@@ -7,6 +7,13 @@ import (
 )
 
 func main() {
-	privateKey := hedera.NewEd25519PrivateKey()
-	fmt.Println(privateKey.PublicKey.KeyData)
+	privateKey, err := hedera.GenerateEd25519PrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	publicKey := privateKey.PublicKey()
+
+	fmt.Printf("private = %v\n", privateKey)
+	fmt.Printf("public = %v\n", publicKey)
 }
