@@ -1,3 +1,9 @@
+9fans.net/go v0.0.0-20181112161441-237454027057 h1:OcHlKWkAMJEF1ndWLGxp5dnJQkYM/YImUOvsBoz6h5E=
+9fans.net/go v0.0.0-20181112161441-237454027057/go.mod h1:diCsxrliIURU9xsYtjCp5AbpQKqdhKmf0ujWDUSkfoY=
+github.com/rogpeppe/godef v1.1.1 h1:NujOtt9q9vIClRTB3sCZpavac+NMRaIayzrcz1h4fSE=
+github.com/rogpeppe/godef v1.1.1/go.mod h1:oEo1eMy1VUEHUzUIX4F7IqvMJRiz9UId44mvnR8oPlQ=
+golang.org/x/tools v0.0.0-20181130195746-895048a75ecf h1:1efYtlcDNt7EL138lS6P4KphZ1KEMWvhFa3FsLbTWEY=
+golang.org/x/tools v0.0.0-20181130195746-895048a75ecf/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
