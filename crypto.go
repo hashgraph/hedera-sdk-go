@@ -7,6 +7,24 @@ import (
 	"fmt"
 )
 
+type Ed25519PrivateKey struct {
+	keyData     []byte
+	asStringRaw string
+	chainCode   []byte
+	publicKey   Ed25519PublicKey
+}
+
+func NewEd25519PrivateKey() Ed25519PrivateKey {
+	_, privateKey := GenerateKeys()
+	return privateKey
+}
+
+type Ed25519PublicKey struct {
+	keyData     []byte
+	asStringRaw string
+	chainCode   []byte
+}
+
 func GenerateKeys() (ed25519.PublicKey, ed25519.PrivateKey) {
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
