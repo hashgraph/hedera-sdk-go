@@ -60,22 +60,6 @@ func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
 	return client
 }
 
-func (client *Client) OperatorId() *AccountID {
-	if client.operator == nil {
-		return nil
-	}
-
-	return &client.operator.accountID
-}
-
-func (client *Client) OperatorPrivateKey() *PrivateKey {
-	if client.operator == nil {
-		return nil
-	}
-
-	return &client.operator.privateKey
-}
-
 func (client *Client) MaxTransactionFee() uint64 {
 	return client.maxTransactionFee
 }
