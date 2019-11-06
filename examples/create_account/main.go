@@ -6,7 +6,7 @@ import "github.com/hashgraph/hedera-sdk-go"
 func main() {
 	client, err := hedera.NewClient(
 		// Node ID
-		AccountID { account: 3 },
+		hedera.NewAccountID(0, 0, 3),
 		// Node Address
 		"0.testnet.hedera.com:50211",
 	)
