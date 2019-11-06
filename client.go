@@ -15,7 +15,7 @@ type Client struct {
 
 type operator struct {
 	accountID  AccountID
-	privateKey PrivateKey
+	privateKey Ed25519PrivateKey
 }
 
 func NewClient(nodeID AccountID, address string) (*Client, error) {
@@ -39,7 +39,7 @@ func (client *Client) Close() error {
 	return client.conn.Close()
 }
 
-func (client *Client) SetOperator(accountID AccountID, privateKey PrivateKey) *Client {
+func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519PrivateKey) *Client {
 	operator := operator{
 		accountID,
 		privateKey,
