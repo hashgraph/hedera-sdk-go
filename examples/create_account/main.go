@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
-import "github.com/hashgraph/hedera-sdk-go"
 
 func main() {
 	client, err := hedera.NewClient(
@@ -19,7 +19,7 @@ func main() {
 	}
 
 	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	
+
 	if err != nil {
 		panic(err)
 	}
