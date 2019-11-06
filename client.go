@@ -6,7 +6,7 @@ const defaultMaxTransactionFee uint64 = 100_000_000 // 1 Hbar
 
 type Client struct {
 	// todo: support multiple nodes
-	nodeId AccountId
+	nodeID AccountID
 	maxTransactionFee uint64
 	maxQueryPayment uint64
 	operator *operator
@@ -14,11 +14,11 @@ type Client struct {
 }
 
 type operator struct {
-	accountId AccountId
+	accountID AccountID
 	privateKey PrivateKey
 }
 
-func NewClient(nodeId AccountId, address string) (*Client, error) {
+func NewClient(nodeId AccountID, address string) (*Client, error) {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (client *Client) Close() error {
 	return client.conn.Close()
 }
 
-func (client *Client) SetOperator(accountId AccountId, privateKey PrivateKey) *Client {
+func (client *Client) SetOperator(accountId AccountID, privateKey PrivateKey) *Client {
 	operator := operator {
 		accountId,
 		privateKey,
@@ -60,12 +60,12 @@ func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
 	return client
 }
 
-func (client *Client) OperatorId() *AccountId {
+func (client *Client) OperatorId() *AccountID {
 	if client.operator == nil {
 		return nil
 	}
 
-	return &client.operator.accountId
+	return &client.operator.accountID
 }
 
 func (client *Client) OperatorPrivateKey() *PrivateKey {
