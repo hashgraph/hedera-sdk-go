@@ -8,21 +8,27 @@ import (
 )
 
 type Ed25519PrivateKey struct {
-	keyData     []byte
-	asStringRaw string
-	chainCode   []byte
-	publicKey   Ed25519PublicKey
+	KeyData []byte
+	// asStringRaw string
+	// chainCode   []byte
+	PublicKey Ed25519PublicKey
 }
 
 func NewEd25519PrivateKey() Ed25519PrivateKey {
-	_, privateKey := GenerateKeys()
-	return privateKey
+	publicKey, privateKey := GenerateKeys()
+	var edPrivKey Ed25519PrivateKey
+	var edPubKey Ed25519PublicKey
+
+	edPrivKey.KeyData = privateKey
+	edPubKey.KeyData = publicKey
+	edPrivKey.PublicKey = edPubKey
+	return edPrivKey
 }
 
 type Ed25519PublicKey struct {
-	keyData     []byte
-	asStringRaw string
-	chainCode   []byte
+	KeyData []byte
+	// asStringRaw string
+	// chainCode   []byte
 }
 
 func GenerateKeys() (ed25519.PublicKey, ed25519.PrivateKey) {
