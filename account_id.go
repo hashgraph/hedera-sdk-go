@@ -9,26 +9,26 @@ type AccountId struct {
 	inner *hedera_proto.AccountID
 }
 
-func NewAccountID(shard, realm, account int64) AccountId {
+func NewAccountID(shard, realm, account uint64) AccountId {
 	return AccountId{
 		inner: &hedera_proto.AccountID{
-			ShardNum:             shard,
-			RealmNum:             realm,
-			AccountNum:           account,
+			ShardNum:             int64(shard),
+			RealmNum:             int64(realm),
+			AccountNum:           int64(account),
 		},
 	}
 }
 
-func (accountId *AccountId) Shard() int64 {
-	return accountId.inner.ShardNum
+func (accountId *AccountId) Shard() uint64 {
+	return uint64(accountId.inner.ShardNum)
 }
 
-func (accountId *AccountId) Realm() int64 {
-	return accountId.inner.RealmNum
+func (accountId *AccountId) Realm() uint64 {
+	return uint64(accountId.inner.RealmNum)
 }
 
-func (accountId *AccountId) Account() int64 {
-	return accountId.inner.AccountNum
+func (accountId *AccountId) Account() uint64 {
+	return uint64(accountId.inner.AccountNum)
 }
 
 func (accountId *AccountId) String() string {

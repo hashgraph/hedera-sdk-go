@@ -1,6 +1,9 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 import "github.com/hashgraph/hedera-sdk-go"
 
 func main() {
@@ -23,7 +26,7 @@ func main() {
 
 	client.SetOperator(
 		// Operator Account ID
-		AccountID { account: 2 },
+		hedera.NewAccountID(0, 0, 3),
 		// Operator Private Key
 		operatorPrivateKey,
 	)
@@ -43,4 +46,6 @@ func main() {
 	}
 
 	newAccountID := receipt.AccountID()
+
+	fmt.Println(newAccountID.String())
 }
