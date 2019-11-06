@@ -5,8 +5,8 @@ import (
 )
 
 type AccountID struct {
-	Shard uint64
-	Realm uint64
+	Shard   uint64
+	Realm   uint64
 	Account uint64
 }
 
