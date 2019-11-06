@@ -1,4 +1,4 @@
 [submodule "hedera-protobuf"]
-	path = hedera-protobuf
+	path = vendor
 	url = https://github.com/QuestofIranon/hedera-protobuf.git
 	branch = "go-support"
