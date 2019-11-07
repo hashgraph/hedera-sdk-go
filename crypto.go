@@ -111,6 +111,14 @@ func (pub Ed25519PublicKey) String() string {
 	return fmt.Sprint(ed25519PubKeyPrefix, hex.EncodeToString(pub.keyData))
 }
 
+func (priv Ed25519PrivateKey) Bytes() []byte {
+	return priv.keyData
+}
+
+func (pub Ed25519PublicKey) Bytes() []byte {
+	return pub.keyData
+}
+
 func (pub Ed25519PublicKey) toProtoKey() hedera_proto.Key {
 	return hedera_proto.Key{Key: &hedera_proto.Key_Ed25519{Ed25519: pub.keyData}}
 }
