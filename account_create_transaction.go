@@ -31,6 +31,7 @@ func (transaction AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) A
 	protoKey := hedera_proto.Key_Ed25519{Ed25519: publicKey.keyData}
 
 	transaction.body.Key = &hedera_proto.Key{Key: &protoKey}
+
 	return transaction
 }
 
@@ -48,7 +49,7 @@ func (transaction AccountCreateTransaction) validate() error {
 	return nil
 }
 
-func (transaction AccountCreateTransaction) Build() (Transaction, error) {
+func (transaction AccountCreateTransaction) Build() (*Transaction, error) {
 	if err := transaction.validate(); err != nil {
 		return nil, err
 	}

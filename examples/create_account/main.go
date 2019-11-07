@@ -32,7 +32,12 @@ func main() {
 		operatorPrivateKey,
 	)
 
-	newKey := hedera.NewEd25519PrivateKey()
+	newKey, err := hedera.GenerateEd25519PrivateKey()
+
+	if err != nil {
+		panic(err)
+	}
+
 	newPublicKey := newKey.PublicKey()
 
 	tx, err := hedera.NewAccountCreateTransaction(client).
