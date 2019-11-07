@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go"
@@ -9,7 +10,7 @@ import (
 func main() {
 	client, err := hedera.NewClient(
 		// Node ID
-		hedera.AccountID { Account: 3 },
+		hedera.AccountID{Account: 3},
 		// Node Address
 		"0.testnet.hedera.com:50211",
 	)
@@ -26,7 +27,7 @@ func main() {
 
 	client.SetOperator(
 		// Operator Account ID
-		hedera.AccountID { Account: 2 },
+		hedera.AccountID{Account: 2},
 		// Operator Private Key
 		operatorPrivateKey,
 	)
@@ -34,10 +35,15 @@ func main() {
 	newKey := hedera.NewEd25519PrivateKey()
 	newPublicKey := newKey.PublicKey()
 
-	tx := hedera.NewAccountCreateTransaction(client).
+	tx, err := hedera.NewAccountCreateTransaction(client).
 		SetKey(newPublicKey).
 		SetInitialBalance(1000).
-		SetMaxTransactionFee(10000000)
+		SetMaxTransactionFee(10000000).
+		Build()
+
+	if err != nil {
+		panic(err)
+	}
 
 	receipt, err := tx.ExecuteForReceipt()
 
