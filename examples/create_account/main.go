@@ -51,7 +51,7 @@ func main() {
 		panic(err)
 	}
 
-	newAccountID := receipt.AccountId()
+	newAccountID := receipt.AccountID()
 
 	fmt.Println(newAccountID.String())
 }
