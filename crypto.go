@@ -99,10 +99,6 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
 }
 
-func (pub Ed25519PublicKey) ToProtoKey() hedera_proto.Key {
-	return hedera_proto.Key{Key: &hedera_proto.Key_Ed25519{Ed25519: pub.keyData}}
-}
-
 func (priv Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
 	return priv.publicKey
 }
@@ -113,6 +109,10 @@ func (priv Ed25519PrivateKey) String() string {
 
 func (pub Ed25519PublicKey) String() string {
 	return fmt.Sprint(ed25519PubKeyPrefix, hex.EncodeToString(pub.keyData))
+}
+
+func (pub Ed25519PublicKey) toProtoKey() hedera_proto.Key {
+	return hedera_proto.Key{Key: &hedera_proto.Key_Ed25519{Ed25519: pub.keyData}}
 }
 
 func (priv Ed25519PrivateKey) Sign(message []byte) []byte {
