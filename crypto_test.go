@@ -7,7 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testKeyStr = "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
+const testPrivateKeyStr = "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
+
+const testPublicKeyStr = "302a300506032b6570032100e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
 
 func TestEd25519PrivateKeyGenerate(t *testing.T) {
 	key, err := GenerateEd25519PrivateKey()
@@ -17,10 +19,10 @@ func TestEd25519PrivateKeyGenerate(t *testing.T) {
 }
 
 func TestEd25519PrivateKeyExternalSerialization(t *testing.T) {
-	key, err := Ed25519PrivateKeyFromString(testKeyStr)
+	key, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
 
 	assert.NoError(t, err)
-	assert.Equal(t, testKeyStr, key.String())
+	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
 func TestEd25519PrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
@@ -28,7 +30,7 @@ func TestEd25519PrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) 
 	key, err := Ed25519PrivateKeyFromString(keyStr)
 
 	assert.NoError(t, err)
-	assert.Equal(t, testKeyStr, key.String())
+	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
 func TestEd25519PrivateKeyExternalSerializationForRawHex(t *testing.T) {
@@ -36,5 +38,20 @@ func TestEd25519PrivateKeyExternalSerializationForRawHex(t *testing.T) {
 	key, err := Ed25519PrivateKeyFromString(keyStr)
 
 	assert.NoError(t, err)
-	assert.Equal(t, testKeyStr, key.String())
+	assert.Equal(t, testPrivateKeyStr, key.String())
+}
+
+func TestEd25519PublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
+	key, err := Ed25519PublicKeyFromString(testPublicKeyStr)
+
+	assert.NoError(t, err)
+	assert.Equal(t, testPublicKeyStr, key.String())
+}
+
+func TestEd25519PublicKeyExternalSerializationForRawHex(t *testing.T) {
+	keyStr := "e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
+	key, err := Ed25519PublicKeyFromString(keyStr)
+
+	assert.NoError(t, err)
+	assert.Equal(t, testPublicKeyStr, key.String())
 }

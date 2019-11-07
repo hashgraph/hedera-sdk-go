@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+
+	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
 )
 
 const ed25519PrivKeyPrefix = "302e020100300506032b657004220420"
@@ -17,6 +19,10 @@ type Ed25519PrivateKey struct {
 	publicKey Ed25519PublicKey
 }
 
+type Ed25519PublicKey struct {
+	keyData []byte
+}
+
 func GenerateEd25519PrivateKey() (Ed25519PrivateKey, error) {
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
@@ -24,15 +30,9 @@ func GenerateEd25519PrivateKey() (Ed25519PrivateKey, error) {
 	}
 
 	return Ed25519PrivateKey{
-		keyData: privateKey,
-		publicKey: Ed25519PublicKey{
-			keyData: publicKey,
-		},
+		keyData:   privateKey,
+		publicKey: Ed25519PublicKey{publicKey},
 	}, nil
-}
-
-type Ed25519PublicKey struct {
-	keyData []byte
 }
 
 func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
@@ -53,10 +53,8 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 	publicKey := privateKey.Public().(ed25519.PublicKey)
 
 	return Ed25519PrivateKey{
-		keyData: privateKey,
-		publicKey: Ed25519PublicKey{
-			keyData: publicKey,
-		},
+		keyData:   privateKey,
+		publicKey: Ed25519PublicKey{publicKey},
 	}, nil
 }
 
@@ -77,6 +75,32 @@ func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
 	}
 
 	return Ed25519PrivateKey{}, fmt.Errorf("invalid private key with length %v", len(s))
+}
+
+func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
+	switch len(s) {
+	case 64: // raw public key
+		bytes, err := hex.DecodeString(s)
+		if err != nil {
+			return Ed25519PublicKey{}, err
+		}
+
+		return Ed25519PublicKey{bytes}, nil
+
+	case 88: // DER encoded public key
+		if strings.HasPrefix(s, ed25519PubKeyPrefix) {
+			pk, err := Ed25519PublicKeyFromString(s[24:])
+			if err != nil {
+				return Ed25519PublicKey{}, err
+			}
+			return pk, nil
+		}
+	}
+	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
+}
+
+func (pub Ed25519PublicKey) ToProtoKey() hedera_proto.Key {
+	return hedera_proto.Key{Key: &hedera_proto.Key_Ed25519{Ed25519: pub.keyData}}
 }
 
 func (priv Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
