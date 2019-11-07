@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"crypto/ed25519"
 	"strings"
 	"testing"
 
@@ -54,4 +55,14 @@ func TestEd25519PublicKeyExternalSerializationForRawHex(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPublicKeyStr, key.String())
+}
+
+func TestSigning(t *testing.T) {
+	priKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+	pubKey, err := Ed25519PublicKeyFromString(testPublicKeyStr)
+	testSignData := []byte("this is the test data to sign")
+	signature := priKey.Sign(testSignData)
+
+	assert.NoError(t, err)
+	assert.True(t, ed25519.Verify(pubKey.Bytes(), []byte("this is the test data to sign"), signature))
 }
