@@ -114,3 +114,7 @@ func (priv Ed25519PrivateKey) String() string {
 func (pub Ed25519PublicKey) String() string {
 	return fmt.Sprint(ed25519PubKeyPrefix, hex.EncodeToString(pub.keyData))
 }
+
+func (priv Ed25519PrivateKey) Sign(message []byte) []byte {
+	return ed25519.Sign(priv.keyData, message)
+}
