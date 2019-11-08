@@ -88,6 +88,10 @@ func (transaction Transaction) Execute() (*TransactionID, error) {
 		return nil, errors.New("No client was provided on this transaction")
 	}
 
+	if transaction.inner.SigMap == nil {
+		transaction.Sign(transaction.client.operator.privateKey)
+	}
+
 	txID := generateTransactionID(transaction.client.operator.accountID)
 
 	body := transaction.inner.GetBody()

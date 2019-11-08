@@ -29,12 +29,7 @@ func (tx AccountCreateTransaction) SetMaxTransactionFee(fee uint64) AccountCreat
 }
 
 func (tx AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
-	// fixme: use our own built in function for this
-	// protoKey := hedera_proto.Key_Ed25519{Ed25519: publicKey.keyData}
-
 	tx.PublicKey = &publicKey
-
-	// transaction.body.Key = &hedera_proto.Key{Key: &protoKey}
 
 	return tx
 }
