@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/hashgraph/hedera-sdk-go"
 )
@@ -19,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString("302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10")
 
 	if err != nil {
 		panic(err)

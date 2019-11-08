@@ -54,6 +54,28 @@ func (transaction AccountCreateTransaction) Build() (*Transaction, error) {
 		return nil, err
 	}
 
+	protoBody := hedera_proto.Transaction_Body{
+		Body: &hedera_proto.TransactionBody{
+			NodeAccountID:            transaction.client.nodeID.proto(),
+			TransactionValidDuration: &hedera_proto.Duration{Seconds: int64(120)},
+			TransactionFee:           transaction.maxTransactionFee,
+			GenerateRecord:           false,
+			Memo:                     "",
+			TransactionID:            generateTransactionID(transaction.client.operator.accountID).proto(),
+			Data: &hedera_proto.TransactionBody_CryptoCreateAccount{
+				CryptoCreateAccount: &transaction.body,
+			},
+		},
+	}
+
+	tx := Transaction{
+		Kind:   CryptoCreateAccount,
+		client: transaction.client,
+		inner: hedera_proto.Transaction{
+			BodyData: &protoBody,
+		},
+	}
+
 	// not implemented yet
-	return nil, nil
+	return &tx, nil
 }

@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -42,6 +43,20 @@ func generateTransactionID(accountID AccountID) TransactionID {
 		accountID,
 		uint64(now.Unix()),
 		uint32(now.UnixNano() - (now.Unix() * 1e+9)),
+	}
+}
+
+func (txID TransactionID) proto() *hedera_proto.TransactionID {
+	return &hedera_proto.TransactionID{
+		TransactionValidStart: &hedera_proto.Timestamp{
+			Seconds: int64(txID.ValidStartSeconds),
+			Nanos:   int32(txID.ValidStartNanos),
+		},
+		AccountID: &hedera_proto.AccountID{
+			ShardNum:   int64(txID.Account.Shard),
+			RealmNum:   int64(txID.Account.Realm),
+			AccountNum: int64(txID.Account.Account),
+		},
 	}
 }
 
@@ -92,22 +107,14 @@ func (transaction Transaction) Execute() (*TransactionID, error) {
 
 	body := transaction.inner.GetBody()
 
-	body.TransactionID = &hedera_proto.TransactionID{
-		TransactionValidStart: &hedera_proto.Timestamp{
-			Seconds: int64(txID.ValidStartSeconds),
-			Nanos:   int32(txID.ValidStartNanos),
-		},
-		AccountID: &hedera_proto.AccountID{
-			ShardNum:   int64(txID.Account.Shard),
-			RealmNum:   int64(txID.Account.Realm),
-			AccountNum: int64(txID.Account.Account),
-		},
-	}
+	body.TransactionID = txID.proto()
 
 	// todo: use response and handle precheck codes
-	_, error := transaction.Kind.execute(*transaction.client, transaction.inner)
+	resp, error := transaction.Kind.execute(*transaction.client, transaction.inner)
 
-	// todo: handle result errors
+	fmt.Println(resp.String())
+
+	// todo: handle other result errors
 	if error != nil {
 		return nil, error
 	}
@@ -122,6 +129,6 @@ func (transaction Transaction) ExecuteForReceipt() (*TransactionReceipt, error) 
 		return nil, err
 	}
 
-	// todo: add receipts
-	return nil, nil
+	// todo: return a real receipt
+	return &TransactionReceipt{}, nil
 }
