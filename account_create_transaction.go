@@ -7,9 +7,11 @@ import (
 )
 
 type AccountCreateTransaction struct {
-	builder        TransactionBuilder
-	PublicKey      *Ed25519PublicKey
-	InitialBalance uint64
+	TransactionBuilder
+	PublicKey           *Ed25519PublicKey
+	InitialBalance      uint64
+	ProxyAccountId      *AccountID
+	ReceiverSigRequired bool
 }
 
 func NewAccountCreateTransaction(client *Client) AccountCreateTransaction {
@@ -21,14 +23,8 @@ func NewAccountCreateTransaction(client *Client) AccountCreateTransaction {
 	}
 
 	return AccountCreateTransaction{
-		builder: builder,
+		TransactionBuilder: builder,
 	}
-}
-
-func (tx AccountCreateTransaction) SetMaxTransactionFee(fee uint64) AccountCreateTransaction {
-	tx.builder.SetMaxTransactionFee(fee)
-
-	return tx
 }
 
 func (tx AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
@@ -40,6 +36,18 @@ func (tx AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCre
 
 func (tx AccountCreateTransaction) SetInitialBalance(balance uint64) AccountCreateTransaction {
 	tx.InitialBalance = balance
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetProxyAccountID(accountID AccountID) AccountCreateTransaction {
+	tx.ProxyAccountId = &accountID
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
+	tx.ReceiverSigRequired = required
 
 	return tx
 }
@@ -60,14 +68,21 @@ func (tx AccountCreateTransaction) Build() (*Transaction, error) {
 
 	protoKey := tx.PublicKey.toProtoKey()
 
-	tx.builder.body.Data = &hedera_proto.TransactionBody_CryptoCreateAccount{
+	bodyData := hedera_proto.TransactionBody_CryptoCreateAccount{
 		CryptoCreateAccount: &hedera_proto.CryptoCreateTransactionBody{
-			Key:            &protoKey,
-			InitialBalance: tx.InitialBalance,
+			Key:                 &protoKey,
+			InitialBalance:      tx.InitialBalance,
+			ReceiverSigRequired: tx.ReceiverSigRequired,
 		},
 	}
 
-	return tx.builder.build(CryptoCreateAccount)
+	if tx.ProxyAccountId != nil {
+		bodyData.CryptoCreateAccount.ProxyAccountID = tx.ProxyAccountId.proto()
+	}
+
+	tx.body.Data = &bodyData
+
+	return tx.build()
 }
 
 func (tx AccountCreateTransaction) Execute() (*TransactionID, error) {

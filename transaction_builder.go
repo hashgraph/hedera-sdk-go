@@ -23,7 +23,6 @@ type TransactionBuilderInterface interface {
 }
 
 type TransactionBuilder struct {
-	TransactionBuilderInterface
 	client            *Client
 	kind              TransactionKind
 	MaxTransactionFee uint64
@@ -54,7 +53,13 @@ func (tb TransactionBuilder) SetTransactionValidDuration(seconds uint64) Transac
 	return tb
 }
 
-func (tb TransactionBuilder) build(kind TransactionKind) (*Transaction, error) {
+func (tb TransactionBuilder) SetNodeAccountID(accountID AccountID) TransactionBuilder {
+	tb.body.NodeAccountID = accountID.proto()
+
+	return tb
+}
+
+func (tb TransactionBuilder) build() (*Transaction, error) {
 	if tb.client != nil {
 		if tb.body.TransactionFee == 0 {
 			tb.body.TransactionFee = tb.client.MaxTransactionFee()
@@ -83,7 +88,7 @@ func (tb TransactionBuilder) build(kind TransactionKind) (*Transaction, error) {
 	}
 
 	tx := Transaction{
-		Kind:   kind,
+		Kind:   tb.kind,
 		client: tb.client,
 		inner: hedera_proto.Transaction{
 			BodyData: &protoBody,

@@ -121,3 +121,11 @@ func (transaction Transaction) ExecuteForReceipt() (*TransactionReceipt, error) 
 	// todo: return a real receipt
 	return &TransactionReceipt{}, nil
 }
+
+func (transaction Transaction) Proto() hedera_proto.Transaction {
+	return transaction.inner
+}
+
+func (transaction Transaction) String() string {
+	return transaction.inner.String()
+}
