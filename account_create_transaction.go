@@ -7,7 +7,6 @@ import (
 )
 
 type AccountCreateTransaction struct {
-	TransactionBuilderInterface
 	builder        TransactionBuilder
 	PublicKey      *Ed25519PublicKey
 	InitialBalance uint64
@@ -15,7 +14,11 @@ type AccountCreateTransaction struct {
 
 func NewAccountCreateTransaction(client *Client) AccountCreateTransaction {
 
-	builder := TransactionBuilder{client: client}
+	builder := TransactionBuilder{
+		client: client,
+		kind:   CryptoCreateAccount,
+		body:   hedera_proto.TransactionBody{},
+	}
 
 	return AccountCreateTransaction{
 		builder: builder,
@@ -29,6 +32,7 @@ func (tx AccountCreateTransaction) SetMaxTransactionFee(fee uint64) AccountCreat
 }
 
 func (tx AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
+
 	tx.PublicKey = &publicKey
 
 	return tx

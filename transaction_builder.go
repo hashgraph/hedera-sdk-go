@@ -16,8 +16,6 @@ func (e *ErrorTransactionValidation) Error() string {
 }
 
 type TransactionBuilderInterface interface {
-	SetMaxTransactionFee(uint64) *TransactionBuilder
-	SetMemo(string)
 	Validate() error
 	Build() (*Transaction, error)
 	Execute() (*TransactionID, error)
@@ -25,7 +23,9 @@ type TransactionBuilderInterface interface {
 }
 
 type TransactionBuilder struct {
+	TransactionBuilderInterface
 	client            *Client
+	kind              TransactionKind
 	MaxTransactionFee uint64
 	body              hedera_proto.TransactionBody
 }
@@ -38,6 +38,12 @@ func (tb TransactionBuilder) SetMemo(memo string) TransactionBuilder {
 
 func (tb TransactionBuilder) SetMaxTransactionFee(fee uint64) TransactionBuilder {
 	tb.MaxTransactionFee = fee
+
+	return tb
+}
+
+func (tb TransactionBuilder) SetTransactionID(txID TransactionID) TransactionBuilder {
+	tb.body.TransactionID = txID.proto()
 
 	return tb
 }
