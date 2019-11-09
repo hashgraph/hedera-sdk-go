@@ -29,36 +29,6 @@ type TransactionBuilder struct {
 	body              hedera_proto.TransactionBody
 }
 
-func (tb TransactionBuilder) SetMemo(memo string) TransactionBuilder {
-	tb.body.Memo = memo
-
-	return tb
-}
-
-func (tb TransactionBuilder) SetMaxTransactionFee(fee uint64) TransactionBuilder {
-	tb.MaxTransactionFee = fee
-
-	return tb
-}
-
-func (tb TransactionBuilder) SetTransactionID(txID TransactionID) TransactionBuilder {
-	tb.body.TransactionID = txID.proto()
-
-	return tb
-}
-
-func (tb TransactionBuilder) SetTransactionValidDuration(seconds uint64) TransactionBuilder {
-	tb.body.TransactionValidDuration = &hedera_proto.Duration{Seconds: int64(seconds)}
-
-	return tb
-}
-
-func (tb TransactionBuilder) SetNodeAccountID(accountID AccountID) TransactionBuilder {
-	tb.body.NodeAccountID = accountID.proto()
-
-	return tb
-}
-
 func (tb TransactionBuilder) build() (*Transaction, error) {
 	if tb.client != nil {
 		if tb.body.TransactionFee == 0 {
@@ -79,8 +49,6 @@ func (tb TransactionBuilder) build() (*Transaction, error) {
 		if tb.client != nil {
 			tb.body.TransactionFee = tb.MaxTransactionFee
 		}
-	} else {
-		tb.body.TransactionFee = tb.client.MaxTransactionFee()
 	}
 
 	protoBody := hedera_proto.Transaction_Body{

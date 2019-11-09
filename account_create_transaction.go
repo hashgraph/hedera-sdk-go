@@ -60,6 +60,36 @@ func (tx AccountCreateTransaction) Validate() error {
 	return nil
 }
 
+func (tx AccountCreateTransaction) SetMemo(memo string) AccountCreateTransaction {
+	tx.body.Memo = memo
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetMaxTransactionFee(fee uint64) AccountCreateTransaction {
+	tx.MaxTransactionFee = fee
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetTransactionID(txID TransactionID) AccountCreateTransaction {
+	tx.body.TransactionID = txID.proto()
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetTransactionValidDuration(seconds uint64) AccountCreateTransaction {
+	tx.body.TransactionValidDuration = &hedera_proto.Duration{Seconds: int64(seconds)}
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetNodeAccountID(accountID AccountID) AccountCreateTransaction {
+	tx.body.NodeAccountID = accountID.proto()
+
+	return tx
+}
+
 func (tx AccountCreateTransaction) Build() (*Transaction, error) {
 
 	if err := tx.Validate(); err != nil {

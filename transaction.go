@@ -122,8 +122,8 @@ func (transaction Transaction) ExecuteForReceipt() (*TransactionReceipt, error) 
 	return &TransactionReceipt{}, nil
 }
 
-func (transaction Transaction) Proto() hedera_proto.Transaction {
-	return transaction.inner
+func (transaction Transaction) proto() *hedera_proto.Transaction {
+	return &transaction.inner
 }
 
 func (transaction Transaction) String() string {
