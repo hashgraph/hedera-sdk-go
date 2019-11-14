@@ -26,14 +26,14 @@ func TransactionReceiptFromResponse(response hedera_proto.Response) (*Transactio
 	return &receipt, nil
 }
 
-func (transactionReceipt TransactionReceipt) AccountID() AccountID {
+func (transactionReceipt TransactionReceipt) AccountID() *AccountID {
 	internalID := transactionReceipt.inner.AccountID
 
 	if internalID == nil {
 		return nil
 	}
 
-	return AccountID{
+	return &AccountID{
 		uint64(internalID.ShardNum),
 		uint64(internalID.RealmNum),
 		uint64(internalID.AccountNum),

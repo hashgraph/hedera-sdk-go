@@ -8,51 +8,129 @@ import (
 
 type AccountCreateTransaction struct {
 	TransactionBuilder
-	client            *Client
-	body              hedera_proto.CryptoCreateTransactionBody
-	maxTransactionFee uint64
+	PublicKey           *Ed25519PublicKey
+	InitialBalance      uint64
+	ProxyAccountId      *AccountID
+	ReceiverSigRequired bool
 }
 
 func NewAccountCreateTransaction(client *Client) AccountCreateTransaction {
-	return AccountCreateTransaction{
+
+	builder := TransactionBuilder{
 		client: client,
-		body:   hedera_proto.CryptoCreateTransactionBody{},
+		kind:   CryptoCreateAccount,
+		body:   hedera_proto.TransactionBody{},
+	}
+
+	return AccountCreateTransaction{
+		TransactionBuilder: builder,
 	}
 }
 
-func (transaction AccountCreateTransaction) SetMaxTransactionFee(tinybar uint64) AccountCreateTransaction {
-	transaction.maxTransactionFee = tinybar
+func (tx AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
 
-	return transaction
+	tx.PublicKey = &publicKey
+
+	return tx
 }
 
-func (transaction AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
-	// fixme: use our own built in function for this
-	protoKey := hedera_proto.Key_Ed25519{Ed25519: publicKey.keyData}
+func (tx AccountCreateTransaction) SetInitialBalance(balance uint64) AccountCreateTransaction {
+	tx.InitialBalance = balance
 
-	transaction.body.Key = &hedera_proto.Key{Key: &protoKey}
-	return transaction
+	return tx
 }
 
-func (transaction AccountCreateTransaction) SetInitialBalance(tinybar uint64) AccountCreateTransaction {
-	transaction.body.InitialBalance = tinybar
+func (tx AccountCreateTransaction) SetProxyAccountID(accountID AccountID) AccountCreateTransaction {
+	tx.ProxyAccountId = &accountID
 
-	return transaction
+	return tx
 }
 
-func (transaction AccountCreateTransaction) validate() error {
-	if transaction.body.Key == nil {
-		return fmt.Errorf("AccountCreateTransaction requires .setKey")
+func (tx AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
+	tx.ReceiverSigRequired = required
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) Validate() error {
+	if tx.PublicKey == nil {
+		return fmt.Errorf("AccountCreateTransaction requires Public Key to be set")
 	}
 
 	return nil
 }
 
-func (transaction AccountCreateTransaction) Build() (Transaction, error) {
-	if err := transaction.validate(); err != nil {
+func (tx AccountCreateTransaction) SetMemo(memo string) AccountCreateTransaction {
+	tx.body.Memo = memo
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetMaxTransactionFee(fee uint64) AccountCreateTransaction {
+	tx.MaxTransactionFee = fee
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetTransactionID(txID TransactionID) AccountCreateTransaction {
+	tx.body.TransactionID = txID.proto()
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetTransactionValidDuration(seconds uint64) AccountCreateTransaction {
+	tx.body.TransactionValidDuration = &hedera_proto.Duration{Seconds: int64(seconds)}
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) SetNodeAccountID(accountID AccountID) AccountCreateTransaction {
+	tx.body.NodeAccountID = accountID.proto()
+
+	return tx
+}
+
+func (tx AccountCreateTransaction) Build() (*Transaction, error) {
+
+	if err := tx.Validate(); err != nil {
 		return nil, err
 	}
 
-	// not implemented yet
-	return nil, nil
+	protoKey := tx.PublicKey.toProtoKey()
+
+	bodyData := hedera_proto.TransactionBody_CryptoCreateAccount{
+		CryptoCreateAccount: &hedera_proto.CryptoCreateTransactionBody{
+			Key:                 &protoKey,
+			InitialBalance:      tx.InitialBalance,
+			ReceiverSigRequired: tx.ReceiverSigRequired,
+		},
+	}
+
+	if tx.ProxyAccountId != nil {
+		bodyData.CryptoCreateAccount.ProxyAccountID = tx.ProxyAccountId.proto()
+	}
+
+	tx.body.Data = &bodyData
+
+	return tx.build()
+}
+
+func (tx AccountCreateTransaction) Execute() (*TransactionID, error) {
+	transaction, err := tx.Build()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return transaction.Execute()
+}
+
+func (tx AccountCreateTransaction) ExecuteForReceipt() (*TransactionReceipt, error) {
+	transaction, err := tx.Build()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return transaction.ExecuteForReceipt()
 }
