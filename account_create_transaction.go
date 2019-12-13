@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type AccountCreateTransaction struct {
@@ -19,7 +19,7 @@ func NewAccountCreateTransaction(client *Client) AccountCreateTransaction {
 	builder := TransactionBuilder{
 		client: client,
 		kind:   CryptoCreateAccount,
-		body:   hedera_proto.TransactionBody{},
+		body:   proto.TransactionBody{},
 	}
 
 	return AccountCreateTransaction{
@@ -79,7 +79,7 @@ func (tx AccountCreateTransaction) SetTransactionID(txID TransactionID) AccountC
 }
 
 func (tx AccountCreateTransaction) SetTransactionValidDuration(seconds uint64) AccountCreateTransaction {
-	tx.body.TransactionValidDuration = &hedera_proto.Duration{Seconds: int64(seconds)}
+	tx.body.TransactionValidDuration = &proto.Duration{Seconds: int64(seconds)}
 
 	return tx
 }
@@ -98,8 +98,8 @@ func (tx AccountCreateTransaction) Build() (*Transaction, error) {
 
 	protoKey := tx.PublicKey.toProtoKey()
 
-	bodyData := hedera_proto.TransactionBody_CryptoCreateAccount{
-		CryptoCreateAccount: &hedera_proto.CryptoCreateTransactionBody{
+	bodyData := proto.TransactionBody_CryptoCreateAccount{
+		CryptoCreateAccount: &proto.CryptoCreateTransactionBody{
 			Key:                 &protoKey,
 			InitialBalance:      tx.InitialBalance,
 			ReceiverSigRequired: tx.ReceiverSigRequired,

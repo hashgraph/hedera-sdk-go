@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 const receiptRetryDelay = 500
@@ -31,13 +31,13 @@ func generateTransactionID(accountID AccountID) TransactionID {
 	}
 }
 
-func (txID TransactionID) proto() *hedera_proto.TransactionID {
-	return &hedera_proto.TransactionID{
-		TransactionValidStart: &hedera_proto.Timestamp{
+func (txID TransactionID) proto() *proto.TransactionID {
+	return &proto.TransactionID{
+		TransactionValidStart: &proto.Timestamp{
 			Seconds: int64(txID.ValidStartSeconds),
 			Nanos:   int32(txID.ValidStartNanos),
 		},
-		AccountID: &hedera_proto.AccountID{
+		AccountID: &proto.AccountID{
 			ShardNum:   int64(txID.Account.Shard),
 			RealmNum:   int64(txID.Account.Realm),
 			AccountNum: int64(txID.Account.Account),
@@ -48,13 +48,13 @@ func (txID TransactionID) proto() *hedera_proto.TransactionID {
 type Transaction struct {
 	Kind   TransactionKind
 	client *Client
-	inner  hedera_proto.Transaction
+	inner  proto.Transaction
 }
 
 func (transaction Transaction) AddSignature(signature []byte, publicKey Ed25519PublicKey) Transaction {
-	signaturePair := hedera_proto.SignaturePair{
+	signaturePair := proto.SignaturePair{
 		PubKeyPrefix: publicKey.keyData,
-		Signature: &hedera_proto.SignaturePair_Ed25519{
+		Signature: &proto.SignaturePair_Ed25519{
 			Ed25519: signature,
 		},
 	}
@@ -62,7 +62,7 @@ func (transaction Transaction) AddSignature(signature []byte, publicKey Ed25519P
 	sigmap := transaction.inner.GetSigMap()
 
 	if sigmap == nil {
-		sigmap = &hedera_proto.SignatureMap{}
+		sigmap = &proto.SignatureMap{}
 	}
 
 	sigmap.SigPair = append(sigmap.SigPair, &signaturePair)
@@ -122,7 +122,7 @@ func (transaction Transaction) ExecuteForReceipt() (*TransactionReceipt, error) 
 	return &TransactionReceipt{}, nil
 }
 
-func (transaction Transaction) proto() *hedera_proto.Transaction {
+func (transaction Transaction) proto() *proto.Transaction {
 	return &transaction.inner
 }
 

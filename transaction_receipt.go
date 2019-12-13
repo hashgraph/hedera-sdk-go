@@ -3,16 +3,16 @@ package hedera
 import (
 	"errors"
 
-	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 var ErrNoReceipt = errors.New("response was not `TransactionGetReceipt`")
 
 type TransactionReceipt struct {
-	inner *hedera_proto.TransactionReceipt
+	inner *proto.TransactionReceipt
 }
 
-func TransactionReceiptFromResponse(response hedera_proto.Response) (*TransactionReceipt, error) {
+func TransactionReceiptFromResponse(response proto.Response) (*TransactionReceipt, error) {
 	transactionGetReceipt := response.GetTransactionGetReceipt()
 
 	if transactionGetReceipt == nil {

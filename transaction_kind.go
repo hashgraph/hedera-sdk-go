@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type TransactionKind int
@@ -14,10 +14,10 @@ const (
 	CryptoTransfer
 )
 
-func (tk TransactionKind) execute(client Client, tx hedera_proto.Transaction) (*hedera_proto.TransactionResponse, error) {
+func (tk TransactionKind) execute(client Client, tx proto.Transaction) (*proto.TransactionResponse, error) {
 	switch tk {
 	case CryptoCreateAccount:
-		return hedera_proto.NewCryptoServiceClient(client.conn).CreateAccount(context.TODO(), &tx)
+		return proto.NewCryptoServiceClient(client.conn).CreateAccount(context.TODO(), &tx)
 	case CryptoTransfer:
 		return nil, errors.New("not implemented yet")
 	default:

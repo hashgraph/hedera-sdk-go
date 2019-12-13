@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 const ed25519PrivKeyPrefix = "302e020100300506032b657004220420"
@@ -119,8 +119,8 @@ func (pub Ed25519PublicKey) Bytes() []byte {
 	return pub.keyData
 }
 
-func (pub Ed25519PublicKey) toProtoKey() hedera_proto.Key {
-	return hedera_proto.Key{Key: &hedera_proto.Key_Ed25519{Ed25519: pub.keyData}}
+func (pub Ed25519PublicKey) toProtoKey() proto.Key {
+	return proto.Key{Key: &proto.Key_Ed25519{Ed25519: pub.keyData}}
 }
 
 func (priv Ed25519PrivateKey) Sign(message []byte) []byte {

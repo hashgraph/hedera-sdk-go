@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type AccountID struct {
@@ -16,8 +16,8 @@ func (accountID AccountID) String() string {
 	return fmt.Sprintf("%d.%d.%d", accountID.Shard, accountID.Realm, accountID.Account)
 }
 
-func (accountID AccountID) proto() *hedera_proto.AccountID {
-	return &hedera_proto.AccountID{
+func (accountID AccountID) proto() *proto.AccountID {
+	return &proto.AccountID{
 		ShardNum:   int64(accountID.Shard),
 		RealmNum:   int64(accountID.Realm),
 		AccountNum: int64(accountID.Account),

@@ -3,7 +3,7 @@ package hedera
 import (
 	"strings"
 
-	"github.com/hashgraph/hedera-sdk-go/hedera_proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type ErrorTransactionValidation struct {
@@ -26,7 +26,7 @@ type TransactionBuilder struct {
 	client            *Client
 	kind              TransactionKind
 	MaxTransactionFee uint64
-	body              hedera_proto.TransactionBody
+	body              proto.TransactionBody
 }
 
 func (tb TransactionBuilder) build() (*Transaction, error) {
@@ -36,7 +36,7 @@ func (tb TransactionBuilder) build() (*Transaction, error) {
 		}
 
 		if tb.body.TransactionValidDuration == nil {
-			tb.body.TransactionValidDuration = &hedera_proto.Duration{Seconds: maxValidDuration}
+			tb.body.TransactionValidDuration = &proto.Duration{Seconds: maxValidDuration}
 		}
 
 		if tb.body.NodeAccountID == nil {
@@ -51,14 +51,14 @@ func (tb TransactionBuilder) build() (*Transaction, error) {
 		}
 	}
 
-	protoBody := hedera_proto.Transaction_Body{
+	protoBody := proto.Transaction_Body{
 		Body: &tb.body,
 	}
 
 	tx := Transaction{
 		Kind:   tb.kind,
 		client: tb.client,
-		inner: hedera_proto.Transaction{
+		inner: proto.Transaction{
 			BodyData: &protoBody,
 		},
 	}
