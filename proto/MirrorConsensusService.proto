@@ -20,7 +20,7 @@
 
 syntax = "proto3";
 
-package mirror;
+package proto;
 
 option java_multiple_files = true; // Required for the reactor-grpc generator to work correctly
 option java_package = "com.hedera.hashgraph.proto.mirror";
@@ -28,7 +28,7 @@ option java_package = "com.hedera.hashgraph.proto.mirror";
 import "BasicTypes.proto";
 import "Timestamp.proto";
 
-message ConsensusTopicQuery {
+message MirrorConsensusTopicQuery {
     .proto.TopicID topicID = 1; // A required topic ID to retrieve messages for.
 
     // Include messages which reached consensus on or after this time. Defaults to current time if not set.
@@ -42,7 +42,7 @@ message ConsensusTopicQuery {
     uint64 limit = 4;
 }
 
-message ConsensusTopicResponse {
+message MirrorConsensusTopicResponse {
     .proto.Timestamp consensusTimestamp = 1; // The time at which the transaction reached consensus
 
     // The message body originally in the ConsensusSubmitMessageTransactionBody. Message size will be less than 4K.
@@ -57,6 +57,6 @@ message ConsensusTopicResponse {
 // The Mirror Service provides the ability to query a stream of Hedera Consensus Service (HCS) messages for an
 // HCS Topic via a specific (possibly open-ended) time range.
 //
-service ConsensusService {
-    rpc subscribeTopic (ConsensusTopicQuery) returns (stream ConsensusTopicResponse);
+service MirrorConsensusService {
+    rpc subscribeTopic (MirrorConsensusTopicQuery) returns (stream MirrorConsensusTopicResponse);
 }
