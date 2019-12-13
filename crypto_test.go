@@ -16,7 +16,7 @@ func TestEd25519PrivateKeyGenerate(t *testing.T) {
 	key, err := GenerateEd25519PrivateKey()
 
 	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(key.String(), ed25519PrivKeyPrefix))
+	assert.True(t, strings.HasPrefix(key.String(), ed25519PrivateKeyPrefix))
 }
 
 func TestEd25519PrivateKeyExternalSerialization(t *testing.T) {

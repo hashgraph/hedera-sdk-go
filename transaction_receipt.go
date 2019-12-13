@@ -2,10 +2,20 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
+	"time"
 )
 
 type TransactionReceipt struct {
-	AccountID *AccountID
+	// TODO: Make the status enum look nicer in Go
+	Status proto.ResponseCodeEnum
+
+	AccountID                    *AccountID
+	ContractID                   *ContractID
+	FileID                       *FileID
+	ConsensusTopicID             *ConsensusTopicID
+	ConsensusTopicSequenceNumber uint64
+	ConsensusTopicRunningHash    []byte
+	ExpirationTime               *time.Time
 }
 
 func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt {
@@ -17,21 +27,38 @@ func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt
 		accountID = &accountIDValue
 	}
 
+	var contractID *ContractID
+	if pb.Receipt.ContractID != nil {
+		contractIDValue := contractIDFromProto(pb.Receipt.ContractID)
+		contractID = &contractIDValue
+	}
+
+	var fileID *FileID
+	if pb.Receipt.FileID != nil {
+		fileIDValue := fileIDFromProto(pb.Receipt.FileID)
+		fileID = &fileIDValue
+	}
+
+	var consensusTopicID *ConsensusTopicID
+	if pb.Receipt.TopicID != nil {
+		consensusTopicIDValue := consensusTopicIDFromProto(pb.Receipt.TopicID)
+		consensusTopicID = &consensusTopicIDValue
+	}
+
+	var expirationTime *time.Time
+	if pb.Receipt.ExpirationTime != nil {
+		expirationTimeValue := timeFromProto(pb.Receipt.ExpirationTime)
+		expirationTime = &expirationTimeValue
+	}
+
 	return TransactionReceipt{
-		AccountID: accountID,
+		Status:                       pb.Receipt.Status,
+		AccountID:                    accountID,
+		ContractID:                   contractID,
+		FileID:                       fileID,
+		ConsensusTopicID:             consensusTopicID,
+		ConsensusTopicSequenceNumber: pb.Receipt.TopicSequenceNumber,
+		ConsensusTopicRunningHash:    pb.Receipt.TopicRunningHash,
+		ExpirationTime:               expirationTime,
 	}
 }
-
-//func (transactionReceipt TransactionReceipt) AccountID() *AccountID {
-//	internalID := transactionReceipt.inner.AccountID
-//
-//	if internalID == nil {
-//		return nil
-//	}
-//
-//	return &AccountID{
-//		uint64(internalID.ShardNum),
-//		uint64(internalID.RealmNum),
-//		uint64(internalID.AccountNum),
-//	}
-//}

@@ -27,28 +27,19 @@ func (id TransactionID) Receipt(client *Client) (TransactionReceipt, error) {
 // TODO: #Record
 
 func (id TransactionID) String() string {
-	seconds := id.ValidStart.Unix()
-	nanos := int32(id.ValidStart.UnixNano() - (id.ValidStart.Unix() * 1e+9))
-
-	return fmt.Sprintf("%v@%v.%v", id.AccountID, seconds, nanos)
+	pb := timeToProto(id.ValidStart)
+	return fmt.Sprintf("%v@%v.%v", id.AccountID, pb.Seconds, pb.Nanos)
 }
 
 func (id TransactionID) toProto() *proto.TransactionID {
 	return &proto.TransactionID{
-		TransactionValidStart: &proto.Timestamp{
-			Seconds: id.ValidStart.Unix(),
-			Nanos:   int32(id.ValidStart.UnixNano() - (id.ValidStart.Unix() * 1e+9)),
-		},
-		AccountID: &proto.AccountID{
-			ShardNum:   int64(id.AccountID.Shard),
-			RealmNum:   int64(id.AccountID.Realm),
-			AccountNum: int64(id.AccountID.Account),
-		},
+		TransactionValidStart: timeToProto(id.ValidStart),
+		AccountID:             id.AccountID.toProto(),
 	}
 }
 
 func transactionIDFromProto(pb *proto.TransactionID) TransactionID {
-	validStart := time.Unix(pb.TransactionValidStart.Seconds, int64(pb.TransactionValidStart.Nanos))
+	validStart := timeFromProto(pb.TransactionValidStart)
 	accountID := accountIDFromProto(pb.AccountID)
 
 	return TransactionID{accountID, validStart}

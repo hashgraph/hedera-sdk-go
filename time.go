@@ -10,3 +10,14 @@ func durationToProto(duration time.Duration) *proto.Duration {
 		Seconds: int64(duration.Seconds()),
 	}
 }
+
+func timeToProto(t time.Time) *proto.Timestamp {
+	return &proto.Timestamp{
+		Seconds: t.Unix(),
+		Nanos:   int32(t.UnixNano() - (t.Unix() * 1e+9)),
+	}
+}
+
+func timeFromProto(pb *proto.Timestamp) time.Time {
+	return time.Unix(pb.Seconds, int64(pb.Nanos))
+}
