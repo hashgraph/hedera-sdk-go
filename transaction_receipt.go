@@ -1,41 +1,37 @@
 package hedera
 
 import (
-	"errors"
-
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-var ErrNoReceipt = errors.New("response was not `TransactionGetReceipt`")
-
 type TransactionReceipt struct {
-	inner *proto.TransactionReceipt
+	AccountID *AccountID
 }
 
-func TransactionReceiptFromResponse(response proto.Response) (*TransactionReceipt, error) {
-	transactionGetReceipt := response.GetTransactionGetReceipt()
+func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt {
+	pb := response.GetTransactionGetReceipt()
 
-	if transactionGetReceipt == nil {
-		return nil, ErrNoReceipt
+	var accountID *AccountID
+	if pb.Receipt.AccountID != nil {
+		accountIDValue := accountIDFromProto(pb.Receipt.AccountID)
+		accountID = &accountIDValue
 	}
 
-	receipt := TransactionReceipt{
-		transactionGetReceipt.Receipt,
-	}
-
-	return &receipt, nil
-}
-
-func (transactionReceipt TransactionReceipt) AccountID() *AccountID {
-	internalID := transactionReceipt.inner.AccountID
-
-	if internalID == nil {
-		return nil
-	}
-
-	return &AccountID{
-		uint64(internalID.ShardNum),
-		uint64(internalID.RealmNum),
-		uint64(internalID.AccountNum),
+	return TransactionReceipt{
+		AccountID: accountID,
 	}
 }
+
+//func (transactionReceipt TransactionReceipt) AccountID() *AccountID {
+//	internalID := transactionReceipt.inner.AccountID
+//
+//	if internalID == nil {
+//		return nil
+//	}
+//
+//	return &AccountID{
+//		uint64(internalID.ShardNum),
+//		uint64(internalID.RealmNum),
+//		uint64(internalID.AccountNum),
+//	}
+//}

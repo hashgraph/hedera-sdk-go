@@ -1,131 +1,139 @@
 package hedera
 
 import (
-	"errors"
+	"bytes"
 	"fmt"
-	"time"
-
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/proto"
+	"math"
+	"math/rand"
+	"time"
 )
 
-const receiptRetryDelay = 500
-const receiptInitialDelay = 1000
-
-const prefixLen = 6
-
-const maxValidDuration = 120
-
-type TransactionID struct {
-	Account           AccountID
-	ValidStartSeconds uint64
-	ValidStartNanos   uint32
-}
-
-func generateTransactionID(accountID AccountID) TransactionID {
-	now := time.Now()
-
-	return TransactionID{
-		accountID,
-		uint64(now.Unix()),
-		uint32(now.UnixNano() - (now.Unix() * 1e+9)),
-	}
-}
-
-func (txID TransactionID) proto() *proto.TransactionID {
-	return &proto.TransactionID{
-		TransactionValidStart: &proto.Timestamp{
-			Seconds: int64(txID.ValidStartSeconds),
-			Nanos:   int32(txID.ValidStartNanos),
-		},
-		AccountID: &proto.AccountID{
-			ShardNum:   int64(txID.Account.Shard),
-			RealmNum:   int64(txID.Account.Realm),
-			AccountNum: int64(txID.Account.Account),
-		},
-	}
-}
-
 type Transaction struct {
-	Kind   TransactionKind
-	client *Client
-	inner  proto.Transaction
+	pb *proto.Transaction
 }
 
-func (transaction Transaction) AddSignature(signature []byte, publicKey Ed25519PublicKey) Transaction {
-	signaturePair := proto.SignaturePair{
-		PubKeyPrefix: publicKey.keyData,
-		Signature: &proto.SignaturePair_Ed25519{
-			Ed25519: signature,
-		},
-	}
+func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
+	// TODO: Disallow duplicate [Sign] with the same private key
 
-	sigmap := transaction.inner.GetSigMap()
+	signature := privateKey.Sign(transaction.pb.GetBodyBytes())
 
-	if sigmap == nil {
-		sigmap = &proto.SignatureMap{}
-	}
-
-	sigmap.SigPair = append(sigmap.SigPair, &signaturePair)
-
-	transaction.inner.SigMap = sigmap
+	transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, &proto.SignaturePair{
+		PubKeyPrefix: nil,
+		Signature:    &proto.SignaturePair_Ed25519{Ed25519: signature},
+	})
 
 	return transaction
 }
 
-func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
-	signature := privateKey.Sign(transaction.inner.GetBodyBytes())
+func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
+	// If the transaction is not signed by the operator, we need
+	// to sign the transaction with the operator
 
-	return transaction.AddSignature(signature, privateKey.PublicKey())
-}
+	var signedByOperator bool
+	operatorPublicKey := client.operator.privateKey.publicKey.keyData
 
-func (transaction Transaction) getReceipt() (*TransactionReceipt, error) {
-	return nil, nil
-}
-
-func (transaction Transaction) Execute() (*TransactionID, error) {
-	// fixme: proper error handling
-	if transaction.client == nil {
-		return nil, errors.New("No client was provided on this transaction")
+	for _, sigPair := range transaction.pb.SigMap.SigPair {
+		if bytes.Equal(sigPair.PubKeyPrefix, operatorPublicKey) {
+			signedByOperator = true
+			break
+		}
 	}
 
-	if transaction.inner.SigMap == nil {
-		transaction.Sign(transaction.client.operator.privateKey)
+	if !signedByOperator {
+		transaction.Sign(client.operator.privateKey)
 	}
 
-	txID := generateTransactionID(transaction.client.operator.accountID)
+	transactionBody := transaction.body()
+	id := transactionIDFromProto(transactionBody.TransactionID)
 
-	body := transaction.inner.GetBody()
+	nodeAccountID := accountIDFromProto(transactionBody.NodeAccountID)
+	node := client.node(nodeAccountID)
 
-	body.TransactionID = txID.proto()
-
-	// todo: use response and handle precheck codes
-	resp, error := transaction.Kind.execute(*transaction.client, transaction.inner)
-
-	fmt.Println(resp.String())
-
-	// todo: handle other result errors
-	if error != nil {
-		return nil, error
+	if node == nil {
+		return id, fmt.Errorf("NodeAccountID %v not found on Client", nodeAccountID)
 	}
 
-	return &txID, nil
-}
+	var methodName string
 
-func (transaction Transaction) ExecuteForReceipt() (*TransactionReceipt, error) {
-	_, err := transaction.Execute()
+	// TODO: Add the rest of the types here
+	switch transactionBody.Data.(type) {
+	case *proto.TransactionBody_CryptoCreateAccount:
+		methodName = "/proto.CryptoService/createAccount"
 
-	if err != nil {
-		return nil, err
+	case *proto.TransactionBody_CryptoTransfer:
+		methodName = "/proto.CryptoService/cryptoTransfer"
+
+	default:
+		return id, fmt.Errorf("unimplemented: %T", transactionBody.Data)
 	}
 
-	// todo: return a real receipt
-	return &TransactionReceipt{}, nil
-}
+	validUntil := time.Now().Add(time.Duration(transactionBody.TransactionValidDuration.Seconds) * time.Second)
+	resp := new(proto.TransactionResponse)
 
-func (transaction Transaction) proto() *proto.Transaction {
-	return &transaction.inner
+	for attempt := 0; true; attempt += 1 {
+		if attempt > 0 && time.Now().After(validUntil) {
+			// Timed out
+			break
+		}
+
+		if attempt > 0 {
+			// After the first attempt, start an exponentially increasing delay
+			delay := 500.0 * rand.Float64() * ((math.Pow(2, float64(attempt))) - 1)
+			time.Sleep(time.Duration(delay) * time.Millisecond)
+		}
+
+		err := node.invoke(methodName, transaction.pb, resp)
+		if err != nil {
+			return id, err
+		}
+
+		if resp.NodeTransactionPrecheckCode == proto.ResponseCodeEnum_BUSY {
+			// Try again (in a flash) on BUSY
+			continue
+		}
+
+		if isStatusExceptional(resp.NodeTransactionPrecheckCode, true) {
+			return id, fmt.Errorf("%v", resp.NodeTransactionPrecheckCode)
+		}
+
+		return id, nil
+	}
+
+	// Timed out
+	// TODO: Better error here?
+	return id, fmt.Errorf("%v", resp.NodeTransactionPrecheckCode)
 }
 
 func (transaction Transaction) String() string {
-	return transaction.inner.String()
+	return protobuf.MarshalTextString(transaction.pb) +
+		protobuf.MarshalTextString(transaction.body())
+}
+
+// The protobuf stores the transaction body as raw bytes so we need to first
+// decode what we have to inspect the Kind, TransactionID, and the NodeAccountID so we know how to
+// properly execute it
+func (transaction Transaction) body() *proto.TransactionBody {
+	transactionBody := new(proto.TransactionBody)
+	err := protobuf.Unmarshal(transaction.pb.GetBodyBytes(), transactionBody)
+	if err != nil {
+		// The bodyBytes inside of the transaction at this point have been verified and this should be impossible
+		panic(err)
+	}
+
+	return transactionBody
+}
+
+func isStatusExceptional(status proto.ResponseCodeEnum, unknownIsExceptional bool) bool {
+	switch status {
+	case proto.ResponseCodeEnum_SUCCESS, proto.ResponseCodeEnum_OK:
+		return false
+
+	case proto.ResponseCodeEnum_UNKNOWN, proto.ResponseCodeEnum_RECEIPT_NOT_FOUND, proto.ResponseCodeEnum_RECORD_NOT_FOUND:
+		return unknownIsExceptional
+
+	default:
+		return true
+	}
 }

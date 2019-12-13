@@ -12,14 +12,22 @@ type AccountID struct {
 	Account uint64
 }
 
-func (accountID AccountID) String() string {
-	return fmt.Sprintf("%d.%d.%d", accountID.Shard, accountID.Realm, accountID.Account)
+func (id AccountID) String() string {
+	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 }
 
-func (accountID AccountID) proto() *proto.AccountID {
+func (id AccountID) toProto() *proto.AccountID {
 	return &proto.AccountID{
-		ShardNum:   int64(accountID.Shard),
-		RealmNum:   int64(accountID.Realm),
-		AccountNum: int64(accountID.Account),
+		ShardNum:   int64(id.Shard),
+		RealmNum:   int64(id.Realm),
+		AccountNum: int64(id.Account),
+	}
+}
+
+func accountIDFromProto(pb *proto.AccountID) AccountID {
+	return AccountID{
+		Shard:   uint64(pb.ShardNum),
+		Realm:   uint64(pb.RealmNum),
+		Account: uint64(pb.AccountNum),
 	}
 }

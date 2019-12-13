@@ -1,67 +1,79 @@
 package hedera
 
 import (
-	"strings"
-
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/proto"
+	"time"
 )
 
-type ErrorTransactionValidation struct {
-	Messages []string
-	Err      error
-}
-
-func (e *ErrorTransactionValidation) Error() string {
-	return "The following requirements were not met: \n" + strings.Join(e.Messages, "\n")
-}
-
-type TransactionBuilderInterface interface {
-	Validate() error
-	Build() (*Transaction, error)
-	Execute() (*TransactionID, error)
-	ExecuteForReceipt() (*TransactionReceipt, error)
-}
-
 type TransactionBuilder struct {
-	client            *Client
-	kind              TransactionKind
-	MaxTransactionFee uint64
-	body              proto.TransactionBody
+	pb *proto.TransactionBody
 }
 
-func (tb TransactionBuilder) build() (*Transaction, error) {
-	if tb.client != nil {
-		if tb.body.TransactionFee == 0 {
-			tb.body.TransactionFee = tb.client.MaxTransactionFee()
-		}
+func newTransactionBuilder() TransactionBuilder {
+	builder := TransactionBuilder{&proto.TransactionBody{}}
+	builder.SetTransactionValidDuration(120 * time.Second)
 
-		if tb.body.TransactionValidDuration == nil {
-			tb.body.TransactionValidDuration = &proto.Duration{Seconds: maxValidDuration}
-		}
+	return builder
+}
 
-		if tb.body.NodeAccountID == nil {
-			// let the client pick an actual node
-			tb.body.NodeAccountID = tb.client.nodeID.proto()
-		}
+func (builder TransactionBuilder) Build(client *Client) Transaction {
+	if builder.pb.TransactionFee == 0 {
+		builder.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 
-	if tb.MaxTransactionFee == 0 {
-		if tb.client != nil {
-			tb.body.TransactionFee = tb.MaxTransactionFee
-		}
+	if builder.pb.NodeAccountID == nil {
+		builder.SetNodeAccountID(client.randomNode().id)
 	}
 
-	protoBody := proto.Transaction_Body{
-		Body: &tb.body,
+	if builder.pb.TransactionID == nil {
+		builder.SetTransactionID(generateTransactionID(client.operator.accountID))
 	}
 
-	tx := Transaction{
-		Kind:   tb.kind,
-		client: tb.client,
-		inner: proto.Transaction{
-			BodyData: &protoBody,
-		},
+	bodyBytes, err := protobuf.Marshal(builder.pb)
+	if err != nil {
+		// This should be unreachable
+		// From the documentation this appears to only be possible if there are missing proto types
+		panic(err)
 	}
 
-	return &tx, nil
+	pb := &proto.Transaction{
+		BodyData: &proto.Transaction_BodyBytes{BodyBytes: bodyBytes},
+		SigMap:   &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
+	}
+
+	return Transaction{pb}
+}
+
+func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error) {
+	return builder.Build(client).Execute(client)
+}
+
+//
+// Shared
+//
+
+func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee uint64) TransactionBuilder {
+	builder.pb.TransactionFee = maxTransactionFee
+	return builder
+}
+
+func (builder TransactionBuilder) SetMemo(memo string) TransactionBuilder {
+	builder.pb.Memo = memo
+	return builder
+}
+
+func (builder TransactionBuilder) SetTransactionValidDuration(validDuration time.Duration) TransactionBuilder {
+	builder.pb.TransactionValidDuration = durationToProto(validDuration)
+	return builder
+}
+
+func (builder TransactionBuilder) SetTransactionID(transactionID TransactionID) TransactionBuilder {
+	builder.pb.TransactionID = transactionID.toProto()
+	return builder
+}
+
+func (builder TransactionBuilder) SetNodeAccountID(nodeAccountID AccountID) TransactionBuilder {
+	builder.pb.NodeAccountID = nodeAccountID.toProto()
+	return builder
 }

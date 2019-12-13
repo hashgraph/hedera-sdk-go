@@ -10,7 +10,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-const ed25519PrivKeyPrefix = "302e020100300506032b657004220420"
+const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
 type Ed25519PrivateKey struct {
@@ -44,7 +44,7 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 		privateKey = ed25519.NewKeyFromSeed(bytes)
 
 	case 64:
-		privateKey = ed25519.PrivateKey(bytes)
+		privateKey = bytes
 
 	default:
 		return Ed25519PrivateKey{}, fmt.Errorf("invalid private key")
@@ -69,7 +69,7 @@ func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
 		return Ed25519PrivateKeyFromBytes(bytes)
 
 	case 96: // prefix-encoded private key
-		if strings.HasPrefix(s, ed25519PrivKeyPrefix) {
+		if strings.HasPrefix(s, ed25519PrivateKeyPrefix) {
 			return Ed25519PrivateKeyFromString(s[32:])
 		}
 	}
@@ -99,30 +99,30 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
 }
 
-func (priv Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
-	return priv.publicKey
+func (sk Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
+	return sk.publicKey
 }
 
-func (priv Ed25519PrivateKey) String() string {
-	return fmt.Sprint(ed25519PrivKeyPrefix, hex.EncodeToString(priv.keyData[:32]))
+func (sk Ed25519PrivateKey) String() string {
+	return fmt.Sprint(ed25519PrivateKeyPrefix, hex.EncodeToString(sk.keyData[:32]))
 }
 
-func (pub Ed25519PublicKey) String() string {
-	return fmt.Sprint(ed25519PubKeyPrefix, hex.EncodeToString(pub.keyData))
+func (pk Ed25519PublicKey) String() string {
+	return fmt.Sprint(ed25519PubKeyPrefix, hex.EncodeToString(pk.keyData))
 }
 
-func (priv Ed25519PrivateKey) Bytes() []byte {
-	return priv.keyData
+func (sk Ed25519PrivateKey) Bytes() []byte {
+	return sk.keyData
 }
 
-func (pub Ed25519PublicKey) Bytes() []byte {
-	return pub.keyData
+func (pk Ed25519PublicKey) Bytes() []byte {
+	return pk.keyData
 }
 
-func (pub Ed25519PublicKey) toProtoKey() proto.Key {
-	return proto.Key{Key: &proto.Key_Ed25519{Ed25519: pub.keyData}}
+func (pk Ed25519PublicKey) toProto() *proto.Key {
+	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
 }
 
-func (priv Ed25519PrivateKey) Sign(message []byte) []byte {
-	return ed25519.Sign(priv.keyData, message)
+func (sk Ed25519PrivateKey) Sign(message []byte) []byte {
+	return ed25519.Sign(sk.keyData, message)
 }

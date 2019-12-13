@@ -1,16 +1,29 @@
 package hedera
 
-import "google.golang.org/grpc"
+import (
+	"context"
+	"google.golang.org/grpc"
+	"math/rand"
+)
 
-const defaultMaxTransactionFee uint64 = 100_000_000 // 1 Hbar
+// Default max fees and payments to 1 h-bar
+const defaultMaxTransactionFee uint64 = 100_000_000
+const defaultMaxQueryPayment uint64 = 100_000_000
 
 type Client struct {
-	// todo: support multiple nodes
-	nodeID            AccountID
 	maxTransactionFee uint64
 	maxQueryPayment   uint64
-	operator          *operator
-	conn              *grpc.ClientConn
+
+	operator *operator
+
+	networkNodes   map[AccountID]*node
+	networkNodeIds []AccountID
+}
+
+type node struct {
+	conn    *grpc.ClientConn
+	id      AccountID
+	address string
 }
 
 type operator struct {
@@ -18,34 +31,44 @@ type operator struct {
 	privateKey Ed25519PrivateKey
 }
 
-func NewClient(nodeID AccountID, address string) (*Client, error) {
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
-	if err != nil {
-		return nil, err
+func NewClient(network map[string]AccountID) *Client {
+	networkNodes := map[AccountID]*node{}
+	var networkNodeIds []AccountID
+
+	for address, id := range network {
+		networkNodeIds = append(networkNodeIds, id)
+		networkNodes[id] = &node{
+			id:      id,
+			address: address,
+		}
 	}
 
-	client := Client{
-		nodeID,
-		defaultMaxTransactionFee,
-		0,
-		nil,
-		conn,
+	return &Client{
+		maxQueryPayment:   defaultMaxQueryPayment,
+		maxTransactionFee: defaultMaxTransactionFee,
+		networkNodes:      networkNodes,
+		networkNodeIds:    networkNodeIds,
 	}
-
-	return &client, nil
 }
 
 func (client *Client) Close() error {
-	return client.conn.Close()
+	for _, node := range client.networkNodes {
+		if node.conn != nil {
+			err := node.conn.Close()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519PrivateKey) *Client {
-	operator := operator{
+	client.operator = &operator{
 		accountID,
 		privateKey,
 	}
-
-	client.operator = &operator
 
 	return client
 }
@@ -60,10 +83,26 @@ func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
 	return client
 }
 
-func (client *Client) MaxTransactionFee() uint64 {
-	return client.maxTransactionFee
+func (client *Client) randomNode() *node {
+	nodeIndex := rand.Intn(len(client.networkNodeIds))
+	nodeId := client.networkNodeIds[nodeIndex]
+
+	return client.networkNodes[nodeId]
 }
 
-func (client *Client) MaxQueryPayment() uint64 {
-	return client.maxQueryPayment
+func (client *Client) node(id AccountID) *node {
+	return client.networkNodes[id]
+}
+
+func (node *node) invoke(method string, in interface{}, out interface{}) error {
+	if node.conn == nil {
+		conn, err := grpc.Dial(node.address, grpc.WithInsecure())
+		if err != nil {
+			return err
+		}
+
+		node.conn = conn
+	}
+
+	return node.conn.Invoke(context.TODO(), method, in, out)
 }

@@ -1,136 +1,99 @@
 package hedera
 
 import (
-	"fmt"
-
 	"github.com/hashgraph/hedera-sdk-go/proto"
+	"math"
+	"time"
 )
 
 type AccountCreateTransaction struct {
 	TransactionBuilder
-	PublicKey           *Ed25519PublicKey
-	InitialBalance      uint64
-	ProxyAccountId      *AccountID
-	ReceiverSigRequired bool
+	pb *proto.CryptoCreateTransactionBody
 }
 
-func NewAccountCreateTransaction(client *Client) AccountCreateTransaction {
+func NewAccountCreateTransaction() AccountCreateTransaction {
+	pb := &proto.CryptoCreateTransactionBody{}
 
-	builder := TransactionBuilder{
-		client: client,
-		kind:   CryptoCreateAccount,
-		body:   proto.TransactionBody{},
+	inner := newTransactionBuilder()
+	inner.pb.Data = &proto.TransactionBody_CryptoCreateAccount{pb}
+
+	builder := AccountCreateTransaction{inner, pb}
+	builder.SetAutoRenewPeriod(7890000 * time.Second)
+
+	// Default to maximum values for record thresholds. Without this records would be
+	// auto-created whenever a send or receive transaction takes place for this new account.
+	// This should be an explicit ask.
+	builder.SetReceiveRecordThreshold(uint64(math.MaxInt64))
+	builder.SetSendRecordThreshold(uint64(math.MaxInt64))
+
+	return builder
+}
+
+func (builder AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
+	builder.pb.Key = publicKey.toProto()
+	return builder
+}
+
+func (builder AccountCreateTransaction) SetInitialBalance(tinyBars uint64) AccountCreateTransaction {
+	builder.pb.InitialBalance = tinyBars
+	return builder
+}
+
+func (builder AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) AccountCreateTransaction {
+	builder.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	return builder
+}
+
+func (builder AccountCreateTransaction) SetSendRecordThreshold(recordThreshold uint64) AccountCreateTransaction {
+	builder.pb.SendRecordThreshold = recordThreshold
+	return builder
+}
+
+func (builder AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold uint64) AccountCreateTransaction {
+	builder.pb.ReceiveRecordThreshold = recordThreshold
+	return builder
+}
+
+func (builder AccountCreateTransaction) Build(client *Client) Transaction {
+	// If a shard/realm is not set, it is inferred from the Operator on the Client
+
+	if builder.pb.ShardID == nil {
+		builder.pb.ShardID = &proto.ShardID{
+			ShardNum: int64(client.operator.accountID.Shard),
+		}
 	}
 
-	return AccountCreateTransaction{
-		TransactionBuilder: builder,
-	}
-}
-
-func (tx AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
-
-	tx.PublicKey = &publicKey
-
-	return tx
-}
-
-func (tx AccountCreateTransaction) SetInitialBalance(balance uint64) AccountCreateTransaction {
-	tx.InitialBalance = balance
-
-	return tx
-}
-
-func (tx AccountCreateTransaction) SetProxyAccountID(accountID AccountID) AccountCreateTransaction {
-	tx.ProxyAccountId = &accountID
-
-	return tx
-}
-
-func (tx AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
-	tx.ReceiverSigRequired = required
-
-	return tx
-}
-
-func (tx AccountCreateTransaction) Validate() error {
-	if tx.PublicKey == nil {
-		return fmt.Errorf("AccountCreateTransaction requires Public Key to be set")
+	if builder.pb.RealmID == nil {
+		builder.pb.RealmID = &proto.RealmID{
+			ShardNum: int64(client.operator.accountID.Shard),
+			RealmNum: int64(client.operator.accountID.Realm),
+		}
 	}
 
-	return nil
+	return builder.TransactionBuilder.Build(client)
 }
 
-func (tx AccountCreateTransaction) SetMemo(memo string) AccountCreateTransaction {
-	tx.body.Memo = memo
+//
+// The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
+// We override the embedded fluent setter methods to return the outer type
+//
 
-	return tx
+func (builder AccountCreateTransaction) SetMaxTransactionFee(maxTransactionFee uint64) AccountCreateTransaction {
+	return AccountCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (tx AccountCreateTransaction) SetMaxTransactionFee(fee uint64) AccountCreateTransaction {
-	tx.MaxTransactionFee = fee
-
-	return tx
+func (builder AccountCreateTransaction) SetMemo(memo string) AccountCreateTransaction {
+	return AccountCreateTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
 }
 
-func (tx AccountCreateTransaction) SetTransactionID(txID TransactionID) AccountCreateTransaction {
-	tx.body.TransactionID = txID.proto()
-
-	return tx
+func (builder AccountCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountCreateTransaction {
+	return AccountCreateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
-func (tx AccountCreateTransaction) SetTransactionValidDuration(seconds uint64) AccountCreateTransaction {
-	tx.body.TransactionValidDuration = &proto.Duration{Seconds: int64(seconds)}
-
-	return tx
+func (builder AccountCreateTransaction) SetTransactionID(transactionID TransactionID) AccountCreateTransaction {
+	return AccountCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
 
-func (tx AccountCreateTransaction) SetNodeAccountID(accountID AccountID) AccountCreateTransaction {
-	tx.body.NodeAccountID = accountID.proto()
-
-	return tx
-}
-
-func (tx AccountCreateTransaction) Build() (*Transaction, error) {
-
-	if err := tx.Validate(); err != nil {
-		return nil, err
-	}
-
-	protoKey := tx.PublicKey.toProtoKey()
-
-	bodyData := proto.TransactionBody_CryptoCreateAccount{
-		CryptoCreateAccount: &proto.CryptoCreateTransactionBody{
-			Key:                 &protoKey,
-			InitialBalance:      tx.InitialBalance,
-			ReceiverSigRequired: tx.ReceiverSigRequired,
-		},
-	}
-
-	if tx.ProxyAccountId != nil {
-		bodyData.CryptoCreateAccount.ProxyAccountID = tx.ProxyAccountId.proto()
-	}
-
-	tx.body.Data = &bodyData
-
-	return tx.build()
-}
-
-func (tx AccountCreateTransaction) Execute() (*TransactionID, error) {
-	transaction, err := tx.Build()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return transaction.Execute()
-}
-
-func (tx AccountCreateTransaction) ExecuteForReceipt() (*TransactionReceipt, error) {
-	transaction, err := tx.Build()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return transaction.ExecuteForReceipt()
+func (builder AccountCreateTransaction) SetNodeAccountID(nodeAccountID AccountID) AccountCreateTransaction {
+	return AccountCreateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
 }

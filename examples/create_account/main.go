@@ -2,23 +2,16 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/hashgraph/hedera-sdk-go"
+	"os"
 )
 
 func main() {
-	client, err := hedera.NewClient(
-		// Node ID
-		hedera.AccountID{Account: 3},
-		// Node Address
-		"0.testnet.hedera.com:50211",
-	)
+	client := hedera.NewClient(map[string]hedera.AccountID{
+		"0.testnet.hedera.com:50211": {Account: 3},
+	})
 
-	if err != nil {
-		panic(err)
-	}
-
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString("302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10")
+	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 
 	if err != nil {
 		panic(err)
@@ -37,25 +30,24 @@ func main() {
 		panic(err)
 	}
 
-	newPublicKey := newKey.PublicKey()
+	fmt.Printf("private = %v\n", newKey)
+	fmt.Printf("public = %v\n", newKey.PublicKey())
 
-	tx, err := hedera.NewAccountCreateTransaction(client).
-		SetKey(newPublicKey).
+	transactionId, err := hedera.NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
 		SetInitialBalance(1000).
-		SetMaxTransactionFee(10000000).
-		Build()
+		SetMemo("sdk example create_account/main.go").
+		Execute(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	receipt, err := tx.ExecuteForReceipt()
+	transactionReceipt, err := transactionId.Receipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	newAccountID := receipt.AccountID()
-
-	fmt.Println(newAccountID.String())
+	fmt.Printf("account = %v\n", transactionReceipt.AccountID)
 }
