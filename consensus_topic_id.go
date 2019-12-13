@@ -2,9 +2,6 @@ package hedera
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -15,23 +12,7 @@ type ConsensusTopicID struct {
 }
 
 func ConsensusTopicIDFromString(s string) (ConsensusTopicID, error) {
-	values := strings.SplitN(s, ".", 3)
-	if len(values) != 3 {
-		// Was not three values separated by periods
-		return ConsensusTopicID{}, fmt.Errorf("expected {shard}.{realm}.{num}")
-	}
-
-	shard, err := strconv.Atoi(values[0])
-	if err != nil {
-		return ConsensusTopicID{}, err
-	}
-
-	realm, err := strconv.Atoi(values[1])
-	if err != nil {
-		return ConsensusTopicID{}, err
-	}
-
-	num, err := strconv.Atoi(values[2])
+	shard, realm, num, err := idFromString(s)
 	if err != nil {
 		return ConsensusTopicID{}, err
 	}

@@ -2,9 +2,6 @@ package hedera
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -15,23 +12,7 @@ type ContractID struct {
 }
 
 func ContractIDFromString(s string) (ContractID, error) {
-	values := strings.SplitN(s, ".", 3)
-	if len(values) != 3 {
-		// Was not three values separated by periods
-		return ContractID{}, fmt.Errorf("expected {shard}.{realm}.{num}")
-	}
-
-	shard, err := strconv.Atoi(values[0])
-	if err != nil {
-		return ContractID{}, err
-	}
-
-	realm, err := strconv.Atoi(values[1])
-	if err != nil {
-		return ContractID{}, err
-	}
-
-	num, err := strconv.Atoi(values[2])
+	shard, realm, num, err := idFromString(s)
 	if err != nil {
 		return ContractID{}, err
 	}
