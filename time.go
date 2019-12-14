@@ -11,6 +11,10 @@ func durationToProto(duration time.Duration) *proto.Duration {
 	}
 }
 
+func durationFromProto(pb *proto.Duration) time.Duration {
+	return time.Until(time.Unix(pb.Seconds, 0))
+}
+
 func timeToProto(t time.Time) *proto.Timestamp {
 	return &proto.Timestamp{
 		Seconds: t.Unix(),
