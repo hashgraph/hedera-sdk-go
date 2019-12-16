@@ -1,10 +1,15 @@
 package hedera
 
 import (
-	"crypto/ed25519"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha512"
+	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"golang.org/x/crypto/ed25519"
+	"golang.org/x/crypto/pbkdf2"
 	"strings"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
@@ -12,6 +17,8 @@ import (
 
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
+
+var ErrNoRNG = errors.New("could not retrieve random bytes from the operating system")
 
 type Ed25519PrivateKey struct {
 	keyData   []byte
@@ -58,6 +65,35 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 	}, nil
 }
 
+func Ed25519PrivateKeyFromMnemonic(mnemonic string, passPhrase string) Ed25519PrivateKey {
+	salt := []byte("mnemonic" + passPhrase)
+	seed := pbkdf2.Key([]byte(mnemonic), salt, 2048, 64, sha512.New)
+
+	h := hmac.New(sha512.New, []byte("ed25519 seed"))
+	h.Write(seed)
+	digest := h.Sum(nil)
+
+	keyBytes := digest[0:32]
+	chainCode := digest[32:len(digest)]
+
+	// note the index is for derivation, not the index of the slice
+	for _, index := range []uint32{ 44, 3030, 0, 0 } {
+		keyBytes, chainCode = deriveChildKey(keyBytes, chainCode, index)
+	}
+
+	var publicKey []byte
+
+	copy(publicKey, keyBytes[32:len(keyBytes)])
+
+	return Ed25519PrivateKey{
+		keyData:   keyBytes,
+		chainCode: chainCode,
+		publicKey: Ed25519PublicKey{
+			publicKey,
+		},
+	}
+}
+
 func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
 	switch len(s) {
 	case 64, 128: // private key : public key
@@ -97,6 +133,59 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 		}
 	}
 	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
+}
+
+// SLIP-10/BIP-32 Child Key derivation
+func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
+	h := hmac.New(sha512.New, chainCode)
+
+	input := make([]byte, 37)
+
+	// 0x00 + parentKey + index(BE)
+	input[0] = 0
+
+	for i, b := range parentKey {
+		input[1 + i] = b
+	}
+
+	binary.BigEndian.PutUint32(input[33:37], index)
+
+	// harden the input
+	input[33] |= 128
+
+	h.Write(input)
+
+	digest := h.Sum(nil)
+
+	return digest[0:32], digest[32:len(digest)]
+}
+
+type MnemonicResult struct {
+	mnemonic string
+}
+
+func (mr MnemonicResult) GenerateKey(passPhrase string) Ed25519PrivateKey {
+	return Ed25519PrivateKeyFromMnemonic(mr.mnemonic, passPhrase)
+}
+
+// Generate a random 24-word mnemonic
+func GenerateMnemonic() (*MnemonicResult, error) {
+	entropy, err := bip39.NewEntropy(256)
+
+	if err != nil {
+		// It is only possible for there to be an error if the operating
+		// system's rng is unreadable
+		return nil, ErrNoRNG
+	}
+
+	mnemonic, err := bip39.NewMnemonic(entropy)
+
+	if err != nil {
+		// todo: return proper error
+		return nil, err
+	}
+
+	return &MnemonicResult{mnemonic}, nil
 }
 
 func (sk Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
