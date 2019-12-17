@@ -18,28 +18,13 @@ func NewFileCreateTransaction() FileCreateTransaction {
 
 	builder := FileCreateTransaction{inner, pb}
 	builder.SetExpirationTime(time.Now().Add(7890000 * time.Second))
+	builder.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 
 	return builder
 }
 
 func (builder FileCreateTransaction) AddKey(publicKey Ed25519PublicKey) FileCreateTransaction {
-	var keylist *proto.KeyList
-	if builder.pb.Keys != nil {
-		keylist = builder.pb.Keys
-	} else {
-		keylist = &proto.KeyList{}
-	}
-
-	var keyarray []*proto.Key
-	if keylist.Keys != nil {
-		keyarray = keylist.GetKeys()
-	} else {
-		keyarray = []*proto.Key{}
-	}
-
-	keylist.Keys = append(keyarray, publicKey.toProto())
-	builder.pb.Keys = keylist
-
+	builder.pb.Keys.Keys = append(builder.pb.Keys.Keys, publicKey.toProto())
 	return builder
 }
 

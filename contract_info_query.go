@@ -35,13 +35,13 @@ func (builder *ContractInfoQuery) SetContractID(id ContractID) *ContractInfoQuer
 	return builder
 }
 
-func (builder *ContractInfoQuery) Execute(client *Client) (*ContractInfo, error) {
+func (builder *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
-		return nil, err
+		return ContractInfo{}, err
 	}
 
-	return &ContractInfo{
+	return ContractInfo{
 		AccountID:         accountIDFromProto(resp.GetContractGetInfo().ContractInfo.AccountID),
 		ContractID:        contractIDFromProto(resp.GetContractGetInfo().ContractInfo.ContractID),
 		ContractAccountID: resp.GetContractGetInfo().ContractInfo.ContractAccountID,
