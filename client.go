@@ -83,6 +83,18 @@ func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
 	return client
 }
 
+func (client *Client) GetInfo() (AccountInfo, error) {
+	return NewAccountInfoQuery().
+		SetAccountID(client.operator.accountID).
+		Execute(client)
+}
+
+func (client *Client) GetBalance() (uint64, error) {
+	return NewAccountBalanceQuery().
+		SetAccountID(client.operator.accountID).
+		Execute(client)
+}
+
 func (client *Client) randomNode() *node {
 	nodeIndex := rand.Intn(len(client.networkNodeIds))
 	nodeId := client.networkNodeIds[nodeIndex]
