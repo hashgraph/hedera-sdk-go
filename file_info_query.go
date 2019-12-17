@@ -33,13 +33,13 @@ func (builder *FileInfoQuery) SetFileID(id FileID) *FileInfoQuery {
 	return builder
 }
 
-func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
+func (builder *FileInfoQuery) Execute(client *Client) (*FileInfo, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
-		return FileInfo{}, err
+		return nil, err
 	}
 
-	return FileInfo{
+	return &FileInfo{
 		FileID:         fileIDFromProto(resp.GetFileGetInfo().FileInfo.FileID),
 		Size:           resp.GetFileGetInfo().FileInfo.Size,
 		ExpirationTime: timeFromProto(resp.GetFileGetInfo().FileInfo.ExpirationTime),

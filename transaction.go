@@ -65,6 +65,19 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	case *proto.TransactionBody_CryptoTransfer:
 		methodName = "/proto.CryptoService/cryptoTransfer"
 
+	// FileServices
+	case *proto.TransactionBody_FileCreate:
+		methodName = "/proto.FileService/createFile"
+
+	case *proto.TransactionBody_FileUpdate:
+		methodName = "/proto.FileService/updateFile"
+
+	case *proto.TransactionBody_FileAppend:
+		methodName = "/proto.FileService/appendFile"
+
+	case *proto.TransactionBody_FileDelete:
+		methodName = "/proto.FileService/deleteFile"
+
 	default:
 		return id, fmt.Errorf("unimplemented: %T", transactionBody.Data)
 	}

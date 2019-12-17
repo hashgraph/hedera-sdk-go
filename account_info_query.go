@@ -39,13 +39,13 @@ func (builder *AccountInfoQuery) SetAccountID(id AccountID) *AccountInfoQuery {
 	return builder
 }
 
-func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
+func (builder *AccountInfoQuery) Execute(client *Client) (*AccountInfo, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
-		return AccountInfo{}, err
+		return nil, err
 	}
 
-	return AccountInfo{
+	return &AccountInfo{
 		AccountID:                      accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.AccountID),
 		ContractAccountID:              resp.GetCryptoGetInfo().AccountInfo.ContractAccountID,
 		Deleted:                        resp.GetCryptoGetInfo().AccountInfo.Deleted,
