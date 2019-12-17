@@ -22,28 +22,19 @@ func (builder *GetBySolidityIDQuery) SetSolidityID(id string) *GetBySolidityIDQu
 }
 
 func (builder *GetBySolidityIDQuery) Execute(client *Client) (EntityID, error) {
-	var id = EntityID{}
+	var id EntityID = nil
 
 	resp, err := builder.execute(client)
 	if err != nil {
-		return id, err
+		return nil, err
 	}
 
 	if resp.GetGetBySolidityID().GetAccountID() != nil {
-		id = EntityID{
-			ty: "ACCOUNT",
-			id: accountIDFromProto(resp.GetGetBySolidityID().GetAccountID()),
-		}
+		id = accountIDFromProto(resp.GetGetBySolidityID().GetAccountID())
 	} else if resp.GetGetBySolidityID().GetFileID() != nil {
-		id = EntityID{
-			ty: "FILE",
-			id: fileIDFromProto(resp.GetGetBySolidityID().GetFileID()),
-		}
+		id = fileIDFromProto(resp.GetGetBySolidityID().GetFileID())
 	} else if resp.GetGetBySolidityID().GetContractID() != nil {
-		id = EntityID{
-			ty: "CONTRACT",
-			id: contractIDFromProto(resp.GetGetBySolidityID().GetContractID()),
-		}
+		id = contractIDFromProto(resp.GetGetBySolidityID().GetContractID())
 	}
 
 	return id, nil

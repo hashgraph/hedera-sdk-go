@@ -57,13 +57,13 @@ func (builder AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshol
 func (builder AccountCreateTransaction) Build(client *Client) Transaction {
 	// If a shard/realm is not set, it is inferred from the Operator on the Client
 
-	if builder.pb.ShardID == nil {
+	if builder.pb.ShardID == nil && client != nil {
 		builder.pb.ShardID = &proto.ShardID{
 			ShardNum: int64(client.operator.accountID.Shard),
 		}
 	}
 
-	if builder.pb.RealmID == nil {
+	if builder.pb.RealmID == nil && client != nil {
 		builder.pb.RealmID = &proto.RealmID{
 			ShardNum: int64(client.operator.accountID.Shard),
 			RealmNum: int64(client.operator.accountID.Realm),

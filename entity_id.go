@@ -1,14 +1,9 @@
 package hedera
 
-type EntityID struct {
-	ty string
-	id EntityIdLike
+type EntityID interface {
+	isEntityID()
 }
 
-type EntityIdLike interface {
-	isEntityIdLike()
-}
-
-func (id FileID) isEntityIdLike()     {}
-func (id AccountID) isEntityIdLike()  {}
-func (id ContractID) isEntityIdLike() {}
+func (id FileID) isEntityID()     {}
+func (id AccountID) isEntityID()  {}
+func (id ContractID) isEntityID() {}
