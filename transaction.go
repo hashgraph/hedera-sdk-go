@@ -118,6 +118,16 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	case *proto.TransactionBody_SystemUndelete:
 		methodName = "/proto.FileService/systemUndelete"
 
+	// HCS
+	case *proto.TransactionBody_ConsensusCreateTopic:
+		methodName = "/proto.ConsensusService/createTopic"
+	case *proto.TransactionBody_ConsensusDeleteTopic:
+		methodName = "/proto.ConsensusService/deleteTopic"
+	case *proto.TransactionBody_ConsensusUpdateTopic:
+		methodName = "/proto.ConsensusService/updateTopic"
+	case *proto.TransactionBody_ConsensusSubmitMessage:
+		methodName = "/proto.ConsensusService/submitMessage"
+
 	default:
 		return id, newErrLocalValidationf("unimplemented: %T", transactionBody.Data)
 	}

@@ -5,10 +5,13 @@ import (
 )
 
 type TransactionReceipt struct {
-	Status     Status
-	accountID  *AccountID
-	contractID *ContractID
-	fileID     *FileID
+	Status                       Status
+	accountID                    *AccountID
+	contractID                   *ContractID
+	fileID                       *FileID
+	consensusTopicID             *ConsensusTopicID
+	ConsensusTopicSequenceNumber uint64
+	ConsensusTopicRunningHash    []byte
 }
 
 func (receipt TransactionReceipt) GetFileID() FileID {
@@ -21,6 +24,10 @@ func (receipt TransactionReceipt) GetAccountID() AccountID {
 
 func (receipt TransactionReceipt) GetContractID() ContractID {
 	return *receipt.contractID
+}
+
+func (receipt TransactionReceipt) ConsensusTopicID() ConsensusTopicID {
+	return *receipt.consensusTopicID
 }
 
 func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt {
@@ -46,10 +53,19 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 		fileID = &fileIDValue
 	}
 
+	var consensusTopicID *ConsensusTopicID
+	if pb.TopicID != nil {
+		consensusTopicIDValue := consensusTopicIDFromProto(pb.TopicID)
+		consensusTopicID = &consensusTopicIDValue
+	}
+
 	return TransactionReceipt{
-		Status:     Status(pb.Status),
-		accountID:  accountID,
-		contractID: contractID,
-		fileID:     fileID,
+		Status:                       Status(pb.Status),
+		accountID:                    accountID,
+		contractID:                   contractID,
+		fileID:                       fileID,
+		consensusTopicID:             consensusTopicID,
+		ConsensusTopicSequenceNumber: pb.TopicSequenceNumber,
+		ConsensusTopicRunningHash:    pb.TopicRunningHash,
 	}
 }

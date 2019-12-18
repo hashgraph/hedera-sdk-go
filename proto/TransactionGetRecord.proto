@@ -5,10 +5,12 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "TransactionRecord.proto";
-import "BasicTypes.proto";
-import "QueryHeader.proto";
-import "ResponseHeader.proto";
+import "proto/TransactionRecord.proto";
+import "proto/BasicTypes.proto";
+import "proto/QueryHeader.proto";
+import "proto/ResponseHeader.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 /* Get the record for a transaction. If the transaction requested a record, then the record lasts for one hour, and a state proof is available for it. If the transaction created an account, file, or smart contract instance, then the record will contain the ID for what it created. If the transaction called a smart contract function, then the record contains the result of that call. If the transaction was a cryptocurrency transfer, then the record includes the TransferList which gives the details of that transfer. If the transaction didn't return anything that should be in the record, then the results field will be set to nothing. */
 message TransactionGetRecordQuery {

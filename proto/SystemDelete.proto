@@ -5,8 +5,10 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "BasicTypes.proto";
-import "Timestamp.proto";
+import "proto/BasicTypes.proto";
+import "proto/Timestamp.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 /* Delete a file or smart contract - can only be done with a Hedera admin multisig. When it is deleted, it immediately disappears from the system as seen by the user, but is still stored internally until the expiration time, at which time it is truly and permanently deleted. Until that time, it can be undeleted by the Hedera admin multisig. When a smart contract is deleted, the cryptocurrency account within it continues to exist, and is not affected by the expiration time here. */
 message SystemDeleteTransactionBody {

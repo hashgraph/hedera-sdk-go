@@ -5,7 +5,9 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "ResponseCode.proto";
+import "proto/ResponseCode.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 
 /* When the client sends the node a transaction of any kind, the node replies with this, which simply says that the transaction passed the precheck (so the node will submit it to the network) or it failed (so it won't). To learn the consensus result, the client should later obtain a receipt (free), or can buy a more detailed record (not free). */

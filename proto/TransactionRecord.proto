@@ -5,11 +5,13 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "Timestamp.proto";
-import "BasicTypes.proto";
-import "TransactionReceipt.proto";
-import "CryptoTransfer.proto";
-import "ContractCallLocal.proto";
+import "proto/Timestamp.proto";
+import "proto/BasicTypes.proto";
+import "proto/TransactionReceipt.proto";
+import "proto/CryptoTransfer.proto";
+import "proto/ContractCallLocal.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 /* Response when the client sends the node TransactionGetRecordResponse */
 message TransactionRecord {
