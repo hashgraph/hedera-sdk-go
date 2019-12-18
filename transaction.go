@@ -65,6 +65,45 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	case *proto.TransactionBody_CryptoTransfer:
 		methodName = "/proto.CryptoService/cryptoTransfer"
 
+	case *proto.TransactionBody_CryptoUpdateAccount:
+		methodName = "/proto.CryptoService/updateAccount"
+
+	// FileServices
+	case *proto.TransactionBody_FileCreate:
+		methodName = "/proto.FileService/createFile"
+
+	case *proto.TransactionBody_FileUpdate:
+		methodName = "/proto.FileService/updateFile"
+
+	case *proto.TransactionBody_FileAppend:
+		methodName = "/proto.FileService/appendFile"
+
+	case *proto.TransactionBody_FileDelete:
+		methodName = "/proto.FileService/deleteFile"
+
+	// Contract
+	case *proto.TransactionBody_ContractCreateInstance:
+		methodName = "/proto.SmartContractService/createContract"
+
+	case *proto.TransactionBody_ContractDeleteInstance:
+		methodName = "/proto.SmartContractService/deleteContract"
+
+	case *proto.TransactionBody_ContractUpdateInstance:
+		methodName = "/proto.SmartContractService/updateContract"
+
+	case *proto.TransactionBody_ContractCall:
+		methodName = "/proto.SmartContractService/contractCallMethod"
+
+	// System
+	case *proto.TransactionBody_Freeze:
+		methodName = "/proto.FreezeService/freeze"
+
+	case *proto.TransactionBody_SystemDelete:
+		methodName = "/proto.FileService/systemDelete"
+
+	case *proto.TransactionBody_SystemUndelete:
+		methodName = "/proto.FileService/systemUndelete"
+
 	default:
 		return id, fmt.Errorf("unimplemented: %T", transactionBody.Data)
 	}

@@ -24,7 +24,11 @@ func (id TransactionID) Receipt(client *Client) (TransactionReceipt, error) {
 		Execute(client)
 }
 
-// TODO: #Record
+func (id TransactionID) Record(client *Client) (TransactionRecord, error) {
+	return NewTransactionRecordQuery().
+		SetTransactionID(id).
+		Execute(client)
+}
 
 func (id TransactionID) String() string {
 	pb := timeToProto(id.ValidStart)

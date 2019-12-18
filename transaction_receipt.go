@@ -19,46 +19,48 @@ type TransactionReceipt struct {
 }
 
 func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt {
-	pb := response.GetTransactionGetReceipt()
+	return transactionReceiptFromProto(response.GetTransactionGetReceipt().Receipt)
+}
 
+func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceipt {
 	var accountID *AccountID
-	if pb.Receipt.AccountID != nil {
-		accountIDValue := accountIDFromProto(pb.Receipt.AccountID)
+	if pb.AccountID != nil {
+		accountIDValue := accountIDFromProto(pb.AccountID)
 		accountID = &accountIDValue
 	}
 
 	var contractID *ContractID
-	if pb.Receipt.ContractID != nil {
-		contractIDValue := contractIDFromProto(pb.Receipt.ContractID)
+	if pb.ContractID != nil {
+		contractIDValue := contractIDFromProto(pb.ContractID)
 		contractID = &contractIDValue
 	}
 
 	var fileID *FileID
-	if pb.Receipt.FileID != nil {
-		fileIDValue := fileIDFromProto(pb.Receipt.FileID)
+	if pb.FileID != nil {
+		fileIDValue := fileIDFromProto(pb.FileID)
 		fileID = &fileIDValue
 	}
 
 	var consensusTopicID *ConsensusTopicID
-	if pb.Receipt.TopicID != nil {
-		consensusTopicIDValue := consensusTopicIDFromProto(pb.Receipt.TopicID)
+	if pb.TopicID != nil {
+		consensusTopicIDValue := consensusTopicIDFromProto(pb.TopicID)
 		consensusTopicID = &consensusTopicIDValue
 	}
 
 	var expirationTime *time.Time
-	if pb.Receipt.ExpirationTime != nil {
-		expirationTimeValue := timeFromProto(pb.Receipt.ExpirationTime)
+	if pb.ExpirationTime != nil {
+		expirationTimeValue := timeFromProto(pb.ExpirationTime)
 		expirationTime = &expirationTimeValue
 	}
 
 	return TransactionReceipt{
-		Status:                       pb.Receipt.Status,
+		Status:                       pb.Status,
 		AccountID:                    accountID,
 		ContractID:                   contractID,
 		FileID:                       fileID,
 		ConsensusTopicID:             consensusTopicID,
-		ConsensusTopicSequenceNumber: pb.Receipt.TopicSequenceNumber,
-		ConsensusTopicRunningHash:    pb.Receipt.TopicRunningHash,
+		ConsensusTopicSequenceNumber: pb.TopicSequenceNumber,
+		ConsensusTopicRunningHash:    pb.TopicRunningHash,
 		ExpirationTime:               expirationTime,
 	}
 }
