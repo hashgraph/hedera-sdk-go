@@ -83,13 +83,13 @@ func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
 	return client
 }
 
-func (client *Client) GetInfo() (AccountInfo, error) {
+func (client *Client) GetAccountInfo() (AccountInfo, error) {
 	return NewAccountInfoQuery().
 		SetAccountID(client.operator.accountID).
 		Execute(client)
 }
 
-func (client *Client) GetBalance() (uint64, error) {
+func (client *Client) GetAccountBalance() (uint64, error) {
 	return NewAccountBalanceQuery().
 		SetAccountID(client.operator.accountID).
 		Execute(client)
