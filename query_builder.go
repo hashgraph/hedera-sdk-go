@@ -27,13 +27,15 @@ func (builder *QueryBuilder) SetMaxQueryPayment(maxPayment uint64) *QueryBuilder
 	return builder
 }
 
-// TODO: Method name is confusing, see https://github.com/hashgraph/hedera-sdk-java/issues/283
-func (builder *QueryBuilder) SetPaymentAmount(paymentAmount uint64) *QueryBuilder {
+func (builder *QueryBuilder) SetQueryPayment(paymentAmount uint64) *QueryBuilder {
 	builder.payment = &paymentAmount
 	return builder
 }
 
-// TODO: setPayment(Transaction)
+func (builder *QueryBuilder) SetQueryPaymentTransaction(tx Transaction) *QueryBuilder {
+	builder.pbHeader.Payment = tx.pb
+	return builder
+}
 
 func (builder *QueryBuilder) Cost(client *Client) (uint64, error) {
 	// Store the current response type and payment from the
@@ -55,13 +57,19 @@ func (builder *QueryBuilder) Cost(client *Client) (uint64, error) {
 	builder.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 
 	// COST_ANSWER requires a "null" payment (it checks for it but does not process it)
-	builder.pbHeader.Payment = NewCryptoTransferTransaction().
+	tx := NewCryptoTransferTransaction().
 		SetNodeAccountID(node.id).
 		AddRecipient(node.id, 0).
 		AddSender(client.operator.accountID, 0).
-		Build(client).
-		Sign(client.operator.privateKey).
-		pb
+		Build(client)
+
+	if client.operator.privateKey != nil {
+		tx = tx.Sign(*client.operator.privateKey)
+	} else {
+		tx = tx.SignWith(client.operator.publicKey, client.operator.signer)
+	}
+
+	builder.pbHeader.Payment = tx.pb
 
 	resp, err := execute(node, builder.pb, time.Now().Add(10*time.Second))
 	if err != nil {
@@ -128,13 +136,19 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 }
 
 func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount uint64) {
-	builder.pbHeader.Payment = NewCryptoTransferTransaction().
+	tx := NewCryptoTransferTransaction().
 		SetNodeAccountID(node.id).
 		AddRecipient(node.id, amount).
 		AddSender(client.operator.accountID, amount).
-		Build(client).
-		Sign(client.operator.privateKey).
-		pb
+		Build(client)
+
+	if client.operator.privateKey != nil {
+		tx = tx.Sign(*client.operator.privateKey)
+	} else {
+		tx = tx.SignWith(client.operator.publicKey, client.operator.signer)
+	}
+
+	builder.pbHeader.Payment = tx.pb
 }
 
 func (builder *QueryBuilder) isPaymentRequired() bool {

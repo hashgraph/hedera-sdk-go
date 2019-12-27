@@ -45,8 +45,8 @@ func (builder SystemUndeleteTransaction) SetMaxTransactionFee(maxTransactionFee 
 	return SystemUndeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder SystemUndeleteTransaction) SetMemo(memo string) SystemUndeleteTransaction {
-	return SystemUndeleteTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder SystemUndeleteTransaction) SetTransactionMemo(memo string) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder SystemUndeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) SystemUndeleteTransaction {

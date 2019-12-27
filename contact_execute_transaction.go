@@ -54,8 +54,8 @@ func (builder ContractExecuteTransaction) SetMaxTransactionFee(maxTransactionFee
 	return ContractExecuteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder ContractExecuteTransaction) SetMemo(memo string) ContractExecuteTransaction {
-	return ContractExecuteTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder ContractExecuteTransaction) SetTransactionMemo(memo string) ContractExecuteTransaction {
+	return ContractExecuteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder ContractExecuteTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractExecuteTransaction {

@@ -6,9 +6,7 @@ import (
 )
 
 type TransactionReceipt struct {
-	// TODO: Make the status enum look nicer in Go
-	Status proto.ResponseCodeEnum
-
+	Status                       Status
 	AccountID                    *AccountID
 	ContractID                   *ContractID
 	FileID                       *FileID
@@ -54,7 +52,7 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 	}
 
 	return TransactionReceipt{
-		Status:                       pb.Status,
+		Status:                       Status(pb.Status),
 		AccountID:                    accountID,
 		ContractID:                   contractID,
 		FileID:                       fileID,

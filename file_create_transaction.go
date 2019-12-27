@@ -66,8 +66,8 @@ func (builder FileCreateTransaction) SetMaxTransactionFee(maxTransactionFee uint
 	return FileCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder FileCreateTransaction) SetMemo(memo string) FileCreateTransaction {
-	return FileCreateTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder FileCreateTransaction) SetTransactionMemo(memo string) FileCreateTransaction {
+	return FileCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder FileCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) FileCreateTransaction {
