@@ -63,7 +63,7 @@ func (builder *QueryBuilder) Cost(client *Client) (uint64, error) {
 		AddSender(client.operator.accountID, 0).
 		Build(client)
 
-	if client.operator.privateKey != nil {
+	if client.operator != nil && client.operator.privateKey != nil {
 		tx = tx.Sign(*client.operator.privateKey)
 	} else {
 		tx = tx.SignWith(client.operator.publicKey, client.operator.signer)
@@ -142,10 +142,8 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 		AddSender(client.operator.accountID, amount).
 		Build(client)
 
-	if client.operator.privateKey != nil {
-		tx = tx.Sign(*client.operator.privateKey)
-	} else {
-		tx = tx.SignWith(client.operator.publicKey, client.operator.signer)
+	if client.operator != nil {
+		tx = tx.SignWithOperator(*client.operator)
 	}
 
 	builder.pbHeader.Payment = tx.pb

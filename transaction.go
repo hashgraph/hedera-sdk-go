@@ -27,6 +27,14 @@ func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
 	return transaction
 }
 
+func (transaction Transaction) SignWithOperator(operator operator) Transaction {
+	if operator.privateKey != nil {
+		return transaction.Sign(*operator.privateKey)
+	} else {
+		return transaction.SignWith(operator.publicKey, operator.signer)
+	}
+}
+
 func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer Signer) Transaction {
 	signature := signer(transaction.pb.GetBodyBytes())
 

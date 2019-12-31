@@ -6,7 +6,7 @@ type ContractLogInfo struct {
 	ContractID ContractID
 	Bloom      []byte
 	Topics     [][]byte
-	data       []byte
+	Data       []byte
 }
 
 func contractLogInfoFromProto(pb *proto.ContractLoginfo) ContractLogInfo {
@@ -14,6 +14,6 @@ func contractLogInfoFromProto(pb *proto.ContractLoginfo) ContractLogInfo {
 		ContractID: contractIDFromProto(pb.ContractID),
 		Bloom:      pb.Bloom,
 		Topics:     pb.Topic,
-		data:       pb.Data,
+		Data:       pb.Data,
 	}
 }

@@ -58,11 +58,11 @@ var testnetNodes = map[string]AccountID{
 	"4.testnet.hedera.com:50211": AccountID{Account: 6},
 }
 
-func MainnetClient() *Client {
+func ClientForMainnet() *Client {
 	return NewClient(mainnetNodes)
 }
 
-func TestnetClient() *Client {
+func ClientForTestnet() *Client {
 	return NewClient(testnetNodes)
 }
 
@@ -79,7 +79,7 @@ func NewClient(network map[string]AccountID) *Client {
 	return client
 }
 
-func FromFile(filename string) (*Client, error) {
+func ClientFromFile(filename string) (*Client, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
