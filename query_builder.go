@@ -2,11 +2,12 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"math"
 	"math/rand"
 	"time"
+
+	protobuf "github.com/golang/protobuf/proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type QueryBuilder struct {
@@ -63,10 +64,8 @@ func (builder *QueryBuilder) Cost(client *Client) (uint64, error) {
 		AddSender(client.operator.accountID, 0).
 		Build(client)
 
-	if client.operator != nil && client.operator.privateKey != nil {
-		tx = tx.Sign(*client.operator.privateKey)
-	} else {
-		tx = tx.SignWith(client.operator.publicKey, client.operator.signer)
+	if client.operator != nil {
+		tx = tx.signWithOperator(*client.operator)
 	}
 
 	builder.pbHeader.Payment = tx.pb
@@ -143,7 +142,7 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 		Build(client)
 
 	if client.operator != nil {
-		tx = tx.SignWithOperator(*client.operator)
+		tx = tx.signWithOperator(*client.operator)
 	}
 
 	builder.pbHeader.Payment = tx.pb

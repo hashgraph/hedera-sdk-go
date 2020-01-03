@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type TransactionRecord struct {
@@ -18,7 +19,7 @@ type TransactionRecord struct {
 	callResultIsCreate bool
 }
 
-func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
+func (record TransactionRecord) ContractExecuteResult() (ContractFunctionResult, error) {
 	if record.callResult == nil || record.callResultIsCreate {
 		return ContractFunctionResult{}, fmt.Errorf("record does not contain a contract execute result")
 	}
@@ -26,7 +27,7 @@ func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResu
 	return *record.callResult, nil
 }
 
-func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResult, error) {
+func (record TransactionRecord) ContractCreateResult() (ContractFunctionResult, error) {
 	if record.callResult == nil || !record.callResultIsCreate {
 		return ContractFunctionResult{}, fmt.Errorf("record does not contain a contract create result")
 	}

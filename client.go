@@ -3,10 +3,11 @@ package hedera
 import (
 	"context"
 	"encoding/json"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"math/rand"
 	"os"
+
+	"google.golang.org/grpc"
 )
 
 // Default max fees and payments to 1 h-bar
@@ -126,12 +127,9 @@ func (client *Client) Close() error {
 }
 
 func (client *Client) ReplaceNodes(network map[string]AccountID) *Client {
-	networkNodes := map[AccountID]*node{}
-	var networkNodeIds []AccountID
-
 	for address, id := range network {
-		networkNodeIds = append(networkNodeIds, id)
-		networkNodes[id] = &node{
+		client.networkNodeIds = append(client.networkNodeIds, id)
+		client.networkNodes[id] = &node{
 			id:      id,
 			address: address,
 		}
@@ -172,23 +170,11 @@ func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
 	return client
 }
 
-func (client *Client) GetAccountInfo() (AccountInfo, error) {
-	return NewAccountInfoQuery().
-		SetAccountID(client.operator.accountID).
-		Execute(client)
-}
-
-func (client *Client) GetAccountBalance() (uint64, error) {
-	return NewAccountBalanceQuery().
-		SetAccountID(client.operator.accountID).
-		Execute(client)
-}
-
 func (client *Client) randomNode() *node {
 	nodeIndex := rand.Intn(len(client.networkNodeIds))
-	nodeId := client.networkNodeIds[nodeIndex]
+	nodeID := client.networkNodeIds[nodeIndex]
 
-	return client.networkNodes[nodeId]
+	return client.networkNodes[nodeID]
 }
 
 func (client *Client) node(id AccountID) *node {

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 func main() {
@@ -24,21 +25,21 @@ func main() {
 		operatorPrivateKey,
 	)
 
-	transactionId, err := hedera.NewFileCreateTransaction().
+	transactionID, err := hedera.NewFileCreateTransaction().
 		AddKey(operatorPrivateKey.PublicKey()).
 		SetContents([]byte{1, 2, 3, 4}).
-		SetMemo("sdk example create_file/main.go").
+		SetTransactionMemo("sdk example create_file/main.go").
 		Execute(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionId.Receipt(client)
+	transactionReceipt, err := transactionID.Receipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("file = %v\n", transactionReceipt.FileID)
+	fmt.Printf("file = %v\n", transactionReceipt.FileID())
 }

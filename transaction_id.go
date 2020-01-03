@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type TransactionID struct {
@@ -22,13 +23,13 @@ func TransactionIDWithValidStart(accountID AccountID, validStart time.Time) Tran
 	return TransactionID{accountID, validStart}
 }
 
-func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
+func (id TransactionID) Receipt(client *Client) (TransactionReceipt, error) {
 	return NewTransactionReceiptQuery().
 		SetTransactionID(id).
 		Execute(client)
 }
 
-func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
+func (id TransactionID) Record(client *Client) (TransactionRecord, error) {
 	return NewTransactionRecordQuery().
 		SetTransactionID(id).
 		Execute(client)

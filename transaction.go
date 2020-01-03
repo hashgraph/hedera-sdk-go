@@ -3,11 +3,12 @@ package hedera
 import (
 	"bytes"
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"math"
 	"math/rand"
 	"time"
+
+	protobuf "github.com/golang/protobuf/proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type Transaction struct {
@@ -27,12 +28,29 @@ func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
 	return transaction
 }
 
-func (transaction Transaction) SignWithOperator(operator operator) Transaction {
-	if operator.privateKey != nil {
-		return transaction.Sign(*operator.privateKey)
-	} else {
-		return transaction.SignWith(operator.publicKey, operator.signer)
+func (transaction Transaction) signWithOperator(operator operator) Transaction {
+	// If the transaction is not signed by the operator, we need
+	// to sign the transaction with the operator
+
+	var signedByOperator bool
+	operatorPublicKey := operator.privateKey.publicKey.keyData
+
+	for _, sigPair := range transaction.pb.SigMap.SigPair {
+		if bytes.Equal(sigPair.PubKeyPrefix, operatorPublicKey) {
+			signedByOperator = true
+			break
+		}
 	}
+
+	if !signedByOperator {
+		if operator.privateKey != nil {
+			transaction.Sign(*operator.privateKey)
+		} else {
+			transaction.SignWith(operator.publicKey, operator.signer)
+		}
+	}
+
+	return transaction
 }
 
 func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer signer) Transaction {
@@ -47,25 +65,8 @@ func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer signe
 }
 
 func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
-
-	var signedByOperator bool
-	operatorPublicKey := client.operator.privateKey.publicKey.keyData
-
-	for _, sigPair := range transaction.pb.SigMap.SigPair {
-		if bytes.Equal(sigPair.PubKeyPrefix, operatorPublicKey) {
-			signedByOperator = true
-			break
-		}
-	}
-
-	if !signedByOperator {
-		if client.operator.privateKey != nil {
-			transaction.Sign(*client.operator.privateKey)
-		} else {
-			transaction.SignWith(client.operator.publicKey, client.operator.signer)
-		}
+	if client.operator != nil {
+		transaction.signWithOperator(*client.operator)
 	}
 
 	transactionBody := transaction.body()

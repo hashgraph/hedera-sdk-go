@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 func main() {
@@ -33,21 +34,21 @@ func main() {
 	fmt.Printf("private = %v\n", newKey)
 	fmt.Printf("public = %v\n", newKey.PublicKey())
 
-	transactionId, err := hedera.NewAccountCreateTransaction().
+	transactionID, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(1000).
-		SetMemo("sdk example create_account/main.go").
+		SetTransactionMemo("sdk example create_account/main.go").
 		Execute(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionId.Receipt(client)
+	transactionReceipt, err := transactionID.Receipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("account = %v\n", transactionReceipt.AccountID)
+	fmt.Printf("account = %v\n", transactionReceipt.AccountID())
 }
