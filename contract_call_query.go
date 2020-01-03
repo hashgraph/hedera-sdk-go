@@ -28,9 +28,14 @@ func (builder *ContractCallQuery) SetGas(gas uint64) *ContractCallQuery {
 	return builder
 }
 
-func (builder *ContractCallQuery) SetFunctionParameters(params CallParams) *ContractCallQuery {
-	builder.pb.FunctionParameters = params.Finish()
-	return builder
+func (builder *ContractCallQuery) SetFunctionParameters(params ContractFunctionParams) (*ContractCallQuery, error) {
+	function, err := params.build(nil)
+	if err != nil {
+		return builder, err
+	}
+
+	builder.pb.FunctionParameters = function
+	return builder, nil
 }
 
 func (builder *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
