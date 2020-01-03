@@ -11,20 +11,24 @@ type TransactionID struct {
 	ValidStart time.Time
 }
 
-func generateTransactionID(accountID AccountID) TransactionID {
+func NewTransactionID(accountID AccountID) TransactionID {
 	// TODO: Less 10s
 	now := time.Now()
 
 	return TransactionID{accountID, now}
 }
 
-func (id TransactionID) Receipt(client *Client) (TransactionReceipt, error) {
+func TransactionIDWithValidStart(accountID AccountID, validStart time.Time) TransactionID {
+	return TransactionID{accountID, validStart}
+}
+
+func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
 	return NewTransactionReceiptQuery().
 		SetTransactionID(id).
 		Execute(client)
 }
 
-func (id TransactionID) Record(client *Client) (TransactionRecord, error) {
+func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 	return NewTransactionRecordQuery().
 		SetTransactionID(id).
 		Execute(client)
