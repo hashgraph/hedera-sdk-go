@@ -29,13 +29,13 @@ type node struct {
 	address string
 }
 
-type Signer func(message []byte) []byte
+type signer func(message []byte) []byte
 
 type operator struct {
 	accountID  AccountID
 	privateKey *Ed25519PrivateKey
 	publicKey  Ed25519PublicKey
-	signer     Signer
+	signer     signer
 }
 
 var mainnetNodes = map[string]AccountID{
@@ -89,9 +89,15 @@ func ClientFromFile(filename string) (*Client, error) {
 	var networkStrings map[string]string
 	network := map[string]AccountID{}
 
-	bytes, _ := ioutil.ReadAll(file)
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
 
-	json.Unmarshal([]byte(bytes), &network)
+	err = json.Unmarshal([]byte(bytes), &network)
+	if err != nil {
+		return nil, err
+	}
 
 	for address, id := range networkStrings {
 		account, err := AccountIDFromString(id)
@@ -145,7 +151,7 @@ func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519Private
 	return client
 }
 
-func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519PublicKey, signer Signer) *Client {
+func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519PublicKey, signer signer) *Client {
 	client.operator = &operator{
 		accountID:  accountID,
 		privateKey: nil,

@@ -35,7 +35,7 @@ func (transaction Transaction) SignWithOperator(operator operator) Transaction {
 	}
 }
 
-func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer Signer) Transaction {
+func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer signer) Transaction {
 	signature := signer(transaction.pb.GetBodyBytes())
 
 	transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, &proto.SignaturePair{
