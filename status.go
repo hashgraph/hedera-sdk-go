@@ -115,14 +115,4 @@ const (
 	ExpirationReductionNotAllowed       Status = 110
 	MaxGasLimitExceeded                 Status = 111
 	MaxFileSizeExceeded                 Status = 112
-	InvalidTopicId                      Status = 150
-	TopicDeleted                        Status = 151
-	InvalidTopicExpirationTime          Status = 154
-	InvalidTopicAdminKey                Status = 155
-	InvalidTopicSubmitKey               Status = 156
-	Unauthorized                        Status = 157
-	InvalidTopicMessage                 Status = 158
-	InvalidAutorenewAccount             Status = 159
-	AutorenewAccountNotAllowed          Status = 160
-	AutorenewAccountSignatureMissing    Status = 161
 )

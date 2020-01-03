@@ -2,18 +2,13 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
-	"time"
 )
 
 type TransactionReceipt struct {
-	Status                       Status
-	accountID                    *AccountID
-	contractID                   *ContractID
-	fileID                       *FileID
-	ConsensusTopicID             *ConsensusTopicID
-	ConsensusTopicSequenceNumber uint64
-	ConsensusTopicRunningHash    []byte
-	ExpirationTime               *time.Time
+	Status     Status
+	accountID  *AccountID
+	contractID *ContractID
+	fileID     *FileID
 }
 
 func (receipt TransactionReceipt) FileID() FileID {
@@ -51,26 +46,10 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 		fileID = &fileIDValue
 	}
 
-	var consensusTopicID *ConsensusTopicID
-	if pb.TopicID != nil {
-		consensusTopicIDValue := consensusTopicIDFromProto(pb.TopicID)
-		consensusTopicID = &consensusTopicIDValue
-	}
-
-	var expirationTime *time.Time
-	if pb.ExpirationTime != nil {
-		expirationTimeValue := timeFromProto(pb.ExpirationTime)
-		expirationTime = &expirationTimeValue
-	}
-
 	return TransactionReceipt{
-		Status:                       Status(pb.Status),
-		accountID:                    accountID,
-		contractID:                   contractID,
-		fileID:                       fileID,
-		ConsensusTopicID:             consensusTopicID,
-		ConsensusTopicSequenceNumber: pb.TopicSequenceNumber,
-		ConsensusTopicRunningHash:    pb.TopicRunningHash,
-		ExpirationTime:               expirationTime,
+		Status:     Status(pb.Status),
+		accountID:  accountID,
+		contractID: contractID,
+		fileID:     fileID,
 	}
 }
