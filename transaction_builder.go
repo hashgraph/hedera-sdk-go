@@ -27,7 +27,7 @@ func (builder TransactionBuilder) Build(client *Client) Transaction {
 	}
 
 	if builder.pb.TransactionID == nil {
-		builder.SetTransactionID(generateTransactionID(client.operator.accountID))
+		builder.SetTransactionID(NewTransactionID(client.operator.accountID))
 	}
 
 	bodyBytes, err := protobuf.Marshal(builder.pb)
