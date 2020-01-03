@@ -10,6 +10,8 @@
 Hedera Hashgraph communicates using [gRPC]; the Protobufs definitions for the protocol are
 available in the [hashgraph/hedera-protobuf] repository.
 
+[gRPC]: https://grpc.io
+[hashgraph/hedera-protobuf]: https://github.com/hashgraph/hedera-protobuf
 
 ## Contributing to this Project
 
