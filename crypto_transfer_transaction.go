@@ -51,8 +51,8 @@ func (builder CryptoTransferTransaction) SetMaxTransactionFee(maxTransactionFee 
 	return CryptoTransferTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder CryptoTransferTransaction) SetMemo(memo string) CryptoTransferTransaction {
-	return CryptoTransferTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder CryptoTransferTransaction) SetTransactionMemo(memo string) CryptoTransferTransaction {
+	return CryptoTransferTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder CryptoTransferTransaction) SetTransactionValidDuration(validDuration time.Duration) CryptoTransferTransaction {

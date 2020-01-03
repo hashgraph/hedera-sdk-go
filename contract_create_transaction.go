@@ -31,6 +31,11 @@ func (builder ContractCreateTransaction) SetAdminKey(publicKey Ed25519PublicKey)
 	return builder
 }
 
+func (builder ContractCreateTransaction) SetContractMemo(memo string) ContractCreateTransaction {
+	builder.pb.Memo = memo
+	return builder
+}
+
 func (builder ContractCreateTransaction) SetGas(gas uint64) ContractCreateTransaction {
 	builder.pb.Gas = int64(gas)
 	return builder
@@ -84,8 +89,8 @@ func (builder ContractCreateTransaction) SetMaxTransactionFee(maxTransactionFee 
 	return ContractCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder ContractCreateTransaction) SetMemo(memo string) ContractCreateTransaction {
-	return ContractCreateTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder ContractCreateTransaction) SetTransactionMemo(memo string) ContractCreateTransaction {
+	return ContractCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder ContractCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractCreateTransaction {

@@ -6,16 +6,26 @@ import (
 )
 
 type TransactionReceipt struct {
-	// TODO: Make the status enum look nicer in Go
-	Status proto.ResponseCodeEnum
-
-	AccountID                    *AccountID
-	ContractID                   *ContractID
-	FileID                       *FileID
+	Status                       Status
+	accountID                    *AccountID
+	contractID                   *ContractID
+	fileID                       *FileID
 	ConsensusTopicID             *ConsensusTopicID
 	ConsensusTopicSequenceNumber uint64
 	ConsensusTopicRunningHash    []byte
 	ExpirationTime               *time.Time
+}
+
+func (receipt TransactionReceipt) FileID() FileID {
+	return *receipt.fileID
+}
+
+func (receipt TransactionReceipt) AccountID() AccountID {
+	return *receipt.accountID
+}
+
+func (receipt TransactionReceipt) ContractID() ContractID {
+	return *receipt.contractID
 }
 
 func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt {
@@ -54,10 +64,10 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 	}
 
 	return TransactionReceipt{
-		Status:                       pb.Status,
-		AccountID:                    accountID,
-		ContractID:                   contractID,
-		FileID:                       fileID,
+		Status:                       Status(pb.Status),
+		accountID:                    accountID,
+		contractID:                   contractID,
+		fileID:                       fileID,
 		ConsensusTopicID:             consensusTopicID,
 		ConsensusTopicSequenceNumber: pb.TopicSequenceNumber,
 		ConsensusTopicRunningHash:    pb.TopicRunningHash,

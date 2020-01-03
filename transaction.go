@@ -27,6 +27,25 @@ func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
 	return transaction
 }
 
+func (transaction Transaction) SignWithOperator(operator operator) Transaction {
+	if operator.privateKey != nil {
+		return transaction.Sign(*operator.privateKey)
+	} else {
+		return transaction.SignWith(operator.publicKey, operator.signer)
+	}
+}
+
+func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer signer) Transaction {
+	signature := signer(transaction.pb.GetBodyBytes())
+
+	transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, &proto.SignaturePair{
+		PubKeyPrefix: publicKey.keyData,
+		Signature:    &proto.SignaturePair_Ed25519{Ed25519: signature},
+	})
+
+	return transaction
+}
+
 func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
@@ -42,7 +61,11 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	}
 
 	if !signedByOperator {
-		transaction.Sign(client.operator.privateKey)
+		if client.operator.privateKey != nil {
+			transaction.Sign(*client.operator.privateKey)
+		} else {
+			transaction.SignWith(client.operator.publicKey, client.operator.signer)
+		}
 	}
 
 	transactionBody := transaction.body()

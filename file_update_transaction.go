@@ -53,8 +53,8 @@ func (builder FileUpdateTransaction) SetExpirationTime(expiration time.Time) Fil
 	return builder
 }
 
-func (builder FileUpdateTransaction) SetContents(contents []byte) FileUpdateTransaction {
-	builder.pb.Contents = contents
+func (builder FileUpdateTransaction) SetContents(contents toBytes) FileUpdateTransaction {
+	builder.pb.Contents = contents.toBytes()
 	return builder
 }
 
@@ -71,8 +71,8 @@ func (builder FileUpdateTransaction) SetMaxTransactionFee(maxTransactionFee uint
 	return FileUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder FileUpdateTransaction) SetMemo(memo string) FileUpdateTransaction {
-	return FileUpdateTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder FileUpdateTransaction) SetTransactionMemo(memo string) FileUpdateTransaction {
+	return FileUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder FileUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) FileUpdateTransaction {

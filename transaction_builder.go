@@ -58,7 +58,7 @@ func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee uint64)
 	return builder
 }
 
-func (builder TransactionBuilder) SetMemo(memo string) TransactionBuilder {
+func (builder TransactionBuilder) SetTransactionMemo(memo string) TransactionBuilder {
 	builder.pb.Memo = memo
 	return builder
 }

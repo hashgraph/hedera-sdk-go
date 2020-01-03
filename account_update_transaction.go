@@ -46,6 +46,27 @@ func (builder AccountUpdateTransaction) SetExpirationTime(expiration time.Time) 
 	return builder
 }
 
+func (builder AccountUpdateTransaction) SetReceiverSignatureRequired(required bool) AccountUpdateTransaction {
+	builder.pb.ReceiverSigRequiredField = &proto.CryptoUpdateTransactionBody_ReceiverSigRequired{
+		ReceiverSigRequired: required,
+	}
+	return builder
+}
+
+func (builder AccountUpdateTransaction) SetSendRecordThreshold(threshold uint64) AccountUpdateTransaction {
+	builder.pb.SendRecordThresholdField = &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
+		SendRecordThreshold: threshold,
+	}
+	return builder
+}
+
+func (builder AccountUpdateTransaction) SetReceiveRecordThreshold(threshold uint64) AccountUpdateTransaction {
+	builder.pb.ReceiveRecordThresholdField = &proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
+		ReceiveRecordThreshold: threshold,
+	}
+	return builder
+}
+
 func (builder AccountUpdateTransaction) Build(client *Client) Transaction {
 	return builder.TransactionBuilder.Build(client)
 }
@@ -59,8 +80,8 @@ func (builder AccountUpdateTransaction) SetMaxTransactionFee(maxTransactionFee u
 	return AccountUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder AccountUpdateTransaction) SetMemo(memo string) AccountUpdateTransaction {
-	return AccountUpdateTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder AccountUpdateTransaction) SetTransactionMemo(memo string) AccountUpdateTransaction {
+	return AccountUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder AccountUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountUpdateTransaction {

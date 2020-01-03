@@ -51,6 +51,11 @@ func (builder ContractUpdateTransaction) SetExpirationTime(expiration time.Time)
 	return builder
 }
 
+func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUpdateTransaction {
+	builder.pb.Memo = memo
+	return builder
+}
+
 func (builder ContractUpdateTransaction) Build(client *Client) Transaction {
 	return builder.TransactionBuilder.Build(client)
 }
@@ -64,8 +69,8 @@ func (builder ContractUpdateTransaction) SetMaxTransactionFee(maxTransactionFee 
 	return ContractUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder ContractUpdateTransaction) SetMemo(memo string) ContractUpdateTransaction {
-	return ContractUpdateTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder ContractUpdateTransaction) SetTransactionMemo(memo string) ContractUpdateTransaction {
+	return ContractUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder ContractUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractUpdateTransaction {

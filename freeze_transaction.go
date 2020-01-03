@@ -46,8 +46,8 @@ func (builder FreezeTransaction) SetMaxTransactionFee(maxTransactionFee uint64) 
 	return FreezeTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder FreezeTransaction) SetMemo(memo string) FreezeTransaction {
-	return FreezeTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder FreezeTransaction) SetTransactionMemo(memo string) FreezeTransaction {
+	return FreezeTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder FreezeTransaction) SetTransactionValidDuration(validDuration time.Duration) FreezeTransaction {

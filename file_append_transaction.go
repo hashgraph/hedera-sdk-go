@@ -5,6 +5,21 @@ import (
 	"time"
 )
 
+type toBytes interface {
+	toBytes() []byte
+}
+
+type Bytes []byte
+type String string
+
+func (bytes Bytes) toBytes() []byte {
+	return bytes
+}
+
+func (str String) toBytes() []byte {
+	return []byte(str)
+}
+
 type FileAppendTransaction struct {
 	TransactionBuilder
 	pb *proto.FileAppendTransactionBody
@@ -26,8 +41,8 @@ func (builder FileAppendTransaction) SetFileID(id FileID) FileAppendTransaction 
 	return builder
 }
 
-func (builder FileAppendTransaction) SetContents(contents []byte) FileAppendTransaction {
-	builder.pb.Contents = contents
+func (builder FileAppendTransaction) SetContents(contents toBytes) FileAppendTransaction {
+	builder.pb.Contents = contents.toBytes()
 	return builder
 }
 
@@ -44,8 +59,8 @@ func (builder FileAppendTransaction) SetMaxTransactionFee(maxTransactionFee uint
 	return FileAppendTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder FileAppendTransaction) SetMemo(memo string) FileAppendTransaction {
-	return FileAppendTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder FileAppendTransaction) SetTransactionMemo(memo string) FileAppendTransaction {
+	return FileAppendTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder FileAppendTransaction) SetTransactionValidDuration(validDuration time.Duration) FileAppendTransaction {

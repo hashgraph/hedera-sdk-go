@@ -54,6 +54,16 @@ func (builder AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshol
 	return builder
 }
 
+func (builder AccountCreateTransaction) SetProxyAccountID(id AccountID) AccountCreateTransaction {
+	builder.pb.ProxyAccountID = id.toProto()
+	return builder
+}
+
+func (builder AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
+	builder.pb.ReceiverSigRequired = required
+	return builder
+}
+
 func (builder AccountCreateTransaction) Build(client *Client) Transaction {
 	// If a shard/realm is not set, it is inferred from the Operator on the Client
 
@@ -82,8 +92,8 @@ func (builder AccountCreateTransaction) SetMaxTransactionFee(maxTransactionFee u
 	return AccountCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder AccountCreateTransaction) SetMemo(memo string) AccountCreateTransaction {
-	return AccountCreateTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder AccountCreateTransaction) SetTransactionMemo(memo string) AccountCreateTransaction {
+	return AccountCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder AccountCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountCreateTransaction {

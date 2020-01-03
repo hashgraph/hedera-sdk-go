@@ -18,7 +18,7 @@ type ContractInfo struct {
 	ExpirationTime    time.Time
 	AutoRenewPeriod   time.Duration
 	Storage           uint64
-	Memo              string
+	ContractMemo      string
 }
 
 func NewContractInfoQuery() *ContractInfoQuery {
@@ -49,6 +49,6 @@ func (builder *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) 
 		ExpirationTime:    timeFromProto(resp.GetContractGetInfo().ContractInfo.ExpirationTime),
 		AutoRenewPeriod:   durationFromProto(resp.GetContractGetInfo().ContractInfo.AutoRenewPeriod),
 		Storage:           uint64(resp.GetContractGetInfo().ContractInfo.Storage),
-		Memo:              resp.GetContractGetInfo().ContractInfo.Memo,
+		ContractMemo:      resp.GetContractGetInfo().ContractInfo.Memo,
 	}, nil
 }

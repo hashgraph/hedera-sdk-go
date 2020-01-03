@@ -21,8 +21,13 @@ func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	return builder
 }
 
-func (builder AccountDeleteTransaction) SetAccountId(id AccountID) AccountDeleteTransaction {
+func (builder AccountDeleteTransaction) SetDeleteAccountId(id AccountID) AccountDeleteTransaction {
 	builder.pb.DeleteAccountID = id.toProto()
+	return builder
+}
+
+func (builder AccountDeleteTransaction) SetTransferAccountID(id AccountID) AccountDeleteTransaction {
+	builder.pb.TransferAccountID = id.toProto()
 	return builder
 }
 
@@ -39,8 +44,8 @@ func (builder AccountDeleteTransaction) SetMaxTransactionFee(maxTransactionFee u
 	return AccountDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder AccountDeleteTransaction) SetMemo(memo string) AccountDeleteTransaction {
-	return AccountDeleteTransaction{builder.TransactionBuilder.SetMemo(memo), builder.pb}
+func (builder AccountDeleteTransaction) SetTransactionMemo(memo string) AccountDeleteTransaction {
+	return AccountDeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
 func (builder AccountDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountDeleteTransaction {
