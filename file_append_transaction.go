@@ -5,21 +5,6 @@ import (
 	"time"
 )
 
-type toBytes interface {
-	toBytes() []byte
-}
-
-type Bytes []byte
-type String string
-
-func (bytes Bytes) toBytes() []byte {
-	return bytes
-}
-
-func (str String) toBytes() []byte {
-	return []byte(str)
-}
-
 type FileAppendTransaction struct {
 	TransactionBuilder
 	pb *proto.FileAppendTransactionBody
@@ -41,8 +26,8 @@ func (builder FileAppendTransaction) SetFileID(id FileID) FileAppendTransaction 
 	return builder
 }
 
-func (builder FileAppendTransaction) SetContents(contents toBytes) FileAppendTransaction {
-	builder.pb.Contents = contents.toBytes()
+func (builder FileAppendTransaction) SetContents(contents []byte) FileAppendTransaction {
+	builder.pb.Contents = contents
 	return builder
 }
 

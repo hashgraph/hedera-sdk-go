@@ -53,8 +53,8 @@ func (builder FileUpdateTransaction) SetExpirationTime(expiration time.Time) Fil
 	return builder
 }
 
-func (builder FileUpdateTransaction) SetContents(contents toBytes) FileUpdateTransaction {
-	builder.pb.Contents = contents.toBytes()
+func (builder FileUpdateTransaction) SetContents(contents []byte) FileUpdateTransaction {
+	builder.pb.Contents = contents
 	return builder
 }
 
