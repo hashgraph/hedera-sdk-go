@@ -19,6 +19,7 @@ const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
 var ErrNoRNG = errors.New("could not retrieve random bytes from the operating system")
+var ErrUnderivable = errors.New("this private key does not support derivation")
 
 type Ed25519PrivateKey struct {
 	keyData   []byte
@@ -51,7 +52,7 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 		privateKey = ed25519.NewKeyFromSeed(bytes)
 
 	case 64:
-		privateKey = bytes
+		privateKey = ed25519.NewKeyFromSeed(bytes[0:32])
 
 	default:
 		return Ed25519PrivateKey{}, fmt.Errorf("invalid private key")
@@ -214,4 +215,29 @@ func (pk Ed25519PublicKey) toProto() *proto.Key {
 
 func (sk Ed25519PrivateKey) Sign(message []byte) []byte {
 	return ed25519.Sign(sk.keyData, message)
+}
+
+func (sk Ed25519PrivateKey) SupportsDerivation() bool {
+	return sk.chainCode != nil
+}
+
+// Given a wallet/account index, derive a child key compatible with the iOS and Android wallets.
+//
+// Use index 0 for the default account.
+func (sk Ed25519PrivateKey) Derive(index uint32) (Ed25519PrivateKey, error) {
+	if !sk.SupportsDerivation() {
+		return Ed25519PrivateKey{}, ErrUnderivable
+	}
+
+	derivedKeyBytes, chainCode := deriveChildKey(sk.keyData, sk.chainCode, index)
+
+	derivedKey, err := Ed25519PrivateKeyFromBytes(derivedKeyBytes)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	derivedKey.chainCode = chainCode
+
+	return derivedKey, nil
 }
