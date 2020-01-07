@@ -75,29 +75,36 @@ func TestEd25519PublicKeyExternalSerializationForRawHex(t *testing.T) {
 }
 
 func TestEd25519PrivateKeyFromMnemonic(t *testing.T) {
-	key := Ed25519PrivateKeyFromMnemonic(testMnemonic, "")
+	key, err := Ed25519PrivateKeyFromMnemonic(testMnemonic, "")
 
+	assert.NoError(t, err)
 	assert.Equal(t, testMnemonicKey, key.String())
 }
 
 func TestIOSPrivateKeyFromMnemonic(t *testing.T) {
-	key, err := Ed25519PrivateKeyFromMnemonic(iosMnemonicString, "").Derive(0)
+	key, err := Ed25519PrivateKeyFromMnemonic(iosMnemonicString, "")
+	assert.NoError(t, err)
+
+	derivedKey, err := key.Derive(0)
 	assert.NoError(t, err)
 
 	expectedKey, err := Ed25519PrivateKeyFromString(iosDefaultPrivateKey)
 	assert.NoError(t, err)
 
-	assert.Equal(t, expectedKey.keyData, key.keyData)
+	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
 }
 
 func TestAndroidPrivateKeyFromMnemonic(t *testing.T) {
-	key, err := Ed25519PrivateKeyFromMnemonic(androidMnemonicString, "").Derive(0)
+	key, err := Ed25519PrivateKeyFromMnemonic(androidMnemonicString, "")
+	assert.NoError(t, err)
+
+	derivedKey, err := key.Derive(0)
 	assert.NoError(t, err)
 
 	expectedKey, err := Ed25519PrivateKeyFromString(androidDefaultPrivateKey)
 	assert.NoError(t, err)
 
-	assert.Equal(t, expectedKey.keyData, key.keyData)
+	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
 }
 
 func TestSigning(t *testing.T) {
@@ -108,4 +115,20 @@ func TestSigning(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.True(t, ed25519.Verify(pubKey.Bytes(), []byte("this is the test data to sign"), signature))
+}
+
+func TestGeneratedMnemonicToWorkingPrivateKey(t *testing.T) {
+	mnemonic, err := GenerateMnemonic()
+
+	assert.NoError(t, err)
+
+	privateKey, err := mnemonic.GenerateKey("")
+
+	assert.NoError(t, err)
+
+	message := []byte("this is a test message")
+
+	signature := privateKey.Sign(message)
+
+	assert.True(t, ed25519.Verify(privateKey.publicKey.Bytes(), message, signature))
 }

@@ -66,7 +66,7 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 	}, nil
 }
 
-func Ed25519PrivateKeyFromMnemonic(mnemonic string, passPhrase string) Ed25519PrivateKey {
+func Ed25519PrivateKeyFromMnemonic(mnemonic string, passPhrase string) (Ed25519PrivateKey, error) {
 	salt := []byte("mnemonic" + passPhrase)
 	seed := pbkdf2.Key([]byte(mnemonic), salt, 2048, 64, sha512.New)
 
@@ -82,17 +82,15 @@ func Ed25519PrivateKeyFromMnemonic(mnemonic string, passPhrase string) Ed25519Pr
 		keyBytes, chainCode = deriveChildKey(keyBytes, chainCode, index)
 	}
 
-	var publicKey []byte
+	privateKey, err := Ed25519PrivateKeyFromBytes(keyBytes)
 
-	copy(publicKey, keyBytes[32:len(keyBytes)])
-
-	return Ed25519PrivateKey{
-		keyData:   keyBytes,
-		chainCode: chainCode,
-		publicKey: Ed25519PublicKey{
-			publicKey,
-		},
+	if err != nil {
+		return Ed25519PrivateKey{}, err
 	}
+
+	privateKey.chainCode = chainCode
+
+	return privateKey, nil
 }
 
 func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
@@ -165,7 +163,7 @@ type MnemonicResult struct {
 	mnemonic string
 }
 
-func (mr MnemonicResult) GenerateKey(passPhrase string) Ed25519PrivateKey {
+func (mr MnemonicResult) GenerateKey(passPhrase string) (Ed25519PrivateKey, error) {
 	return Ed25519PrivateKeyFromMnemonic(mr.mnemonic, passPhrase)
 }
 
