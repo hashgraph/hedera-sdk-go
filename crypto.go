@@ -134,6 +134,8 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
 }
 
+// todo: Ed25519PublicKeyFromBytes
+
 // SLIP-10/BIP-32 Child Key derivation
 func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
 	h := hmac.New(sha512.New, chainCode)
@@ -143,9 +145,7 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	// 0x00 + parentKey + index(BE)
 	input[0] = 0
 
-	for i, b := range parentKey {
-		input[1 + i] = b
-	}
+	copy(input[1:37], parentKey)
 
 	binary.BigEndian.PutUint32(input[33:37], index)
 
@@ -153,7 +153,6 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	input[33] |= 128
 
 	h.Write(input)
-
 	digest := h.Sum(nil)
 
 	return digest[0:32], digest[32:len(digest)]
@@ -163,6 +162,7 @@ type MnemonicResult struct {
 	mnemonic string
 }
 
+// todo: rename as toPrivateKey
 func (mr MnemonicResult) GenerateKey(passPhrase string) (Ed25519PrivateKey, error) {
 	return Ed25519PrivateKeyFromMnemonic(mr.mnemonic, passPhrase)
 }
@@ -186,6 +186,14 @@ func GenerateMnemonic() (*MnemonicResult, error) {
 
 	return &MnemonicResult{mnemonic}, nil
 }
+
+// todo: Mnemonic From String
+
+// todo: Mnemonic To String
+
+// todo: func NewMnemonic([]string)
+
+// todo: Words -> []string
 
 func (sk Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
 	return sk.publicKey
@@ -227,7 +235,7 @@ func (sk Ed25519PrivateKey) Derive(index uint32) (Ed25519PrivateKey, error) {
 		return Ed25519PrivateKey{}, ErrUnderivable
 	}
 
-	derivedKeyBytes, chainCode := deriveChildKey(sk.keyData, sk.chainCode, index)
+	derivedKeyBytes, chainCode := deriveChildKey(sk.Bytes(), sk.chainCode, index)
 
 	derivedKey, err := Ed25519PrivateKeyFromBytes(derivedKeyBytes)
 
