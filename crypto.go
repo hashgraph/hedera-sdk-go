@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
 	"strings"
@@ -63,9 +62,9 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 	}, nil
 }
 
-func Ed25519PrivateKeyFromMnemonic(mnemonic string, passPhrase string) (Ed25519PrivateKey, error) {
+func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed25519PrivateKey, error) {
 	salt := []byte("mnemonic" + passPhrase)
-	seed := pbkdf2.Key([]byte(mnemonic), salt, 2048, 64, sha512.New)
+	seed := pbkdf2.Key([]byte(mnemonic.String()), salt, 2048, 64, sha512.New)
 
 	h := hmac.New(sha512.New, []byte("ed25519 seed"))
 	h.Write(seed)
@@ -161,60 +160,6 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	digest := h.Sum(nil)
 
 	return digest[0:32], digest[32:len(digest)]
-}
-
-type Mnemonic struct {
-	words string
-}
-
-func (m Mnemonic) ToPrivateKey(passPhrase string) (Ed25519PrivateKey, error) {
-	return Ed25519PrivateKeyFromMnemonic(m.String(), passPhrase)
-}
-
-// Generate a random 24-word mnemonic
-func GenerateMnemonic() (*Mnemonic, error) {
-	entropy, err := bip39.NewEntropy(256)
-
-	if err != nil {
-		// It is only possible for there to be an error if the operating
-		// system's rng is unreadable
-		return nil, fmt.Errorf("could not retrieve random bytes from the operating system")
-	}
-
-	mnemonic, err := bip39.NewMnemonic(entropy)
-
-	if err != nil {
-		// todo: return proper error
-		return nil, err
-	}
-
-	return &Mnemonic{mnemonic }, nil
-}
-
-// Create a mnemonic from a string of 24 words separated by spaces
-// Keys are lazily generated
-func MnemonicFromString(s string) (Mnemonic, error) {
-	return NewMnemonic(strings.Split(s, " "))
-}
-
-func (m Mnemonic) String() string {
-	return m.words
-}
-
-func (m Mnemonic) Words() []string {
-	return strings.Split(m.words, " ")
-}
-
-// Create a mnemonic from a list of 24 strings
-// Keys are lazily generated
-func NewMnemonic(words []string) (Mnemonic, error){
-	if len(words) != 24 {
-		return Mnemonic{}, fmt.Errorf("invalid mnemonic string")
-	}
-
-	return Mnemonic{
-		words: strings.Join(words, " "),
-	}, nil
 }
 
 func (sk Ed25519PrivateKey) PublicKey() Ed25519PublicKey {

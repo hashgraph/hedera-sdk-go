@@ -75,14 +75,20 @@ func TestEd25519PublicKeyExternalSerializationForRawHex(t *testing.T) {
 }
 
 func TestEd25519PrivateKeyFromMnemonic(t *testing.T) {
-	key, err := Ed25519PrivateKeyFromMnemonic(testMnemonic, "")
+	mnemonic, err := MnemonicFromString(testMnemonic)
+	assert.NoError(t, err)
+
+	key, err := Ed25519PrivateKeyFromMnemonic(mnemonic, "")
 
 	assert.NoError(t, err)
 	assert.Equal(t, testMnemonicKey, key.String())
 }
 
 func TestIOSPrivateKeyFromMnemonic(t *testing.T) {
-	key, err := Ed25519PrivateKeyFromMnemonic(iosMnemonicString, "")
+	mnemonic, err := MnemonicFromString(iosMnemonicString)
+	assert.NoError(t, err)
+
+	key, err := Ed25519PrivateKeyFromMnemonic(mnemonic, "")
 	assert.NoError(t, err)
 
 	derivedKey, err := key.Derive(0)
@@ -95,7 +101,10 @@ func TestIOSPrivateKeyFromMnemonic(t *testing.T) {
 }
 
 func TestAndroidPrivateKeyFromMnemonic(t *testing.T) {
-	key, err := Ed25519PrivateKeyFromMnemonic(androidMnemonicString, "")
+	mnemonic, err := MnemonicFromString(androidMnemonicString)
+	assert.NoError(t, err)
+
+	key, err := Ed25519PrivateKeyFromMnemonic(mnemonic, "")
 	assert.NoError(t, err)
 
 	derivedKey, err := key.Derive(0)
