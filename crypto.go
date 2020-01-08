@@ -6,8 +6,8 @@ import (
 	"crypto/sha512"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"fmt"
+	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
 	"strings"
@@ -17,9 +17,6 @@ import (
 
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
-
-var ErrNoRNG = errors.New("could not retrieve random bytes from the operating system")
-var ErrUnderivable = errors.New("this private key does not support derivation")
 
 type Ed25519PrivateKey struct {
 	keyData   []byte
@@ -181,7 +178,7 @@ func GenerateMnemonic() (*Mnemonic, error) {
 	if err != nil {
 		// It is only possible for there to be an error if the operating
 		// system's rng is unreadable
-		return nil, ErrNoRNG
+		return nil, fmt.Errorf("could not retrieve random bytes from the operating system")
 	}
 
 	mnemonic, err := bip39.NewMnemonic(entropy)
@@ -257,7 +254,7 @@ func (sk Ed25519PrivateKey) SupportsDerivation() bool {
 // Use index 0 for the default account.
 func (sk Ed25519PrivateKey) Derive(index uint32) (Ed25519PrivateKey, error) {
 	if !sk.SupportsDerivation() {
-		return Ed25519PrivateKey{}, ErrUnderivable
+		return Ed25519PrivateKey{}, fmt.Errorf("this private key does not support derivation")
 	}
 
 	derivedKeyBytes, chainCode := deriveChildKey(sk.Bytes(), sk.chainCode, index)
