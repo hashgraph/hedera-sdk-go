@@ -122,7 +122,7 @@ func TestGeneratedMnemonicToWorkingPrivateKey(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	privateKey, err := mnemonic.GenerateKey("")
+	privateKey, err := mnemonic.ToPrivateKey("")
 
 	assert.NoError(t, err)
 

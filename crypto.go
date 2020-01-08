@@ -134,7 +134,15 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
 }
 
-// todo: Ed25519PublicKeyFromBytes
+func Ed25519PublicKeyFromBytes(bytes []byte) (Ed25519PublicKey, error) {
+	if len(bytes) != ed25519.PublicKeySize {
+		return Ed25519PublicKey{}, fmt.Errorf("invalid public key")
+	}
+
+	return Ed25519PublicKey{
+		keyData:bytes,
+	}, nil
+}
 
 // SLIP-10/BIP-32 Child Key derivation
 func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
@@ -158,17 +166,16 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	return digest[0:32], digest[32:len(digest)]
 }
 
-type MnemonicResult struct {
-	mnemonic string
+type Mnemonic struct {
+	words string
 }
 
-// todo: rename as toPrivateKey
-func (mr MnemonicResult) GenerateKey(passPhrase string) (Ed25519PrivateKey, error) {
-	return Ed25519PrivateKeyFromMnemonic(mr.mnemonic, passPhrase)
+func (m Mnemonic) ToPrivateKey(passPhrase string) (Ed25519PrivateKey, error) {
+	return Ed25519PrivateKeyFromMnemonic(m.String(), passPhrase)
 }
 
 // Generate a random 24-word mnemonic
-func GenerateMnemonic() (*MnemonicResult, error) {
+func GenerateMnemonic() (*Mnemonic, error) {
 	entropy, err := bip39.NewEntropy(256)
 
 	if err != nil {
@@ -184,16 +191,34 @@ func GenerateMnemonic() (*MnemonicResult, error) {
 		return nil, err
 	}
 
-	return &MnemonicResult{mnemonic}, nil
+	return &Mnemonic{mnemonic }, nil
 }
 
-// todo: Mnemonic From String
+// Create a mnemonic from a string of 24 words separated by spaces
+// Keys are lazily generated
+func MnemonicFromString(s string) (Mnemonic, error) {
+	return NewMnemonic(strings.Split(s, " "))
+}
 
-// todo: Mnemonic To String
+func (m Mnemonic) String() string {
+	return m.words
+}
 
-// todo: func NewMnemonic([]string)
+func (m Mnemonic) Words() []string {
+	return strings.Split(m.words, " ")
+}
 
-// todo: Words -> []string
+// Create a mnemonic from a list of 24 strings
+// Keys are lazily generated
+func NewMnemonic(words []string) (Mnemonic, error){
+	if len(words) != 24 {
+		return Mnemonic{}, fmt.Errorf("invalid mnemonic string")
+	}
+
+	return Mnemonic{
+		words: strings.Join(words, " "),
+	}, nil
+}
 
 func (sk Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
 	return sk.publicKey
