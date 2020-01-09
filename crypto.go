@@ -140,6 +140,16 @@ func Ed25519PublicKeyFromBytes(bytes []byte) (Ed25519PublicKey, error) {
 	}, nil
 }
 
+func ed25519PublicKeyFromProto(proto proto.Key) (Ed25519PublicKey, error) {
+	rawKey := proto.GetEd25519()
+
+	if rawKey == nil {
+		return Ed25519PublicKey{}, fmt.Errorf("not an ed25519 key")
+	}
+
+	return Ed25519PublicKeyFromBytes(rawKey)
+}
+
 // SLIP-10/BIP-32 Child Key derivation
 func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
 	h := hmac.New(sha512.New, chainCode)
