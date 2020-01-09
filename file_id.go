@@ -24,8 +24,25 @@ func FileIDFromString(s string) (FileID, error) {
 	}, nil
 }
 
+func FileIDFromSolidityAddress(s string) (FileID, error) {
+	shard, realm, file, err := idFromSolidityAddress(s)
+	if err != nil {
+		return FileID{}, err
+	}
+
+	return FileID{
+		Shard: shard,
+		Realm: realm,
+		File:  file,
+	}, nil
+}
+
 func (id FileID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File)
+}
+
+func (id FileID) ToSolidityAddress() string {
+	return idToSolidityAddress(id.Shard, id.Realm, id.File)
 }
 
 func (id FileID) toProto() *proto.FileID {

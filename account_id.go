@@ -24,8 +24,25 @@ func AccountIDFromString(s string) (AccountID, error) {
 	}, nil
 }
 
+func AccountIDFromSolidityAddress(s string) (AccountID, error) {
+	shard, realm, account, err := idFromSolidityAddress(s)
+	if err != nil {
+		return AccountID{}, err
+	}
+
+	return AccountID{
+		Shard:   shard,
+		Realm:   realm,
+		Account: account,
+	}, nil
+}
+
 func (id AccountID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
+}
+
+func (id AccountID) ToSolidityAddress() string {
+	return idToSolidityAddress(id.Shard, id.Realm, id.Account)
 }
 
 func (id AccountID) toProto() *proto.AccountID {

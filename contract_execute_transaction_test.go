@@ -13,11 +13,11 @@ func TestSerializeContractExecuteTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewContractExecuteTransaction().
-		SetContractID(ContractID{ Contract: 5 }).
+		SetContractID(ContractID{Contract: 5}).
 		SetGas(141).
-		SetAmount(10000).
+		SetPayableAmount(HbarFromTinybar(10000)).
 		// this was pulled from the Java test
-		SetFunctionParameters([]byte{ 24, 43, 11 }).
+		SetFunctionParameters([]byte{24, 43, 11}).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionId).
 		Build(mockClient).

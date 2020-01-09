@@ -31,8 +31,8 @@ func (builder ContractExecuteTransaction) SetGas(gas uint64) ContractExecuteTran
 	return builder
 }
 
-func (builder ContractExecuteTransaction) SetAmount(amount uint64) ContractExecuteTransaction {
-	builder.pb.Amount = int64(amount)
+func (builder ContractExecuteTransaction) SetPayableAmount(amount Hbar) ContractExecuteTransaction {
+	builder.pb.Amount = int64(amount.AsTinybar())
 	return builder
 }
 
