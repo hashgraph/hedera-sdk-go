@@ -2,58 +2,66 @@ package hedera
 
 type HbarUnit string
 
-const (
-	Tinybar  HbarUnit = "tinybar"
-	Microbar HbarUnit = "microbar"
-	Millibar HbarUnit = "millibar"
-	HBar     HbarUnit = "hbar"
-	Kilobar  HbarUnit = "kilobar"
-	Megabar  HbarUnit = "megabar"
-	Gigabar  HbarUnit = "gigabar"
-)
+var HbarUnits = struct {
+	Tinybar  HbarUnit
+	Microbar HbarUnit
+	Millibar HbarUnit
+	Hbar     HbarUnit
+	Kilobar  HbarUnit
+	Megabar  HbarUnit
+	Gigabar  HbarUnit
+}{
+	Tinybar:  HbarUnit("tinybar"),
+	Microbar: HbarUnit("microbar"),
+	Millibar: HbarUnit("millibar"),
+	Hbar:     HbarUnit("hbar"),
+	Kilobar:  HbarUnit("kilobar"),
+	Megabar:  HbarUnit("megabar"),
+	Gigabar:  HbarUnit("gigabar"),
+}
 
 func (unit HbarUnit) Symbol() string {
 	switch unit {
-	case Tinybar:
+	case HbarUnits.Tinybar:
 		return "tℏ"
-	case Microbar:
+	case HbarUnits.Microbar:
 		return "μℏ"
-	case Millibar:
+	case HbarUnits.Millibar:
 		return "mℏ"
-	case HBar:
+	case HbarUnits.Hbar:
 		return "ℏ"
-	case Kilobar:
+	case HbarUnits.Kilobar:
 		return "kℏ"
-	case Megabar:
+	case HbarUnits.Megabar:
 		return "Mℏ"
-	case Gigabar:
+	case HbarUnits.Gigabar:
 		return "Gℏ"
 	}
 
-	panic("HbarUnit.Symbol() switch statement is non-exhaustive")
+	panic("unreacahble: HbarUnit.Symbol() switch statement is non-exhaustive")
 }
 
 func (unit HbarUnit) String() string {
 	return string(unit)
 }
 
-func (unit HbarUnit) toTinybarCount() int64 {
+func (unit HbarUnit) numberOfTinybar() int64 {
 	switch unit {
-	case Tinybar:
+	case HbarUnits.Tinybar:
 		return 1
-	case Microbar:
+	case HbarUnits.Microbar:
 		return 100
-	case Millibar:
+	case HbarUnits.Millibar:
 		return 100_000
-	case HBar:
+	case HbarUnits.Hbar:
 		return 100_000_000
-	case Kilobar:
+	case HbarUnits.Kilobar:
 		return 100_000_000_000
-	case Megabar:
+	case HbarUnits.Megabar:
 		return 100_000_000_000_000
-	case Gigabar:
+	case HbarUnits.Gigabar:
 		return 100_000_000_000_000_000
 	}
 
-	panic("HbarUnit.Symbol() switch statement is non-exhaustive")
+	panic("unreacahble: HbarUnit.Symbol() switch statement is non-exhaustive")
 }
