@@ -101,6 +101,39 @@ func (contract *ContractFunctionParams) AddInt256(value []byte) (*ContractFuncti
 	return contract, nil
 }
 
+func (contract *ContractFunctionParams) AddUint32(value uint32) (*ContractFunctionParams, error) {
+	argument := NewArgument()
+
+	binary.BigEndian.PutUint32(argument.value[28:32], value)
+
+	contract.function.AddUint32()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract, nil
+}
+
+func (contract *ContractFunctionParams) AddUint64(value uint64) (*ContractFunctionParams, error) {
+	argument := NewArgument()
+
+	binary.BigEndian.PutUint64(argument.value[24:32], value)
+
+	contract.function.AddUint64()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract, nil
+}
+
+func (contract *ContractFunctionParams) AddUint256(value []byte) (*ContractFunctionParams, error) {
+	argument := NewArgument()
+
+	argument.value = value
+
+	contract.function.AddUint256()
+	contract.arguments = append(contract.arguments, argument)
+
+	return contract, nil
+}
+
 func (contract *ContractFunctionParams) AddInt32Array(value []int32) *ContractFunctionParams {
 	argument := NewArgument()
 	argument.dynamic = true
@@ -154,6 +187,63 @@ func (contract *ContractFunctionParams) AddInt256Array(value [][32]byte) *Contra
 	argument.value = result
 
 	contract.function.AddInt256Array()
+	contract.arguments = append(contract.arguments, argument)
+	return contract
+}
+
+func (contract *ContractFunctionParams) AddUint32Array(value []uint32) *ContractFunctionParams {
+	argument := NewArgument()
+	argument.dynamic = true
+
+	result := make([]byte, len(value)+32)
+
+	binary.BigEndian.PutUint64(result[24:32], uint64(len(value)))
+
+	for i, v := range value {
+		binary.BigEndian.PutUint32(result[i*32+32+28:i*32+32+32], v)
+	}
+
+	argument.value = result
+
+	contract.function.AddUint32Array()
+	contract.arguments = append(contract.arguments, argument)
+	return contract
+}
+
+func (contract *ContractFunctionParams) AddUint64Array(value []uint64) *ContractFunctionParams {
+	argument := NewArgument()
+	argument.dynamic = true
+
+	result := make([]byte, len(value)+32)
+
+	binary.BigEndian.PutUint64(result[24:32], uint64(len(value)))
+
+	for i, v := range value {
+		binary.BigEndian.PutUint64(result[i*32+32+24:i*32+32+32], v)
+	}
+
+	argument.value = result
+
+	contract.function.AddUint64Array()
+	contract.arguments = append(contract.arguments, argument)
+	return contract
+}
+
+func (contract *ContractFunctionParams) AddUint256Array(value [][32]byte) *ContractFunctionParams {
+	argument := NewArgument()
+	argument.dynamic = true
+
+	result := make([]byte, len(value)+32)
+
+	binary.BigEndian.PutUint64(result[24:32], uint64(len(value)))
+
+	for i, v := range value {
+		copy(result[i*32+32:i*32+32+32], v[0:32])
+	}
+
+	argument.value = result
+
+	contract.function.AddUint256Array()
 	contract.arguments = append(contract.arguments, argument)
 	return contract
 }
