@@ -74,7 +74,7 @@ func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed2551
 	chainCode := digest[32:len(digest)]
 
 	// note the index is for derivation, not the index of the slice
-	for _, index := range []uint32{ 44, 3030, 0, 0 } {
+	for _, index := range []uint32{44, 3030, 0, 0} {
 		keyBytes, chainCode = deriveChildKey(keyBytes, chainCode, index)
 	}
 
@@ -136,7 +136,7 @@ func Ed25519PublicKeyFromBytes(bytes []byte) (Ed25519PublicKey, error) {
 	}
 
 	return Ed25519PublicKey{
-		keyData:bytes,
+		keyData: bytes,
 	}, nil
 }
 
