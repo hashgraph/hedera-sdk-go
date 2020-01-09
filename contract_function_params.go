@@ -19,7 +19,7 @@ type Argument struct {
 
 func NewContractFunctionParams() *ContractFunctionParams {
 	return &ContractFunctionParams{
-		function:  NewContractFunctionSelector(nil),
+		function:  NewContractFunctionSelector(""),
 		arguments: []Argument{},
 	}
 }

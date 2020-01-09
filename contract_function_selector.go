@@ -33,7 +33,15 @@ const (
 	aAddress  argument = "address"
 )
 
-func NewContractFunctionSelector(function *string) ContractFunctionSelector {
+func NewContractFunctionSelector(name string) ContractFunctionSelector {
+	var function *string
+
+	if name == "" {
+		function = nil
+	} else {
+		function = &name
+	}
+
 	return ContractFunctionSelector{
 		function:   function,
 		params:     "",
