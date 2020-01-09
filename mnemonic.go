@@ -15,23 +15,24 @@ func (m Mnemonic) ToPrivateKey(passPhrase string) (Ed25519PrivateKey, error) {
 }
 
 // Generate a random 24-word mnemonic
-func GenerateMnemonic() (*Mnemonic, error) {
+func GenerateMnemonic() (Mnemonic, error) {
 	entropy, err := bip39.NewEntropy(256)
 
 	if err != nil {
 		// It is only possible for there to be an error if the operating
 		// system's rng is unreadable
-		return nil, fmt.Errorf("could not retrieve random bytes from the operating system")
+		return Mnemonic{}, fmt.Errorf("could not retrieve random bytes from the operating system")
 	}
 
 	mnemonic, err := bip39.NewMnemonic(entropy)
 
+
+	// Note that this should never actually fail since it is being provided by library generated mnemonic
 	if err != nil {
-		// todo: return proper error
-		return nil, err
+		return Mnemonic{}, err
 	}
 
-	return &Mnemonic{mnemonic }, nil
+	return Mnemonic{mnemonic }, nil
 }
 
 // Create a mnemonic from a string of 24 words separated by spaces
