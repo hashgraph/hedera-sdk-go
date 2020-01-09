@@ -1,10 +1,14 @@
 package hedera
 
 import (
-	"crypto/ed25519"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha512"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"golang.org/x/crypto/ed25519"
+	"golang.org/x/crypto/pbkdf2"
 	"strings"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
@@ -44,7 +48,7 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 		privateKey = ed25519.NewKeyFromSeed(bytes)
 
 	case 64:
-		privateKey = bytes
+		privateKey = ed25519.NewKeyFromSeed(bytes[0:32])
 
 	default:
 		return Ed25519PrivateKey{}, fmt.Errorf("invalid private key")
@@ -56,6 +60,33 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 		keyData:   privateKey,
 		publicKey: Ed25519PublicKey{publicKey},
 	}, nil
+}
+
+func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed25519PrivateKey, error) {
+	salt := []byte("mnemonic" + passPhrase)
+	seed := pbkdf2.Key([]byte(mnemonic.String()), salt, 2048, 64, sha512.New)
+
+	h := hmac.New(sha512.New, []byte("ed25519 seed"))
+	h.Write(seed)
+	digest := h.Sum(nil)
+
+	keyBytes := digest[0:32]
+	chainCode := digest[32:len(digest)]
+
+	// note the index is for derivation, not the index of the slice
+	for _, index := range []uint32{44, 3030, 0, 0} {
+		keyBytes, chainCode = deriveChildKey(keyBytes, chainCode, index)
+	}
+
+	privateKey, err := Ed25519PrivateKeyFromBytes(keyBytes)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	privateKey.chainCode = chainCode
+
+	return privateKey, nil
 }
 
 func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
@@ -99,6 +130,48 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
 }
 
+func Ed25519PublicKeyFromBytes(bytes []byte) (Ed25519PublicKey, error) {
+	if len(bytes) != ed25519.PublicKeySize {
+		return Ed25519PublicKey{}, fmt.Errorf("invalid public key")
+	}
+
+	return Ed25519PublicKey{
+		keyData: bytes,
+	}, nil
+}
+
+func ed25519PublicKeyFromProto(proto proto.Key) (Ed25519PublicKey, error) {
+	rawKey := proto.GetEd25519()
+
+	if rawKey == nil {
+		return Ed25519PublicKey{}, fmt.Errorf("provided proto key did not represent an ed25519 key")
+	}
+
+	return Ed25519PublicKeyFromBytes(rawKey)
+}
+
+// SLIP-10/BIP-32 Child Key derivation
+func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
+	h := hmac.New(sha512.New, chainCode)
+
+	input := make([]byte, 37)
+
+	// 0x00 + parentKey + index(BE)
+	input[0] = 0
+
+	copy(input[1:37], parentKey)
+
+	binary.BigEndian.PutUint32(input[33:37], index)
+
+	// harden the input
+	input[33] |= 128
+
+	h.Write(input)
+	digest := h.Sum(nil)
+
+	return digest[0:32], digest[32:len(digest)]
+}
+
 func (sk Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
 	return sk.publicKey
 }
@@ -125,4 +198,29 @@ func (pk Ed25519PublicKey) toProto() *proto.Key {
 
 func (sk Ed25519PrivateKey) Sign(message []byte) []byte {
 	return ed25519.Sign(sk.keyData, message)
+}
+
+func (sk Ed25519PrivateKey) SupportsDerivation() bool {
+	return sk.chainCode != nil
+}
+
+// Given a wallet/account index, derive a child key compatible with the iOS and Android wallets.
+//
+// Use index 0 for the default account.
+func (sk Ed25519PrivateKey) Derive(index uint32) (Ed25519PrivateKey, error) {
+	if !sk.SupportsDerivation() {
+		return Ed25519PrivateKey{}, fmt.Errorf("this private key does not support derivation")
+	}
+
+	derivedKeyBytes, chainCode := deriveChildKey(sk.Bytes(), sk.chainCode, index)
+
+	derivedKey, err := Ed25519PrivateKeyFromBytes(derivedKeyBytes)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	derivedKey.chainCode = chainCode
+
+	return derivedKey, nil
 }
