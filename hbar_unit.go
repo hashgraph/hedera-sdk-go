@@ -6,13 +6,13 @@ const (
 	Tinybar  HbarUnit = "tinybar"
 	Microbar HbarUnit = "microbar"
 	Millibar HbarUnit = "millibar"
-	// Hbar     HbarUnit = "hbar"
-	Kilobar HbarUnit = "kilobar"
-	Megabar HbarUnit = "megabar"
-	Gigabar HbarUnit = "gigabar"
+	HBar     HbarUnit = "hbar"
+	Kilobar  HbarUnit = "kilobar"
+	Megabar  HbarUnit = "megabar"
+	Gigabar  HbarUnit = "gigabar"
 )
 
-func (unit HbarUnit) GetSymbol() string {
+func (unit HbarUnit) Symbol() string {
 	switch unit {
 	case Tinybar:
 		return "tℏ"
@@ -20,8 +20,8 @@ func (unit HbarUnit) GetSymbol() string {
 		return "μℏ"
 	case Millibar:
 		return "mℏ"
-	// case Hbar:
-	// 	return "ℏ"
+	case HBar:
+		return "ℏ"
 	case Kilobar:
 		return "kℏ"
 	case Megabar:
@@ -30,8 +30,7 @@ func (unit HbarUnit) GetSymbol() string {
 		return "Gℏ"
 	}
 
-	// Unreachable
-	return ""
+	panic("HbarUnit.Symbol() switch statement is non-exhaustive")
 }
 
 func (unit HbarUnit) String() string {

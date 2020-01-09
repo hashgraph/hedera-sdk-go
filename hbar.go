@@ -7,16 +7,16 @@ type Hbar struct {
 const max = int64(^uint(0) >> 1)
 const min = -max - 1
 
-var HbarMAX = Hbar{max}
-var HbarMIN = Hbar{min}
-var HbarZERO = Hbar{}
+var MaxHbar = Hbar{max}
+var MinHbar = Hbar{min}
+var ZeroHbar = Hbar{}
 
-func HbarFromTinybar(tinybar uint64) Hbar {
-	return Hbar{tinybar: int64(tinybar)}
+func HbarFromTinybar(tinybar int64) Hbar {
+	return Hbar{tinybar: tinybar}
 }
 
-func HbarOf(tinybar float64) Hbar {
-	return Hbar{tinybar: int64(tinybar * 100_000_000)}
+func HbarOf(hbar float64) Hbar {
+	return Hbar{tinybar: int64(hbar * 100_000_000)}
 }
 
 func (hbar Hbar) AsTinybar() uint64 {
