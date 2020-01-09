@@ -12,15 +12,19 @@ func main() {
 	})
 
 	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-
 	if err != nil {
 		panic(err)
 	}
 
-	client.SetOperator(hedera.AccountID{Account: 2}, operatorPrivateKey)
+	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	if err != nil {
+		panic(err)
+	}
+
+	client.SetOperator(operatorAccountID, operatorPrivateKey)
 
 	balance, err := hedera.NewAccountBalanceQuery().
-		SetAccountID(hedera.AccountID{Account: 2}).
+		SetAccountID(oepratorAccountID).
 		Execute(client)
 
 	if err != nil {
