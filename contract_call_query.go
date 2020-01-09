@@ -28,6 +28,11 @@ func (builder *ContractCallQuery) SetGas(gas uint64) *ContractCallQuery {
 	return builder
 }
 
+func (builder *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQuery {
+	builder.pb.MaxResultSize = int64(size)
+	return builder
+}
+
 func (builder *ContractCallQuery) SetFunctionParameters(params ContractFunctionParams) (*ContractCallQuery, error) {
 	function, err := params.build(nil)
 	if err != nil {
@@ -45,4 +50,13 @@ func (builder *ContractCallQuery) Execute(client *Client) (ContractFunctionResul
 	}
 
 	return contractFunctionResultFromProto(resp.GetContractCallLocal().FunctionResult), nil
+}
+
+func (builder *ContractCallQuery) Cost(client *Client) (uint64, error) {
+	cost, err := builder.QueryBuilder.Cost(client)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(float64(cost) * float64(1.1)), nil
 }
