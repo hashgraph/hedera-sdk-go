@@ -144,7 +144,7 @@ func ed25519PublicKeyFromProto(proto proto.Key) (Ed25519PublicKey, error) {
 	rawKey := proto.GetEd25519()
 
 	if rawKey == nil {
-		return Ed25519PublicKey{}, fmt.Errorf("not an ed25519 key")
+		return Ed25519PublicKey{}, fmt.Errorf("provided proto key did not represent an ed25519 key")
 	}
 
 	return Ed25519PublicKeyFromBytes(rawKey)
