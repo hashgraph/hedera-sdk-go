@@ -26,13 +26,12 @@ func GenerateMnemonic() (Mnemonic, error) {
 
 	mnemonic, err := bip39.NewMnemonic(entropy)
 
-
 	// Note that this should never actually fail since it is being provided by library generated mnemonic
 	if err != nil {
 		return Mnemonic{}, err
 	}
 
-	return Mnemonic{mnemonic }, nil
+	return Mnemonic{mnemonic}, nil
 }
 
 // Create a mnemonic from a string of 24 words separated by spaces
@@ -51,7 +50,7 @@ func (m Mnemonic) Words() []string {
 
 // Create a mnemonic from a list of 24 strings
 // Keys are lazily generated
-func NewMnemonic(words []string) (Mnemonic, error){
+func NewMnemonic(words []string) (Mnemonic, error) {
 	if len(words) != 24 {
 		return Mnemonic{}, fmt.Errorf("invalid mnemonic string")
 	}
