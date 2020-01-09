@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
@@ -24,8 +26,37 @@ func ContractIDFromString(s string) (ContractID, error) {
 	}, nil
 }
 
+func ContractIDFromSolidityAddress(s string) (ContractID, error) {
+	bytes, err := hex.DecodeString(s)
+	if err != nil {
+		return ContractID{}, err
+	}
+
+	if len(bytes) != 20 {
+		return ContractID{}, fmt.Errorf("Solidity address must be 20 bytes")
+	}
+
+	shard := uint64(binary.BigEndian.Uint32(bytes[0:4]))
+	realm := binary.BigEndian.Uint64(bytes[4:12])
+	contract := binary.BigEndian.Uint64(bytes[12:20])
+
+	return ContractID{
+		Shard:    shard,
+		Realm:    realm,
+		Contract: contract,
+	}, nil
+}
+
 func (id ContractID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
+}
+
+func (id ContractID) ToSolidityAddress() string {
+	bytes := make([]byte, 20)
+	binary.BigEndian.PutUint32(bytes[0:4], uint32(id.Shard))
+	binary.BigEndian.PutUint64(bytes[4:12], id.Realm)
+	binary.BigEndian.PutUint64(bytes[12:20], id.Contract)
+	return hex.EncodeToString(bytes)
 }
 
 func (id ContractID) toProto() *proto.ContractID {

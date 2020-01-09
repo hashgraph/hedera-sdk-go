@@ -21,6 +21,9 @@ func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	return builder
 }
 
+// Sets the account to delete. Note: To successfully delete an account
+// one must also manually set the `TransactionID` to a `TransactionID`
+// constructed from the same `AccountID`
 func (builder AccountDeleteTransaction) SetDeleteAccountId(id AccountID) AccountDeleteTransaction {
 	builder.pb.DeleteAccountID = id.toProto()
 	return builder

@@ -46,3 +46,21 @@ func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		Deleted:        resp.GetFileGetInfo().FileInfo.Deleted,
 	}, nil
 }
+
+func (builder *FileInfoQuery) Cost(client *Client) (uint64, error) {
+	// deleted files return a COST_ANSWER of zero which triggers `INSUFFICIENT_TX_FEE`
+	// if you set that as the query payment; 25 tinybar seems to be enough to get
+	// `FILE_DELETED` back instead.
+	cost, err := builder.QueryBuilder.Cost(client)
+	if err != nil {
+		return 0, err
+	}
+
+	// math.Min requires float64 and returns float64
+	if cost > 25 {
+		return cost, nil
+	} else {
+		return 25, nil
+	}
+
+}

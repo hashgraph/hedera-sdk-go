@@ -14,7 +14,7 @@ type TransactionRecord struct {
 	TransactionID      TransactionID
 	TransactionMemo    string
 	TransactionFee     uint64
-	TransferList       []Transfer
+	Transfers          []Transfer
 	callResult         *ContractFunctionResult
 	callResultIsCreate bool
 }
@@ -60,7 +60,7 @@ func transactionRecordFromProto(pb *proto.TransactionRecord) TransactionRecord {
 		TransactionID:      transactionIDFromProto(pb.TransactionID),
 		TransactionMemo:    pb.Memo,
 		TransactionFee:     pb.TransactionFee,
-		TransferList:       transferList,
+		Transfers:          transferList,
 		callResultIsCreate: callResultIsCreate,
 		callResult:         callResult,
 	}
