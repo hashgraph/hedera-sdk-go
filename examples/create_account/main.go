@@ -13,14 +13,18 @@ func main() {
 	})
 
 	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	if err != nil {
+		panic(err)
+	}
 
+	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(err)
 	}
 
 	client.SetOperator(
 		// Operator Account ID
-		hedera.AccountID{Account: 2},
+		operatorAccountID,
 		// Operator Private Key
 		operatorPrivateKey,
 	)
