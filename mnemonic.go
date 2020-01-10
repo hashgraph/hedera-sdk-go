@@ -26,7 +26,7 @@ func GenerateMnemonic() (Mnemonic, error) {
 
 	mnemonic, err := bip39.NewMnemonic(entropy)
 
-	// Note that this should never actually fail since it is being provided by library generated mnemonic
+	// Note that this should never actually fail since it is being provided by library generated entropy
 	if err != nil {
 		return Mnemonic{}, err
 	}
