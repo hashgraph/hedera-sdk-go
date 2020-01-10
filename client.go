@@ -166,7 +166,7 @@ func (client *Client) SetMaxTransactionFee(tinyBars uint64) *Client {
 }
 
 func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
-	client.maxTransactionFee = tinyBars
+	client.maxQueryPayment = tinyBars
 	return client
 }
 
