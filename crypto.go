@@ -30,7 +30,7 @@ type Ed25519PublicKey struct {
 func GenerateEd25519PrivateKey() (Ed25519PrivateKey, error) {
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return Ed25519PrivateKey{}, nil
+		return Ed25519PrivateKey{}, err
 	}
 
 	return Ed25519PrivateKey{
