@@ -1,11 +1,13 @@
 package hedera
 
 import (
+	"bytes"
 	"crypto/aes"
 	cipher2 "crypto/cipher"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -94,7 +96,7 @@ func NewKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	cipherText := make([]byte, len(privateKey))
 	cipher.XORKeyStream(cipherText, privateKey)
 
-	h := hmac.New(sha256.New, key)
+	h := hmac.New(sha512.New384, key[16:])
 
 	_, err = h.Write(cipherText)
 
@@ -124,4 +126,76 @@ func NewKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	}
 
 	return json.Marshal(keystore)
+}
+
+func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, error) {
+	keyStore := Keystore{}
+
+	err := json.Unmarshal(keystoreBytes, &keyStore)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	if keyStore.Crypto.KDF != "pbkdf2" {
+		return Ed25519PrivateKey{}, fmt.Errorf("unsupported key derivation function: %v", keyStore.Crypto.KDF)
+	}
+
+	if keyStore.Crypto.KDFParams.PRF != HMAC_SHA256 {
+		return Ed25519PrivateKey{}, fmt.Errorf(
+			"unsupported key derivation hash function: %v",
+			keyStore.Crypto.KDFParams.PRF)
+	}
+
+	salt, err := hex.DecodeString(keyStore.Crypto.KDFParams.Salt)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	iv, err := hex.DecodeString(keyStore.Crypto.CipherParams.IV)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	cipherBytes, err := hex.DecodeString(keyStore.Crypto.CipherText)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	key := pbkdf2.Key([]byte(passphrase), salt, keyStore.Crypto.KDFParams.Count, dkLen, sha256.New)
+
+	mac, err := hex.DecodeString(keyStore.Crypto.Mac)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	h := hmac.New(sha512.New384, key[16:])
+
+	_, err = h.Write(cipherBytes)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	verifyMac := h.Sum(nil)
+
+	if !bytes.Equal(mac, verifyMac) {
+		return Ed25519PrivateKey{}, fmt.Errorf("key mismatch when loading from keystore")
+	}
+
+	block, err := aes.NewCipher(key[:16])
+	if err != nil {
+		return Ed25519PrivateKey{}, nil
+	}
+
+	decipher := cipher2.NewCTR(block, iv)
+	pkBytes := make([]byte, len(cipherBytes))
+
+	decipher.XORKeyStream(pkBytes, cipherBytes)
+
+	return Ed25519PrivateKeyFromBytes(pkBytes)
 }
