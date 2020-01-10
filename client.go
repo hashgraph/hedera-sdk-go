@@ -53,10 +53,10 @@ var mainnetNodes = map[string]AccountID{
 }
 
 var testnetNodes = map[string]AccountID{
-	"1.testnet.hedera.com:50211": AccountID{Account: 3},
-	"2.testnet.hedera.com:50211": AccountID{Account: 4},
-	"3.testnet.hedera.com:50211": AccountID{Account: 5},
-	"4.testnet.hedera.com:50211": AccountID{Account: 6},
+	"0.testnet.hedera.com:50211": AccountID{Account: 3},
+	"1.testnet.hedera.com:50211": AccountID{Account: 4},
+	"2.testnet.hedera.com:50211": AccountID{Account: 5},
+	"3.testnet.hedera.com:50211": AccountID{Account: 6},
 }
 
 func ClientForMainnet() *Client {
