@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
+	"io"
+	"io/ioutil"
 	"strings"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
@@ -108,6 +110,19 @@ func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
 	return Ed25519PrivateKey{}, fmt.Errorf("invalid private key with length %v", len(s))
 }
 
+func Ed25519PrivateKeyFromKeystore(ks []byte, passphrase string) (Ed25519PrivateKey, error) {
+	return parseKeystore(ks, passphrase)
+}
+
+func Ed25519PrivateKeyReadKeystore(source io.Reader, passphrase string) (Ed25519PrivateKey, error) {
+	keystoreBytes, err := ioutil.ReadAll(source)
+	if err != nil {
+		return Ed25519PrivateKey{}, fmt.Errorf("failed to read keystore from provided source")
+	}
+
+	return Ed25519PrivateKeyFromKeystore(keystoreBytes, passphrase)
+}
+
 func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 	switch len(s) {
 	case 64: // raw public key
@@ -186,6 +201,25 @@ func (pk Ed25519PublicKey) String() string {
 
 func (sk Ed25519PrivateKey) Bytes() []byte {
 	return sk.keyData
+}
+
+func (sk Ed25519PrivateKey) Keystore(passphrase string) ([]byte, error) {
+	return newKeystore(sk.keyData, passphrase)
+}
+
+func (sk Ed25519PrivateKey) WriteKeystore(destination io.Writer, passphrase string) error {
+	keystore, err := sk.Keystore(passphrase)
+	if err != nil {
+		return err
+	}
+
+	_, err = destination.Write(keystore)
+
+	if err != nil {
+		return fmt.Errorf("could not write keystore to destination")
+	}
+
+	return nil
 }
 
 func (pk Ed25519PublicKey) Bytes() []byte {

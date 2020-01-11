@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"bytes"
 	"crypto/ed25519"
 	"strings"
 	"testing"
@@ -140,3 +141,39 @@ func TestGeneratedMnemonicToWorkingPrivateKey(t *testing.T) {
 
 	assert.True(t, ed25519.Verify(privateKey.publicKey.Bytes(), message, signature))
 }
+
+func TestEd25519PrivateKeyFromKeystore(t *testing.T) {
+	privatekey, err := Ed25519PrivateKeyFromKeystore([]byte(testKeystore), passphrase)
+	assert.NoError(t, err)
+
+	actualPrivateKey, err := Ed25519PrivateKeyFromString(testKeystoreKeyString)
+	assert.NoError(t, err)
+
+	assert.Equal(t, actualPrivateKey.keyData, privatekey.keyData)
+}
+
+func TestEd25519PrivateKey_Keystore(t *testing.T) {
+	privateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+	assert.NoError(t, err)
+
+	keystore, err := privateKey.Keystore(passphrase)
+	assert.NoError(t, err)
+
+	ksPrivateKey, err := parseKeystore(keystore, passphrase)
+	assert.NoError(t, err)
+
+	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
+}
+
+func TestEd25519PrivateKey_ReadKeystore(t *testing.T) {
+	actualPrivateKey, err := Ed25519PrivateKeyFromString(testKeystoreKeyString)
+	assert.NoError(t, err)
+
+	keystoreReader := bytes.NewReader([]byte(testKeystore))
+
+	privateKey, err := Ed25519PrivateKeyReadKeystore(keystoreReader, passphrase)
+	assert.NoError(t, err)
+
+	assert.Equal(t, actualPrivateKey.keyData, privateKey.keyData)
+}
+

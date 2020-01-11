@@ -72,7 +72,7 @@ func randomBytes(n uint) ([]byte, error) {
 	return b, nil
 }
 
-func NewKeystore(privateKey []byte, passphrase string) ([]byte, error) {
+func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	salt, err := randomBytes(saltLen)
 	if err != nil {
 		return nil, fmt.Errorf("could not generate salt bytes")

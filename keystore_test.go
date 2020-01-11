@@ -27,7 +27,7 @@ func TestEncryptAndDecryptKeyStore(t *testing.T) {
 	privateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 
-	keyStore, err := NewKeystore(privateKey.Bytes(), passphrase)
+	keyStore, err := newKeystore(privateKey.Bytes(), passphrase)
 	assert.NoError(t, err)
 
 	ksPrivateKey, err := parseKeystore(keyStore, passphrase)
