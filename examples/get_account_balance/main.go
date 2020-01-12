@@ -24,7 +24,7 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorPrivateKey)
 
 	balance, err := hedera.NewAccountBalanceQuery().
-		SetAccountID(oepratorAccountID).
+		SetAccountID(operatorAccountID).
 		Execute(client)
 
 	if err != nil {
