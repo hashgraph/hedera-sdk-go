@@ -161,11 +161,47 @@ func (builder *QueryBuilder) isPaymentRequired() bool {
 
 func methodName(pb *proto.Query) string {
 	switch pb.Query.(type) {
+	// Crypto
+
 	case *proto.Query_TransactionGetReceipt:
 		return "/proto.CryptoService/getTransactionReceipts"
 
 	case *proto.Query_CryptogetAccountBalance:
 		return "/proto.CryptoService/cryptoGetBalance"
+
+	case *proto.Query_CryptoGetAccountRecords:
+		return "/proto.CryptoService/getAccountRecords"
+
+	case *proto.Query_CryptoGetInfo:
+		return "/proto.CryptoService/getAccountInfo"
+
+	case *proto.Query_TransactionGetRecord:
+		return "/proto.CryptoService/getTxRecordByTxID"
+
+	case *proto.Query_CryptoGetProxyStakers:
+		return "/proto.CryptoService/getStakersByAccountID"
+
+	// Smart Contracts
+
+	case *proto.Query_ContractCallLocal:
+		return "/proto.SmartContractService/contractCallLocalMethod"
+
+	case *proto.Query_ContractGetBytecode:
+		return "/proto.SmartContractService/ContractGetBytecode"
+
+	case *proto.Query_ContractGetInfo:
+		return "/proto.SmartContractService/getContractInfo"
+
+	case *proto.Query_ContractGetRecords:
+		return "/proto.SmartContractService/getTxRecordByContractID"
+
+	// File
+
+	case *proto.Query_FileGetContents:
+		return "/proto.FileService/getFileContent"
+
+	case *proto.Query_FileGetInfo:
+		return "/proto.FileService/getFileInfo"
 
 	default:
 		panic(fmt.Sprintf("[methodName] not implemented: %T", pb.Query))
@@ -174,11 +210,47 @@ func methodName(pb *proto.Query) string {
 
 func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 	switch resp.Response.(type) {
+	// Crypto
+
 	case *proto.Response_TransactionGetReceipt:
 		return resp.GetTransactionGetReceipt().Header
 
 	case *proto.Response_CryptogetAccountBalance:
 		return resp.GetCryptogetAccountBalance().Header
+
+	case *proto.Response_CryptoGetAccountRecords:
+		return resp.GetCryptoGetAccountRecords().Header
+
+	case *proto.Response_CryptoGetInfo:
+		return resp.GetCryptoGetInfo().Header
+
+	case *proto.Response_TransactionGetRecord:
+		return resp.GetTransactionGetRecord().Header
+
+	case *proto.Response_CryptoGetProxyStakers:
+		return resp.GetCryptoGetProxyStakers().Header
+
+	// Smart Contracts
+
+	case *proto.Response_ContractCallLocal:
+		return resp.GetContractCallLocal().Header
+
+	case *proto.Response_ContractGetBytecodeResponse:
+		return resp.GetContractGetBytecodeResponse().Header
+
+	case *proto.Response_ContractGetInfo:
+		return resp.GetContractGetInfo().Header
+
+	case *proto.Response_ContractGetRecordsResponse:
+		return resp.GetContractGetRecordsResponse().Header
+
+	// File
+
+	case *proto.Response_FileGetContents:
+		return resp.GetFileGetContents().Header
+
+	case *proto.Response_FileGetInfo:
+		return resp.GetFileGetInfo().Header
 
 	default:
 		panic(fmt.Sprintf("[mapResponseHeader] not implemented: %T", resp.Response))

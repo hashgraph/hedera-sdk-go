@@ -81,7 +81,6 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 
 	var methodName string
 
-	// TODO: Add the rest of the types here
 	switch transactionBody.Data.(type) {
 	case *proto.TransactionBody_CryptoCreateAccount:
 		methodName = "/proto.CryptoService/createAccount"
