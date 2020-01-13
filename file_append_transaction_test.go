@@ -13,7 +13,7 @@ func TestSerializeFileAppendTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewFileAppendTransaction().
-		SetFileID(FileID{ File: 5 }).
+		SetFileID(FileID{File: 5}).
 		SetContents([]byte("This is some random data")).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).

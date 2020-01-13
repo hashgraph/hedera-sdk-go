@@ -13,7 +13,7 @@ func TestSerializeSystemUndeleteTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewSystemUndeleteTransaction().
-		SetID(FileID{ File: 3 }).
+		SetID(FileID{File: 3}).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).
 		Build(mockClient).
