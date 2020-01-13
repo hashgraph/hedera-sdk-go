@@ -53,8 +53,8 @@ type cryptoData struct {
 	Mac string `json:"mac"`
 }
 
-const AES_128_CTR = "aes-128-ctr"
-const HMAC_SHA256 = "hmac-sha256"
+const Aes128Ctr = "aes-128-ctr"
+const HmacSha256 = "hmac-sha256"
 
 // all values taken from https://github.com/ethereumjs/ethereumjs-wallet/blob/de3a92e752673ada1d78f95cf80bc56ae1f59775/src/index.ts#L25
 const dkLen int = 32
@@ -113,13 +113,13 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 			CipherParams: cipherParams{
 				IV: hex.EncodeToString(iv),
 			},
-			Cipher: AES_128_CTR,
+			Cipher: Aes128Ctr,
 			KDF:    "pbkdf2",
 			KDFParams: kdfParams{
 				DKLength: dkLen,
 				Salt:     hex.EncodeToString(salt),
 				Count:    c,
-				PRF:      HMAC_SHA256,
+				PRF:      HmacSha256,
 			},
 			Mac: hex.EncodeToString(mac),
 		},
@@ -141,7 +141,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, 
 		return Ed25519PrivateKey{}, fmt.Errorf("unsupported key derivation function: %v", keyStore.Crypto.KDF)
 	}
 
-	if keyStore.Crypto.KDFParams.PRF != HMAC_SHA256 {
+	if keyStore.Crypto.KDFParams.PRF != HmacSha256 {
 		return Ed25519PrivateKey{}, fmt.Errorf(
 			"unsupported key derivation hash function: %v",
 			keyStore.Crypto.KDFParams.PRF)

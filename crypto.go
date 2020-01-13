@@ -35,7 +35,7 @@ func GenerateEd25519PrivateKey() (Ed25519PrivateKey, error) {
 	}
 
 	return Ed25519PrivateKey{
-		keyData:   privateKey,
+		keyData: privateKey,
 	}, nil
 }
 
@@ -55,7 +55,7 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 	}
 
 	return Ed25519PrivateKey{
-		keyData:   privateKey,
+		keyData: privateKey,
 	}, nil
 }
 
