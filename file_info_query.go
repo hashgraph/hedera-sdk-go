@@ -23,7 +23,7 @@ func NewFileInfoQuery() *FileInfoQuery {
 	pb := &proto.FileGetInfoQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_FileGetInfo{pb}
+	inner.pb.Query = &proto.Query_FileGetInfo{FileGetInfo: pb}
 
 	return &FileInfoQuery{inner, pb}
 }
@@ -59,8 +59,7 @@ func (builder *FileInfoQuery) Cost(client *Client) (uint64, error) {
 	// math.Min requires float64 and returns float64
 	if cost > 25 {
 		return cost, nil
-	} else {
-		return 25, nil
 	}
 
+	return 25, nil
 }

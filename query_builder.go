@@ -292,7 +292,7 @@ func execute(node *node, pb *proto.Query, deadline time.Time) (*proto.Response, 
 	methodName := methodName(pb)
 	resp := new(proto.Response)
 
-	for attempt := 0; true; attempt += 1 {
+	for attempt := 0; true; attempt++ {
 		if attempt > 0 && time.Now().After(deadline) {
 			// Timed out
 			break

@@ -14,7 +14,7 @@ func NewContractExecuteTransaction() ContractExecuteTransaction {
 	pb := &proto.ContractCallTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_ContractCall{pb}
+	inner.pb.Data = &proto.TransactionBody_ContractCall{ContractCall: pb}
 
 	builder := ContractExecuteTransaction{inner, pb}
 

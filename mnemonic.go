@@ -14,7 +14,7 @@ func (m Mnemonic) ToPrivateKey(passPhrase string) (Ed25519PrivateKey, error) {
 	return Ed25519PrivateKeyFromMnemonic(m, passPhrase)
 }
 
-// Generate a random 24-word mnemonic
+// GenerateMnemonic generates a random 24-word mnemonic
 func GenerateMnemonic() (Mnemonic, error) {
 	entropy, err := bip39.NewEntropy(256)
 
@@ -34,7 +34,8 @@ func GenerateMnemonic() (Mnemonic, error) {
 	return Mnemonic{mnemonic}, nil
 }
 
-// Create a mnemonic from a string of 24 words separated by spaces
+// MnemonicFromString creates a mnemonic from a string of 24 words separated by spaces
+//
 // Keys are lazily generated
 func MnemonicFromString(s string) (Mnemonic, error) {
 	return NewMnemonic(strings.Split(s, " "))
@@ -48,7 +49,8 @@ func (m Mnemonic) Words() []string {
 	return strings.Split(m.words, " ")
 }
 
-// Create a mnemonic from a list of 24 strings
+// NewMnemonic Creates a mnemonic from a slice of 24 strings
+//
 // Keys are lazily generated
 func NewMnemonic(words []string) (Mnemonic, error) {
 	if len(words) != 24 {

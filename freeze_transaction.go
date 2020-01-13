@@ -14,7 +14,7 @@ func NewFreezeTransaction() FreezeTransaction {
 	pb := &proto.FreezeTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_Freeze{pb}
+	inner.pb.Data = &proto.TransactionBody_Freeze{Freeze: pb}
 
 	builder := FreezeTransaction{inner, pb}
 

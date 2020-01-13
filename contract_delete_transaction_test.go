@@ -13,9 +13,9 @@ func TestSerializeContractDeleteTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewContractDeleteTransaction().
-		SetContractID(ContractID{ Contract: 5 }).
+		SetContractID(ContractID{Contract: 5}).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient).
 		Sign(privateKey)
 

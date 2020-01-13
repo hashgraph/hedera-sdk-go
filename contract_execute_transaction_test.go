@@ -19,7 +19,7 @@ func TestSerializeContractExecuteTransaction(t *testing.T) {
 		// this was pulled from the Java test
 		SetFunctionParameters([]byte{24, 43, 11}).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient).
 		Sign(privateKey)
 

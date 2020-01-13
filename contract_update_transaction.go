@@ -14,7 +14,7 @@ func NewContractUpdateTransaction() ContractUpdateTransaction {
 	pb := &proto.ContractUpdateTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_ContractUpdateInstance{pb}
+	inner.pb.Data = &proto.TransactionBody_ContractUpdateInstance{ContractUpdateInstance: pb}
 
 	builder := ContractUpdateTransaction{inner, pb}
 

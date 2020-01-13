@@ -11,7 +11,7 @@ func NewContractRecordsQuery() *ContractRecordsQuery {
 	pb := &proto.ContractGetRecordsQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_ContractGetRecords{pb}
+	inner.pb.Query = &proto.Query_ContractGetRecords{ContractGetRecords: pb}
 
 	return &ContractRecordsQuery{inner, pb}
 }

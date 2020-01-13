@@ -13,8 +13,8 @@ func TestSerializeAccountUpdateTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewAccountUpdateTransaction().
-		SetTransactionID(testTransactionId).
-		SetAccountID(AccountID{ Account: 3 }).
+		SetTransactionID(testTransactionID).
+		SetAccountID(AccountID{Account: 3}).
 		SetKey(privateKey.publicKey).
 		SetMaxTransactionFee(1e6).
 		Build(mockClient).

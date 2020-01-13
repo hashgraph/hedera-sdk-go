@@ -17,13 +17,13 @@ const (
 	DuplicateTransaction                Status = 11
 	Busy                                Status = 12
 	NotSupported                        Status = 13
-	InvalidFileId                       Status = 14
-	InvalidAccountId                    Status = 15
-	InvalidContractId                   Status = 16
-	InvalidTransactionId                Status = 17
+	InvalidFileID                       Status = 14
+	InvalidAccountID                    Status = 15
+	InvalidContractID                   Status = 16
+	InvalidTransactionID                Status = 17
 	ReceiptNotFound                     Status = 18
 	RecordNotFound                      Status = 19
-	InvalidSolidityId                   Status = 20
+	InvalidSolidityID                   Status = 20
 	Unknown                             Status = 21
 	Success                             Status = 22
 	FailInvalid                         Status = 23
@@ -63,7 +63,7 @@ const (
 	EmptyQueryBody                      Status = 57
 	EmptyClaimQuery                     Status = 58
 	ClaimNotFound                       Status = 59
-	AccountIdDoesNotExist               Status = 60
+	AccountIDDoesNotExist               Status = 60
 	ClaimAlreadyExists                  Status = 61
 	InvalidFileWacl                     Status = 62
 	SerializationFailed                 Status = 63
@@ -74,13 +74,13 @@ const (
 	KeyPrefixMismatch                   Status = 68
 	PlatformTransactionNotCreated       Status = 69
 	InvalidRenewalPeriod                Status = 70
-	InvalidPayerAccountId               Status = 71
+	InvalidPayerAccountID               Status = 71
 	AccountDeleted                      Status = 72
 	FileDeleted                         Status = 73
 	AccountRepeatedInAccountAmounts     Status = 74
 	SettingNegativeAccountBalance       Status = 75
 	ObtainerRequired                    Status = 76
-	ObtainerSameContractId              Status = 77
+	ObtainerSameContractID              Status = 77
 	ObtainerDoesNotExist                Status = 78
 	ModifyingImmutableContract          Status = 79
 	FileSystemException                 Status = 80
@@ -147,19 +147,19 @@ func (status Status) String() string {
 		return "BUSY"
 	case NotSupported:
 		return "NOT_SUPPORTED"
-	case InvalidFileId:
+	case InvalidFileID:
 		return "INVALID_FILE_ID"
-	case InvalidAccountId:
+	case InvalidAccountID:
 		return "INVALID_ACCOUNT_ID"
-	case InvalidContractId:
+	case InvalidContractID:
 		return "INVALID_CONTRACT_ID"
-	case InvalidTransactionId:
+	case InvalidTransactionID:
 		return "INVALID_TRANSACTION_ID"
 	case ReceiptNotFound:
 		return "RECEIPT_NOT_FOUND"
 	case RecordNotFound:
 		return "RECORD_NOT_FOUND"
-	case InvalidSolidityId:
+	case InvalidSolidityID:
 		return "INVALID_SOLIDITY_ID"
 	case Unknown:
 		return "UNKNOWN"
@@ -239,7 +239,7 @@ func (status Status) String() string {
 		return "EMPTY_CLAIM_QUERY"
 	case ClaimNotFound:
 		return "CLAIM_NOT_FOUND"
-	case AccountIdDoesNotExist:
+	case AccountIDDoesNotExist:
 		return "ACCOUNT_ID_DOES_NOT_EXIST"
 	case ClaimAlreadyExists:
 		return "CLAIM_ALREADY_EXISTS"
@@ -261,7 +261,7 @@ func (status Status) String() string {
 		return "PLATFORM_TRANSACTION_NOT_CREATED"
 	case InvalidRenewalPeriod:
 		return "INVALID_RENEWAL_PERIOD"
-	case InvalidPayerAccountId:
+	case InvalidPayerAccountID:
 		return "INVALID_PAYER_ACCOUNT_ID"
 	case AccountDeleted:
 		return "ACCOUNT_DELETED"
@@ -273,7 +273,7 @@ func (status Status) String() string {
 		return "SETTING_NEGATIVE_ACCOUNT_BALANCE"
 	case ObtainerRequired:
 		return "OBTAINER_REQUIRED"
-	case ObtainerSameContractId:
+	case ObtainerSameContractID:
 		return "OBTAINER_SAME_CONTRACT_ID"
 	case ObtainerDoesNotExist:
 		return "OBTAINER_DOES_NOT_EXIST"

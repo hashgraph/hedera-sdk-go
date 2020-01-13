@@ -13,12 +13,12 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	pb := &proto.ContractGetBytecodeQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_ContractGetBytecode{pb}
+	inner.pb.Query = &proto.Query_ContractGetBytecode{ContractGetBytecode: pb}
 
 	return &ContractBytecodeQuery{inner, pb}
 }
 
-func (builder *ContractBytecodeQuery) SetContractId(id ContractID) *ContractBytecodeQuery {
+func (builder *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
 	builder.pb.ContractID = id.toProto()
 	return builder
 }

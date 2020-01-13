@@ -13,7 +13,7 @@ func NewContractCallQuery() *ContractCallQuery {
 	pb := &proto.ContractCallLocalQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_ContractCallLocal{pb}
+	inner.pb.Query = &proto.Query_ContractCallLocal{ContractCallLocal: pb}
 
 	return &ContractCallQuery{inner, pb}
 }

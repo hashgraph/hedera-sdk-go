@@ -14,7 +14,7 @@ func NewSystemDeleteTransaction() SystemDeleteTransaction {
 	pb := &proto.SystemDeleteTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_SystemDelete{pb}
+	inner.pb.Data = &proto.TransactionBody_SystemDelete{SystemDelete: pb}
 
 	builder := SystemDeleteTransaction{inner, pb}
 
@@ -28,8 +28,8 @@ func (builder SystemDeleteTransaction) SetExpirationTime(expiration time.Time) S
 	return builder
 }
 
-func (builder SystemDeleteTransaction) SetId(id ContractIdOrFileId) SystemDeleteTransaction {
-	file, contract, ty := id.toProtoContractIdOrFile()
+func (builder SystemDeleteTransaction) SetID(id ContractIDOrFileID) SystemDeleteTransaction {
+	file, contract, ty := id.toProtoContractIDOrFile()
 	if ty == 0 {
 		builder.pb.Id = &proto.SystemDeleteTransactionBody_FileID{FileID: file}
 	} else {

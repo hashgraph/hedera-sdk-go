@@ -14,7 +14,7 @@ func NewFileCreateTransaction() FileCreateTransaction {
 	pb := &proto.FileCreateTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_FileCreate{pb}
+	inner.pb.Data = &proto.TransactionBody_FileCreate{FileCreate: pb}
 
 	builder := FileCreateTransaction{inner, pb}
 	builder.SetExpirationTime(time.Now().Add(7890000 * time.Second))

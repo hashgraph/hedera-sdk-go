@@ -13,10 +13,10 @@ func TestSerializeAccountDeleteTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewAccountDeleteTransaction().
-		SetDeleteAccountId(AccountID{ Account: 3 }).
-		SetTransferAccountID(AccountID{ Account: 2 }).
+		SetDeleteAccountID(AccountID{Account: 3}).
+		SetTransferAccountID(AccountID{Account: 2}).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient)
 
 	tx.Sign(privateKey)
@@ -52,7 +52,6 @@ cryptoDelete: <
   >
 >
 `
-
 
 	assert.Equal(t, txString, tx.String())
 }

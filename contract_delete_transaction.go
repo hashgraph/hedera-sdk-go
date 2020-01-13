@@ -14,7 +14,7 @@ func NewContractDeleteTransaction() ContractDeleteTransaction {
 	pb := &proto.ContractDeleteTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_ContractDeleteInstance{pb}
+	inner.pb.Data = &proto.TransactionBody_ContractDeleteInstance{ContractDeleteInstance: pb}
 
 	builder := ContractDeleteTransaction{inner, pb}
 

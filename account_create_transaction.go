@@ -15,7 +15,7 @@ func NewAccountCreateTransaction() AccountCreateTransaction {
 	pb := &proto.CryptoCreateTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_CryptoCreateAccount{pb}
+	inner.pb.Data = &proto.TransactionBody_CryptoCreateAccount{CryptoCreateAccount: pb}
 
 	builder := AccountCreateTransaction{inner, pb}
 	builder.SetAutoRenewPeriod(7890000 * time.Second)

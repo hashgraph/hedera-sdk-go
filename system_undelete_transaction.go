@@ -14,15 +14,15 @@ func NewSystemUndeleteTransaction() SystemUndeleteTransaction {
 	pb := &proto.SystemUndeleteTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_SystemUndelete{pb}
+	inner.pb.Data = &proto.TransactionBody_SystemUndelete{SystemUndelete: pb}
 
 	builder := SystemUndeleteTransaction{inner, pb}
 
 	return builder
 }
 
-func (builder SystemUndeleteTransaction) SetId(id ContractIdOrFileId) SystemUndeleteTransaction {
-	file, contract, ty := id.toProtoContractIdOrFile()
+func (builder SystemUndeleteTransaction) SetID(id ContractIDOrFileID) SystemUndeleteTransaction {
+	file, contract, ty := id.toProtoContractIDOrFile()
 	if ty == 0 {
 		builder.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: file}
 	} else {

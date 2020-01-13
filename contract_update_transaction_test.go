@@ -21,7 +21,7 @@ func TestSerializeContractUpdateTransaction(t *testing.T) {
 		SetProxyAccountID(AccountID{Account: 3}).
 		SetAutoRenewPeriod(60 * 60 * 24 * 14 * time.Second).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient).
 		Sign(privateKey)
 

@@ -11,7 +11,7 @@ func NewAccountRecordQuery() *AccountRecordQuery {
 	pb := &proto.CryptoGetAccountRecordsQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_CryptoGetAccountRecords{pb}
+	inner.pb.Query = &proto.Query_CryptoGetAccountRecords{CryptoGetAccountRecords: pb}
 
 	return &AccountRecordQuery{inner, pb}
 }

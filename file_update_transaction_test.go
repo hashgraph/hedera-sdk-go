@@ -14,12 +14,12 @@ func TestSerializeFileUpdateTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewFileUpdateTransaction().
-		SetFileID(FileID{ File: 5 }).
+		SetFileID(FileID{File: 5}).
 		SetContents([]byte("there was a hole here")).
 		SetExpirationTime(time.Unix(15415151511, 0)).
 		AddKey(privateKey.publicKey).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient).
 		Sign(privateKey)
 
