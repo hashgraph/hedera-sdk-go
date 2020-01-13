@@ -14,7 +14,7 @@ func (m Mnemonic) ToPrivateKey(passPhrase string) (Ed25519PrivateKey, error) {
 	return Ed25519PrivateKeyFromMnemonic(m, passPhrase)
 }
 
-// GemerateMnemonic generates a random 24-word mnemonic
+// GenerateMnemonic generates a random 24-word mnemonic
 func GenerateMnemonic() (Mnemonic, error) {
 	entropy, err := bip39.NewEntropy(256)
 

@@ -13,7 +13,7 @@ func TestSerializeAccountDeleteTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewAccountDeleteTransaction().
-		SetDeleteAccountId(AccountID{Account: 3}).
+		SetDeleteAccountID(AccountID{Account: 3}).
 		SetTransferAccountID(AccountID{Account: 2}).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).

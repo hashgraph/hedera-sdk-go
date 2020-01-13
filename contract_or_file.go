@@ -2,7 +2,7 @@ package hedera
 
 import "github.com/hashgraph/hedera-sdk-go/proto"
 
-type ContractIdOrFileID interface {
+type ContractIDOrFileID interface {
 	toProtoContractIDOrFile() (*proto.FileID, *proto.ContractID, int32)
 }
 

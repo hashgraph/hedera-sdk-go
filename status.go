@@ -63,7 +63,7 @@ const (
 	EmptyQueryBody                      Status = 57
 	EmptyClaimQuery                     Status = 58
 	ClaimNotFound                       Status = 59
-	AccountIdDoesNotExist               Status = 60
+	AccountIDDoesNotExist               Status = 60
 	ClaimAlreadyExists                  Status = 61
 	InvalidFileWacl                     Status = 62
 	SerializationFailed                 Status = 63
@@ -239,7 +239,7 @@ func (status Status) String() string {
 		return "EMPTY_CLAIM_QUERY"
 	case ClaimNotFound:
 		return "CLAIM_NOT_FOUND"
-	case AccountIdDoesNotExist:
+	case AccountIDDoesNotExist:
 		return "ACCOUNT_ID_DOES_NOT_EXIST"
 	case ClaimAlreadyExists:
 		return "CLAIM_ALREADY_EXISTS"

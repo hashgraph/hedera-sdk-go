@@ -21,7 +21,7 @@ func NewSystemUndeleteTransaction() SystemUndeleteTransaction {
 	return builder
 }
 
-func (builder SystemUndeleteTransaction) SetID(id ContractIdOrFileID) SystemUndeleteTransaction {
+func (builder SystemUndeleteTransaction) SetID(id ContractIDOrFileID) SystemUndeleteTransaction {
 	file, contract, ty := id.toProtoContractIDOrFile()
 	if ty == 0 {
 		builder.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: file}
