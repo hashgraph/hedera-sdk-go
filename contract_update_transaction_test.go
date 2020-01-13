@@ -15,7 +15,7 @@ func TestSerializeContractUpdateTransaction(t *testing.T) {
 
 	tx := NewContractUpdateTransaction().
 		SetContractID(ContractID{Contract: 3}).
-		SetAdminKey(privateKey.publicKey).
+		SetAdminKey(privateKey.PublicKey()).
 		SetBytecodeFile(FileID{File: 5}).
 		SetExpirationTime(time.Unix(1569375111277, 0)).
 		SetProxyAccountID(AccountID{Account: 3}).

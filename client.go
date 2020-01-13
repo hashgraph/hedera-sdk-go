@@ -142,7 +142,7 @@ func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519Private
 	client.operator = &operator{
 		accountID:  accountID,
 		privateKey: &privateKey,
-		publicKey:  privateKey.publicKey,
+		publicKey:  privateKey.PublicKey(),
 		signer:     privateKey.Sign,
 	}
 

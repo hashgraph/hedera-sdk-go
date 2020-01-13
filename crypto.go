@@ -22,7 +22,6 @@ const ed25519PubKeyPrefix = "302a300506032b6570032100"
 type Ed25519PrivateKey struct {
 	keyData   []byte
 	chainCode []byte
-	publicKey Ed25519PublicKey
 }
 
 type Ed25519PublicKey struct {
@@ -30,14 +29,13 @@ type Ed25519PublicKey struct {
 }
 
 func GenerateEd25519PrivateKey() (Ed25519PrivateKey, error) {
-	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return Ed25519PrivateKey{}, err
 	}
 
 	return Ed25519PrivateKey{
 		keyData:   privateKey,
-		publicKey: Ed25519PublicKey{publicKey},
 	}, nil
 }
 
@@ -56,11 +54,8 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 		return Ed25519PrivateKey{}, fmt.Errorf("invalid private key")
 	}
 
-	publicKey := privateKey.Public().(ed25519.PublicKey)
-
 	return Ed25519PrivateKey{
 		keyData:   privateKey,
-		publicKey: Ed25519PublicKey{publicKey},
 	}, nil
 }
 
@@ -188,7 +183,9 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 }
 
 func (sk Ed25519PrivateKey) PublicKey() Ed25519PublicKey {
-	return sk.publicKey
+	return Ed25519PublicKey{
+		keyData: sk.keyData[32:],
+	}
 }
 
 func (sk Ed25519PrivateKey) String() string {

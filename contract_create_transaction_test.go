@@ -14,7 +14,7 @@ func TestSerializeContractCreateTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewContractCreateTransaction().
-		SetAdminKey(privateKey.publicKey).
+		SetAdminKey(privateKey.PublicKey()).
 		SetInitialBalance(1e3).
 		SetBytecodeFile(FileID{File: 4}).
 		SetGas(100).

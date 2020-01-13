@@ -139,7 +139,7 @@ func TestGeneratedMnemonicToWorkingPrivateKey(t *testing.T) {
 
 	signature := privateKey.Sign(message)
 
-	assert.True(t, ed25519.Verify(privateKey.publicKey.Bytes(), message, signature))
+	assert.True(t, ed25519.Verify(privateKey.PublicKey().Bytes(), message, signature))
 }
 
 func TestEd25519PrivateKeyFromKeystore(t *testing.T) {

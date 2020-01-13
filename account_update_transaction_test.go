@@ -15,7 +15,7 @@ func TestSerializeAccountUpdateTransaction(t *testing.T) {
 	tx := NewAccountUpdateTransaction().
 		SetTransactionID(testTransactionID).
 		SetAccountID(AccountID{Account: 3}).
-		SetKey(privateKey.publicKey).
+		SetKey(privateKey.PublicKey()).
 		SetMaxTransactionFee(1e6).
 		Build(mockClient).
 		Sign(privateKey)

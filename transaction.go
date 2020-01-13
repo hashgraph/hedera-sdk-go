@@ -33,7 +33,7 @@ func (transaction Transaction) signWithOperator(operator operator) Transaction {
 	// to sign the transaction with the operator
 
 	var signedByOperator bool
-	operatorPublicKey := operator.privateKey.publicKey.keyData
+	operatorPublicKey := operator.privateKey.PublicKey().keyData
 
 	for _, sigPair := range transaction.pb.SigMap.SigPair {
 		if bytes.Equal(sigPair.PubKeyPrefix, operatorPublicKey) {

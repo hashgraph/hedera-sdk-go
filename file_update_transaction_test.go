@@ -17,7 +17,7 @@ func TestSerializeFileUpdateTransaction(t *testing.T) {
 		SetFileID(FileID{File: 5}).
 		SetContents([]byte("there was a hole here")).
 		SetExpirationTime(time.Unix(15415151511, 0)).
-		AddKey(privateKey.publicKey).
+		AddKey(privateKey.PublicKey()).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).
 		Build(mockClient).
