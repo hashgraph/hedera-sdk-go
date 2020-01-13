@@ -134,7 +134,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	validUntil := time.Now().Add(time.Duration(transactionBody.TransactionValidDuration.Seconds) * time.Second)
 	resp := new(proto.TransactionResponse)
 
-	for attempt := 0; true; attempt += 1 {
+	for attempt := 0; true; attempt++ {
 		if attempt > 0 && time.Now().After(validUntil) {
 			// Timed out
 			break

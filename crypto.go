@@ -204,7 +204,8 @@ func (sk Ed25519PrivateKey) SupportsDerivation() bool {
 	return sk.chainCode != nil
 }
 
-// Given a wallet/account index, derive a child key compatible with the iOS and Android wallets.
+// Derive a child key compatible with the iOS and Android wallets
+// using a provided wallet/account index
 //
 // Use index 0 for the default account.
 func (sk Ed25519PrivateKey) Derive(index uint32) (Ed25519PrivateKey, error) {

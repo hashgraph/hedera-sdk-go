@@ -28,8 +28,8 @@ func (builder SystemDeleteTransaction) SetExpirationTime(expiration time.Time) S
 	return builder
 }
 
-func (builder SystemDeleteTransaction) SetId(id ContractIdOrFileId) SystemDeleteTransaction {
-	file, contract, ty := id.toProtoContractIdOrFile()
+func (builder SystemDeleteTransaction) SetID(id ContractIdOrFileID) SystemDeleteTransaction {
+	file, contract, ty := id.toProtoContractIDOrFile()
 	if ty == 0 {
 		builder.pb.Id = &proto.SystemDeleteTransactionBody_FileID{FileID: file}
 	} else {

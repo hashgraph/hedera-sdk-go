@@ -65,8 +65,7 @@ func (builder *ContractInfoQuery) Cost(client *Client) (uint64, error) {
 	// math.Min requires float64 and returns float64
 	if cost > 25 {
 		return cost, nil
-	} else {
-		return 25, nil
 	}
 
+	return 25, nil
 }

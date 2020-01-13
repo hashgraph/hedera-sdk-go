@@ -15,7 +15,7 @@ func TestSerializeFileDeleteTransaction(t *testing.T) {
 	tx := NewFileDeleteTransaction().
 		SetFileID(FileID{ File: 5 }).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient).
 		Sign(privateKey)
 

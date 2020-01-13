@@ -14,10 +14,10 @@ func TestSerializeSystemDeleteTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := NewSystemDeleteTransaction().
-		SetId(FileID{ File: 3 }).
+		SetID(FileID{ File: 3 }).
 		SetExpirationTime(time.Unix(15415151511, 0)).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient).
 		Sign(privateKey)
 

@@ -8,7 +8,7 @@ import (
 
 var mockPrivateKey string = "302e020100300506032b6570042204203b054fade7a2b0869c6bd4a63b7017cbae7855d12acc357bea718e2c3e805962"
 
-var testTransactionId TransactionID = TransactionID{
+var testTransactionID TransactionID = TransactionID{
 			AccountID{ Account: 3 },
 			time.Unix(124124, 151515),
 	}
@@ -50,7 +50,7 @@ func newMockTransaction() (Transaction, error) {
 		AddSender(AccountID{ Account: 2, }, 100).
 		AddRecipient(AccountID{ Account: 3, }, 100).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(client).
 		Sign(privateKey)
 

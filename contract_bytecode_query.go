@@ -18,7 +18,7 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	return &ContractBytecodeQuery{inner, pb}
 }
 
-func (builder *ContractBytecodeQuery) SetContractId(id ContractID) *ContractBytecodeQuery {
+func (builder *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
 	builder.pb.ContractID = id.toProto()
 	return builder
 }

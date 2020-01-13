@@ -19,7 +19,7 @@ func TestSerializeFileUpdateTransaction(t *testing.T) {
 		SetExpirationTime(time.Unix(15415151511, 0)).
 		AddKey(privateKey.publicKey).
 		SetMaxTransactionFee(1e6).
-		SetTransactionID(testTransactionId).
+		SetTransactionID(testTransactionID).
 		Build(mockClient).
 		Sign(privateKey)
 
