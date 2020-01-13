@@ -15,7 +15,7 @@ import (
 	"io"
 )
 
-type Keystore struct {
+type keystore struct {
 	Version uint8      `json:"version"`
 	Crypto  cryptoData `json:"crypto"`
 }
@@ -75,14 +75,14 @@ func randomBytes(n uint) ([]byte, error) {
 func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	salt, err := randomBytes(saltLen)
 	if err != nil {
-		return nil, fmt.Errorf("could not generate salt bytes")
+		return nil, err
 	}
 
 	key := pbkdf2.Key([]byte(passphrase), salt, c, dkLen, sha256.New)
 
 	iv, err := randomBytes(16)
 	if err != nil {
-		return nil, fmt.Errorf("could not generate iv bytes")
+		return nil, err
 	}
 
 	// AES-128-CTR with the first half of the derived key and a random IV
@@ -106,7 +106,7 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 
 	mac := h.Sum(nil)
 
-	keystore := Keystore{
+	keystore := keystore{
 		Version: 1,
 		Crypto: cryptoData{
 			CipherText: hex.EncodeToString(cipherText),
@@ -129,7 +129,7 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 }
 
 func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, error) {
-	keyStore := Keystore{}
+	keyStore := keystore{}
 
 	err := json.Unmarshal(keystoreBytes, &keyStore)
 

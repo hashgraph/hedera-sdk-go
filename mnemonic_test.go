@@ -11,7 +11,7 @@ func TestGenerateMnemonic(t *testing.T) {
 	mnemonic, err := GenerateMnemonic()
 	assert.NoError(t, err)
 
-	assert.Equal(t,24, len(mnemonic.Words()))
+	assert.Equal(t, 24, len(mnemonic.Words()))
 }
 
 func TestMnemonicFromString(t *testing.T) {
@@ -57,4 +57,3 @@ func TestMnemonicBreaksWithBadLength(t *testing.T) {
 	_, err = NewMnemonic(strings.Split(shortMnemonic, " "))
 	assert.Error(t, err)
 }
-

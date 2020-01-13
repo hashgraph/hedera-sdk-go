@@ -176,4 +176,3 @@ func TestEd25519PrivateKey_ReadKeystore(t *testing.T) {
 
 	assert.Equal(t, actualPrivateKey.keyData, privateKey.keyData)
 }
-

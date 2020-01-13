@@ -117,7 +117,7 @@ func Ed25519PrivateKeyFromKeystore(ks []byte, passphrase string) (Ed25519Private
 func Ed25519PrivateKeyReadKeystore(source io.Reader, passphrase string) (Ed25519PrivateKey, error) {
 	keystoreBytes, err := ioutil.ReadAll(source)
 	if err != nil {
-		return Ed25519PrivateKey{}, fmt.Errorf("failed to read keystore from provided source")
+		return Ed25519PrivateKey{}, err
 	}
 
 	return Ed25519PrivateKeyFromKeystore(keystoreBytes, passphrase)
@@ -215,11 +215,7 @@ func (sk Ed25519PrivateKey) WriteKeystore(destination io.Writer, passphrase stri
 
 	_, err = destination.Write(keystore)
 
-	if err != nil {
-		return fmt.Errorf("could not write keystore to destination")
-	}
-
-	return nil
+	return err
 }
 
 func (pk Ed25519PublicKey) Bytes() []byte {
