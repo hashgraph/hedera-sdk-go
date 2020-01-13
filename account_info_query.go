@@ -29,7 +29,7 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 	pb := &proto.CryptoGetInfoQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_CryptoGetInfo{pb}
+	inner.pb.Query = &proto.Query_CryptoGetInfo{CryptoGetInfo: pb}
 
 	return &AccountInfoQuery{inner, pb}
 }

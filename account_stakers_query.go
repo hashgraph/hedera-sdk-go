@@ -16,7 +16,7 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 	pb := &proto.CryptoGetStakersQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_CryptoGetProxyStakers{pb}
+	inner.pb.Query = &proto.Query_CryptoGetProxyStakers{CryptoGetProxyStakers: pb}
 
 	return &AccountStakersQuery{inner, pb}
 }

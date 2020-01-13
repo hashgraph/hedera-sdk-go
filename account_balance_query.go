@@ -11,7 +11,7 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 	pb := &proto.CryptoGetAccountBalanceQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_CryptogetAccountBalance{pb}
+	inner.pb.Query = &proto.Query_CryptogetAccountBalance{CryptogetAccountBalance: pb}
 
 	return &AccountBalanceQuery{inner, pb}
 }

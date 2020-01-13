@@ -14,7 +14,7 @@ func NewFileDeleteTransaction() FileDeleteTransaction {
 	pb := &proto.FileDeleteTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_FileDelete{pb}
+	inner.pb.Data = &proto.TransactionBody_FileDelete{FileDelete: pb}
 
 	builder := FileDeleteTransaction{inner, pb}
 

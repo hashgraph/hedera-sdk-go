@@ -11,7 +11,7 @@ func NewFileContentsQuery() *FileContentsQuery {
 	pb := &proto.FileGetContentsQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_FileGetContents{pb}
+	inner.pb.Query = &proto.Query_FileGetContents{FileGetContents: pb}
 
 	return &FileContentsQuery{inner, pb}
 }

@@ -11,7 +11,7 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	pb := &proto.TransactionGetReceiptQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_TransactionGetReceipt{pb}
+	inner.pb.Query = &proto.Query_TransactionGetReceipt{TransactionGetReceipt: pb}
 
 	return &TransactionReceiptQuery{inner, pb}
 }

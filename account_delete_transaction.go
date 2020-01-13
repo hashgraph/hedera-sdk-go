@@ -14,7 +14,7 @@ func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	pb := &proto.CryptoDeleteTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_CryptoDelete{pb}
+	inner.pb.Data = &proto.TransactionBody_CryptoDelete{CryptoDelete: pb}
 
 	builder := AccountDeleteTransaction{inner, pb}
 

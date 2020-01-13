@@ -18,7 +18,7 @@ func NewCryptoTransferTransaction() CryptoTransferTransaction {
 	}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_CryptoTransfer{pb}
+	inner.pb.Data = &proto.TransactionBody_CryptoTransfer{CryptoTransfer: pb}
 
 	builder := CryptoTransferTransaction{inner, pb}
 

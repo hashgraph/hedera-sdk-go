@@ -13,7 +13,7 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	pb := &proto.ContractGetBytecodeQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_ContractGetBytecode{pb}
+	inner.pb.Query = &proto.Query_ContractGetBytecode{ContractGetBytecode: pb}
 
 	return &ContractBytecodeQuery{inner, pb}
 }

@@ -25,7 +25,7 @@ func NewContractInfoQuery() *ContractInfoQuery {
 	pb := &proto.ContractGetInfoQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_ContractGetInfo{pb}
+	inner.pb.Query = &proto.Query_ContractGetInfo{ContractGetInfo: pb}
 
 	return &ContractInfoQuery{inner, pb}
 }

@@ -11,7 +11,7 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	pb := &proto.TransactionGetRecordQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_TransactionGetRecord{pb}
+	inner.pb.Query = &proto.Query_TransactionGetRecord{TransactionGetRecord: pb}
 
 	return &TransactionRecordQuery{inner, pb}
 }

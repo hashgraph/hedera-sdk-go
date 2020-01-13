@@ -14,7 +14,7 @@ func NewFileAppendTransaction() FileAppendTransaction {
 	pb := &proto.FileAppendTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_FileAppend{pb}
+	inner.pb.Data = &proto.TransactionBody_FileAppend{FileAppend: pb}
 
 	builder := FileAppendTransaction{inner, pb}
 

@@ -14,7 +14,7 @@ func NewSystemDeleteTransaction() SystemDeleteTransaction {
 	pb := &proto.SystemDeleteTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_SystemDelete{pb}
+	inner.pb.Data = &proto.TransactionBody_SystemDelete{SystemDelete: pb}
 
 	builder := SystemDeleteTransaction{inner, pb}
 

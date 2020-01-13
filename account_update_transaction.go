@@ -14,7 +14,7 @@ func NewAccountUpdateTransaction() AccountUpdateTransaction {
 	pb := &proto.CryptoUpdateTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_CryptoUpdateAccount{pb}
+	inner.pb.Data = &proto.TransactionBody_CryptoUpdateAccount{CryptoUpdateAccount: pb}
 
 	builder := AccountUpdateTransaction{inner, pb}
 

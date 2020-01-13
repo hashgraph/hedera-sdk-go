@@ -23,7 +23,7 @@ func NewFileInfoQuery() *FileInfoQuery {
 	pb := &proto.FileGetInfoQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_FileGetInfo{pb}
+	inner.pb.Query = &proto.Query_FileGetInfo{FileGetInfo: pb}
 
 	return &FileInfoQuery{inner, pb}
 }
