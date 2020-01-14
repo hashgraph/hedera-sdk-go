@@ -16,7 +16,7 @@ type AccountInfo struct {
 	Deleted                        bool
 	ProxyAccountID                 AccountID
 	ProxyReceived                  int64
-	Key                            Ed25519PublicKey
+	Key                            PublicKey
 	Balance                        uint64
 	GenerateSendRecordThreshold    uint64
 	GenerateReceiveRecordThreshold uint64
@@ -45,13 +45,15 @@ func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
+	pubKey, err := PublicKeyFromProto(resp.GetCryptoGetInfo().AccountInfo.Key)
+
 	return AccountInfo{
 		AccountID:                      accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.AccountID),
 		ContractAccountID:              resp.GetCryptoGetInfo().AccountInfo.ContractAccountID,
 		Deleted:                        resp.GetCryptoGetInfo().AccountInfo.Deleted,
 		ProxyAccountID:                 accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.ProxyAccountID),
 		ProxyReceived:                  resp.GetCryptoGetInfo().AccountInfo.ProxyReceived,
-		Key:                            Ed25519PublicKey{keyData: resp.GetCryptoGetInfo().AccountInfo.Key.GetEd25519()},
+		Key:                            pubKey,
 		Balance:                        resp.GetCryptoGetInfo().AccountInfo.Balance,
 		GenerateSendRecordThreshold:    resp.GetCryptoGetInfo().AccountInfo.GenerateSendRecordThreshold,
 		GenerateReceiveRecordThreshold: resp.GetCryptoGetInfo().AccountInfo.GenerateReceiveRecordThreshold,

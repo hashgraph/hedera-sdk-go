@@ -19,6 +19,73 @@ import (
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
+type PrivateKey interface {
+	String() string
+	Bytes()  []byte
+	Sign(message []byte) []byte
+	Keystore(passphrase string) ([]byte, error)
+	WriteKeystore(destination io.Writer, passphrase string) error
+}
+
+type PublicKey interface {
+	Bytes() []byte
+	toProto() *proto.Key
+}
+
+type keyList struct {
+	list []PublicKey
+}
+func (kl keyList) toProto() *proto.Key {
+	var pbList = make([]*proto.Key, len(kl.list))
+
+	for i, key := range kl.list {
+		pbList[i] = key.toProto()
+	}
+
+	return &proto.Key{Key: &proto.Key_KeyList{KeyList: &proto.KeyList{Keys: pbList}}}
+}
+
+func (kl keyList) Bytes() []byte {
+	// todo: fill this in
+	return []byte{}
+}
+
+func PublicKeyFromProto(pbKey *proto.Key) (PublicKey, error) {
+	switch key := pbKey.GetKey().(type){
+	case *proto.Key_Ed25519:
+		return Ed25519PublicKeyFromBytes(key.Ed25519)
+	case *proto.Key_ThresholdKey:
+		return nil, fmt.Errorf("threshold key not yet implemented")
+	case *proto.Key_KeyList:
+		return keyListFromProto(key.KeyList)
+
+	case *proto.Key_ContractID:
+		return nil, fmt.Errorf("contractID key is deprecated")
+	case *proto.Key_RSA_3072:
+		return nil, fmt.Errorf("RSA_3072 key not yet supported")
+	case *proto.Key_ECDSA_384:
+		return nil, fmt.Errorf("ECDSA_384 key not yet supported")
+	default:
+		return nil, fmt.Errorf("invalid key provided")
+	}
+}
+
+func keyListFromProto(pb *proto.KeyList) (keyList, error) {
+	var keys keyList = make([]PublicKey, len(pb.Keys))
+
+	for i, pbKey := range pb.Keys {
+		key, err := PublicKeyFromProto(pbKey)
+
+		if err != nil {
+			return keyList{}, err
+		}
+
+		keys[i] = key
+	}
+
+	return keys, nil
+}
+
 type Ed25519PrivateKey struct {
 	keyData   []byte
 	chainCode []byte
@@ -150,16 +217,6 @@ func Ed25519PublicKeyFromBytes(bytes []byte) (Ed25519PublicKey, error) {
 	}, nil
 }
 
-func ed25519PublicKeyFromProto(proto proto.Key) (Ed25519PublicKey, error) {
-	rawKey := proto.GetEd25519()
-
-	if rawKey == nil {
-		return Ed25519PublicKey{}, fmt.Errorf("provided proto key did not represent an ed25519 key")
-	}
-
-	return Ed25519PublicKeyFromBytes(rawKey)
-}
-
 // SLIP-10/BIP-32 Child Key derivation
 func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
 	h := hmac.New(sha512.New, chainCode)
@@ -215,14 +272,6 @@ func (sk Ed25519PrivateKey) WriteKeystore(destination io.Writer, passphrase stri
 	return err
 }
 
-func (pk Ed25519PublicKey) Bytes() []byte {
-	return pk.keyData
-}
-
-func (pk Ed25519PublicKey) toProto() *proto.Key {
-	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
-}
-
 func (sk Ed25519PrivateKey) Sign(message []byte) []byte {
 	return ed25519.Sign(sk.keyData, message)
 }
@@ -251,4 +300,12 @@ func (sk Ed25519PrivateKey) Derive(index uint32) (Ed25519PrivateKey, error) {
 	derivedKey.chainCode = chainCode
 
 	return derivedKey, nil
+}
+
+func (pk Ed25519PublicKey) Bytes() []byte {
+	return pk.keyData
+}
+
+func (pk Ed25519PublicKey) toProto() *proto.Key {
+	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
 }

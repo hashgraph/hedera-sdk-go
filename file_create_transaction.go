@@ -23,7 +23,7 @@ func NewFileCreateTransaction() FileCreateTransaction {
 	return builder
 }
 
-func (builder FileCreateTransaction) AddKey(publicKey Ed25519PublicKey) FileCreateTransaction {
+func (builder FileCreateTransaction) AddKey(publicKey PublicKey) FileCreateTransaction {
 	builder.pb.Keys.Keys = append(builder.pb.Keys.Keys, publicKey.toProto())
 	return builder
 }

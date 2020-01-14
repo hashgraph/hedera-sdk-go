@@ -15,7 +15,7 @@ type FileInfo struct {
 	Size           int64
 	ExpirationTime time.Time
 	Deleted        bool
-	Keys 		   []Ed25519PublicKey
+	Keys 		   []PublicKey
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
@@ -40,9 +40,9 @@ func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 
 	pbKeyList := resp.GetFileGetInfo().FileInfo.Keys.Keys
 
-	keyList := make([]Ed25519PublicKey, len(pbKeyList))
+	keyList := make([]PublicKey, len(pbKeyList))
 
-	for i, key := range(pbKeyList) {
+	for i, key := range pbKeyList {
 
 		// todo: support more than ed25519keys
 		keyList[i], err = Ed25519PublicKeyFromBytes(key.GetEd25519())

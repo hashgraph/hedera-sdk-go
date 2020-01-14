@@ -27,23 +27,23 @@ func (builder FileUpdateTransaction) SetFileID(id FileID) FileUpdateTransaction 
 	return builder
 }
 
-func (builder FileUpdateTransaction) AddKey(publicKey Ed25519PublicKey) FileUpdateTransaction {
-	var keylist *proto.KeyList
+func (builder FileUpdateTransaction) AddKey(publicKey PublicKey) FileUpdateTransaction {
+	var keyList *proto.KeyList
 	if builder.pb.Keys != nil {
-		keylist = builder.pb.Keys
+		keyList = builder.pb.Keys
 	} else {
-		keylist = &proto.KeyList{}
+		keyList = &proto.KeyList{}
 	}
 
 	var keyarray []*proto.Key
-	if keylist.Keys != nil {
-		keyarray = keylist.GetKeys()
+	if keyList.Keys != nil {
+		keyarray = keyList.GetKeys()
 	} else {
 		keyarray = []*proto.Key{}
 	}
 
-	keylist.Keys = append(keyarray, publicKey.toProto())
-	builder.pb.Keys = keylist
+	keyList.Keys = append(keyarray, publicKey.toProto())
+	builder.pb.Keys = keyList
 
 	return builder
 }
