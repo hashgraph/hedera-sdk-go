@@ -90,23 +90,10 @@ type clientConfig struct {
 	Operator *configOperator `json:"operator"`
 }
 
-func ClientFromFile(filename string) (Client, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return Client{}, err
-	}
-
-	defer func() {
-		err = file.Close()
-	}()
-
+func ClientFromJSON(jsonBytes []byte) (Client, error) {
 	var clientConfig clientConfig
-	configBytes, err := ioutil.ReadAll(file)
-	if err != nil {
-		return Client{}, err
-	}
 
-	err = json.Unmarshal(configBytes, clientConfig)
+	err := json.Unmarshal(jsonBytes, &clientConfig)
 
 	client := NewClient(clientConfig.Network)
 
@@ -128,8 +115,24 @@ func ClientFromFile(filename string) (Client, error) {
 	}
 
 	client.operator = &operator
+}
 
-	return client, nil
+func ClientFromFile(filename string) (Client, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return Client{}, err
+	}
+
+	defer func() {
+		err = file.Close()
+	}()
+
+	configBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return Client{}, err
+	}
+
+	return ClientFromJSON(configBytes)
 }
 
 func (client *Client) Close() error {
