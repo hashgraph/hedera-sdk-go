@@ -42,7 +42,7 @@ func (builder TransactionBuilder) Build(client *Client) Transaction {
 		SigMap:   &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
 	}
 
-	return Transaction{pb}
+	return Transaction{pb, builder.pb.TransactionID}
 }
 
 func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error) {

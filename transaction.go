@@ -12,7 +12,12 @@ import (
 )
 
 type Transaction struct {
-	pb *proto.Transaction
+	pb    *proto.Transaction
+	txnID *proto.TransactionID
+}
+
+func (transaction Transaction) ID() TransactionID {
+	return transactionIDFromProto(transaction.txnID)
 }
 
 func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
