@@ -81,8 +81,8 @@ func NewClient(network map[string]AccountID) Client {
 }
 
 type configOperator struct {
-	AccountID  AccountID `json:"accountId"`
-	PrivateKey []byte `json:"privateKey"`
+	AccountID  string `json:"accountId"`
+	PrivateKey string `json:"privateKey"`
 }
 
 type clientConfig struct {
@@ -102,19 +102,26 @@ func ClientFromJSON(jsonBytes []byte) (Client, error) {
 		return client, nil
 	}
 
-	operatorKey, err := Ed25519PrivateKeyFromBytes(clientConfig.Operator.PrivateKey)
+	operatorId, err := AccountIDFromString(clientConfig.Operator.AccountID)
+	if err != nil {
+		return Client{}, err
+	}
+
+	operatorKey, err := Ed25519PrivateKeyFromString(clientConfig.Operator.PrivateKey)
 	if err != nil {
 		return Client{}, err
 	}
 
 	operator := operator{
-		accountID:  clientConfig.Operator.AccountID,
+		accountID:  operatorId,
 		privateKey: &operatorKey,
 		publicKey:  operatorKey.PublicKey(),
 		signer:     operatorKey.Sign,
 	}
 
 	client.operator = &operator
+
+	return client, nil
 }
 
 func ClientFromFile(filename string) (Client, error) {
