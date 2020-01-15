@@ -59,16 +59,16 @@ var testnetNodes = map[string]AccountID{
 	"3.testnet.hedera.com:50211": AccountID{Account: 6},
 }
 
-func ClientForMainnet() *Client {
+func ClientForMainnet() Client {
 	return NewClient(mainnetNodes)
 }
 
-func ClientForTestnet() *Client {
+func ClientForTestnet() Client {
 	return NewClient(testnetNodes)
 }
 
-func NewClient(network map[string]AccountID) *Client {
-	client := &Client{
+func NewClient(network map[string]AccountID) Client {
+	client := Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
 		maxTransactionFee: defaultMaxTransactionFee,
 		networkNodes:      map[AccountID]*node{},
@@ -80,37 +80,56 @@ func NewClient(network map[string]AccountID) *Client {
 	return client
 }
 
-func ClientFromFile(filename string) (*Client, error) {
+type configOperator struct {
+	AccountID  AccountID `json:"accountId"`
+	PrivateKey []byte `json:"privateKey"`
+}
+
+type clientConfig struct {
+	Network map[string]AccountID `json:"network"`
+	Operator *configOperator `json:"operator"`
+}
+
+func ClientFromFile(filename string) (Client, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return Client{}, err
 	}
-	defer file.Close()
 
-	var networkStrings map[string]string
-	network := map[string]AccountID{}
+	defer func() {
+		err = file.Close()
+	}()
 
-	bytes, err := ioutil.ReadAll(file)
+	var clientConfig clientConfig
+	configBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, err
+		return Client{}, err
 	}
 
-	err = json.Unmarshal([]byte(bytes), &network)
+	err = json.Unmarshal(configBytes, clientConfig)
+
+	client := NewClient(clientConfig.Network)
+
+	// if the operator is not provided, finish here
+	if clientConfig.Operator == nil {
+		return client, nil
+	}
+
+	operatorKey, err := Ed25519PrivateKeyFromBytes(clientConfig.Operator.PrivateKey)
 	if err != nil {
-		return nil, err
+		return Client{}, err
 	}
 
-	for address, id := range networkStrings {
-		account, err := AccountIDFromString(id)
-		if err != nil {
-			return nil, err
-		}
-
-		network[address] = account
+	operator := operator{
+		accountID:  clientConfig.Operator.AccountID,
+		privateKey: &operatorKey,
+		publicKey:  operatorKey.PublicKey(),
+		signer:     operatorKey.Sign,
 	}
 
-	return NewClient(network), nil
+	client.operator = &operator
 
+	return client, nil
 }
 
 func (client *Client) Close() error {

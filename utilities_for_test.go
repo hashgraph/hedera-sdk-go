@@ -13,11 +13,11 @@ var testTransactionID TransactionID = TransactionID{
 	time.Unix(124124, 151515),
 }
 
-func newMockClient() (*Client, error) {
+func newMockClient() (Client, error) {
 	privateKey, err := Ed25519PrivateKeyFromString(mockPrivateKey)
 
 	if err != nil {
-		return nil, err
+		return Client{}, err
 	}
 
 	client := NewClient(map[string]AccountID{
@@ -51,7 +51,7 @@ func newMockTransaction() (Transaction, error) {
 		AddRecipient(AccountID{Account: 3}, 100).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).
-		Build(client).
+		Build(&client).
 		Sign(privateKey)
 
 	return tx, nil

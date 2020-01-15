@@ -17,7 +17,7 @@ func TestSerializeAccountDeleteTransaction(t *testing.T) {
 		SetTransferAccountID(AccountID{Account: 2}).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).
-		Build(mockClient)
+		Build(&mockClient)
 
 	tx.Sign(privateKey)
 

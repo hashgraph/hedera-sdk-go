@@ -16,7 +16,7 @@ func TestSerializeFileDeleteTransaction(t *testing.T) {
 		SetFileID(FileID{File: 5}).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).
-		Build(mockClient).
+		Build(&mockClient).
 		Sign(privateKey)
 
 	txString := `bodyBytes: "\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\003\030\300\204=\"\002\010x\222\001\004\022\002\030\005"
