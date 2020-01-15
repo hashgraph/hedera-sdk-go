@@ -11,7 +11,7 @@ type FileUpdateTransaction struct {
 }
 
 func NewFileUpdateTransaction() FileUpdateTransaction {
-	pb := &proto.FileUpdateTransactionBody{}
+	pb := &proto.FileUpdateTransactionBody{Keys: &proto.KeyList{Keys: []*proto.Key{}}}
 
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_FileUpdate{FileUpdate: pb}
@@ -28,23 +28,7 @@ func (builder FileUpdateTransaction) SetFileID(id FileID) FileUpdateTransaction 
 }
 
 func (builder FileUpdateTransaction) AddKey(publicKey PublicKey) FileUpdateTransaction {
-	var keyList *proto.KeyList
-	if builder.pb.Keys != nil {
-		keyList = builder.pb.Keys
-	} else {
-		keyList = &proto.KeyList{}
-	}
-
-	var keyarray []*proto.Key
-	if keyList.Keys != nil {
-		keyarray = keyList.GetKeys()
-	} else {
-		keyarray = []*proto.Key{}
-	}
-
-	keyList.Keys = append(keyarray, publicKey.toProto())
-	builder.pb.Keys = keyList
-
+	builder.pb.Keys.Keys = append(builder.pb.Keys.Keys, publicKey.toProto())
 	return builder
 }
 

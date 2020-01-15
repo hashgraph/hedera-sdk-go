@@ -15,7 +15,7 @@ type FileInfo struct {
 	Size           int64
 	ExpirationTime time.Time
 	Deleted        bool
-	Keys 		   []PublicKey
+	Keys           []PublicKey
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
@@ -38,18 +38,11 @@ func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	pbKeyList := resp.GetFileGetInfo().FileInfo.Keys.Keys
+	pbKeys := resp.GetFileGetInfo().FileInfo.Keys
+	keys, err := publicKeyListFromProto(pbKeys)
 
-	keyList := make([]PublicKey, len(pbKeyList))
-
-	for i, key := range pbKeyList {
-
-		// todo: support more than ed25519keys
-		keyList[i], err = Ed25519PublicKeyFromBytes(key.GetEd25519())
-
-		if err != nil {
-			return FileInfo{}, err
-		}
+	if err != nil {
+		return FileInfo{}, err
 	}
 
 	return FileInfo{
@@ -57,7 +50,7 @@ func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		Size:           resp.GetFileGetInfo().FileInfo.Size,
 		ExpirationTime: timeFromProto(resp.GetFileGetInfo().FileInfo.ExpirationTime),
 		Deleted:        resp.GetFileGetInfo().FileInfo.Deleted,
-		Keys:			keyList,
+		Keys:           keys,
 	}, nil
 }
 

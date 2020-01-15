@@ -19,65 +19,45 @@ import (
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
-type PrivateKey interface {
-	String() string
-	Bytes()  []byte
-	Sign(message []byte) []byte
-	Keystore(passphrase string) ([]byte, error)
-	WriteKeystore(destination io.Writer, passphrase string) error
-}
-
 type PublicKey interface {
-	Bytes() []byte
 	toProto() *proto.Key
 }
 
-type keyList struct {
-	list []PublicKey
-}
-func (kl keyList) toProto() *proto.Key {
-	var pbList = make([]*proto.Key, len(kl.list))
-
-	for i, key := range kl.list {
-		pbList[i] = key.toProto()
-	}
-
-	return &proto.Key{Key: &proto.Key_KeyList{KeyList: &proto.KeyList{Keys: pbList}}}
-}
-
-func (kl keyList) Bytes() []byte {
-	// todo: fill this in
-	return []byte{}
-}
-
-func PublicKeyFromProto(pbKey *proto.Key) (PublicKey, error) {
-	switch key := pbKey.GetKey().(type){
+func publicKeyFromProto(pbKey *proto.Key) (PublicKey, error) {
+	switch key := pbKey.GetKey().(type) {
 	case *proto.Key_Ed25519:
 		return Ed25519PublicKeyFromBytes(key.Ed25519)
-	case *proto.Key_ThresholdKey:
-		return nil, fmt.Errorf("threshold key not yet implemented")
-	case *proto.Key_KeyList:
-		return keyListFromProto(key.KeyList)
 
-	case *proto.Key_ContractID:
-		return nil, fmt.Errorf("contractID key is deprecated")
-	case *proto.Key_RSA_3072:
-		return nil, fmt.Errorf("RSA_3072 key not yet supported")
-	case *proto.Key_ECDSA_384:
-		return nil, fmt.Errorf("ECDSA_384 key not yet supported")
+	case *proto.Key_ThresholdKey:
+		threshold := key.ThresholdKey.GetThreshold()
+		keys, err := publicKeyListFromProto(key.ThresholdKey.GetKeys())
+		if err != nil {
+			return nil, err
+		}
+
+		return NewThresholdKey(threshold).AddAll(keys), nil
+
+	case *proto.Key_KeyList:
+		keys, err := publicKeyListFromProto(key.KeyList)
+		if err != nil {
+			return nil, err
+		}
+
+		return NewKeyList().AddAll(keys), nil
+
 	default:
-		return nil, fmt.Errorf("invalid key provided")
+		return nil, fmt.Errorf("key type not implemented: %v", key)
 	}
 }
 
-func keyListFromProto(pb *proto.KeyList) (keyList, error) {
-	var keys keyList = make([]PublicKey, len(pb.Keys))
+func publicKeyListFromProto(pb *proto.KeyList) ([]PublicKey, error) {
+	var keys []PublicKey = make([]PublicKey, len(pb.Keys))
 
 	for i, pbKey := range pb.Keys {
-		key, err := PublicKeyFromProto(pbKey)
+		key, err := publicKeyFromProto(pbKey)
 
 		if err != nil {
-			return keyList{}, err
+			return nil, err
 		}
 
 		keys[i] = key

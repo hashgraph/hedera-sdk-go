@@ -45,7 +45,7 @@ func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	pubKey, err := PublicKeyFromProto(resp.GetCryptoGetInfo().AccountInfo.Key)
+	pubKey, err := publicKeyFromProto(resp.GetCryptoGetInfo().AccountInfo.Key)
 
 	return AccountInfo{
 		AccountID:                      accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.AccountID),
