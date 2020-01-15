@@ -24,7 +24,7 @@ func HbarFromTinybar(tinybar int64) Hbar {
 	return Hbar{tinybar: tinybar, unit: HbarUnits.Tinybar}
 }
 
-func HbarOf(hbar float64) Hbar {
+func NewHbar(hbar float64) Hbar {
 	return Hbar{tinybar: int64(hbar * 100_000_000), unit: HbarUnits.Hbar}
 }
 
