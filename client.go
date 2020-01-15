@@ -80,37 +80,66 @@ func NewClient(network map[string]AccountID) *Client {
 	return client
 }
 
+type configOperator struct {
+	AccountID  string `json:"accountId"`
+	PrivateKey string `json:"privateKey"`
+}
+
+type clientConfig struct {
+	Network map[string]AccountID `json:"network"`
+	Operator *configOperator `json:"operator"`
+}
+
+func ClientFromJSON(jsonBytes []byte) (*Client, error) {
+	var clientConfig clientConfig
+
+	err := json.Unmarshal(jsonBytes, &clientConfig)
+
+	client := NewClient(clientConfig.Network)
+
+	// if the operator is not provided, finish here
+	if clientConfig.Operator == nil {
+		return client, nil
+	}
+
+	operatorId, err := AccountIDFromString(clientConfig.Operator.AccountID)
+	if err != nil {
+		return nil, err
+	}
+
+	operatorKey, err := Ed25519PrivateKeyFromString(clientConfig.Operator.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	operator := operator{
+		accountID:  operatorId,
+		privateKey: &operatorKey,
+		publicKey:  operatorKey.PublicKey(),
+		signer:     operatorKey.Sign,
+	}
+
+	client.operator = &operator
+
+	return client, nil
+}
+
 func ClientFromFile(filename string) (*Client, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
-	var networkStrings map[string]string
-	network := map[string]AccountID{}
+	defer func() {
+		err = file.Close()
+	}()
 
-	bytes, err := ioutil.ReadAll(file)
+	configBytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(bytes), &network)
-	if err != nil {
-		return nil, err
-	}
-
-	for address, id := range networkStrings {
-		account, err := AccountIDFromString(id)
-		if err != nil {
-			return nil, err
-		}
-
-		network[address] = account
-	}
-
-	return NewClient(network), nil
-
+	return ClientFromJSON(configBytes)
 }
 
 func (client *Client) Close() error {
