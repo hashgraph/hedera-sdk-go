@@ -21,14 +21,13 @@ func NewSystemUndeleteTransaction() SystemUndeleteTransaction {
 	return builder
 }
 
-func (builder SystemUndeleteTransaction) SetID(id ContractIDOrFileID) SystemUndeleteTransaction {
-	file, contract, ty := id.toProtoContractIDOrFile()
-	if ty == 0 {
-		builder.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: file}
-	} else {
-		builder.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: contract}
-	}
+func (builder SystemUndeleteTransaction) SetContractID(ID ContractID) SystemUndeleteTransaction {
+	builder.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: ID.toProto()}
+	return builder
+}
 
+func (builder SystemUndeleteTransaction) SetFileID(ID FileID) SystemUndeleteTransaction {
+	builder.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: ID.toProto()}
 	return builder
 }
 
