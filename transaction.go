@@ -16,16 +16,9 @@ type Transaction struct {
 }
 
 func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
-	// TODO: Disallow duplicate [Sign] with the same private key
-
-	signature := privateKey.Sign(transaction.pb.GetBodyBytes())
-
-	transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, &proto.SignaturePair{
-		PubKeyPrefix: nil,
-		Signature:    &proto.SignaturePair_Ed25519{Ed25519: signature},
+	return transaction.SignWith(privateKey.PublicKey(), func(message []byte) []byte {
+		return privateKey.Sign(message)
 	})
-
-	return transaction
 }
 
 func (transaction Transaction) signWithOperator(operator operator) Transaction {
