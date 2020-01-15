@@ -59,16 +59,16 @@ var testnetNodes = map[string]AccountID{
 	"3.testnet.hedera.com:50211": AccountID{Account: 6},
 }
 
-func ClientForMainnet() Client {
+func ClientForMainnet() *Client {
 	return NewClient(mainnetNodes)
 }
 
-func ClientForTestnet() Client {
+func ClientForTestnet() *Client {
 	return NewClient(testnetNodes)
 }
 
-func NewClient(network map[string]AccountID) Client {
-	client := Client{
+func NewClient(network map[string]AccountID) *Client {
+	client := &Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
 		maxTransactionFee: defaultMaxTransactionFee,
 		networkNodes:      map[AccountID]*node{},
@@ -90,7 +90,7 @@ type clientConfig struct {
 	Operator *configOperator `json:"operator"`
 }
 
-func ClientFromJSON(jsonBytes []byte) (Client, error) {
+func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 	var clientConfig clientConfig
 
 	err := json.Unmarshal(jsonBytes, &clientConfig)
@@ -104,12 +104,12 @@ func ClientFromJSON(jsonBytes []byte) (Client, error) {
 
 	operatorId, err := AccountIDFromString(clientConfig.Operator.AccountID)
 	if err != nil {
-		return Client{}, err
+		return nil, err
 	}
 
 	operatorKey, err := Ed25519PrivateKeyFromString(clientConfig.Operator.PrivateKey)
 	if err != nil {
-		return Client{}, err
+		return nil, err
 	}
 
 	operator := operator{
@@ -124,10 +124,10 @@ func ClientFromJSON(jsonBytes []byte) (Client, error) {
 	return client, nil
 }
 
-func ClientFromFile(filename string) (Client, error) {
+func ClientFromFile(filename string) (*Client, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return Client{}, err
+		return nil, err
 	}
 
 	defer func() {
@@ -136,7 +136,7 @@ func ClientFromFile(filename string) (Client, error) {
 
 	configBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return Client{}, err
+		return nil, err
 	}
 
 	return ClientFromJSON(configBytes)

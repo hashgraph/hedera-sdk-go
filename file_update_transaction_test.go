@@ -20,7 +20,7 @@ func TestSerializeFileUpdateTransaction(t *testing.T) {
 		AddKey(privateKey.PublicKey()).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).
-		Build(&mockClient).
+		Build(mockClient).
 		Sign(privateKey)
 
 	txString := `bodyBytes: "\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\003\030\300\204=\"\002\010x\232\001I\n\002\030\005\022\006\010\227\227\302\2669\032$\n\"\022 \344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216\"\025there was a hole here"

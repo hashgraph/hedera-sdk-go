@@ -20,7 +20,7 @@ func TestSerializeContractExecuteTransaction(t *testing.T) {
 		SetFunctionParameters([]byte{24, 43, 11}).
 		SetMaxTransactionFee(1e6).
 		SetTransactionID(testTransactionID).
-		Build(&mockClient).
+		Build(mockClient).
 		Sign(privateKey)
 
 	// note: yes this is the best way to add a ` to a raw string literal

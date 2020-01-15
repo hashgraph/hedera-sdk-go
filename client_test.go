@@ -43,6 +43,7 @@ func TestClientFromJSON(t *testing.T) {
 	client, err := ClientFromJSON([]byte(testClientJson))
 	assert.NoError(t, err)
 
+	assert.NotNil(t, client)
 	assert.Equal(t, 10, len(client.networkNodeIds))
 	assert.Nil(t, client.operator)
 }
@@ -50,6 +51,8 @@ func TestClientFromJSON(t *testing.T) {
 func TestClientFromJSONWithOperator(t *testing.T) {
 	client, err := ClientFromJSON([]byte(testClientJsonWithOperator))
 	assert.NoError(t, err)
+
+	assert.NotNil(t, client)
 
 	testOperatorKey, err := Ed25519PrivateKeyFromString("302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10")
 	assert.NoError(t, err)
