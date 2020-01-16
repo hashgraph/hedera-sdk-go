@@ -46,7 +46,7 @@ func publicKeyFromProto(pbKey *proto.Key) (PublicKey, error) {
 		return NewKeyList().AddAll(keys), nil
 
 	default:
-		return nil, fmt.Errorf("key type not implemented: %v", key)
+		return nil, newErrBadKeyf("key type not implemented: %v", key)
 	}
 }
 
@@ -98,7 +98,7 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 		privateKey = ed25519.NewKeyFromSeed(bytes[0:32])
 
 	default:
-		return Ed25519PrivateKey{}, fmt.Errorf("invalid private key")
+		return Ed25519PrivateKey{}, newErrBadKeyf("invalid private key length: %v bytes", len(bytes))
 	}
 
 	return Ed25519PrivateKey{
@@ -154,7 +154,7 @@ func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
 		}
 	}
 
-	return Ed25519PrivateKey{}, fmt.Errorf("invalid private key with length %v", len(s))
+	return Ed25519PrivateKey{}, newErrBadKeyf("invalid private key string with length %v", len(s))
 }
 
 func Ed25519PrivateKeyFromKeystore(ks []byte, passphrase string) (Ed25519PrivateKey, error) {
@@ -189,12 +189,12 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 			return pk, nil
 		}
 	}
-	return Ed25519PublicKey{}, fmt.Errorf("invalid public key with length %v", len(s))
+	return Ed25519PublicKey{}, newErrBadKeyf("invalid public key string with length %v", len(s))
 }
 
 func Ed25519PublicKeyFromBytes(bytes []byte) (Ed25519PublicKey, error) {
 	if len(bytes) != ed25519.PublicKeySize {
-		return Ed25519PublicKey{}, fmt.Errorf("invalid public key")
+		return Ed25519PublicKey{}, newErrBadKeyf("invalid public key length: %v bytes", len(bytes))
 	}
 
 	return Ed25519PublicKey{
@@ -271,7 +271,7 @@ func (sk Ed25519PrivateKey) SupportsDerivation() bool {
 // Use index 0 for the default account.
 func (sk Ed25519PrivateKey) Derive(index uint32) (Ed25519PrivateKey, error) {
 	if !sk.SupportsDerivation() {
-		return Ed25519PrivateKey{}, fmt.Errorf("this private key does not support derivation")
+		return Ed25519PrivateKey{}, newErrBadKeyf("child key cannot be derived from this key")
 	}
 
 	derivedKeyBytes, chainCode := deriveChildKey(sk.Bytes(), sk.chainCode, index)

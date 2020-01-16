@@ -31,17 +31,15 @@ func (e ErrMaxQueryPaymentExceeded) Error() string {
 }
 
 type ErrBadKey struct {
-	error error
+	message string
 }
 
-func newErrBadKey(e error) ErrBadKey {
-	return ErrBadKey{
-		error: e,
-	}
+func newErrBadKeyf(format string, a ...interface{}) ErrBadKey {
+	return ErrBadKey{fmt.Sprintf(format, a...)}
 }
 
 func (e ErrBadKey) Error() string {
-	return e.error.Error()
+	return e.message
 }
 
 type ErrHederaNetwork struct {
