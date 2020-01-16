@@ -110,7 +110,7 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 			}
 
 			if actualCost.AsTinybar() > maxPayment.AsTinybar() {
-				return nil, fmt.Errorf("query cost of %v exceeds configured limit of %v", actualCost, maxPayment)
+				return nil, newErrorMaxQueryPaymentExceeded(builder, int64(actualCost), int64(maxPayment))
 			}
 
 			builder.generatePaymentTransaction(client, node, ZeroHbar)
