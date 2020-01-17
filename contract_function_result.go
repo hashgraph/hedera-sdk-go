@@ -22,6 +22,10 @@ func (result ContractFunctionResult) GetAddress(index uint64) []byte {
 	return result.ContractCallResult[(index*32)+12 : (index*32)+32]
 }
 
+func (result ContractFunctionResult) GetInt8(index uint64) int8 {
+	return int8(result.ContractCallResult[index*32+31])
+}
+
 func (result ContractFunctionResult) GetInt32(index uint64) int32 {
 	return int32(binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32]))
 }
@@ -34,6 +38,10 @@ func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 	return result.ContractCallResult[index*32 : index*32+32]
 }
 
+func (result ContractFunctionResult) GetUint8(index uint64) uint8 {
+	return result.ContractCallResult[index*32+31]
+}
+
 func (result ContractFunctionResult) GetUint32(index uint64) uint32 {
 	return binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32])
 }
@@ -43,6 +51,10 @@ func (result ContractFunctionResult) GetUint64(index uint64) uint64 {
 }
 
 func (result ContractFunctionResult) GetUint256(index uint64) []byte {
+	return result.ContractCallResult[index*32 : index*32+32]
+}
+
+func (result ContractFunctionResult) GetBytes32(index uint64) []byte {
 	return result.ContractCallResult[index*32 : index*32+32]
 }
 

@@ -22,13 +22,16 @@ type argument string
 const (
 	aBool     argument = "bool"
 	aString   argument = "string"
+	aInt8     argument = "int8"
 	aInt32    argument = "int32"
 	aInt64    argument = "int64"
 	aInt256   argument = "int256"
+	aUint8    argument = "uint8"
 	aUint32   argument = "uint32"
 	aUint64   argument = "uint64"
 	aUint256  argument = "uint256"
 	aBytes    argument = "bytes"
+	aBytes32  argument = "bytes32"
 	aFunction argument = "function"
 	aAddress  argument = "address"
 )
@@ -91,6 +94,13 @@ func (selector *ContractFunctionSelector) AddString() *ContractFunctionSelector 
 	})
 }
 
+func (selector *ContractFunctionSelector) AddInt8() *ContractFunctionSelector {
+	return selector.addParam(solidity{
+		ty:    aInt8,
+		array: false,
+	})
+}
+
 func (selector *ContractFunctionSelector) AddInt32() *ContractFunctionSelector {
 	return selector.addParam(solidity{
 		ty:    aInt32,
@@ -108,6 +118,13 @@ func (selector *ContractFunctionSelector) AddInt64() *ContractFunctionSelector {
 func (selector *ContractFunctionSelector) AddInt256() *ContractFunctionSelector {
 	return selector.addParam(solidity{
 		ty:    aInt256,
+		array: false,
+	})
+}
+
+func (selector *ContractFunctionSelector) AddUint8() *ContractFunctionSelector {
+	return selector.addParam(solidity{
+		ty:    aUint8,
 		array: false,
 	})
 }
@@ -140,6 +157,13 @@ func (selector *ContractFunctionSelector) AddBytes() *ContractFunctionSelector {
 	})
 }
 
+func (selector *ContractFunctionSelector) AddBytes32() *ContractFunctionSelector {
+	return selector.addParam(solidity{
+		ty:    aBytes32,
+		array: false,
+	})
+}
+
 func (selector *ContractFunctionSelector) AddAddressArray() *ContractFunctionSelector {
 	return selector.addParam(solidity{
 		ty:    aAddress,
@@ -161,6 +185,13 @@ func (selector *ContractFunctionSelector) AddStringArray() *ContractFunctionSele
 	})
 }
 
+func (selector *ContractFunctionSelector) AddInt8Array() *ContractFunctionSelector {
+	return selector.addParam(solidity{
+		ty:    aInt8,
+		array: true,
+	})
+}
+
 func (selector *ContractFunctionSelector) AddInt32Array() *ContractFunctionSelector {
 	return selector.addParam(solidity{
 		ty:    aInt32,
@@ -178,6 +209,13 @@ func (selector *ContractFunctionSelector) AddInt64Array() *ContractFunctionSelec
 func (selector *ContractFunctionSelector) AddInt256Array() *ContractFunctionSelector {
 	return selector.addParam(solidity{
 		ty:    aInt256,
+		array: true,
+	})
+}
+
+func (selector *ContractFunctionSelector) AddUint8Array() *ContractFunctionSelector {
+	return selector.addParam(solidity{
+		ty:    aUint8,
 		array: true,
 	})
 }
@@ -206,6 +244,13 @@ func (selector *ContractFunctionSelector) AddUint256Array() *ContractFunctionSel
 func (selector *ContractFunctionSelector) AddBytesArray() *ContractFunctionSelector {
 	return selector.addParam(solidity{
 		ty:    aBytes,
+		array: true,
+	})
+}
+
+func (selector *ContractFunctionSelector) AddBytes32Array() *ContractFunctionSelector {
+	return selector.addParam(solidity{
+		ty:    aBytes32,
 		array: true,
 	})
 }
