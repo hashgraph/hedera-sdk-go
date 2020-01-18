@@ -71,19 +71,6 @@ func (e ErrHederaStatus) Error() string {
 	return e.Status.String()
 }
 
-// ErrHbarRange is returned by constructor/factor methods of Hbar when a value is out of range.
-type ErrHbarRange struct {
-	message string
-}
-
-func newErrHbarRange(message string) ErrHbarRange {
-	return ErrHbarRange{message}
-}
-
-func (e ErrHbarRange) Error() string {
-	return e.message
-}
-
 // ErrLocalValidation is returned by TransactionBuilder.Build(*Client) and QueryBuilder.Execute(*Client)
 // if the constructed transaction or query fails local sanity checks.
 type ErrLocalValidation struct {
@@ -97,3 +84,7 @@ func newErrLocalValidation(message string) ErrLocalValidation {
 func (e ErrLocalValidation) Error() string {
 	return e.message
 }
+
+// Note: an Out of Range error for Hbar units as provided in the other SDKs does not have a clean translation to go.
+// 		 it would require all conversions and hbar constructors to return both the object and error resulting in a worst
+//       api usage experience.
