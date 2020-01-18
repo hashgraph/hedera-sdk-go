@@ -117,11 +117,14 @@ const (
 	StatusMaxFileSizeExceeded                Status = 112
 )
 
-func (status Status) isExceptional() *ErrHederaStatus {
+func (status Status) isExceptional(includeUnknown bool) *ErrHederaStatus {
 	switch status {
-	case StatusOk:
-	case StatusSuccess:
+	case StatusOk, StatusSuccess:
 		return nil
+	case StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
+		if !includeUnknown {
+			return nil
+		}
 	default:
 	}
 

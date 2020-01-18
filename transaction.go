@@ -148,16 +148,11 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 			continue
 		}
 
-		if isStatusExceptional(resp.NodeTransactionPrecheckCode, true) {
-			return id, fmt.Errorf("%v", resp.NodeTransactionPrecheckCode)
-		}
-
-		return id, nil
+		return id, Status(resp.NodeTransactionPrecheckCode).isExceptional(true)
 	}
 
 	// Timed out
-	// TODO: Better error here?
-	return id, fmt.Errorf("%v", resp.NodeTransactionPrecheckCode)
+	return id, Status(resp.NodeTransactionPrecheckCode).isExceptional(true)
 }
 
 func (transaction Transaction) String() string {
@@ -177,17 +172,4 @@ func (transaction Transaction) body() *proto.TransactionBody {
 	}
 
 	return transactionBody
-}
-
-func isStatusExceptional(status proto.ResponseCodeEnum, unknownIsExceptional bool) bool {
-	switch status {
-	case proto.ResponseCodeEnum_SUCCESS, proto.ResponseCodeEnum_OK:
-		return false
-
-	case proto.ResponseCodeEnum_UNKNOWN, proto.ResponseCodeEnum_RECEIPT_NOT_FOUND, proto.ResponseCodeEnum_RECORD_NOT_FOUND:
-		return unknownIsExceptional
-
-	default:
-		return true
-	}
 }

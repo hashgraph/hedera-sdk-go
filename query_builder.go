@@ -321,15 +321,10 @@ func execute(node *node, pb *proto.Query, deadline time.Time) (*proto.Response, 
 			continue
 		}
 
-		if isStatusExceptional(respHeader.NodeTransactionPrecheckCode, true) {
-			return nil, fmt.Errorf("%v", respHeader.NodeTransactionPrecheckCode)
-		}
-
-		return resp, nil
+		return resp, Status(respHeader.NodeTransactionPrecheckCode).isExceptional(true)
 	}
 
 	// Timed out
-	// TODO: Better error here?
 	respHeader := mapResponseHeader(resp)
-	return nil, fmt.Errorf("%v", respHeader.NodeTransactionPrecheckCode)
+	return nil, Status(respHeader.NodeTransactionPrecheckCode).isExceptional(true)
 }
