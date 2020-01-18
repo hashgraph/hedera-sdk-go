@@ -370,7 +370,7 @@ func (contract *ContractFunctionParams) AddBytesArray(value [][]byte) *ContractF
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddByte32sArray(value [][]byte) *ContractFunctionParams {
+func (contract *ContractFunctionParams) AddBytes32Array(value [][]byte) *ContractFunctionParams {
 	argument := NewArgument()
 	argument.dynamic = true
 
