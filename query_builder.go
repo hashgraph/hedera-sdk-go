@@ -14,8 +14,8 @@ type QueryBuilder struct {
 	pb       *proto.Query
 	pbHeader *proto.QueryHeader
 
-	maxPayment uint64
-	payment    *uint64
+	maxPayment Hbar
+	payment    *Hbar
 }
 
 func newQueryBuilder(pbHeader *proto.QueryHeader) QueryBuilder {
@@ -23,12 +23,12 @@ func newQueryBuilder(pbHeader *proto.QueryHeader) QueryBuilder {
 	return builder
 }
 
-func (builder *QueryBuilder) SetMaxQueryPayment(maxPayment uint64) *QueryBuilder {
+func (builder *QueryBuilder) SetMaxQueryPayment(maxPayment Hbar) *QueryBuilder {
 	builder.maxPayment = maxPayment
 	return builder
 }
 
-func (builder *QueryBuilder) SetQueryPayment(paymentAmount uint64) *QueryBuilder {
+func (builder *QueryBuilder) SetQueryPayment(paymentAmount Hbar) *QueryBuilder {
 	builder.payment = &paymentAmount
 	return builder
 }
@@ -38,7 +38,7 @@ func (builder *QueryBuilder) SetQueryPaymentTransaction(tx Transaction) *QueryBu
 	return builder
 }
 
-func (builder *QueryBuilder) Cost(client *Client) (uint64, error) {
+func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
 	// Store the current response type and payment from the
 	// query header
 	currentResponseType := builder.pbHeader.ResponseType
@@ -60,8 +60,8 @@ func (builder *QueryBuilder) Cost(client *Client) (uint64, error) {
 	// COST_ANSWER requires a "null" payment (it checks for it but does not process it)
 	tx := NewCryptoTransferTransaction().
 		SetNodeAccountID(node.id).
-		AddRecipient(node.id, 0).
-		AddSender(client.operator.accountID, 0).
+		AddRecipient(node.id, ZeroHbar).
+		AddSender(client.operator.accountID, ZeroHbar).
 		Build(client)
 
 	if client.operator != nil {
@@ -72,10 +72,10 @@ func (builder *QueryBuilder) Cost(client *Client) (uint64, error) {
 
 	resp, err := execute(node, builder.pb, time.Now().Add(10*time.Second))
 	if err != nil {
-		return 0, err
+		return ZeroHbar, err
 	}
 
-	return mapResponseHeader(resp).Cost, nil
+	return HbarFromTinybar(int64(mapResponseHeader(resp).Cost)), nil
 }
 
 func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
@@ -96,11 +96,11 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 		} else if builder.payment != nil {
 			node = client.randomNode()
 			builder.generatePaymentTransaction(client, node, *builder.payment)
-		} else if builder.maxPayment > 0 || client.maxQueryPayment > 0 {
+		} else if builder.maxPayment.AsTinybar() > 0 || client.maxQueryPayment.AsTinybar() > 0 {
 			node = client.randomNode()
 
 			var maxPayment = builder.maxPayment
-			if maxPayment == 0 {
+			if maxPayment.AsTinybar() == 0 {
 				maxPayment = client.maxQueryPayment
 			}
 
@@ -109,11 +109,11 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 				return nil, err
 			}
 
-			if actualCost > maxPayment {
+			if actualCost.AsTinybar() > maxPayment.AsTinybar() {
 				return nil, fmt.Errorf("query cost of %v exceeds configured limit of %v", actualCost, maxPayment)
 			}
 
-			builder.generatePaymentTransaction(client, node, 0)
+			builder.generatePaymentTransaction(client, node, ZeroHbar)
 		}
 	} else {
 		node = client.randomNode()
@@ -134,7 +134,7 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 	return execute(node, builder.pb, deadline)
 }
 
-func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount uint64) {
+func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount Hbar) {
 	tx := NewCryptoTransferTransaction().
 		SetNodeAccountID(node.id).
 		AddRecipient(node.id, amount).

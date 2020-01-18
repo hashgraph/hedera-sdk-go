@@ -1,8 +1,6 @@
 package hedera
 
 import (
-	"errors"
-	"fmt"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -264,14 +262,15 @@ func (selector *ContractFunctionSelector) String() string {
 	return function + "(" + selector.params + ")"
 }
 
-func (selector *ContractFunctionSelector) build(function *string) ([]byte, error) {
+func (selector *ContractFunctionSelector) build(function *string) []byte {
 	if function != nil {
 		selector.function = function
 	} else if selector.function == nil {
-		return nil, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
+		panic("unreacahble: function name must be non-nil at this point")
 	}
 
 	hash := sha3.NewLegacyKeccak256()
 	hash.Write([]byte(selector.String()))
-	return hash.Sum(nil)[0:4], nil
+
+	return hash.Sum(nil)[0:4]
 }

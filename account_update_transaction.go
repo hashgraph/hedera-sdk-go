@@ -26,7 +26,7 @@ func (builder AccountUpdateTransaction) SetAccountID(id AccountID) AccountUpdate
 	return builder
 }
 
-func (builder AccountUpdateTransaction) SetKey(publicKey Ed25519PublicKey) AccountUpdateTransaction {
+func (builder AccountUpdateTransaction) SetKey(publicKey PublicKey) AccountUpdateTransaction {
 	builder.pb.Key = publicKey.toProto()
 	return builder
 }
@@ -53,22 +53,18 @@ func (builder AccountUpdateTransaction) SetReceiverSignatureRequired(required bo
 	return builder
 }
 
-func (builder AccountUpdateTransaction) SetSendRecordThreshold(threshold uint64) AccountUpdateTransaction {
+func (builder AccountUpdateTransaction) SetSendRecordThreshold(threshold Hbar) AccountUpdateTransaction {
 	builder.pb.SendRecordThresholdField = &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
-		SendRecordThreshold: threshold,
+		SendRecordThreshold: uint64(threshold.AsTinybar()),
 	}
 	return builder
 }
 
-func (builder AccountUpdateTransaction) SetReceiveRecordThreshold(threshold uint64) AccountUpdateTransaction {
+func (builder AccountUpdateTransaction) SetReceiveRecordThreshold(threshold Hbar) AccountUpdateTransaction {
 	builder.pb.ReceiveRecordThresholdField = &proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
-		ReceiveRecordThreshold: threshold,
+		ReceiveRecordThreshold: uint64(threshold.AsTinybar()),
 	}
 	return builder
-}
-
-func (builder AccountUpdateTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
 }
 
 //
@@ -76,7 +72,7 @@ func (builder AccountUpdateTransaction) Build(client *Client) Transaction {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder AccountUpdateTransaction) SetMaxTransactionFee(maxTransactionFee uint64) AccountUpdateTransaction {
+func (builder AccountUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountUpdateTransaction {
 	return AccountUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

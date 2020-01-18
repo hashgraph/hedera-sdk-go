@@ -15,11 +15,11 @@ type AccountInfo struct {
 	ContractAccountID              string
 	Deleted                        bool
 	ProxyAccountID                 AccountID
-	ProxyReceived                  int64
+	ProxyReceived                  Hbar
 	Key                            PublicKey
-	Balance                        uint64
-	GenerateSendRecordThreshold    uint64
-	GenerateReceiveRecordThreshold uint64
+	Balance                        Hbar
+	GenerateSendRecordThreshold    Hbar
+	GenerateReceiveRecordThreshold Hbar
 	ReceiverSigRequired            bool
 	ExpirationTime                 time.Time
 	AutoRenewPeriod                time.Duration
@@ -46,35 +46,38 @@ func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	}
 
 	pubKey, err := publicKeyFromProto(resp.GetCryptoGetInfo().AccountInfo.Key)
+	if err != nil {
+		return AccountInfo{}, err
+	}
 
 	return AccountInfo{
 		AccountID:                      accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.AccountID),
 		ContractAccountID:              resp.GetCryptoGetInfo().AccountInfo.ContractAccountID,
 		Deleted:                        resp.GetCryptoGetInfo().AccountInfo.Deleted,
 		ProxyAccountID:                 accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.ProxyAccountID),
-		ProxyReceived:                  resp.GetCryptoGetInfo().AccountInfo.ProxyReceived,
+		ProxyReceived:                  HbarFromTinybar(resp.GetCryptoGetInfo().AccountInfo.ProxyReceived),
 		Key:                            pubKey,
-		Balance:                        resp.GetCryptoGetInfo().AccountInfo.Balance,
-		GenerateSendRecordThreshold:    resp.GetCryptoGetInfo().AccountInfo.GenerateSendRecordThreshold,
-		GenerateReceiveRecordThreshold: resp.GetCryptoGetInfo().AccountInfo.GenerateReceiveRecordThreshold,
+		Balance:                        HbarFromTinybar(int64(resp.GetCryptoGetInfo().AccountInfo.Balance)),
+		GenerateSendRecordThreshold:    HbarFromTinybar(int64(resp.GetCryptoGetInfo().AccountInfo.GenerateSendRecordThreshold)),
+		GenerateReceiveRecordThreshold: HbarFromTinybar(int64(resp.GetCryptoGetInfo().AccountInfo.GenerateReceiveRecordThreshold)),
 		ReceiverSigRequired:            resp.GetCryptoGetInfo().AccountInfo.ReceiverSigRequired,
 		ExpirationTime:                 timeFromProto(resp.GetCryptoGetInfo().AccountInfo.ExpirationTime),
 	}, nil
 }
 
-func (builder *AccountInfoQuery) Cost(client *Client) (uint64, error) {
+func (builder *AccountInfoQuery) Cost(client *Client) (Hbar, error) {
 	// deleted files return a COST_ANSWER of zero which triggers `INSUFFICIENT_TX_FEE`
 	// if you set that as the query payment; 25 tinybar seems to be enough to get
 	// `ACCOUNT_DELETED` back instead.
 	cost, err := builder.QueryBuilder.Cost(client)
 	if err != nil {
-		return 0, err
+		return ZeroHbar, err
 	}
 
-	// math.Min requires float64 and returns float64
-	if cost > 25 {
+	// math.Max requires float64 and returns float64
+	if cost.AsTinybar() > 25 {
 		return cost, nil
 	}
 
-	return 25, nil
+	return HbarFromTinybar(25), nil
 }

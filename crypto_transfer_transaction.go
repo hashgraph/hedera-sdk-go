@@ -25,18 +25,18 @@ func NewCryptoTransferTransaction() CryptoTransferTransaction {
 	return builder
 }
 
-func (builder CryptoTransferTransaction) AddSender(id AccountID, amount uint64) CryptoTransferTransaction {
-	return builder.AddTransfer(id, -int64(amount))
+func (builder CryptoTransferTransaction) AddSender(id AccountID, amount Hbar) CryptoTransferTransaction {
+	return builder.AddTransfer(id, amount.negated())
 }
 
-func (builder CryptoTransferTransaction) AddRecipient(id AccountID, amount uint64) CryptoTransferTransaction {
-	return builder.AddTransfer(id, int64(amount))
+func (builder CryptoTransferTransaction) AddRecipient(id AccountID, amount Hbar) CryptoTransferTransaction {
+	return builder.AddTransfer(id, amount)
 }
 
-func (builder CryptoTransferTransaction) AddTransfer(id AccountID, amount int64) CryptoTransferTransaction {
+func (builder CryptoTransferTransaction) AddTransfer(id AccountID, amount Hbar) CryptoTransferTransaction {
 	builder.pb.Transfers.AccountAmounts = append(builder.pb.Transfers.AccountAmounts, &proto.AccountAmount{
 		AccountID: id.toProto(),
-		Amount:    amount,
+		Amount:    amount.AsTinybar(),
 	})
 
 	return builder
@@ -47,7 +47,7 @@ func (builder CryptoTransferTransaction) AddTransfer(id AccountID, amount int64)
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder CryptoTransferTransaction) SetMaxTransactionFee(maxTransactionFee uint64) CryptoTransferTransaction {
+func (builder CryptoTransferTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) CryptoTransferTransaction {
 	return CryptoTransferTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

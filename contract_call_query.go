@@ -33,14 +33,9 @@ func (builder *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQue
 	return builder
 }
 
-func (builder *ContractCallQuery) SetFunctionParameters(params ContractFunctionParams) (*ContractCallQuery, error) {
-	function, err := params.build(nil)
-	if err != nil {
-		return builder, err
-	}
-
-	builder.pb.FunctionParameters = function
-	return builder, nil
+func (builder *ContractCallQuery) SetFunction(name string, params ContractFunctionParams) *ContractCallQuery {
+	builder.pb.FunctionParameters = params.build(&name)
+	return builder
 }
 
 func (builder *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
@@ -52,11 +47,12 @@ func (builder *ContractCallQuery) Execute(client *Client) (ContractFunctionResul
 	return contractFunctionResultFromProto(resp.GetContractCallLocal().FunctionResult), nil
 }
 
-func (builder *ContractCallQuery) Cost(client *Client) (uint64, error) {
+func (builder *ContractCallQuery) Cost(client *Client) (Hbar, error) {
 	cost, err := builder.QueryBuilder.Cost(client)
 	if err != nil {
-		return 0, err
+		return ZeroHbar, err
 	}
 
-	return uint64(float64(cost) * float64(1.1)), nil
+	// TODO: Document why
+	return HbarFromTinybar(int64(float64(cost.AsTinybar()) * float64(1.1))), nil
 }

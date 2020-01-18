@@ -26,16 +26,12 @@ func (builder ContractDeleteTransaction) SetContractID(id ContractID) ContractDe
 	return builder
 }
 
-func (builder ContractDeleteTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder ContractDeleteTransaction) SetMaxTransactionFee(maxTransactionFee uint64) ContractDeleteTransaction {
+func (builder ContractDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractDeleteTransaction {
 	return ContractDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

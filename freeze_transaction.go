@@ -33,16 +33,12 @@ func (builder FreezeTransaction) SetEndTime(end time.Time) FreezeTransaction {
 	return builder
 }
 
-func (builder FreezeTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder FreezeTransaction) SetMaxTransactionFee(maxTransactionFee uint64) FreezeTransaction {
+func (builder FreezeTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FreezeTransaction {
 	return FreezeTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

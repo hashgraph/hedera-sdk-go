@@ -9,17 +9,17 @@ import (
 
 type TransactionRecord struct {
 	Receipt            TransactionReceipt
-	Hash               []byte
+	TransactionHash    []byte
 	ConsensusTimestamp time.Time
 	TransactionID      TransactionID
 	TransactionMemo    string
-	TransactionFee     uint64
+	TransactionFee     Hbar
 	Transfers          []Transfer
 	callResult         *ContractFunctionResult
 	callResultIsCreate bool
 }
 
-func (record TransactionRecord) ContractExecuteResult() (ContractFunctionResult, error) {
+func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
 	if record.callResult == nil || record.callResultIsCreate {
 		return ContractFunctionResult{}, fmt.Errorf("record does not contain a contract execute result")
 	}
@@ -27,7 +27,7 @@ func (record TransactionRecord) ContractExecuteResult() (ContractFunctionResult,
 	return *record.callResult, nil
 }
 
-func (record TransactionRecord) ContractCreateResult() (ContractFunctionResult, error) {
+func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResult, error) {
 	if record.callResult == nil || !record.callResultIsCreate {
 		return ContractFunctionResult{}, fmt.Errorf("record does not contain a contract create result")
 	}
@@ -55,11 +55,11 @@ func transactionRecordFromProto(pb *proto.TransactionRecord) TransactionRecord {
 
 	return TransactionRecord{
 		Receipt:            transactionReceiptFromProto(pb.Receipt),
-		Hash:               pb.TransactionHash,
+		TransactionHash:    pb.TransactionHash,
 		ConsensusTimestamp: timeFromProto(pb.ConsensusTimestamp),
 		TransactionID:      transactionIDFromProto(pb.TransactionID),
 		TransactionMemo:    pb.Memo,
-		TransactionFee:     pb.TransactionFee,
+		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:          transferList,
 		callResultIsCreate: callResultIsCreate,
 		callResult:         callResult,

@@ -38,16 +38,12 @@ func (builder SystemDeleteTransaction) SetFileID(ID FileID) SystemDeleteTransact
 	return builder
 }
 
-func (builder SystemDeleteTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder SystemDeleteTransaction) SetMaxTransactionFee(maxTransactionFee uint64) SystemDeleteTransaction {
+func (builder SystemDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) SystemDeleteTransaction {
 	return SystemDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

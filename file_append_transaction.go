@@ -31,16 +31,12 @@ func (builder FileAppendTransaction) SetContents(contents []byte) FileAppendTran
 	return builder
 }
 
-func (builder FileAppendTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder FileAppendTransaction) SetMaxTransactionFee(maxTransactionFee uint64) FileAppendTransaction {
+func (builder FileAppendTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileAppendTransaction {
 	return FileAppendTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

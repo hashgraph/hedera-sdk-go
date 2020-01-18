@@ -26,12 +26,12 @@ func (builder ContractUpdateTransaction) SetContractID(id ContractID) ContractUp
 	return builder
 }
 
-func (builder ContractUpdateTransaction) SetBytecodeFile(id FileID) ContractUpdateTransaction {
+func (builder ContractUpdateTransaction) SetBytecodeFileID(id FileID) ContractUpdateTransaction {
 	builder.pb.FileID = id.toProto()
 	return builder
 }
 
-func (builder ContractUpdateTransaction) SetAdminKey(publicKey Ed25519PublicKey) ContractUpdateTransaction {
+func (builder ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) ContractUpdateTransaction {
 	builder.pb.AdminKey = publicKey.toProto()
 	return builder
 }
@@ -56,16 +56,12 @@ func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUp
 	return builder
 }
 
-func (builder ContractUpdateTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder ContractUpdateTransaction) SetMaxTransactionFee(maxTransactionFee uint64) ContractUpdateTransaction {
+func (builder ContractUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractUpdateTransaction {
 	return ContractUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

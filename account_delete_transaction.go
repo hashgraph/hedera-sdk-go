@@ -21,9 +21,6 @@ func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	return builder
 }
 
-// SetDeleteAccountID sets the account to delete. Note: To successfully delete
-// an account one must also manually set the `TransactionID` to a
-// `TransactionID` constructed from the same `AccountID`
 func (builder AccountDeleteTransaction) SetDeleteAccountID(id AccountID) AccountDeleteTransaction {
 	builder.pb.DeleteAccountID = id.toProto()
 	return builder
@@ -34,16 +31,12 @@ func (builder AccountDeleteTransaction) SetTransferAccountID(id AccountID) Accou
 	return builder
 }
 
-func (builder AccountDeleteTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder AccountDeleteTransaction) SetMaxTransactionFee(maxTransactionFee uint64) AccountDeleteTransaction {
+func (builder AccountDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountDeleteTransaction {
 	return AccountDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

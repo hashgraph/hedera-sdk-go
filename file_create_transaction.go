@@ -38,31 +38,12 @@ func (builder FileCreateTransaction) SetContents(contents []byte) FileCreateTran
 	return builder
 }
 
-func (builder FileCreateTransaction) Build(client *Client) Transaction {
-	// If a shard/realm is not set, it is inferred from the Operator on the Client
-
-	if builder.pb.ShardID == nil && client != nil {
-		builder.pb.ShardID = &proto.ShardID{
-			ShardNum: int64(client.operator.accountID.Shard),
-		}
-	}
-
-	if builder.pb.RealmID == nil && client != nil {
-		builder.pb.RealmID = &proto.RealmID{
-			ShardNum: int64(client.operator.accountID.Shard),
-			RealmNum: int64(client.operator.accountID.Realm),
-		}
-	}
-
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder FileCreateTransaction) SetMaxTransactionFee(maxTransactionFee uint64) FileCreateTransaction {
+func (builder FileCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileCreateTransaction {
 	return FileCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

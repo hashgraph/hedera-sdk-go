@@ -13,8 +13,7 @@ type TransactionID struct {
 }
 
 func NewTransactionID(accountID AccountID) TransactionID {
-	// TODO: Less 10s
-	now := time.Now()
+	now := time.Now().Add(-10 * time.Second)
 
 	return TransactionID{accountID, now}
 }
@@ -23,13 +22,21 @@ func TransactionIDWithValidStart(accountID AccountID, validStart time.Time) Tran
 	return TransactionID{accountID, validStart}
 }
 
-func (id TransactionID) Receipt(client *Client) (TransactionReceipt, error) {
+func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
+	// TODO: Return an error on an exceptional receipt status and ensure that
+	// 		 TransactionReceiptQuery does not return error on exceptional receipt status
+
 	return NewTransactionReceiptQuery().
 		SetTransactionID(id).
 		Execute(client)
 }
 
-func (id TransactionID) Record(client *Client) (TransactionRecord, error) {
+func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
+	_, err := id.GetReceipt(client)
+	if err != nil {
+		return TransactionRecord{}, err
+	}
+
 	return NewTransactionRecordQuery().
 		SetTransactionID(id).
 		Execute(client)

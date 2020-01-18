@@ -7,11 +7,6 @@ type AccountStakersQuery struct {
 	pb *proto.CryptoGetStakersQuery
 }
 
-type ProxyStaker struct {
-	AccountID AccountID
-	Amount    int64
-}
-
 func NewAccountStakersQuery() *AccountStakersQuery {
 	pb := &proto.CryptoGetStakersQuery{Header: &proto.QueryHeader{}}
 
@@ -26,8 +21,8 @@ func (builder *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQu
 	return builder
 }
 
-func (builder *AccountStakersQuery) Execute(client *Client) ([]ProxyStaker, error) {
-	var stakers = []ProxyStaker{}
+func (builder *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
+	var stakers = []Transfer{}
 
 	resp, err := builder.execute(client)
 	if err != nil {
@@ -35,9 +30,9 @@ func (builder *AccountStakersQuery) Execute(client *Client) ([]ProxyStaker, erro
 	}
 
 	for _, element := range resp.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
-		stakers = append(stakers, ProxyStaker{
+		stakers = append(stakers, Transfer{
 			AccountID: accountIDFromProto(element.AccountID),
-			Amount:    element.Amount,
+			Amount:    HbarFromTinybar(element.Amount),
 		})
 	}
 

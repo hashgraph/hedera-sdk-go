@@ -11,12 +11,12 @@ import (
 )
 
 // Default max fees and payments to 1 h-bar
-const defaultMaxTransactionFee uint64 = 100_000_000
-const defaultMaxQueryPayment uint64 = 100_000_000
+var defaultMaxTransactionFee Hbar = NewHbar(1)
+var defaultMaxQueryPayment Hbar = NewHbar(1)
 
 type Client struct {
-	maxTransactionFee uint64
-	maxQueryPayment   uint64
+	maxTransactionFee Hbar
+	maxQueryPayment   Hbar
 
 	operator *operator
 
@@ -86,8 +86,8 @@ type configOperator struct {
 }
 
 type clientConfig struct {
-	Network map[string]AccountID `json:"network"`
-	Operator *configOperator `json:"operator"`
+	Network  map[string]AccountID `json:"network"`
+	Operator *configOperator      `json:"operator"`
 }
 
 func ClientFromJSON(jsonBytes []byte) (*Client, error) {
@@ -189,13 +189,13 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519Publ
 	return client
 }
 
-func (client *Client) SetMaxTransactionFee(tinyBars uint64) *Client {
-	client.maxTransactionFee = tinyBars
+func (client *Client) SetMaxTransactionFee(fee Hbar) *Client {
+	client.maxTransactionFee = fee
 	return client
 }
 
-func (client *Client) SetMaxQueryPayment(tinyBars uint64) *Client {
-	client.maxQueryPayment = tinyBars
+func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
+	client.maxQueryPayment = payment
 	return client
 }
 

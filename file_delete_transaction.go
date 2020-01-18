@@ -35,7 +35,7 @@ func (builder FileDeleteTransaction) Build(client *Client) Transaction {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder FileDeleteTransaction) SetMaxTransactionFee(maxTransactionFee uint64) FileDeleteTransaction {
+func (builder FileDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileDeleteTransaction {
 	return FileDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

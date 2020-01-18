@@ -36,13 +36,9 @@ func (builder ContractExecuteTransaction) SetPayableAmount(amount Hbar) Contract
 	return builder
 }
 
-func (builder ContractExecuteTransaction) SetFunctionParameters(params []byte) ContractExecuteTransaction {
-	builder.pb.FunctionParameters = params
+func (builder ContractExecuteTransaction) SetFunction(name string, params ContractFunctionParams) ContractExecuteTransaction {
+	builder.pb.FunctionParameters = params.build(&name)
 	return builder
-}
-
-func (builder ContractExecuteTransaction) Build(client *Client) Transaction {
-	return builder.TransactionBuilder.Build(client)
 }
 
 //
@@ -50,7 +46,7 @@ func (builder ContractExecuteTransaction) Build(client *Client) Transaction {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder ContractExecuteTransaction) SetMaxTransactionFee(maxTransactionFee uint64) ContractExecuteTransaction {
+func (builder ContractExecuteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractExecuteTransaction {
 	return ContractExecuteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

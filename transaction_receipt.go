@@ -11,15 +11,15 @@ type TransactionReceipt struct {
 	fileID     *FileID
 }
 
-func (receipt TransactionReceipt) FileID() FileID {
+func (receipt TransactionReceipt) GetFileID() FileID {
 	return *receipt.fileID
 }
 
-func (receipt TransactionReceipt) AccountID() AccountID {
+func (receipt TransactionReceipt) GetAccountID() AccountID {
 	return *receipt.accountID
 }
 
-func (receipt TransactionReceipt) ContractID() ContractID {
+func (receipt TransactionReceipt) GetContractID() ContractID {
 	return *receipt.contractID
 }
 

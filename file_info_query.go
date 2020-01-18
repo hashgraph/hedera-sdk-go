@@ -14,7 +14,7 @@ type FileInfo struct {
 	FileID         FileID
 	Size           int64
 	ExpirationTime time.Time
-	Deleted        bool
+	IsDeleted      bool
 	Keys           []PublicKey
 }
 
@@ -49,24 +49,24 @@ func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		FileID:         fileIDFromProto(resp.GetFileGetInfo().FileInfo.FileID),
 		Size:           resp.GetFileGetInfo().FileInfo.Size,
 		ExpirationTime: timeFromProto(resp.GetFileGetInfo().FileInfo.ExpirationTime),
-		Deleted:        resp.GetFileGetInfo().FileInfo.Deleted,
+		IsDeleted:      resp.GetFileGetInfo().FileInfo.Deleted,
 		Keys:           keys,
 	}, nil
 }
 
-func (builder *FileInfoQuery) Cost(client *Client) (uint64, error) {
+func (builder *FileInfoQuery) Cost(client *Client) (Hbar, error) {
 	// deleted files return a COST_ANSWER of zero which triggers `INSUFFICIENT_TX_FEE`
 	// if you set that as the query payment; 25 tinybar seems to be enough to get
 	// `FILE_DELETED` back instead.
 	cost, err := builder.QueryBuilder.Cost(client)
 	if err != nil {
-		return 0, err
+		return ZeroHbar, err
 	}
 
 	// math.Min requires float64 and returns float64
-	if cost > 25 {
+	if cost.AsTinybar() > 25 {
 		return cost, nil
 	}
 
-	return 25, nil
+	return HbarFromTinybar(25), nil
 }

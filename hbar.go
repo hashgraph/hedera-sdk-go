@@ -28,8 +28,8 @@ func NewHbar(hbar float64) Hbar {
 	return Hbar{tinybar: int64(hbar * 100_000_000), unit: HbarUnits.Hbar}
 }
 
-func (hbar Hbar) AsTinybar() uint64 {
-	return uint64(hbar.tinybar)
+func (hbar Hbar) AsTinybar() int64 {
+	return hbar.tinybar
 }
 
 func (hbar Hbar) As(unit HbarUnit) int64 {
@@ -42,4 +42,11 @@ func (hbar Hbar) String() string {
 	}
 
 	return fmt.Sprintf("%v %v (%v tinybar)", hbar.tinybar, hbar.unit.String(), hbar.AsTinybar())
+}
+
+func (hbar Hbar) negated() Hbar {
+	return Hbar{
+		tinybar: -hbar.tinybar,
+		unit:    hbar.unit,
+	}
 }

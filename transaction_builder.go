@@ -42,7 +42,7 @@ func (builder TransactionBuilder) Build(client *Client) Transaction {
 		SigMap:   &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
 	}
 
-	return Transaction{pb, builder.pb.TransactionID}
+	return Transaction{pb, transactionIDFromProto(builder.pb.TransactionID)}
 }
 
 func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error) {
@@ -53,8 +53,8 @@ func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error)
 // Shared
 //
 
-func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee uint64) TransactionBuilder {
-	builder.pb.TransactionFee = maxTransactionFee
+func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee Hbar) TransactionBuilder {
+	builder.pb.TransactionFee = uint64(maxTransactionFee.AsTinybar())
 	return builder
 }
 

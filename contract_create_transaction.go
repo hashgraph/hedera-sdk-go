@@ -21,7 +21,7 @@ func NewContractCreateTransaction() ContractCreateTransaction {
 	return builder
 }
 
-func (builder ContractCreateTransaction) SetBytecodeFile(id FileID) ContractCreateTransaction {
+func (builder ContractCreateTransaction) SetBytecodeFileID(id FileID) ContractCreateTransaction {
 	builder.pb.FileID = id.toProto()
 	return builder
 }
@@ -41,8 +41,8 @@ func (builder ContractCreateTransaction) SetGas(gas uint64) ContractCreateTransa
 	return builder
 }
 
-func (builder ContractCreateTransaction) SetInitialBalance(tinyBars uint64) ContractCreateTransaction {
-	builder.pb.InitialBalance = int64(tinyBars)
+func (builder ContractCreateTransaction) SetInitialBalance(initialBalance Hbar) ContractCreateTransaction {
+	builder.pb.InitialBalance = initialBalance.AsTinybar()
 	return builder
 }
 
@@ -56,28 +56,9 @@ func (builder ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time
 	return builder
 }
 
-func (builder ContractCreateTransaction) SetConstructorParams(params []byte) ContractCreateTransaction {
-	builder.pb.ConstructorParameters = params
+func (builder ContractCreateTransaction) SetConstructorParams(params ContractFunctionParams) ContractCreateTransaction {
+	builder.pb.ConstructorParameters = params.build(nil)
 	return builder
-}
-
-func (builder ContractCreateTransaction) Build(client *Client) Transaction {
-	// If a shard/realm is not set, it is inferred from the Operator on the Client
-
-	if builder.pb.ShardID == nil {
-		builder.pb.ShardID = &proto.ShardID{
-			ShardNum: int64(client.operator.accountID.Shard),
-		}
-	}
-
-	if builder.pb.RealmID == nil {
-		builder.pb.RealmID = &proto.RealmID{
-			ShardNum: int64(client.operator.accountID.Shard),
-			RealmNum: int64(client.operator.accountID.Realm),
-		}
-	}
-
-	return builder.TransactionBuilder.Build(client)
 }
 
 //
@@ -85,7 +66,7 @@ func (builder ContractCreateTransaction) Build(client *Client) Transaction {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder ContractCreateTransaction) SetMaxTransactionFee(maxTransactionFee uint64) ContractCreateTransaction {
+func (builder ContractCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractCreateTransaction {
 	return ContractCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 

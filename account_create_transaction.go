@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
-	"math"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type AccountCreateTransaction struct {
@@ -23,19 +23,19 @@ func NewAccountCreateTransaction() AccountCreateTransaction {
 	// Default to maximum values for record thresholds. Without this records would be
 	// auto-created whenever a send or receive transaction takes place for this new account.
 	// This should be an explicit ask.
-	builder.SetReceiveRecordThreshold(uint64(math.MaxInt64))
-	builder.SetSendRecordThreshold(uint64(math.MaxInt64))
+	builder.SetReceiveRecordThreshold(MaxHbar)
+	builder.SetSendRecordThreshold(MaxHbar)
 
 	return builder
 }
 
-func (builder AccountCreateTransaction) SetKey(publicKey Ed25519PublicKey) AccountCreateTransaction {
+func (builder AccountCreateTransaction) SetKey(publicKey PublicKey) AccountCreateTransaction {
 	builder.pb.Key = publicKey.toProto()
 	return builder
 }
 
-func (builder AccountCreateTransaction) SetInitialBalance(tinyBars uint64) AccountCreateTransaction {
-	builder.pb.InitialBalance = tinyBars
+func (builder AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) AccountCreateTransaction {
+	builder.pb.InitialBalance = uint64(initialBalance.AsTinybar())
 	return builder
 }
 
@@ -44,13 +44,13 @@ func (builder AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.
 	return builder
 }
 
-func (builder AccountCreateTransaction) SetSendRecordThreshold(recordThreshold uint64) AccountCreateTransaction {
-	builder.pb.SendRecordThreshold = recordThreshold
+func (builder AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
+	builder.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return builder
 }
 
-func (builder AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold uint64) AccountCreateTransaction {
-	builder.pb.ReceiveRecordThreshold = recordThreshold
+func (builder AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
+	builder.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return builder
 }
 
@@ -64,31 +64,12 @@ func (builder AccountCreateTransaction) SetReceiverSignatureRequired(required bo
 	return builder
 }
 
-func (builder AccountCreateTransaction) Build(client *Client) Transaction {
-	// If a shard/realm is not set, it is inferred from the Operator on the Client
-
-	if builder.pb.ShardID == nil && client != nil {
-		builder.pb.ShardID = &proto.ShardID{
-			ShardNum: int64(client.operator.accountID.Shard),
-		}
-	}
-
-	if builder.pb.RealmID == nil && client != nil {
-		builder.pb.RealmID = &proto.RealmID{
-			ShardNum: int64(client.operator.accountID.Shard),
-			RealmNum: int64(client.operator.accountID.Realm),
-		}
-	}
-
-	return builder.TransactionBuilder.Build(client)
-}
-
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder AccountCreateTransaction) SetMaxTransactionFee(maxTransactionFee uint64) AccountCreateTransaction {
+func (builder AccountCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountCreateTransaction {
 	return AccountCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
