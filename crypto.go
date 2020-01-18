@@ -87,23 +87,19 @@ func GenerateEd25519PrivateKey() (Ed25519PrivateKey, error) {
 }
 
 func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
-	var privateKey ed25519.PrivateKey
-
 	switch len(bytes) {
 	case 32:
 		// The bytes array has just the private key
-		privateKey = ed25519.NewKeyFromSeed(bytes)
-
+		return Ed25519PrivateKey{
+			keyData:   ed25519.NewKeyFromSeed(bytes),
+		}, nil
 	case 64:
-		privateKey = ed25519.NewKeyFromSeed(bytes[0:32])
-
+		return Ed25519PrivateKey{
+			keyData: ed25519.NewKeyFromSeed(bytes[0:32]),
+		}, nil
 	default:
 		return Ed25519PrivateKey{}, newErrBadKeyf("invalid private key length: %v bytes", len(bytes))
 	}
-
-	return Ed25519PrivateKey{
-		keyData: privateKey,
-	}, nil
 }
 
 func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed25519PrivateKey, error) {
