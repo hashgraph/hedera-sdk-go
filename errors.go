@@ -15,10 +15,10 @@ type ErrMaxQueryPaymentExceeded struct {
 	query string
 }
 
-func newErrorMaxQueryPaymentExceeded(builder *QueryBuilder, queryCost int64, maxQueryPayment int64) ErrMaxQueryPaymentExceeded {
+func newErrorMaxQueryPaymentExceeded(builder *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
 	return ErrMaxQueryPaymentExceeded{
-		QueryCost:       HbarFromTinybar(queryCost),
-		MaxQueryPayment: HbarFromTinybar(maxQueryPayment),
+		QueryCost:       queryCost,
+		MaxQueryPayment: maxQueryPayment,
 		query:           reflect.TypeOf(*builder).Name(),
 	}
 }
