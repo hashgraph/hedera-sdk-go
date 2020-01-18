@@ -17,9 +17,7 @@ type Transaction struct {
 }
 
 func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
-	return transaction.SignWith(privateKey.PublicKey(), func(message []byte) []byte {
-		return privateKey.Sign(message)
-	})
+	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
 func (transaction Transaction) signWithOperator(operator operator) Transaction {

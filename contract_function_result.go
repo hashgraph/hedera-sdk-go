@@ -75,12 +75,7 @@ func (result ContractFunctionResult) AsBytes() []byte {
 func contractFunctionResultFromProto(pb *proto.ContractFunctionResult) ContractFunctionResult {
 	infos := []ContractLogInfo{}
 	for _, info := range pb.LogInfo {
-		infos = append(infos, ContractLogInfo{
-			ContractID: contractIDFromProto(info.ContractID),
-			Bloom:      info.Bloom,
-			Topics:     info.Topic,
-			Data:       info.Data,
-		})
+		infos = append(infos, contractLogInfoFromProto(info))
 	}
 
 	return ContractFunctionResult{

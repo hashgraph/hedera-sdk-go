@@ -94,6 +94,9 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 	var clientConfig clientConfig
 
 	err := json.Unmarshal(jsonBytes, &clientConfig)
+	if err != nil {
+		return nil, err
+	}
 
 	client := NewClient(clientConfig.Network)
 

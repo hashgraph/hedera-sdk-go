@@ -117,6 +117,7 @@ const (
 	MaxFileSizeExceeded                 Status = 112
 )
 
+// nolint:gocyclo
 func (status Status) String() string {
 	switch status {
 	case Ok:

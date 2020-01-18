@@ -5,9 +5,7 @@ linters:
     - deadcode
     - depguard
     - dogsled
-    - dupl
     - errcheck
-    - funlen
     - gochecknoinits
     - goconst
     - gocritic
@@ -20,7 +18,6 @@ linters:
     - govet
     - ineffassign
     - interfacer
-    - lll
     - misspell
     - nakedret
     - scopelint

@@ -39,11 +39,11 @@ func main() {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionID.Receipt(client)
+	transactionReceipt, err := transactionID.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("file = %v\n", transactionReceipt.FileID())
+	fmt.Printf("file = %v\n", transactionReceipt.GetFileID())
 }

@@ -322,7 +322,7 @@ func (contract *ContractFunctionParams) AddBytes(value []byte) *ContractFunction
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddBytes32(value []byte) *ContractFunctionParams {
+func (contract *ContractFunctionParams) AddBytes32(value [32]byte) *ContractFunctionParams {
 	argument := newArgument()
 
 	argument.value = value[:]

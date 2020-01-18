@@ -40,7 +40,7 @@ func main() {
 
 	transactionID, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(1000).
+		SetInitialBalance(hedera.HbarFromTinybar(10)).
 		SetTransactionMemo("sdk example create_account/main.go").
 		Execute(client)
 
@@ -48,11 +48,11 @@ func main() {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionID.Receipt(client)
+	transactionReceipt, err := transactionID.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("account = %v\n", transactionReceipt.AccountID())
+	fmt.Printf("account = %v\n", transactionReceipt.GetAccountID())
 }

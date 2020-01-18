@@ -111,7 +111,12 @@ func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed2551
 	seed := pbkdf2.Key([]byte(mnemonic.String()), salt, 2048, 64, sha512.New)
 
 	h := hmac.New(sha512.New, []byte("ed25519 seed"))
-	h.Write(seed)
+
+	_, err := h.Write(seed)
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
 	digest := h.Sum(nil)
 
 	keyBytes := digest[0:32]
