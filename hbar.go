@@ -1,17 +1,17 @@
 package hedera
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type Hbar struct {
 	tinybar int64
 }
 
-const max = int64(^uint(0) >> 1)
-const min = -max - 1
+var MaxHbar = Hbar{math.MaxInt64}
 
-var MaxHbar = Hbar{max}
-
-var MinHbar = Hbar{min}
+var MinHbar = Hbar{math.MinInt64}
 
 var ZeroHbar = Hbar{0}
 
@@ -24,16 +24,8 @@ func HbarFrom(bars float64, unit HbarUnit) Hbar {
 
 // todo: change this behavior to wrap around?
 // HbarFromTinybar creates a representation of Hbar in tinybars
-// note: if the value of tinybar is out of range it will return 0
+// note: if the value of tinybar is out of range it will wrap around
 func HbarFromTinybar(tinybar int64) Hbar {
-	if tinybar > max {
-		return ZeroHbar
-	}
-
-	if tinybar < min {
-		return ZeroHbar
-	}
-
 	return Hbar{tinybar}
 }
 
