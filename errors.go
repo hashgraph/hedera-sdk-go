@@ -77,8 +77,8 @@ type ErrLocalValidation struct {
 	message string
 }
 
-func newErrLocalValidation(message string) ErrLocalValidation {
-	return ErrLocalValidation{message}
+func newErrLocalValidationf(format string, a ...interface{}) ErrLocalValidation {
+	return ErrLocalValidation{fmt.Sprintf(format, a...)}
 }
 
 func (e ErrLocalValidation) Error() string {

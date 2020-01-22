@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"bytes"
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -68,7 +67,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	node := client.node(nodeAccountID)
 
 	if node == nil {
-		return id, fmt.Errorf("NodeAccountID %v not found on Client", nodeAccountID)
+		return id, newErrLocalValidationf("NodeAccountID %v not found on Client", nodeAccountID)
 	}
 
 	var methodName string
@@ -120,7 +119,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 		methodName = "/proto.FileService/systemUndelete"
 
 	default:
-		return id, fmt.Errorf("unimplemented: %T", transactionBody.Data)
+		return id, newErrLocalValidationf("unimplemented: %T", transactionBody.Data)
 	}
 
 	validUntil := time.Now().Add(time.Duration(transactionBody.TransactionValidDuration.Seconds) * time.Second)

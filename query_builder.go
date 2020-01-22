@@ -161,8 +161,8 @@ func (builder *QueryBuilder) isPaymentRequired() bool {
 
 func methodName(pb *proto.Query) string {
 	switch pb.Query.(type) {
-	// Crypto
 
+	// Crypto
 	case *proto.Query_TransactionGetReceipt:
 		return "/proto.CryptoService/getTransactionReceipts"
 
@@ -182,7 +182,6 @@ func methodName(pb *proto.Query) string {
 		return "/proto.CryptoService/getStakersByAccountID"
 
 	// Smart Contracts
-
 	case *proto.Query_ContractCallLocal:
 		return "/proto.SmartContractService/contractCallLocalMethod"
 
@@ -196,7 +195,6 @@ func methodName(pb *proto.Query) string {
 		return "/proto.SmartContractService/getTxRecordByContractID"
 
 	// File
-
 	case *proto.Query_FileGetContents:
 		return "/proto.FileService/getFileContent"
 
@@ -210,8 +208,8 @@ func methodName(pb *proto.Query) string {
 
 func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 	switch resp.Response.(type) {
-	// Crypto
 
+	// Crypto
 	case *proto.Response_TransactionGetReceipt:
 		return resp.GetTransactionGetReceipt().Header
 
@@ -231,7 +229,6 @@ func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 		return resp.GetCryptoGetProxyStakers().Header
 
 	// Smart Contracts
-
 	case *proto.Response_ContractCallLocal:
 		return resp.GetContractCallLocal().Header
 
@@ -245,7 +242,6 @@ func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 		return resp.GetContractGetRecordsResponse().Header
 
 	// File
-
 	case *proto.Response_FileGetContents:
 		return resp.GetFileGetContents().Header
 
