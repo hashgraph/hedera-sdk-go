@@ -9,33 +9,26 @@ import (
 
 var functionName = string("f")
 
-func TestSolidtySerialization(t *testing.T) {
-	params := NewContractFunctionParams()
+func TestSoliditySerialization(t *testing.T) {
+	params := NewContractFunctionParams().
+		AddInt32(16909060).
+		AddInt64(0xffffff).
+		AddString("this is a grin: 😁")
 
-	params, err := params.AddInt32(16909060)
-	if err != nil {
-		panic(err)
-	}
-
-	params, err = params.AddInt64(0xffffff)
-	if err != nil {
-		panic(err)
-	}
-
-	params.AddString("this is a grin: 😁")
-
-	result, _ := params.build(&functionName)
+	result := params.build(&functionName)
 
 	function, err := hex.DecodeString("29a2132d")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
-	first, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000001020304")
-	second, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000ffffff")
-	thirdOffset, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000060")
-	thirdValueLength, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000014")
-	thirdValue, _ := hex.DecodeString("746869732069732061206772696e3a20f09f9881000000000000000000000000")
+	first, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000001020304")
+	assert.NoError(t, err)
+	second, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000ffffff")
+	assert.NoError(t, err)
+	thirdOffset, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000060")
+	assert.NoError(t, err)
+	thirdValueLength, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000014")
+	assert.NoError(t, err)
+	thirdValue, err := hex.DecodeString("746869732069732061206772696e3a20f09f9881000000000000000000000000")
 
 	assert.Equal(t, 164, len(result), "Length of params does not match")
 	assert.Equal(t, function, result[0:4], "Function signature doesn't match")
@@ -46,55 +39,37 @@ func TestSolidtySerialization(t *testing.T) {
 	assert.Equal(t, thirdValue, result[(32*4)+4:(32*5)+4], "ThirdValue argument doesn't match")
 }
 
-func TestSolidtyStringArraySerialization(t *testing.T) {
-	result, _ := NewContractFunctionParams().
+func TestSolidityStringArraySerialization(t *testing.T) {
+	result := NewContractFunctionParams().
 		AddStringArray([]string{"one", "four"}).
 		build(&functionName)
 
 	function, err := hex.DecodeString("e9cc8780")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	firstOffset, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000020")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	firstLengthOfArray, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000002")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	firstElementOffset, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000040")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	secondElementOffset, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000080")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	firstElementLength, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000003")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	secondElementLength, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000004")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	firstElementValue, err := hex.DecodeString("6f6e650000000000000000000000000000000000000000000000000000000000")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	secondElementValue, err := hex.DecodeString("666f757200000000000000000000000000000000000000000000000000000000")
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 
 	assert.Equal(t, 260, len(result), "Length of params does not match")
 	assert.Equal(t, function, result[0:4], "Function signature doesn't match")
@@ -106,5 +81,4 @@ func TestSolidtyStringArraySerialization(t *testing.T) {
 	assert.Equal(t, firstElementValue, result[(32*5)+4:(32*6)+4], "firstElementLength doesn't match")
 	assert.Equal(t, secondElementLength, result[(32*6)+4:(32*7)+4], " secondElementLength doesn't match")
 	assert.Equal(t, secondElementValue, result[(32*7)+4:(32*8)+4], "secondElementLength doesn't match")
-
 }

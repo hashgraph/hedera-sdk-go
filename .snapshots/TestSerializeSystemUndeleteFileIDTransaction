@@ -1,0 +1,29 @@
+bodyBytes: "\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\003\030\240\215\006\"\002\010x\252\001\004\n\002\030\003"
+sigMap: <
+  sigPair: <
+    pubKeyPrefix: "\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"
+    ed25519: "\203\300S\261\351,\316\351-0\321s\233(k\301\027&0M\274 \253O\301\022\214a\362\001L\365\333|\275\335/J\365\207A\373\177j\222\001TR\017\004(\016\213\236G\034\013\034l\321\273\201\273\010"
+  >
+>
+transactionID: <
+  transactionValidStart: <
+    seconds: 124124
+    nanos: 151515
+  >
+  accountID: <
+    accountNum: 3
+  >
+>
+nodeAccountID: <
+  accountNum: 3
+>
+transactionFee: 100000
+transactionValidDuration: <
+  seconds: 120
+>
+systemUndelete: <
+  fileID: <
+    fileNum: 3
+  >
+>
+

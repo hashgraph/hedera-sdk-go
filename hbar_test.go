@@ -23,5 +23,4 @@ func TestHbarFromTinybar(t *testing.T) {
 	hbar = HbarFromTinybar(tinybar)
 
 	assert.Equal(t, tinybar, hbar.tinybar)
-
 }
