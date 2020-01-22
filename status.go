@@ -100,21 +100,21 @@ const (
 	StatusNotSpecialAccount                   Status = 94
 	StatusContractNegativeGas                 Status = 95
 	StatusContractNegativeValue               Status = 96
-	StatusInvalidFeeFile                     Status = 97
-	StatusInvalidExchangeRateFile            Status = 98
-	StatusInsufficientLocalCallGas           Status = 99
-	StatusEntityNotAllowedToDelete           Status = 100
-	StatusAuthorizationFailed                Status = 101
-	StatusFileUploadedProtoInvalid           Status = 102
-	StatusFileUploadedProtoNotSavedToDisk    Status = 103
-	StatusFeeScheduleFilePartUploaded        Status = 104
-	StatusExchangeRateChangeLimitExceeded    Status = 105
-	StatusMaxContractStorageExceeded         Status = 106
-	StatusTransferAccountSameAsDeleteAccount Status = 107
-	StatusTotalLedgerBalanceInvalid          Status = 108
-	StatusExpirationReductionNotAllowed      Status = 110
-	StatusMaxGasLimitExceeded                Status = 111
-	StatusMaxFileSizeExceeded                Status = 112
+	StatusInvalidFeeFile                      Status = 97
+	StatusInvalidExchangeRateFile             Status = 98
+	StatusInsufficientLocalCallGas            Status = 99
+	StatusEntityNotAllowedToDelete            Status = 100
+	StatusAuthorizationFailed                 Status = 101
+	StatusFileUploadedProtoInvalid            Status = 102
+	StatusFileUploadedProtoNotSavedToDisk     Status = 103
+	StatusFeeScheduleFilePartUploaded         Status = 104
+	StatusExchangeRateChangeLimitExceeded     Status = 105
+	StatusMaxContractStorageExceeded          Status = 106
+	StatusTransferAccountSameAsDeleteAccount  Status = 107
+	StatusTotalLedgerBalanceInvalid           Status = 108
+	StatusExpirationReductionNotAllowed       Status = 110
+	StatusMaxGasLimitExceeded                 Status = 111
+	StatusMaxFileSizeExceeded                 Status = 112
 )
 
 func (status Status) isExceptional(includeUnknown bool) *ErrHederaStatus {

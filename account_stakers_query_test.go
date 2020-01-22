@@ -11,7 +11,7 @@ func TestNewAccountStakersQuery(t *testing.T) {
 	assert.NoError(t, err)
 
 	query := NewAccountStakersQuery().
-		SetAccountID(AccountID{Account:3}).
+		SetAccountID(AccountID{Account: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
 	cupaloy.SnapshotT(t, query.pb.String())

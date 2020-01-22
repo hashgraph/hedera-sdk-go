@@ -11,7 +11,7 @@ func TestNewFileContentsQuery(t *testing.T) {
 	assert.NoError(t, err)
 
 	query := NewFileContentsQuery().
-		SetFileID(FileID{File:3}).
+		SetFileID(FileID{File: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
 	cupaloy.SnapshotT(t, query.pb.String())

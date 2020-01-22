@@ -17,9 +17,8 @@ func TestNewContractCallQuery(t *testing.T) {
 		SetGas(100).
 		SetMaxResultSize(100).
 		SetFunction("someFunction", *parameters).
-		SetContractID(ContractID{Contract:3}).
+		SetContractID(ContractID{Contract: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
 	cupaloy.SnapshotT(t, query.pb.String())
 }
-

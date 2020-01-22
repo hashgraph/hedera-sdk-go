@@ -11,9 +11,8 @@ func TestNewContractBytecodeQuery(t *testing.T) {
 	assert.NoError(t, err)
 
 	query := NewContractBytecodeQuery().
-		SetContractID(ContractID{Contract:3}).
+		SetContractID(ContractID{Contract: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
 	cupaloy.SnapshotT(t, query.pb.String())
 }
-

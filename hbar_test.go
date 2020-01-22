@@ -6,7 +6,7 @@ import (
 )
 
 func TestHbarFromTinybar(t *testing.T) {
-	tinybar := HbarUnits.Hbar.numberOfTinybar();
+	tinybar := HbarUnits.Hbar.numberOfTinybar()
 
 	hbar := HbarFromTinybar(tinybar)
 
