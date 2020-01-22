@@ -15,16 +15,12 @@ var MinHbar = Hbar{math.MinInt64}
 
 var ZeroHbar = Hbar{0}
 
-// todo: change this behavior to wrap around?
 // HbarFrom creates a representation of Hbar in tinybar on the unit provided
-// note: if the value of bars is out of range it will return 0
 func HbarFrom(bars float64, unit HbarUnit) Hbar {
 	return HbarFromTinybar(int64(bars * float64(unit.numberOfTinybar())))
 }
 
-// todo: change this behavior to wrap around?
 // HbarFromTinybar creates a representation of Hbar in tinybars
-// note: if the value of tinybar is out of range it will wrap around
 func HbarFromTinybar(tinybar int64) Hbar {
 	return Hbar{tinybar}
 }
