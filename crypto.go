@@ -91,7 +91,7 @@ func Ed25519PrivateKeyFromBytes(bytes []byte) (Ed25519PrivateKey, error) {
 	case 32:
 		// The bytes array has just the private key
 		return Ed25519PrivateKey{
-			keyData:   ed25519.NewKeyFromSeed(bytes),
+			keyData: ed25519.NewKeyFromSeed(bytes),
 		}, nil
 	case 64:
 		return Ed25519PrivateKey{

@@ -1,7 +1,5 @@
 package hedera
 
-// todo: rename this file?
-
 import (
 	"time"
 )
@@ -47,9 +45,9 @@ func newMockTransaction() (Transaction, error) {
 	}
 
 	tx := NewCryptoTransferTransaction().
-		AddSender(AccountID{Account: 2}, 100).
-		AddRecipient(AccountID{Account: 3}, 100).
-		SetMaxTransactionFee(1e6).
+		AddSender(AccountID{Account: 2}, HbarFromTinybar(100)).
+		AddRecipient(AccountID{Account: 3}, HbarFromTinybar(100)).
+		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		SetTransactionID(testTransactionID).
 		Build(client).
 		Sign(privateKey)

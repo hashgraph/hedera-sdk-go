@@ -48,7 +48,7 @@ func TestNewMnemonicFromGeneratedMnemonic(t *testing.T) {
 }
 
 func TestMnemonicBreaksWithBadLength(t *testing.T) {
-	// note this mnemonic is probably invalid but is just used to test breakage on length
+	// note this mnemonic is probably invalid and is only used to test breakage based on length
 	shortMnemonic := "inmate flip alley wear offer often piece magnet surge toddler submit right"
 
 	_, err := MnemonicFromString(shortMnemonic)

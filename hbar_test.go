@@ -6,7 +6,7 @@ import (
 )
 
 func TestHbarFromTinybar(t *testing.T) {
-	tinybar := HbarUnits.Hbar.numberOfTinybar();
+	tinybar := HbarUnits.Hbar.numberOfTinybar()
 
 	hbar := HbarFromTinybar(tinybar)
 
@@ -23,5 +23,4 @@ func TestHbarFromTinybar(t *testing.T) {
 	hbar = HbarFromTinybar(tinybar)
 
 	assert.Equal(t, tinybar, hbar.tinybar)
-
 }
