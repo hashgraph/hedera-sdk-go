@@ -4,23 +4,20 @@ import (
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
-func TestSerializeContractExecuteTransaction(t *testing.T) {
+func TestSerializeFreezeTransaction(t *testing.T) {
 	mockClient, err := newMockClient()
 	assert.NoError(t, err)
 
 	privateKey, err := Ed25519PrivateKeyFromString(mockPrivateKey)
 	assert.NoError(t, err)
 
-	parameters := NewContractFunctionParams().
-		AddBytes([]byte{24, 43, 11})
-
-	tx := NewContractExecuteTransaction().
-		SetContractID(ContractID{Contract: 5}).
-		SetGas(141).
-		SetPayableAmount(HbarFromTinybar(10000)).
-		SetFunction("someFunction", *parameters).
+	tx := NewFreezeTransaction().
+		SetTransactionID(testTransactionID).
+		SetStartTime(time.Unix(600, 100)).
+		SetEndTime(time.Unix(800, 100)).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
 		Build(mockClient).
