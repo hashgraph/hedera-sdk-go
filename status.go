@@ -3,346 +3,361 @@ package hedera
 type Status uint32
 
 const (
-	Ok                                  Status = 0
-	InvalidTransaction                  Status = 1
-	PayerAccountNotFound                Status = 2
-	InvalidNodeAccount                  Status = 3
-	TransactionExpired                  Status = 4
-	InvalidTransactionStart             Status = 5
-	InvalidTransactionDuration          Status = 6
-	InvalidSignature                    Status = 7
-	MemoTooLong                         Status = 8
-	InsufficientTxFee                   Status = 9
-	InsufficientPayerBalance            Status = 10
-	DuplicateTransaction                Status = 11
-	Busy                                Status = 12
-	NotSupported                        Status = 13
-	InvalidFileID                       Status = 14
-	InvalidAccountID                    Status = 15
-	InvalidContractID                   Status = 16
-	InvalidTransactionID                Status = 17
-	ReceiptNotFound                     Status = 18
-	RecordNotFound                      Status = 19
-	InvalidSolidityID                   Status = 20
-	Unknown                             Status = 21
-	Success                             Status = 22
-	FailInvalid                         Status = 23
-	FailFee                             Status = 24
-	FailBalance                         Status = 25
-	KeyRequired                         Status = 26
-	BadEncoding                         Status = 27
-	InsufficientAccountBalance          Status = 28
-	InvalidSolidityAddress              Status = 29
-	InsufficientGas                     Status = 30
-	ContractSizeLimitExceeded           Status = 31
-	LocalCallModificationException      Status = 32
-	ContractRevertExecuted              Status = 33
-	ContractExecutionException          Status = 34
-	InvalidReceivingNodeAccount         Status = 35
-	MissingQueryHeader                  Status = 36
-	AccountUpdateFailed                 Status = 37
-	InvalidKeyEncoding                  Status = 38
-	NullSolidityAddress                 Status = 39
-	ContractUpdateFailed                Status = 40
-	InvalidQueryHeader                  Status = 41
-	InvalidFeeSubmitted                 Status = 42
-	InvalidPayerSignature               Status = 43
-	KeyNotProvided                      Status = 44
-	InvalidExpirationTime               Status = 45
-	NoWaclKey                           Status = 46
-	FileContentEmpty                    Status = 47
-	InvalidAccountAmounts               Status = 48
-	EmptyTransactionBody                Status = 49
-	InvalidTransactionBody              Status = 50
-	InvalidSignatureTypeMismatchingKey  Status = 51
-	InvalidSignatureCountMismatchingKey Status = 52
-	EmptyClaimBody                      Status = 53
-	EmptyClaimHash                      Status = 54
-	EmptyClaimKeys                      Status = 55
-	InvalidClaimHashSize                Status = 56
-	EmptyQueryBody                      Status = 57
-	EmptyClaimQuery                     Status = 58
-	ClaimNotFound                       Status = 59
-	AccountIDDoesNotExist               Status = 60
-	ClaimAlreadyExists                  Status = 61
-	InvalidFileWacl                     Status = 62
-	SerializationFailed                 Status = 63
-	TransactionOversize                 Status = 64
-	TransactionTooManyLayers            Status = 65
-	ContractDeleted                     Status = 66
-	PlatformNotActive                   Status = 67
-	KeyPrefixMismatch                   Status = 68
-	PlatformTransactionNotCreated       Status = 69
-	InvalidRenewalPeriod                Status = 70
-	InvalidPayerAccountID               Status = 71
-	AccountDeleted                      Status = 72
-	FileDeleted                         Status = 73
-	AccountRepeatedInAccountAmounts     Status = 74
-	SettingNegativeAccountBalance       Status = 75
-	ObtainerRequired                    Status = 76
-	ObtainerSameContractID              Status = 77
-	ObtainerDoesNotExist                Status = 78
-	ModifyingImmutableContract          Status = 79
-	FileSystemException                 Status = 80
-	AutorenewDurationNotInRange         Status = 81
-	ErrorDecodingBytestring             Status = 82
-	ContractFileEmpty                   Status = 83
-	ContractBytecodeEmpty               Status = 84
-	InvalidInitialBalance               Status = 85
-	InvalidReceiveRecordThreshold       Status = 86
-	InvalidSendRecordThreshold          Status = 87
-	AccountIsNotGenesisAccount          Status = 88
-	PayerAccountUnauthorized            Status = 89
-	InvalidFreezeTransactionBody        Status = 90
-	FreezeTransactionBodyNotFound       Status = 91
-	TransferListSizeLimitExceeded       Status = 92
-	ResultSizeLimitExceeded             Status = 93
-	NotSpecialAccount                   Status = 94
-	ContractNegativeGas                 Status = 95
-	ContractNegativeValue               Status = 96
-	InvalidFeeFile                      Status = 97
-	InvalidExchangeRateFile             Status = 98
-	InsufficientLocalCallGas            Status = 99
-	EntityNotAllowedToDelete            Status = 100
-	AuthorizationFailed                 Status = 101
-	FileUploadedProtoInvalid            Status = 102
-	FileUploadedProtoNotSavedToDisk     Status = 103
-	FeeScheduleFilePartUploaded         Status = 104
-	ExchangeRateChangeLimitExceeded     Status = 105
-	MaxContractStorageExceeded          Status = 106
-	TransaferAccountSameAsDeleteAccount Status = 107
-	TotalLedgerBalanceInvalid           Status = 108
-	ExpirationReductionNotAllowed       Status = 110
-	MaxGasLimitExceeded                 Status = 111
-	MaxFileSizeExceeded                 Status = 112
+	StatusOk                                  Status = 0
+	StatusInvalidTransaction                  Status = 1
+	StatusPayerAccountNotFound                Status = 2
+	StatusInvalidNodeAccount                  Status = 3
+	StatusTransactionExpired                  Status = 4
+	StatusInvalidTransactionStart             Status = 5
+	StatusInvalidTransactionDuration          Status = 6
+	StatusInvalidSignature                    Status = 7
+	StatusMemoTooLong                         Status = 8
+	StatusInsufficientTxFee                   Status = 9
+	StatusInsufficientPayerBalance            Status = 10
+	StatusDuplicateTransaction                Status = 11
+	StatusBusy                                Status = 12
+	StatusNotSupported                        Status = 13
+	StatusInvalidFileID                       Status = 14
+	StatusInvalidAccountID                    Status = 15
+	StatusInvalidContractID                   Status = 16
+	StatusInvalidTransactionID                Status = 17
+	StatusReceiptNotFound                     Status = 18
+	StatusRecordNotFound                      Status = 19
+	StatusInvalidSolidityID                   Status = 20
+	StatusUnknown                             Status = 21
+	StatusSuccess                             Status = 22
+	StatusFailInvalid                         Status = 23
+	StatusFailFee                             Status = 24
+	StatusFailBalance                         Status = 25
+	StatusKeyRequired                         Status = 26
+	StatusBadEncoding                         Status = 27
+	StatusInsufficientAccountBalance          Status = 28
+	StatusInvalidSolidityAddress              Status = 29
+	StatusInsufficientGas                     Status = 30
+	StatusContractSizeLimitExceeded           Status = 31
+	StatusLocalCallModificationException      Status = 32
+	StatusContractRevertExecuted              Status = 33
+	StatusContractExecutionException          Status = 34
+	StatusInvalidReceivingNodeAccount         Status = 35
+	StatusMissingQueryHeader                  Status = 36
+	StatusAccountUpdateFailed                 Status = 37
+	StatusInvalidKeyEncoding                  Status = 38
+	StatusNullSolidityAddress                 Status = 39
+	StatusContractUpdateFailed                Status = 40
+	StatusInvalidQueryHeader                  Status = 41
+	StatusInvalidFeeSubmitted                 Status = 42
+	StatusInvalidPayerSignature               Status = 43
+	StatusKeyNotProvided                      Status = 44
+	StatusInvalidExpirationTime               Status = 45
+	StatusNoWaclKey                           Status = 46
+	StatusFileContentEmpty                    Status = 47
+	StatusInvalidAccountAmounts               Status = 48
+	StatusEmptyTransactionBody                Status = 49
+	StatusInvalidTransactionBody              Status = 50
+	StatusInvalidSignatureTypeMismatchingKey  Status = 51
+	StatusInvalidSignatureCountMismatchingKey Status = 52
+	StatusEmptyClaimBody                      Status = 53
+	StatusEmptyClaimHash                      Status = 54
+	StatusEmptyClaimKeys                      Status = 55
+	StatusInvalidClaimHashSize                Status = 56
+	StatusEmptyQueryBody                      Status = 57
+	StatusEmptyClaimQuery                     Status = 58
+	StatusClaimNotFound                       Status = 59
+	StatusAccountIDDoesNotExist               Status = 60
+	StatusClaimAlreadyExists                  Status = 61
+	StatusInvalidFileWacl                     Status = 62
+	StatusSerializationFailed                 Status = 63
+	StatusTransactionOversize                 Status = 64
+	StatusTransactionTooManyLayers            Status = 65
+	StatusContractDeleted                     Status = 66
+	StatusPlatformNotActive                   Status = 67
+	StatusKeyPrefixMismatch                   Status = 68
+	StatusPlatformTransactionNotCreated       Status = 69
+	StatusInvalidRenewalPeriod                Status = 70
+	StatusInvalidPayerAccountID               Status = 71
+	StatusAccountDeleted                      Status = 72
+	StatusFileDeleted                         Status = 73
+	StatusAccountRepeatedInAccountAmounts     Status = 74
+	StatusSettingNegativeAccountBalance       Status = 75
+	StatusObtainerRequired                    Status = 76
+	StatusObtainerSameContractID              Status = 77
+	StatusObtainerDoesNotExist                Status = 78
+	StatusModifyingImmutableContract          Status = 79
+	StatusFileSystemException                 Status = 80
+	StatusAutorenewDurationNotInRange         Status = 81
+	StatusErrorDecodingBytestring             Status = 82
+	StatusContractFileEmpty                   Status = 83
+	StatusContractBytecodeEmpty               Status = 84
+	StatusInvalidInitialBalance               Status = 85
+	StatusInvalidReceiveRecordThreshold       Status = 86
+	StatusInvalidSendRecordThreshold          Status = 87
+	StatusAccountIsNotGenesisAccount          Status = 88
+	StatusPayerAccountUnauthorized            Status = 89
+	StatusInvalidFreezeTransactionBody        Status = 90
+	StatusFreezeTransactionBodyNotFound       Status = 91
+	StatusTransferListSizeLimitExceeded       Status = 92
+	StatusResultSizeLimitExceeded             Status = 93
+	StatusNotSpecialAccount                   Status = 94
+	StatusContractNegativeGas                 Status = 95
+	StatusContractNegativeValue               Status = 96
+	StatusInvalidFeeFile                     Status = 97
+	StatusInvalidExchangeRateFile            Status = 98
+	StatusInsufficientLocalCallGas           Status = 99
+	StatusEntityNotAllowedToDelete           Status = 100
+	StatusAuthorizationFailed                Status = 101
+	StatusFileUploadedProtoInvalid           Status = 102
+	StatusFileUploadedProtoNotSavedToDisk    Status = 103
+	StatusFeeScheduleFilePartUploaded        Status = 104
+	StatusExchangeRateChangeLimitExceeded    Status = 105
+	StatusMaxContractStorageExceeded         Status = 106
+	StatusTransferAccountSameAsDeleteAccount Status = 107
+	StatusTotalLedgerBalanceInvalid          Status = 108
+	StatusExpirationReductionNotAllowed      Status = 110
+	StatusMaxGasLimitExceeded                Status = 111
+	StatusMaxFileSizeExceeded                Status = 112
 )
 
-// nolint:gocyclo
+func (status Status) isExceptional(includeUnknown bool) *ErrHederaStatus {
+	switch status {
+	case StatusOk, StatusSuccess:
+		return nil
+	case StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
+		if !includeUnknown {
+			return nil
+		}
+	default:
+	}
+
+	statusErr := newErrHederaStatus(status)
+
+	return &statusErr
+}
+
 func (status Status) String() string {
 	switch status {
-	case Ok:
+	case StatusOk:
 		return "OK"
-	case InvalidTransaction:
+	case StatusInvalidTransaction:
 		return "INVALID_TRANSACTION"
-	case PayerAccountNotFound:
+	case StatusPayerAccountNotFound:
 		return "PAYER_ACCOUNT_NOT_FOUND"
-	case InvalidNodeAccount:
+	case StatusInvalidNodeAccount:
 		return "INVALID_NODE_ACCOUNT"
-	case TransactionExpired:
+	case StatusTransactionExpired:
 		return "TRANSACTION_EXPIRED"
-	case InvalidTransactionStart:
+	case StatusInvalidTransactionStart:
 		return "INVALID_TRANSACTION_START"
-	case InvalidTransactionDuration:
+	case StatusInvalidTransactionDuration:
 		return "INVALID_TRANSACTION_DURATION"
-	case InvalidSignature:
+	case StatusInvalidSignature:
 		return "INVALID_SIGNATURE"
-	case MemoTooLong:
+	case StatusMemoTooLong:
 		return "MEMO_TOO_LONG"
-	case InsufficientTxFee:
+	case StatusInsufficientTxFee:
 		return "INSUFFICIENT_TX_FEE"
-	case InsufficientPayerBalance:
+	case StatusInsufficientPayerBalance:
 		return "INSUFFICIENT_PAYER_BALANCE"
-	case DuplicateTransaction:
+	case StatusDuplicateTransaction:
 		return "DUPLICATE_TRANSACTION"
-	case Busy:
+	case StatusBusy:
 		return "BUSY"
-	case NotSupported:
+	case StatusNotSupported:
 		return "NOT_SUPPORTED"
-	case InvalidFileID:
+	case StatusInvalidFileID:
 		return "INVALID_FILE_ID"
-	case InvalidAccountID:
+	case StatusInvalidAccountID:
 		return "INVALID_ACCOUNT_ID"
-	case InvalidContractID:
+	case StatusInvalidContractID:
 		return "INVALID_CONTRACT_ID"
-	case InvalidTransactionID:
+	case StatusInvalidTransactionID:
 		return "INVALID_TRANSACTION_ID"
-	case ReceiptNotFound:
+	case StatusReceiptNotFound:
 		return "RECEIPT_NOT_FOUND"
-	case RecordNotFound:
+	case StatusRecordNotFound:
 		return "RECORD_NOT_FOUND"
-	case InvalidSolidityID:
+	case StatusInvalidSolidityID:
 		return "INVALID_SOLIDITY_ID"
-	case Unknown:
+	case StatusUnknown:
 		return "UNKNOWN"
-	case Success:
+	case StatusSuccess:
 		return "SUCCESS"
-	case FailInvalid:
+	case StatusFailInvalid:
 		return "FAIL_INVALID"
-	case FailFee:
+	case StatusFailFee:
 		return "FAIL_FEE"
-	case FailBalance:
+	case StatusFailBalance:
 		return "FAIL_BALANCE"
-	case KeyRequired:
+	case StatusKeyRequired:
 		return "KEY_REQUIRED"
-	case BadEncoding:
+	case StatusBadEncoding:
 		return "BAD_ENCODING"
-	case InsufficientAccountBalance:
+	case StatusInsufficientAccountBalance:
 		return "INSUFFICIENT_ACCOUNT_BALANCE"
-	case InvalidSolidityAddress:
+	case StatusInvalidSolidityAddress:
 		return "INVALID_SOLIDITY_ADDRESS"
-	case InsufficientGas:
+	case StatusInsufficientGas:
 		return "INSUFFICIENT_GAS"
-	case ContractSizeLimitExceeded:
+	case StatusContractSizeLimitExceeded:
 		return "CONTRACT_SIZE_LIMIT_EXCEEDED"
-	case LocalCallModificationException:
+	case StatusLocalCallModificationException:
 		return "LOCAL_CALL_MODIFICATION_EXCEPTION"
-	case ContractRevertExecuted:
+	case StatusContractRevertExecuted:
 		return "CONTRACT_REVERT_EXECUTED"
-	case ContractExecutionException:
+	case StatusContractExecutionException:
 		return "CONTRACT_EXECUTION_EXCEPTION"
-	case InvalidReceivingNodeAccount:
+	case StatusInvalidReceivingNodeAccount:
 		return "INVALID_RECEIVING_NODE_ACCOUNT"
-	case MissingQueryHeader:
+	case StatusMissingQueryHeader:
 		return "MISSING_QUERY_HEADER"
-	case AccountUpdateFailed:
+	case StatusAccountUpdateFailed:
 		return "ACCOUNT_UPDATE_FAILED"
-	case InvalidKeyEncoding:
+	case StatusInvalidKeyEncoding:
 		return "INVALID_KEY_ENCODING"
-	case NullSolidityAddress:
+	case StatusNullSolidityAddress:
 		return "NULL_SOLIDITY_ADDRESS"
-	case ContractUpdateFailed:
+	case StatusContractUpdateFailed:
 		return "CONTRACT_UPDATE_FAILED"
-	case InvalidQueryHeader:
+	case StatusInvalidQueryHeader:
 		return "INVALID_QUERY_HEADER"
-	case InvalidFeeSubmitted:
+	case StatusInvalidFeeSubmitted:
 		return "INVALID_FEE_SUBMITTED"
-	case InvalidPayerSignature:
+	case StatusInvalidPayerSignature:
 		return "INVALID_PAYER_SIGNATURE"
-	case KeyNotProvided:
+	case StatusKeyNotProvided:
 		return "KEY_NOT_PROVIDED"
-	case InvalidExpirationTime:
+	case StatusInvalidExpirationTime:
 		return "INVALID_EXPIRATION_TIME"
-	case NoWaclKey:
+	case StatusNoWaclKey:
 		return "NO_WACL_KEY"
-	case FileContentEmpty:
+	case StatusFileContentEmpty:
 		return "FILE_CONTENT_EMPTY"
-	case InvalidAccountAmounts:
+	case StatusInvalidAccountAmounts:
 		return "INVALID_ACCOUNT_AMOUNTS"
-	case EmptyTransactionBody:
+	case StatusEmptyTransactionBody:
 		return "EMPTY_TRANSACTION_BODY"
-	case InvalidTransactionBody:
+	case StatusInvalidTransactionBody:
 		return "INVALID_TRANSACTION_BODY"
-	case InvalidSignatureTypeMismatchingKey:
+	case StatusInvalidSignatureTypeMismatchingKey:
 		return "INVALID_SIGNATURE_TYPE_MISMATCHING_KEY"
-	case InvalidSignatureCountMismatchingKey:
+	case StatusInvalidSignatureCountMismatchingKey:
 		return "INVALID_SIGNATURE_COUNT_MISMATCHING_KEY"
-	case EmptyClaimBody:
+	case StatusEmptyClaimBody:
 		return "EMPTY_CLAIM_BODY"
-	case EmptyClaimHash:
+	case StatusEmptyClaimHash:
 		return "EMPTY_CLAIM_HASH"
-	case EmptyClaimKeys:
+	case StatusEmptyClaimKeys:
 		return "EMPTY_CLAIM_KEYS"
-	case InvalidClaimHashSize:
+	case StatusInvalidClaimHashSize:
 		return "INVALID_CLAIM_HASH_SIZE"
-	case EmptyQueryBody:
+	case StatusEmptyQueryBody:
 		return "EMPTY_QUERY_BODY"
-	case EmptyClaimQuery:
+	case StatusEmptyClaimQuery:
 		return "EMPTY_CLAIM_QUERY"
-	case ClaimNotFound:
+	case StatusClaimNotFound:
 		return "CLAIM_NOT_FOUND"
-	case AccountIDDoesNotExist:
+	case StatusAccountIDDoesNotExist:
 		return "ACCOUNT_ID_DOES_NOT_EXIST"
-	case ClaimAlreadyExists:
+	case StatusClaimAlreadyExists:
 		return "CLAIM_ALREADY_EXISTS"
-	case InvalidFileWacl:
+	case StatusInvalidFileWacl:
 		return "INVALID_FILE_WACL"
-	case SerializationFailed:
+	case StatusSerializationFailed:
 		return "SERIALIZATION_FAILED"
-	case TransactionOversize:
+	case StatusTransactionOversize:
 		return "TRANSACTION_OVERSIZE"
-	case TransactionTooManyLayers:
+	case StatusTransactionTooManyLayers:
 		return "TRANSACTION_TOO_MANY_LAYERS"
-	case ContractDeleted:
+	case StatusContractDeleted:
 		return "CONTRACT_DELETED"
-	case PlatformNotActive:
+	case StatusPlatformNotActive:
 		return "PLATFORM_NOT_ACTIVE"
-	case KeyPrefixMismatch:
+	case StatusKeyPrefixMismatch:
 		return "KEY_PREFIX_MISMATCH"
-	case PlatformTransactionNotCreated:
+	case StatusPlatformTransactionNotCreated:
 		return "PLATFORM_TRANSACTION_NOT_CREATED"
-	case InvalidRenewalPeriod:
+	case StatusInvalidRenewalPeriod:
 		return "INVALID_RENEWAL_PERIOD"
-	case InvalidPayerAccountID:
+	case StatusInvalidPayerAccountID:
 		return "INVALID_PAYER_ACCOUNT_ID"
-	case AccountDeleted:
+	case StatusAccountDeleted:
 		return "ACCOUNT_DELETED"
-	case FileDeleted:
+	case StatusFileDeleted:
 		return "FILE_DELETED"
-	case AccountRepeatedInAccountAmounts:
+	case StatusAccountRepeatedInAccountAmounts:
 		return "ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS"
-	case SettingNegativeAccountBalance:
+	case StatusSettingNegativeAccountBalance:
 		return "SETTING_NEGATIVE_ACCOUNT_BALANCE"
-	case ObtainerRequired:
+	case StatusObtainerRequired:
 		return "OBTAINER_REQUIRED"
-	case ObtainerSameContractID:
+	case StatusObtainerSameContractID:
 		return "OBTAINER_SAME_CONTRACT_ID"
-	case ObtainerDoesNotExist:
+	case StatusObtainerDoesNotExist:
 		return "OBTAINER_DOES_NOT_EXIST"
-	case ModifyingImmutableContract:
+	case StatusModifyingImmutableContract:
 		return "MODIFYING_IMMUTABLE_CONTRACT"
-	case FileSystemException:
+	case StatusFileSystemException:
 		return "FILE_SYSTEM_EXCEPTION"
-	case AutorenewDurationNotInRange:
+	case StatusAutorenewDurationNotInRange:
 		return "AUTORENEW_DURATION_NOT_IN_RANGE"
-	case ErrorDecodingBytestring:
+	case StatusErrorDecodingBytestring:
 		return "ERROR_DECODING_BYTESTRING"
-	case ContractFileEmpty:
+	case StatusContractFileEmpty:
 		return "CONTRACT_FILE_EMPTY"
-	case ContractBytecodeEmpty:
+	case StatusContractBytecodeEmpty:
 		return "CONTRACT_BYTECODE_EMPTY"
-	case InvalidInitialBalance:
+	case StatusInvalidInitialBalance:
 		return "INVALID_INITIAL_BALANCE"
-	case InvalidReceiveRecordThreshold:
+	case StatusInvalidReceiveRecordThreshold:
 		return "INVALID_RECEIVE_RECORD_THRESHOLD"
-	case InvalidSendRecordThreshold:
+	case StatusInvalidSendRecordThreshold:
 		return "INVALID_SEND_RECORD_THRESHOLD"
-	case AccountIsNotGenesisAccount:
+	case StatusAccountIsNotGenesisAccount:
 		return "ACCOUNT_IS_NOT_GENESIS_ACCOUNT"
-	case PayerAccountUnauthorized:
+	case StatusPayerAccountUnauthorized:
 		return "PAYER_ACCOUNT_UNAUTHORIZED"
-	case InvalidFreezeTransactionBody:
+	case StatusInvalidFreezeTransactionBody:
 		return "INVALID_FREEZE_TRANSACTION_BODY"
-	case FreezeTransactionBodyNotFound:
+	case StatusFreezeTransactionBodyNotFound:
 		return "FREEZE_TRANSACTION_BODY_NOT_FOUND"
-	case TransferListSizeLimitExceeded:
+	case StatusTransferListSizeLimitExceeded:
 		return "TRANSFER_LIST_SIZE_LIMIT_EXCEEDED"
-	case ResultSizeLimitExceeded:
+	case StatusResultSizeLimitExceeded:
 		return "RESULT_SIZE_LIMIT_EXCEEDED"
-	case NotSpecialAccount:
+	case StatusNotSpecialAccount:
 		return "NOT_SPECIAL_ACCOUNT"
-	case ContractNegativeGas:
+	case StatusContractNegativeGas:
 		return "CONTRACT_NEGATIVE_GAS"
-	case ContractNegativeValue:
+	case StatusContractNegativeValue:
 		return "CONTRACT_NEGATIVE_VALUE"
-	case InvalidFeeFile:
+	case StatusInvalidFeeFile:
 		return "INVALID_FEE_FILE"
-	case InvalidExchangeRateFile:
+	case StatusInvalidExchangeRateFile:
 		return "INVALID_EXCHANGE_RATE_FILE"
-	case InsufficientLocalCallGas:
+	case StatusInsufficientLocalCallGas:
 		return "INSUFFICIENT_LOCAL_CALL_GAS"
-	case EntityNotAllowedToDelete:
+	case StatusEntityNotAllowedToDelete:
 		return "ENTITY_NOT_ALLOWED_TO_DELETE"
-	case AuthorizationFailed:
+	case StatusAuthorizationFailed:
 		return "AUTHORIZATION_FAILED"
-	case FileUploadedProtoInvalid:
+	case StatusFileUploadedProtoInvalid:
 		return "FILE_UPLOADED_PROTO_INVALID"
-	case FileUploadedProtoNotSavedToDisk:
+	case StatusFileUploadedProtoNotSavedToDisk:
 		return "FILE_UPLOADED_PROTO_NOT_SAVED_TO_DISK"
-	case FeeScheduleFilePartUploaded:
+	case StatusFeeScheduleFilePartUploaded:
 		return "FEE_SCHEDULE_FILE_PART_UPLOADED"
-	case ExchangeRateChangeLimitExceeded:
+	case StatusExchangeRateChangeLimitExceeded:
 		return "EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED"
-	case MaxContractStorageExceeded:
+	case StatusMaxContractStorageExceeded:
 		return "MAX_CONTRACT_STORAGE_EXCEEDED"
-	case TransaferAccountSameAsDeleteAccount:
+	case StatusTransferAccountSameAsDeleteAccount:
 		return "TRANSAFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT"
-	case TotalLedgerBalanceInvalid:
+	case StatusTotalLedgerBalanceInvalid:
 		return "TOTAL_LEDGER_BALANCE_INVALID"
-	case ExpirationReductionNotAllowed:
+	case StatusExpirationReductionNotAllowed:
 		return "EXPIRATION_REDUCTION_NOT_ALLOWED"
-	case MaxGasLimitExceeded:
+	case StatusMaxGasLimitExceeded:
 		return "MAX_GAS_LIMIT_EXCEEDED"
-	case MaxFileSizeExceeded:
+	case StatusMaxFileSizeExceeded:
 		return "MAX_FILE_SIZE_EXCEEDED"
 	}
 

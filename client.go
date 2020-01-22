@@ -217,7 +217,7 @@ func (node *node) invoke(method string, in interface{}, out interface{}) error {
 	if node.conn == nil {
 		conn, err := grpc.Dial(node.address, grpc.WithInsecure())
 		if err != nil {
-			return err
+			return newErrHederaNetwork(err)
 		}
 
 		node.conn = conn

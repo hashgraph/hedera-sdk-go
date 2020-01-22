@@ -10,7 +10,6 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"golang.org/x/crypto/pbkdf2"
 	"io"
 )
@@ -91,7 +90,6 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 		return nil, err
 	}
 
-	// todo: recheck the following
 	cipher := cipher2.NewCTR(block, iv)
 	cipherText := make([]byte, len(privateKey))
 	cipher.XORKeyStream(cipherText, privateKey)
@@ -137,13 +135,22 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, 
 		return Ed25519PrivateKey{}, err
 	}
 
+	if keyStore.Version != 1 {
+		// todo: change to a switch and handle differently if future keystore versions are added
+		return Ed25519PrivateKey{}, newErrBadKeyf("unsupported keystore version: %v", keyStore.Version)
+	}
+
 	if keyStore.Crypto.KDF != "pbkdf2" {
-		return Ed25519PrivateKey{}, fmt.Errorf("unsupported key derivation function: %v", keyStore.Crypto.KDF)
+		return Ed25519PrivateKey{}, newErrBadKeyf("unsupported KDF: %v", keyStore.Crypto.KDF)
+	}
+
+	if keyStore.Crypto.Cipher != Aes128Ctr {
+		return Ed25519PrivateKey{}, newErrBadKeyf("unsupported keystore cipher: %v", keyStore.Crypto.Cipher)
 	}
 
 	if keyStore.Crypto.KDFParams.PRF != HmacSha256 {
-		return Ed25519PrivateKey{}, fmt.Errorf(
-			"unsupported key derivation hash function: %v",
+		return Ed25519PrivateKey{}, newErrBadKeyf(
+			"unsupported PRF: %v",
 			keyStore.Crypto.KDFParams.PRF)
 	}
 
@@ -184,7 +191,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, 
 	verifyMac := h.Sum(nil)
 
 	if !bytes.Equal(mac, verifyMac) {
-		return Ed25519PrivateKey{}, fmt.Errorf("key mismatch when loading from keystore")
+		return Ed25519PrivateKey{}, newErrBadKeyf("hmac mismatch; passphrase is incorrect")
 	}
 
 	block, err := aes.NewCipher(key[:16])

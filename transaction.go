@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"bytes"
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -68,7 +67,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	node := client.node(nodeAccountID)
 
 	if node == nil {
-		return id, fmt.Errorf("NodeAccountID %v not found on Client", nodeAccountID)
+		return id, newErrLocalValidationf("NodeAccountID %v not found on Client", nodeAccountID)
 	}
 
 	var methodName string
@@ -120,7 +119,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 		methodName = "/proto.FileService/systemUndelete"
 
 	default:
-		return id, fmt.Errorf("unimplemented: %T", transactionBody.Data)
+		return id, newErrLocalValidationf("unimplemented: %T", transactionBody.Data)
 	}
 
 	validUntil := time.Now().Add(time.Duration(transactionBody.TransactionValidDuration.Seconds) * time.Second)
@@ -148,16 +147,11 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 			continue
 		}
 
-		if isStatusExceptional(resp.NodeTransactionPrecheckCode, true) {
-			return id, fmt.Errorf("%v", resp.NodeTransactionPrecheckCode)
-		}
-
-		return id, nil
+		return id, Status(resp.NodeTransactionPrecheckCode).isExceptional(true)
 	}
 
 	// Timed out
-	// TODO: Better error here?
-	return id, fmt.Errorf("%v", resp.NodeTransactionPrecheckCode)
+	return id, Status(resp.NodeTransactionPrecheckCode).isExceptional(true)
 }
 
 func (transaction Transaction) String() string {
@@ -177,17 +171,4 @@ func (transaction Transaction) body() *proto.TransactionBody {
 	}
 
 	return transactionBody
-}
-
-func isStatusExceptional(status proto.ResponseCodeEnum, unknownIsExceptional bool) bool {
-	switch status {
-	case proto.ResponseCodeEnum_SUCCESS, proto.ResponseCodeEnum_OK:
-		return false
-
-	case proto.ResponseCodeEnum_UNKNOWN, proto.ResponseCodeEnum_RECEIPT_NOT_FOUND, proto.ResponseCodeEnum_RECORD_NOT_FOUND:
-		return unknownIsExceptional
-
-	default:
-		return true
-	}
 }
