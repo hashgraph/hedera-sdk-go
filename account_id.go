@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
@@ -52,6 +53,19 @@ func (id AccountID) toProto() *proto.AccountID {
 		RealmNum:   int64(id.Realm),
 		AccountNum: int64(id.Account),
 	}
+}
+
+func (id *AccountID) UnmarshalJSON(data []byte) error {
+	accountId, err := AccountIDFromString(strings.Replace(string(data), "\"", "", 2))
+
+	if err != nil {
+		println("error was not nil")
+		return err
+	}
+
+	id = &accountId
+
+	return nil
 }
 
 func accountIDFromProto(pb *proto.AccountID) AccountID {
