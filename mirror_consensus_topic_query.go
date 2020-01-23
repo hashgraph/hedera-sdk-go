@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"context"
 	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
 	"time"
 )
@@ -47,17 +48,31 @@ func (b *MirrorConsensusTopicQuery) SetLimit(limit uint64) *MirrorConsensusTopic
 	return b
 }
 
-/*
-func (b *MirrorConsensusTopicQuery) Subscribe(client MirrorClient, onNext func(MirrorConsensusTopicResponse), onError *func()) (MirrorSubscriptionHandle, error) {
-	name := methodName()
+func (b *MirrorConsensusTopicQuery) Subscribe(
+	client MirrorClient,
+	onNext func(MirrorConsensusTopicResponse),
+	onError *func(error),
+) (MirrorSubscriptionHandle, error) {
 
-	client.conn.NewStream(context.TODO(), grpc.StreamDesc{
-		StreamName:    "",
-		Handler:       nil,
-		ServerStreams: false,
-		ClientStreams: false,
-	}, )
+	if b.pb.TopicID == nil {
+		return MirrorSubscriptionHandle{}, newErrLocalValidationf("topic ID was not provided")
+	}
+
+	subClient, err := client.client.SubscribeTopic(context.TODO(), b.pb)
 
 
+	if err != nil {
+		return MirrorSubscriptionHandle{}, nil
+	}
+
+	subscription := NewConsensusClientSubscription(
+		topicID,
+		startTime,
+		subscriptionClient,
+		self.errorHandler,
+		listener,
+	)
+
+	go subscriptionHandler(subscription)
+	return subscription, nil
 }
-*/

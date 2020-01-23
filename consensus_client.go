@@ -11,6 +11,7 @@ type ErrorHandler func(error)
 type Listener func(ConsensusMessage)
 
 type ConsensusClient struct {
+	conn		*grpc.ClientConn
 	client       mirror.ConsensusServiceClient
 	errorHandler ErrorHandler
 }
@@ -24,13 +25,14 @@ type ConsensusClientSubscription struct {
 }
 
 func NewConsensusClient(endpoint string) (*ConsensusClient, error) {
-	client, err := grpc.Dial(endpoint, grpc.WithInsecure())
+	conn, err := grpc.Dial(endpoint, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 
 	return &ConsensusClient{
-		client:       mirror.NewConsensusServiceClient(client),
+		conn:		  conn,
+		client:       mirror.NewConsensusServiceClient(conn),
 		errorHandler: nil,
 	}, nil
 }

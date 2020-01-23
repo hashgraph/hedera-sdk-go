@@ -1,23 +1,17 @@
 package hedera
 
-import (
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
-	"time"
-)
-
 type MirrorClient struct {
-	conn *grpc.ClientConn
+	ConsensusClient
 }
 
 func newMirrorClient(endpoint string) (MirrorClient, error) {
-	client, err := grpc.Dial(endpoint, grpc.WithKeepaliveParams(keepalive.ClientParameters{Time: 2 * time.Minute}))
+	client, err := NewConsensusClient(endpoint)
 
 	if err != nil {
-		return MirrorClient{}, err
+		return MirrorClient{}, nil
 	}
 
-	return MirrorClient{client}, err
+	return MirrorClient{*client}, nil
 }
 
 func (mc MirrorClient) Close() error {
