@@ -32,18 +32,8 @@ func (builder ConsensusTopicCreateTransaction) SetSubmitKey(publicKey Ed25519Pub
 	return builder
 }
 
-func (builder ConsensusTopicCreateTransaction) SetValidStart(start time.Time) ConsensusTopicCreateTransaction {
-	builder.pb.ValidStartTime = timeToProto(start)
-	return builder
-}
-
 func (builder ConsensusTopicCreateTransaction) SetTopicMemo(memo string) ConsensusTopicCreateTransaction {
 	builder.pb.Memo = memo
-	return builder
-}
-
-func (builder ConsensusTopicCreateTransaction) SetExpirationTime(expiration time.Time) ConsensusTopicCreateTransaction {
-	builder.pb.ExpirationTime = timeToProto(expiration)
 	return builder
 }
 
@@ -52,7 +42,7 @@ func (builder ConsensusTopicCreateTransaction) SetAutoRenewPeriod(period time.Du
 	return builder
 }
 
-func (builder ConsensusTopicCreateTransaction) SetAutoRenewAccount(id AccountID) ConsensusTopicCreateTransaction {
+func (builder ConsensusTopicCreateTransaction) SetAutoRenewAccountID(id AccountID) ConsensusTopicCreateTransaction {
 	builder.pb.AutoRenewAccount = id.toProto()
 	return builder
 }

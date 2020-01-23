@@ -68,7 +68,7 @@ func main() {
 	}
 
 	for i := 0; true; i++ {
-		id, err := hedera.NewConsensusSubmitMessageTransaction().
+		id, err := hedera.NewConsensusMessageSubmitTransaction().
 			SetTopicID(topicID).
 			SetMessage([]byte(fmt.Sprintf("Hello, HCS! Message %v", i))).
 			Execute(client)

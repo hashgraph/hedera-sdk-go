@@ -28,18 +28,13 @@ func (builder ConsensusTopicUpdateTransaction) SetTopicID(id ConsensusTopicID) C
 	return builder
 }
 
-func (builder ConsensusTopicUpdateTransaction) SetAdminKey(publicKey Ed25519PublicKey) ConsensusTopicUpdateTransaction {
+func (builder ConsensusTopicUpdateTransaction) SetAdminKey(publicKey PublicKey) ConsensusTopicUpdateTransaction {
 	builder.pb.AdminKey = publicKey.toProto()
 	return builder
 }
 
-func (builder ConsensusTopicUpdateTransaction) SetSubmitKey(publicKey Ed25519PublicKey) ConsensusTopicUpdateTransaction {
+func (builder ConsensusTopicUpdateTransaction) SetSubmitKey(publicKey PublicKey) ConsensusTopicUpdateTransaction {
 	builder.pb.SubmitKey = publicKey.toProto()
-	return builder
-}
-
-func (builder ConsensusTopicUpdateTransaction) SetValidStart(start time.Time) ConsensusTopicUpdateTransaction {
-	builder.pb.ValidStartTime = timeToProto(start)
 	return builder
 }
 
@@ -58,8 +53,30 @@ func (builder ConsensusTopicUpdateTransaction) SetAutoRenewPeriod(period time.Du
 	return builder
 }
 
-func (builder ConsensusTopicUpdateTransaction) SetAutoRenewAccount(id AccountID) ConsensusTopicUpdateTransaction {
+func (builder ConsensusTopicUpdateTransaction) SetAutoRenewAccountID(id AccountID) ConsensusTopicUpdateTransaction {
 	builder.pb.AutoRenewAccount = id.toProto()
+	return builder
+}
+
+// ClearTopicMemo explicitly clears any memo on the topic by sending an empty string as the memo
+func (builder ConsensusTopicUpdateTransaction) ClearTopicMemo() ConsensusTopicUpdateTransaction {
+	return builder.SetTopicMemo("")
+}
+
+// ClearAdminKey explicitly clears any admin key on the topic by sending an empty key list as the key
+func (builder ConsensusTopicUpdateTransaction) ClearAdminKey() ConsensusTopicUpdateTransaction {
+	return builder.SetAdminKey(NewKeyList())
+}
+
+// ClearSubmitKey explicitly clears any submit key on the topic by sending an empty key list as the key
+func (builder ConsensusTopicUpdateTransaction) ClearSubmitKey() ConsensusTopicUpdateTransaction {
+	return builder.SetSubmitKey(NewKeyList())
+}
+
+// ClearAutoRenewAccountID explicitly clears any auto renew account ID on the topic by sending an empty accountID
+func (builder ConsensusTopicUpdateTransaction) ClearAutoRenewAccountID() ConsensusTopicUpdateTransaction {
+	builder.pb.AutoRenewAccount = &proto.AccountID{}
+
 	return builder
 }
 
