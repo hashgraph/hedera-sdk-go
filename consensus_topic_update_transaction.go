@@ -72,7 +72,7 @@ func (builder ConsensusTopicUpdateTransaction) Build(client *Client) Transaction
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (builder ConsensusTopicUpdateTransaction) SetMaxTransactionFee(maxTransactionFee uint64) ConsensusTopicUpdateTransaction {
+func (builder ConsensusTopicUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusTopicUpdateTransaction {
 	return ConsensusTopicUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
