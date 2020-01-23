@@ -41,14 +41,14 @@ func main() {
 
 	transactionId, err := hedera.NewConsensusTopicCreateTransaction().
 		SetTransactionMemo("sdk example create_pub_sub/main.go").
-		SetMaxTransactionFee(1000000000).
+		SetMaxTransactionFee(hedera.HbarFromTinybar(1000000000)).
 		Execute(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionId.Receipt(client)
+	transactionReceipt, err := transactionId.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
@@ -77,7 +77,7 @@ func main() {
 			panic(err)
 		}
 
-		_, err = id.Receipt(client)
+		_, err = id.GetReceipt(client)
 
 		if err != nil {
 			panic(err)
