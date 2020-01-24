@@ -1,13 +1,13 @@
 package hedera
 
 type MirrorSubscriptionHandle struct {
-	onUnsubscribe func() error
+	onUnsubscribe func()
 }
 
-func newMirrorSubscriptionHandle(onUnsubscribe func() error) MirrorSubscriptionHandle {
+func newMirrorSubscriptionHandle(onUnsubscribe func()) MirrorSubscriptionHandle {
 	return MirrorSubscriptionHandle{onUnsubscribe: onUnsubscribe}
 }
 
-func (handle MirrorSubscriptionHandle) Unsubscribe() error {
-	return handle.onUnsubscribe()
+func (handle MirrorSubscriptionHandle) Unsubscribe() {
+	handle.onUnsubscribe()
 }

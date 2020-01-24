@@ -66,7 +66,9 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 		return MirrorSubscriptionHandle{}, newErrLocalValidationf("topic ID was not provided")
 	}
 
-	subClient, err := client.client.SubscribeTopic(context.TODO(), b.pb)
+	ctx, cancel := context.WithCancel(context.TODO())
+
+	subClient, err := client.client.SubscribeTopic(ctx, b.pb)
 
 	if err != nil {
 		return MirrorSubscriptionHandle{}, err
@@ -80,8 +82,7 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 				if onError != nil {
 					onError(err)
 				}
-				// attempt a clean disconnect, but ignore if failed and stop listening
-				_ = subClient.CloseSend()
+				cancel()
 				break
 			}
 
@@ -89,5 +90,5 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 		}
 	}()
 
-	return newMirrorSubscriptionHandle(subClient.CloseSend), nil
+	return newMirrorSubscriptionHandle(cancel), nil
 }
