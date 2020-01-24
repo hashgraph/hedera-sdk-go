@@ -4,8 +4,8 @@ type MirrorSubscriptionHandle struct {
 	onUnsubscribe func() error
 }
 
-func NewMirrorSubscriptionHandle(onUnsubscribe func() error) MirrorSubscriptionHandle {
-	return MirrorSubscriptionHandle{onUnsubscribe:onUnsubscribe}
+func newMirrorSubscriptionHandle(onUnsubscribe func() error) MirrorSubscriptionHandle {
+	return MirrorSubscriptionHandle{onUnsubscribe: onUnsubscribe}
 }
 
 func (handle MirrorSubscriptionHandle) Unsubscribe() error {

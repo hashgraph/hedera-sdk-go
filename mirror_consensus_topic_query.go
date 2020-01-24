@@ -11,10 +11,10 @@ type MirrorConsensusTopicQuery struct {
 }
 
 type MirrorConsensusTopicResponse struct {
-	ConsensusTimeStamp 	time.Time
-	Message 			[]byte
-	RunningHash 		[]byte
-	SequenceNumber 		uint64
+	ConsensusTimeStamp time.Time
+	Message            []byte
+	RunningHash        []byte
+	SequenceNumber     uint64
 }
 
 func NewMirrorConsensusTopicQuery() *MirrorConsensusTopicQuery {
@@ -48,31 +48,46 @@ func (b *MirrorConsensusTopicQuery) SetLimit(limit uint64) *MirrorConsensusTopic
 	return b
 }
 
+func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
+	return MirrorConsensusTopicResponse{
+		ConsensusTimeStamp: timeFromProto(r.ConsensusTimestamp),
+		Message:            r.Message,
+		RunningHash:        r.RunningHash,
+		SequenceNumber:     r.SequenceNumber,
+	}
+}
+
 func (b *MirrorConsensusTopicQuery) Subscribe(
 	client MirrorClient,
 	onNext func(MirrorConsensusTopicResponse),
-	onError *func(error),
+	onError func(error),
 ) (MirrorSubscriptionHandle, error) {
-
 	if b.pb.TopicID == nil {
 		return MirrorSubscriptionHandle{}, newErrLocalValidationf("topic ID was not provided")
 	}
 
 	subClient, err := client.client.SubscribeTopic(context.TODO(), b.pb)
 
-
 	if err != nil {
-		return MirrorSubscriptionHandle{}, nil
+		return MirrorSubscriptionHandle{}, err
 	}
 
-	subscription := NewConsensusClientSubscription(
-		topicID,
-		startTime,
-		subscriptionClient,
-		self.errorHandler,
-		listener,
-	)
+	go func() {
+		for {
+			resp, err := subClient.Recv()
 
-	go subscriptionHandler(subscription)
-	return subscription, nil
+			if err != nil {
+				if onError != nil {
+					onError(err)
+				}
+				// attempt a clean disconnect, but ignore if failed and stop listening
+				_ = subClient.CloseSend()
+				break
+			}
+
+			onNext(mirrorConsensusTopicResponseFromProto(resp))
+		}
+	}()
+
+	return newMirrorSubscriptionHandle(subClient.CloseSend), nil
 }
