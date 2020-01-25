@@ -19,7 +19,7 @@ func NewConsensusTopicCreateTransaction() ConsensusTopicCreateTransaction {
 
 	builder := ConsensusTopicCreateTransaction{inner, pb}
 
-	return builder
+	return builder.SetAutoRenewPeriod(7890000 * time.Second)
 }
 
 func (builder ConsensusTopicCreateTransaction) SetAdminKey(publicKey Ed25519PublicKey) ConsensusTopicCreateTransaction {
