@@ -275,8 +275,12 @@ func isResponseUnknown(resp *proto.Response) bool {
 
 	case *proto.Response_TransactionGetRecord:
 		body := resp.GetTransactionGetRecord()
-		return isStatusUnknown(body.Header.NodeTransactionPrecheckCode) ||
-			isStatusUnknown(body.TransactionRecord.Receipt.Status)
+
+		if body.TransactionRecord == nil {
+			return false
+		}
+
+		return isStatusUnknown(body.TransactionRecord.Receipt.Status)
 
 	default:
 	}
