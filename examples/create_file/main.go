@@ -33,6 +33,7 @@ func main() {
 		AddKey(operatorPrivateKey.PublicKey()).
 		SetContents([]byte{1, 2, 3, 4}).
 		SetTransactionMemo("sdk example create_file/main.go").
+		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
 	if err != nil {
