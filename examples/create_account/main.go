@@ -42,6 +42,7 @@ func main() {
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(hedera.HbarFromTinybar(10)).
 		SetTransactionMemo("sdk example create_account/main.go").
+		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
 	if err != nil {

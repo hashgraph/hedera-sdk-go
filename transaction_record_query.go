@@ -1,6 +1,8 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/proto"
+import (
+	"github.com/hashgraph/hedera-sdk-go/proto"
+)
 
 type TransactionRecordQuery struct {
 	QueryBuilder
