@@ -8,25 +8,24 @@ import (
 	"github.com/hashgraph/hedera-sdk-go"
 )
 
-var nodeAddress = os.Getenv("NODE_ADDRESS")
-var operatorKey = os.Getenv("OPERATOR_KEY")
-var mirrorNodeAddress = os.Getenv("MIRROR_NODE_ADDRESS")
-
 func main() {
-	consensusClient, err := hedera.NewConsensusClient(mirrorNodeAddress)
+	nodeAddress := os.Getenv("NODE_ADDRESS")
+
+	nodeID, err := hedera.AccountIDFromString(os.Getenv("NODE_ID"))
 	if err != nil {
 		panic(err)
 	}
 
-	consensusClient.SetErrorHandler(func(err error) {
-		fmt.Printf("Received error: %v", err)
-	})
-
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(operatorKey)
-
 	client := hedera.NewClient(map[string]hedera.AccountID{
-		nodeAddress: {Account: 3},
+		nodeAddress: nodeID,
 	})
+
+	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	if err != nil {
+		panic(err)
+	}
+
+	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 
 	if err != nil {
 		panic(err)
@@ -34,14 +33,14 @@ func main() {
 
 	client.SetOperator(
 		// Operator Account ID
-		hedera.AccountID{Account: 2},
+		operatorAccountID,
 		// Operator Private Key
 		operatorPrivateKey,
 	)
 
 	transactionId, err := hedera.NewConsensusTopicCreateTransaction().
 		SetTransactionMemo("sdk example create_pub_sub/main.go").
-		SetMaxTransactionFee(hedera.HbarFromTinybar(1000000000)).
+		SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
 	if err != nil {
@@ -54,22 +53,38 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Println(transactionReceipt.Status)
+
 	topicID := transactionReceipt.ConsensusTopicID()
 
 	fmt.Printf("topicID: %v\n", topicID)
 
-	_, err = consensusClient.Subscribe(topicID, nil, func(message hedera.ConsensusMessage) {
-		fmt.Printf("%v recived topic message %v\n", message.ConsensusTimestamp, message.String())
-	})
+	mirrorNodeAddress := os.Getenv("MIRROR_NODE_ADDRESS")
+
+	mirrorClient, err := hedera.NewMirrorClient(mirrorNodeAddress)
+	if err != nil {
+		panic(err)
+	}
+
+	topicQuery, err := hedera.NewMirrorConsensusTopicQuery().
+		SetTopicID(topicID).
+		Subscribe(
+			mirrorClient,
+			func(resp hedera.MirrorConsensusTopicResponse) {
+				fmt.Println(string(resp.Message))
+			},
+			func(err error) {
+				fmt.Println(err.Error())
+			})
 
 	if err != nil {
-		fmt.Printf("Failed to Subscribe to topic")
 		panic(err)
 	}
 
 	for i := 0; true; i++ {
 		id, err := hedera.NewConsensusMessageSubmitTransaction().
 			SetTopicID(topicID).
+			SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
 			SetMessage([]byte(fmt.Sprintf("Hello, HCS! Message %v", i))).
 			Execute(client)
 
@@ -87,4 +102,6 @@ func main() {
 
 		time.Sleep(2500 * time.Millisecond)
 	}
+
+	topicQuery.Unsubscribe()
 }
