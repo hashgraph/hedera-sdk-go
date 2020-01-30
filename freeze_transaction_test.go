@@ -4,7 +4,6 @@ import (
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func TestSerializeFreezeTransaction(t *testing.T) {
@@ -16,8 +15,8 @@ func TestSerializeFreezeTransaction(t *testing.T) {
 
 	tx := NewFreezeTransaction().
 		SetTransactionID(testTransactionID).
-		SetStartTime(time.Unix(600, 100)).
-		SetEndTime(time.Unix(800, 100)).
+		SetStartTime(12, 30).
+		SetEndTime(14, 30).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
 		Build(mockClient).

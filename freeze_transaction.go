@@ -21,15 +21,15 @@ func NewFreezeTransaction() FreezeTransaction {
 	return builder
 }
 
-func (builder FreezeTransaction) SetStartTime(start time.Time) FreezeTransaction {
-	builder.pb.StartHour = int32(start.Hour())
-	builder.pb.StartMin = int32(start.Minute())
+func (builder FreezeTransaction) SetStartTime(hour uint8, minute uint8) FreezeTransaction {
+	builder.pb.StartHour = int32(hour)
+	builder.pb.StartMin = int32(minute)
 	return builder
 }
 
-func (builder FreezeTransaction) SetEndTime(end time.Time) FreezeTransaction {
-	builder.pb.EndHour = int32(end.Hour())
-	builder.pb.EndMin = int32(end.Minute())
+func (builder FreezeTransaction) SetEndTime(hour uint8, minute uint8) FreezeTransaction {
+	builder.pb.EndHour = int32(hour)
+	builder.pb.EndMin = int32(minute)
 	return builder
 }
 
