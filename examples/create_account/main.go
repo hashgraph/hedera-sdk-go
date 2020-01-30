@@ -8,39 +8,31 @@ import (
 )
 
 func main() {
-	client := hedera.NewClient(map[string]hedera.AccountID{
-		"0.testnet.hedera.com:50211": {Account: 3},
-	})
+	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	if err != nil {
+		panic(err)
+	}
 
 	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		panic(err)
 	}
 
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	if err != nil {
-		panic(err)
-	}
-
-	client.SetOperator(
-		// Operator Account ID
-		operatorAccountID,
-		// Operator Private Key
-		operatorPrivateKey,
-	)
-
 	newKey, err := hedera.GenerateEd25519PrivateKey()
-
 	if err != nil {
 		panic(err)
 	}
 
+	fmt.Println("Automatic signing example")
 	fmt.Printf("private = %v\n", newKey)
 	fmt.Printf("public = %v\n", newKey.PublicKey())
 
+	client := hedera.ClientForTestnet().
+		SetOperator(operatorAccountID, operatorPrivateKey)
+
 	transactionID, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(hedera.HbarFromTinybar(10)).
+		SetInitialBalance(hedera.ZeroHbar).
 		SetTransactionMemo("sdk example create_account/main.go").
 		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
 		Execute(client)
@@ -55,5 +47,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("account = %v\n", transactionReceipt.GetAccountID())
+	newAccountID := transactionReceipt.GetAccountID()
+
+	fmt.Printf("account = %v\n", newAccountID)
 }
