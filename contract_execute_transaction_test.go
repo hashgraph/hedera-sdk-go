@@ -16,15 +16,18 @@ func TestSerializeContractExecuteTransaction(t *testing.T) {
 	parameters := NewContractFunctionParams().
 		AddBytes([]byte{24, 43, 11})
 
-	tx := NewContractExecuteTransaction().
+	tx, err := NewContractExecuteTransaction().
 		SetContractID(ContractID{Contract: 5}).
 		SetGas(141).
 		SetPayableAmount(HbarFromTinybar(10000)).
 		SetFunction("someFunction", *parameters).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
-		Build(mockClient).
-		Sign(privateKey)
+		Build(mockClient)
+
+	assert.NoError(t, err)
+
+	tx.Sign(privateKey)
 
 	cupaloy.SnapshotT(t, tx.String())
 }

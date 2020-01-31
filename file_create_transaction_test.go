@@ -14,7 +14,7 @@ func TestSerializeFileCreateTransaction(t *testing.T) {
 	key, err := Ed25519PrivateKeyFromString("302e020100300506032b6570042204203b054fade7a2b0869c6bd4a63b7017cbae7855d12acc357bea718e2c3e805962")
 	assert.NoError(t, err)
 
-	tx := NewFileCreateTransaction().
+	tx, err := NewFileCreateTransaction().
 		AddKey(key.PublicKey()).
 		SetContents([]byte{1, 2, 3, 4}).
 		SetExpirationTime(date).
@@ -24,8 +24,11 @@ func TestSerializeFileCreateTransaction(t *testing.T) {
 			ValidStart: date,
 		}).
 		SetMaxTransactionFee(HbarFromTinybar(100_000)).
-		Build(nil).
-		Sign(key)
+		Build(nil)
+
+	assert.NoError(t, err)
+
+	tx.Sign(key)
 
 	cupaloy.SnapshotT(t, tx.String())
 }

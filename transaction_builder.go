@@ -17,17 +17,28 @@ func newTransactionBuilder() TransactionBuilder {
 	return builder
 }
 
-func (builder TransactionBuilder) Build(client *Client) Transaction {
-	if builder.pb.TransactionFee == 0 {
+func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
+	if client != nil && builder.pb.TransactionFee == 0 {
 		builder.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 
 	if builder.pb.NodeAccountID == nil {
-		builder.SetNodeAccountID(client.randomNode().id)
+		if client != nil {
+			builder.SetNodeAccountID(client.randomNode().id)
+		}
 	}
 
-	if builder.pb.TransactionID == nil {
+	if builder.pb.TransactionID == nil && client != nil && client.operator != nil {
 		builder.SetTransactionID(NewTransactionID(client.operator.accountID))
+	}
+
+	// todo: add a validate function per transaction type
+	if builder.pb.TransactionID == nil {
+		return Transaction{}, newErrLocalValidationf(".setTransactionID() required")
+	}
+
+	if builder.pb.NodeAccountID == nil {
+		return Transaction{}, newErrLocalValidationf(".setNodeAccountID() required")
 	}
 
 	bodyBytes, err := protobuf.Marshal(builder.pb)
@@ -42,11 +53,17 @@ func (builder TransactionBuilder) Build(client *Client) Transaction {
 		SigMap:   &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
 	}
 
-	return Transaction{pb, transactionIDFromProto(builder.pb.TransactionID)}
+	return Transaction{pb, transactionIDFromProto(builder.pb.TransactionID)}, nil
 }
 
 func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error) {
-	return builder.Build(client).Execute(client)
+	tx, err := builder.Build(client)
+
+	if err != nil {
+		return TransactionID{}, err
+	}
+
+	return tx.Execute(client)
 }
 
 //

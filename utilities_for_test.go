@@ -44,13 +44,18 @@ func newMockTransaction() (Transaction, error) {
 		return Transaction{}, err
 	}
 
-	tx := NewCryptoTransferTransaction().
+	tx, err := NewCryptoTransferTransaction().
 		AddSender(AccountID{Account: 2}, HbarFromTinybar(100)).
 		AddRecipient(AccountID{Account: 3}, HbarFromTinybar(100)).
 		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		SetTransactionID(testTransactionID).
-		Build(client).
-		Sign(privateKey)
+		Build(client)
+
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	tx.Sign(privateKey)
 
 	return tx, nil
 }

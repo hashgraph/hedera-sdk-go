@@ -14,14 +14,17 @@ func TestSerializeFreezeTransaction(t *testing.T) {
 	privateKey, err := Ed25519PrivateKeyFromString(mockPrivateKey)
 	assert.NoError(t, err)
 
-	tx := NewFreezeTransaction().
+	tx, err := NewFreezeTransaction().
 		SetTransactionID(testTransactionID).
 		SetStartTime(time.Unix(600, 100)).
 		SetEndTime(time.Unix(800, 100)).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
-		Build(mockClient).
-		Sign(privateKey)
+		Build(mockClient)
+
+	assert.NoError(t, err)
+
+	tx.Sign(privateKey)
 
 	cupaloy.SnapshotT(t, tx.String())
 }

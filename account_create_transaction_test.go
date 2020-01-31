@@ -14,7 +14,7 @@ func TestSerializeAccountCreateTransaction(t *testing.T) {
 	key, err := Ed25519PrivateKeyFromString("302e020100300506032b6570042204203b054fade7a2b0869c6bd4a63b7017cbae7855d12acc357bea718e2c3e805962")
 	assert.NoError(t, err)
 
-	tx := NewAccountCreateTransaction().
+	tx, err := NewAccountCreateTransaction().
 		SetKey(key.PublicKey()).
 		SetInitialBalance(HbarFromTinybar(450)).
 		SetProxyAccountID(AccountID{Account: 1020}).
@@ -25,8 +25,11 @@ func TestSerializeAccountCreateTransaction(t *testing.T) {
 			ValidStart: date,
 		}).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
-		Build(nil).
-		Sign(key)
+		Build(nil)
+
+	assert.NoError(t, err)
+
+	tx.Sign(key)
 
 	cupaloy.SnapshotT(t, tx.String())
 }

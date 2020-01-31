@@ -14,7 +14,7 @@ func TestSerializeContractUpdateTransaction(t *testing.T) {
 	privateKey, err := Ed25519PrivateKeyFromString(mockPrivateKey)
 	assert.NoError(t, err)
 
-	tx := NewContractUpdateTransaction().
+	tx, err := NewContractUpdateTransaction().
 		SetContractID(ContractID{Contract: 3}).
 		SetAdminKey(privateKey.PublicKey()).
 		SetBytecodeFileID(FileID{File: 5}).
@@ -23,8 +23,11 @@ func TestSerializeContractUpdateTransaction(t *testing.T) {
 		SetAutoRenewPeriod(60 * 60 * 24 * 14 * time.Second).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
-		Build(mockClient).
-		Sign(privateKey)
+		Build(mockClient)
+
+	assert.NoError(t, err)
+
+	tx.Sign(privateKey)
 
 	cupaloy.SnapshotT(t, tx.String())
 }

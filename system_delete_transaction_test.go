@@ -14,13 +14,16 @@ func TestSerializeSystemDeleteFileIDTransaction(t *testing.T) {
 	privateKey, err := Ed25519PrivateKeyFromString(mockPrivateKey)
 	assert.NoError(t, err)
 
-	tx := NewSystemDeleteTransaction().
+	tx, err := NewSystemDeleteTransaction().
 		SetFileID(FileID{File: 3}).
 		SetExpirationTime(time.Unix(15415151511, 0)).
 		SetMaxTransactionFee(HbarFromTinybar(100_000)).
 		SetTransactionID(testTransactionID).
-		Build(mockClient).
-		Sign(privateKey)
+		Build(mockClient)
+
+	assert.NoError(t, err)
+
+	tx.Sign(privateKey)
 
 	cupaloy.SnapshotT(t, tx.String())
 }
@@ -32,13 +35,15 @@ func TestSerializeSystemDeleteContractIDTransaction(t *testing.T) {
 	privateKey, err := Ed25519PrivateKeyFromString(mockPrivateKey)
 	assert.NoError(t, err)
 
-	tx := NewSystemDeleteTransaction().
-		SetContractID(ContractID{Contract: 3}).
+	tx, err := NewSystemDeleteTransaction().
+	 	SetContractID(ContractID{Contract: 3}).
 		SetExpirationTime(time.Unix(15415151511, 0)).
 		SetMaxTransactionFee(HbarFromTinybar(100_000)).
 		SetTransactionID(testTransactionID).
-		Build(mockClient).
-		Sign(privateKey)
+		Build(mockClient)
+
+	assert.NoError(t, err)
+	tx.Sign(privateKey)
 
 	cupaloy.SnapshotT(t, tx.String())
 }

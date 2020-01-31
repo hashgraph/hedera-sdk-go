@@ -26,7 +26,7 @@ func (builder FileDeleteTransaction) SetFileID(id FileID) FileDeleteTransaction 
 	return builder
 }
 
-func (builder FileDeleteTransaction) Build(client *Client) Transaction {
+func (builder FileDeleteTransaction) Build(client *Client) (Transaction, error) {
 	return builder.TransactionBuilder.Build(client)
 }
 
