@@ -18,7 +18,8 @@ func NewContractCreateTransaction() ContractCreateTransaction {
 
 	builder := ContractCreateTransaction{inner, pb}
 
-	return builder
+	// Default autoRenewPeriod to a value within the required range (~1/4 year)
+	return builder.SetAutoRenewPeriod(131500 * time.Minute)
 }
 
 func (builder ContractCreateTransaction) SetBytecodeFileID(id FileID) ContractCreateTransaction {
@@ -56,7 +57,7 @@ func (builder ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time
 	return builder
 }
 
-func (builder ContractCreateTransaction) SetConstructorParams(params ContractFunctionParams) ContractCreateTransaction {
+func (builder ContractCreateTransaction) SetConstructorParams(params *ContractFunctionParams) ContractCreateTransaction {
 	builder.pb.ConstructorParameters = params.build(nil)
 	return builder
 }

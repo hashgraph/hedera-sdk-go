@@ -37,8 +37,7 @@ func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 		return TransactionRecord{}, err
 	}
 
-	return NewTransactionRecordQuery().
-		SetTransactionID(id).
+	return NewTransactionRecordQuery().SetTransactionID(id).
 		Execute(client)
 }
 

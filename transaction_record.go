@@ -36,24 +36,13 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 }
 
 func transactionRecordFromProto(pb *proto.TransactionRecord) TransactionRecord {
-	var transferList = []Transfer{}
+	var transferList = make([]Transfer, len(pb.TransferList.AccountAmounts))
 
-	for _, element := range pb.TransferList.AccountAmounts {
-		transferList = append(transferList, transferFromProto(element))
+	for i, element := range pb.TransferList.AccountAmounts {
+		transferList[i] = transferFromProto(element)
 	}
 
-	callResultIsCreate := false
-	var callResult *ContractFunctionResult = nil
-	if pb.GetContractCreateResult() != nil {
-		callResultIsCreate = false
-		result := contractFunctionResultFromProto(pb.GetContractCreateResult())
-		callResult = &result
-	} else {
-		result := contractFunctionResultFromProto(pb.GetContractCallResult())
-		callResult = &result
-	}
-
-	return TransactionRecord{
+	txRecord := TransactionRecord{
 		Receipt:            transactionReceiptFromProto(pb.Receipt),
 		TransactionHash:    pb.TransactionHash,
 		ConsensusTimestamp: timeFromProto(pb.ConsensusTimestamp),
@@ -61,7 +50,20 @@ func transactionRecordFromProto(pb *proto.TransactionRecord) TransactionRecord {
 		TransactionMemo:    pb.Memo,
 		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:          transferList,
-		callResultIsCreate: callResultIsCreate,
-		callResult:         callResult,
+		callResultIsCreate: true,
+		callResult:         nil,
 	}
+
+	if pb.GetContractCreateResult() != nil {
+		result := contractFunctionResultFromProto(pb.GetContractCreateResult())
+		txRecord.callResult = &result
+
+		return txRecord
+	}
+
+	result := contractFunctionResultFromProto(pb.GetContractCallResult())
+	txRecord.callResult = &result
+	txRecord.callResultIsCreate = false
+
+	return txRecord
 }
