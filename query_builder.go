@@ -58,11 +58,15 @@ func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
 	builder.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 
 	// COST_ANSWER requires a "null" payment (it checks for it but does not process it)
-	tx := NewCryptoTransferTransaction().
+	tx, err := NewCryptoTransferTransaction().
 		SetNodeAccountID(node.id).
 		AddRecipient(node.id, ZeroHbar).
 		AddSender(client.operator.accountID, ZeroHbar).
 		Build(client)
+
+	if err != nil {
+		return ZeroHbar, err
+	}
 
 	if client.operator != nil {
 		tx = tx.signWithOperator(*client.operator)
@@ -134,18 +138,24 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 	return execute(node, builder.pb, deadline)
 }
 
-func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount Hbar) {
-	tx := NewCryptoTransferTransaction().
+func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount Hbar) error {
+	tx, err := NewCryptoTransferTransaction().
 		SetNodeAccountID(node.id).
 		AddRecipient(node.id, amount).
 		AddSender(client.operator.accountID, amount).
 		Build(client)
+
+	if err != nil {
+		return err
+	}
 
 	if client.operator != nil {
 		tx = tx.signWithOperator(*client.operator)
 	}
 
 	builder.pbHeader.Payment = tx.pb
+
+	return nil
 }
 
 func (builder *QueryBuilder) isPaymentRequired() bool {

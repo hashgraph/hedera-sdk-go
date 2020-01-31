@@ -13,12 +13,15 @@ func TestSerializeFileDeleteTransaction(t *testing.T) {
 	privateKey, err := Ed25519PrivateKeyFromString(mockPrivateKey)
 	assert.NoError(t, err)
 
-	tx := NewFileDeleteTransaction().
+	tx, err := NewFileDeleteTransaction().
 		SetFileID(FileID{File: 5}).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
-		Build(mockClient).
-		Sign(privateKey)
+		Build(mockClient)
+
+	assert.NoError(t, err)
+
+	tx.Sign(privateKey)
 
 	cupaloy.SnapshotT(t, tx.String())
 }
