@@ -99,7 +99,10 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 			node = client.node(nodeID)
 		} else if builder.payment != nil {
 			node = client.randomNode()
-			builder.generatePaymentTransaction(client, node, *builder.payment)
+			err := builder.generatePaymentTransaction(client, node, *builder.payment)
+			if err != nil {
+				return nil, err
+			}
 		} else if builder.maxPayment.AsTinybar() > 0 || client.maxQueryPayment.AsTinybar() > 0 {
 			node = client.randomNode()
 
@@ -117,7 +120,10 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 				return nil, newErrorMaxQueryPaymentExceeded(builder, actualCost, maxPayment)
 			}
 
-			builder.generatePaymentTransaction(client, node, ZeroHbar)
+			err = builder.generatePaymentTransaction(client, node, actualCost)
+			if err != nil {
+				return nil, err
+			}
 		}
 	} else {
 		node = client.randomNode()

@@ -47,8 +47,11 @@ func main() {
 	thresholdKey := hedera.NewThresholdKey(2).
 		AddAll(pubKeys)
 
+	fmt.Printf("threshold key %v\n", thresholdKey)
+
 	transaction, err := hedera.NewAccountCreateTransaction().
 		SetKey(thresholdKey).
+		SetInitialBalance(hedera.HbarFrom(20, hedera.HbarUnits.Hbar)).
 		SetTransactionID(hedera.NewTransactionID(operatorAccountID)).
 		SetTransactionMemo("sdk example create_account_with_threshold_keys/main.go").
 		Build(client)
