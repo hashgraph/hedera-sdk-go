@@ -82,6 +82,9 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	case *proto.TransactionBody_CryptoUpdateAccount:
 		methodName = "/proto.CryptoService/updateAccount"
 
+	case *proto.TransactionBody_CryptoDelete:
+		methodName = "/proto.CryptoService/cryptoDelete"
+
 	// FileServices
 	case *proto.TransactionBody_FileCreate:
 		methodName = "/proto.FileService/createFile"
@@ -129,7 +132,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 		methodName = "/proto.ConsensusService/submitMessage"
 
 	default:
-		return id, newErrLocalValidationf("unimplemented: %T", transactionBody.Data)
+		return id, newErrLocalValidationf("Could not find method name for: %T", transactionBody.Data)
 	}
 
 	validUntil := time.Now().Add(time.Duration(transactionBody.TransactionValidDuration.Seconds) * time.Second)

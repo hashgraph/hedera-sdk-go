@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/hashgraph/hedera-sdk-go"
+	"os"
 )
 
 func main() {
@@ -23,18 +22,26 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Automatic signing example")
+	fmt.Println("Manual signing example")
 	fmt.Printf("private = %v\n", newKey)
 	fmt.Printf("public = %v\n", newKey.PublicKey())
 
-	client := hedera.ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey)
+	client := hedera.ClientForTestnet()
 
-	transactionID, err := hedera.NewAccountCreateTransaction().
+	transaction, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(hedera.ZeroHbar).
-		SetTransactionMemo("sdk example create_account/main.go").
+		SetTransactionID(hedera.NewTransactionID(operatorAccountID)).
+		SetTransactionMemo("sdk example create_account__with_manual_signing/main.go").
 		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
+		Build(client)
+
+	if err != nil {
+		panic(err)
+	}
+
+	transactionID, err := transaction.
+		Sign(operatorPrivateKey).
 		Execute(client)
 
 	if err != nil {
@@ -42,12 +49,11 @@ func main() {
 	}
 
 	transactionReceipt, err := transactionID.GetReceipt(client)
-
 	if err != nil {
 		panic(err)
 	}
 
-	newAccountID := transactionReceipt.GetAccountID()
+	newAccountId := transactionReceipt.GetAccountID()
 
-	fmt.Printf("account = %v\n", newAccountID)
+	fmt.Printf("account = %v\n", newAccountId)
 }
