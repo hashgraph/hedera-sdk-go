@@ -32,7 +32,7 @@ func (builder ConsensusMessageSubmitTransaction) SetMessage(message []byte) Cons
 	return builder
 }
 
-func (builder ConsensusMessageSubmitTransaction) Build(client *Client) Transaction {
+func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transaction, error) {
 	return builder.TransactionBuilder.Build(client)
 }
 

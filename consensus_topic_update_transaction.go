@@ -80,7 +80,7 @@ func (builder ConsensusTopicUpdateTransaction) ClearAutoRenewAccountID() Consens
 	return builder
 }
 
-func (builder ConsensusTopicUpdateTransaction) Build(client *Client) Transaction {
+func (builder ConsensusTopicUpdateTransaction) Build(client *Client) (Transaction, error) {
 	return builder.TransactionBuilder.Build(client)
 }
 

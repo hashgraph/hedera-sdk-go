@@ -47,7 +47,7 @@ func (builder ConsensusTopicCreateTransaction) SetAutoRenewAccountID(id AccountI
 	return builder
 }
 
-func (builder ConsensusTopicCreateTransaction) Build(client *Client) Transaction {
+func (builder ConsensusTopicCreateTransaction) Build(client *Client) (Transaction, error) {
 	return builder.TransactionBuilder.Build(client)
 }
 

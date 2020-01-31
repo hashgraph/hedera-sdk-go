@@ -27,7 +27,7 @@ func (builder ConsensusTopicDeleteTransaction) SetTopicID(id ConsensusTopicID) C
 	return builder
 }
 
-func (builder ConsensusTopicDeleteTransaction) Build(client *Client) Transaction {
+func (builder ConsensusTopicDeleteTransaction) Build(client *Client) (Transaction, error) {
 	return builder.TransactionBuilder.Build(client)
 }
 
