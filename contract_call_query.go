@@ -33,7 +33,11 @@ func (builder *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQue
 	return builder
 }
 
-func (builder *ContractCallQuery) SetFunction(name string, params ContractFunctionParams) *ContractCallQuery {
+func (builder *ContractCallQuery) SetFunction(name string, params *ContractFunctionParams) *ContractCallQuery {
+	if params == nil {
+		params = NewContractFunctionParams()
+	}
+
 	builder.pb.FunctionParameters = params.build(&name)
 	return builder
 }

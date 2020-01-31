@@ -402,9 +402,6 @@ func (contract *ContractFunctionParams) AddStringArray(value []string) *Contract
 }
 
 func (contract *ContractFunctionParams) build(functionName *string) []byte {
-	// TODO: Only build if functionName is non-nil
-	function := contract.function.build(functionName)
-
 	length := uint64(0)
 
 	functionOffset := uint64(0)
@@ -420,7 +417,9 @@ func (contract *ContractFunctionParams) build(functionName *string) []byte {
 	}
 
 	result := make([]byte, length+functionOffset)
-	copy(result[0:4], function)
+	if functionName != nil {
+		copy(result[0:4], contract.function.build(functionName))
+	}
 
 	offset := uint64(len(contract.arguments) * 32)
 

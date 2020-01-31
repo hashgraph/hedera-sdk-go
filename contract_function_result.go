@@ -6,7 +6,7 @@ import (
 )
 
 type ContractFunctionResult struct {
-	ContractID         ContractID
+	ContractID         *ContractID
 	ContractCallResult []byte
 	ErrorMessage       string
 	Bloom              []byte
@@ -73,17 +73,25 @@ func (result ContractFunctionResult) AsBytes() []byte {
 }
 
 func contractFunctionResultFromProto(pb *proto.ContractFunctionResult) ContractFunctionResult {
-	infos := []ContractLogInfo{}
-	for _, info := range pb.LogInfo {
-		infos = append(infos, contractLogInfoFromProto(info))
+	infos := make([]ContractLogInfo, len(pb.LogInfo))
+
+	for i, info := range pb.LogInfo {
+		infos[i] = contractLogInfoFromProto(info)
 	}
 
-	return ContractFunctionResult{
-		ContractID:         contractIDFromProto(pb.ContractID),
+	result := ContractFunctionResult{
+		ContractID:         nil,
 		ContractCallResult: pb.ContractCallResult,
 		ErrorMessage:       pb.ErrorMessage,
 		Bloom:              pb.Bloom,
 		GasUsed:            pb.GasUsed,
 		LogInfo:            infos,
 	}
+
+	if pb.ContractID != nil {
+		contractID := contractIDFromProto(pb.ContractID)
+		result.ContractID = &contractID
+	}
+
+	return result
 }

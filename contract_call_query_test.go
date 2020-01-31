@@ -16,7 +16,7 @@ func TestNewContractCallQuery(t *testing.T) {
 	query := NewContractCallQuery().
 		SetGas(100).
 		SetMaxResultSize(100).
-		SetFunction("someFunction", *parameters).
+		SetFunction("someFunction", parameters).
 		SetContractID(ContractID{Contract: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 

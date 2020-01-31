@@ -79,7 +79,19 @@ func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
 		return ZeroHbar, err
 	}
 
-	return HbarFromTinybar(int64(mapResponseHeader(resp).Cost)), nil
+	tbCost := int64(mapResponseHeader(resp).Cost)
+
+	// Some queries require more than the server requests, so 10% is added to the cost as an estimated max range
+	switch builder.pb.Query.(type) {
+	case *proto.Query_ContractCallLocal:
+		tbCost = int64(float64(tbCost) * 1.1)
+		break
+	default:
+		// do nothing -- add more if they are found
+		break
+	}
+
+	return HbarFromTinybar(tbCost), nil
 }
 
 func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
@@ -109,6 +121,7 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 			}
 
 			actualCost, err := builder.Cost(client)
+
 			if err != nil {
 				return nil, err
 			}
@@ -117,7 +130,7 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 				return nil, newErrorMaxQueryPaymentExceeded(builder, actualCost, maxPayment)
 			}
 
-			builder.generatePaymentTransaction(client, node, ZeroHbar)
+			builder.generatePaymentTransaction(client, node, actualCost)
 		}
 	} else {
 		node = client.randomNode()
@@ -143,6 +156,7 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 		SetNodeAccountID(node.id).
 		AddRecipient(node.id, amount).
 		AddSender(client.operator.accountID, amount).
+		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		Build(client)
 
 	if err != nil {
