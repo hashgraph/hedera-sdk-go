@@ -5,26 +5,30 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "GetByKey.proto";
-import "GetBySolidityID.proto";
+import "proto/GetByKey.proto";
+import "proto/GetBySolidityID.proto";
 
-import "ContractCallLocal.proto";
-import "ContractGetInfo.proto";
-import "ContractGetBytecode.proto";
-import "ContractGetRecords.proto";
+import "proto/ContractCallLocal.proto";
+import "proto/ContractGetInfo.proto";
+import "proto/ContractGetBytecode.proto";
+import "proto/ContractGetRecords.proto";
 
-import "CryptoGetAccountBalance.proto";
-import "CryptoGetAccountRecords.proto";
-import "CryptoGetInfo.proto";
-import "CryptoGetClaim.proto";
-import "CryptoGetStakers.proto";
+import "proto/CryptoGetAccountBalance.proto";
+import "proto/CryptoGetAccountRecords.proto";
+import "proto/CryptoGetInfo.proto";
+import "proto/CryptoGetClaim.proto";
+import "proto/CryptoGetStakers.proto";
 
-import "FileGetContents.proto";
-import "FileGetInfo.proto";
+import "proto/FileGetContents.proto";
+import "proto/FileGetInfo.proto";
 
-import "TransactionGetReceipt.proto";
-import "TransactionGetRecord.proto";
-import "TransactionGetFastRecord.proto";
+import "proto/TransactionGetReceipt.proto";
+import "proto/TransactionGetRecord.proto";
+import "proto/TransactionGetFastRecord.proto";
+
+import "proto/ConsensusGetTopicInfo.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 /* A single query, which is sent from the client to the node. This includes all possible queries. Each Query should not have more than 50 levels. */
 message Query {
@@ -48,5 +52,9 @@ message Query {
         TransactionGetReceiptQuery transactionGetReceipt = 14; // Get a receipt for a transaction (lasts 180 seconds)
         TransactionGetRecordQuery transactionGetRecord = 15; // Get a record for a transaction (lasts 1 hour)
         TransactionGetFastRecordQuery transactionGetFastRecord = 16; // Get a record for a transaction (lasts 180 seconds)
+
+        // New functionality in the HCS release below here
+
+        ConsensusGetTopicInfoQuery consensusGetTopicInfo = 50; // Get the parameters of and state of a consensus topic.
     }
 }

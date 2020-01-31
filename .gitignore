@@ -16,3 +16,4 @@ vendor/
 
 # Editors
 .idea
+.env

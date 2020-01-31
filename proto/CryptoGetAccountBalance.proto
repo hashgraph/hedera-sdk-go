@@ -5,9 +5,11 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "BasicTypes.proto";
-import "QueryHeader.proto";
-import "ResponseHeader.proto";
+import "proto/BasicTypes.proto";
+import "proto/QueryHeader.proto";
+import "proto/ResponseHeader.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 /* Get the balance of a cryptocurrency account. This returns only the balance, so it is a smaller and faster reply than CryptoGetInfo, which returns the balance plus additional information. */
 message CryptoGetAccountBalanceQuery {

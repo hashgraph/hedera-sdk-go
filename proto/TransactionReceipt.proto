@@ -5,10 +5,12 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "BasicTypes.proto";
-import "ResponseCode.proto";
-import "ExchangeRate.proto";
-import "Timestamp.proto";
+import "proto/BasicTypes.proto";
+import "proto/ResponseCode.proto";
+import "proto/ExchangeRate.proto";
+import "proto/Timestamp.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 
 /* The consensus result for a transaction, which might not be currently known, or may  succeed or fail. */
@@ -18,4 +20,12 @@ message TransactionReceipt {
     FileID fileID = 3; // The file ID, if a new file was created
     ContractID contractID = 4; // The contract ID, if a new smart contract instance was created
     ExchangeRateSet exchangeRate = 5; // exchange rate set of Hbar to cents (USD)
+
+    TopicID topicID = 6; // TopicID of a newly created consensus service topic
+
+    // Updated sequence number for a consensus service topic. The result of a ConsensusSubmitMessage.
+    uint64 topicSequenceNumber = 7;
+
+    // Updated running hash for a consensus service topic. The result of a ConsensusSubmitMessage.
+    bytes topicRunningHash = 8;
 }

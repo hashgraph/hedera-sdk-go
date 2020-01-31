@@ -6,8 +6,10 @@ option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
 
-import "BasicTypes.proto";
-import "TransactionBody.proto";
+import "proto/BasicTypes.proto";
+import "proto/TransactionBody.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 
 

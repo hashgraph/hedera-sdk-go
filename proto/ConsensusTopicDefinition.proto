@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package proto;
+
+option java_package = "com.hedera.hashgraph.proto";
+option java_multiple_files = true;
+
+import "proto/BasicTypes.proto";
+import "proto/Timestamp.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+
+// Deprecated
+message ConsensusTopicDefinition {
+    string memo = 1;
+    Timestamp validStartTime = 2;
+    Timestamp expirationTime = 3;
+    Key adminKey = 4;
+    Key submitKey = 5;
+    Timestamp lastUpdateTime = 6;
+    Timestamp creationTime = 7;
+}

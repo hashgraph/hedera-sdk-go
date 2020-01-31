@@ -5,7 +5,9 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "Timestamp.proto";
+import "proto/Timestamp.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 
 /*  Values from these proto denotes habr and cents(USD) conversion */

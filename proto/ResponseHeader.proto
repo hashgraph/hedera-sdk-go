@@ -5,8 +5,10 @@ package proto;
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
-import "QueryHeader.proto";
-import "ResponseCode.proto";
+import "proto/QueryHeader.proto";
+import "proto/ResponseCode.proto";
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 /* Every query receives a response containing the QueryResponseHeader. Either or both of the cost and stateProof fields may be blank, if the responseType didn't ask for the cost or stateProof. */
 message ResponseHeader {
