@@ -37,9 +37,13 @@ func (hbar Hbar) As(unit HbarUnit) int64 {
 	return hbar.tinybar * unit.numberOfTinybar()
 }
 
-// todo: format in hbar if over 0.00001 hbar
 func (hbar Hbar) String() string {
-	return fmt.Sprintf("%v tħ", hbar.tinybar)
+	// Format the string as tinybar if the value is 1000 tinybar or less
+	if hbar.tinybar <= 1000 {
+		return fmt.Sprintf("%v tħ", hbar.tinybar)
+	}
+
+	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()))
 }
 
 func (hbar Hbar) negated() Hbar {

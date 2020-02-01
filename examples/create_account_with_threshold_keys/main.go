@@ -38,9 +38,7 @@ func main() {
 		pubKeys[i] = newKey.PublicKey()
 	}
 
-	client := hedera.ClientForTestnet().
-		SetMaxTransactionFee(hedera.HbarFrom(3, hedera.HbarUnits.Hbar)).
-		SetMaxQueryPayment(hedera.HbarFrom(3, hedera.HbarUnits.Hbar))
+	client := hedera.ClientForTestnet()
 
 	// A threshold key with a threshold of 2 and length of 3 requires
 	// at least 2 of the 3 keys to sign anything modifying the account
@@ -51,7 +49,7 @@ func main() {
 
 	transaction, err := hedera.NewAccountCreateTransaction().
 		SetKey(thresholdKey).
-		SetInitialBalance(hedera.HbarFrom(20, hedera.HbarUnits.Hbar)).
+		SetInitialBalance(hedera.NewHbar(6)).
 		SetTransactionID(hedera.NewTransactionID(operatorAccountID)).
 		SetTransactionMemo("sdk example create_account_with_threshold_keys/main.go").
 		Build(client)
@@ -103,11 +101,18 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Status of transfer transaction: %v\n", receipt.Status)
+	fmt.Printf("status of transfer transaction: %v\n", receipt.Status)
+
+	// Operator must be set
+	client.SetOperator(operatorAccountID, operatorPrivateKey)
 
 	balance, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(newAccountID).
 		Execute(client)
+
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Printf("account balance after transfer: %v\n", balance)
 }
