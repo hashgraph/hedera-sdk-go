@@ -13,6 +13,12 @@ available in the [hashgraph/hedera-protobuf] repository.
 [gRPC]: https://grpc.io
 [hashgraph/hedera-protobuf]: https://github.com/hashgraph/hedera-protobuf
 
+## Install
+
+```sh
+$ go get github.com/hashgraph/hedera-sdk-go
+```
+
 ## Contributing to this Project
 
 We welcome participation from all developers!
