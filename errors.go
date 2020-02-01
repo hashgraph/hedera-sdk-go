@@ -24,7 +24,7 @@ func newErrorMaxQueryPaymentExceeded(builder *QueryBuilder, queryCost Hbar, maxQ
 }
 
 func (e ErrMaxQueryPaymentExceeded) Error() string {
-	return fmt.Sprintf("cost of %s (%d) without explicit payment is greater than Client.MaxQueryPayment (%d)",
+	return fmt.Sprintf("cost of %s (%d) without explicit payment is greater than the max query payment of %d",
 		e.query,
 		e.QueryCost.tinybar,
 		e.MaxQueryPayment.tinybar)

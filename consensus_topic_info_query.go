@@ -56,3 +56,20 @@ func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicI
 		AutoRenewAccountID: accountIDFromProto(resp.GetConsensusGetTopicInfo().TopicInfo.AutoRenewAccount),
 	}, nil
 }
+
+//
+// The following _3_ must be copy-pasted at the bottom of **every** _query.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func (builder *ConsensusTopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ConsensusTopicInfoQuery {
+	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+}
+
+func (builder *ConsensusTopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *ConsensusTopicInfoQuery {
+	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+}
+
+func (builder *ConsensusTopicInfoQuery) SetQueryPaymentTransaction(tx Transaction) *ConsensusTopicInfoQuery {
+	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+}

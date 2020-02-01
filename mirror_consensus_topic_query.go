@@ -92,3 +92,8 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 
 	return newMirrorSubscriptionHandle(cancel), nil
 }
+
+//
+// The QueryPayment functions are not required for this query
+//
+

@@ -35,3 +35,20 @@ func (builder *ContractRecordsQuery) Execute(client *Client) ([]TransactionRecor
 
 	return records, nil
 }
+
+//
+// The following _3_ must be copy-pasted at the bottom of **every** _query.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func (builder *ContractRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractRecordsQuery {
+	return &ContractRecordsQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+}
+
+func (builder *ContractRecordsQuery) SetQueryPayment(paymentAmount Hbar) *ContractRecordsQuery {
+	return &ContractRecordsQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+}
+
+func (builder *ContractRecordsQuery) SetQueryPaymentTransaction(tx Transaction) *ContractRecordsQuery {
+	return &ContractRecordsQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+}
