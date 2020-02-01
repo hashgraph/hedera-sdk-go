@@ -1,9 +1,6 @@
 ![](https://img.shields.io/github/v/tag/hashgraph/hedera-sdk-go)
-
 [![Actions Status](https://github.com/hashgraph/hedera-sdk-go/workflows/Go/badge.svg)](https://github.com/hashgraph/hedera-sdk-Go/actions?query=workflow%3AGo)
-
 ![](https://img.shields.io/github/go-mod/go-version/hashgraph/hedera-sdk-go)
-
 [![](https://godoc.org/github.com/hashgraph/hedera-sdk-go?status.svg)](http://godoc.org/github.com/hashgraph/hedera-sdk-go)
 
 # Hedera™ Hashgraph Go SDK
