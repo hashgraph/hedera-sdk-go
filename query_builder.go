@@ -39,6 +39,11 @@ func (builder *QueryBuilder) SetQueryPaymentTransaction(tx Transaction) *QueryBu
 }
 
 func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
+	// An operator must be set on the client
+	if client == nil || client.operator == nil {
+		return ZeroHbar, newErrLocalValidationf("calling .Cost() requires client.SetOperator")
+	}
+
 	// Store the current response type and payment from the
 	// query header
 	currentResponseType := builder.pbHeader.ResponseType
@@ -68,9 +73,7 @@ func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
 		return ZeroHbar, err
 	}
 
-	if client.operator != nil {
-		tx = tx.signWithOperator(*client.operator)
-	}
+	tx = tx.signWithOperator(*client.operator)
 
 	builder.pbHeader.Payment = tx.pb
 
