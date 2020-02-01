@@ -20,7 +20,7 @@ func TestSerializeContractExecuteTransaction(t *testing.T) {
 		SetContractID(ContractID{Contract: 5}).
 		SetGas(141).
 		SetPayableAmount(HbarFromTinybar(10000)).
-		SetFunction("someFunction", *parameters).
+		SetFunction("someFunction", parameters).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
 		Build(mockClient)
