@@ -10,7 +10,7 @@ func TestNewAccountRecordQuery(t *testing.T) {
 	mockTransaction, err := newMockTransaction()
 	assert.NoError(t, err)
 
-	query := NewAccountRecordQuery().
+	query := NewAccountRecordsQuery().
 		SetAccountID(AccountID{Account: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 

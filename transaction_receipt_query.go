@@ -29,3 +29,20 @@ func (builder *TransactionReceiptQuery) Execute(client *Client) (TransactionRece
 
 	return transactionReceiptFromResponse(resp), nil
 }
+
+//
+// The following _3_ must be copy-pasted at the bottom of **every** _query.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func (builder *TransactionReceiptQuery) SetMaxQueryPayment(maxPayment Hbar) *TransactionReceiptQuery {
+	return &TransactionReceiptQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+}
+
+func (builder *TransactionReceiptQuery) SetQueryPayment(paymentAmount Hbar) *TransactionReceiptQuery {
+	return &TransactionReceiptQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+}
+
+func (builder *TransactionReceiptQuery) SetQueryPaymentTransaction(tx Transaction) *TransactionReceiptQuery {
+	return &TransactionReceiptQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+}

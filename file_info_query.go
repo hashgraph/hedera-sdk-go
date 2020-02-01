@@ -70,3 +70,20 @@ func (builder *FileInfoQuery) Cost(client *Client) (Hbar, error) {
 
 	return HbarFromTinybar(25), nil
 }
+
+//
+// The following _3_ must be copy-pasted at the bottom of **every** _query.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func (builder *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
+	return &FileInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+}
+
+func (builder *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
+	return &FileInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+}
+
+func (builder *FileInfoQuery) SetQueryPaymentTransaction(tx Transaction) *FileInfoQuery {
+	return &FileInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+}

@@ -22,19 +22,36 @@ func (builder *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQu
 }
 
 func (builder *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
-	var stakers = []Transfer{}
-
 	resp, err := builder.execute(client)
 	if err != nil {
-		return stakers, err
+		return []Transfer{}, err
 	}
 
-	for _, element := range resp.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
-		stakers = append(stakers, Transfer{
+	var stakers = make([]Transfer, len(resp.GetCryptoGetProxyStakers().Stakers.ProxyStaker))
+
+	for i, element := range resp.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
+		stakers[i] = Transfer{
 			AccountID: accountIDFromProto(element.AccountID),
 			Amount:    HbarFromTinybar(element.Amount),
-		})
+		}
 	}
 
 	return stakers, nil
+}
+
+//
+// The following _3_ must be copy-pasted at the bottom of **every** _query.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func (builder *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
+	return &AccountStakersQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+}
+
+func (builder *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
+	return &AccountStakersQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+}
+
+func (builder *AccountStakersQuery) SetQueryPaymentTransaction(tx Transaction) *AccountStakersQuery {
+	return &AccountStakersQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

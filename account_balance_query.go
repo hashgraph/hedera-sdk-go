@@ -29,3 +29,20 @@ func (builder *AccountBalanceQuery) Execute(client *Client) (Hbar, error) {
 
 	return HbarFromTinybar(int64(resp.GetCryptogetAccountBalance().Balance)), nil
 }
+
+//
+// The following _3_ must be copy-pasted at the bottom of **every** _query.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func (builder *AccountBalanceQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountBalanceQuery {
+	return &AccountBalanceQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+}
+
+func (builder *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBalanceQuery {
+	return &AccountBalanceQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+}
+
+func (builder *AccountBalanceQuery) SetQueryPaymentTransaction(tx Transaction) *AccountBalanceQuery {
+	return &AccountBalanceQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+}

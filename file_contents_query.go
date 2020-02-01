@@ -29,3 +29,20 @@ func (builder *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 
 	return resp.GetFileGetContents().FileContents.Contents, nil
 }
+
+//
+// The following _3_ must be copy-pasted at the bottom of **every** _query.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func (builder *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
+	return &FileContentsQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+}
+
+func (builder *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
+	return &FileContentsQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+}
+
+func (builder *FileContentsQuery) SetQueryPaymentTransaction(tx Transaction) *FileContentsQuery {
+	return &FileContentsQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+}
