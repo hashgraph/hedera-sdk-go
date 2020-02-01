@@ -56,14 +56,14 @@ func transactionRecordFromProto(pb *proto.TransactionRecord) TransactionRecord {
 
 	if pb.GetContractCreateResult() != nil {
 		result := contractFunctionResultFromProto(pb.GetContractCreateResult())
+
 		txRecord.callResult = &result
+	} else if pb.GetContractCallResult() != nil {
+		result := contractFunctionResultFromProto(pb.GetContractCallResult())
 
-		return txRecord
+		txRecord.callResult = &result
+		txRecord.callResultIsCreate = false
 	}
-
-	result := contractFunctionResultFromProto(pb.GetContractCallResult())
-	txRecord.callResult = &result
-	txRecord.callResultIsCreate = false
 
 	return txRecord
 }

@@ -26,7 +26,7 @@ func HbarFromTinybar(tinybar int64) Hbar {
 }
 
 func NewHbar(hbar float64) Hbar {
-	return HbarFromTinybar(int64(hbar * float64(HbarUnits.Tinybar.numberOfTinybar())))
+	return HbarFrom(hbar, HbarUnits.Hbar)
 }
 
 func (hbar Hbar) AsTinybar() int64 {
@@ -37,9 +37,9 @@ func (hbar Hbar) As(unit HbarUnit) int64 {
 	return hbar.tinybar * unit.numberOfTinybar()
 }
 
-// todo: handle different unit types?
+// todo: format in hbar if over 0.00001 hbar
 func (hbar Hbar) String() string {
-	return fmt.Sprintf("%v tinybar", hbar.tinybar)
+	return fmt.Sprintf("%v tħ", hbar.tinybar)
 }
 
 func (hbar Hbar) negated() Hbar {

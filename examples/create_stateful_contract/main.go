@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"io/ioutil"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 type contract struct {
@@ -30,9 +31,7 @@ func main() {
 	}
 
 	client := hedera.ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey).
-		SetMaxTransactionFee(hedera.HbarFrom(50, hedera.HbarUnits.Hbar)).
-		SetMaxQueryPayment(hedera.HbarFrom(50, hedera.HbarUnits.Hbar))
+		SetOperator(operatorAccountID, operatorPrivateKey)
 
 	defer func() {
 		err = client.Close()
@@ -57,11 +56,11 @@ func main() {
 	smartContractByteCode := smartContract.Contracts["stateful.sol:StatefulContract"].Bin
 
 	fmt.Println("Stateful contract example")
-	fmt.Printf("Contract bytecode size: %vbytes\n", len(smartContractByteCode))
+	fmt.Printf("Contract bytecode size: %v bytes\n", len(smartContractByteCode))
 
 	// Upload a file containing the byte code
 	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
-		SetMaxTransactionFee(hedera.HbarFrom(3, hedera.HbarUnits.Hbar)).
+		SetMaxTransactionFee(hedera.NewHbar(2)).
 		AddKey(operatorPrivateKey.PublicKey()).
 		SetContents([]byte(smartContractByteCode)).
 		Execute(client)
@@ -84,7 +83,7 @@ func main() {
 
 	// Instantiate the contract instance
 	contractTransactionID, err := hedera.NewContractCreateTransaction().
-		SetMaxTransactionFee(hedera.HbarFrom(15, hedera.HbarUnits.Hbar)).
+		SetMaxTransactionFee(hedera.NewHbar(15)).
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(2000).
 		// Failing to set parameters when required will result in "CONTRACT_REVERT_EXECUTED" status
@@ -109,13 +108,14 @@ func main() {
 	newContractID := contractRecord.Receipt.GetContractID()
 
 	fmt.Printf("Contract create gas used: %v\n", contractCreateResult.GasUsed)
-	fmt.Printf("Contract create transaction fee: %v tinybar\n", contractRecord.TransactionFee.AsTinybar())
+	fmt.Printf("Contract create transaction fee: %v\n", contractRecord.TransactionFee)
 	fmt.Printf("contract: %v\n", newContractID)
 
 	// Ask for the current message (set on creation)
 	callResult, err := hedera.NewContractCallQuery().
 		SetContractID(newContractID).
 		SetGas(1000).
+		// nil -> no parameters
 		SetFunction("getMessage", nil).
 		Execute(client)
 
@@ -133,7 +133,7 @@ func main() {
 	contractExecuteID, err := hedera.NewContractExecuteTransaction().
 		SetContractID(newContractID).
 		SetGas(7000).
-		SetFunction("setMessage", *contractFunctionParams).
+		SetFunction("setMessage", contractFunctionParams).
 		Execute(client)
 
 	if err != nil {

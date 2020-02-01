@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 func main() {
@@ -14,11 +15,6 @@ func main() {
 	}
 
 	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	if err != nil {
-		panic(err)
-	}
-
-	transferID, err := hedera.AccountIDFromString(os.Getenv("TRANSFER_ID"))
 	if err != nil {
 		panic(err)
 	}
@@ -37,9 +33,8 @@ func main() {
 
 	transactionID, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(hedera.HbarFrom(2, hedera.HbarUnits.Hbar)).
-		SetTransactionMemo("sdk example delete_account/main.go").
-		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
+		SetInitialBalance(hedera.NewHbar(2)).
+		SetTransactionMemo("go sdk example delete_account/main.go").
 		Execute(client)
 
 	if err != nil {
@@ -61,11 +56,8 @@ func main() {
 		// Set the account to be deleted
 		SetDeleteAccountID(newAccountID).
 		// Set an account to transfer to balance of the deleted account to
-		SetTransferAccountID(transferID).
-		// Manually set a TransactionID constructed from the AccountID you intend to delete
-		SetTransactionID(hedera.NewTransactionID(newAccountID)).
-		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
-		SetTransactionMemo("sdk example delete_account/main.go").
+		SetTransferAccountID(hedera.AccountID{Account: 3}).
+		SetTransactionMemo("go sdk example delete_account/main.go").
 		Build(client)
 
 	if err != nil {
@@ -73,9 +65,10 @@ func main() {
 	}
 
 	// Manually sign the transaction with the private key of the account to be deleted
-	deleteTransactionID, err := deleteTransaction.
-		Sign(newKey).
-		Execute(client)
+	deleteTransaction = deleteTransaction.Sign(newKey)
+
+	// Execute the transaction
+	deleteTransactionID, err := deleteTransaction.Execute(client)
 
 	if err != nil {
 		panic(err)

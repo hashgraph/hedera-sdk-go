@@ -8,9 +8,7 @@ import (
 )
 
 func main() {
-	client := hedera.NewClient(map[string]hedera.AccountID{
-		"0.testnet.hedera.com:50211": {Account: 3},
-	})
+	client := hedera.ClientForTestnet()
 
 	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
@@ -22,18 +20,13 @@ func main() {
 		panic(err)
 	}
 
-	client.SetOperator(
-		// Operator Account ID
-		operatorAccountID,
-		// Operator Private Key
-		operatorPrivateKey,
-	)
+	client.SetOperator(operatorAccountID, operatorPrivateKey)
 
 	transactionID, err := hedera.NewFileCreateTransaction().
+		// A file is not implicitly owned by anyone, even the operator
 		AddKey(operatorPrivateKey.PublicKey()).
-		SetContents([]byte{1, 2, 3, 4}).
-		SetTransactionMemo("sdk example create_file/main.go").
-		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
+		SetContents([]byte("Hello, World")).
+		SetTransactionMemo("go sdk example create_file/main.go").
 		Execute(client)
 
 	if err != nil {

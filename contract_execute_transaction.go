@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type ContractExecuteTransaction struct {
@@ -36,7 +37,11 @@ func (builder ContractExecuteTransaction) SetPayableAmount(amount Hbar) Contract
 	return builder
 }
 
-func (builder ContractExecuteTransaction) SetFunction(name string, params ContractFunctionParams) ContractExecuteTransaction {
+func (builder ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParams) ContractExecuteTransaction {
+	if params == nil {
+		params = NewContractFunctionParams()
+	}
+
 	builder.pb.FunctionParameters = params.build(&name)
 	return builder
 }

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 func main() {
@@ -33,7 +34,6 @@ func main() {
 		SetInitialBalance(hedera.ZeroHbar).
 		SetTransactionID(hedera.NewTransactionID(operatorAccountID)).
 		SetTransactionMemo("sdk example create_account__with_manual_signing/main.go").
-		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
 		Build(client)
 
 	if err != nil {

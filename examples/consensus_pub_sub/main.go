@@ -40,7 +40,7 @@ func main() {
 
 	transactionId, err := hedera.NewConsensusTopicCreateTransaction().
 		SetTransactionMemo("sdk example create_pub_sub/main.go").
-		SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
+		// SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
 	if err != nil {
@@ -84,7 +84,6 @@ func main() {
 	for i := 0; true; i++ {
 		id, err := hedera.NewConsensusMessageSubmitTransaction().
 			SetTopicID(topicID).
-			SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
 			SetMessage([]byte(fmt.Sprintf("Hello, HCS! Message %v", i))).
 			Execute(client)
 

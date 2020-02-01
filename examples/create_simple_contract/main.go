@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"io/ioutil"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 type contract struct {
@@ -27,9 +28,9 @@ func main() {
 	}
 
 	client := hedera.ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey).
-		SetMaxTransactionFee(hedera.HbarFrom(50, hedera.HbarUnits.Hbar)).
-		SetMaxQueryPayment(hedera.HbarFrom(50, hedera.HbarUnits.Hbar))
+		SetOperator(operatorAccountID, operatorPrivateKey)
+		// SetMaxTransactionFee(hedera.HbarFrom(50, hedera.HbarUnits.Hbar)).
+		// SetMaxQueryPayment(hedera.HbarFrom(50, hedera.HbarUnits.Hbar))
 
 	defer func() {
 		err = client.Close()
@@ -54,11 +55,11 @@ func main() {
 	contractByteCode := []byte(contract.Object)
 
 	fmt.Println("Simple contract example")
-	fmt.Printf("Contract bytecode size: %vbytes\n", len(contractByteCode))
+	fmt.Printf("Contract bytecode size: %v bytes\n", len(contractByteCode))
 
 	// Upload a file containing the byte code
 	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
-		SetMaxTransactionFee(hedera.HbarFrom(3, hedera.HbarUnits.Hbar)).
+		SetMaxTransactionFee(hedera.NewHbar(2)).
 		AddKey(operatorPrivateKey.PublicKey()).
 		SetContents(contractByteCode).
 		Execute(client)
@@ -67,19 +68,22 @@ func main() {
 		panic(err)
 	}
 
-	byteCodeTransactionReceipt, err := byteCodeTransactionID.GetReceipt(client)
+	byteCodeTransactionRecord, err := byteCodeTransactionID.GetRecord(client)
 	if err != nil {
 		panic(err)
 	}
 
-	byteCodeFileID := byteCodeTransactionReceipt.GetFileID()
+	fmt.Printf("contract bytecode file upload fee: %v\n", byteCodeTransactionRecord.TransactionFee)
+
+	byteCodeFileID := byteCodeTransactionRecord.Receipt.GetFileID()
 
 	fmt.Printf("contract bytecode file: %v\n", byteCodeFileID)
 
 	// Instantiate the contract instance
 	contractTransactionID, err := hedera.NewContractCreateTransaction().
+		SetMaxTransactionFee(hedera.NewHbar(15)).
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
-		SetGas(217000).
+		SetGas(2000).
 		SetBytecodeFileID(byteCodeFileID).
 		// Setting an admin key allows you to delete the contract in the future
 		SetAdminKey(operatorPrivateKey.PublicKey()).
@@ -102,7 +106,7 @@ func main() {
 	newContractID := contractRecord.Receipt.GetContractID()
 
 	fmt.Printf("Contract create gas used: %v\n", contractCreateResult.GasUsed)
-	fmt.Printf("Contract create transaction fee: %v tinybar\n", contractRecord.TransactionFee.AsTinybar())
+	fmt.Printf("Contract create transaction fee: %v\n", contractRecord.TransactionFee)
 	fmt.Printf("Contract: %v\n", newContractID)
 
 	// Call the contract to receive the greeting

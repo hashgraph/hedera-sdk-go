@@ -21,11 +21,11 @@ func (builder *AccountBalanceQuery) SetAccountID(id AccountID) *AccountBalanceQu
 	return builder
 }
 
-func (builder *AccountBalanceQuery) Execute(client *Client) (uint64, error) {
+func (builder *AccountBalanceQuery) Execute(client *Client) (Hbar, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
-		return 0, err
+		return ZeroHbar, err
 	}
 
-	return resp.GetCryptogetAccountBalance().Balance, nil
+	return HbarFromTinybar(int64(resp.GetCryptogetAccountBalance().Balance)), nil
 }

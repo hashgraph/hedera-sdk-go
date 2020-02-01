@@ -23,7 +23,6 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Automatic signing example")
 	fmt.Printf("private = %v\n", newKey)
 	fmt.Printf("public = %v\n", newKey.PublicKey())
 
@@ -32,9 +31,7 @@ func main() {
 
 	transactionID, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(hedera.ZeroHbar).
-		SetTransactionMemo("sdk example create_account/main.go").
-		SetMaxTransactionFee(hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
+		SetTransactionMemo("go sdk example create_account/main.go").
 		Execute(client)
 
 	if err != nil {

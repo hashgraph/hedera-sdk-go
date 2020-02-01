@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 func main() {
-	client := hedera.NewClient(map[string]hedera.AccountID{
-		"0.testnet.hedera.com:50211": {Account: 3},
-	})
+	client := hedera.ClientForTestnet()
 
 	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
@@ -31,5 +30,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("balance = %v tħ\n", balance)
+	fmt.Printf("balance = %v\n", balance)
 }
