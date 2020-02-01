@@ -9,16 +9,7 @@ import (
 )
 
 func main() {
-	nodeAddress := os.Getenv("NODE_ADDRESS")
-
-	nodeID, err := hedera.AccountIDFromString(os.Getenv("NODE_ID"))
-	if err != nil {
-		panic(err)
-	}
-
-	client := hedera.NewClient(map[string]hedera.AccountID{
-		nodeAddress: nodeID,
-	})
+	client := hedera.ClientForTestnet()
 
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
@@ -31,15 +22,10 @@ func main() {
 		panic(err)
 	}
 
-	client.SetOperator(
-		// Operator Account ID
-		operatorAccountID,
-		// Operator Private Key
-		operatorPrivateKey,
-	)
+	client.SetOperator(operatorAccountID, operatorPrivateKey)
 
-	transactionId, err := hedera.NewConsensusTopicCreateTransaction().
-		SetTransactionMemo("sdk example create_pub_sub/main.go").
+	transactionID, err := hedera.NewConsensusTopicCreateTransaction().
+		SetTransactionMemo("go sdk example create_pub_sub/main.go").
 		// SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
@@ -47,13 +33,11 @@ func main() {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionId.GetReceipt(client)
+	transactionReceipt, err := transactionID.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(transactionReceipt.Status)
 
 	topicID := transactionReceipt.ConsensusTopicID()
 
@@ -66,12 +50,12 @@ func main() {
 		panic(err)
 	}
 
-	topicQuery, err := hedera.NewMirrorConsensusTopicQuery().
+	_, err = hedera.NewMirrorConsensusTopicQuery().
 		SetTopicID(topicID).
 		Subscribe(
 			mirrorClient,
 			func(resp hedera.MirrorConsensusTopicResponse) {
-				fmt.Println(string(resp.Message))
+				fmt.Printf("received message: %v\n", string(resp.Message))
 			},
 			func(err error) {
 				fmt.Println(err.Error())
@@ -84,7 +68,7 @@ func main() {
 	for i := 0; true; i++ {
 		id, err := hedera.NewConsensusMessageSubmitTransaction().
 			SetTopicID(topicID).
-			SetMessage([]byte(fmt.Sprintf("Hello, HCS! Message %v", i))).
+			SetMessage([]byte(fmt.Sprintf("Hello HCS from Go! Message %v", i))).
 			Execute(client)
 
 		if err != nil {
@@ -101,6 +85,4 @@ func main() {
 
 		time.Sleep(2500 * time.Millisecond)
 	}
-
-	topicQuery.Unsubscribe()
 }
