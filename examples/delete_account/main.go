@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	// first create an account
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(err)
@@ -31,6 +30,7 @@ func main() {
 	client := hedera.ClientForTestnet().
 		SetOperator(operatorAccountID, operatorPrivateKey)
 
+	// first create an account
 	transactionID, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(hedera.NewHbar(2)).
