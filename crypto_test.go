@@ -29,6 +29,12 @@ const androidMnemonicString = "ramp april job flavor surround pyramid fish sea g
 // private key for "default account", should be index 0
 const androidDefaultPrivateKey = "c284c25b3a1458b59423bc289e83703b125c8eefec4d5aa1b393c2beb9f2bae66188a344ba75c43918ab12fa2ea4a92960eca029a2320d8c6a1c3b94e06c9985"
 
+// test pem key contests for the above testPrivateKeyStr
+const pemString = `-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEINtIS4KOZLLY8SzjwKDpOguMznrxu485yXcyOUSCU44Q
+-----END PRIVATE KEY-----
+`
+
 func TestEd25519PrivateKeyGenerate(t *testing.T) {
 	key, err := GenerateEd25519PrivateKey()
 
@@ -175,4 +181,14 @@ func TestEd25519PrivateKey_ReadKeystore(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, actualPrivateKey.keyData, privateKey.keyData)
+}
+
+func TestEd25519PrivateKey_FromPem(t *testing.T) {
+	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+	assert.NoError(t, err)
+
+	privateKey, err := Ed25519PrivateKeyFromPem([]byte(pemString), "")
+	assert.NoError(t, err)
+
+	assert.Equal(t, actualPrivateKey, privateKey)
 }

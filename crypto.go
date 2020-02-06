@@ -6,6 +6,7 @@ import (
 	"crypto/sha512"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/pem"
 	"fmt"
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
@@ -171,6 +172,19 @@ func Ed25519PrivateKeyReadKeystore(source io.Reader, passphrase string) (Ed25519
 	}
 
 	return Ed25519PrivateKeyFromKeystore(keystoreBytes, passphrase)
+}
+
+func Ed25519PrivateKeyFromPem(pemBytes []byte, passphrase string) (Ed25519PrivateKey, error) {
+	// note: passphrases are currently not supported, but included in the function definition to avoid breaking
+	// changes in the future
+
+	for block, _ := pem.Decode(pemBytes); block != nil; {
+		if block.Type == "PRIVATE KEY" {
+			return Ed25519PrivateKeyFromString(hex.EncodeToString(block.Bytes))
+		}
+	}
+
+	return Ed25519PrivateKey{}, newErrBadKeyf("pem file did not contain a private key")
 }
 
 // Ed25519PublicKeyFromString recovers an Ed25519PublicKey from its text-encoded representation.
