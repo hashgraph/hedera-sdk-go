@@ -39,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	topicID := transactionReceipt.ConsensusTopicID()
+	topicID := transactionReceipt.GetConsensusTopicID()
 
 	fmt.Printf("topicID: %v\n", topicID)
 
