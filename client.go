@@ -30,13 +30,13 @@ type node struct {
 	address string
 }
 
-type signer func(message []byte) []byte
+type TransactionSigner func(message []byte) []byte
 
 type operator struct {
 	accountID  AccountID
 	privateKey *Ed25519PrivateKey
 	publicKey  Ed25519PublicKey
-	signer     signer
+	signer     TransactionSigner
 }
 
 var mainnetNodes = map[string]AccountID{
@@ -181,7 +181,7 @@ func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519Private
 	return client
 }
 
-func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519PublicKey, signer signer) *Client {
+func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519PublicKey, signer TransactionSigner) *Client {
 	client.operator = &operator{
 		accountID:  accountID,
 		privateKey: nil,
