@@ -175,16 +175,30 @@ func Ed25519PrivateKeyReadKeystore(source io.Reader, passphrase string) (Ed25519
 }
 
 func Ed25519PrivateKeyFromPem(pemBytes []byte, passphrase string) (Ed25519PrivateKey, error) {
-	// note: passphrases are currently not supported, but included in the function definition to avoid breaking
-	// changes in the future
+	// note: Passphrases are currently not supported, but included in the function definition to avoid breaking
+	// changes in the future.
 
-	for block, _ := pem.Decode(pemBytes); block != nil; {
+	for block, remaining := pem.Decode(pemBytes); block != nil; {
 		if block.Type == "PRIVATE KEY" {
 			return Ed25519PrivateKeyFromString(hex.EncodeToString(block.Bytes))
 		}
+
+		pemBytes = remaining
 	}
 
 	return Ed25519PrivateKey{}, newErrBadKeyf("pem file did not contain a private key")
+}
+
+func Ed25519PrivateKeyReadPem(source io.Reader, passphrase string) (Ed25519PrivateKey, error) {
+	// note: Passphrases are currently not supported, but included in the function definition to avoid breaking
+	// changes in the future.
+
+	pemFileBytes, err := ioutil.ReadAll(source)
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	return Ed25519PrivateKeyFromPem(pemFileBytes, passphrase)
 }
 
 // Ed25519PublicKeyFromString recovers an Ed25519PublicKey from its text-encoded representation.
