@@ -354,10 +354,18 @@ func execute(node *node, pb *proto.Query, deadline time.Time) (*proto.Response, 
 			continue
 		}
 
-		return resp, Status(respHeader.NodeTransactionPrecheckCode).isExceptional(true)
+		status := Status(respHeader.NodeTransactionPrecheckCode)
+
+		if status.isExceptional(true) {
+			// precheck failed
+			return resp, newErrHederaPrecheckStatus(status)
+		}
+
+		// success
+		return resp, nil
 	}
 
 	// Timed out
 	respHeader := mapResponseHeader(resp)
-	return nil, Status(respHeader.NodeTransactionPrecheckCode).isExceptional(true)
+	return nil, newErrHederaPrecheckStatus(Status(respHeader.NodeTransactionPrecheckCode))
 }
