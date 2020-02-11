@@ -30,7 +30,7 @@ func NewConsensusTopicInfoQuery() *ConsensusTopicInfoQuery {
 	return &ConsensusTopicInfoQuery{inner, pb}
 }
 
-func (builder ConsensusTopicInfoQuery) SetTopicID(id ConsensusTopicID) ConsensusTopicInfoQuery {
+func (builder *ConsensusTopicInfoQuery) SetTopicID(id ConsensusTopicID) *ConsensusTopicInfoQuery {
 	builder.pb.TopicID = id.toProto()
 	return builder
 }

@@ -290,6 +290,10 @@ func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 	case *proto.Response_FileGetInfo:
 		return resp.GetFileGetInfo().Header
 
+	// HCS
+	case *proto.Response_ConsensusGetTopicInfo:
+		return resp.GetConsensusGetTopicInfo().Header
+
 	default:
 		panic(fmt.Sprintf("[mapResponseHeader] not implemented: %T", resp.Response))
 	}
