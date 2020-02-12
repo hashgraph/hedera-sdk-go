@@ -5,6 +5,8 @@ import (
 	"reflect"
 )
 
+// ErrMaxQueryPaymentExceeded is returned during query execution if the total cost of the query + estimated fees exceeds
+// the max query payment threshold set on the client or QueryBuilder.
 type ErrMaxQueryPaymentExceeded struct {
 	// The cost of the query that was attempted as returned by QueryBuilder.Cost
 	QueryCost Hbar
@@ -30,6 +32,7 @@ func (e ErrMaxQueryPaymentExceeded) Error() string {
 		e.MaxQueryPayment.tinybar)
 }
 
+// ErrBadKey is returned if a key is provided in an invalid format or structure
 type ErrBadKey struct {
 	message string
 }
@@ -42,6 +45,7 @@ func (e ErrBadKey) Error() string {
 	return e.message
 }
 
+// ErrHederaNetwork is returned in cases where the Hedera network cannot be reached or a network-side error occurs.
 type ErrHederaNetwork struct {
 	error error
 }
@@ -54,21 +58,47 @@ func (e ErrHederaNetwork) Error() string {
 	return fmt.Sprintf("transport error occurred while accessing the Hedera network: %s", e.Error())
 }
 
-type ErrHederaStatus struct {
+// ErrHederaPreCheckStatus is returned by Transaction.Execute and QueryBuilder.Execute if an exceptional status is
+// returned during network side validation of the sent transaction.
+type ErrHederaPreCheckStatus struct {
+	TxID   TransactionID
 	Status Status
 }
 
-func newErrHederaStatus(status Status) ErrHederaStatus {
-	// note [2020-01-15]: in the Java sdk the constructor of HederaStatusException checks if the status code is actually
-	// exceptional and throws an invalid argument exception
-
-	return ErrHederaStatus{
-		Status: status,
-	}
+func newErrHederaPreCheckStatus(id TransactionID, status Status) ErrHederaPreCheckStatus {
+	return ErrHederaPreCheckStatus{TxID: id, Status: status}
 }
 
-func (e ErrHederaStatus) Error() string {
-	return e.Status.String()
+func (e ErrHederaPreCheckStatus) Error() string {
+	return fmt.Sprintf("exceptional precheck status %s received for transaction %v", e.Status.String(), e.TxID)
+}
+
+// ErrHederaReceiptStatus is returned by TransactionID.GetReceipt if the status of the receipt is exceptional.
+type ErrHederaReceiptStatus struct {
+	TxID   TransactionID
+	Status Status
+}
+
+func newErrHederaReceiptStatus(id TransactionID, status Status) ErrHederaReceiptStatus {
+	return ErrHederaReceiptStatus{TxID: id, Status: status}
+}
+
+func (e ErrHederaReceiptStatus) Error() string {
+	return fmt.Sprintf("exceptional status %s received for transaction %v", e.Status.String(), e.TxID)
+}
+
+// ErrHederaRecordStatus is returned by TransactionID.GetRecord if the status of the record is exceptional.
+type ErrHederaRecordStatus struct {
+	TxID   TransactionID
+	Status Status
+}
+
+func newErrHederaRecordStatus(id TransactionID, status Status) ErrHederaRecordStatus {
+	return ErrHederaRecordStatus{TxID: id, Status: status}
+}
+
+func (e ErrHederaRecordStatus) Error() string {
+	return fmt.Sprintf("exceptional status %s received for transaction %v", e.Status.String(), e.TxID)
 }
 
 // ErrLocalValidation is returned by TransactionBuilder.Build(*Client) and QueryBuilder.Execute(*Client)
