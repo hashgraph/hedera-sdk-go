@@ -15,6 +15,26 @@ type Transaction struct {
 	ID TransactionID
 }
 
+func TransactionFromBytes(txBytes []byte) (Transaction, error) {
+	transaction := new(proto.Transaction)
+	txBody := new(proto.TransactionBody)
+
+	if err := transaction.XXX_Unmarshal(txBytes); err != nil {
+		return Transaction{}, err
+	}
+
+	if err := txBody.XXX_Unmarshal(transaction.GetBodyBytes()); err != nil {
+		return Transaction{}, err
+	}
+
+	txID := transactionIDFromProto(txBody.TransactionID)
+
+	return Transaction{
+		pb: transaction,
+		ID: txID,
+	}, nil
+}
+
 func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
@@ -178,6 +198,10 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 func (transaction Transaction) String() string {
 	return protobuf.MarshalTextString(transaction.pb) +
 		protobuf.MarshalTextString(transaction.body())
+}
+
+func (transaction Transaction) Bytes() ([]byte, error) {
+	return protobuf.Marshal(transaction.pb)
 }
 
 // The protobuf stores the transaction body as raw bytes so we need to first
