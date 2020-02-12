@@ -58,18 +58,19 @@ func (e ErrHederaNetwork) Error() string {
 	return fmt.Sprintf("transport error occurred while accessing the Hedera network: %s", e.Error())
 }
 
-// ErrHederaPrecheckStatus is returned by Transaction.Execute and QueryBuilder.Execute if an exceptional status is
+// ErrHederaPreCheckStatus is returned by Transaction.Execute and QueryBuilder.Execute if an exceptional status is
 // returned during network side validation of the sent transaction.
-type ErrHederaPrecheckStatus struct {
+type ErrHederaPreCheckStatus struct {
+	TxID   TransactionID
 	Status Status
 }
 
-func newErrHederaPrecheckStatus(status Status) ErrHederaPrecheckStatus {
-	return ErrHederaPrecheckStatus{Status: status}
+func newErrHederaPreCheckStatus(id TransactionID, status Status) ErrHederaPreCheckStatus {
+	return ErrHederaPreCheckStatus{TxID: id, Status: status}
 }
 
-func (e ErrHederaPrecheckStatus) Error() string {
-	return e.Status.String()
+func (e ErrHederaPreCheckStatus) Error() string {
+	return fmt.Sprintf("exceptional precheck status %s received for transaction %v", e.Status.String(), e.TxID)
 }
 
 // ErrHederaReceiptStatus is returned by TransactionID.GetReceipt if the status of the receipt is exceptional.

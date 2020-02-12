@@ -164,7 +164,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 
 		if status.isExceptional(true) {
 			// precheck failed
-			return id, newErrHederaPrecheckStatus(status)
+			return id, newErrHederaPreCheckStatus(transaction.ID, status)
 		}
 
 		// success
@@ -172,7 +172,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	}
 
 	// Timed out
-	return id, newErrHederaPrecheckStatus(Status(resp.NodeTransactionPrecheckCode))
+	return id, newErrHederaPreCheckStatus(transaction.ID, Status(resp.NodeTransactionPrecheckCode))
 }
 
 func (transaction Transaction) String() string {

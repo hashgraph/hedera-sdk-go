@@ -77,7 +77,7 @@ func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
 
 	builder.pbHeader.Payment = tx.pb
 
-	resp, err := execute(node, builder.pb, time.Now().Add(10*time.Second))
+	resp, err := execute(node, &tx.ID, builder.pb, time.Now().Add(10*time.Second))
 	if err != nil {
 		return ZeroHbar, err
 	}
@@ -99,6 +99,7 @@ func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
 
 func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 	var node *node
+	var payment *TransactionID
 
 	if builder.isPaymentRequired() {
 		if builder.pbHeader.Payment != nil {
@@ -111,13 +112,18 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 			}
 
 			nodeID := accountIDFromProto(paymentBody.NodeAccountID)
+			txID := transactionIDFromProto(paymentBody.TransactionID)
+			payment = &txID
 			node = client.node(nodeID)
 		} else if builder.payment != nil {
 			node = client.randomNode()
-			err := builder.generatePaymentTransaction(client, node, *builder.payment)
+			txID, err := builder.generatePaymentTransaction(client, node, *builder.payment)
+
 			if err != nil {
 				return nil, err
 			}
+
+			payment = &txID
 		} else if builder.maxPayment.AsTinybar() > 0 || client.maxQueryPayment.AsTinybar() > 0 {
 			node = client.randomNode()
 
@@ -136,10 +142,13 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 				return nil, newErrorMaxQueryPaymentExceeded(builder, actualCost, maxPayment)
 			}
 
-			err = builder.generatePaymentTransaction(client, node, actualCost)
+			txID, err := builder.generatePaymentTransaction(client, node, actualCost)
 			if err != nil {
 				return nil, err
 			}
+
+			payment = &txID
+
 		}
 	} else {
 		node = client.randomNode()
@@ -157,10 +166,10 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 		deadline = time.Now().Add(10 * time.Second)
 	}
 
-	return execute(node, builder.pb, deadline)
+	return execute(node, payment, builder.pb, deadline)
 }
 
-func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount Hbar) error {
+func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount Hbar) (TransactionID, error) {
 	tx, err := NewCryptoTransferTransaction().
 		SetNodeAccountID(node.id).
 		AddRecipient(node.id, amount).
@@ -169,7 +178,7 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 		Build(client)
 
 	if err != nil {
-		return err
+		return TransactionID{}, err
 	}
 
 	if client.operator != nil {
@@ -178,7 +187,7 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 
 	builder.pbHeader.Payment = tx.pb
 
-	return nil
+	return tx.ID, nil
 }
 
 func (builder *QueryBuilder) isPaymentRequired() bool {
@@ -321,7 +330,7 @@ func isResponseUnknown(resp *proto.Response) bool {
 	return false
 }
 
-func execute(node *node, pb *proto.Query, deadline time.Time) (*proto.Response, error) {
+func execute(node *node, paymentID *TransactionID, pb *proto.Query, deadline time.Time) (*proto.Response, error) {
 	methodName := methodName(pb)
 	resp := new(proto.Response)
 
@@ -357,8 +366,8 @@ func execute(node *node, pb *proto.Query, deadline time.Time) (*proto.Response, 
 		status := Status(respHeader.NodeTransactionPrecheckCode)
 
 		if status.isExceptional(true) {
-			// precheck failed
-			return resp, newErrHederaPrecheckStatus(status)
+			// precheck failed, paymentID should never be nil in this case
+			return resp, newErrHederaPreCheckStatus(*paymentID, status)
 		}
 
 		// success
@@ -367,5 +376,9 @@ func execute(node *node, pb *proto.Query, deadline time.Time) (*proto.Response, 
 
 	// Timed out
 	respHeader := mapResponseHeader(resp)
-	return nil, newErrHederaPrecheckStatus(Status(respHeader.NodeTransactionPrecheckCode))
+	if paymentID != nil {
+		return nil, newErrHederaPreCheckStatus(*paymentID, Status(respHeader.NodeTransactionPrecheckCode))
+	}
+
+	return nil, newErrHederaNetwork(fmt.Errorf("timed out with status %v", Status(respHeader.NodeTransactionPrecheckCode)))
 }
