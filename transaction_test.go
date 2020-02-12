@@ -1,21 +1,22 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTransactionSerializationDeserialization(t *testing.T) {
-
 	transaction, err := newMockTransaction()
 
 	assert.NoError(t, err)
 
-	txBytes, err := transaction.Bytes()
+	txBytes, err := transaction.MarshalBinary()
 
 	assert.NoError(t, err)
 
-	deserializedTX, err := TransactionFromBytes(txBytes)
+	var deserializedTX Transaction
+	err = deserializedTX.UnmarshalBinary(txBytes)
 
 	assert.NoError(t, err)
 

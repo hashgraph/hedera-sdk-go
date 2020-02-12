@@ -15,24 +15,20 @@ type Transaction struct {
 	ID TransactionID
 }
 
-func TransactionFromBytes(txBytes []byte) (Transaction, error) {
-	transaction := new(proto.Transaction)
-	txBody := new(proto.TransactionBody)
-
-	if err := transaction.XXX_Unmarshal(txBytes); err != nil {
-		return Transaction{}, err
+func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
+	transaction.pb = new(proto.Transaction)
+	if err := protobuf.Unmarshal(txBytes, transaction.pb); err != nil {
+		return err
 	}
 
-	if err := txBody.XXX_Unmarshal(transaction.GetBodyBytes()); err != nil {
-		return Transaction{}, err
+	var txBody proto.TransactionBody
+	if err := protobuf.Unmarshal(transaction.pb.GetBodyBytes(), &txBody); err != nil {
+		return err
 	}
 
-	txID := transactionIDFromProto(txBody.TransactionID)
+	transaction.ID = transactionIDFromProto(txBody.TransactionID)
 
-	return Transaction{
-		pb: transaction,
-		ID: txID,
-	}, nil
+	return nil
 }
 
 func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
@@ -200,7 +196,7 @@ func (transaction Transaction) String() string {
 		protobuf.MarshalTextString(transaction.body())
 }
 
-func (transaction Transaction) Bytes() ([]byte, error) {
+func (transaction Transaction) MarshalBinary() ([]byte, error) {
 	return protobuf.Marshal(transaction.pb)
 }
 

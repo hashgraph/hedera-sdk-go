@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
-	"time"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 func main() {
@@ -21,11 +21,8 @@ func main() {
 	client := hedera.ClientForTestnet()
 
 	// We must manually construct a TransactionID with the accountID of the operator/sender
-	// and an appropriate valid start time
-	txID := hedera.TransactionID{
-		AccountID:  operatorAccountID,
-		ValidStart: time.Now(),
-	}
+	// This is the account that will be charged the transaction fee
+	txID := hedera.NewTransactionID(operatorAccountID)
 
 	// The following steps are required for manually signing
 	transaction, err := hedera.NewCryptoTransferTransaction().
@@ -44,7 +41,7 @@ func main() {
 	}
 
 	// marshal your transaction to bytes
-	txBytes, err := transaction.Bytes()
+	txBytes, err := transaction.MarshalBinary()
 
 	if err != nil {
 		panic(err)
@@ -64,7 +61,8 @@ func main() {
 	fmt.Printf("received bytes for signed transaction \n%v\n", signedTxBytes)
 
 	// unmarshal your bytes into the signed transaction
-	signedTx, err := hedera.TransactionFromBytes(signedTxBytes)
+	var signedTx hedera.Transaction
+	err = signedTx.UnmarshalBinary(signedTxBytes)
 
 	if err != nil {
 		panic(err)
@@ -88,7 +86,7 @@ func main() {
 	fmt.Printf("crypto transfer status: %v\n", receipt.Status)
 }
 
-// signingService represents a non-local service which knows the private keys needed for signing
+// signingService represents an offline service which knows the private keys needed for signing
 // a transaction and returns the byte representation of the transaction
 func signingService(txBytes []byte) ([]byte, error) {
 	fmt.Println("signing service has received the transaction")
@@ -100,7 +98,8 @@ func signingService(txBytes []byte) ([]byte, error) {
 	}
 
 	// unmarshal the unsigned transaction's bytes
-	unsignedTx, err := hedera.TransactionFromBytes(txBytes)
+	var unsignedTx hedera.Transaction
+	err = unsignedTx.UnmarshalBinary(txBytes)
 
 	if err != nil {
 		return txBytes, err
@@ -111,5 +110,5 @@ func signingService(txBytes []byte) ([]byte, error) {
 	// sign your unsigned transaction and marshal back to bytes
 	return unsignedTx.
 		Sign(operatorPrivateKey).
-		Bytes()
+		MarshalBinary()
 }
