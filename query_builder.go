@@ -243,6 +243,10 @@ func methodName(pb *proto.Query) string {
 	case *proto.Query_FileGetInfo:
 		return "/proto.FileService/getFileInfo"
 
+	// HCS
+	case *proto.Query_ConsensusGetTopicInfo:
+		return "/proto.ConsensusService/getTopicInfo"
+
 	default:
 		panic(fmt.Sprintf("[methodName] not implemented: %T", pb.Query))
 	}
