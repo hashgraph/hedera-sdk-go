@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TransactionBuilder is used to construct Transactions. The state is mutable through the various setter functions.
 type TransactionBuilder struct {
 	pb *proto.TransactionBody
 
@@ -22,6 +23,8 @@ func newTransactionBuilder() TransactionBuilder {
 	return builder
 }
 
+// Build validates and finalizes the transaction's state and prepares it for execution, returning a Transaction.
+// The inner state becomes immutable, however it can still be signed after building.
 func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
 	if client != nil && !builder.noTXFee {
 		builder.SetMaxTransactionFee(client.maxTransactionFee)
@@ -61,6 +64,8 @@ func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
 	return Transaction{pb, transactionIDFromProto(builder.pb.TransactionID)}, nil
 }
 
+// Execute is a short hand function to build and execute a transaction. It first calls build on the TransactionBuilder
+// and as long as validation passes it will then execute the resulting Transaction.
 func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error) {
 	tx, err := builder.Build(client)
 
