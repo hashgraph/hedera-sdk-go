@@ -10,19 +10,20 @@ import (
 type TransactionBuilder struct {
 	pb *proto.TransactionBody
 
-	// unfortunately; this is required
-	setTXFee bool
+	// unfortunately; this is required to prevent setting the max TXFee if it is purposely set to 0
+	// (for example, when .Cost() is called)
+	noTXFee bool
 }
 
 func newTransactionBuilder() TransactionBuilder {
-	builder := TransactionBuilder{&proto.TransactionBody{}, false}
+	builder := TransactionBuilder{pb: &proto.TransactionBody{}}
 	builder.SetTransactionValidDuration(120 * time.Second)
 
 	return builder
 }
 
 func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
-	if client != nil && !builder.setTXFee {
+	if client != nil && !builder.noTXFee {
 		builder.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 
@@ -85,15 +86,17 @@ func (builder TransactionBuilder) Cost(client *Client) (Hbar, error) {
 	oldFee := builder.pb.TransactionFee
 	oldTxID := builder.pb.TransactionID
 	oldValidDuration := builder.pb.TransactionValidDuration
-	oldTxFeeStatus := builder.setTXFee
+	oldTxFeeStatus := builder.noTXFee
 
 	defer func() {
 		// always reset the state of the builder before exiting this function
 		builder.pb.TransactionFee = oldFee
 		builder.pb.TransactionID = oldTxID
 		builder.pb.TransactionValidDuration = oldValidDuration
-		builder.setTXFee = oldTxFeeStatus
+		builder.noTXFee = oldTxFeeStatus
 	}()
+
+	builder.noTXFee = true
 
 	costTx, err := builder.
 		SetMaxTransactionFee(ZeroHbar).
@@ -126,7 +129,6 @@ func (builder TransactionBuilder) Cost(client *Client) (Hbar, error) {
 //
 
 func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee Hbar) TransactionBuilder {
-	builder.setTXFee = true
 	builder.pb.TransactionFee = uint64(maxTransactionFee.AsTinybar())
 	return builder
 }
