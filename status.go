@@ -115,6 +115,14 @@ const (
 	StatusExpirationReductionNotAllowed       Status = 110
 	StatusMaxGasLimitExceeded                 Status = 111
 	StatusMaxFileSizeExceeded                 Status = 112
+	StatusInvalidTopicID                      Status = 150
+	StatusInvalidAdminKey                     Status = 155
+	StatusInvalidSubmitKey                    Status = 156
+	StatusUnauthorized                        Status = 157
+	StatusInvalidTopicMessage                 Status = 158
+	StatusInvalidAutoRenewAccount             Status = 159
+	StatusAutoRenewAccountNotAllowed          Status = 160
+	StatusTopicExpired                        Status = 162
 )
 
 func (status Status) isExceptional(includeUnknown bool) bool {
@@ -131,6 +139,7 @@ func (status Status) isExceptional(includeUnknown bool) bool {
 	return true
 }
 
+// String() returns a string representation of the status
 func (status Status) String() string {
 	switch status {
 	case StatusOk:
@@ -357,6 +366,22 @@ func (status Status) String() string {
 		return "MAX_GAS_LIMIT_EXCEEDED"
 	case StatusMaxFileSizeExceeded:
 		return "MAX_FILE_SIZE_EXCEEDED"
+	case StatusInvalidTopicID:
+		return "INVALID_TOPIC_ID"
+	case StatusInvalidAdminKey:
+		return "INVALID_ADMIN_KEY"
+	case StatusInvalidSubmitKey:
+		return "INVALID_SUBMIT_KEY"
+	case StatusUnauthorized:
+		return "UNAUTHORIZED"
+	case StatusInvalidTopicMessage:
+		return "INVALID_TOPIC_MESSAGE"
+	case StatusInvalidAutoRenewAccount:
+		return "INVALID_AUTO_RENEW_ACCOUNT"
+	case StatusAutoRenewAccountNotAllowed:
+		return "AUTO_RENEW_ACCOUNT_NOT_ALLOWED"
+	case StatusTopicExpired:
+		return "TOPIC_EXPIRED"
 	}
 
 	panic("unreacahble: Status.String() switch statement is non-exhaustive")
