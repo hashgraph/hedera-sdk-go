@@ -3,6 +3,7 @@ package hedera
 import (
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/proto"
+	"math"
 	"time"
 )
 
@@ -64,6 +65,55 @@ func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error)
 	}
 
 	return tx.Execute(client)
+}
+
+// Cost returns the estimated cost of the transaction.
+//
+// NOTE: The actual cost returned by Hedera is within 99.8% to 99.9%  of the actual fee that will be assessed. We're
+// unsure if this is because the fee fluctuates that much or if the calculations are simply incorrect on the server. To
+// compensate for this we just bump by a 1% the value returned. As this would only ever be a maximum this will not cause
+// you to be charged more.
+func (builder TransactionBuilder) Cost(client *Client) (Hbar, error) {
+	// An operator must be set on the client
+	if client == nil || client.operator == nil {
+		return ZeroHbar, newErrLocalValidationf("calling .Cost() requires client.SetOperator")
+	}
+
+	oldFee := builder.pb.TransactionFee
+	oldTxID := builder.pb.TransactionID
+	oldValidDuration := builder.pb.TransactionValidDuration
+
+	defer func(){
+		// always reset the state of the builder before exiting this function
+		builder.pb.TransactionFee = oldFee
+		builder.pb.TransactionID = oldTxID
+		builder.pb.TransactionValidDuration = oldValidDuration
+	}()
+
+	costTx, err := builder.
+		SetMaxTransactionFee(ZeroHbar).
+		SetTransactionID(NewTransactionID(client.operator.accountID)).
+		Build(client)
+
+	if err != nil {
+		return ZeroHbar, err
+	}
+
+	_, resp, err := costTx.
+		executeForResponse(client)
+
+	if err != nil {
+		return ZeroHbar, err
+	}
+
+	status := Status(resp.NodeTransactionPrecheckCode)
+
+	if status != StatusInsufficientTxFee {
+		//  any status that is not insufficienttxfee should be considered an error in this case
+		return ZeroHbar, newErrHederaPreCheckStatus(transactionIDFromProto(builder.pb.TransactionID), status)
+	}
+
+	return HbarFromTinybar(int64(math.Ceil(float64(resp.GetCost()) * 1.1))), nil
 }
 
 //
