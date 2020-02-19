@@ -55,11 +55,11 @@ var fileDescriptor_5cefbc36ab9ea863 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // CryptoServiceClient is the client API for CryptoService service.
 //
@@ -82,10 +82,10 @@ type CryptoServiceClient interface {
 }
 
 type cryptoServiceClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewCryptoServiceClient(cc *grpc.ClientConn) CryptoServiceClient {
+func NewCryptoServiceClient(cc grpc.ClientConnInterface) CryptoServiceClient {
 	return &cryptoServiceClient{cc}
 }
 
