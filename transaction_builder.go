@@ -9,17 +9,20 @@ import (
 
 type TransactionBuilder struct {
 	pb *proto.TransactionBody
+
+	// unfortunately; this is required
+	setTXFee bool
 }
 
 func newTransactionBuilder() TransactionBuilder {
-	builder := TransactionBuilder{&proto.TransactionBody{}}
+	builder := TransactionBuilder{&proto.TransactionBody{}, false}
 	builder.SetTransactionValidDuration(120 * time.Second)
 
 	return builder
 }
 
 func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
-	if client != nil && builder.pb.TransactionFee == 0 {
+	if client != nil && !builder.setTXFee {
 		builder.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 
@@ -82,12 +85,14 @@ func (builder TransactionBuilder) Cost(client *Client) (Hbar, error) {
 	oldFee := builder.pb.TransactionFee
 	oldTxID := builder.pb.TransactionID
 	oldValidDuration := builder.pb.TransactionValidDuration
+	oldTxFeeStatus := builder.setTXFee
 
-	defer func(){
+	defer func() {
 		// always reset the state of the builder before exiting this function
 		builder.pb.TransactionFee = oldFee
 		builder.pb.TransactionID = oldTxID
 		builder.pb.TransactionValidDuration = oldValidDuration
+		builder.setTXFee = oldTxFeeStatus
 	}()
 
 	costTx, err := builder.
@@ -121,6 +126,7 @@ func (builder TransactionBuilder) Cost(client *Client) (Hbar, error) {
 //
 
 func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee Hbar) TransactionBuilder {
+	builder.setTXFee = true
 	builder.pb.TransactionFee = uint64(maxTransactionFee.AsTinybar())
 	return builder
 }
