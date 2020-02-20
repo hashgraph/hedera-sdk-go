@@ -10,6 +10,8 @@ type ContractDeleteTransaction struct {
 	pb *proto.ContractDeleteTransactionBody
 }
 
+// NewContractDeleteTransaction creates a Contract Delete Transaction builder which can be used to construct and execute
+// a Contract Delete Transaction.
 func NewContractDeleteTransaction() ContractDeleteTransaction {
 	pb := &proto.ContractDeleteTransactionBody{}
 
@@ -21,8 +23,26 @@ func NewContractDeleteTransaction() ContractDeleteTransaction {
 	return builder
 }
 
+// SetContractID sets the Contract ID of the Contract to be deleted by the Contract Delete Transaction
 func (builder ContractDeleteTransaction) SetContractID(id ContractID) ContractDeleteTransaction {
 	builder.pb.ContractID = id.toProto()
+	return builder
+}
+
+// SetTransferAccountID sets the Account ID which will receive remaining hbar tied to the Contract
+func (builder ContractDeleteTransaction) SetTransferAccountID(id AccountID) ContractDeleteTransaction {
+	builder.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+		TransferAccountID: id.toProto(),
+	}
+
+	return builder
+}
+
+func (builder ContractDeleteTransaction) SetTransferContractID(id ContractID) ContractDeleteTransaction {
+	builder.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+		TransferContractID: id.toProto(),
+	}
+
 	return builder
 }
 
