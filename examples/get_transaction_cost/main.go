@@ -30,7 +30,7 @@ func main() {
 		SetKey(newKey.PublicKey()).
 		SetTransactionMemo("go sdk example create_account/main.go")
 
-	txCost, err := transaction.Cost(client)
+	txCost, err := transaction.GetCost(client)
 
 	if err != nil {
 		panic(err)

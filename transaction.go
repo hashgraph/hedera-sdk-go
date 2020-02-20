@@ -10,11 +10,13 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// Transaction contains the protobuf of a prepared transaction which can be signed and executed.
 type Transaction struct {
 	pb *proto.Transaction
-	ID TransactionID
+	id TransactionID
 }
 
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
 	transaction.pb = new(proto.Transaction)
 	if err := protobuf.Unmarshal(txBytes, transaction.pb); err != nil {
@@ -26,11 +28,12 @@ func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
 		return err
 	}
 
-	transaction.ID = transactionIDFromProto(txBody.TransactionID)
+	transaction.id = transactionIDFromProto(txBody.TransactionID)
 
 	return nil
 }
 
+// Sign uses the provided privateKey to sign the transaction.
 func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
@@ -60,6 +63,8 @@ func (transaction Transaction) signWithOperator(operator operator) Transaction {
 	return transaction
 }
 
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
 func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer TransactionSigner) Transaction {
 	signature := signer(transaction.pb.GetBodyBytes())
 
@@ -121,9 +126,10 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 	}
 
 	// Timed out
-	return id, nil, newErrHederaPreCheckStatus(transaction.ID, Status(resp.NodeTransactionPrecheckCode))
+	return id, nil, newErrHederaPreCheckStatus(transaction.id, Status(resp.NodeTransactionPrecheckCode))
 }
 
+// Execute executes the Transaction with the provided client
 func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 	id, resp, err := transaction.executeForResponse(client)
 
@@ -135,7 +141,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 
 	if status.isExceptional(true) {
 		// precheck failed
-		return id, newErrHederaPreCheckStatus(transaction.ID, status)
+		return id, newErrHederaPreCheckStatus(transaction.id, status)
 	}
 
 	// success
@@ -147,8 +153,16 @@ func (transaction Transaction) String() string {
 		protobuf.MarshalTextString(transaction.body())
 }
 
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (transaction Transaction) MarshalBinary() ([]byte, error) {
 	return protobuf.Marshal(transaction.pb)
+}
+
+// ID returns the transaction ID of the transaction
+func (transaction Transaction) ID() TransactionID {
+	// Provide an accessor function to prevent the user from mutating the
+	// ID which would result in undefined behavior.
+	return transaction.id
 }
 
 // The protobuf stores the transaction body as raw bytes so we need to first

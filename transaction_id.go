@@ -7,14 +7,14 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-// TransactionID is the ID used to identify a Transaction on the Hedera network. It consists of an AccountID and a
+// TransactionID is the id used to identify a Transaction on the Hedera network. It consists of an AccountID and a
 // a valid start time.
 type TransactionID struct {
 	AccountID  AccountID
 	ValidStart time.Time
 }
 
-// NewTransactionID constructs a new Transaction ID struct with the provided AccountID and the valid start time set
+// NewTransactionID constructs a new Transaction id struct with the provided AccountID and the valid start time set
 // to the current time - 10 seconds.
 func NewTransactionID(accountID AccountID) TransactionID {
 	now := time.Now().Add(-10 * time.Second)
@@ -22,7 +22,7 @@ func NewTransactionID(accountID AccountID) TransactionID {
 	return TransactionID{accountID, now}
 }
 
-// NewTransactionIDWithValidStart constructs a new Transaction ID struct with the provided AccountID and the valid start
+// NewTransactionIDWithValidStart constructs a new Transaction id struct with the provided AccountID and the valid start
 // time set to a provided time.
 func NewTransactionIDWithValidStart(accountID AccountID, validStart time.Time) TransactionID {
 	return TransactionID{accountID, validStart}

@@ -77,7 +77,7 @@ func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
 
 	builder.pbHeader.Payment = tx.pb
 
-	resp, err := execute(node, &tx.ID, builder.pb, time.Now().Add(10*time.Second))
+	resp, err := execute(node, &tx.id, builder.pb, time.Now().Add(10*time.Second))
 	if err != nil {
 		return ZeroHbar, err
 	}
@@ -187,7 +187,7 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 
 	builder.pbHeader.Payment = tx.pb
 
-	return tx.ID, nil
+	return tx.id, nil
 }
 
 func (builder *QueryBuilder) isPaymentRequired() bool {

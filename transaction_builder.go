@@ -12,7 +12,7 @@ type TransactionBuilder struct {
 	pb *proto.TransactionBody
 
 	// unfortunately; this is required to prevent setting the max TXFee if it is purposely set to 0
-	// (for example, when .Cost() is called)
+	// (for example, when .GetCost() is called)
 	noTXFee bool
 }
 
@@ -76,16 +76,16 @@ func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error)
 	return tx.Execute(client)
 }
 
-// Cost returns the estimated cost of the transaction.
+// GetCost returns the estimated cost of the transaction.
 //
 // NOTE: The actual cost returned by Hedera is within 99.8% to 99.9%  of the actual fee that will be assessed. We're
 // unsure if this is because the fee fluctuates that much or if the calculations are simply incorrect on the server. To
 // compensate for this we just bump by a 1% the value returned. As this would only ever be a maximum this will not cause
 // you to be charged more.
-func (builder TransactionBuilder) Cost(client *Client) (Hbar, error) {
+func (builder TransactionBuilder) GetCost(client *Client) (Hbar, error) {
 	// An operator must be set on the client
 	if client == nil || client.operator == nil {
-		return ZeroHbar, newErrLocalValidationf("calling .Cost() requires client.SetOperator")
+		return ZeroHbar, newErrLocalValidationf("calling .GetCost() requires client.SetOperator")
 	}
 
 	oldFee := builder.pb.TransactionFee
