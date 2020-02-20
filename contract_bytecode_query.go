@@ -4,11 +4,14 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// ContractBytcodeQuery retrieves the bytecode for a smart contract instance
 type ContractBytecodeQuery struct {
 	QueryBuilder
 	pb *proto.ContractGetBytecodeQuery
 }
 
+// NewContractBytecodeQuery creates a ContractBytecodeQuery builder which can be used to construct and execute a
+// Contract Get Bytecode Query.
 func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	pb := &proto.ContractGetBytecodeQuery{Header: &proto.QueryHeader{}}
 
@@ -18,11 +21,13 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	return &ContractBytecodeQuery{inner, pb}
 }
 
+// SetContractID sets the contract for which the bytecode is requested
 func (builder *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
 	builder.pb.ContractID = id.toProto()
 	return builder
 }
 
+// Execute executes the ContractByteCodeQuery using the provided client
 func (builder *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
