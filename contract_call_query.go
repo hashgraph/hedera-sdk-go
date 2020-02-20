@@ -52,7 +52,7 @@ func (builder *ContractCallQuery) Execute(client *Client) (ContractFunctionResul
 }
 
 func (builder *ContractCallQuery) Cost(client *Client) (Hbar, error) {
-	cost, err := builder.QueryBuilder.Cost(client)
+	cost, err := builder.QueryBuilder.GetCost(client)
 	if err != nil {
 		return ZeroHbar, err
 	}

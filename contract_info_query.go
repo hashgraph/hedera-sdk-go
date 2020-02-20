@@ -62,7 +62,7 @@ func (builder *ContractInfoQuery) Cost(client *Client) (Hbar, error) {
 	// deleted files return a COST_ANSWER of zero which triggers `INSUFFICIENT_TX_FEE`
 	// if you set that as the query payment; 25 tinybar seems to be enough to get
 	// `FILE_DELETED` back instead.
-	cost, err := builder.QueryBuilder.Cost(client)
+	cost, err := builder.QueryBuilder.GetCost(client)
 	if err != nil {
 		return ZeroHbar, err
 	}
