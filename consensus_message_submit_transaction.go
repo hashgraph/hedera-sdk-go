@@ -11,6 +11,8 @@ type ConsensusMessageSubmitTransaction struct {
 	pb *proto.ConsensusSubmitMessageTransactionBody
 }
 
+// NewConsensusMessageSubmitTransaction creates a ConsensusMessageSubmitTransaction builder which can be used to
+// construct and execute a Consensus Submit Message Transaction.
 func NewConsensusMessageSubmitTransaction() ConsensusMessageSubmitTransaction {
 	pb := &proto.ConsensusSubmitMessageTransactionBody{}
 
@@ -22,18 +24,16 @@ func NewConsensusMessageSubmitTransaction() ConsensusMessageSubmitTransaction {
 	return builder
 }
 
+// SetTopic sets the topic to submit the message to.
 func (builder ConsensusMessageSubmitTransaction) SetTopicID(id ConsensusTopicID) ConsensusMessageSubmitTransaction {
 	builder.pb.TopicID = id.toProto()
 	return builder
 }
 
+// SetMessage sets the message to be submitted. Max size of the Transaction (including signatures) is 4kB.
 func (builder ConsensusMessageSubmitTransaction) SetMessage(message []byte) ConsensusMessageSubmitTransaction {
 	builder.pb.Message = message
 	return builder
-}
-
-func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transaction, error) {
-	return builder.TransactionBuilder.Build(client)
 }
 
 //
