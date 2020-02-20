@@ -5,11 +5,14 @@ import (
 	"time"
 )
 
+// AccountInfoQuery gets all the information about an account excluding account records.
+// This includes the  balance.
 type AccountInfoQuery struct {
 	QueryBuilder
 	pb *proto.CryptoGetInfoQuery
 }
 
+// AccountInfo is info about the account returned from an AccountInfoQuery
 type AccountInfo struct {
 	AccountID                      AccountID
 	ContractAccountID              string
@@ -25,6 +28,11 @@ type AccountInfo struct {
 	AutoRenewPeriod                time.Duration
 }
 
+// NewAccountInfoQuery creates an AccountInfoQuery builder which can be used to construct and execute
+// an AccountInfoQuery.
+//
+// It is recommended that you use this for creating new instances of an AccountInfoQuery
+// instead of manually creating an instance of the struct.
 func NewAccountInfoQuery() *AccountInfoQuery {
 	pb := &proto.CryptoGetInfoQuery{Header: &proto.QueryHeader{}}
 
@@ -34,11 +42,13 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 	return &AccountInfoQuery{inner, pb}
 }
 
+// SetAccountID sets the account ID for which information is requested
 func (builder *AccountInfoQuery) SetAccountID(id AccountID) *AccountInfoQuery {
 	builder.pb.AccountID = id.toProto()
 	return builder
 }
 
+// Execute executes the AccountInfoQuery using the provided client
 func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
@@ -65,6 +75,9 @@ func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	}, nil
 }
 
+// Cost is a wrapper around the standard Cost function for a query. It must exist because the cost returned by the
+// standard Cost() and the Hedera Network doesn't work for any accounnts that have been deleted. In that case the
+// minimum cost should be ~25 Tinybar which seems to succeed most of the time.
 func (builder *AccountInfoQuery) Cost(client *Client) (Hbar, error) {
 	// deleted files return a COST_ANSWER of zero which triggers `INSUFFICIENT_TX_FEE`
 	// if you set that as the query payment; 25 tinybar seems to be enough to get
