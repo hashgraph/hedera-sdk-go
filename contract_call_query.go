@@ -10,8 +10,8 @@ import (
 // This is performed locally on the particular node that the client is communicating with. It cannot change the state of
 // the contract instance (and so, cannot spend anything from the instance's Hedera account). It will not have a
 // consensus timestamp. It cannot generate a record or a receipt. This is useful for calling getter functions, which
-// purely read the state and don't change it. It is faster and cheaper than a normal call, because it is purely local to
-// a single  node.
+// purely read the state and don't change it. It is faster and cheaper than a ContractExecuteTransaction, because it is
+// purely local to a single  node.
 type ContractCallQuery struct {
 	QueryBuilder
 	pb *proto.ContractCallLocalQuery
