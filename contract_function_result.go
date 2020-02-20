@@ -5,13 +5,21 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// ContractFunctionResult is the result returned by a call to a smart contract function. This is The response to
+// a ContractCallQuery, and is in the record for a ContractCallQuery.
 type ContractFunctionResult struct {
-	ContractID         *ContractID
+	// ContractID is the smart contract instance whose function was called
+	ContractID *ContractID
+	// ContractCallResult is the result returned by the function
 	ContractCallResult []byte
-	ErrorMessage       string
-	Bloom              []byte
-	GasUsed            uint64
-	LogInfo            []ContractLogInfo
+	// ErrorMessage is the message returned in the case there was an error during smart contract execution
+	ErrorMessage string
+	// Bloom is the bloom filter for record
+	Bloom []byte
+	// GasUsed is the amount of gas used to execute the contract function
+	GasUsed uint64
+	// LogInfo is the log info for events returned by the function
+	LogInfo []ContractLogInfo
 }
 
 func (result ContractFunctionResult) GetBool(index uint64) bool {
