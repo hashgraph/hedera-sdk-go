@@ -5,11 +5,16 @@ import (
 	"time"
 )
 
+// AccountDeleteTransaction marks an account as deleted, moving all its current hbars to another account. It will remain
+// in the ledger, marked as deleted, until it expires. Transfers into it a deleted account fail. But a deleted account
+// can still have its expiration extended in the normal way.
 type AccountDeleteTransaction struct {
 	TransactionBuilder
 	pb *proto.CryptoDeleteTransactionBody
 }
 
+// NewAccountDeleteTransaction creates an AccountDeleteTransaction builder which can be used to construct and execute
+// a Crypto Delete Transaction.
 func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	pb := &proto.CryptoDeleteTransactionBody{}
 
@@ -21,11 +26,13 @@ func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	return builder
 }
 
+// SetDeleteAccountID sets the account ID which should be deleted.
 func (builder AccountDeleteTransaction) SetDeleteAccountID(id AccountID) AccountDeleteTransaction {
 	builder.pb.DeleteAccountID = id.toProto()
 	return builder
 }
 
+// SetTransferAccountID sets the account ID which will receive all remaining hbars.
 func (builder AccountDeleteTransaction) SetTransferAccountID(id AccountID) AccountDeleteTransaction {
 	builder.pb.TransferAccountID = id.toProto()
 	return builder
