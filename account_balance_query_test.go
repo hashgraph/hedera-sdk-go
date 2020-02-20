@@ -16,3 +16,14 @@ func TestNewAccountBalanceQuery(t *testing.T) {
 
 	cupaloy.SnapshotT(t, query.pb.String())
 }
+
+func TestNewAccountBalanceQuery_ForContract(t *testing.T) {
+	mockTransaction, err := newMockTransaction()
+	assert.NoError(t, err)
+
+	query := NewAccountBalanceQuery().
+		SetContractID(ContractID{Contract: 3}).
+		SetQueryPaymentTransaction(mockTransaction)
+
+	cupaloy.SnapshotT(t, query.pb.String())
+}
