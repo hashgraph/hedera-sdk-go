@@ -38,10 +38,10 @@ func (builder *QueryBuilder) SetQueryPaymentTransaction(tx Transaction) *QueryBu
 	return builder
 }
 
-func (builder *QueryBuilder) Cost(client *Client) (Hbar, error) {
+func (builder *QueryBuilder) GetCost(client *Client) (Hbar, error) {
 	// An operator must be set on the client
 	if client == nil || client.operator == nil {
-		return ZeroHbar, newErrLocalValidationf("calling .Cost() requires client.SetOperator")
+		return ZeroHbar, newErrLocalValidationf("calling .GetCost() requires client.SetOperator")
 	}
 
 	// Store the current response type and payment from the
@@ -132,7 +132,7 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 				maxPayment = client.maxQueryPayment
 			}
 
-			actualCost, err := builder.Cost(client)
+			actualCost, err := builder.GetCost(client)
 
 			if err != nil {
 				return nil, err

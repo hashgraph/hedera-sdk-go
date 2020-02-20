@@ -8,7 +8,7 @@ import (
 // ErrMaxQueryPaymentExceeded is returned during query execution if the total cost of the query + estimated fees exceeds
 // the max query payment threshold set on the client or QueryBuilder.
 type ErrMaxQueryPaymentExceeded struct {
-	// The cost of the query that was attempted as returned by QueryBuilder.Cost
+	// The cost of the query that was attempted as returned by QueryBuilder.GetCost
 	QueryCost Hbar
 	// The limit for a single automatic query payment, set by
 	// Client.SetMaxQueryPayment(int64) or QueryBuilder.SetMaxQueryPayment(uint64).
