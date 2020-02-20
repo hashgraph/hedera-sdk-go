@@ -45,7 +45,7 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 }
 
 // String returns the string representation of an AccountID in
-// `Shart.Realm.Account` (for example "0.0.3")
+// `Shard.Realm.Account` (for example "0.0.3")
 func (id AccountID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 }
