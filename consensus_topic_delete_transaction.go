@@ -11,6 +11,8 @@ type ConsensusTopicDeleteTransaction struct {
 	pb *proto.ConsensusDeleteTopicTransactionBody
 }
 
+// NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction builder which can be used to construct
+// and execute a Consensus Delete Topic Transaction.
 func NewConsensusTopicDeleteTransaction() ConsensusTopicDeleteTransaction {
 	pb := &proto.ConsensusDeleteTopicTransactionBody{}
 
@@ -22,13 +24,10 @@ func NewConsensusTopicDeleteTransaction() ConsensusTopicDeleteTransaction {
 	return builder
 }
 
+// SetTopicID sets the topic identifier.
 func (builder ConsensusTopicDeleteTransaction) SetTopicID(id ConsensusTopicID) ConsensusTopicDeleteTransaction {
 	builder.pb.TopicID = id.toProto()
 	return builder
-}
-
-func (builder ConsensusTopicDeleteTransaction) Build(client *Client) (Transaction, error) {
-	return builder.TransactionBuilder.Build(client)
 }
 
 //
