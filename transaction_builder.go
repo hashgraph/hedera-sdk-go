@@ -26,7 +26,7 @@ func newTransactionBuilder() TransactionBuilder {
 // Build validates and finalizes the transaction's state and prepares it for execution, returning a Transaction.
 // The inner state becomes immutable, however it can still be signed after building.
 func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
-	if client != nil && !builder.noTXFee {
+	if client != nil && !builder.noTXFee && builder.pb.TransactionFee == 0 {
 		builder.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 
