@@ -25,6 +25,7 @@ func newErrorMaxQueryPaymentExceeded(builder *QueryBuilder, queryCost Hbar, maxQ
 	}
 }
 
+// Error() implements the Error interface
 func (e ErrMaxQueryPaymentExceeded) Error() string {
 	return fmt.Sprintf("cost of %s (%d) without explicit payment is greater than the max query payment of %d",
 		e.query,
@@ -41,6 +42,7 @@ func newErrBadKeyf(format string, a ...interface{}) ErrBadKey {
 	return ErrBadKey{fmt.Sprintf(format, a...)}
 }
 
+// Error() implements the Error interface
 func (e ErrBadKey) Error() string {
 	return e.message
 }
@@ -54,6 +56,7 @@ func newErrHederaNetwork(e error) ErrHederaNetwork {
 	return ErrHederaNetwork{error: e}
 }
 
+// Error() implements the Error interface
 func (e ErrHederaNetwork) Error() string {
 	return fmt.Sprintf("transport error occurred while accessing the Hedera network: %s", e.Error())
 }
@@ -69,6 +72,7 @@ func newErrHederaPreCheckStatus(id TransactionID, status Status) ErrHederaPreChe
 	return ErrHederaPreCheckStatus{TxID: id, Status: status}
 }
 
+// Error() implements the Error interface
 func (e ErrHederaPreCheckStatus) Error() string {
 	return fmt.Sprintf("exceptional precheck status %s received for transaction %v", e.Status.String(), e.TxID)
 }
@@ -83,6 +87,7 @@ func newErrHederaReceiptStatus(id TransactionID, status Status) ErrHederaReceipt
 	return ErrHederaReceiptStatus{TxID: id, Status: status}
 }
 
+// Error() implements the Error interface
 func (e ErrHederaReceiptStatus) Error() string {
 	return fmt.Sprintf("exceptional status %s received for transaction %v", e.Status.String(), e.TxID)
 }
@@ -97,6 +102,7 @@ func newErrHederaRecordStatus(id TransactionID, status Status) ErrHederaRecordSt
 	return ErrHederaRecordStatus{TxID: id, Status: status}
 }
 
+// Error() implements the Error interface
 func (e ErrHederaRecordStatus) Error() string {
 	return fmt.Sprintf("exceptional status %s received for transaction %v", e.Status.String(), e.TxID)
 }
@@ -111,6 +117,7 @@ func newErrLocalValidationf(format string, a ...interface{}) ErrLocalValidation 
 	return ErrLocalValidation{fmt.Sprintf(format, a...)}
 }
 
+// Error() implements the Error interface
 func (e ErrLocalValidation) Error() string {
 	return e.message
 }
