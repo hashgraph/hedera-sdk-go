@@ -23,6 +23,8 @@ type ContractUpdateTransaction struct {
 	pb *proto.ContractUpdateTransactionBody
 }
 
+// NewContractUpdateTransaction creates a ContractUpdateTransaction builder which can be
+// used to construct and execute a Contract Update Transaction.
 func NewContractUpdateTransaction() ContractUpdateTransaction {
 	pb := &proto.ContractUpdateTransactionBody{}
 
@@ -34,36 +36,51 @@ func NewContractUpdateTransaction() ContractUpdateTransaction {
 	return builder
 }
 
+// SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
 func (builder ContractUpdateTransaction) SetContractID(id ContractID) ContractUpdateTransaction {
 	builder.pb.ContractID = id.toProto()
 	return builder
 }
 
+// SetBytecodeFileID sets the file ID of file containing the smart contract byte code. A copy will be made and held by
+// the contract instance, and have the same expiration time as the instance.
 func (builder ContractUpdateTransaction) SetBytecodeFileID(id FileID) ContractUpdateTransaction {
 	builder.pb.FileID = id.toProto()
 	return builder
 }
 
+// SetAdminKey sets the key which can be used to arbitrarily modify the state of the instance by signing a
+// ContractUpdateTransaction to modify it. If the admin key was never set then such modifications are not possible,
+// and there is no administrator that can override the normal operation of the smart contract instance.
 func (builder ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) ContractUpdateTransaction {
 	builder.pb.AdminKey = publicKey.toProto()
 	return builder
 }
 
+// SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,
+// is an invalid account, or is an account that isn't a node, then this contract is automatically proxy staked to a node
+// chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
+// or if it is not currently running a node, then it will behave as if proxyAccountID was never set.
 func (builder ContractUpdateTransaction) SetProxyAccountID(id AccountID) ContractUpdateTransaction {
 	builder.pb.ProxyAccountID = id.toProto()
 	return builder
 }
 
+// SetAutoRenewPeriod sets the duration for which the contract instance will automatically charge its account to
+// renew for.
 func (builder ContractUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) ContractUpdateTransaction {
 	builder.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
 	return builder
 }
 
+// SetExpirationTime extends the expiration of the instance and its account to the provided time. If the time provided
+// is the current or past time, then there will be no effect.
 func (builder ContractUpdateTransaction) SetExpirationTime(expiration time.Time) ContractUpdateTransaction {
 	builder.pb.ExpirationTime = timeToProto(expiration)
 	return builder
 }
 
+// SetContractMemo sets the memo associated with the contract (max 100 bytes)
 func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUpdateTransaction {
 	builder.pb.Memo = memo
 	return builder
