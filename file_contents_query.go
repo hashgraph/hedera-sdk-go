@@ -2,11 +2,14 @@ package hedera
 
 import "github.com/hashgraph/hedera-sdk-go/proto"
 
+// FileContentsQuery retrieves the contents of a file.
 type FileContentsQuery struct {
 	QueryBuilder
 	pb *proto.FileGetContentsQuery
 }
 
+// NewFileContentsQuery creates a FileContentsQuery builder which can be used to construct and execute a
+// File Get Contents Query.
 func NewFileContentsQuery() *FileContentsQuery {
 	pb := &proto.FileGetContentsQuery{Header: &proto.QueryHeader{}}
 
@@ -16,11 +19,14 @@ func NewFileContentsQuery() *FileContentsQuery {
 	return &FileContentsQuery{inner, pb}
 }
 
+// SetFileID sets the FileID of the file whose contents are requested.
 func (builder *FileContentsQuery) SetFileID(id FileID) *FileContentsQuery {
 	builder.pb.FileID = id.toProto()
 	return builder
 }
 
+// Execute executes the FileContentsQuery using the provided client. The returned byte slice will be empty if the file
+// is empty.
 func (builder *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
