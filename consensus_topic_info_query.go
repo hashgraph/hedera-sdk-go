@@ -15,12 +15,14 @@ type ConsensusTopicInfo struct {
 	RunningHash        []byte
 	SequenceNumber     uint64
 	ExpirationTime     time.Time
-	AdminKey		   *Ed25519PublicKey
+	AdminKey           *Ed25519PublicKey
 	SubmitKey          *Ed25519PublicKey
 	AutoRenewPeriod    time.Duration
 	AutoRenewAccountID *AccountID
 }
 
+// NewConsensusTopicInfoQuery creates a ConsensusTopicInfoQuery builder which can be used to construct and execute a
+// Consensus Get Topic Info Query.
 func NewConsensusTopicInfoQuery() *ConsensusTopicInfoQuery {
 	pb := &proto.ConsensusGetTopicInfoQuery{Header: &proto.QueryHeader{}}
 
@@ -30,11 +32,13 @@ func NewConsensusTopicInfoQuery() *ConsensusTopicInfoQuery {
 	return &ConsensusTopicInfoQuery{inner, pb}
 }
 
+// SetTopicId sets the topic to retrieve info about (the parameters and running state of).
 func (builder *ConsensusTopicInfoQuery) SetTopicID(id ConsensusTopicID) *ConsensusTopicInfoQuery {
 	builder.pb.TopicID = id.toProto()
 	return builder
 }
 
+// Execute executes the ConsensusTopicInfoQuery using the provided client
 func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicInfo, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
@@ -44,11 +48,11 @@ func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicI
 	ti := resp.GetConsensusGetTopicInfo().TopicInfo
 
 	consensusTopicInfo := ConsensusTopicInfo{
-		Memo:           ti.GetMemo(),
-		RunningHash:    ti.RunningHash,
-		SequenceNumber: ti.SequenceNumber,
-		ExpirationTime: timeFromProto(ti.ExpirationTime),
-		AutoRenewPeriod:    durationFromProto(ti.AutoRenewPeriod),
+		Memo:            ti.GetMemo(),
+		RunningHash:     ti.RunningHash,
+		SequenceNumber:  ti.SequenceNumber,
+		ExpirationTime:  timeFromProto(ti.ExpirationTime),
+		AutoRenewPeriod: durationFromProto(ti.AutoRenewPeriod),
 	}
 
 	if adminKey := ti.AdminKey; adminKey != nil {
@@ -68,7 +72,6 @@ func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicI
 
 		consensusTopicInfo.AutoRenewAccountID = &ID
 	}
-
 
 	return consensusTopicInfo, nil
 }

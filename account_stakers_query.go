@@ -2,11 +2,18 @@ package hedera
 
 import "github.com/hashgraph/hedera-sdk-go/proto"
 
+// AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount
+// currently staked will be given. This is not yet implemented, but will be in a future version of the API.
 type AccountStakersQuery struct {
 	QueryBuilder
 	pb *proto.CryptoGetStakersQuery
 }
 
+// NewAccountStakersQuery creates an AccountStakersQuery builder which can be used to construct and execute
+// an AccountStakersQuery.
+//
+// It is recommended that you use this for creating new instances of an AccountStakersQuery
+// instead of manually creating an instance of the struct.
 func NewAccountStakersQuery() *AccountStakersQuery {
 	pb := &proto.CryptoGetStakersQuery{Header: &proto.QueryHeader{}}
 
@@ -16,11 +23,13 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 	return &AccountStakersQuery{inner, pb}
 }
 
+// SetAccountID sets the Account ID for which the stakers should be retrieved
 func (builder *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQuery {
 	builder.pb.AccountID = id.toProto()
 	return builder
 }
 
+// Execute executes the AccountStakersQuery using the provided client.
 func (builder *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	resp, err := builder.execute(client)
 	if err != nil {

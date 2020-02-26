@@ -6,11 +6,20 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// ContractExecuteTransaction calls a function of the given smart contract instance, giving it ContractFuncionParams as
+// its inputs. it can use the given amount of gas, and any unspent gas will be refunded to the paying account.
+//
+// If this function stores information, it is charged gas to store it. There is a fee in hbars to maintain that storage
+// until the expiration time, and that fee is added as part of the transaction fee.
+//
+// For a cheaper but more limited method to call functions, see ContractCallQuery.
 type ContractExecuteTransaction struct {
 	TransactionBuilder
 	pb *proto.ContractCallTransactionBody
 }
 
+// NewContractExecuteTransaction creates a ContractExecuteTransaction builder which can be
+// used to construct and execute a Contract Call Transaction.
 func NewContractExecuteTransaction() ContractExecuteTransaction {
 	pb := &proto.ContractCallTransactionBody{}
 
@@ -22,21 +31,25 @@ func NewContractExecuteTransaction() ContractExecuteTransaction {
 	return builder
 }
 
+// SetContractID sets the contract instance to call.
 func (builder ContractExecuteTransaction) SetContractID(id ContractID) ContractExecuteTransaction {
 	builder.pb.ContractID = id.toProto()
 	return builder
 }
 
+// SetGas sets the maximum amount of gas to use for the call.
 func (builder ContractExecuteTransaction) SetGas(gas uint64) ContractExecuteTransaction {
 	builder.pb.Gas = int64(gas)
 	return builder
 }
 
+// SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
 func (builder ContractExecuteTransaction) SetPayableAmount(amount Hbar) ContractExecuteTransaction {
 	builder.pb.Amount = int64(amount.AsTinybar())
 	return builder
 }
 
+// SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
 func (builder ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParams) ContractExecuteTransaction {
 	if params == nil {
 		params = NewContractFunctionParams()

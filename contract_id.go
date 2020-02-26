@@ -5,12 +5,14 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// ContractID is the ID for a Hedera smart contract
 type ContractID struct {
 	Shard    uint64
 	Realm    uint64
 	Contract uint64
 }
 
+// ContractIDFromString constructs a ContractID from a string formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func ContractIDFromString(s string) (ContractID, error) {
 	shard, realm, num, err := idFromString(s)
 	if err != nil {
@@ -24,6 +26,7 @@ func ContractIDFromString(s string) (ContractID, error) {
 	}, nil
 }
 
+// ContractIDFromSolidityAddress constructs a ContractID from a string representation of a solidity address
 func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 	shard, realm, contract, err := idFromSolidityAddress(s)
 	if err != nil {
@@ -37,10 +40,12 @@ func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 	}, nil
 }
 
+// String returns the string representation of a ContractID formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func (id ContractID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
 }
 
+// ToSolidityAddress returns the string representation of the ContractID as a solidity address.
 func (id ContractID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.Contract)
 }
