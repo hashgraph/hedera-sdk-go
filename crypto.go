@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
+	"encoding/asn1"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"
@@ -175,18 +176,52 @@ func Ed25519PrivateKeyReadKeystore(source io.Reader, passphrase string) (Ed25519
 }
 
 func Ed25519PrivateKeyFromPem(pemBytes []byte, passphrase string) (Ed25519PrivateKey, error) {
-	// note: Passphrases are currently not supported, but included in the function definition to avoid breaking
-	// changes in the future.
+	var blockType string
 
+	if len(passphrase) == 0 {
+		blockType = "PRIVATE KEY"
+	} else {
+		// the pem is encrypted
+		blockType = "ENCRYPTED PRIVATE KEY"
+	}
+
+	var PKBlock pem.Block
 	for block, remaining := pem.Decode(pemBytes); block != nil; {
-		if block.Type == "PRIVATE KEY" {
-			return Ed25519PrivateKeyFromString(hex.EncodeToString(block.Bytes))
+		if block.Type == blockType {
+			PKBlock = *block
+			break
 		}
 
 		pemBytes = remaining
+		if len(pemBytes) < 1 {
+			// no key was found
+			return Ed25519PrivateKey{}, newErrBadKeyf("pem file did not contain a private key")
+		}
 	}
 
-	return Ed25519PrivateKey{}, newErrBadKeyf("pem file did not contain a private key")
+	if len(passphrase) == 0 {
+		// key does not need decrypted, end here
+		return Ed25519PrivateKeyFromString(hex.EncodeToString(PKBlock.Bytes))
+	}
+
+	fmt.Println("hello world")
+
+	var contents struct{
+		Contents asn1.RawContent
+		Key asn1.BitString
+	}
+
+	_, err := asn1.Unmarshal(PKBlock.Bytes, &contents)
+
+	fmt.Println(hex.EncodeToString(contents.Contents))
+
+	fmt.Println(contents.Key)
+
+	if err != nil {
+		return Ed25519PrivateKey{}, newErrBadKeyf("failed to parse encrypted private key: %s", err.Error())
+	}
+
+	return Ed25519PrivateKeyFromString(hex.EncodeToString(PKBlock.Bytes))
 }
 
 func Ed25519PrivateKeyReadPem(source io.Reader, passphrase string) (Ed25519PrivateKey, error) {
