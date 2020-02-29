@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"os"
 	"time"
 )
 
@@ -58,4 +59,18 @@ func newMockTransaction() (Transaction, error) {
 	tx.Sign(privateKey)
 
 	return tx, nil
+}
+
+func clientForTest() (*Client, error){
+	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	if err != nil {
+		return nil, err
+	}
+
+	operatorPrivateKey, err := Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	if err != nil {
+		return nil, err
+	}
+
+	return ClientForTestnet().SetOperator(operatorAccountID, operatorPrivateKey), nil
 }

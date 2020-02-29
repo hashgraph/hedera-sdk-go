@@ -62,3 +62,26 @@ func TestClientFromJSONWithOperator(t *testing.T) {
 	assert.Equal(t, testOperatorKey.keyData, client.operator.privateKey.keyData)
 	assert.Equal(t, AccountID{Account: 3}, client.operator.accountID)
 }
+
+func TestClientMaxQueryFee(t *testing.T) {
+	client, err := clientForTest()
+	assert.NoError(t, err)
+
+	client.SetMaxQueryPayment(ZeroHbar)
+
+	query := NewAccountBalanceQuery().
+		SetAccountID(AccountID{Account:3})
+
+	_, err = query.Execute(client)
+
+	// Having a client with a max query fee of 0 tinybar and no makually set value on the query should return an error,
+	// not panic or nil.
+	assert.Error(t, err)
+
+	_, err = query.
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+
+	// Manually setting the max query payment should enable the query to work.
+	assert.NoError(t, err)
+}
