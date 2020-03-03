@@ -11,7 +11,7 @@ func TestSerializeCryptoTransferTransaction(t *testing.T) {
 	tx, err := newMockTransaction()
 	assert.NoError(t, err)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }
 
 func TestCryptoTransferTransaction_Execute(t *testing.T) {

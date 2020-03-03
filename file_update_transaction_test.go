@@ -26,5 +26,5 @@ func TestSerializeFileUpdateTransaction(t *testing.T) {
 	assert.NoError(t, err)
 	tx.Sign(privateKey)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }

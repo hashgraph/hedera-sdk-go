@@ -25,7 +25,7 @@ func TestSerializeSystemDeleteFileIDTransaction(t *testing.T) {
 
 	tx.Sign(privateKey)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }
 
 func TestSerializeSystemDeleteContractIDTransaction(t *testing.T) {
@@ -45,5 +45,5 @@ func TestSerializeSystemDeleteContractIDTransaction(t *testing.T) {
 	assert.NoError(t, err)
 	tx.Sign(privateKey)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }

@@ -15,7 +15,7 @@ func TestNewAccountBalanceQuery(t *testing.T) {
 		SetAccountID(AccountID{Account: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }
 
 func TestNewAccountBalanceQuery_ForContract(t *testing.T) {
@@ -26,7 +26,7 @@ func TestNewAccountBalanceQuery_ForContract(t *testing.T) {
 		SetContractID(ContractID{Contract: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }
 
 func TestAccountBalanceQuery_Execute(t *testing.T) {

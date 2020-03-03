@@ -23,7 +23,7 @@ func TestSerializeContractDeleteTransaction(t *testing.T) {
 
 	tx.Sign(privateKey)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }
 
 func TestSerializeContractDeleteTransaction_WithAccountIDObtainer(t *testing.T) {
@@ -44,7 +44,7 @@ func TestSerializeContractDeleteTransaction_WithAccountIDObtainer(t *testing.T) 
 
 	tx.Sign(privateKey)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }
 
 func TestSerializeContractDeleteTransaction_WithContractIDObtainer(t *testing.T) {
@@ -65,5 +65,5 @@ func TestSerializeContractDeleteTransaction_WithContractIDObtainer(t *testing.T)
 
 	tx.Sign(privateKey)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }

@@ -29,5 +29,5 @@ func TestSerializeConsensusTopicCreateTransaction(t *testing.T) {
 
 	tx.Sign(key)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }

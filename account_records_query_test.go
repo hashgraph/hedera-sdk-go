@@ -14,5 +14,5 @@ func TestNewAccountRecordQuery(t *testing.T) {
 		SetAccountID(AccountID{Account: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }

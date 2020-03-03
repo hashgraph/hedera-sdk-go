@@ -14,5 +14,5 @@ func TestNewTransactionReceiptQuery(t *testing.T) {
 		SetTransactionID(testTransactionID).
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }

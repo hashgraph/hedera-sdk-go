@@ -14,5 +14,5 @@ func TestNewContractInfoQuery(t *testing.T) {
 		SetContractID(ContractID{Contract: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }
