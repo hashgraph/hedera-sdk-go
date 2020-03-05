@@ -1,4 +1,7 @@
 name: Go
+env:
+    OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
+    OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
 
 on:
   pull_request:
@@ -24,6 +27,7 @@ jobs:
 
     - name: Build
       run: go build -v .
-    
+
     - name: Test
       run: go test -v
+
