@@ -14,5 +14,5 @@ func TestConsensusTopicInfoQuery(t *testing.T) {
 		SetTopicID(ConsensusTopicID{Topic: 99}).
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }

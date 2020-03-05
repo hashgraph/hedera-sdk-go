@@ -13,5 +13,5 @@ func TestMirrorConsensusTopicQuery(t *testing.T) {
 		SetEndTime(time.Unix(9, 9)).
 		SetLimit(100)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }

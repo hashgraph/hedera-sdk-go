@@ -14,5 +14,5 @@ func TestNewGetBySolidityIDQuery(t *testing.T) {
 		SetSolidityID("not a real solidity id").
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }

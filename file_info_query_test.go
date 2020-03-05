@@ -14,5 +14,5 @@ func TestNewFileInfoQuery(t *testing.T) {
 		SetFileID(FileID{File: 3}).
 		SetQueryPaymentTransaction(mockTransaction)
 
-	cupaloy.SnapshotT(t, query.pb.String())
+	cupaloy.SnapshotT(t, query)
 }

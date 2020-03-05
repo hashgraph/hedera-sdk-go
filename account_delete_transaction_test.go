@@ -25,7 +25,7 @@ func TestSerializeAccountDeleteTransaction(t *testing.T) {
 
 	tx.Sign(privateKey)
 
-	cupaloy.SnapshotT(t, tx.String())
+	cupaloy.SnapshotT(t, tx)
 }
 
 func TestAccountDeleteTransaction_Execute(t *testing.T) {
