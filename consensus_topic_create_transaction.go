@@ -26,13 +26,13 @@ func NewConsensusTopicCreateTransaction() ConsensusTopicCreateTransaction {
 
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
 // expirationTime.
-func (builder ConsensusTopicCreateTransaction) SetAdminKey(publicKey Ed25519PublicKey) ConsensusTopicCreateTransaction {
+func (builder ConsensusTopicCreateTransaction) SetAdminKey(publicKey PublicKey) ConsensusTopicCreateTransaction {
 	builder.pb.AdminKey = publicKey.toProto()
 	return builder
 }
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
-func (builder ConsensusTopicCreateTransaction) SetSubmitKey(publicKey Ed25519PublicKey) ConsensusTopicCreateTransaction {
+func (builder ConsensusTopicCreateTransaction) SetSubmitKey(publicKey PublicKey) ConsensusTopicCreateTransaction {
 	builder.pb.SubmitKey = publicKey.toProto()
 	return builder
 }
