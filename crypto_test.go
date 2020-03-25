@@ -3,10 +3,9 @@ package hedera
 import (
 	"bytes"
 	"crypto/ed25519"
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const testPrivateKeyStr = "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
@@ -28,6 +27,21 @@ const androidMnemonicString = "ramp april job flavor surround pyramid fish sea g
 
 // private key for "default account", should be index 0
 const androidDefaultPrivateKey = "c284c25b3a1458b59423bc289e83703b125c8eefec4d5aa1b393c2beb9f2bae66188a344ba75c43918ab12fa2ea4a92960eca029a2320d8c6a1c3b94e06c9985"
+
+// test pem key contests for the above testPrivateKeyStr
+const pemString = `-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEINtIS4KOZLLY8SzjwKDpOguMznrxu485yXcyOUSCU44Q
+-----END PRIVATE KEY-----
+`
+
+const encryptedPem = `-----BEGIN ENCRYPTED PRIVATE KEY-----
+MIGbMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAi8WY7Gy2tThQICCAAw
+DAYIKoZIhvcNAgkFADAdBglghkgBZQMEAQIEEOq46NPss58chbjUn20NoK0EQG1x
+R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
+9hlo4YEh3uEaCmfJzWM=
+-----END ENCRYPTED PRIVATE KEY-----`
+
+const pemPassphrase = "this is a passphrase"
 
 func TestEd25519PrivateKeyGenerate(t *testing.T) {
 	key, err := GenerateEd25519PrivateKey()
@@ -175,4 +189,24 @@ func TestEd25519PrivateKey_ReadKeystore(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, actualPrivateKey.keyData, privateKey.keyData)
+}
+
+func TestEd25519PrivateKey_FromPem(t *testing.T) {
+	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+	assert.NoError(t, err)
+
+	privateKey, err := Ed25519PrivateKeyFromPem([]byte(pemString), "")
+	assert.NoError(t, err)
+
+	assert.Equal(t, actualPrivateKey, privateKey)
+}
+
+func TestEd25519PrivateKey_FromPemWithPassphrase(t *testing.T) {
+	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+	assert.NoError(t, err)
+
+	privateKey, err := Ed25519PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
+	assert.NoError(t, err)
+
+	assert.Equal(t, actualPrivateKey, privateKey)
 }
