@@ -205,9 +205,8 @@ func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519Private
 }
 
 // SetOperatorWith sets that account that will, by default, be paying for
-// transactions and queries built with the client, the associated key with
-// which to automatically sign transactions, and a callback that will be
-// invoked when a transaction needs to be signed.
+// transactions and queries built with the client, the account's Ed25519PublicKey
+// and a callback that will be invoked when a transaction needs to be signed.
 func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519PublicKey, signer TransactionSigner) *Client {
 	client.operator = &operator{
 		accountID:  accountID,
