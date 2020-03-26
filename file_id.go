@@ -13,17 +13,17 @@ type FileID struct {
 
 // The public node address book for the current network
 func FileIDForAddressBook() FileID {
-	return FileID{ File: 102 }
+	return FileID{File: 102}
 }
 
 // The current fee schedule for the network
 func FileIDForFeeSchedule() FileID {
-	return FileID{ File: 111 }
+	return FileID{File: 111}
 }
 
 // The current exchange rates of HBAR to USD
 func FileIDForExchangeRate() FileID {
-	return FileID{ File: 112 }
+	return FileID{File: 112}
 }
 
 func FileIDFromString(s string) (FileID, error) {

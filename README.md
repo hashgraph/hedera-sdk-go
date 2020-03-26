@@ -30,11 +30,6 @@ We welcome participation from all developers!
 For instructions on how to contribute to this repo, please
 review the [Contributing Guide](CONTRIBUTING.md).
 
-## Running Tests
-If a change is made that requires a snapshot test to be updated you can update the snapshots using this command:
-
-`env UPDATE_SNAPSHOTS=true go test`
-
 ## License Information
 
 Licensed under Apache License,

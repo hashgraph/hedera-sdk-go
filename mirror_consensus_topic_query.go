@@ -96,4 +96,3 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 //
 // The QueryPayment functions are not required for this query
 //
-

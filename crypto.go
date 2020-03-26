@@ -206,9 +206,9 @@ func Ed25519PrivateKeyFromPem(pemBytes []byte, passphrase string) (Ed25519Privat
 
 	fmt.Println("hello world")
 
-	var contents struct{
+	var contents struct {
 		Contents asn1.RawContent
-		Key asn1.BitString
+		Key      asn1.BitString
 	}
 
 	_, err := asn1.Unmarshal(PKBlock.Bytes, &contents)
