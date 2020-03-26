@@ -107,7 +107,8 @@ type ContractDeleteTransactionBody_TransferContractID struct {
 
 func (*ContractDeleteTransactionBody_TransferAccountID) isContractDeleteTransactionBody_Obtainers() {}
 
-func (*ContractDeleteTransactionBody_TransferContractID) isContractDeleteTransactionBody_Obtainers() {}
+func (*ContractDeleteTransactionBody_TransferContractID) isContractDeleteTransactionBody_Obtainers() {
+}
 
 var File_proto_ContractDelete_proto protoreflect.FileDescriptor
 

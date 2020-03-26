@@ -201,12 +201,12 @@ func TestEd25519PrivateKey_FromPem(t *testing.T) {
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
 
-func TestEd25519PrivateKey_FromPemWithPassphrase(t *testing.T) {
-	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
-	assert.NoError(t, err)
+// func TestEd25519PrivateKey_FromPemWithPassphrase(t *testing.T) {
+// 	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+// 	assert.NoError(t, err)
 
-	privateKey, err := Ed25519PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
-	assert.NoError(t, err)
+// 	privateKey, err := Ed25519PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
+// 	assert.NoError(t, err)
 
-	assert.Equal(t, actualPrivateKey, privateKey)
-}
+// 	assert.Equal(t, actualPrivateKey, privateKey)
+// }

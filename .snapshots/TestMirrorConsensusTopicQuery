@@ -1,3 +1,0 @@
-(*hedera.MirrorConsensusTopicQuery)({
-  pb: (*mirror.ConsensusTopicQuery)(topicID:{topicNum:99}  consensusStartTime:{}  consensusEndTime:{seconds:9  nanos:9}  limit:100)
-})

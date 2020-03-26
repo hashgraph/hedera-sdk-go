@@ -23,7 +23,6 @@ func main() {
 
 	// first create a file
 
-
 	transactionID, err := hedera.NewFileCreateTransaction().
 		SetContents([]byte("The quick brown fox jumps over the lazy dog")).
 		SetTransactionMemo("go sdk example delete_file/main.go").
