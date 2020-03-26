@@ -70,7 +70,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	tx.Sign(newKey)
 	tx.Sign(newKey2)
 
-	_, err = tx.Execute(client)
+	txID, err = tx.Execute(client)
 	assert.NoError(t, err)
 
 	_, err = txID.GetReceipt(client)
