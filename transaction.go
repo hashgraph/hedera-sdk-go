@@ -202,7 +202,7 @@ func getMethodName(transactionBody *proto.TransactionBody) (string, error) {
 		return "/proto.FileService/updateFile", nil
 
 	case *proto.TransactionBody_FileAppend:
-		return "/proto.FileService/appendFile", nil
+		return "/proto.FileService/appendContent", nil
 
 	case *proto.TransactionBody_FileDelete:
 		return "/proto.FileService/deleteFile", nil
