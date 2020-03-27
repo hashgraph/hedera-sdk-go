@@ -1,7 +1,9 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
@@ -61,4 +63,45 @@ func TestClientFromJSONWithOperator(t *testing.T) {
 	assert.NotNil(t, client.operator)
 	assert.Equal(t, testOperatorKey.keyData, client.operator.privateKey.keyData)
 	assert.Equal(t, AccountID{Account: 3}, client.operator.accountID)
+}
+
+func TestClientBackOffDoesNotOverflow(t *testing.T) {
+	// Context -> the back off code was previously getting stuck in an infinite loop
+	//	this test is to ensure that no longer occurs
+
+	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	assert.NoError(t, err)
+
+	operatorPrivateKey, err := Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	assert.NoError(t, err)
+
+	// To reproduce the error, the client must be configured to point to a GRPC server
+	// that is not Hedera
+	client := NewClient(map[string]AccountID {
+		"": AccountID{Account: 3},
+	}).SetOperator(operatorAccountID, operatorPrivateKey)
+
+	// Since an account is not actually being created, just use the hard coded test key
+	throwawayKey, err := Ed25519PublicKeyFromString(testPublicKeyStr)
+	assert.NoError(t, err)
+
+	tx := NewAccountCreateTransaction().
+		SetKey(throwawayKey)
+
+	assert.NotPanics(t, func() {
+		fmt.Println("executing tx")
+		_, err = tx.Execute(client)
+	})
+
+	assert.Error(t, err)
+
+	query := NewAccountInfoQuery().
+		SetAccountID(AccountID{Account: 3})
+
+	assert.NotPanics(t, func() {
+		fmt.Println("executing query")
+		_, err = query.execute(client)
+	})
+
+	assert.Error(t, err)
 }
