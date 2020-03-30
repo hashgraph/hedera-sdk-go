@@ -248,7 +248,7 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 		return Ed25519PublicKey{bytes}, nil
 
 	case 88: // DER encoded public key
-		if strings.HasPrefix(s, ed25519PubKeyPrefix) {
+		if strings.HasPrefix(strings.ToLower(s), ed25519PubKeyPrefix) {
 			pk, err := Ed25519PublicKeyFromString(s[24:])
 			if err != nil {
 				return Ed25519PublicKey{}, err
