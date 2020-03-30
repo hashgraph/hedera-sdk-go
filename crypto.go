@@ -256,7 +256,7 @@ func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
 			return pk, nil
 		}
 	}
-	return Ed25519PublicKey{}, newErrBadKeyf("invalid public key string with length %v", len(s))
+	return Ed25519PublicKey{}, newErrBadKeyf("invalid public key '%v' string with length %v", s, len(s))
 }
 
 // Ed25519PublicKeyFromBytes constructs a known Ed25519PublicKey from its text-encoded representation.
