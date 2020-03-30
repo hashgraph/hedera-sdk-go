@@ -152,7 +152,7 @@ func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
 		return Ed25519PrivateKeyFromBytes(bytes)
 
 	case 96: // prefix-encoded private key
-		if strings.HasPrefix(s, ed25519PrivateKeyPrefix) {
+		if strings.HasPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix) {
 			return Ed25519PrivateKeyFromString(s[32:])
 		}
 	}
