@@ -2,6 +2,8 @@ package hedera
 
 import (
 	"fmt"
+	"google.golang.org/grpc/codes"
+	status2 "google.golang.org/grpc/status"
 	"reflect"
 )
 
@@ -50,9 +52,15 @@ func (e ErrBadKey) Error() string {
 // ErrHederaNetwork is returned in cases where the Hedera network cannot be reached or a network-side error occurs.
 type ErrHederaNetwork struct {
 	error error
+	// GRPC Status Code
+	StatusCode *codes.Code
 }
 
 func newErrHederaNetwork(e error) ErrHederaNetwork {
+	if status, ok := status2.FromError(e); ok == true {
+		statusCode := status.Code()
+		return ErrHederaNetwork{error: e, StatusCode: &statusCode}
+	}
 	return ErrHederaNetwork{error: e}
 }
 
