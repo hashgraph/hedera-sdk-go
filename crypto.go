@@ -142,22 +142,17 @@ func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed2551
 
 // Ed25519PrivateKeyFromString recovers an Ed25519PrivateKey from its text-encoded representation.
 func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
-	switch len(s) {
-	case 64, 128: // private key : public key
-		bytes, err := hex.DecodeString(s)
-		if err != nil {
-			return Ed25519PrivateKey{}, err
-		}
-
-		return Ed25519PrivateKeyFromBytes(bytes)
-
-	case 96: // prefix-encoded private key
-		if strings.HasPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix) {
-			return Ed25519PrivateKeyFromString(s[32:])
-		}
+	sLen := len(s)
+	if sLen != 64 && sLen != 96 && sLen != 128 {
+		return Ed25519PrivateKey{}, newErrBadKeyf("invalid private key string with length %v", len(s))
 	}
 
-	return Ed25519PrivateKey{}, newErrBadKeyf("invalid private key string with length %v", len(s))
+	bytes, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix))
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	return Ed25519PrivateKeyFromBytes(bytes)
 }
 
 // Ed25519PrivateKeyFromKeystore recovers an Ed25519PrivateKey from an encrypted keystore encoded as a byte slice.
