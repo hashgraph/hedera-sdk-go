@@ -238,25 +238,18 @@ func Ed25519PrivateKeyReadPem(source io.Reader, passphrase string) (Ed25519Priva
 
 // Ed25519PublicKeyFromString recovers an Ed25519PublicKey from its text-encoded representation.
 func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
-	switch len(s) {
-	case 64: // raw public key
-		bytes, err := hex.DecodeString(s)
-		if err != nil {
-			return Ed25519PublicKey{}, err
-		}
-
-		return Ed25519PublicKey{bytes}, nil
-
-	case 88: // DER encoded public key
-		if strings.HasPrefix(strings.ToLower(s), ed25519PubKeyPrefix) {
-			pk, err := Ed25519PublicKeyFromString(s[24:])
-			if err != nil {
-				return Ed25519PublicKey{}, err
-			}
-			return pk, nil
-		}
+	sLen := len(s)
+	if sLen != 64 && sLen != 88 {
+		return Ed25519PublicKey{}, newErrBadKeyf("invalid public key '%v' string with length %v", s, sLen)
 	}
-	return Ed25519PublicKey{}, newErrBadKeyf("invalid public key '%v' string with length %v", s, len(s))
+
+	keyStr := strings.TrimPrefix(strings.ToLower(s), ed25519PubKeyPrefix)
+	bytes, err := hex.DecodeString(keyStr)
+	if err != nil {
+		return Ed25519PublicKey{}, err
+	}
+
+	return Ed25519PublicKey{bytes}, nil
 }
 
 // Ed25519PublicKeyFromBytes constructs a known Ed25519PublicKey from its text-encoded representation.
