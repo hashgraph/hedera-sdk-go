@@ -75,6 +75,9 @@ func TestConsensusMessageSubmitTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
+	_, err = txID.GetReceipt(client)
+	assert.NoError(t, err)
+
 	info, err = NewConsensusTopicInfoQuery().
 		SetTopicID(topicID).
 		SetMaxQueryPayment(NewHbar(1)).
@@ -90,6 +93,6 @@ func TestConsensusMessageSubmitTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err = txID.GetReceipt(client)
+	_, err = txID.GetReceipt(client)
 	assert.NoError(t, err)
 }
