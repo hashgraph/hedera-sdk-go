@@ -254,5 +254,11 @@ func (node *node) invoke(method string, in interface{}, out interface{}) error {
 		node.conn = conn
 	}
 
-	return node.conn.Invoke(context.TODO(), method, in, out)
+	err := node.conn.Invoke(context.TODO(), method, in, out)
+
+	if err != nil {
+		return newErrHederaNetwork(err)
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"bytes"
+	"google.golang.org/grpc/codes"
 	"math"
 	"math/rand"
 	"time"
@@ -114,6 +115,13 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 
 		err := node.invoke(methodName, transaction.pb, resp)
 		if err != nil {
+			statusCode := err.(ErrHederaNetwork).StatusCode
+
+			if *statusCode == codes.Unavailable || *statusCode == codes.ResourceExhausted {
+				// try again on unavailable or ResourceExhausted
+				continue
+			}
+
 			return id, resp, err
 		}
 

@@ -142,22 +142,17 @@ func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed2551
 
 // Ed25519PrivateKeyFromString recovers an Ed25519PrivateKey from its text-encoded representation.
 func Ed25519PrivateKeyFromString(s string) (Ed25519PrivateKey, error) {
-	switch len(s) {
-	case 64, 128: // private key : public key
-		bytes, err := hex.DecodeString(s)
-		if err != nil {
-			return Ed25519PrivateKey{}, err
-		}
-
-		return Ed25519PrivateKeyFromBytes(bytes)
-
-	case 96: // prefix-encoded private key
-		if strings.HasPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix) {
-			return Ed25519PrivateKeyFromString(s[32:])
-		}
+	sLen := len(s)
+	if sLen != 64 && sLen != 96 && sLen != 128 {
+		return Ed25519PrivateKey{}, newErrBadKeyf("invalid private key string with length %v", len(s))
 	}
 
-	return Ed25519PrivateKey{}, newErrBadKeyf("invalid private key string with length %v", len(s))
+	bytes, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix))
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
+
+	return Ed25519PrivateKeyFromBytes(bytes)
 }
 
 // Ed25519PrivateKeyFromKeystore recovers an Ed25519PrivateKey from an encrypted keystore encoded as a byte slice.
@@ -238,25 +233,18 @@ func Ed25519PrivateKeyReadPem(source io.Reader, passphrase string) (Ed25519Priva
 
 // Ed25519PublicKeyFromString recovers an Ed25519PublicKey from its text-encoded representation.
 func Ed25519PublicKeyFromString(s string) (Ed25519PublicKey, error) {
-	switch len(s) {
-	case 64: // raw public key
-		bytes, err := hex.DecodeString(s)
-		if err != nil {
-			return Ed25519PublicKey{}, err
-		}
-
-		return Ed25519PublicKey{bytes}, nil
-
-	case 88: // DER encoded public key
-		if strings.HasPrefix(strings.ToLower(s), ed25519PubKeyPrefix) {
-			pk, err := Ed25519PublicKeyFromString(s[24:])
-			if err != nil {
-				return Ed25519PublicKey{}, err
-			}
-			return pk, nil
-		}
+	sLen := len(s)
+	if sLen != 64 && sLen != 88 {
+		return Ed25519PublicKey{}, newErrBadKeyf("invalid public key '%v' string with length %v", s, sLen)
 	}
-	return Ed25519PublicKey{}, newErrBadKeyf("invalid public key '%v' string with length %v", s, len(s))
+
+	keyStr := strings.TrimPrefix(strings.ToLower(s), ed25519PubKeyPrefix)
+	bytes, err := hex.DecodeString(keyStr)
+	if err != nil {
+		return Ed25519PublicKey{}, err
+	}
+
+	return Ed25519PublicKey{bytes}, nil
 }
 
 // Ed25519PublicKeyFromBytes constructs a known Ed25519PublicKey from its text-encoded representation.
