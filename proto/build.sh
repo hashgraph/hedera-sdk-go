@@ -2,7 +2,7 @@
 
 # ensure that we have protoc-gen-go
 # note: requires $GOPATH/bin to be in path
-go get github.com/golang/protobuf/protoc-gen-go
+# go get github.com/golang/protobuf/protoc-gen-go
 
 # $project/proto
 dir="$( cd "$( dirname $( dirname "${BASH_SOURCE[0]}" ) )" >/dev/null 2>&1 && pwd )"
