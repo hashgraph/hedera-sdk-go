@@ -3,8 +3,8 @@ module github.com/hashgraph/hedera-sdk-go
 go 1.13
 
 require (
-	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
 	github.com/golang/protobuf v1.4.0-rc.4
+	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/tyler-smith/go-bip39 v1.0.2
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
