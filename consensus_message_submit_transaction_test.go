@@ -82,7 +82,7 @@ func TestConsensusMessageSubmitTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
-	assert.Equal(t, uint64(1), info.SequenceNumber)
+	assert.Equal(t, uint64(0), info.SequenceNumber)
 
 	txID, err = NewConsensusTopicDeleteTransaction().
 		SetTopicID(topicID).
