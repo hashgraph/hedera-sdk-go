@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -33,4 +34,62 @@ func TestSerializeConsensusMessageSubmitTransaction(t *testing.T) {
 	tx.Sign(key)
 
 	assert.Equal(t, `bodyBytes:"\n\014\n\006\010\316\247\212\345\005\022\002\030\002\022\002\030\003\030\300\204=\"\004\010\200\243\005\332\001\025\n\002\030c\022\017HelloHashgraph"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\307\333\307\010\\D`+"`"+`R\372\322\255zI$%\006\024\214\334\350\006g\021=\237\r\254e;+\234Y\335\235\246\270\215\234\235v\206e~F\261\025.\251yR\305s\301\347_\264\206\002XT\031<\004\002">>transactionID:<transactionValidStart:<seconds:1554158542>accountID:<accountNum:2>>nodeAccountID:<accountNum:3>transactionFee:1000000transactionValidDuration:<seconds:86400>consensusSubmitMessage:<topicID:<topicNum:99>message:"HelloHashgraph">`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
+}
+
+func TestConsensusMessageSubmitTransaction_Execute(t *testing.T) {
+	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	assert.NoError(t, err)
+
+	operatorPrivateKey, err := Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	assert.NoError(t, err)
+
+	client := ClientForTestnet().
+		SetOperator(operatorAccountID, operatorPrivateKey)
+
+	txID, err := NewConsensusTopicCreateTransaction().
+		SetAdminKey(operatorPrivateKey.PublicKey()).
+		SetTopicMemo("go-sdk::TestConsensusMessageSubmitTransaction_Execute").
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := txID.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := receipt.GetConsensusTopicID()
+	assert.NotNil(t, topicID)
+
+	info, err := NewConsensusTopicInfoQuery().
+		SetTopicID(topicID).
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info)
+
+	assert.Equal(t, uint64(0), info.SequenceNumber)
+
+	txID, err = NewConsensusMessageSubmitTransaction().
+		SetTopicID(topicID).
+		SetMessage([]byte("go-sdk::TestConsensusMessageSubmitTransaction_Execute::MessageSubmit")).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	info, err = NewConsensusTopicInfoQuery().
+		SetTopicID(topicID).
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info)
+
+	assert.Equal(t, uint64(1), info.SequenceNumber)
+
+	txID, err = NewConsensusTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err = txID.GetReceipt(client)
+	assert.NoError(t, err)
 }
