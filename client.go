@@ -3,11 +3,12 @@ package hedera
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/hashgraph/hedera-sdk-go/proto"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	"math/rand"
 	"os"
-
-	"google.golang.org/grpc"
 )
 
 // Default max fees and payments to 1 h-bar
@@ -231,6 +232,41 @@ func (client *Client) SetMaxTransactionFee(fee Hbar) *Client {
 func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 	client.maxQueryPayment = payment
 	return client
+}
+
+// Ping sends an AccountBalanceQuery to the specified node returning nil if no
+// problems occur. Otherwise, an error representing the status of the node will
+// be returned.
+func (client *Client) Ping(nodeID AccountID) error {
+	node := client.networkNodes[nodeID]
+	if node == nil {
+		return fmt.Errorf("node with ID %s not registered on this client", nodeID)
+	}
+
+	pingQuery := NewAccountBalanceQuery().
+		SetAccountID(nodeID)
+
+	pb := pingQuery.QueryBuilder.pb
+
+	resp := new(proto.Response)
+
+	err := node.invoke(methodName(pb), pb, resp)
+
+	if err != nil {
+		return newErrPingStatus(err)
+	}
+
+	respHeader := mapResponseHeader(resp)
+
+	if respHeader.NodeTransactionPrecheckCode == proto.ResponseCodeEnum_BUSY {
+		return newErrPingStatus(fmt.Errorf("%s", Status(respHeader.NodeTransactionPrecheckCode).String()))
+	}
+
+	if isResponseUnknown(resp) {
+		return newErrPingStatus(fmt.Errorf("unknown"))
+	}
+
+	return nil
 }
 
 func (client *Client) randomNode() *node {

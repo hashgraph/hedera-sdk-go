@@ -133,3 +133,17 @@ func (e ErrLocalValidation) Error() string {
 // Note: an Out of Range error for Hbar units as provided in the other SDKs does not have a clean translation to go.
 // 		 it would require all conversions and hbar constructors to return both the object and error resulting in a worst
 //       api usage experience.
+
+// ErrPingStatus is returned by client.Ping(AccountID) if an error occurs
+type ErrPingStatus struct {
+	error error
+}
+
+func newErrPingStatus(e error) ErrPingStatus {
+	return ErrPingStatus{error: e}
+}
+
+// Error() implements the Error interface
+func (e ErrPingStatus) Error() string {
+	return fmt.Sprintf("error occured during ping: %s", e.Error())
+}
