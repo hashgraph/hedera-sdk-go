@@ -40,7 +40,7 @@ func main() {
 	}()
 
 	// This path assumes you are running it from the sdk root
-	rawContract, err := ioutil.ReadFile("./examples/create_simple_contract/hello_world.json")
+	rawContract, err := ioutil.ReadFile("./hello_world.json")
 	if err != nil {
 		panic(err)
 	}
