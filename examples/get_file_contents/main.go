@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"reflect"
+	"unsafe"
 	"github.com/hashgraph/hedera-sdk-go"
 	"os"
 )
@@ -35,6 +37,6 @@ func main() {
 	}
 
 	fmt.Printf("contents for file %v :\n", fileID)
-	fmt.Print(contents)
+	fmt.Print(string(contents))
 	fmt.Println()
 }
