@@ -39,7 +39,6 @@ func main() {
 		}
 	}()
 
-	// This path assumes you are running it from the sdk root
 	rawContract, err := ioutil.ReadFile("./hello_world.json")
 	if err != nil {
 		panic(err)
