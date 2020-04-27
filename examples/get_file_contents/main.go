@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"reflect"
-	"unsafe"
 	"github.com/hashgraph/hedera-sdk-go"
 	"os"
 )
