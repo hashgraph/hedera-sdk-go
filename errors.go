@@ -66,7 +66,7 @@ func newErrHederaNetwork(e error) ErrHederaNetwork {
 
 // Error() implements the Error interface
 func (e ErrHederaNetwork) Error() string {
-	return fmt.Sprintf("transport error occurred while accessing the Hedera network: %s", e.Error())
+	return fmt.Sprintf("transport error occurred while accessing the Hedera network: %s", e.StatusCode)
 }
 
 // ErrHederaPreCheckStatus is returned by Transaction.Execute and QueryBuilder.Execute if an exceptional status is
@@ -145,5 +145,5 @@ func newErrPingStatus(e error) ErrPingStatus {
 
 // Error() implements the Error interface
 func (e ErrPingStatus) Error() string {
-	return fmt.Sprintf("error occured during ping: %s", e.Error())
+	return fmt.Sprintf("error occured during ping")
 }
