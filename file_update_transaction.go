@@ -11,13 +11,12 @@ type FileUpdateTransaction struct {
 }
 
 func NewFileUpdateTransaction() FileUpdateTransaction {
-	pb := &proto.FileUpdateTransactionBody{Keys: &proto.KeyList{Keys: []*proto.Key{}}}
+	pb := &proto.FileUpdateTransactionBody{}
 
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_FileUpdate{FileUpdate: pb}
 
 	builder := FileUpdateTransaction{inner, pb}
-	builder.SetExpirationTime(time.Now().Add(7890000 * time.Second))
 
 	return builder
 }
@@ -28,7 +27,12 @@ func (builder FileUpdateTransaction) SetFileID(id FileID) FileUpdateTransaction 
 }
 
 func (builder FileUpdateTransaction) AddKey(publicKey PublicKey) FileUpdateTransaction {
+	if builder.pb.Keys == nil {
+		builder.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+	}
+
 	builder.pb.Keys.Keys = append(builder.pb.Keys.Keys, publicKey.toProto())
+
 	return builder
 }
 
@@ -40,6 +44,10 @@ func (builder FileUpdateTransaction) SetExpirationTime(expiration time.Time) Fil
 func (builder FileUpdateTransaction) SetContents(contents []byte) FileUpdateTransaction {
 	builder.pb.Contents = contents
 	return builder
+}
+
+func (builder FileUpdateTransaction) Build(client *Client) (Transaction, error) {
+	return builder.TransactionBuilder.Build(client)
 }
 
 //
