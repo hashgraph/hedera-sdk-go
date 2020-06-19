@@ -72,6 +72,7 @@ func (builder ContractDeleteTransaction) SetTransactionID(transactionID Transact
 	return ContractDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder ContractDeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) ContractDeleteTransaction {
 	return ContractDeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
 }

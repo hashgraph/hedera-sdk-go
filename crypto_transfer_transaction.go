@@ -85,6 +85,7 @@ func (builder CryptoTransferTransaction) SetTransactionID(transactionID Transact
 	return CryptoTransferTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder CryptoTransferTransaction) SetNodeAccountID(nodeAccountID AccountID) CryptoTransferTransaction {
 	return CryptoTransferTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
 }

@@ -57,6 +57,7 @@ func (builder SystemUndeleteTransaction) SetTransactionID(transactionID Transact
 	return SystemUndeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder SystemUndeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) SystemUndeleteTransaction {
 	return SystemUndeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
 }

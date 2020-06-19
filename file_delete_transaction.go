@@ -56,6 +56,7 @@ func (builder FileDeleteTransaction) SetTransactionID(transactionID TransactionI
 	return FileDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder FileDeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) FileDeleteTransaction {
 	return FileDeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
 }
