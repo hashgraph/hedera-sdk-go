@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go/proto"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"math/rand"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
+	"google.golang.org/grpc"
 )
 
 // Default max fees and payments to 1 h-bar
@@ -33,7 +34,7 @@ type node struct {
 	address string
 }
 
-// Transaction signer is a closure or function that defines how transactions will be signed
+// TransactionSigner is a closure or function that defines how transactions will be signed
 type TransactionSigner func(message []byte) []byte
 
 type operator struct {
@@ -44,23 +45,23 @@ type operator struct {
 }
 
 var mainnetNodes = map[string]AccountID{
-	"35.237.200.180:50211": AccountID{Account: 3},
-	"35.186.191.247:50211": AccountID{Account: 4},
-	"35.192.2.25:50211":    AccountID{Account: 5},
-	"35.199.161.108:50211": AccountID{Account: 6},
-	"35.203.82.240:50211":  AccountID{Account: 7},
-	"35.236.5.219:50211":   AccountID{Account: 8},
-	"35.197.192.225:50211": AccountID{Account: 9},
-	"35.242.233.154:50211": AccountID{Account: 10},
-	"35.240.118.96:50211":  AccountID{Account: 11},
-	"35.204.86.32:50211":   AccountID{Account: 12},
+	"35.237.200.180:50211": {Account: 3},
+	"35.186.191.247:50211": {Account: 4},
+	"35.192.2.25:50211":    {Account: 5},
+	"35.199.161.108:50211": {Account: 6},
+	"35.203.82.240:50211":  {Account: 7},
+	"35.236.5.219:50211":   {Account: 8},
+	"35.197.192.225:50211": {Account: 9},
+	"35.242.233.154:50211": {Account: 10},
+	"35.240.118.96:50211":  {Account: 11},
+	"35.204.86.32:50211":   {Account: 12},
 }
 
 var testnetNodes = map[string]AccountID{
-	"0.testnet.hedera.com:50211": AccountID{Account: 3},
-	"1.testnet.hedera.com:50211": AccountID{Account: 4},
-	"2.testnet.hedera.com:50211": AccountID{Account: 5},
-	"3.testnet.hedera.com:50211": AccountID{Account: 6},
+	"0.testnet.hedera.com:50211": {Account: 3},
+	"1.testnet.hedera.com:50211": {Account: 4},
+	"2.testnet.hedera.com:50211": {Account: 5},
+	"3.testnet.hedera.com:50211": {Account: 6},
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
@@ -121,7 +122,7 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 		return client, nil
 	}
 
-	operatorId, err := AccountIDFromString(clientConfig.Operator.AccountID)
+	operatorID, err := AccountIDFromString(clientConfig.Operator.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +133,7 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 	}
 
 	operator := operator{
-		accountID:  operatorId,
+		accountID:  operatorID,
 		privateKey: &operatorKey,
 		publicKey:  operatorKey.PublicKey(),
 		signer:     operatorKey.Sign,

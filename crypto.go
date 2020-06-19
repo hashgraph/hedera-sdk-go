@@ -9,11 +9,12 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"golang.org/x/crypto/ed25519"
-	"golang.org/x/crypto/pbkdf2"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"golang.org/x/crypto/ed25519"
+	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
@@ -122,7 +123,7 @@ func Ed25519PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (Ed2551
 	digest := h.Sum(nil)
 
 	keyBytes := digest[0:32]
-	chainCode := digest[32:len(digest)]
+	chainCode := digest[32:]
 
 	// note the index is for derivation, not the index of the slice
 	for _, index := range []uint32{44, 3030, 0, 0} {
@@ -277,7 +278,7 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	h.Write(input)
 	digest := h.Sum(nil)
 
-	return digest[0:32], digest[32:len(digest)]
+	return digest[0:32], digest[32:]
 }
 
 // PublicKey returns the Ed25519PublicKey associated with this Ed25519PrivateKey.

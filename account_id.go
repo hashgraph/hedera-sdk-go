@@ -66,14 +66,14 @@ func (id AccountID) toProto() *proto.AccountID {
 
 // UnmarshalJSON implements the encoding.JSON interface.
 func (id *AccountID) UnmarshalJSON(data []byte) error {
-	accountId, err := AccountIDFromString(strings.Replace(string(data), "\"", "", 2))
+	accountID, err := AccountIDFromString(strings.Replace(string(data), "\"", "", 2))
 
 	if err != nil {
 		println("error was not nil")
 		return err
 	}
 
-	id = &accountId
+	id = &accountID
 
 	return nil
 }

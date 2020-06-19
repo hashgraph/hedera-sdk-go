@@ -4,7 +4,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-// ContractBytcodeQuery retrieves the bytecode for a smart contract instance
+// ContractBytecodeQuery retrieves the bytecode for a smart contract instance
 type ContractBytecodeQuery struct {
 	QueryBuilder
 	pb *proto.ContractGetBytecodeQuery

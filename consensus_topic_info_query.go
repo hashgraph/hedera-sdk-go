@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type ConsensusTopicInfoQuery struct {
@@ -32,7 +33,7 @@ func NewConsensusTopicInfoQuery() *ConsensusTopicInfoQuery {
 	return &ConsensusTopicInfoQuery{inner, pb}
 }
 
-// SetTopicId sets the topic to retrieve info about (the parameters and running state of).
+// SetTopicID sets the topic to retrieve info about (the parameters and running state of).
 func (builder *ConsensusTopicInfoQuery) SetTopicID(id ConsensusTopicID) *ConsensusTopicInfoQuery {
 	builder.pb.TopicID = id.toProto()
 	return builder

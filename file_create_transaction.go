@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // FileCreateTransaction creates a new file, containing the given contents.  It is referenced by its FileID, and does
@@ -34,7 +35,7 @@ func NewFileCreateTransaction() FileCreateTransaction {
 	return builder
 }
 
-// AddKeys adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
+// AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
 // create or modify a file, but only one of them needs to sign in order to delete the file. Each of those "keys" may
 // itself be threshold key containing other keys (including other threshold keys). In other words, the behavior is an
 // AND for create/modify, OR for delete. This is useful for acting as a revocation server. If it is desired to have the
