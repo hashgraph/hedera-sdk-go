@@ -87,6 +87,7 @@ func (builder ConsensusTopicCreateTransaction) SetTransactionID(transactionID Tr
 	return ConsensusTopicCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder ConsensusTopicCreateTransaction) SetNodeAccountID(nodeAccountID AccountID) ConsensusTopicCreateTransaction {
 	return ConsensusTopicCreateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
 }

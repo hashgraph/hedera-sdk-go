@@ -158,6 +158,7 @@ func (builder TransactionBuilder) SetTransactionID(transactionID TransactionID) 
 	return builder
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder TransactionBuilder) SetNodeAccountID(nodeAccountID AccountID) TransactionBuilder {
 	builder.pb.NodeAccountID = nodeAccountID.toProto()
 	return builder

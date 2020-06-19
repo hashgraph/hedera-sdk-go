@@ -59,6 +59,7 @@ func (builder FreezeTransaction) SetTransactionID(transactionID TransactionID) F
 	return FreezeTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder FreezeTransaction) SetNodeAccountID(nodeAccountID AccountID) FreezeTransaction {
 	return FreezeTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
 }
