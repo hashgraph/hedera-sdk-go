@@ -6,6 +6,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// A ConsensusMessageSubmitTransaction is used for submitting a message to HCS.
 type ConsensusMessageSubmitTransaction struct {
 	TransactionBuilder
 	pb *proto.ConsensusSubmitMessageTransactionBody

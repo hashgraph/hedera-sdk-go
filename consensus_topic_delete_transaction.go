@@ -6,6 +6,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// A ConsensusTopicDeleteTransaction is for deleting a topic on HCS.
 type ConsensusTopicDeleteTransaction struct {
 	TransactionBuilder
 	pb *proto.ConsensusDeleteTopicTransactionBody

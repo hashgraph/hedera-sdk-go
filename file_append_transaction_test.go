@@ -53,7 +53,6 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 	fileID := receipt.fileID
 	assert.NotNil(t, fileID)
 
-
 	txID, err = NewFileAppendTransaction().
 		SetFileID(*fileID).
 		SetContents([]byte(" world!")).
