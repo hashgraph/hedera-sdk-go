@@ -2,10 +2,11 @@ package hedera
 
 import (
 	"fmt"
-	"google.golang.org/grpc/codes"
 	"math"
 	"math/rand"
 	"time"
+
+	"google.golang.org/grpc/codes"
 
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/proto"
@@ -24,16 +25,19 @@ func newQueryBuilder(pbHeader *proto.QueryHeader) QueryBuilder {
 	return builder
 }
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *QueryBuilder) SetMaxQueryPayment(maxPayment Hbar) *QueryBuilder {
 	builder.maxPayment = maxPayment
 	return builder
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *QueryBuilder) SetQueryPayment(paymentAmount Hbar) *QueryBuilder {
 	builder.payment = &paymentAmount
 	return builder
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *QueryBuilder) SetQueryPaymentTransaction(tx Transaction) *QueryBuilder {
 	builder.pbHeader.Payment = tx.pb
 	return builder

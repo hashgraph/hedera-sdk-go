@@ -35,14 +35,17 @@ func (builder *TransactionReceiptQuery) Execute(client *Client) (TransactionRece
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *TransactionReceiptQuery) SetMaxQueryPayment(maxPayment Hbar) *TransactionReceiptQuery {
 	return &TransactionReceiptQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *TransactionReceiptQuery) SetQueryPayment(paymentAmount Hbar) *TransactionReceiptQuery {
 	return &TransactionReceiptQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *TransactionReceiptQuery) SetQueryPaymentTransaction(tx Transaction) *TransactionReceiptQuery {
 	return &TransactionReceiptQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

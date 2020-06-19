@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // ContractInfoQuery retrieves information about a smart contract instance. This includes the account that it uses, the
@@ -87,14 +88,17 @@ func (builder *ContractInfoQuery) Cost(client *Client) (Hbar, error) {
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *ContractInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractInfoQuery {
 	return &ContractInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInfoQuery {
 	return &ContractInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *ContractInfoQuery) SetQueryPaymentTransaction(tx Transaction) *ContractInfoQuery {
 	return &ContractInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

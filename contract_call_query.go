@@ -85,14 +85,17 @@ func (builder *ContractCallQuery) Cost(client *Client) (Hbar, error) {
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *ContractCallQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractCallQuery {
 	return &ContractCallQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCallQuery {
 	return &ContractCallQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *ContractCallQuery) SetQueryPaymentTransaction(tx Transaction) *ContractCallQuery {
 	return &ContractCallQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

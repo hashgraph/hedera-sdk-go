@@ -82,14 +82,17 @@ func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicI
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *ConsensusTopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ConsensusTopicInfoQuery {
 	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *ConsensusTopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *ConsensusTopicInfoQuery {
 	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *ConsensusTopicInfoQuery) SetQueryPaymentTransaction(tx Transaction) *ConsensusTopicInfoQuery {
 	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }
