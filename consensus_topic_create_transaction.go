@@ -17,7 +17,7 @@ func NewConsensusTopicCreateTransaction() ConsensusTopicCreateTransaction {
 	pb := &proto.ConsensusCreateTopicTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_ConsensusCreateTopic{pb}
+	inner.pb.Data = &proto.TransactionBody_ConsensusCreateTopic{ConsensusCreateTopic: pb}
 
 	builder := ConsensusTopicCreateTransaction{inner, pb}
 

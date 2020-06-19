@@ -28,7 +28,7 @@ func NewConsensusTopicInfoQuery() *ConsensusTopicInfoQuery {
 	pb := &proto.ConsensusGetTopicInfoQuery{Header: &proto.QueryHeader{}}
 
 	inner := newQueryBuilder(pb.Header)
-	inner.pb.Query = &proto.Query_ConsensusGetTopicInfo{pb}
+	inner.pb.Query = &proto.Query_ConsensusGetTopicInfo{ConsensusGetTopicInfo: pb}
 
 	return &ConsensusTopicInfoQuery{inner, pb}
 }
