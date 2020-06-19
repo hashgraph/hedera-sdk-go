@@ -1,10 +1,11 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"math"
 	"time"
+
+	protobuf "github.com/golang/protobuf/proto"
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // TransactionBuilder is used to construct Transactions. The state is mutable through the various setter functions.
@@ -133,21 +134,25 @@ func (builder TransactionBuilder) GetCost(client *Client) (Hbar, error) {
 // Shared
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee Hbar) TransactionBuilder {
 	builder.pb.TransactionFee = uint64(maxTransactionFee.AsTinybar())
 	return builder
 }
 
+// SetTransactionMemo sets the memo for this Transaction.
 func (builder TransactionBuilder) SetTransactionMemo(memo string) TransactionBuilder {
 	builder.pb.Memo = memo
 	return builder
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder TransactionBuilder) SetTransactionValidDuration(validDuration time.Duration) TransactionBuilder {
 	builder.pb.TransactionValidDuration = durationToProto(validDuration)
 	return builder
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder TransactionBuilder) SetTransactionID(transactionID TransactionID) TransactionBuilder {
 	builder.pb.TransactionID = transactionID.toProto()
 	return builder

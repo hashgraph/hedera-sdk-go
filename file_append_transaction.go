@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // FileAppendTransaction appends the given contents to the end of the file. If a file is too big to create with a single
@@ -43,18 +44,22 @@ func (builder FileAppendTransaction) SetContents(contents []byte) FileAppendTran
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder FileAppendTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileAppendTransaction {
 	return FileAppendTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
+// SetTransactionMemo sets the memo for this Transaction.
 func (builder FileAppendTransaction) SetTransactionMemo(memo string) FileAppendTransaction {
 	return FileAppendTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder FileAppendTransaction) SetTransactionValidDuration(validDuration time.Duration) FileAppendTransaction {
 	return FileAppendTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder FileAppendTransaction) SetTransactionID(transactionID TransactionID) FileAppendTransaction {
 	return FileAppendTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }

@@ -16,6 +16,7 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	return &TransactionReceiptQuery{inner, pb}
 }
 
+// SetTransactionID sets the TransactionID for which to request the TransactionReceipt.
 func (builder *TransactionReceiptQuery) SetTransactionID(id TransactionID) *TransactionReceiptQuery {
 	builder.pb.TransactionID = id.toProto()
 	return builder

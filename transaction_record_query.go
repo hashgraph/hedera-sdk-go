@@ -18,6 +18,7 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	return &TransactionRecordQuery{inner, pb}
 }
 
+// SetTransactionID sets the TransactionID for which to request the TransactionRecord.
 func (builder *TransactionRecordQuery) SetTransactionID(id TransactionID) *TransactionRecordQuery {
 	builder.pb.TransactionID = id.toProto()
 	return builder

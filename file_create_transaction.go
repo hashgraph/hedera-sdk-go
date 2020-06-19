@@ -72,18 +72,22 @@ func (builder FileCreateTransaction) SetContents(contents []byte) FileCreateTran
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder FileCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileCreateTransaction {
 	return FileCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
+// SetTransactionMemo sets the memo for this Transaction.
 func (builder FileCreateTransaction) SetTransactionMemo(memo string) FileCreateTransaction {
 	return FileCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder FileCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) FileCreateTransaction {
 	return FileCreateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder FileCreateTransaction) SetTransactionID(transactionID TransactionID) FileCreateTransaction {
 	return FileCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }

@@ -105,18 +105,22 @@ func (builder ConsensusTopicUpdateTransaction) ClearAutoRenewAccountID() Consens
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder ConsensusTopicUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusTopicUpdateTransaction {
 	return ConsensusTopicUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder ConsensusTopicUpdateTransaction) SetMemo(memo string) ConsensusTopicUpdateTransaction {
+// SetTransactionMemo sets the memo for this Transaction.
+func (builder ConsensusTopicUpdateTransaction) SetTransactionMemo(memo string) ConsensusTopicUpdateTransaction {
 	return ConsensusTopicUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder ConsensusTopicUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusTopicUpdateTransaction {
 	return ConsensusTopicUpdateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder ConsensusTopicUpdateTransaction) SetTransactionID(transactionID TransactionID) ConsensusTopicUpdateTransaction {
 	return ConsensusTopicUpdateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }
