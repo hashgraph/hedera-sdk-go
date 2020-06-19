@@ -6,7 +6,8 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-// Transfer hbar from some account balances to other account balances. The accounts list can contain up to 10 accounts.
+// A CryptoTransferTransaction is for transferring hbar from some account balances to other account balances.
+// The accounts list can contain up to 10 accounts.
 // The amounts list must be the same length as the accounts list.
 //
 // This transaction must be signed by the

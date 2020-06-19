@@ -6,6 +6,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// A ConsensusTopicCreateTransaction is for creating a new Topic on HCS.
 type ConsensusTopicCreateTransaction struct {
 	TransactionBuilder
 	pb *proto.ConsensusCreateTopicTransactionBody

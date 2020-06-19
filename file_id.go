@@ -2,30 +2,34 @@ package hedera
 
 import (
 	"fmt"
+
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+// A FileID is the ID for a file on the network.
 type FileID struct {
 	Shard uint64
 	Realm uint64
 	File  uint64
 }
 
-// The public node address book for the current network
+// FileIDForAddressBook returns the public node address book for the current network.
 func FileIDForAddressBook() FileID {
 	return FileID{File: 102}
 }
 
-// The current fee schedule for the network
+// FileIDForFeeSchedule returns the current fee schedule for the network.
 func FileIDForFeeSchedule() FileID {
 	return FileID{File: 111}
 }
 
-// The current exchange rates of HBAR to USD
+// FileIDForExchangeRate returns the current exchange rates of HBAR to USD.
 func FileIDForExchangeRate() FileID {
 	return FileID{File: 112}
 }
 
+// FileIDFromString returns a FileID parsed from the given string.
+// A malformatted string will cause this to return an error instead.
 func FileIDFromString(s string) (FileID, error) {
 	shard, realm, num, err := idFromString(s)
 	if err != nil {

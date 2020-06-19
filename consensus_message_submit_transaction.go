@@ -9,6 +9,7 @@ import (
 
 const chunkSize = 4096
 
+// A ConsensusMessageSubmitTransaction is used for submitting a message to HCS.
 type ConsensusMessageSubmitTransaction struct {
 	TransactionBuilder
 	pb                   *proto.ConsensusSubmitMessageTransactionBody
