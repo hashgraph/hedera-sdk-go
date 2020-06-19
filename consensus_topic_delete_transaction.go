@@ -17,7 +17,7 @@ func NewConsensusTopicDeleteTransaction() ConsensusTopicDeleteTransaction {
 	pb := &proto.ConsensusDeleteTopicTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_ConsensusDeleteTopic{pb}
+	inner.pb.Data = &proto.TransactionBody_ConsensusDeleteTopic{ConsensusDeleteTopic: pb}
 
 	builder := ConsensusTopicDeleteTransaction{inner, pb}
 

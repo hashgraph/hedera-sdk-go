@@ -19,7 +19,7 @@ func NewConsensusTopicUpdateTransaction() ConsensusTopicUpdateTransaction {
 	pb := &proto.ConsensusUpdateTopicTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_ConsensusUpdateTopic{pb}
+	inner.pb.Data = &proto.TransactionBody_ConsensusUpdateTopic{ConsensusUpdateTopic: pb}
 
 	builder := ConsensusTopicUpdateTransaction{inner, pb}
 
