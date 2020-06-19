@@ -42,14 +42,17 @@ func (builder *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *ContractBytecodeQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractBytecodeQuery {
 	return &ContractBytecodeQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *ContractBytecodeQuery {
 	return &ContractBytecodeQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *ContractBytecodeQuery) SetQueryPaymentTransaction(tx Transaction) *ContractBytecodeQuery {
 	return &ContractBytecodeQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

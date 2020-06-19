@@ -53,14 +53,17 @@ func (builder *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) 
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
 	return &AccountStakersQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
 	return &AccountStakersQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *AccountStakersQuery) SetQueryPaymentTransaction(tx Transaction) *AccountStakersQuery {
 	return &AccountStakersQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

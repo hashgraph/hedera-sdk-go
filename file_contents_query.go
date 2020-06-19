@@ -41,14 +41,17 @@ func (builder *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
 	return &FileContentsQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
 	return &FileContentsQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *FileContentsQuery) SetQueryPaymentTransaction(tx Transaction) *FileContentsQuery {
 	return &FileContentsQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

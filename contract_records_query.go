@@ -48,14 +48,17 @@ func (builder *ContractRecordsQuery) Execute(client *Client) ([]TransactionRecor
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *ContractRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractRecordsQuery {
 	return &ContractRecordsQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *ContractRecordsQuery) SetQueryPayment(paymentAmount Hbar) *ContractRecordsQuery {
 	return &ContractRecordsQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *ContractRecordsQuery) SetQueryPaymentTransaction(tx Transaction) *ContractRecordsQuery {
 	return &ContractRecordsQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

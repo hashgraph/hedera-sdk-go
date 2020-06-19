@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type FileInfoQuery struct {
@@ -76,14 +77,17 @@ func (builder *FileInfoQuery) Cost(client *Client) (Hbar, error) {
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
 	return &FileInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
 	return &FileInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *FileInfoQuery) SetQueryPaymentTransaction(tx Transaction) *FileInfoQuery {
 	return &FileInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }

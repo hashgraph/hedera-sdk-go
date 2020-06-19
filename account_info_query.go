@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // AccountInfoQuery gets all the information about an account excluding account records.
@@ -100,14 +101,17 @@ func (builder *AccountInfoQuery) Cost(client *Client) (Hbar, error) {
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (builder *AccountInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountInfoQuery {
 	return &AccountInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
 }
 
+// SetQueryPayment sets the payment amount for this Query.
 func (builder *AccountInfoQuery) SetQueryPayment(paymentAmount Hbar) *AccountInfoQuery {
 	return &AccountInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
 }
 
+// SetQueryPaymentTransaction sets the payment Transaction for this Query.
 func (builder *AccountInfoQuery) SetQueryPaymentTransaction(tx Transaction) *AccountInfoQuery {
 	return &AccountInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }
