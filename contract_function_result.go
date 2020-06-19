@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/binary"
+
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -77,7 +78,7 @@ func (result ContractFunctionResult) GetBytes32(index uint64) []byte {
 	return result.ContractCallResult[index*32 : index*32+32]
 }
 
-// GetStrings gets a string from the result at the given index
+// GetString gets a string from the result at the given index
 func (result ContractFunctionResult) GetString(index uint64) string {
 	return string(result.GetBytes(index))
 }

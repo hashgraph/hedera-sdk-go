@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // ContractCreateTransaction starts a new smart contract instance. After the instance is created, the ContractID for it
@@ -60,7 +61,7 @@ func (builder ContractCreateTransaction) SetBytecodeFileID(id FileID) ContractCr
 	return builder
 }
 
-// SetAdminKeyu sets the key required to arbitrarily modify the state of the instance and its fields. If this is left
+// SetAdminKey sets the key required to arbitrarily modify the state of the instance and its fields. If this is left
 // unset, then such modifications are not possible, and there is no administrator that can override the normal operation
 // of the smart contract instance. Note that if it is created with no admin keys, then there is no administrator to
 // authorize changing the admin keys, so there can never be any admin keys for that instance.

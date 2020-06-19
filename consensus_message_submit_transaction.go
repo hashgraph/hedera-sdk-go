@@ -27,14 +27,14 @@ func NewConsensusMessageSubmitTransaction() ConsensusMessageSubmitTransaction {
 	pb := &proto.ConsensusSubmitMessageTransactionBody{}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{pb}
+	inner.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{ConsensusSubmitMessage: pb}
 
 	builder := ConsensusMessageSubmitTransaction{inner, pb, 10, nil, ConsensusTopicID{}, TransactionID{}, 0, 0, false}
 
 	return builder
 }
 
-// SetTopic sets the topic to submit the message to.
+// SetTopicID sets the topic to submit the message to.
 func (builder ConsensusMessageSubmitTransaction) SetTopicID(id ConsensusTopicID) ConsensusMessageSubmitTransaction {
 	builder.topicID = id
 	return builder
@@ -161,6 +161,7 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder ConsensusMessageSubmitTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{
 		builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee),
@@ -175,6 +176,7 @@ func (builder ConsensusMessageSubmitTransaction) SetMaxTransactionFee(maxTransac
 	}
 }
 
+// SetMemo sets the memo for this Transaction.
 func (builder ConsensusMessageSubmitTransaction) SetMemo(memo string) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetTransactionMemo(memo),
 		builder.pb,
@@ -188,6 +190,7 @@ func (builder ConsensusMessageSubmitTransaction) SetMemo(memo string) ConsensusM
 	}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder ConsensusMessageSubmitTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration),
 		builder.pb,
@@ -201,6 +204,7 @@ func (builder ConsensusMessageSubmitTransaction) SetTransactionValidDuration(val
 	}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder ConsensusMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetTransactionID(transactionID),
 		builder.pb,
@@ -214,6 +218,7 @@ func (builder ConsensusMessageSubmitTransaction) SetTransactionID(transactionID 
 	}
 }
 
+// SetNodeAccountID sets the node AccountID for this Transaction.
 func (builder ConsensusMessageSubmitTransaction) SetNodeAccountID(nodeAccountID AccountID) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID),
 		builder.pb,

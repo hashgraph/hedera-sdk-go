@@ -1,11 +1,12 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-const testClientJson string = `{
+const testClientJSON string = `{
     "network": {
         "0.0.3": "35.237.200.180:50211",
         "0.0.4": "35.186.191.247:50211",
@@ -20,7 +21,7 @@ const testClientJson string = `{
     }
 }`
 
-const testClientJsonWithOperator string = `{
+const testClientJSONWithOperator string = `{
     "network": {
         "0.0.3": "35.237.200.180:50211",
         "0.0.4": "35.186.191.247:50211",
@@ -40,7 +41,7 @@ const testClientJsonWithOperator string = `{
 }`
 
 func TestClientFromJSON(t *testing.T) {
-	client, err := ClientFromJSON([]byte(testClientJson))
+	client, err := ClientFromJSON([]byte(testClientJSON))
 	assert.NoError(t, err)
 
 	assert.NotNil(t, client)
@@ -49,7 +50,7 @@ func TestClientFromJSON(t *testing.T) {
 }
 
 func TestClientFromJSONWithOperator(t *testing.T) {
-	client, err := ClientFromJSON([]byte(testClientJsonWithOperator))
+	client, err := ClientFromJSON([]byte(testClientJSONWithOperator))
 	assert.NoError(t, err)
 
 	assert.NotNil(t, client)

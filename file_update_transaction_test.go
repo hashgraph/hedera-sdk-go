@@ -1,11 +1,12 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSerializeFileUpdateTransaction(t *testing.T) {
@@ -66,11 +67,11 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 	fileID := receipt.fileID
 	assert.NotNil(t, fileID)
 
-	var new_contents = []byte("Good Night, World")
+	var newContents = []byte("Good Night, World")
 
 	txID, err = NewFileUpdateTransaction().
 		SetFileID(*fileID).
-		SetContents(new_contents).
+		SetContents(newContents).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -83,7 +84,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	assert.Equal(t, new_contents, contents)
+	assert.Equal(t, newContents, contents)
 
 	txID, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
