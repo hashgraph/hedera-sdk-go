@@ -17,7 +17,7 @@ type TransactionID struct {
 // NewTransactionID constructs a new Transaction id struct with the provided AccountID and the valid start time set
 // to the current time - 10 seconds.
 func NewTransactionID(accountID AccountID) TransactionID {
-	now := time.Now().Add(-10 * time.Second)
+	now := time.Now().UTC().Add(-10 * time.Second)
 
 	return TransactionID{accountID, now}
 }
