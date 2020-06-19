@@ -35,18 +35,22 @@ func (builder ConsensusTopicDeleteTransaction) SetTopicID(id ConsensusTopicID) C
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder ConsensusTopicDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusTopicDeleteTransaction {
 	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-func (builder ConsensusTopicDeleteTransaction) SetMemo(memo string) ConsensusTopicDeleteTransaction {
+// SetTransactionMemo sets the memo for this Transaction.
+func (builder ConsensusTopicDeleteTransaction) SetTransactionMemo(memo string) ConsensusTopicDeleteTransaction {
 	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder ConsensusTopicDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusTopicDeleteTransaction {
 	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder ConsensusTopicDeleteTransaction) SetTransactionID(transactionID TransactionID) ConsensusTopicDeleteTransaction {
 	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }

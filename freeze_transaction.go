@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 type FreezeTransaction struct {
@@ -38,18 +39,22 @@ func (builder FreezeTransaction) SetEndTime(hour uint8, minute uint8) FreezeTran
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder FreezeTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FreezeTransaction {
 	return FreezeTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
+// SetTransactionMemo sets the memo for this Transaction.
 func (builder FreezeTransaction) SetTransactionMemo(memo string) FreezeTransaction {
 	return FreezeTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder FreezeTransaction) SetTransactionValidDuration(validDuration time.Duration) FreezeTransaction {
 	return FreezeTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder FreezeTransaction) SetTransactionID(transactionID TransactionID) FreezeTransaction {
 	return FreezeTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }

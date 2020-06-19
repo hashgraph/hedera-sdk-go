@@ -126,18 +126,22 @@ func (builder ContractCreateTransaction) SetConstructorParams(params *ContractFu
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder ContractCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractCreateTransaction {
 	return ContractCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
+// SetTransactionMemo sets the memo for this Transaction.
 func (builder ContractCreateTransaction) SetTransactionMemo(memo string) ContractCreateTransaction {
 	return ContractCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder ContractCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractCreateTransaction {
 	return ContractCreateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder ContractCreateTransaction) SetTransactionID(transactionID TransactionID) ContractCreateTransaction {
 	return ContractCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }

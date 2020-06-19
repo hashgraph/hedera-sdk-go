@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // AccountDeleteTransaction marks an account as deleted, moving all its current hbars to another account. It will remain
@@ -43,18 +44,22 @@ func (builder AccountDeleteTransaction) SetTransferAccountID(id AccountID) Accou
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder AccountDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountDeleteTransaction {
 	return AccountDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
+// SetTransactionMemo sets the memo for this Transaction.
 func (builder AccountDeleteTransaction) SetTransactionMemo(memo string) AccountDeleteTransaction {
 	return AccountDeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder AccountDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountDeleteTransaction {
 	return AccountDeleteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) AccountDeleteTransaction {
 	return AccountDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }

@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 // ContractUpdateTransaction is used to modify a smart contract instance to have the given parameter values. Any nil
@@ -91,18 +92,22 @@ func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUp
 // We override the embedded fluent setter methods to return the outer type
 //
 
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (builder ContractUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractUpdateTransaction {
 	return ContractUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
+// SetTransactionMemo sets the memo for this Transaction.
 func (builder ContractUpdateTransaction) SetTransactionMemo(memo string) ContractUpdateTransaction {
 	return ContractUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
+// SetTransactionValidDuration sets the valid duration for this Transaction.
 func (builder ContractUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractUpdateTransaction {
 	return ContractUpdateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
 }
 
+// SetTransactionID sets the TransactionID for this Transaction.
 func (builder ContractUpdateTransaction) SetTransactionID(transactionID TransactionID) ContractUpdateTransaction {
 	return ContractUpdateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
 }

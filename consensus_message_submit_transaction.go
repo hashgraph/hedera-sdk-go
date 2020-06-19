@@ -46,8 +46,8 @@ func (builder ConsensusMessageSubmitTransaction) SetMaxTransactionFee(maxTransac
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
 }
 
-// SetMemo sets the memo for this Transaction.
-func (builder ConsensusMessageSubmitTransaction) SetMemo(memo string) ConsensusMessageSubmitTransaction {
+// SetTransactionMemo sets the memo for this Transaction.
+func (builder ConsensusMessageSubmitTransaction) SetTransactionMemo(memo string) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
 }
 
