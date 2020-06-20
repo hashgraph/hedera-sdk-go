@@ -5,14 +5,18 @@ import (
 	"math"
 )
 
+// Hbar is a typesafe wrapper around values of HBAR providing foolproof conversions to other denominations.
 type Hbar struct {
 	tinybar int64
 }
 
+// MaxHbar is the maximum amount the Hbar type can wrap.
 var MaxHbar = Hbar{math.MaxInt64}
 
+// MinHbar is the minimum amount the Hbar type can wrap.
 var MinHbar = Hbar{math.MinInt64}
 
+// ZeroHbar wraps a 0 value of Hbar.
 var ZeroHbar = Hbar{0}
 
 // HbarFrom creates a representation of Hbar in tinybar on the unit provided
@@ -25,10 +29,12 @@ func HbarFromTinybar(tinybar int64) Hbar {
 	return Hbar{tinybar}
 }
 
+// NewHbar constructs a new Hbar from a possibly fractional amount of hbar.
 func NewHbar(hbar float64) Hbar {
 	return HbarFrom(hbar, HbarUnits.Hbar)
 }
 
+// AsTinybar returns the equivalent tinybar amount.
 func (hbar Hbar) AsTinybar() int64 {
 	return hbar.tinybar
 }
