@@ -392,9 +392,14 @@ func execute(node *node, paymentID *TransactionID, pb *proto.Query, deadline tim
 
 	// Timed out
 	respHeader := mapResponseHeader(resp)
-	if paymentID != nil {
-		return nil, newErrHederaPreCheckStatus(*paymentID, Status(respHeader.NodeTransactionPrecheckCode))
+	precheckCode := respHeader.NodeTransactionPrecheckCode
+	if precheckCode == proto.ResponseCodeEnum_OK {
+		precheckCode = proto.ResponseCodeEnum_TRANSACTION_EXPIRED
 	}
 
-	return nil, newErrHederaNetwork(fmt.Errorf("timed out with status %v", Status(respHeader.NodeTransactionPrecheckCode)))
+	if paymentID != nil {
+		return nil, newErrHederaPreCheckStatus(*paymentID, Status(precheckCode))
+	}
+
+	return nil, newErrHederaNetwork(fmt.Errorf("timed out with status %v", Status(precheckCode)))
 }
