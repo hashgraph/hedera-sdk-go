@@ -134,7 +134,12 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 	}
 
 	// Timed out
-	return id, nil, newErrHederaPreCheckStatus(transaction.id, Status(resp.NodeTransactionPrecheckCode))
+	precheckCode := resp.NodeTransactionPrecheckCode
+	if precheckCode == proto.ResponseCodeEnum_OK {
+		precheckCode = proto.ResponseCodeEnum_TRANSACTION_EXPIRED
+	}
+
+	return id, nil, newErrHederaPreCheckStatus(transaction.id, Status(precheckCode))
 }
 
 // Execute executes the Transaction with the provided client
