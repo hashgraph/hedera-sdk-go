@@ -359,7 +359,7 @@ func execute(node *node, paymentID *TransactionID, pb *proto.Query, deadline tim
 		if err != nil {
 			statusCode := err.(ErrHederaNetwork).StatusCode
 
-			if *statusCode == codes.Unavailable || *statusCode == codes.ResourceExhausted {
+			if statusCode != nil && (*statusCode == codes.Unavailable || *statusCode == codes.ResourceExhausted) {
 				// try again on unavailable or ResourceExhausted
 				continue
 			}
