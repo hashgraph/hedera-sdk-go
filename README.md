@@ -24,6 +24,29 @@ available in the [hashgraph/hedera-protobuf] repository.
 $ go get github.com/hashgraph/hedera-sdk-go
 ```
 
+## Running Integration Tests
+```bash
+$ env CONFIG="<your_config_file>" go test -v _Execute
+```
+
+or
+
+```bash
+$ env CONFIG="<your_config_file>" OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v _Execute
+```
+
+or
+
+```bash
+$ env OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v _Execute
+```
+
+The config file _can_ contain both the network and the operator, but you can also
+use environment variables `OPERATOR_KEY` and `OPERATOR_ID`. If both are provided
+the network is used from the config file, but for the operator the environment variables
+take precedence. If the config file is not provided then the network will default to testnet
+and `OPERATOR_KEY` and `OPERATOR_ID` **must** be provided.
+
 ## Contributing to this Project
 
 We welcome participation from all developers!
