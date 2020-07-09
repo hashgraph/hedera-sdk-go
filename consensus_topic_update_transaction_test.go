@@ -36,19 +36,29 @@ func TestSerializeConsensusTopicUpdateTransaction(t *testing.T) {
 }
 
 func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
-	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	assert.NoError(t, err)
+	client, err := ClientFromFile(os.Getenv("CONFIG"))
 
-	operatorPrivateKey, err := Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	assert.NoError(t, err)
+	if err != nil {
+		client = ClientForTestnet()
+	}
 
-	client := ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey)
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		operatorKey, err := Ed25519PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
 
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
 	txID, err := NewConsensusTopicCreateTransaction().
-		SetAdminKey(operatorPrivateKey.PublicKey()).
+		SetAdminKey(client.GetOperatorKey()).
 		SetTopicMemo(oldTopicMemo).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
@@ -69,7 +79,7 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 
 	assert.Equal(t, oldTopicMemo, info.Memo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
-	assert.Equal(t, operatorPrivateKey.PublicKey().String(), info.AdminKey.String())
+	assert.Equal(t, client.GetOperatorKey().String(), info.AdminKey.String())
 
 	newTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::updated"
 
@@ -92,7 +102,7 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 
 	assert.Equal(t, newTopicMemo, info.Memo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
-	assert.Equal(t, operatorPrivateKey.PublicKey().String(), info.AdminKey.String())
+	assert.Equal(t, client.GetOperatorKey().String(), info.AdminKey.String())
 
 	_, err = NewConsensusTopicDeleteTransaction().
 		SetTopicID(topicID).

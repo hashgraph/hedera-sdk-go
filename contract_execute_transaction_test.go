@@ -54,17 +54,27 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 
 	testContractByteCode := []byte(smartContract.Contracts["stateful.sol:StatefulContract"].Bin)
 
-	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	assert.NoError(t, err)
+	client, err := ClientFromFile(os.Getenv("CONFIG"))
 
-	operatorPrivateKey, err := Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	assert.NoError(t, err)
+	if err != nil {
+		client = ClientForTestnet()
+	}
 
-	client := ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey)
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		operatorKey, err := Ed25519PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
 
 	txID, err := NewFileCreateTransaction().
-		AddKey(operatorPrivateKey.PublicKey()).
+		AddKey(client.GetOperatorKey()).
 		SetContents(testContractByteCode).
 		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
@@ -77,7 +87,7 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 	assert.NotNil(t, fileID)
 
 	txID, err = NewContractCreateTransaction().
-		SetAdminKey(operatorPrivateKey.PublicKey()).
+		SetAdminKey(client.GetOperatorKey()).
 		SetGas(2000).
 		SetConstructorParams(NewContractFunctionParams().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).

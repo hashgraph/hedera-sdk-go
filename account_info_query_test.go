@@ -18,14 +18,24 @@ func TestNewAccountInfoQuery(t *testing.T) {
 }
 
 func TestAccountInfoQuery_Execute(t *testing.T) {
-	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	assert.NoError(t, err)
+	client, err := ClientFromFile(os.Getenv("CONFIG"))
 
-	operatorPrivateKey, err := Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	assert.NoError(t, err)
+	if err != nil {
+		client = ClientForTestnet()
+	}
 
-	client := ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey)
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		operatorKey, err := Ed25519PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
 
 	newKey, err := GenerateEd25519PrivateKey()
 	assert.NoError(t, err)
@@ -59,7 +69,7 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 
 	tx, err := NewAccountDeleteTransaction().
 		SetDeleteAccountID(accountID).
-		SetTransferAccountID(operatorAccountID).
+		SetTransferAccountID(client.GetOperatorID()).
 		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(NewTransactionID(accountID)).
 		Build(client)

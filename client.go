@@ -100,7 +100,7 @@ type configOperator struct {
 }
 
 type clientConfig struct {
-	Network  map[string]AccountID `json:"network"`
+	Network  map[string]string `json:"network"`
 	Operator *configOperator      `json:"operator"`
 }
 
@@ -114,7 +114,18 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-	client := NewClient(clientConfig.Network)
+    var network map[string]AccountID = make(map[string]AccountID)
+
+    for id, url := range clientConfig.Network {
+        accountID, err := AccountIDFromString(id)
+        if err != nil {
+            return nil, err
+        }
+
+        network[url] = accountID
+    }
+
+	client := NewClient(network)
 
 	// if the operator is not provided, finish here
 	if clientConfig.Operator == nil {
@@ -217,6 +228,16 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519Publ
 	}
 
 	return client
+}
+
+// GetOperatorID returns the ID for the operator
+func (client *Client) GetOperatorID() AccountID {
+	return client.operator.accountID
+}
+
+// GetOperatorKey returns the Key for the operator
+func (client *Client) GetOperatorKey() Ed25519PublicKey {
+	return client.operator.publicKey
 }
 
 // SetMaxTransactionFee sets the maximum fee to be paid for the transactions

@@ -35,18 +35,28 @@ func TestSerializeFileCreateTransaction(t *testing.T) {
 }
 
 func TestFileCreateTransaction_Execute(t *testing.T) {
-	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	assert.NoError(t, err)
+	client, err := ClientFromFile(os.Getenv("CONFIG"))
 
-	operatorPrivateKey, err := Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	assert.NoError(t, err)
+	if err != nil {
+		client = ClientForTestnet()
+	}
 
-	client := ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey).
-		SetMaxTransactionFee(NewHbar(2))
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
 
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		operatorKey, err := Ed25519PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
+
+  client.SetMaxTransactionFee(NewHbar(2))
 	txID, err := NewFileCreateTransaction().
-		AddKey(operatorPrivateKey.PublicKey()).
+		AddKey(client.GetOperatorKey()).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(client)
