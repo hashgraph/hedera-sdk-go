@@ -18,7 +18,7 @@ func TestNewAccountInfoQuery(t *testing.T) {
 }
 
 func TestAccountInfoQuery_Execute(t *testing.T) {
-	client, err := ClientFromFile(os.Getenv("CONFIG"))
+	client, err := ClientFromFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
 		client = ClientForTestnet()

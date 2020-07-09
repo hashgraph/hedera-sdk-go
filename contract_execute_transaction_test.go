@@ -54,7 +54,7 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 
 	testContractByteCode := []byte(smartContract.Contracts["stateful.sol:StatefulContract"].Bin)
 
-	client, err := ClientFromFile(os.Getenv("CONFIG"))
+	client, err := ClientFromFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
 		client = ClientForTestnet()

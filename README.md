@@ -26,13 +26,13 @@ $ go get github.com/hashgraph/hedera-sdk-go
 
 ## Running Integration Tests
 ```bash
-$ env CONFIG="<your_config_file>" go test -v _Execute
+$ env CONFIG_FILE="<your_config_file>" go test -v _Execute
 ```
 
 or
 
 ```bash
-$ env CONFIG="<your_config_file>" OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v _Execute
+$ env CONFIG_FILE="<your_config_file>" OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v _Execute
 ```
 
 or
@@ -46,6 +46,8 @@ use environment variables `OPERATOR_KEY` and `OPERATOR_ID`. If both are provided
 the network is used from the config file, but for the operator the environment variables
 take precedence. If the config file is not provided then the network will default to testnet
 and `OPERATOR_KEY` and `OPERATOR_ID` **must** be provided.
+
+[Example Config File](./client-config-with-operator.json)
 
 ## Contributing to this Project
 

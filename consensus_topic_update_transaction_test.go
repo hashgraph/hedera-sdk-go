@@ -36,7 +36,7 @@ func TestSerializeConsensusTopicUpdateTransaction(t *testing.T) {
 }
 
 func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
-	client, err := ClientFromFile(os.Getenv("CONFIG"))
+	client, err := ClientFromFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
 		client = ClientForTestnet()
