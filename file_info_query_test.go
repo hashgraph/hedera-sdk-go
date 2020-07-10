@@ -37,7 +37,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-  client.SetMaxTransactionFee(NewHbar(2))
+	client.SetMaxTransactionFee(NewHbar(2))
 
 	txID, err := NewFileCreateTransaction().
 		AddKey(client.GetOperatorKey()).

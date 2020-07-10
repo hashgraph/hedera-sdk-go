@@ -101,7 +101,7 @@ type configOperator struct {
 
 type clientConfig struct {
 	Network  map[string]string `json:"network"`
-	Operator *configOperator      `json:"operator"`
+	Operator *configOperator   `json:"operator"`
 }
 
 // ClientFromJSON takes in the byte slice representation of a JSON string or
@@ -114,16 +114,16 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-    var network map[string]AccountID = make(map[string]AccountID)
+	var network map[string]AccountID = make(map[string]AccountID)
 
-    for id, url := range clientConfig.Network {
-        accountID, err := AccountIDFromString(id)
-        if err != nil {
-            return nil, err
-        }
+	for id, url := range clientConfig.Network {
+		accountID, err := AccountIDFromString(id)
+		if err != nil {
+			return nil, err
+		}
 
-        network[url] = accountID
-    }
+		network[url] = accountID
+	}
 
 	client := NewClient(network)
 

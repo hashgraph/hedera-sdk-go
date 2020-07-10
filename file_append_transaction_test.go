@@ -48,7 +48,7 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-  client.SetMaxTransactionFee(NewHbar(2))
+	client.SetMaxTransactionFee(NewHbar(2))
 
 	txID, err := NewFileCreateTransaction().
 		AddKey(client.GetOperatorKey()).
@@ -63,7 +63,6 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 
 	fileID := receipt.fileID
 	assert.NotNil(t, fileID)
-
 
 	txID, err = NewFileAppendTransaction().
 		SetFileID(*fileID).

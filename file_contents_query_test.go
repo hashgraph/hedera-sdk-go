@@ -37,7 +37,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-  client.SetMaxTransactionFee(NewHbar(2))
+	client.SetMaxTransactionFee(NewHbar(2))
 
 	var contents = []byte("Hellow world!")
 

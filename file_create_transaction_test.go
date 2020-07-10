@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	"strings"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -54,7 +54,7 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-  client.SetMaxTransactionFee(NewHbar(2))
+	client.SetMaxTransactionFee(NewHbar(2))
 	txID, err := NewFileCreateTransaction().
 		AddKey(client.GetOperatorKey()).
 		SetContents([]byte("Hello, World")).
