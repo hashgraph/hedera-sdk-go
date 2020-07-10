@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package proto;
 
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
@@ -10,9 +12,9 @@ import "proto/TransactionRecord.proto";
 import "proto/QueryHeader.proto";
 import "proto/ResponseHeader.proto";
 
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
-
-/* Get all the records for a smart contract instance, for any function call (or the constructor call) during the last 25 hours, for which a Record was requested. */
+/*
+Get all the records for a smart contract instance, for any transaction (creation or call) that occurred in the last 25 hours.
+*/
 message ContractGetRecordsQuery {
     QueryHeader header = 1; // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
     ContractID contractID = 2; // The smart contract instance for which the records should be retrieved

@@ -2,17 +2,15 @@ syntax = "proto3";
 
 package proto;
 
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
 import "proto/BasicTypes.proto";
 import "proto/QueryHeader.proto";
 import "proto/ResponseHeader.proto";
-import "proto/ConsensusTopicDefinition.proto";
 import "proto/ConsensusTopicInfo.proto";
-import "proto/ConsensusTopicState.proto";
-
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 // See [ConsensusService.getTopicInfo()](#proto.ConsensusService)
 message ConsensusGetTopicInfoQuery {
@@ -20,7 +18,8 @@ message ConsensusGetTopicInfoQuery {
     // (cost, state proof, both, or neither).
     QueryHeader header = 1;
 
-    TopicID topicID = 2; // Topic to retrieve info about (the parameters and running state of).
+    // The Topic for which information is being requested
+    TopicID topicID = 2;
 }
 
 // Retrieve the parameters of and state of a consensus topic.
@@ -29,9 +28,6 @@ message ConsensusGetTopicInfoResponse {
     ResponseHeader header = 1;
 
     TopicID topicID = 2; // Topic identifier.
-
-    ConsensusTopicDefinition topicDefinition = 3 [deprecated = true];  // Deprecated and to be removed before HCS release.
-    ConsensusTopicState topicState = 4 [deprecated = true];  // Deprecated and to be removed before HCS release.
 
     ConsensusTopicInfo topicInfo = 5; // Current state of the topic
 }

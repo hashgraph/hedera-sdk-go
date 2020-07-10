@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package proto;
 
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
@@ -9,8 +11,6 @@ import "proto/BasicTypes.proto";
 import "proto/TransactionRecord.proto";
 import "proto/QueryHeader.proto";
 import "proto/ResponseHeader.proto";
-
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 /* Get all the records for an account for any transfers into it and out of it, that were above the threshold, during the last 25 hours. */
 message CryptoGetAccountRecordsQuery {

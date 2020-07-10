@@ -1,11 +1,15 @@
 syntax = "proto3";
 
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
-
 package proto;
+
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
+
+import "proto/Duration.proto";
+import "proto/Timestamp.proto";
+import "proto/BasicTypes.proto";
 
 /* Set the freezing period in which the platform will stop creating events and accepting transactions. This is used before safely shut down the platform for maintenance. */
 message FreezeTransactionBody {
@@ -13,4 +17,5 @@ message FreezeTransactionBody {
     int32 startMin = 2; // The start minute (in UTC time), a value between 0 and 59
     int32 endHour = 3; // The end hour (in UTC time), a value between 0 and 23
     int32 endMin = 4; // The end minute (in UTC time), a value between 0 and 59
+    FileID updateFile = 5; // The ID of the file needs to be updated during a freeze transaction
 }

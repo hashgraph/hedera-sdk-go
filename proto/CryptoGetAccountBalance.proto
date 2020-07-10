@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package proto;
 
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+
 option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
@@ -9,14 +11,13 @@ import "proto/BasicTypes.proto";
 import "proto/QueryHeader.proto";
 import "proto/ResponseHeader.proto";
 
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
-
-/* Get the balance of a cryptocurrency account. This returns only the balance, so it is a smaller and faster reply than CryptoGetInfo, which returns the balance plus additional information. */
+/* Get the balance of a cryptocurrency account. This returns only the balance, so it is a smaller
+reply than CryptoGetInfo, which returns the balance plus additional information. */
 message CryptoGetAccountBalanceQuery {
     QueryHeader header = 1; // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
     oneof balanceSource {
-        AccountID accountID = 2; // The account ID for which information is requested
-        ContractID contractID = 3; // The account ID for which information is requested
+    	AccountID accountID = 2; // The account ID for which information is requested
+    	ContractID contractID = 3; // The account ID for which information is requested
     }
 }
 
@@ -26,3 +27,5 @@ message CryptoGetAccountBalanceResponse {
     AccountID accountID = 2; // The account ID that is being described (this is useful with state proofs, for proving to a third party)
     uint64 balance = 3; // The current balance, in tinybars
 }
+
+
