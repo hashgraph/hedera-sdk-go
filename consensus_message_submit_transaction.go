@@ -36,6 +36,16 @@ func (builder ConsensusMessageSubmitTransaction) SetMessage(message []byte) Cons
 	return builder
 }
 
+// SetMessage sets the message to be submitted. Max size of the Transaction (including signatures) is 4kB.
+func (builder ConsensusMessageSubmitTransaction) SetChunkInfo(transactionID TransactionID, total int32, number int32) ConsensusMessageSubmitTransaction {
+	builder.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
+        InitialTransactionID: transactionID.toProto(),
+        Total: total,
+        Number: number,
+    }
+	return builder
+}
+
 //
 // The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type

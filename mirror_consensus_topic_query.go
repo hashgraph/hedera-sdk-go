@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+type ChunkInfo struct {
+    InitialTransactionID TransactionID
+    Total                uint32
+    Number               uint32
+}
+
 type MirrorConsensusTopicQuery struct {
 	pb *mirror.ConsensusTopicQuery
 }
@@ -15,6 +21,7 @@ type MirrorConsensusTopicResponse struct {
 	Message            []byte
 	RunningHash        []byte
 	SequenceNumber     uint64
+    ChunkInfo         ChunkInfo
 }
 
 func NewMirrorConsensusTopicQuery() *MirrorConsensusTopicQuery {
@@ -54,6 +61,11 @@ func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) Mir
 		Message:            r.Message,
 		RunningHash:        r.RunningHash,
 		SequenceNumber:     r.SequenceNumber,
+        ChunkInfo: ChunkInfo{
+            InitialTransactionID: transactionIDFromProto(r.ChunkInfo.InitialTransactionID),
+            Total: uint32(r.ChunkInfo.Total),
+            Number: uint32(r.ChunkInfo.Number),
+        },
 	}
 }
 
