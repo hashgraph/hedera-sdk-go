@@ -123,6 +123,8 @@ const (
 	StatusInvalidAutoRenewAccount             Status = 159
 	StatusAutoRenewAccountNotAllowed          Status = 160
 	StatusTopicExpired                        Status = 162
+	StatusInvalidChunkNumber                  Status = 163
+	StatusInvalidChunkTransactionId           Status = 164
 )
 
 func (status Status) isExceptional(includeUnknown bool) bool {
@@ -382,6 +384,10 @@ func (status Status) String() string {
 		return "AUTO_RENEW_ACCOUNT_NOT_ALLOWED"
 	case StatusTopicExpired:
 		return "TOPIC_EXPIRED"
+	case StatusInvalidChunkNumber:
+		return "INVALID_CHUNK_NUMBER"
+	case StatusInvalidChunkTransactionId:
+		return "INVALID_CHUNK_TRANSACTION_ID"
 	}
 
 	panic("unreacahble: Status.String() switch statement is non-exhaustive")
