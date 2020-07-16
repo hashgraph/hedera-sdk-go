@@ -73,7 +73,7 @@ func (builder ConsensusMessageSubmitTransaction) Execute(client *Client) ([]Tran
 func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (TransactionList, error) {
 	// If chunk info  is set then we aren't going to chunk the message
 	// Set all the required fields and return a list of 1
-	if builder.chunkInfoSet || len(builder.message) < chunkSize {
+	if builder.chunkInfoSet {
 		builder.pb.TopicID = builder.topicID.toProto()
 		builder.pb.Message = builder.message
 		builder.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{

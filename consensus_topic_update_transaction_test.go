@@ -67,8 +67,8 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 	receipt, err := txID.GetReceipt(client)
 	assert.NoError(t, err)
 
-	topicID := receipt.GetConsensusTopicID()
-	assert.NotNil(t, topicID)
+	topicID, err := receipt.TryGetConsensusTopicID()
+	assert.NoError(t, err)
 
 	info, err := NewConsensusTopicInfoQuery().
 		SetTopicID(topicID).
