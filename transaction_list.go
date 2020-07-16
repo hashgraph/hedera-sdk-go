@@ -23,7 +23,7 @@ func (list TransactionList) SignWith(publicKey Ed25519PublicKey, signer Transact
 	return list
 }
 
-func (list TransactionList) Execute(client *Client) ([]TransactionID, error) {
+func (list TransactionList) ExecuteAll(client *Client) ([]TransactionID, error) {
 	ids := make([]TransactionID, len(list.List))
 	for i, tx := range list.List {
 		id, err := tx.Execute(client)
@@ -35,4 +35,20 @@ func (list TransactionList) Execute(client *Client) ([]TransactionID, error) {
 	}
 
 	return ids, nil
+}
+
+func (list TransactionList) Execute(client *Client) (TransactionID, error) {
+    var lastID TransactionID
+	for i, tx := range list.List {
+		id, err := tx.Execute(client)
+		if err != nil {
+			return TransactionID{}, err
+		}
+
+        if i == len(list.List) - 1 {
+            lastID = id
+        }
+	}
+
+	return lastID, nil
 }

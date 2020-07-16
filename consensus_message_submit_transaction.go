@@ -61,15 +61,23 @@ func (builder ConsensusMessageSubmitTransaction) SetChunkInfo(transactionID Tran
 	return builder
 }
 
-func (builder ConsensusMessageSubmitTransaction) Execute(client *Client) ([]TransactionID, error) {
+func (builder ConsensusMessageSubmitTransaction) Execute(client *Client) (TransactionID, error) {
 	txs, err := builder.Build(client)
 	if err != nil {
-		return nil, err
+		return TransactionID{}, err
 	}
 
 	return txs.Execute(client)
 }
 
+func (builder ConsensusMessageSubmitTransaction) ExecuteAll(client *Client) ([]TransactionID, error) {
+	txs, err := builder.Build(client)
+	if err != nil {
+		return nil, err
+	}
+
+	return txs.ExecuteAll(client)
+}
 func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (TransactionList, error) {
 	// If chunk info  is set then we aren't going to chunk the message
 	// Set all the required fields and return a list of 1
