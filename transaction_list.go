@@ -25,13 +25,13 @@ func (list TransactionList) SignWith(publicKey Ed25519PublicKey, signer Transact
 
 func (list TransactionList) Execute(client *Client) ([]TransactionID, error) {
 	ids := make([]TransactionID, len(list.List))
-	for _, tx := range list.List {
+	for i, tx := range list.List {
 		id, err := tx.Execute(client)
 		if err != nil {
 			return nil, err
 		}
 
-		ids = append(ids, id)
+		ids[i] = id
 	}
 
 	return ids, nil

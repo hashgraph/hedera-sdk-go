@@ -28,7 +28,7 @@ func NewConsensusMessageSubmitTransaction() ConsensusMessageSubmitTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{pb}
 
-	builder := ConsensusMessageSubmitTransaction{inner, pb, 0, nil, ConsensusTopicID{}, TransactionID{}, 0, 0, false}
+	builder := ConsensusMessageSubmitTransaction{inner, pb, 10, nil, ConsensusTopicID{}, TransactionID{}, 0, 0, false}
 
 	return builder
 }
@@ -72,7 +72,7 @@ func (builder ConsensusMessageSubmitTransaction) Execute(client *Client) ([]Tran
 func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (TransactionList, error) {
 	// If chunk info  is set then we aren't going to chunk the message
 	// Set all the required fields and return a list of 1
-	if builder.chunkInfoSet {
+	if builder.chunkInfoSet || len(builder.message) < chunkSize {
 		builder.pb.TopicID = builder.topicID.toProto()
 		builder.pb.Message = builder.message
 		builder.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
@@ -90,22 +90,17 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 			List: make([]Transaction, 1),
 		}
 
-		list.List = append(list.List, transaction)
+		list.List[0] = transaction
 		return list, nil
 	}
 
-	chunks := uint64(len(builder.message) / chunkSize)
-	remainder := uint64(len(builder.message) % chunkSize)
+	chunks := uint64((len(builder.message) + (chunkSize - 1)) / chunkSize)
 
 	if chunks > builder.maxChunks {
 		return TransactionList{}, ErrMaxChunksExceeded{
 			Chunks:    chunks,
 			MaxChunks: builder.maxChunks,
 		}
-	}
-
-	if remainder != 0 {
-		chunks += 1
 	}
 
 	list := make([]Transaction, chunks)
@@ -119,11 +114,11 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 
 	nextTransactionID := initialTransactionID
 
-	for i := 1; i < len(builder.message); i += chunkSize {
+	for i := 0; uint64(i) < chunks; i += 1 {
 		start := i * chunkSize
-		end := (i + 1) * chunkSize
+		end := start + chunkSize
 
-		if (i+1)*chunkSize > len(builder.message) {
+		if end > len(builder.message) {
 			end = len(builder.message)
 		}
 
@@ -141,7 +136,7 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 			return TransactionList{}, err
 		}
 
-		list = append(list, transaction.List[0])
+		list[i] = transaction.List[0]
 		nextTransactionID.ValidStart = nextTransactionID.ValidStart.Add(1 * time.Nanosecond)
 	}
 
