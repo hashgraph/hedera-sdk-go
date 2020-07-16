@@ -9,7 +9,7 @@ import (
 )
 
 type ConsensusMessageMetadata struct {
-	ConsensusTimeStamp time.Time
+	ConsensusTimestamp time.Time
 	RunningHash        []byte
 	SequenceNumber     uint64
 	ContentSize        uint64
@@ -20,7 +20,7 @@ type MirrorConsensusTopicQuery struct {
 }
 
 type MirrorConsensusTopicResponse struct {
-	ConsensusTimeStamp time.Time
+	ConsensusTimestamp time.Time
 	Message            []byte
 	RunningHash        []byte
 	SequenceNumber     uint64
@@ -61,7 +61,7 @@ func (b *MirrorConsensusTopicQuery) SetLimit(limit uint64) *MirrorConsensusTopic
 
 func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
 	resp := MirrorConsensusTopicResponse{
-		ConsensusTimeStamp: timeFromProto(r.ConsensusTimestamp),
+		ConsensusTimestamp: timeFromProto(r.ConsensusTimestamp),
 		Message:            r.Message,
 		RunningHash:        r.RunningHash,
 		SequenceNumber:     r.SequenceNumber,
@@ -70,7 +70,7 @@ func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) Mir
 	}
 
 	resp.Metadata = append(resp.Metadata, ConsensusMessageMetadata{
-		ConsensusTimeStamp: resp.ConsensusTimeStamp,
+		ConsensusTimestamp: resp.ConsensusTimestamp,
 		RunningHash:        resp.RunningHash,
 		SequenceNumber:     resp.SequenceNumber,
 		ContentSize:        uint64(len(r.Message)),
@@ -87,7 +87,7 @@ func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTop
 
 	for _, m := range message {
 		metadata[m.ChunkInfo.Number-1] = ConsensusMessageMetadata{
-			ConsensusTimeStamp: timeFromProto(m.ConsensusTimestamp),
+			ConsensusTimestamp: timeFromProto(m.ConsensusTimestamp),
 			RunningHash:        m.RunningHash,
 			SequenceNumber:     m.SequenceNumber,
 			ContentSize:        uint64(len(m.Message)),
@@ -103,9 +103,9 @@ func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTop
 	}
 
 	return MirrorConsensusTopicResponse{
-		ConsensusTimeStamp: metadata[length-1].ConsensusTimeStamp,
-		RunningHash:        metadata[length-1].RunningHash,
-		SequenceNumber:     metadata[length-1].SequenceNumber,
+		ConsensusTimestamp: timeFromProto(message[length-1].ConsensusTimestamp),
+		RunningHash:        message[length-1].RunningHash,
+		SequenceNumber:     message[length-1].SequenceNumber,
 		Contents:           final_message,
 		Metadata:           metadata,
 	}
