@@ -8,7 +8,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
 )
 
-type ConsensusMessageMetadata struct {
+type ConsensusMessageChunks struct {
 	ConsensusTimestamp time.Time
 	RunningHash        []byte
 	SequenceNumber     uint64
@@ -25,7 +25,7 @@ type MirrorConsensusTopicResponse struct {
 	RunningHash        []byte
 	SequenceNumber     uint64
 	Contents           []byte
-	Metadata           []ConsensusMessageMetadata
+	Chunks           []ConsensusMessageChunks
 }
 
 func NewMirrorConsensusTopicQuery() *MirrorConsensusTopicQuery {
@@ -66,10 +66,10 @@ func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) Mir
 		RunningHash:        r.RunningHash,
 		SequenceNumber:     r.SequenceNumber,
 		Contents:           r.Message,
-		Metadata:           make([]ConsensusMessageMetadata, 1),
+		Chunks:           make([]ConsensusMessageChunks, 1),
 	}
 
-	resp.Metadata = append(resp.Metadata, ConsensusMessageMetadata{
+	resp.Chunks = append(resp.Chunks, ConsensusMessageChunks{
 		ConsensusTimestamp: resp.ConsensusTimestamp,
 		RunningHash:        resp.RunningHash,
 		SequenceNumber:     resp.SequenceNumber,
@@ -82,11 +82,11 @@ func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) Mir
 func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
 	length := len(message)
 	size := uint64(0)
-	metadata := make([]ConsensusMessageMetadata, length)
+	chunks := make([]ConsensusMessageChunks, length)
 	messages := make([][]byte, length)
 
 	for _, m := range message {
-		metadata[m.ChunkInfo.Number-1] = ConsensusMessageMetadata{
+		chunks[m.ChunkInfo.Number-1] = ConsensusMessageChunks{
 			ConsensusTimestamp: timeFromProto(m.ConsensusTimestamp),
 			RunningHash:        m.RunningHash,
 			SequenceNumber:     m.SequenceNumber,
@@ -107,7 +107,7 @@ func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTop
 		RunningHash:        message[length-1].RunningHash,
 		SequenceNumber:     message[length-1].SequenceNumber,
 		Contents:           final_message,
-		Metadata:           metadata,
+		Chunks:           chunks,
 	}
 }
 
