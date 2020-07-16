@@ -8,12 +8,12 @@ import (
 )
 
 type ErrMaxChunksExceeded struct {
-    Chunks    uint64
-    MaxChunks uint64
+	Chunks    uint64
+	MaxChunks uint64
 }
 
 func (err ErrMaxChunksExceeded) Error() string {
-    return fmt.Sprintf("Message requires %d chunks, but max chunks is %d", err.Chunks, err.MaxChunks)
+	return fmt.Sprintf("Message requires %d chunks, but max chunks is %d", err.Chunks, err.MaxChunks)
 }
 
 // ErrMaxQueryPaymentExceeded is returned during query execution if the total cost of the query + estimated fees exceeds

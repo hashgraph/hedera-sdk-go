@@ -11,13 +11,13 @@ const chunkSize = 4096
 type ConsensusMessageSubmitTransaction struct {
 	TransactionBuilder
 	pb                   *proto.ConsensusSubmitMessageTransactionBody
-    maxChunks            uint64
-    message              []byte
-    topicID              ConsensusTopicID
-    initialTransactionID TransactionID
-    total                int32
-    number               int32
-    chunkInfoSet         bool
+	maxChunks            uint64
+	message              []byte
+	topicID              ConsensusTopicID
+	initialTransactionID TransactionID
+	total                int32
+	number               int32
+	chunkInfoSet         bool
 }
 
 // NewConsensusMessageSubmitTransaction creates a ConsensusMessageSubmitTransaction builder which can be used to
@@ -41,95 +41,95 @@ func (builder ConsensusMessageSubmitTransaction) SetTopicID(id ConsensusTopicID)
 
 // SetMessage sets the message to be submitted. Max size of the Transaction (including signatures) is 4kB.
 func (builder ConsensusMessageSubmitTransaction) SetMessage(message []byte) ConsensusMessageSubmitTransaction {
-    builder.message = message
+	builder.message = message
 	return builder
 }
 
 // SetMessage sets the message to be submitted. Max size of the Transaction (including signatures) is 4kB.
 func (builder ConsensusMessageSubmitTransaction) SetMaxChunks(max uint64) ConsensusMessageSubmitTransaction {
-    builder.maxChunks = max
+	builder.maxChunks = max
 	return builder
 }
 
 // SetMessage sets the message to be submitted. Max size of the Transaction (including signatures) is 4kB.
 func (builder ConsensusMessageSubmitTransaction) SetChunkInfo(transactionID TransactionID, total int32, number int32) ConsensusMessageSubmitTransaction {
-    builder.initialTransactionID = transactionID
-    builder.total = total
-    builder.number = number
-    builder.chunkInfoSet = true
+	builder.initialTransactionID = transactionID
+	builder.total = total
+	builder.number = number
+	builder.chunkInfoSet = true
 	return builder
 }
 
 func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (TransactionList, error) {
-    // If chunk info  is set then we aren't going to chunk the message
-    // Set all the required fields and return a list of 1
-    if builder.chunkInfoSet {
-        builder.pb.TopicID = builder.topicID.toProto()
-        builder.pb.Message = builder.message
-        builder.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
-            InitialTransactionID: builder.initialTransactionID.toProto(),
-            Number: builder.number,
-            Total: builder.total,
-        }
+	// If chunk info  is set then we aren't going to chunk the message
+	// Set all the required fields and return a list of 1
+	if builder.chunkInfoSet {
+		builder.pb.TopicID = builder.topicID.toProto()
+		builder.pb.Message = builder.message
+		builder.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
+			InitialTransactionID: builder.initialTransactionID.toProto(),
+			Number:               builder.number,
+			Total:                builder.total,
+		}
 
-        transaction, err := builder.TransactionBuilder.Build(client)
-        if err != nil {
-            return TransactionList{}, err
-        }
+		transaction, err := builder.TransactionBuilder.Build(client)
+		if err != nil {
+			return TransactionList{}, err
+		}
 
-        list := TransactionList{
-            List: make([]Transaction, 1),
-        }
+		list := TransactionList{
+			List: make([]Transaction, 1),
+		}
 
-        list.List = append(list.List, transaction)
-        return list, nil
-    }
+		list.List = append(list.List, transaction)
+		return list, nil
+	}
 
-    chunks := uint64(len(builder.message) / chunkSize)
-    remainder := uint64(len(builder.message) % chunkSize)
+	chunks := uint64(len(builder.message) / chunkSize)
+	remainder := uint64(len(builder.message) % chunkSize)
 
-    if chunks > builder.maxChunks {
-        return TransactionList{}, ErrMaxChunksExceeded{
-            Chunks: chunks,
-            MaxChunks: builder.maxChunks,
-        }
-    }
+	if chunks > builder.maxChunks {
+		return TransactionList{}, ErrMaxChunksExceeded{
+			Chunks:    chunks,
+			MaxChunks: builder.maxChunks,
+		}
+	}
 
-    if remainder != 0 {
-        chunks += 1
-    }
+	if remainder != 0 {
+		chunks += 1
+	}
 
-    list := make([]Transaction, chunks)
+	list := make([]Transaction, chunks)
 
-    var transactionID TransactionID
-    if builder.TransactionBuilder.pb.TransactionID != nil {
-        transactionID = transactionIDFromProto(builder.TransactionBuilder.pb.TransactionID)
-    } else {
-        transactionID = NewTransactionID(client.GetOperatorID())
-    }
+	var transactionID TransactionID
+	if builder.TransactionBuilder.pb.TransactionID != nil {
+		transactionID = transactionIDFromProto(builder.TransactionBuilder.pb.TransactionID)
+	} else {
+		transactionID = NewTransactionID(client.GetOperatorID())
+	}
 
-    for i := 1; i < len(builder.message); i += chunkSize {
-        start := i * chunkSize
-        end := (i + 1) * chunkSize
+	for i := 1; i < len(builder.message); i += chunkSize {
+		start := i * chunkSize
+		end := (i + 1) * chunkSize
 
-        if (i + 1) * chunkSize > len(builder.message) {
-            end = len(builder.message)
-        }
+		if (i+1)*chunkSize > len(builder.message) {
+			end = len(builder.message)
+		}
 
-        transaction, err := NewConsensusMessageSubmitTransaction().
-          SetMessage(builder.message[start:end]).
-          SetTopicID(builder.topicID).
-          SetChunkInfo(transactionID, int32(chunks), int32(i) + 1).
-          Build(client)
+		transaction, err := NewConsensusMessageSubmitTransaction().
+			SetMessage(builder.message[start:end]).
+			SetTopicID(builder.topicID).
+			SetChunkInfo(transactionID, int32(chunks), int32(i)+1).
+			Build(client)
 
-        if err != nil {
-            return TransactionList{}, err
-        }
+		if err != nil {
+			return TransactionList{}, err
+		}
 
-        list = append(list, transaction.List[0])
-    }
+		list = append(list, transaction.List[0])
+	}
 
-    return TransactionList{list}, nil
+	return TransactionList{list}, nil
 }
 
 //
@@ -139,66 +139,66 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 
 func (builder ConsensusMessageSubmitTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{
-        builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee),
-        builder.pb,
-        builder.maxChunks,
-        builder.message,
-        builder.topicID,
-        builder.initialTransactionID,
-        builder.number,
-        builder.total,
-        builder.chunkInfoSet,
-    }
+		builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee),
+		builder.pb,
+		builder.maxChunks,
+		builder.message,
+		builder.topicID,
+		builder.initialTransactionID,
+		builder.number,
+		builder.total,
+		builder.chunkInfoSet,
+	}
 }
 
 func (builder ConsensusMessageSubmitTransaction) SetMemo(memo string) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetTransactionMemo(memo),
-        builder.pb,
-        builder.maxChunks,
-        builder.message,
-        builder.topicID,
-        builder.initialTransactionID,
-        builder.number,
-        builder.total,
-        builder.chunkInfoSet,
-    }
+		builder.pb,
+		builder.maxChunks,
+		builder.message,
+		builder.topicID,
+		builder.initialTransactionID,
+		builder.number,
+		builder.total,
+		builder.chunkInfoSet,
+	}
 }
 
 func (builder ConsensusMessageSubmitTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration),
-        builder.pb,
-        builder.maxChunks,
-        builder.message,
-        builder.topicID,
-        builder.initialTransactionID,
-        builder.number,
-        builder.total,
-        builder.chunkInfoSet,
-    }
+		builder.pb,
+		builder.maxChunks,
+		builder.message,
+		builder.topicID,
+		builder.initialTransactionID,
+		builder.number,
+		builder.total,
+		builder.chunkInfoSet,
+	}
 }
 
 func (builder ConsensusMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetTransactionID(transactionID),
-        builder.pb,
-        builder.maxChunks,
-        builder.message,
-        builder.topicID,
-        builder.initialTransactionID,
-        builder.number,
-        builder.total,
-        builder.chunkInfoSet,
-    }
+		builder.pb,
+		builder.maxChunks,
+		builder.message,
+		builder.topicID,
+		builder.initialTransactionID,
+		builder.number,
+		builder.total,
+		builder.chunkInfoSet,
+	}
 }
 
 func (builder ConsensusMessageSubmitTransaction) SetNodeAccountID(nodeAccountID AccountID) ConsensusMessageSubmitTransaction {
 	return ConsensusMessageSubmitTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID),
-        builder.pb,
-        builder.maxChunks,
-        builder.message,
-        builder.topicID,
-        builder.initialTransactionID,
-        builder.number,
-        builder.total,
-        builder.chunkInfoSet,
-    }
+		builder.pb,
+		builder.maxChunks,
+		builder.message,
+		builder.topicID,
+		builder.initialTransactionID,
+		builder.number,
+		builder.total,
+		builder.chunkInfoSet,
+	}
 }

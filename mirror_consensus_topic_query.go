@@ -12,7 +12,7 @@ type ConsensusMessageMetadata struct {
 	ConsensusTimeStamp time.Time
 	RunningHash        []byte
 	SequenceNumber     uint64
-	ContentSize     uint64
+	ContentSize        uint64
 }
 
 type MirrorConsensusTopicQuery struct {
@@ -24,8 +24,8 @@ type MirrorConsensusTopicResponse struct {
 	Message            []byte
 	RunningHash        []byte
 	SequenceNumber     uint64
-    Contents           []byte
-    Metadata           []ConsensusMessageMetadata
+	Contents           []byte
+	Metadata           []ConsensusMessageMetadata
 }
 
 func NewMirrorConsensusTopicQuery() *MirrorConsensusTopicQuery {
@@ -60,54 +60,54 @@ func (b *MirrorConsensusTopicQuery) SetLimit(limit uint64) *MirrorConsensusTopic
 }
 
 func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
-    resp := MirrorConsensusTopicResponse{
+	resp := MirrorConsensusTopicResponse{
 		ConsensusTimeStamp: timeFromProto(r.ConsensusTimestamp),
 		Message:            r.Message,
 		RunningHash:        r.RunningHash,
 		SequenceNumber:     r.SequenceNumber,
-        Contents: r.Message,
-        Metadata: make([]ConsensusMessageMetadata, 1),
+		Contents:           r.Message,
+		Metadata:           make([]ConsensusMessageMetadata, 1),
 	}
 
-    resp.Metadata = append(resp.Metadata, ConsensusMessageMetadata{
-        ConsensusTimeStamp: resp.ConsensusTimeStamp,
-        RunningHash: resp.RunningHash,
-        SequenceNumber: resp.SequenceNumber,
-        ContentSize: uint64(len(r.Message)),
-    })
+	resp.Metadata = append(resp.Metadata, ConsensusMessageMetadata{
+		ConsensusTimeStamp: resp.ConsensusTimeStamp,
+		RunningHash:        resp.RunningHash,
+		SequenceNumber:     resp.SequenceNumber,
+		ContentSize:        uint64(len(r.Message)),
+	})
 
-    return resp
+	return resp
 }
 
 func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
-    length := len(message)
-    size := uint64(0)
-    metadata := make([]ConsensusMessageMetadata, length)
-    messages := make([][]byte, length)
+	length := len(message)
+	size := uint64(0)
+	metadata := make([]ConsensusMessageMetadata, length)
+	messages := make([][]byte, length)
 
-    for _, m := range message {
-        metadata[m.ChunkInfo.Number - 1] = ConsensusMessageMetadata {
-            ConsensusTimeStamp: timeFromProto(m.ConsensusTimestamp),
-            RunningHash:        m.RunningHash,
-            SequenceNumber:     m.SequenceNumber,
-            ContentSize:        uint64(len(m.Message)),
-        }
+	for _, m := range message {
+		metadata[m.ChunkInfo.Number-1] = ConsensusMessageMetadata{
+			ConsensusTimeStamp: timeFromProto(m.ConsensusTimestamp),
+			RunningHash:        m.RunningHash,
+			SequenceNumber:     m.SequenceNumber,
+			ContentSize:        uint64(len(m.Message)),
+		}
 
-        messages[m.ChunkInfo.Number - 1] = m.Message
-        size += uint64(len(m.Message))
-    }
+		messages[m.ChunkInfo.Number-1] = m.Message
+		size += uint64(len(m.Message))
+	}
 
-    final_message := make([]byte, size)
-    for _, m := range messages {
-        final_message = append(final_message, m...)
-    }
+	final_message := make([]byte, size)
+	for _, m := range messages {
+		final_message = append(final_message, m...)
+	}
 
-    return MirrorConsensusTopicResponse{
-		ConsensusTimeStamp: metadata[length - 1].ConsensusTimeStamp,
-		RunningHash:        metadata[length - 1].RunningHash,
-		SequenceNumber:     metadata[length - 1].SequenceNumber,
-        Contents:           final_message,
-        Metadata:           metadata,
+	return MirrorConsensusTopicResponse{
+		ConsensusTimeStamp: metadata[length-1].ConsensusTimeStamp,
+		RunningHash:        metadata[length-1].RunningHash,
+		SequenceNumber:     metadata[length-1].SequenceNumber,
+		Contents:           final_message,
+		Metadata:           metadata,
 	}
 }
 
@@ -124,8 +124,8 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 
 	subClient, err := client.client.SubscribeTopic(ctx, b.pb)
 
-    messages := sync.Map{}
-    messagesMutex := sync.Mutex{}
+	messages := sync.Map{}
+	messagesMutex := sync.Mutex{}
 
 	if err != nil {
 		return MirrorSubscriptionHandle{}, err
@@ -143,24 +143,24 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 				break
 			}
 
-            if resp.ChunkInfo == nil {
-                onNext(mirrorConsensusTopicResponseFromProto(resp))
-            } else {
-                messagesMutex.Lock()
-                txID := transactionIDFromProto(resp.ChunkInfo.InitialTransactionID)
-                messageI, _ := messages.LoadOrStore(txID, make([]*mirror.ConsensusTopicResponse, resp.ChunkInfo.Total))
-                message := messageI.([]*mirror.ConsensusTopicResponse)
-                message = append(message, resp)
+			if resp.ChunkInfo == nil {
+				onNext(mirrorConsensusTopicResponseFromProto(resp))
+			} else {
+				messagesMutex.Lock()
+				txID := transactionIDFromProto(resp.ChunkInfo.InitialTransactionID)
+				messageI, _ := messages.LoadOrStore(txID, make([]*mirror.ConsensusTopicResponse, resp.ChunkInfo.Total))
+				message := messageI.([]*mirror.ConsensusTopicResponse)
+				message = append(message, resp)
 
-                if int32(len(message)) == resp.ChunkInfo.Total {
-                    messages.Delete(txID)
-                    messagesMutex.Unlock()
-                    onNext(mirrorConsensusTopicResponseFromChunkedProto(message))
-                } else {
-                    messagesMutex.Unlock()
-                }
+				if int32(len(message)) == resp.ChunkInfo.Total {
+					messages.Delete(txID)
+					messagesMutex.Unlock()
+					onNext(mirrorConsensusTopicResponseFromChunkedProto(message))
+				} else {
+					messagesMutex.Unlock()
+				}
 
-            }
+			}
 		}
 	}()
 
