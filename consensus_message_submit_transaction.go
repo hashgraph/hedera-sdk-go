@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
@@ -28,7 +29,7 @@ func NewConsensusMessageSubmitTransaction() ConsensusMessageSubmitTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{pb}
 
-	builder := ConsensusMessageSubmitTransaction{inner, pb, 0, nil, ConsensusTopicID{}, TransactionID{}, 0, 0, false}
+	builder := ConsensusMessageSubmitTransaction{inner, pb, 10, nil, ConsensusTopicID{}, TransactionID{}, 0, 0, false}
 
 	return builder
 }
@@ -61,9 +62,20 @@ func (builder ConsensusMessageSubmitTransaction) SetChunkInfo(transactionID Tran
 }
 
 func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (TransactionList, error) {
+	var transactionID TransactionID
+	if builder.TransactionBuilder.pb.TransactionID != nil {
+		transactionID = transactionIDFromProto(builder.TransactionBuilder.pb.TransactionID)
+	} else {
+        if client != nil {
+            transactionID = NewTransactionID(client.GetOperatorID())
+        } else {
+            return TransactionList{}, fmt.Errorf("client must have an operator or set a transaction ID to build a consensus message transaction")
+        }
+	}
+
 	// If chunk info  is set then we aren't going to chunk the message
 	// Set all the required fields and return a list of 1
-	if builder.chunkInfoSet {
+	if builder.chunkInfoSet || len(builder.message) < chunkSize {
 		builder.pb.TopicID = builder.topicID.toProto()
 		builder.pb.Message = builder.message
 		builder.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
@@ -81,12 +93,11 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 			List: make([]Transaction, 1),
 		}
 
-		list.List = append(list.List, transaction)
+		list.List[0] = transaction
 		return list, nil
 	}
 
-	chunks := uint64(len(builder.message) / chunkSize)
-	remainder := uint64(len(builder.message) % chunkSize)
+	chunks := uint64((len(builder.message) + (chunkSize - 1)) / chunkSize)
 
 	if chunks > builder.maxChunks {
 		return TransactionList{}, ErrMaxChunksExceeded{
@@ -95,24 +106,13 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 		}
 	}
 
-	if remainder != 0 {
-		chunks += 1
-	}
-
 	list := make([]Transaction, chunks)
 
-	var transactionID TransactionID
-	if builder.TransactionBuilder.pb.TransactionID != nil {
-		transactionID = transactionIDFromProto(builder.TransactionBuilder.pb.TransactionID)
-	} else {
-		transactionID = NewTransactionID(client.GetOperatorID())
-	}
-
-	for i := 1; i < len(builder.message); i += chunkSize {
+	for i := 0; uint64(i) < chunks; i += 1 {
 		start := i * chunkSize
-		end := (i + 1) * chunkSize
+		end := start + chunkSize
 
-		if (i+1)*chunkSize > len(builder.message) {
+		if end > len(builder.message) {
 			end = len(builder.message)
 		}
 
@@ -120,16 +120,40 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 			SetMessage(builder.message[start:end]).
 			SetTopicID(builder.topicID).
 			SetChunkInfo(transactionID, int32(chunks), int32(i)+1).
+            SetTransactionID(transactionID).
+            SetNodeAccountID(accountIDFromProto(builder.TransactionBuilder.pb.NodeAccountID)).
 			Build(client)
+
+        transactionID = NewTransactionIDWithValidStart(transactionID.AccountID, transactionID.ValidStart.Add(1 * time.Nanosecond))
 
 		if err != nil {
 			return TransactionList{}, err
 		}
 
-		list = append(list, transaction.List[0])
+		list[i] = transaction.List[0]
 	}
 
 	return TransactionList{list}, nil
+}
+
+func (builder ConsensusMessageSubmitTransaction) Execute(client *Client) ([]TransactionID, error) {
+    list, err := builder.Build(client)
+    if err != nil {
+        return nil, err
+    }
+
+    ids := make([]TransactionID, len(list.List))
+
+    for i, tx := range list.List {
+        result, err := tx.Execute(client);
+        if err != nil {
+            return nil, err
+        }
+
+        ids[i] = result
+    }
+
+    return ids, nil
 }
 
 //
