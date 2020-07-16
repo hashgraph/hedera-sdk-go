@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/hashgraph/hedera-sdk-go"
 )
@@ -51,6 +52,27 @@ func main() {
 	}
 
 	fmt.Printf("ids = %v\n", ids)
+
+    mirrorClient, err := hedera.NewMirrorClient("hcs.testnet.mirrornode.hedera.com:5600")
+    if err != nil {
+        panic(err)
+    }
+
+    _, err = hedera.NewMirrorConsensusTopicQuery().
+        SetTopicID(topicID).
+        Subscribe(mirrorClient, func (response hedera.MirrorConsensusTopicResponse) {
+            println(response.Contents)
+        }, func (err error) {
+            panic(err)
+        })
+
+    if err != nil {
+        panic(err)
+    }
+
+    for {
+        time.Sleep(1 * time.Second)
+    }
 }
 
 // 14k+ stuff to upload
