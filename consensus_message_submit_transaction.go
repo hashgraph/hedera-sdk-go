@@ -3,6 +3,7 @@ package hedera
 import (
 	"time"
 
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -81,6 +82,9 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 			Total:                builder.total,
 		}
 
+		// FIXME: really have no idea why this is needed @daniel
+		builder.TransactionBuilder.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{builder.pb}
+
 		transaction, err := builder.TransactionBuilder.Build(client)
 		if err != nil {
 			return TransactionList{}, err
@@ -123,7 +127,7 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 		}
 
 		transactionBuilder := NewConsensusMessageSubmitTransaction()
-		transactionBuilder.TransactionBuilder = builder.TransactionBuilder
+		transactionBuilder.TransactionBuilder.pb = protobuf.Clone(builder.TransactionBuilder.pb).(*proto.TransactionBody)
 
 		transaction, err := transactionBuilder.
 			SetMessage(builder.message[start:end]).

@@ -8,7 +8,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
 )
 
-type ConsensusMessageChunks struct {
+type ConsensusMessageChunk struct {
 	ConsensusTimestamp time.Time
 	RunningHash        []byte
 	SequenceNumber     uint64
@@ -24,8 +24,7 @@ type MirrorConsensusTopicResponse struct {
 	Message            []byte
 	RunningHash        []byte
 	SequenceNumber     uint64
-	Contents           []byte
-	Chunks           []ConsensusMessageChunks
+	Chunks             []ConsensusMessageChunk
 }
 
 func NewMirrorConsensusTopicQuery() *MirrorConsensusTopicQuery {
@@ -65,11 +64,10 @@ func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) Mir
 		Message:            r.Message,
 		RunningHash:        r.RunningHash,
 		SequenceNumber:     r.SequenceNumber,
-		Contents:           r.Message,
-		Chunks:           make([]ConsensusMessageChunks, 1),
+		Chunks:             make([]ConsensusMessageChunk, 0, 1),
 	}
 
-	resp.Chunks = append(resp.Chunks, ConsensusMessageChunks{
+	resp.Chunks = append(resp.Chunks, ConsensusMessageChunk{
 		ConsensusTimestamp: resp.ConsensusTimestamp,
 		RunningHash:        resp.RunningHash,
 		SequenceNumber:     resp.SequenceNumber,
@@ -82,11 +80,11 @@ func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) Mir
 func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
 	length := len(message)
 	size := uint64(0)
-	chunks := make([]ConsensusMessageChunks, length)
+	chunks := make([]ConsensusMessageChunk, length)
 	messages := make([][]byte, length)
 
 	for _, m := range message {
-		chunks[m.ChunkInfo.Number-1] = ConsensusMessageChunks{
+		chunks[m.ChunkInfo.Number-1] = ConsensusMessageChunk{
 			ConsensusTimestamp: timeFromProto(m.ConsensusTimestamp),
 			RunningHash:        m.RunningHash,
 			SequenceNumber:     m.SequenceNumber,
@@ -97,17 +95,18 @@ func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTop
 		size += uint64(len(m.Message))
 	}
 
-	final_message := make([]byte, size)
+	finalMessage := make([]byte, 0, size)
+
 	for _, m := range messages {
-		final_message = append(final_message, m...)
+		finalMessage = append(finalMessage, m...)
 	}
 
 	return MirrorConsensusTopicResponse{
 		ConsensusTimestamp: timeFromProto(message[length-1].ConsensusTimestamp),
 		RunningHash:        message[length-1].RunningHash,
 		SequenceNumber:     message[length-1].SequenceNumber,
-		Contents:           final_message,
-		Chunks:           chunks,
+		Message:            finalMessage,
+		Chunks:             chunks,
 	}
 }
 
@@ -148,9 +147,12 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 			} else {
 				messagesMutex.Lock()
 				txID := transactionIDFromProto(resp.ChunkInfo.InitialTransactionID)
-				messageI, _ := messages.LoadOrStore(txID, make([]*mirror.ConsensusTopicResponse, resp.ChunkInfo.Total))
+				messageI, _ := messages.LoadOrStore(txID, make([]*mirror.ConsensusTopicResponse, 0, resp.ChunkInfo.Total))
+
 				message := messageI.([]*mirror.ConsensusTopicResponse)
 				message = append(message, resp)
+
+				messages.Store(txID, message)
 
 				if int32(len(message)) == resp.ChunkInfo.Total {
 					messages.Delete(txID)

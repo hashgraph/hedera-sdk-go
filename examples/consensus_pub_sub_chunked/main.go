@@ -38,10 +38,29 @@ func main() {
 
 	topicID := transactionReceipt.GetConsensusTopicID()
 
-	fmt.Printf("topic = %v\n", topicID)
-	fmt.Printf("message size = %v\n", len(bigContents))
+	fmt.Printf("for topic %v\n", topicID)
 
-	ids, err := hedera.NewConsensusMessageSubmitTransaction().
+	fmt.Printf("wait to propagate...\n")
+	time.Sleep(10 * time.Second)
+
+	mirrorClient, err := hedera.NewMirrorClient(os.Getenv("MIRROR_NODE_ADDRESS"))
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = hedera.NewMirrorConsensusTopicQuery().
+		SetTopicID(topicID).
+		Subscribe(mirrorClient, func(response hedera.MirrorConsensusTopicResponse) {
+			fmt.Printf("at %v ( seq = %v ) received topic message of %v bytes \n", response.ConsensusTimestamp, response.SequenceNumber, len(response.Message))
+		}, func(err error) {
+			panic(err)
+		})
+
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = hedera.NewConsensusMessageSubmitTransaction().
 		SetTopicID(topicID).
 		SetMessage([]byte(bigContents)).
 		SetMaxChunks(4). // default is 10
@@ -51,28 +70,9 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("ids = %v\n", ids)
-
-    mirrorClient, err := hedera.NewMirrorClient("hcs.testnet.mirrornode.hedera.com:5600")
-    if err != nil {
-        panic(err)
-    }
-
-    _, err = hedera.NewMirrorConsensusTopicQuery().
-        SetTopicID(topicID).
-        Subscribe(mirrorClient, func (response hedera.MirrorConsensusTopicResponse) {
-            println(response.Contents)
-        }, func (err error) {
-            panic(err)
-        })
-
-    if err != nil {
-        panic(err)
-    }
-
-    for {
-        time.Sleep(1 * time.Second)
-    }
+	for {
+		time.Sleep(1 * time.Second)
+	}
 }
 
 // 14k+ stuff to upload
