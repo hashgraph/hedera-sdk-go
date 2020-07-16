@@ -2,14 +2,17 @@ package hedera
 
 import (
 	"context"
-	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
+	"sync"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
 )
 
-type ChunkInfo struct {
-    InitialTransactionID TransactionID
-    Total                uint32
-    Number               uint32
+type ConsensusMessageMetadata struct {
+	ConsensusTimeStamp time.Time
+	RunningHash        []byte
+	SequenceNumber     uint64
+	ContentSize     uint64
 }
 
 type MirrorConsensusTopicQuery struct {
@@ -21,7 +24,8 @@ type MirrorConsensusTopicResponse struct {
 	Message            []byte
 	RunningHash        []byte
 	SequenceNumber     uint64
-    ChunkInfo         ChunkInfo
+    Contents           []byte
+    Metadata           []ConsensusMessageMetadata
 }
 
 func NewMirrorConsensusTopicQuery() *MirrorConsensusTopicQuery {
@@ -56,16 +60,54 @@ func (b *MirrorConsensusTopicQuery) SetLimit(limit uint64) *MirrorConsensusTopic
 }
 
 func mirrorConsensusTopicResponseFromProto(r *mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
-	return MirrorConsensusTopicResponse{
+    resp := MirrorConsensusTopicResponse{
 		ConsensusTimeStamp: timeFromProto(r.ConsensusTimestamp),
 		Message:            r.Message,
 		RunningHash:        r.RunningHash,
 		SequenceNumber:     r.SequenceNumber,
-        ChunkInfo: ChunkInfo{
-            InitialTransactionID: transactionIDFromProto(r.ChunkInfo.InitialTransactionID),
-            Total: uint32(r.ChunkInfo.Total),
-            Number: uint32(r.ChunkInfo.Number),
-        },
+        Contents: r.Message,
+        Metadata: make([]ConsensusMessageMetadata, 1),
+	}
+
+    resp.Metadata = append(resp.Metadata, ConsensusMessageMetadata{
+        ConsensusTimeStamp: resp.ConsensusTimeStamp,
+        RunningHash: resp.RunningHash,
+        SequenceNumber: resp.SequenceNumber,
+        ContentSize: uint64(len(r.Message)),
+    })
+
+    return resp
+}
+
+func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTopicResponse) MirrorConsensusTopicResponse {
+    length := len(message)
+    size := uint64(0)
+    metadata := make([]ConsensusMessageMetadata, length)
+    messages := make([][]byte, length)
+
+    for _, m := range message {
+        metadata[m.ChunkInfo.Number - 1] = ConsensusMessageMetadata {
+            ConsensusTimeStamp: timeFromProto(m.ConsensusTimestamp),
+            RunningHash:        m.RunningHash,
+            SequenceNumber:     m.SequenceNumber,
+            ContentSize:        uint64(len(m.Message)),
+        }
+
+        messages[m.ChunkInfo.Number - 1] = m.Message
+        size += uint64(len(m.Message))
+    }
+
+    final_message := make([]byte, size)
+    for _, m := range messages {
+        final_message = append(final_message, m...)
+    }
+
+    return MirrorConsensusTopicResponse{
+		ConsensusTimeStamp: metadata[length - 1].ConsensusTimeStamp,
+		RunningHash:        metadata[length - 1].RunningHash,
+		SequenceNumber:     metadata[length - 1].SequenceNumber,
+        Contents:           final_message,
+        Metadata:           metadata,
 	}
 }
 
@@ -81,6 +123,9 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 	ctx, cancel := context.WithCancel(context.TODO())
 
 	subClient, err := client.client.SubscribeTopic(ctx, b.pb)
+
+    messages := sync.Map{}
+    messagesMutex := sync.Mutex{}
 
 	if err != nil {
 		return MirrorSubscriptionHandle{}, err
@@ -98,7 +143,24 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 				break
 			}
 
-			onNext(mirrorConsensusTopicResponseFromProto(resp))
+            if resp.ChunkInfo == nil {
+                onNext(mirrorConsensusTopicResponseFromProto(resp))
+            } else {
+                messagesMutex.Lock()
+                txID := transactionIDFromProto(resp.ChunkInfo.InitialTransactionID)
+                messageI, _ := messages.LoadOrStore(txID, make([]*mirror.ConsensusTopicResponse, resp.ChunkInfo.Total))
+                message := messageI.([]*mirror.ConsensusTopicResponse)
+                message = append(message, resp)
+
+                if int32(len(message)) == resp.ChunkInfo.Total {
+                    messages.Delete(txID)
+                    messagesMutex.Unlock()
+                    onNext(mirrorConsensusTopicResponseFromChunkedProto(message))
+                } else {
+                    messagesMutex.Unlock()
+                }
+
+            }
 		}
 	}()
 
