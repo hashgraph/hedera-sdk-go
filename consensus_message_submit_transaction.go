@@ -101,12 +101,14 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 
 	list := make([]Transaction, chunks)
 
-	var transactionID TransactionID
+	var initialTransactionID TransactionID
 	if builder.TransactionBuilder.pb.TransactionID != nil {
-		transactionID = transactionIDFromProto(builder.TransactionBuilder.pb.TransactionID)
+		initialTransactionID = transactionIDFromProto(builder.TransactionBuilder.pb.TransactionID)
 	} else {
-		transactionID = NewTransactionID(client.GetOperatorID())
+		initialTransactionID = NewTransactionID(client.GetOperatorID())
 	}
+
+	nextTransactionID := initialTransactionID
 
 	for i := 1; i < len(builder.message); i += chunkSize {
 		start := i * chunkSize
@@ -116,10 +118,14 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 			end = len(builder.message)
 		}
 
-		transaction, err := NewConsensusMessageSubmitTransaction().
+		transactionBuilder := NewConsensusMessageSubmitTransaction()
+		transactionBuilder.TransactionBuilder = builder.TransactionBuilder
+
+		transaction, err := transactionBuilder.
 			SetMessage(builder.message[start:end]).
+			SetTransactionID(nextTransactionID).
 			SetTopicID(builder.topicID).
-			SetChunkInfo(transactionID, int32(chunks), int32(i)+1).
+			SetChunkInfo(initialTransactionID, int32(chunks), int32(i)+1).
 			Build(client)
 
 		if err != nil {
@@ -127,6 +133,7 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 		}
 
 		list = append(list, transaction.List[0])
+		nextTransactionID.ValidStart = nextTransactionID.ValidStart.Add(1 * time.Nanosecond)
 	}
 
 	return TransactionList{list}, nil
