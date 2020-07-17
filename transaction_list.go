@@ -38,17 +38,10 @@ func (list TransactionList) ExecuteAll(client *Client) ([]TransactionID, error) 
 }
 
 func (list TransactionList) Execute(client *Client) (TransactionID, error) {
-    var lastID TransactionID
-	for i, tx := range list.List {
-		id, err := tx.Execute(client)
-		if err != nil {
-			return TransactionID{}, err
-		}
-
-        if i == len(list.List) - 1 {
-            lastID = id
-        }
+	ids, err := list.ExecuteAll(client)
+	if err != nil {
+		return TransactionID{}, err
 	}
 
-	return lastID, nil
+	return ids[0], nil
 }

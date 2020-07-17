@@ -78,6 +78,7 @@ func (builder ConsensusMessageSubmitTransaction) ExecuteAll(client *Client) ([]T
 
 	return txs.ExecuteAll(client)
 }
+
 func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (TransactionList, error) {
 	// If chunk info  is set then we aren't going to chunk the message
 	// Set all the required fields and return a list of 1
