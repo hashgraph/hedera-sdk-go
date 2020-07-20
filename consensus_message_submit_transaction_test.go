@@ -33,7 +33,7 @@ func TestSerializeConsensusMessageSubmitTransaction(t *testing.T) {
 
 	tx.Sign(key)
 
-    assert.Equal(t, `bodyBytes:"\n\014\n\006\010\316\247\212\345\005\022\002\030\002\022\002\030\003\030\300\204=\"\004\010\200\243\005\332\001)\n\002\030c\022\017HelloHashgraph\032\022\n\014\n\006\010\316\247\212\345\005\022\002\030\002\020\001\030\001"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"|T\235GE\003\210\027\302\231]\002\265\304\376\034E\224\254\376\225\266\006|b\025s\357W\236_9\217^\234^\230\235el8\032H$\355y\232\327J)\213\236\3669\016\235\300\342\030\323'\366\201\n">>transactionID:<transactionValidStart:<seconds:1554158542>accountID:<accountNum:2>>nodeAccountID:<accountNum:3>transactionFee:1000000transactionValidDuration:<seconds:86400>consensusSubmitMessage:<topicID:<topicNum:99>message:"HelloHashgraph"chunkInfo:<initialTransactionID:<transactionValidStart:<seconds:1554158542>accountID:<accountNum:2>>total:1number:1>>`, strings.ReplaceAll(strings.ReplaceAll(tx.List[0].String(), " ", ""), "\n", ""))
+	assert.Equal(t, `bodyBytes:"\n\014\n\006\010\316\247\212\345\005\022\002\030\002\022\002\030\003\030\300\204=\"\004\010\200\243\005\332\001)\n\002\030c\022\017HelloHashgraph\032\022\n\014\n\006\010\316\247\212\345\005\022\002\030\002\020\001\030\001"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"|T\235GE\003\210\027\302\231]\002\265\304\376\034E\224\254\376\225\266\006|b\025s\357W\236_9\217^\234^\230\235el8\032H$\355y\232\327J)\213\236\3669\016\235\300\342\030\323'\366\201\n">>transactionID:<transactionValidStart:<seconds:1554158542>accountID:<accountNum:2>>nodeAccountID:<accountNum:3>transactionFee:1000000transactionValidDuration:<seconds:86400>consensusSubmitMessage:<topicID:<topicNum:99>message:"HelloHashgraph"chunkInfo:<initialTransactionID:<transactionValidStart:<seconds:1554158542>accountID:<accountNum:2>>total:1number:1>>`, strings.ReplaceAll(strings.ReplaceAll(tx.List[0].String(), " ", ""), "\n", ""))
 }
 
 func TestConsensusMessageSubmitTransaction_Execute(t *testing.T) {
@@ -78,14 +78,14 @@ func TestConsensusMessageSubmitTransaction_Execute(t *testing.T) {
 
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 
-    txIDs, err := NewConsensusMessageSubmitTransaction().
+	txID, err = NewConsensusMessageSubmitTransaction().
 		SetTopicID(topicID).
 		SetMessage([]byte("go-sdk::TestConsensusMessageSubmitTransaction_Execute::MessageSubmit")).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = txIDs[0].GetReceipt(client)
+	_, err = txID.GetReceipt(client)
 	assert.NoError(t, err)
 
 	info, err = NewConsensusTopicInfoQuery().

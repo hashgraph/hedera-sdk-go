@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
 )
 
 func main() {
@@ -67,5 +68,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("file %v was deleted: %\nv", newFileID, fileInfo.IsDeleted)
+	fmt.Printf("file %v was deleted: %v\n", newFileID, fileInfo.IsDeleted)
 }
