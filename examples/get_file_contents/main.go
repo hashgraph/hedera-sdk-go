@@ -35,6 +35,6 @@ func main() {
 	}
 
 	fmt.Printf("contents for file %v :\n", fileID)
-	fmt.Print(contents)
+	fmt.Print(string(contents))
 	fmt.Println()
 }

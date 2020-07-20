@@ -40,8 +40,7 @@ func main() {
 		}
 	}()
 
-	// This path assumes you are running it from the sdk root
-	rawSmartContract, err := ioutil.ReadFile("./examples/create_stateful_contract/stateful.json")
+	rawSmartContract, err := ioutil.ReadFile("./stateful.json")
 	if err != nil {
 		panic(err)
 	}
@@ -134,6 +133,7 @@ func main() {
 		SetContractID(newContractID).
 		SetGas(7000).
 		SetFunction("setMessage", contractFunctionParams).
+		SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
 	if err != nil {

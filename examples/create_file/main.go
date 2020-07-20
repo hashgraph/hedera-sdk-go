@@ -27,6 +27,7 @@ func main() {
 		AddKey(operatorPrivateKey.PublicKey()).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk example create_file/main.go").
+	    SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
 	if err != nil {
