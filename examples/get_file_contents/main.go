@@ -1,9 +1,14 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go"
+
+	"github.com/golang/protobuf/proto"
+	protobuf "github.com/hashgraph/hedera-sdk-go/proto"
 )
 
 func main() {
@@ -34,7 +39,18 @@ func main() {
 		panic(err)
 	}
 
+    var book protobuf.NodeAddressBook
+    proto.Unmarshal(contents, &book)
+
 	fmt.Printf("contents for file %v :\n", fileID)
-	fmt.Print(string(contents))
-	fmt.Println()
+    for _, node := range book.NodeAddress {
+        fmt.Printf("IpAddress: %v\n", node.IpAddress)
+        fmt.Printf("Portno: %v\n", node.Portno)
+        fmt.Printf("Memo: %v\n", string(node.Memo))
+        fmt.Printf("RSA_PubKey: %v\n", node.RSA_PubKey)
+        fmt.Printf("NodeId: %v\n", node.NodeId)
+        fmt.Printf("NodeAccountId: %v\n", node.NodeAccountId)
+        fmt.Printf("NodeCertHash: %v\n", hex.EncodeToString(node.NodeCertHash))
+        fmt.Println()
+    }
 }

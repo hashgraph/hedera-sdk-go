@@ -1,13 +1,15 @@
 package hedera
 
 import (
-    "context"
-    "crypto/x509"
-    "encoding/json"
-    "fmt"
-    "io/ioutil"
-    "math/rand"
-    "os"
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
 	"google.golang.org/grpc"
@@ -306,15 +308,25 @@ func (client *Client) node(id AccountID) *node {
 
 func (node *node) invoke(method string, in interface{}, out interface{}) error {
     // TODO: Move this code somewhere where it only needs to be executed once
-    cert, err := x509.ParseCertificate(make([]byte, 1))
-    if err != nil {
-        return err
+    // cert, err := x509.ParseCertificate(make([]byte, 1))
+    // if err != nil {
+    //     return err
+    // }
+
+    // cp := x509.NewCertPool()
+    // cp.AddCert(cert)
+
+    config := tls.Config{
+        InsecureSkipVerify: true,
+        VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+            for _, cert := range rawCerts {
+                fmt.Printf("%v\n", hex.EncodeToString(cert))
+            }
+            return nil
+        },
     }
 
-    cp := x509.NewCertPool()
-    cp.AddCert(cert)
-
-    tls := credentials.NewClientTLSFromCert(cp, "")
+    tls := credentials.NewTLS(&config)
 
 	if node.conn == nil {
 		conn, err := grpc.Dial(node.address, grpc.WithTransportCredentials(tls))
@@ -325,7 +337,7 @@ func (node *node) invoke(method string, in interface{}, out interface{}) error {
 		node.conn = conn
 	}
 
-	err = node.conn.Invoke(context.TODO(), method, in, out)
+    err := node.conn.Invoke(context.TODO(), method, in, out)
 
 	if err != nil {
 		return newErrHederaNetwork(err)
