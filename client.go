@@ -1,15 +1,17 @@
 package hedera
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"math/rand"
-	"os"
+    "context"
+    "crypto/x509"
+    "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "math/rand"
+    "os"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // Default max fees and payments to 1 h-bar
@@ -303,8 +305,19 @@ func (client *Client) node(id AccountID) *node {
 }
 
 func (node *node) invoke(method string, in interface{}, out interface{}) error {
+    // TODO: Move this code somewhere where it only needs to be executed once
+    cert, err := x509.ParseCertificate(make([]byte, 1))
+    if err != nil {
+        return err
+    }
+
+    cp := x509.NewCertPool()
+    cp.AddCert(cert)
+
+    tls := credentials.NewClientTLSFromCert(cp, "")
+
 	if node.conn == nil {
-		conn, err := grpc.Dial(node.address, grpc.WithInsecure())
+		conn, err := grpc.Dial(node.address, grpc.WithTransportCredentials(tls))
 		if err != nil {
 			return newErrHederaNetwork(err)
 		}
@@ -312,7 +325,7 @@ func (node *node) invoke(method string, in interface{}, out interface{}) error {
 		node.conn = conn
 	}
 
-	err := node.conn.Invoke(context.TODO(), method, in, out)
+	err = node.conn.Invoke(context.TODO(), method, in, out)
 
 	if err != nil {
 		return newErrHederaNetwork(err)
