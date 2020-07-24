@@ -4,7 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
-	"encoding/asn1"
+
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"
@@ -17,6 +17,7 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
+    "github.com/youmark/pkcs8"
 )
 
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
@@ -171,7 +172,7 @@ func Ed25519PrivateKeyReadKeystore(source io.Reader, passphrase string) (Ed25519
 	return Ed25519PrivateKeyFromKeystore(keystoreBytes, passphrase)
 }
 
-func Ed25519PrivateKeyFromPem(pemBytes []byte, passphrase string) (Ed25519PrivateKey, error) {
+func Ed25519PrivateKeyFromPem(bytes []byte, passphrase string) (Ed25519PrivateKey, error) {
 	var blockType string
 
 	if len(passphrase) == 0 {
@@ -181,15 +182,15 @@ func Ed25519PrivateKeyFromPem(pemBytes []byte, passphrase string) (Ed25519Privat
 		blockType = "ENCRYPTED PRIVATE KEY"
 	}
 
-	var PKBlock pem.Block
-	for block, remaining := pem.Decode(pemBytes); block != nil; {
+	var pk *pem.Block
+	for block, rest := pem.Decode(bytes); block != nil; {
 		if block.Type == blockType {
-			PKBlock = *block
+			pk = block
 			break
 		}
 
-		pemBytes = remaining
-		if len(pemBytes) < 1 {
+		bytes = rest
+		if len(bytes) == 0 {
 			// no key was found
 			return Ed25519PrivateKey{}, newErrBadKeyf("pem file did not contain a private key")
 		}
@@ -197,27 +198,15 @@ func Ed25519PrivateKeyFromPem(pemBytes []byte, passphrase string) (Ed25519Privat
 
 	if len(passphrase) == 0 {
 		// key does not need decrypted, end here
-		return Ed25519PrivateKeyFromString(hex.EncodeToString(PKBlock.Bytes))
+		return Ed25519PrivateKeyFromString(hex.EncodeToString(pk.Bytes))
 	}
 
-	fmt.Println("hello world")
+    keyI, err := pkcs8.ParsePKCS8PrivateKey(pk.Bytes, []byte(passphrase))
+    if err != nil {
+        return Ed25519PrivateKey{}, err;
+    }
 
-	var contents struct {
-		Contents asn1.RawContent
-		Key      asn1.BitString
-	}
-
-	_, err := asn1.Unmarshal(PKBlock.Bytes, &contents)
-
-	fmt.Println(hex.EncodeToString(contents.Contents))
-
-	fmt.Println(contents.Key)
-
-	if err != nil {
-		return Ed25519PrivateKey{}, newErrBadKeyf("failed to parse encrypted private key: %s", err.Error())
-	}
-
-	return Ed25519PrivateKeyFromString(hex.EncodeToString(PKBlock.Bytes))
+    return Ed25519PrivateKeyFromBytes(keyI.(ed25519.PrivateKey))
 }
 
 func Ed25519PrivateKeyReadPem(source io.Reader, passphrase string) (Ed25519PrivateKey, error) {

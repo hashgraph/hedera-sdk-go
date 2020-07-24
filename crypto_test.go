@@ -34,12 +34,20 @@ MC4CAQAwBQYDK2VwBCIEINtIS4KOZLLY8SzjwKDpOguMznrxu485yXcyOUSCU44Q
 -----END PRIVATE KEY-----
 `
 
+// const encryptedPem = `-----BEGIN ENCRYPTED PRIVATE KEY-----
+// MIGbMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAi8WY7Gy2tThQICCAAw
+// DAYIKoZIhvcNAgkFADAdBglghkgBZQMEAQIEEOq46NPss58chbjUn20NoK0EQG1x
+// R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
+// 9hlo4YEh3uEaCmfJzWM=
+// -----END ENCRYPTED PRIVATE KEY-----`
+
 const encryptedPem = `-----BEGIN ENCRYPTED PRIVATE KEY-----
 MIGbMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAi8WY7Gy2tThQICCAAw
 DAYIKoZIhvcNAgkFADAdBglghkgBZQMEAQIEEOq46NPss58chbjUn20NoK0EQG1x
 R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
 9hlo4YEh3uEaCmfJzWM=
------END ENCRYPTED PRIVATE KEY-----`
+-----END ENCRYPTED PRIVATE KEY-----
+`
 
 const pemPassphrase = "this is a passphrase"
 
@@ -201,12 +209,12 @@ func TestEd25519PrivateKey_FromPem(t *testing.T) {
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
 
-// func TestEd25519PrivateKey_FromPemWithPassphrase(t *testing.T) {
-// 	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
-// 	assert.NoError(t, err)
+func TestEd25519PrivateKey_FromPemWithPassphrase(t *testing.T) {
+	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+	assert.NoError(t, err)
 
-// 	privateKey, err := Ed25519PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
-// 	assert.NoError(t, err)
+	privateKey, err := Ed25519PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
+	assert.NoError(t, err)
 
-// 	assert.Equal(t, actualPrivateKey, privateKey)
-// }
+	assert.Equal(t, actualPrivateKey, privateKey)
+}
