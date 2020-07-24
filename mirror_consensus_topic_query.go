@@ -121,7 +121,7 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 
 	ctx, cancel := context.WithCancel(context.TODO())
 
-    handle := newMirrorSubscriptionHandle(cancel)
+	handle := newMirrorSubscriptionHandle(cancel)
 
 	subClient, err := client.client.SubscribeTopic(ctx, b.pb)
 
