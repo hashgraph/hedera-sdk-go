@@ -121,6 +121,8 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 
 	ctx, cancel := context.WithCancel(context.TODO())
 
+    handle := newMirrorSubscriptionHandle(cancel)
+
 	subClient, err := client.client.SubscribeTopic(ctx, b.pb)
 
 	messages := sync.Map{}
@@ -166,7 +168,7 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 		}
 	}()
 
-	return newMirrorSubscriptionHandle(cancel), nil
+	return handle, nil
 }
 
 //

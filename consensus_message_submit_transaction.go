@@ -93,7 +93,7 @@ func (builder ConsensusMessageSubmitTransaction) Build(client *Client) (Transact
 		}
 
 		// FIXME: really have no idea why this is needed @daniel
-		builder.TransactionBuilder.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{builder.pb}
+        builder.TransactionBuilder.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{ConsensusSubmitMessage: builder.pb}
 
 		transaction, err := builder.TransactionBuilder.Build(client)
 		if err != nil {

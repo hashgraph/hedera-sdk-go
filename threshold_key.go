@@ -25,7 +25,7 @@ func (tk *ThresholdKey) toProto() *proto.Key {
 	keyList := tk.keyList.toProto().GetKeyList()
 
 	tkProto := proto.ThresholdKey{Keys: keyList, Threshold: tk.threshold}
-	keyProto := proto.Key{Key: &proto.Key_ThresholdKey{&tkProto}}
+    keyProto := proto.Key{Key: &proto.Key_ThresholdKey{ThresholdKey: &tkProto}}
 
 	return &keyProto
 }
