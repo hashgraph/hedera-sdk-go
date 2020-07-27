@@ -64,6 +64,13 @@ var testnetNodes = map[string]AccountID{
 	"3.testnet.hedera.com:50211": {Account: 6},
 }
 
+var previewnetNodes = map[string]AccountID{
+	"0.previewnet.hedera.com:50211": {Account: 3},
+	"1.previewnet.hedera.com:50211": {Account: 4},
+	"2.previewnet.hedera.com:50211": {Account: 5},
+	"3.previewnet.hedera.com:50211": {Account: 6},
+}
+
 // ClientForMainnet returns a preconfigured client for use with the standard
 // Hedera mainnet.
 // Most users will want to set an operator account with .SetOperator so
@@ -78,6 +85,14 @@ func ClientForMainnet() *Client {
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
 	return NewClient(testnetNodes)
+}
+
+// ClientForPreviewnet returns a preconfigured client for use with the standard
+// Hedera previewnet.
+// Most users will want to set an operator account with .SetOperator so
+// transactions can be automatically given TransactionIDs and signed.
+func ClientForPreviewnet() *Client {
+	return NewClient(previewnetNodes)
 }
 
 // NewClient takes in a map of node addresses to their respective IDS (network)
