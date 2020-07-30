@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type ConsensusMessageChunk struct {
@@ -130,41 +130,41 @@ func (b *MirrorConsensusTopicQuery) Subscribe(
 	messagesMutex := sync.Mutex{}
 
 	go func() {
-        var subClient mirror.ConsensusService_SubscribeTopicClient
-        attempt := 0
-        shouldRetry := true
+		var subClient mirror.ConsensusService_SubscribeTopicClient
+		attempt := 0
+		shouldRetry := true
 
 		for {
-            if shouldRetry {
-                subClient, _ = client.client.SubscribeTopic(ctx, b.pb)
-            }
-
-            resp, err := subClient.Recv()
-
-            code := status.Code(err)
-
-			if err != nil {
-                if attempt >= 10 && !shouldRetry && (code == codes.NotFound || code == codes.Unavailable) {
-                    if onError != nil {
-                        onError(err)
-                    }
-                    cancel()
-                    break
-                } else if shouldRetry && code != codes.NotFound && code != codes.Unavailable {
-                    delay := 250.0 * math.Pow(2.0, float64(attempt))
-                    time.Sleep(time.Duration(delay) * time.Millisecond)
-                    attempt += 1
-                    continue
-                } else {
-                    if onError != nil {
-                        onError(err)
-                    }
-                    cancel()
-                    break
-                }
+			if shouldRetry {
+				subClient, _ = client.client.SubscribeTopic(ctx, b.pb)
 			}
 
-            shouldRetry = false
+			resp, err := subClient.Recv()
+
+			code := status.Code(err)
+
+			if err != nil {
+				if attempt >= 10 && !shouldRetry && (code == codes.NotFound || code == codes.Unavailable) {
+					if onError != nil {
+						onError(err)
+					}
+					cancel()
+					break
+				} else if shouldRetry && code != codes.NotFound && code != codes.Unavailable {
+					delay := 250.0 * math.Pow(2.0, float64(attempt))
+					time.Sleep(time.Duration(delay) * time.Millisecond)
+					attempt += 1
+					continue
+				} else {
+					if onError != nil {
+						onError(err)
+					}
+					cancel()
+					break
+				}
+			}
+
+			shouldRetry = false
 
 			if resp.ChunkInfo == nil {
 				onNext(mirrorConsensusTopicResponseFromProto(resp))

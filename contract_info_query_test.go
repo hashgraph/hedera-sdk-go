@@ -56,7 +56,7 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 	fileID := receipt.GetFileID()
 	assert.NotNil(t, fileID)
 
-    time.Sleep(5 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	txID, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
@@ -68,7 +68,7 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-    time.Sleep(5 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	receipt, err = txID.GetReceipt(client)
 	assert.NoError(t, err)

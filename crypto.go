@@ -17,7 +17,7 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
-    "github.com/youmark/pkcs8"
+	"github.com/youmark/pkcs8"
 )
 
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
@@ -201,12 +201,12 @@ func Ed25519PrivateKeyFromPem(bytes []byte, passphrase string) (Ed25519PrivateKe
 		return Ed25519PrivateKeyFromString(hex.EncodeToString(pk.Bytes))
 	}
 
-    keyI, err := pkcs8.ParsePKCS8PrivateKey(pk.Bytes, []byte(passphrase))
-    if err != nil {
-        return Ed25519PrivateKey{}, err;
-    }
+	keyI, err := pkcs8.ParsePKCS8PrivateKey(pk.Bytes, []byte(passphrase))
+	if err != nil {
+		return Ed25519PrivateKey{}, err
+	}
 
-    return Ed25519PrivateKeyFromBytes(keyI.(ed25519.PrivateKey))
+	return Ed25519PrivateKeyFromBytes(keyI.(ed25519.PrivateKey))
 }
 
 func Ed25519PrivateKeyReadPem(source io.Reader, passphrase string) (Ed25519PrivateKey, error) {
