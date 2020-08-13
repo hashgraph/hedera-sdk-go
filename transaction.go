@@ -202,6 +202,11 @@ func (transaction Transaction) ID() TransactionID {
 	return transaction.id
 }
 
+// BodyBytes returns the transaction body as raw bytes
+func (transaction Transaction) BodyBytes() []byte {
+	return transaction.pb.GetBodyBytes()
+}
+
 // The protobuf stores the transaction body as raw bytes so we need to first
 // decode what we have to inspect the Kind, TransactionID, and the NodeAccountID so we know how to
 // properly execute it
