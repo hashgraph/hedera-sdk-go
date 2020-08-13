@@ -78,16 +78,10 @@ func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer Trans
 	return transaction
 }
 
-// AppendSignature verifies provided signature and public key for corresponding transaction and adds them
+// AppendSignature verifies provided signature and public key for corresponding transaction body and adds them
 // to the Transaction's signature map
 func (transaction Transaction) AppendSignature(publicKey Ed25519PublicKey, signature []byte) (*Transaction, error) {
-	txBytes, err := transaction.MarshalBinary()
-
-	if err != nil {
-		return nil, err
-	}
-
-	verifiedSignature := ed25519.Verify(publicKey.Bytes(), txBytes, signature)
+	verifiedSignature := ed25519.Verify(publicKey.Bytes(), transaction.BodyBytes(), signature)
 
 	if verifiedSignature != true {
 		return nil, newErrSignatureVerification("invalid public key or signature provided")
