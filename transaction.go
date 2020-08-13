@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"google.golang.org/grpc/codes"
 	"math"
 	"math/rand"
@@ -75,6 +76,29 @@ func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer Trans
 	})
 
 	return transaction
+}
+
+// AppendSignature verifies provided signature and public key for corresponding transaction and adds them
+// to the Transaction's signature map
+func (transaction Transaction) AppendSignature(publicKey Ed25519PublicKey, signature []byte) (*Transaction, error) {
+	txBytes, err := transaction.MarshalBinary()
+
+	if err != nil {
+		return nil, err
+	}
+
+	verifiedSignature := ed25519.Verify(publicKey.Bytes(), txBytes, signature)
+
+	if verifiedSignature != true {
+		return nil, newErrSignatureVerification("invalid public key or signature provided")
+	}
+
+	transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, &proto.SignaturePair{
+		PubKeyPrefix: publicKey.keyData,
+		Signature:    &proto.SignaturePair_Ed25519{Ed25519: signature},
+	})
+
+	return &transaction, nil
 }
 
 func (transaction Transaction) executeForResponse(client *Client) (TransactionID, *proto.TransactionResponse, error) {

@@ -156,3 +156,18 @@ func newErrPingStatus(e error) ErrPingStatus {
 func (e ErrPingStatus) Error() string {
 	return fmt.Sprintf("error occured during ping")
 }
+
+// ErrSignatureVerification is returned by Transaction.AppendSignature(Ed25519PublicKey, []byte)
+// if signature verification fails.
+type ErrSignatureVerification struct {
+	message string
+}
+
+func newErrSignatureVerification(format string, a ...interface{}) ErrSignatureVerification {
+	return ErrSignatureVerification{fmt.Sprintf(format, a...)}
+}
+
+// Error() implements the Error interface
+func (e ErrSignatureVerification) Error() string {
+	return e.message
+}
