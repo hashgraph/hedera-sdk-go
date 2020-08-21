@@ -100,7 +100,7 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 		transaction.signWithOperator(*client.operator)
 	}
 
-	transactionBody := transaction.body()
+	transactionBody := transaction.Body()
 	id := transactionIDFromProto(transactionBody.TransactionID)
 
 	nodeAccountID := accountIDFromProto(transactionBody.NodeAccountID)
@@ -110,7 +110,7 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 		return id, nil, newErrLocalValidationf("NodeAccountID %v not found on Client", nodeAccountID)
 	}
 
-	methodName, err := getMethodName(transaction.body())
+	methodName, err := getMethodName(transaction.Body())
 
 	if err != nil {
 		return id, nil, err
@@ -181,7 +181,7 @@ func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
 
 func (transaction Transaction) String() string {
 	return protobuf.MarshalTextString(transaction.pb) +
-		protobuf.MarshalTextString(transaction.body())
+		protobuf.MarshalTextString(transaction.Body())
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
@@ -201,10 +201,15 @@ func (transaction Transaction) BodyBytes() []byte {
 	return transaction.pb.GetBodyBytes()
 }
 
+// SignaturePairs returns the transaction signature pairs
+func (transaction Transaction) SignaturePairs() []*proto.SignaturePair {
+	return transaction.pb.GetSigMap().SigPair
+}
+
 // The protobuf stores the transaction body as raw bytes so we need to first
 // decode what we have to inspect the Kind, TransactionID, and the NodeAccountID so we know how to
 // properly execute it
-func (transaction Transaction) body() *proto.TransactionBody {
+func (transaction Transaction) Body() *proto.TransactionBody {
 	transactionBody := new(proto.TransactionBody)
 	err := protobuf.Unmarshal(transaction.pb.GetBodyBytes(), transactionBody)
 	if err != nil {
