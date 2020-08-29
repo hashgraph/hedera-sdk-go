@@ -120,28 +120,73 @@ type clientConfig struct {
 	Operator *configOperator   `json:"operator"`
 }
 
+type clientConfigString struct {
+	Network  string `json:"network"`
+	Operator *configOperator   `json:"operator"`
+}
+
 // ClientFromJSON takes in the byte slice representation of a JSON string or
 // document and returns Client based on the configuration.
 func ClientFromJSON(jsonBytes []byte) (*Client, error) {
+	var clientConfigString clientConfigString
 	var clientConfig clientConfig
+	//var s interface{}
+	var client *Client
+	err := json.Unmarshal(jsonBytes,&clientConfigString)
+	if err != nil{
+		err := json.Unmarshal(jsonBytes,&clientConfig)
+		if err != nil{
+			return nil, err
+		}
+		var network map[string]AccountID =  make(map[string]AccountID)
 
-	err := json.Unmarshal(jsonBytes, &clientConfig)
-	if err != nil {
-		return nil, err
-	}
+		for id, url := range clientConfig.Network {
+			accountID, err := AccountIDFromString(id)
+			if err != nil {
+				return nil, err
+			}
 
-	var network map[string]AccountID = make(map[string]AccountID)
+			network[url] = accountID
+		}
 
-	for id, url := range clientConfig.Network {
-		accountID, err := AccountIDFromString(id)
+		client = NewClient(network)
+
+		if clientConfig.Operator == nil {
+			return client, nil
+		}
+
+		operatorID, err := AccountIDFromString(clientConfig.Operator.AccountID)
 		if err != nil {
 			return nil, err
 		}
 
-		network[url] = accountID
-	}
+		operatorKey, err := Ed25519PrivateKeyFromString(clientConfig.Operator.PrivateKey)
+		if err != nil {
+			return nil, err
+		}
 
-	client := NewClient(network)
+		operator := operator{
+			accountID:  operatorID,
+			privateKey: &operatorKey,
+			publicKey:  operatorKey.PublicKey(),
+			signer:     operatorKey.Sign,
+		}
+
+		client.operator = &operator
+
+		return client, nil
+	}
+	fmt.Println("in client")
+	fmt.Printf("(%v, %T)\n", clientConfigString, clientConfigString)
+
+	switch clientConfigString.Network{
+		case "mainnet":
+			client = ClientForMainnet()
+		case "testnet":
+			client = ClientForTestnet()
+		case "previewnet":
+			client = ClientForPreviewnet()
+	}
 
 	// if the operator is not provided, finish here
 	if clientConfig.Operator == nil {
