@@ -65,6 +65,8 @@ func (builder AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.
 
 // SetSendRecordThreshold sets the threshold amount for which an account record is created for any send/withdraw
 // transaction
+//
+// Deprecated: No longer used by Hedera
 func (builder AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
 	builder.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return builder
@@ -72,6 +74,8 @@ func (builder AccountCreateTransaction) SetSendRecordThreshold(recordThreshold H
 
 // SetReceiveRecordThreshold sets the threshold amount for which an account record is created for any receive/deposit
 // transaction
+//
+// Deprecated: No longer used by Hedera
 func (builder AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
 	builder.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return builder

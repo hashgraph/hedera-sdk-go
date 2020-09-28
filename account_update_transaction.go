@@ -76,6 +76,8 @@ func (builder AccountUpdateTransaction) SetReceiverSignatureRequired(required bo
 
 // SetSendRecordThreshold sets the threshold amount for which an account record is created for any send/withdraw
 // transaction
+//
+// Deprecated: No longer used by Hedera
 func (builder AccountUpdateTransaction) SetSendRecordThreshold(threshold Hbar) AccountUpdateTransaction {
 	builder.pb.SendRecordThresholdField = &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
 		SendRecordThreshold: uint64(threshold.AsTinybar()),
@@ -85,6 +87,8 @@ func (builder AccountUpdateTransaction) SetSendRecordThreshold(threshold Hbar) A
 
 // SetReceiveRecordThreshold sets the threshold amount for which an account record is created for any receive/deposit
 // transaction
+//
+// Deprecated: No longer used by Hedera
 func (builder AccountUpdateTransaction) SetReceiveRecordThreshold(threshold Hbar) AccountUpdateTransaction {
 	builder.pb.ReceiveRecordThresholdField = &proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
 		ReceiveRecordThreshold: uint64(threshold.AsTinybar()),
