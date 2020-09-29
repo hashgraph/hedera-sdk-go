@@ -14,7 +14,7 @@ type AccountDeleteTransaction struct {
 	pb *proto.CryptoDeleteTransactionBody
 }
 
-// NewAccountDeleteTransaction creates an AccountDeleteTransaction builder which can be used to construct and execute
+// NewAccountDeleteTransaction creates an AccountDeleteTransaction transaction which can be used to construct and execute
 // a Crypto Delete Transaction.
 func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	pb := &proto.CryptoDeleteTransactionBody{}
@@ -22,21 +22,21 @@ func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_CryptoDelete{CryptoDelete: pb}
 
-	builder := AccountDeleteTransaction{inner, pb}
+	transaction := AccountDeleteTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // SetDeleteAccountID sets the account ID which should be deleted.
-func (builder AccountDeleteTransaction) SetDeleteAccountID(id AccountID) AccountDeleteTransaction {
-	builder.pb.DeleteAccountID = id.toProto()
-	return builder
+func (transaction AccountDeleteTransaction) SetDeleteAccountID(id AccountID) AccountDeleteTransaction {
+	transaction.pb.DeleteAccountID = id.toProto()
+	return transaction
 }
 
 // SetTransferAccountID sets the account ID which will receive all remaining hbars.
-func (builder AccountDeleteTransaction) SetTransferAccountID(id AccountID) AccountDeleteTransaction {
-	builder.pb.TransferAccountID = id.toProto()
-	return builder
+func (transaction AccountDeleteTransaction) SetTransferAccountID(id AccountID) AccountDeleteTransaction {
+	transaction.pb.TransferAccountID = id.toProto()
+	return transaction
 }
 
 //
@@ -45,26 +45,26 @@ func (builder AccountDeleteTransaction) SetTransferAccountID(id AccountID) Accou
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder AccountDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountDeleteTransaction {
-	return AccountDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction AccountDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountDeleteTransaction {
+	return AccountDeleteTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder AccountDeleteTransaction) SetTransactionMemo(memo string) AccountDeleteTransaction {
-	return AccountDeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction AccountDeleteTransaction) SetTransactionMemo(memo string) AccountDeleteTransaction {
+	return AccountDeleteTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder AccountDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountDeleteTransaction {
-	return AccountDeleteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction AccountDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountDeleteTransaction {
+	return AccountDeleteTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) AccountDeleteTransaction {
-	return AccountDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) AccountDeleteTransaction {
+	return AccountDeleteTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder AccountDeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) AccountDeleteTransaction {
-	return AccountDeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction AccountDeleteTransaction) SetNodeID(nodeAccountID AccountID) AccountDeleteTransaction {
+	return AccountDeleteTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

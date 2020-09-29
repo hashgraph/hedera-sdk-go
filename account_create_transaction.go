@@ -19,7 +19,7 @@ type AccountCreateTransaction struct {
 	pb *proto.CryptoCreateTransactionBody
 }
 
-// NewAccountCreateTransaction creates an AccountCreateTransaction builder which can be used to construct and
+// NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
 // execute a Crypto Create Transaction.
 func NewAccountCreateTransaction() AccountCreateTransaction {
 	pb := &proto.CryptoCreateTransactionBody{}
@@ -27,29 +27,29 @@ func NewAccountCreateTransaction() AccountCreateTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_CryptoCreateAccount{CryptoCreateAccount: pb}
 
-	builder := AccountCreateTransaction{inner, pb}
-	builder.SetAutoRenewPeriod(7890000 * time.Second)
+	transaction := AccountCreateTransaction{inner, pb}
+	transaction.SetAutoRenewPeriod(7890000 * time.Second)
 
 	// Default to maximum values for record thresholds. Without this records would be
 	// auto-created whenever a send or receive transaction takes place for this new account.
 	// This should be an explicit ask.
-	builder.SetReceiveRecordThreshold(MaxHbar)
-	builder.SetSendRecordThreshold(MaxHbar)
+	transaction.SetReceiveRecordThreshold(MaxHbar)
+	transaction.SetSendRecordThreshold(MaxHbar)
 
-	return builder
+	return transaction
 }
 
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
-func (builder AccountCreateTransaction) SetKey(publicKey PublicKey) AccountCreateTransaction {
-	builder.pb.Key = publicKey.toProto()
-	return builder
+func (transaction AccountCreateTransaction) SetKey(publicKey PublicKey) AccountCreateTransaction {
+	transaction.pb.Key = publicKey.toProto()
+	return transaction
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
-func (builder AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) AccountCreateTransaction {
-	builder.pb.InitialBalance = uint64(initialBalance.AsTinybar())
-	return builder
+func (transaction AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) AccountCreateTransaction {
+	transaction.pb.InitialBalance = uint64(initialBalance.AsTinybar())
+	return transaction
 }
 
 // SetAutoRenewPeriod sets the time duration for when account is charged to extend its expiration date. When the account
@@ -58,36 +58,36 @@ func (builder AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) A
 // renew for another auto renew period. If it does not have enough hbars to renew for that long, then the  remaining
 // hbars are used to extend its expiration as long as possible. If it is has a zero balance when it expires,
 // then it is deleted.
-func (builder AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) AccountCreateTransaction {
-	builder.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
-	return builder
+func (transaction AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) AccountCreateTransaction {
+	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	return transaction
 }
 
 // SetSendRecordThreshold sets the threshold amount for which an account record is created for any send/withdraw
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (builder AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
-	builder.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
-	return builder
+func (transaction AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
+	transaction.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
+	return transaction
 }
 
 // SetReceiveRecordThreshold sets the threshold amount for which an account record is created for any receive/deposit
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (builder AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
-	builder.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
-	return builder
+func (transaction AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
+	transaction.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
+	return transaction
 }
 
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
 // is an invalid account, or is an account that isn't a node, then this account is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
-func (builder AccountCreateTransaction) SetProxyAccountID(id AccountID) AccountCreateTransaction {
-	builder.pb.ProxyAccountID = id.toProto()
-	return builder
+func (transaction AccountCreateTransaction) SetProxyAccountID(id AccountID) AccountCreateTransaction {
+	transaction.pb.ProxyAccountID = id.toProto()
+	return transaction
 }
 
 // SetReceiverSignatureRequired sets the receiverSigRequired flag. If the receiverSigRequired flag is set to true, then
@@ -95,9 +95,9 @@ func (builder AccountCreateTransaction) SetProxyAccountID(id AccountID) AccountC
 // then only transfers out have to be signed by it. This transaction must be signed by the
 // payer account. If receiverSigRequired is false, then the transaction does not have to be signed by the keys in the
 // keys field. If it is true, then it must be signed by them, in addition to the keys of the payer account.
-func (builder AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
-	builder.pb.ReceiverSigRequired = required
-	return builder
+func (transaction AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
+	transaction.pb.ReceiverSigRequired = required
+	return transaction
 }
 
 //
@@ -106,26 +106,26 @@ func (builder AccountCreateTransaction) SetReceiverSignatureRequired(required bo
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder AccountCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountCreateTransaction {
-	return AccountCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction AccountCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountCreateTransaction {
+	return AccountCreateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder AccountCreateTransaction) SetTransactionMemo(memo string) AccountCreateTransaction {
-	return AccountCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction AccountCreateTransaction) SetTransactionMemo(memo string) AccountCreateTransaction {
+	return AccountCreateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder AccountCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountCreateTransaction {
-	return AccountCreateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction AccountCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountCreateTransaction {
+	return AccountCreateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder AccountCreateTransaction) SetTransactionID(transactionID TransactionID) AccountCreateTransaction {
-	return AccountCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction AccountCreateTransaction) SetTransactionID(transactionID TransactionID) AccountCreateTransaction {
+	return AccountCreateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder AccountCreateTransaction) SetNodeAccountID(nodeAccountID AccountID) AccountCreateTransaction {
-	return AccountCreateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction AccountCreateTransaction) SetNodeID(nodeAccountID AccountID) AccountCreateTransaction {
+	return AccountCreateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

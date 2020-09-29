@@ -13,7 +13,7 @@ type AccountUpdateTransaction struct {
 	pb *proto.CryptoUpdateTransactionBody
 }
 
-// NewAccountUpdateTransaction creates an AccountUpdateTransaction builder which can be used to construct and
+// NewAccountUpdateTransaction creates an AccountUpdateTransaction transaction which can be used to construct and
 // execute a Crypto Update Transaction.
 func NewAccountUpdateTransaction() AccountUpdateTransaction {
 	pb := &proto.CryptoUpdateTransactionBody{}
@@ -21,15 +21,15 @@ func NewAccountUpdateTransaction() AccountUpdateTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_CryptoUpdateAccount{CryptoUpdateAccount: pb}
 
-	builder := AccountUpdateTransaction{inner, pb}
+	transaction := AccountUpdateTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // SetAccountID sets the account ID which is being updated in this transaction
-func (builder AccountUpdateTransaction) SetAccountID(id AccountID) AccountUpdateTransaction {
-	builder.pb.AccountIDToUpdate = id.toProto()
-	return builder
+func (transaction AccountUpdateTransaction) SetAccountID(id AccountID) AccountUpdateTransaction {
+	transaction.pb.AccountIDToUpdate = id.toProto()
+	return transaction
 }
 
 // SetKey sets the new key for the account being updated. The transaction must be signed by both the old key (from
@@ -37,63 +37,63 @@ func (builder AccountUpdateTransaction) SetAccountID(id AccountID) AccountUpdate
 //
 //The old key must sign for security. The new key must sign as a safeguard to avoid accidentally changing to an invalid
 // key, and then having no way to recover.
-func (builder AccountUpdateTransaction) SetKey(publicKey PublicKey) AccountUpdateTransaction {
-	builder.pb.Key = publicKey.toProto()
-	return builder
+func (transaction AccountUpdateTransaction) SetKey(publicKey PublicKey) AccountUpdateTransaction {
+	transaction.pb.Key = publicKey.toProto()
+	return transaction
 }
 
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is unset, is an
 // invalid account, or is an account that isn't a node, then this account is automatically proxy staked to a node chosen
 // by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking, or if it
 // is not currently running a node, then it will behave as if proxyAccountID was unset.
-func (builder AccountUpdateTransaction) SetProxyAccountID(id AccountID) AccountUpdateTransaction {
-	builder.pb.ProxyAccountID = id.toProto()
-	return builder
+func (transaction AccountUpdateTransaction) SetProxyAccountID(id AccountID) AccountUpdateTransaction {
+	transaction.pb.ProxyAccountID = id.toProto()
+	return transaction
 }
 
 // SetAutoRenewPeriod sets the duration in which it will automatically extend the expiration period. If it doesn't have
 // enough balance, it extends as long as possible. If the balance is empty when it expires, then it is deleted.
-func (builder AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) AccountUpdateTransaction {
-	builder.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
-	return builder
+func (transaction AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) AccountUpdateTransaction {
+	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	return transaction
 }
 
 // SetExpirationTime sets the new expiration time to extend to (ignored if equal to or before the current one) When
 // extending the expiration date, the cost is affected by the size of the list of attached claims, and of the keys
 // associated with the claims and the account.
-func (builder AccountUpdateTransaction) SetExpirationTime(expiration time.Time) AccountUpdateTransaction {
-	builder.pb.ExpirationTime = timeToProto(expiration)
-	return builder
+func (transaction AccountUpdateTransaction) SetExpirationTime(expiration time.Time) AccountUpdateTransaction {
+	transaction.pb.ExpirationTime = timeToProto(expiration)
+	return transaction
 }
 
 // SetReceiverSignatureRequired sets the receiverSigRequired flag on the account.
-func (builder AccountUpdateTransaction) SetReceiverSignatureRequired(required bool) AccountUpdateTransaction {
-	builder.pb.ReceiverSigRequiredField = &proto.CryptoUpdateTransactionBody_ReceiverSigRequired{
+func (transaction AccountUpdateTransaction) SetReceiverSignatureRequired(required bool) AccountUpdateTransaction {
+	transaction.pb.ReceiverSigRequiredField = &proto.CryptoUpdateTransactionBody_ReceiverSigRequired{
 		ReceiverSigRequired: required,
 	}
-	return builder
+	return transaction
 }
 
 // SetSendRecordThreshold sets the threshold amount for which an account record is created for any send/withdraw
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (builder AccountUpdateTransaction) SetSendRecordThreshold(threshold Hbar) AccountUpdateTransaction {
-	builder.pb.SendRecordThresholdField = &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
+func (transaction AccountUpdateTransaction) SetSendRecordThreshold(threshold Hbar) AccountUpdateTransaction {
+	transaction.pb.SendRecordThresholdField = &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
 		SendRecordThreshold: uint64(threshold.AsTinybar()),
 	}
-	return builder
+	return transaction
 }
 
 // SetReceiveRecordThreshold sets the threshold amount for which an account record is created for any receive/deposit
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (builder AccountUpdateTransaction) SetReceiveRecordThreshold(threshold Hbar) AccountUpdateTransaction {
-	builder.pb.ReceiveRecordThresholdField = &proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
+func (transaction AccountUpdateTransaction) SetReceiveRecordThreshold(threshold Hbar) AccountUpdateTransaction {
+	transaction.pb.ReceiveRecordThresholdField = &proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
 		ReceiveRecordThreshold: uint64(threshold.AsTinybar()),
 	}
-	return builder
+	return transaction
 }
 
 //
@@ -102,26 +102,26 @@ func (builder AccountUpdateTransaction) SetReceiveRecordThreshold(threshold Hbar
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder AccountUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountUpdateTransaction {
-	return AccountUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction AccountUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountUpdateTransaction {
+	return AccountUpdateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder AccountUpdateTransaction) SetTransactionMemo(memo string) AccountUpdateTransaction {
-	return AccountUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction AccountUpdateTransaction) SetTransactionMemo(memo string) AccountUpdateTransaction {
+	return AccountUpdateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder AccountUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountUpdateTransaction {
-	return AccountUpdateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction AccountUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountUpdateTransaction {
+	return AccountUpdateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) AccountUpdateTransaction {
-	return AccountUpdateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) AccountUpdateTransaction {
+	return AccountUpdateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder AccountUpdateTransaction) SetNodeAccountID(nodeAccountID AccountID) AccountUpdateTransaction {
-	return AccountUpdateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction AccountUpdateTransaction) SetNodeID(nodeAccountID AccountID) AccountUpdateTransaction {
+	return AccountUpdateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

@@ -17,18 +17,18 @@ func NewFileDeleteTransaction() FileDeleteTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_FileDelete{FileDelete: pb}
 
-	builder := FileDeleteTransaction{inner, pb}
+	transaction := FileDeleteTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
-func (builder FileDeleteTransaction) SetFileID(id FileID) FileDeleteTransaction {
-	builder.pb.FileID = id.toProto()
-	return builder
+func (transaction FileDeleteTransaction) SetFileID(id FileID) FileDeleteTransaction {
+	transaction.pb.FileID = id.toProto()
+	return transaction
 }
 
-func (builder FileDeleteTransaction) Build(client *Client) (Transaction, error) {
-	return builder.TransactionBuilder.Build(client)
+func (transaction FileDeleteTransaction) Build(client *Client) (Transaction, error) {
+	return transaction.TransactionBuilder.Build(client)
 }
 
 //
@@ -37,26 +37,26 @@ func (builder FileDeleteTransaction) Build(client *Client) (Transaction, error) 
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder FileDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileDeleteTransaction {
-	return FileDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction FileDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileDeleteTransaction {
+	return FileDeleteTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder FileDeleteTransaction) SetTransactionMemo(memo string) FileDeleteTransaction {
-	return FileDeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction FileDeleteTransaction) SetTransactionMemo(memo string) FileDeleteTransaction {
+	return FileDeleteTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder FileDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) FileDeleteTransaction {
-	return FileDeleteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction FileDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) FileDeleteTransaction {
+	return FileDeleteTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder FileDeleteTransaction) SetTransactionID(transactionID TransactionID) FileDeleteTransaction {
-	return FileDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction FileDeleteTransaction) SetTransactionID(transactionID TransactionID) FileDeleteTransaction {
+	return FileDeleteTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder FileDeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) FileDeleteTransaction {
-	return FileDeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction FileDeleteTransaction) SetNodeID(nodeAccountID AccountID) FileDeleteTransaction {
+	return FileDeleteTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

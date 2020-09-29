@@ -1,16 +1,21 @@
 package hedera
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
+
 	"google.golang.org/grpc/codes"
 	status2 "google.golang.org/grpc/status"
-	"reflect"
 )
 
 type ErrMaxChunksExceeded struct {
 	Chunks    uint64
 	MaxChunks uint64
 }
+
+var errTransactionIsFrozen = errors.New("transaction is immutable; it has at least one signature or has been explicitly frozen")
+var errNoClientOrTransactionID = errors.New("`client` must have an `operator` or `transactionId` must be set")
 
 func (err ErrMaxChunksExceeded) Error() string {
 	return fmt.Sprintf("Message requires %d chunks, but max chunks is %d", err.Chunks, err.MaxChunks)
@@ -24,15 +29,15 @@ type ErrMaxQueryPaymentExceeded struct {
 	// The limit for a single automatic query payment, set by
 	// Client.SetMaxQueryPayment(int64) or QueryBuilder.SetMaxQueryPayment(uint64).
 	MaxQueryPayment Hbar
-	// Name of the query builder class used for output
+	// Name of the query transaction class used for output
 	query string
 }
 
-func newErrorMaxQueryPaymentExceeded(builder *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
+func newErrorMaxQueryPaymentExceeded(transaction *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
 	return ErrMaxQueryPaymentExceeded{
 		QueryCost:       queryCost,
 		MaxQueryPayment: maxQueryPayment,
-		query:           reflect.TypeOf(*builder).Name(),
+		query:           reflect.TypeOf(*transaction).Name(),
 	}
 }
 

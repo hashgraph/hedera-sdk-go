@@ -79,7 +79,7 @@ var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[AccountID]string) *Client {
-    return newClient(network, []string{})
+	return newClient(network, []string{})
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
@@ -119,7 +119,7 @@ func newClient(network map[AccountID]string, mirrorNetwork []string) *Client {
 	}
 
 	client.SetNetwork(network)
-    client.SetMirrorNetwork(mirrorNetwork)
+	client.SetMirrorNetwork(mirrorNetwork)
 
 	return client
 }
@@ -131,9 +131,9 @@ type configOperator struct {
 
 // TODO: Implement complete spec: https://gitlab.com/launchbadge/hedera/sdk/python/-/issues/45
 type clientConfig struct {
-	Network  map[string]string `json:"network"`
-    MirrorNetwork []string `json:"mirrorNetwork"`
-	Operator *configOperator   `json:"operator"`
+	Network       map[string]string `json:"network"`
+	MirrorNetwork []string          `json:"mirrorNetwork"`
+	Operator      *configOperator   `json:"operator"`
 }
 
 // ClientFromJSON takes in the byte slice representation of a JSON string or
@@ -237,7 +237,7 @@ func (client *Client) SetNetwork(network map[AccountID]string) *Client {
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetMirrorNetwork(mirrorNetwork []string) *Client {
-    client.mirrorNetwork= mirrorNetwork
+	client.mirrorNetwork = mirrorNetwork
 
 	return client
 }

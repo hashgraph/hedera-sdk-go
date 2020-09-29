@@ -17,13 +17,13 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 }
 
 // SetTransactionID sets the TransactionID for which to request the TransactionReceipt.
-func (builder *TransactionReceiptQuery) SetTransactionID(id TransactionID) *TransactionReceiptQuery {
-	builder.pb.TransactionID = id.toProto()
-	return builder
+func (transaction *TransactionReceiptQuery) SetTransactionID(id TransactionID) *TransactionReceiptQuery {
+	transaction.pb.TransactionID = id.toProto()
+	return transaction
 }
 
-func (builder *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
-	resp, err := builder.execute(client)
+func (transaction *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return TransactionReceipt{}, err
 	}
@@ -37,16 +37,16 @@ func (builder *TransactionReceiptQuery) Execute(client *Client) (TransactionRece
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *TransactionReceiptQuery) SetMaxQueryPayment(maxPayment Hbar) *TransactionReceiptQuery {
-	return &TransactionReceiptQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *TransactionReceiptQuery) SetMaxQueryPayment(maxPayment Hbar) *TransactionReceiptQuery {
+	return &TransactionReceiptQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *TransactionReceiptQuery) SetQueryPayment(paymentAmount Hbar) *TransactionReceiptQuery {
-	return &TransactionReceiptQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *TransactionReceiptQuery) SetQueryPayment(paymentAmount Hbar) *TransactionReceiptQuery {
+	return &TransactionReceiptQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *TransactionReceiptQuery) SetQueryPaymentTransaction(tx Transaction) *TransactionReceiptQuery {
-	return &TransactionReceiptQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *TransactionReceiptQuery) SetQueryPaymentTransaction(tx Transaction) *TransactionReceiptQuery {
+	return &TransactionReceiptQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

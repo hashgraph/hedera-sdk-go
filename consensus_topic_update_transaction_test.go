@@ -20,7 +20,7 @@ func TestSerializeConsensusTopicUpdateTransaction(t *testing.T) {
 	tx, err := NewConsensusTopicUpdateTransaction().
 		SetTopicID(testTopicID).SetAdminKey(key.PublicKey()).SetTopicMemo("updated topic memo").
 		SetTransactionValidDuration(24 * time.Hour).
-		SetNodeAccountID(AccountID{Account: 3}).
+		SetNodeID(AccountID{Account: 3}).
 		SetTransactionID(TransactionID{
 			AccountID:  AccountID{Account: 2},
 			ValidStart: date,

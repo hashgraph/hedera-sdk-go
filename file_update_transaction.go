@@ -17,38 +17,38 @@ func NewFileUpdateTransaction() FileUpdateTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_FileUpdate{FileUpdate: pb}
 
-	builder := FileUpdateTransaction{inner, pb}
+	transaction := FileUpdateTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
-func (builder FileUpdateTransaction) SetFileID(id FileID) FileUpdateTransaction {
-	builder.pb.FileID = id.toProto()
-	return builder
+func (transaction FileUpdateTransaction) SetFileID(id FileID) FileUpdateTransaction {
+	transaction.pb.FileID = id.toProto()
+	return transaction
 }
 
-func (builder FileUpdateTransaction) AddKey(publicKey PublicKey) FileUpdateTransaction {
-	if builder.pb.Keys == nil {
-		builder.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+func (transaction FileUpdateTransaction) AddKey(publicKey PublicKey) FileUpdateTransaction {
+	if transaction.pb.Keys == nil {
+		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 	}
 
-	builder.pb.Keys.Keys = append(builder.pb.Keys.Keys, publicKey.toProto())
+	transaction.pb.Keys.Keys = append(transaction.pb.Keys.Keys, publicKey.toProto())
 
-	return builder
+	return transaction
 }
 
-func (builder FileUpdateTransaction) SetExpirationTime(expiration time.Time) FileUpdateTransaction {
-	builder.pb.ExpirationTime = timeToProto(expiration)
-	return builder
+func (transaction FileUpdateTransaction) SetExpirationTime(expiration time.Time) FileUpdateTransaction {
+	transaction.pb.ExpirationTime = timeToProto(expiration)
+	return transaction
 }
 
-func (builder FileUpdateTransaction) SetContents(contents []byte) FileUpdateTransaction {
-	builder.pb.Contents = contents
-	return builder
+func (transaction FileUpdateTransaction) SetContents(contents []byte) FileUpdateTransaction {
+	transaction.pb.Contents = contents
+	return transaction
 }
 
-func (builder FileUpdateTransaction) Build(client *Client) (Transaction, error) {
-	return builder.TransactionBuilder.Build(client)
+func (transaction FileUpdateTransaction) Build(client *Client) (Transaction, error) {
+	return transaction.TransactionBuilder.Build(client)
 }
 
 //
@@ -57,26 +57,26 @@ func (builder FileUpdateTransaction) Build(client *Client) (Transaction, error) 
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder FileUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileUpdateTransaction {
-	return FileUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction FileUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileUpdateTransaction {
+	return FileUpdateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder FileUpdateTransaction) SetTransactionMemo(memo string) FileUpdateTransaction {
-	return FileUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction FileUpdateTransaction) SetTransactionMemo(memo string) FileUpdateTransaction {
+	return FileUpdateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder FileUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) FileUpdateTransaction {
-	return FileUpdateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction FileUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) FileUpdateTransaction {
+	return FileUpdateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder FileUpdateTransaction) SetTransactionID(transactionID TransactionID) FileUpdateTransaction {
-	return FileUpdateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction FileUpdateTransaction) SetTransactionID(transactionID TransactionID) FileUpdateTransaction {
+	return FileUpdateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder FileUpdateTransaction) SetNodeAccountID(nodeAccountID AccountID) FileUpdateTransaction {
-	return FileUpdateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction FileUpdateTransaction) SetNodeID(nodeAccountID AccountID) FileUpdateTransaction {
+	return FileUpdateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

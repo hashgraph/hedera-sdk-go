@@ -11,10 +11,24 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
+type iTransaction interface {
+	IsFrozen() bool
+	onFreeze(pbBody *proto.TransactionBody) bool
+}
+
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.
 type Transaction struct {
-	pb *proto.Transaction
+	super  iTransaction
+	pb     *proto.Transaction
+	pbBody *proto.TransactionBody
+
 	id TransactionID
+
+	// unfortunately; this is required to prevent setting the max TXFee if it is purposely set to 0
+	// (for example, when .GetCost() is called)
+	noTXFee bool
+
+	transactions []*proto.Transaction
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
@@ -32,6 +46,12 @@ func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
 	transaction.id = transactionIDFromProto(txBody.TransactionID)
 
 	return nil
+}
+
+func TransactionFromBytes(bytes []byte) Transaction {
+	tx := Transaction{}
+	(&tx).UnmarshalBinary(bytes)
+	return tx
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -75,6 +95,44 @@ func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer Trans
 	})
 
 	return transaction
+}
+
+func (transaction Transaction) FreezeWith(client *Client) (Transaction, error) {
+	if client != nil {
+		if !transaction.noTXFee && transaction.pbBody.TransactionFee == 0 {
+			transaction.SetMaxTransactionFee(client.maxTransactionFee)
+		}
+
+		if transaction.pbBody.TransactionID == nil {
+			if client.operator != nil {
+				transaction.SetTransactionID(NewTransactionID(client.operator.accountID))
+			} else {
+				return Transaction{}, errNoClientOrTransactionID
+			}
+		}
+	}
+
+	if transaction.onFreeze(transaction.pbBody) {
+		return transaction, nil
+	}
+
+	return transaction, nil
+}
+
+func (transaction Transaction) IsFrozen() bool {
+	return transaction.super.IsFrozen()
+}
+
+func (transaction Transaction) requireNotFrozen() error {
+	if transaction.IsFrozen() {
+		return errTransactionIsFrozen
+	}
+
+	return nil
+}
+
+func (transaction Transaction) onFreeze(pbBody *proto.TransactionBody) bool {
+	return transaction.super.onFreeze(pbBody)
 }
 
 func (transaction Transaction) executeForResponse(client *Client) (TransactionID, *proto.TransactionResponse, error) {
@@ -171,11 +229,8 @@ func (transaction Transaction) MarshalBinary() ([]byte, error) {
 	return protobuf.Marshal(transaction.pb)
 }
 
-// ID returns the transaction ID of the transaction
-func (transaction Transaction) ID() TransactionID {
-	// Provide an accessor function to prevent the user from mutating the
-	// ID which would result in undefined behavior.
-	return transaction.id
+func (transaction Transaction) ToBytes() ([]byte, error) {
+	return transaction.MarshalBinary()
 }
 
 // The protobuf stores the transaction body as raw bytes so we need to first
@@ -257,4 +312,58 @@ func getMethodName(transactionBody *proto.TransactionBody) (string, error) {
 		return "", newErrLocalValidationf("Could not find method name for: %T", transactionBody.Data)
 	}
 
+}
+
+//
+// Shared
+//
+
+func (transaction Transaction) GetMaxTransactionFee() Hbar {
+	return HbarFromTinybar(int64(transaction.pbBody.TransactionFee))
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
+func (transaction Transaction) SetMaxTransactionFee(fee Hbar) Transaction {
+	transaction.pbBody.TransactionFee = uint64(fee.AsTinybar())
+	return transaction
+}
+
+func (transaction Transaction) GetTransactionMemo() string {
+	return transaction.pbBody.Memo
+}
+
+// SetTransactionMemo sets the memo for this Transaction.
+func (transaction Transaction) SetTransactionMemo(memo string) Transaction {
+	transaction.pbBody.Memo = memo
+	return transaction
+}
+
+func (transaction Transaction) GetTransactionValidDuration() time.Duration {
+	return durationFromProto(transaction.pbBody.TransactionValidDuration)
+}
+
+// SetTransactionValidDuration sets the valid duration for this Transaction.
+func (transaction Transaction) SetTransactionValidDuration(duration time.Duration) Transaction {
+	transaction.pbBody.TransactionValidDuration = durationToProto(duration)
+	return transaction
+}
+
+func (transaction Transaction) GetTransactionID() TransactionID {
+	return transactionIDFromProto(transaction.pbBody.TransactionID)
+}
+
+// SetTransactionID sets the TransactionID for this Transaction.
+func (transaction Transaction) SetTransactionID(transactionID TransactionID) Transaction {
+	transaction.pbBody.TransactionID = transactionID.toProto()
+	return transaction
+}
+
+func (transaction Transaction) GetNodeID() AccountID {
+	return accountIDFromProto(transaction.pbBody.NodeAccountID)
+}
+
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction Transaction) SetNodeID(nodeAccountID AccountID) Transaction {
+	transaction.pbBody.NodeAccountID = nodeAccountID.toProto()
+	return transaction
 }

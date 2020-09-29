@@ -22,7 +22,7 @@ type ConsensusTopicInfo struct {
 	AutoRenewAccountID *AccountID
 }
 
-// NewConsensusTopicInfoQuery creates a ConsensusTopicInfoQuery builder which can be used to construct and execute a
+// NewConsensusTopicInfoQuery creates a ConsensusTopicInfoQuery transaction which can be used to construct and execute a
 // Consensus Get Topic Info Query.
 func NewConsensusTopicInfoQuery() *ConsensusTopicInfoQuery {
 	pb := &proto.ConsensusGetTopicInfoQuery{Header: &proto.QueryHeader{}}
@@ -34,14 +34,14 @@ func NewConsensusTopicInfoQuery() *ConsensusTopicInfoQuery {
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
-func (builder *ConsensusTopicInfoQuery) SetTopicID(id ConsensusTopicID) *ConsensusTopicInfoQuery {
-	builder.pb.TopicID = id.toProto()
-	return builder
+func (transaction *ConsensusTopicInfoQuery) SetTopicID(id ConsensusTopicID) *ConsensusTopicInfoQuery {
+	transaction.pb.TopicID = id.toProto()
+	return transaction
 }
 
 // Execute executes the ConsensusTopicInfoQuery using the provided client
-func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicInfo, error) {
-	resp, err := builder.execute(client)
+func (transaction *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicInfo, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return ConsensusTopicInfo{}, err
 	}
@@ -83,16 +83,16 @@ func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicI
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *ConsensusTopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ConsensusTopicInfoQuery {
-	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *ConsensusTopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ConsensusTopicInfoQuery {
+	return &ConsensusTopicInfoQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *ConsensusTopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *ConsensusTopicInfoQuery {
-	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *ConsensusTopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *ConsensusTopicInfoQuery {
+	return &ConsensusTopicInfoQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *ConsensusTopicInfoQuery) SetQueryPaymentTransaction(tx Transaction) *ConsensusTopicInfoQuery {
-	return &ConsensusTopicInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *ConsensusTopicInfoQuery) SetQueryPaymentTransaction(tx Transaction) *ConsensusTopicInfoQuery {
+	return &ConsensusTopicInfoQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

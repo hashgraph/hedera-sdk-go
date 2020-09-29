@@ -17,19 +17,19 @@ func NewSystemUndeleteTransaction() SystemUndeleteTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_SystemUndelete{SystemUndelete: pb}
 
-	builder := SystemUndeleteTransaction{inner, pb}
+	transaction := SystemUndeleteTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
-func (builder SystemUndeleteTransaction) SetContractID(ID ContractID) SystemUndeleteTransaction {
-	builder.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: ID.toProto()}
-	return builder
+func (transaction SystemUndeleteTransaction) SetContractID(ID ContractID) SystemUndeleteTransaction {
+	transaction.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: ID.toProto()}
+	return transaction
 }
 
-func (builder SystemUndeleteTransaction) SetFileID(ID FileID) SystemUndeleteTransaction {
-	builder.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: ID.toProto()}
-	return builder
+func (transaction SystemUndeleteTransaction) SetFileID(ID FileID) SystemUndeleteTransaction {
+	transaction.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: ID.toProto()}
+	return transaction
 }
 
 //
@@ -38,26 +38,26 @@ func (builder SystemUndeleteTransaction) SetFileID(ID FileID) SystemUndeleteTran
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder SystemUndeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) SystemUndeleteTransaction {
-	return SystemUndeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction SystemUndeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder SystemUndeleteTransaction) SetTransactionMemo(memo string) SystemUndeleteTransaction {
-	return SystemUndeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction SystemUndeleteTransaction) SetTransactionMemo(memo string) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder SystemUndeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) SystemUndeleteTransaction {
-	return SystemUndeleteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction SystemUndeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder SystemUndeleteTransaction) SetTransactionID(transactionID TransactionID) SystemUndeleteTransaction {
-	return SystemUndeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction SystemUndeleteTransaction) SetTransactionID(transactionID TransactionID) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder SystemUndeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) SystemUndeleteTransaction {
-	return SystemUndeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction SystemUndeleteTransaction) SetNodeID(nodeAccountID AccountID) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

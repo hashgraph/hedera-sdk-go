@@ -38,7 +38,7 @@ type ContractCreateTransaction struct {
 	pb *proto.ContractCreateTransactionBody
 }
 
-// NewContractCreateTransaction creates a ContractCreateTransaction builder which can be
+// NewContractCreateTransaction creates a ContractCreateTransaction transaction which can be
 // used to construct and execute a Contract Create Transaction. This constructor defaults
 // the autoRenewPeriod to ~1/4 year to fall within the required range, if desired the value
 // can be changed through the SetAutoRenewPeriod method
@@ -48,26 +48,26 @@ func NewContractCreateTransaction() ContractCreateTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ContractCreateInstance{ContractCreateInstance: pb}
 
-	builder := ContractCreateTransaction{inner, pb}
+	transaction := ContractCreateTransaction{inner, pb}
 
 	// Default autoRenewPeriod to a value within the required range (~1/4 year)
-	return builder.SetAutoRenewPeriod(131500 * time.Minute)
+	return transaction.SetAutoRenewPeriod(131500 * time.Minute)
 }
 
 // SetBytecodeFileID sets the ID of the file containing the smart contract byte code. A copy will be made and held by
 // the contract instance, and have the same expiration time as the instance.
-func (builder ContractCreateTransaction) SetBytecodeFileID(id FileID) ContractCreateTransaction {
-	builder.pb.FileID = id.toProto()
-	return builder
+func (transaction ContractCreateTransaction) SetBytecodeFileID(id FileID) ContractCreateTransaction {
+	transaction.pb.FileID = id.toProto()
+	return transaction
 }
 
 // SetAdminKey sets the key required to arbitrarily modify the state of the instance and its fields. If this is left
 // unset, then such modifications are not possible, and there is no administrator that can override the normal operation
 // of the smart contract instance. Note that if it is created with no admin keys, then there is no administrator to
 // authorize changing the admin keys, so there can never be any admin keys for that instance.
-func (builder ContractCreateTransaction) SetAdminKey(publicKey Ed25519PublicKey) ContractCreateTransaction {
-	builder.pb.AdminKey = publicKey.toProto()
-	return builder
+func (transaction ContractCreateTransaction) SetAdminKey(publicKey Ed25519PublicKey) ContractCreateTransaction {
+	transaction.pb.AdminKey = publicKey.toProto()
+	return transaction
 }
 
 // SetContractMemo sets the optional memo field which can contain a string whose length is up to 100 bytes. That is the
@@ -79,46 +79,46 @@ func (builder ContractCreateTransaction) SetAdminKey(publicKey Ed25519PublicKey)
 // legal document to guide their decisions during a binding arbitration tribunal, convened to consider any changes to
 // the smart contract in the future. The memo field can only be changed using the admin keys. If there are no admin
 // keys, then it cannot be changed after the smart contract is created.
-func (builder ContractCreateTransaction) SetContractMemo(memo string) ContractCreateTransaction {
-	builder.pb.Memo = memo
-	return builder
+func (transaction ContractCreateTransaction) SetContractMemo(memo string) ContractCreateTransaction {
+	transaction.pb.Memo = memo
+	return transaction
 }
 
 // SetGas sets the gas required to run the constructor
-func (builder ContractCreateTransaction) SetGas(gas uint64) ContractCreateTransaction {
-	builder.pb.Gas = int64(gas)
-	return builder
+func (transaction ContractCreateTransaction) SetGas(gas uint64) ContractCreateTransaction {
+	transaction.pb.Gas = int64(gas)
+	return transaction
 }
 
 // SetInitialBalance sets the initial Hbar to put into the account associated with and owned by the smart contract
-func (builder ContractCreateTransaction) SetInitialBalance(initialBalance Hbar) ContractCreateTransaction {
-	builder.pb.InitialBalance = initialBalance.AsTinybar()
-	return builder
+func (transaction ContractCreateTransaction) SetInitialBalance(initialBalance Hbar) ContractCreateTransaction {
+	transaction.pb.InitialBalance = initialBalance.AsTinybar()
+	return transaction
 }
 
 // SetProxyAccountID sets the AccountID of the account to which this contract is proxy staked. If proxyAccountID is left
 // unset, is an invalid account, or is an account that isn't a node, then this contract is automatically proxy staked
 // to a node chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy
 // staking , or if it is not currently running a node, then it will behave as if  proxyAccountID was never set.
-func (builder ContractCreateTransaction) SetProxyAccountID(id AccountID) ContractCreateTransaction {
-	builder.pb.ProxyAccountID = id.toProto()
-	return builder
+func (transaction ContractCreateTransaction) SetProxyAccountID(id AccountID) ContractCreateTransaction {
+	transaction.pb.ProxyAccountID = id.toProto()
+	return transaction
 }
 
 // SetAutoRenewPeriod sets the duration the instance will exist for. When that is reached, it will renew itself for
 // another autoRenewPeriod duration by charging its associated account. If it has an insufficient balance to extend that
 // long, it will extend as long as it can. If its balance is zero, the instance will be deleted.
-func (builder ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) ContractCreateTransaction {
-	builder.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
-	return builder
+func (transaction ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) ContractCreateTransaction {
+	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	return transaction
 }
 
 // SetConstructorParams sets the ContractFunctionParams to pass to the constructor. If this constructor stores
 // information, it is charged gas to store it. There is a fee in hbars to maintain that storage until the expiration
 // time, and that fee is added as part of the transaction fee.
-func (builder ContractCreateTransaction) SetConstructorParams(params *ContractFunctionParams) ContractCreateTransaction {
-	builder.pb.ConstructorParameters = params.build(nil)
-	return builder
+func (transaction ContractCreateTransaction) SetConstructorParams(params *ContractFunctionParams) ContractCreateTransaction {
+	transaction.pb.ConstructorParameters = params.build(nil)
+	return transaction
 }
 
 //
@@ -127,26 +127,26 @@ func (builder ContractCreateTransaction) SetConstructorParams(params *ContractFu
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder ContractCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractCreateTransaction {
-	return ContractCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction ContractCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractCreateTransaction {
+	return ContractCreateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder ContractCreateTransaction) SetTransactionMemo(memo string) ContractCreateTransaction {
-	return ContractCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction ContractCreateTransaction) SetTransactionMemo(memo string) ContractCreateTransaction {
+	return ContractCreateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder ContractCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractCreateTransaction {
-	return ContractCreateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction ContractCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractCreateTransaction {
+	return ContractCreateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder ContractCreateTransaction) SetTransactionID(transactionID TransactionID) ContractCreateTransaction {
-	return ContractCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction ContractCreateTransaction) SetTransactionID(transactionID TransactionID) ContractCreateTransaction {
+	return ContractCreateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder ContractCreateTransaction) SetNodeAccountID(nodeAccountID AccountID) ContractCreateTransaction {
-	return ContractCreateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction ContractCreateTransaction) SetNodeID(nodeAccountID AccountID) ContractCreateTransaction {
+	return ContractCreateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

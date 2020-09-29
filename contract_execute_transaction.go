@@ -18,7 +18,7 @@ type ContractExecuteTransaction struct {
 	pb *proto.ContractCallTransactionBody
 }
 
-// NewContractExecuteTransaction creates a ContractExecuteTransaction builder which can be
+// NewContractExecuteTransaction creates a ContractExecuteTransaction transaction which can be
 // used to construct and execute a Contract Call Transaction.
 func NewContractExecuteTransaction() ContractExecuteTransaction {
 	pb := &proto.ContractCallTransactionBody{}
@@ -26,37 +26,37 @@ func NewContractExecuteTransaction() ContractExecuteTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ContractCall{ContractCall: pb}
 
-	builder := ContractExecuteTransaction{inner, pb}
+	transaction := ContractExecuteTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // SetContractID sets the contract instance to call.
-func (builder ContractExecuteTransaction) SetContractID(id ContractID) ContractExecuteTransaction {
-	builder.pb.ContractID = id.toProto()
-	return builder
+func (transaction ContractExecuteTransaction) SetContractID(id ContractID) ContractExecuteTransaction {
+	transaction.pb.ContractID = id.toProto()
+	return transaction
 }
 
 // SetGas sets the maximum amount of gas to use for the call.
-func (builder ContractExecuteTransaction) SetGas(gas uint64) ContractExecuteTransaction {
-	builder.pb.Gas = int64(gas)
-	return builder
+func (transaction ContractExecuteTransaction) SetGas(gas uint64) ContractExecuteTransaction {
+	transaction.pb.Gas = int64(gas)
+	return transaction
 }
 
 // SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
-func (builder ContractExecuteTransaction) SetPayableAmount(amount Hbar) ContractExecuteTransaction {
-	builder.pb.Amount = int64(amount.AsTinybar())
-	return builder
+func (transaction ContractExecuteTransaction) SetPayableAmount(amount Hbar) ContractExecuteTransaction {
+	transaction.pb.Amount = int64(amount.AsTinybar())
+	return transaction
 }
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
-func (builder ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParams) ContractExecuteTransaction {
+func (transaction ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParams) ContractExecuteTransaction {
 	if params == nil {
 		params = NewContractFunctionParams()
 	}
 
-	builder.pb.FunctionParameters = params.build(&name)
-	return builder
+	transaction.pb.FunctionParameters = params.build(&name)
+	return transaction
 }
 
 //
@@ -65,26 +65,26 @@ func (builder ContractExecuteTransaction) SetFunction(name string, params *Contr
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder ContractExecuteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractExecuteTransaction {
-	return ContractExecuteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction ContractExecuteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractExecuteTransaction {
+	return ContractExecuteTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder ContractExecuteTransaction) SetTransactionMemo(memo string) ContractExecuteTransaction {
-	return ContractExecuteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction ContractExecuteTransaction) SetTransactionMemo(memo string) ContractExecuteTransaction {
+	return ContractExecuteTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder ContractExecuteTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractExecuteTransaction {
-	return ContractExecuteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction ContractExecuteTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractExecuteTransaction {
+	return ContractExecuteTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) ContractExecuteTransaction {
-	return ContractExecuteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) ContractExecuteTransaction {
+	return ContractExecuteTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder ContractExecuteTransaction) SetNodeAccountID(nodeAccountID AccountID) ContractExecuteTransaction {
-	return ContractExecuteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction ContractExecuteTransaction) SetNodeID(nodeAccountID AccountID) ContractExecuteTransaction {
+	return ContractExecuteTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

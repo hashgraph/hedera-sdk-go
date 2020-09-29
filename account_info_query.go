@@ -29,7 +29,7 @@ type AccountInfo struct {
 	AutoRenewPeriod                time.Duration
 }
 
-// NewAccountInfoQuery creates an AccountInfoQuery builder which can be used to construct and execute
+// NewAccountInfoQuery creates an AccountInfoQuery transaction which can be used to construct and execute
 // an AccountInfoQuery.
 //
 // It is recommended that you use this for creating new instances of an AccountInfoQuery
@@ -44,14 +44,14 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 }
 
 // SetAccountID sets the account ID for which information is requested
-func (builder *AccountInfoQuery) SetAccountID(id AccountID) *AccountInfoQuery {
-	builder.pb.AccountID = id.toProto()
-	return builder
+func (transaction *AccountInfoQuery) SetAccountID(id AccountID) *AccountInfoQuery {
+	transaction.pb.AccountID = id.toProto()
+	return transaction
 }
 
 // Execute executes the AccountInfoQuery using the provided client
-func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
-	resp, err := builder.execute(client)
+func (transaction *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -79,11 +79,11 @@ func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 // Cost is a wrapper around the standard Cost function for a query. It must exist because the cost returned by the
 // standard Cost() and the Hedera Network doesn't work for any accounnts that have been deleted. In that case the
 // minimum cost should be ~25 Tinybar which seems to succeed most of the time.
-func (builder *AccountInfoQuery) Cost(client *Client) (Hbar, error) {
+func (transaction *AccountInfoQuery) Cost(client *Client) (Hbar, error) {
 	// deleted files return a COST_ANSWER of zero which triggers `INSUFFICIENT_TX_FEE`
 	// if you set that as the query payment; 25 tinybar seems to be enough to get
 	// `ACCOUNT_DELETED` back instead.
-	cost, err := builder.QueryBuilder.GetCost(client)
+	cost, err := transaction.QueryBuilder.GetCost(client)
 	if err != nil {
 		return ZeroHbar, err
 	}
@@ -102,16 +102,16 @@ func (builder *AccountInfoQuery) Cost(client *Client) (Hbar, error) {
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *AccountInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountInfoQuery {
-	return &AccountInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *AccountInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountInfoQuery {
+	return &AccountInfoQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *AccountInfoQuery) SetQueryPayment(paymentAmount Hbar) *AccountInfoQuery {
-	return &AccountInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *AccountInfoQuery) SetQueryPayment(paymentAmount Hbar) *AccountInfoQuery {
+	return &AccountInfoQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *AccountInfoQuery) SetQueryPaymentTransaction(tx Transaction) *AccountInfoQuery {
-	return &AccountInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *AccountInfoQuery) SetQueryPaymentTransaction(tx Transaction) *AccountInfoQuery {
+	return &AccountInfoQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

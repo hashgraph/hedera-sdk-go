@@ -14,7 +14,7 @@ type FileAppendTransaction struct {
 	pb *proto.FileAppendTransactionBody
 }
 
-// NewFileAppendTransaction creates a FileAppendTransaction builder which can be
+// NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
 // used to construct and execute a File Append Transaction.
 func NewFileAppendTransaction() FileAppendTransaction {
 	pb := &proto.FileAppendTransactionBody{}
@@ -22,21 +22,21 @@ func NewFileAppendTransaction() FileAppendTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_FileAppend{FileAppend: pb}
 
-	builder := FileAppendTransaction{inner, pb}
+	transaction := FileAppendTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
-func (builder FileAppendTransaction) SetFileID(id FileID) FileAppendTransaction {
-	builder.pb.FileID = id.toProto()
-	return builder
+func (transaction FileAppendTransaction) SetFileID(id FileID) FileAppendTransaction {
+	transaction.pb.FileID = id.toProto()
+	return transaction
 }
 
 // SetContents sets the bytes to append to the contents of the file.
-func (builder FileAppendTransaction) SetContents(contents []byte) FileAppendTransaction {
-	builder.pb.Contents = contents
-	return builder
+func (transaction FileAppendTransaction) SetContents(contents []byte) FileAppendTransaction {
+	transaction.pb.Contents = contents
+	return transaction
 }
 
 //
@@ -45,26 +45,26 @@ func (builder FileAppendTransaction) SetContents(contents []byte) FileAppendTran
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder FileAppendTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileAppendTransaction {
-	return FileAppendTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction FileAppendTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileAppendTransaction {
+	return FileAppendTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder FileAppendTransaction) SetTransactionMemo(memo string) FileAppendTransaction {
-	return FileAppendTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction FileAppendTransaction) SetTransactionMemo(memo string) FileAppendTransaction {
+	return FileAppendTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder FileAppendTransaction) SetTransactionValidDuration(validDuration time.Duration) FileAppendTransaction {
-	return FileAppendTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction FileAppendTransaction) SetTransactionValidDuration(validDuration time.Duration) FileAppendTransaction {
+	return FileAppendTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder FileAppendTransaction) SetTransactionID(transactionID TransactionID) FileAppendTransaction {
-	return FileAppendTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction FileAppendTransaction) SetTransactionID(transactionID TransactionID) FileAppendTransaction {
+	return FileAppendTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder FileAppendTransaction) SetNodeAccountID(nodeAccountID AccountID) FileAppendTransaction {
-	return FileAppendTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction FileAppendTransaction) SetNodeID(nodeAccountID AccountID) FileAppendTransaction {
+	return FileAppendTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

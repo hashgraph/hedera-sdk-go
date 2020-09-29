@@ -10,7 +10,7 @@ type ContractBytecodeQuery struct {
 	pb *proto.ContractGetBytecodeQuery
 }
 
-// NewContractBytecodeQuery creates a ContractBytecodeQuery builder which can be used to construct and execute a
+// NewContractBytecodeQuery creates a ContractBytecodeQuery transaction which can be used to construct and execute a
 // Contract Get Bytecode Query.
 func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	pb := &proto.ContractGetBytecodeQuery{Header: &proto.QueryHeader{}}
@@ -22,14 +22,14 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 }
 
 // SetContractID sets the contract for which the bytecode is requested
-func (builder *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
-	builder.pb.ContractID = id.toProto()
-	return builder
+func (transaction *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
+	transaction.pb.ContractID = id.toProto()
+	return transaction
 }
 
 // Execute executes the ContractByteCodeQuery using the provided client
-func (builder *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
-	resp, err := builder.execute(client)
+func (transaction *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -43,16 +43,16 @@ func (builder *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *ContractBytecodeQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractBytecodeQuery {
-	return &ContractBytecodeQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *ContractBytecodeQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractBytecodeQuery {
+	return &ContractBytecodeQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *ContractBytecodeQuery {
-	return &ContractBytecodeQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *ContractBytecodeQuery {
+	return &ContractBytecodeQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *ContractBytecodeQuery) SetQueryPaymentTransaction(tx Transaction) *ContractBytecodeQuery {
-	return &ContractBytecodeQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *ContractBytecodeQuery) SetQueryPaymentTransaction(tx Transaction) *ContractBytecodeQuery {
+	return &ContractBytecodeQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

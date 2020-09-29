@@ -18,39 +18,39 @@ type TransactionBuilder struct {
 }
 
 func newTransactionBuilder() TransactionBuilder {
-	builder := TransactionBuilder{pb: &proto.TransactionBody{}}
-	builder.SetTransactionValidDuration(120 * time.Second)
+	transaction := TransactionBuilder{pb: &proto.TransactionBody{}}
+	transaction.SetTransactionValidDuration(120 * time.Second)
 
-	return builder
+	return transaction
 }
 
 // Build validates and finalizes the transaction's state and prepares it for execution, returning a Transaction.
 // The inner state becomes immutable, however it can still be signed after building.
-func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
-	if client != nil && !builder.noTXFee && builder.pb.TransactionFee == 0 {
-		builder.SetMaxTransactionFee(client.maxTransactionFee)
+func (transaction TransactionBuilder) Build(client *Client) (Transaction, error) {
+	if client != nil && !transaction.noTXFee && transaction.pb.TransactionFee == 0 {
+		transaction.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 
-	if builder.pb.NodeAccountID == nil {
+	if transaction.pb.NodeAccountID == nil {
 		if client != nil {
-			builder.SetNodeAccountID(client.randomNode().id)
+			transaction.SetNodeID(client.randomNode().id)
 		}
 	}
 
-	if builder.pb.TransactionID == nil && client != nil && client.operator != nil {
-		builder.SetTransactionID(NewTransactionID(client.operator.accountID))
+	if transaction.pb.TransactionID == nil && client != nil && client.operator != nil {
+		transaction.SetTransactionID(NewTransactionID(client.operator.accountID))
 	}
 
 	// todo: add a validate function per transaction type
-	if builder.pb.TransactionID == nil {
+	if transaction.pb.TransactionID == nil {
 		return Transaction{}, newErrLocalValidationf(".setTransactionID() required")
 	}
 
-	if builder.pb.NodeAccountID == nil {
+	if transaction.pb.NodeAccountID == nil {
 		return Transaction{}, newErrLocalValidationf(".setNodeAccountID() required")
 	}
 
-	bodyBytes, err := protobuf.Marshal(builder.pb)
+	bodyBytes, err := protobuf.Marshal(transaction.pb)
 	if err != nil {
 		// This should be unreachable
 		// From the documentation this appears to only be possible if there are missing proto types
@@ -59,16 +59,16 @@ func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
 
 	pb := &proto.Transaction{
 		BodyBytes: bodyBytes,
-		SigMap:   &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
+		SigMap:    &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
 	}
 
-	return Transaction{pb, transactionIDFromProto(builder.pb.TransactionID)}, nil
+	return Transaction{pb, transactionIDFromProto(transaction.pb.TransactionID)}, nil
 }
 
 // Execute is a short hand function to build and execute a transaction. It first calls build on the TransactionBuilder
 // and as long as validation passes it will then execute the resulting Transaction.
-func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error) {
-	tx, err := builder.Build(client)
+func (transaction TransactionBuilder) Execute(client *Client) (TransactionID, error) {
+	tx, err := transaction.Build(client)
 
 	if err != nil {
 		return TransactionID{}, err
@@ -83,28 +83,28 @@ func (builder TransactionBuilder) Execute(client *Client) (TransactionID, error)
 // unsure if this is because the fee fluctuates that much or if the calculations are simply incorrect on the server. To
 // compensate for this we just bump by a 1% the value returned. As this would only ever be a maximum this will not cause
 // you to be charged more.
-func (builder TransactionBuilder) GetCost(client *Client) (Hbar, error) {
+func (transaction TransactionBuilder) GetCost(client *Client) (Hbar, error) {
 	// An operator must be set on the client
 	if client == nil || client.operator == nil {
 		return ZeroHbar, newErrLocalValidationf("calling .GetCost() requires client.SetOperator")
 	}
 
-	oldFee := builder.pb.TransactionFee
-	oldTxID := builder.pb.TransactionID
-	oldValidDuration := builder.pb.TransactionValidDuration
-	oldTxFeeStatus := builder.noTXFee
+	oldFee := transaction.pb.TransactionFee
+	oldTxID := transaction.pb.TransactionID
+	oldValidDuration := transaction.pb.TransactionValidDuration
+	oldTxFeeStatus := transaction.noTXFee
 
 	defer func() {
-		// always reset the state of the builder before exiting this function
-		builder.pb.TransactionFee = oldFee
-		builder.pb.TransactionID = oldTxID
-		builder.pb.TransactionValidDuration = oldValidDuration
-		builder.noTXFee = oldTxFeeStatus
+		// always reset the state of the transaction before exiting this function
+		transaction.pb.TransactionFee = oldFee
+		transaction.pb.TransactionID = oldTxID
+		transaction.pb.TransactionValidDuration = oldValidDuration
+		transaction.noTXFee = oldTxFeeStatus
 	}()
 
-	builder.noTXFee = true
+	transaction.noTXFee = true
 
-	costTx, err := builder.
+	costTx, err := transaction.
 		SetMaxTransactionFee(ZeroHbar).
 		SetTransactionID(NewTransactionID(client.operator.accountID)).
 		Build(client)
@@ -124,7 +124,7 @@ func (builder TransactionBuilder) GetCost(client *Client) (Hbar, error) {
 
 	if status != StatusInsufficientTxFee {
 		//  any status that is not insufficienttxfee should be considered an error in this case
-		return ZeroHbar, newErrHederaPreCheckStatus(transactionIDFromProto(builder.pb.TransactionID), status)
+		return ZeroHbar, newErrHederaPreCheckStatus(transactionIDFromProto(transaction.pb.TransactionID), status)
 	}
 
 	return HbarFromTinybar(int64(math.Ceil(float64(resp.GetCost()) * 1.1))), nil
@@ -135,31 +135,31 @@ func (builder TransactionBuilder) GetCost(client *Client) (Hbar, error) {
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder TransactionBuilder) SetMaxTransactionFee(maxTransactionFee Hbar) TransactionBuilder {
-	builder.pb.TransactionFee = uint64(maxTransactionFee.AsTinybar())
-	return builder
+func (transaction TransactionBuilder) SetMaxTransactionFee(maxTransactionFee Hbar) TransactionBuilder {
+	transaction.pb.TransactionFee = uint64(maxTransactionFee.AsTinybar())
+	return transaction
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder TransactionBuilder) SetTransactionMemo(memo string) TransactionBuilder {
-	builder.pb.Memo = memo
-	return builder
+func (transaction TransactionBuilder) SetTransactionMemo(memo string) TransactionBuilder {
+	transaction.pb.Memo = memo
+	return transaction
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder TransactionBuilder) SetTransactionValidDuration(validDuration time.Duration) TransactionBuilder {
-	builder.pb.TransactionValidDuration = durationToProto(validDuration)
-	return builder
+func (transaction TransactionBuilder) SetTransactionValidDuration(validDuration time.Duration) TransactionBuilder {
+	transaction.pb.TransactionValidDuration = durationToProto(validDuration)
+	return transaction
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder TransactionBuilder) SetTransactionID(transactionID TransactionID) TransactionBuilder {
-	builder.pb.TransactionID = transactionID.toProto()
-	return builder
+func (transaction TransactionBuilder) SetTransactionID(transactionID TransactionID) TransactionBuilder {
+	transaction.pb.TransactionID = transactionID.toProto()
+	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder TransactionBuilder) SetNodeAccountID(nodeAccountID AccountID) TransactionBuilder {
-	builder.pb.NodeAccountID = nodeAccountID.toProto()
-	return builder
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction TransactionBuilder) SetNodeID(nodeAccountID AccountID) TransactionBuilder {
+	transaction.pb.NodeAccountID = nodeAccountID.toProto()
+	return transaction
 }

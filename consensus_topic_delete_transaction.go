@@ -12,7 +12,7 @@ type ConsensusTopicDeleteTransaction struct {
 	pb *proto.ConsensusDeleteTopicTransactionBody
 }
 
-// NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction builder which can be used to construct
+// NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction transaction which can be used to construct
 // and execute a Consensus Delete Topic Transaction.
 func NewConsensusTopicDeleteTransaction() ConsensusTopicDeleteTransaction {
 	pb := &proto.ConsensusDeleteTopicTransactionBody{}
@@ -20,15 +20,15 @@ func NewConsensusTopicDeleteTransaction() ConsensusTopicDeleteTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ConsensusDeleteTopic{ConsensusDeleteTopic: pb}
 
-	builder := ConsensusTopicDeleteTransaction{inner, pb}
+	transaction := ConsensusTopicDeleteTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // SetTopicID sets the topic identifier.
-func (builder ConsensusTopicDeleteTransaction) SetTopicID(id ConsensusTopicID) ConsensusTopicDeleteTransaction {
-	builder.pb.TopicID = id.toProto()
-	return builder
+func (transaction ConsensusTopicDeleteTransaction) SetTopicID(id ConsensusTopicID) ConsensusTopicDeleteTransaction {
+	transaction.pb.TopicID = id.toProto()
+	return transaction
 }
 
 //
@@ -37,26 +37,26 @@ func (builder ConsensusTopicDeleteTransaction) SetTopicID(id ConsensusTopicID) C
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder ConsensusTopicDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusTopicDeleteTransaction {
-	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction ConsensusTopicDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusTopicDeleteTransaction {
+	return ConsensusTopicDeleteTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder ConsensusTopicDeleteTransaction) SetTransactionMemo(memo string) ConsensusTopicDeleteTransaction {
-	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction ConsensusTopicDeleteTransaction) SetTransactionMemo(memo string) ConsensusTopicDeleteTransaction {
+	return ConsensusTopicDeleteTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder ConsensusTopicDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusTopicDeleteTransaction {
-	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction ConsensusTopicDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusTopicDeleteTransaction {
+	return ConsensusTopicDeleteTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder ConsensusTopicDeleteTransaction) SetTransactionID(transactionID TransactionID) ConsensusTopicDeleteTransaction {
-	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction ConsensusTopicDeleteTransaction) SetTransactionID(transactionID TransactionID) ConsensusTopicDeleteTransaction {
+	return ConsensusTopicDeleteTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder ConsensusTopicDeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) ConsensusTopicDeleteTransaction {
-	return ConsensusTopicDeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction ConsensusTopicDeleteTransaction) SetNodeID(nodeAccountID AccountID) ConsensusTopicDeleteTransaction {
+	return ConsensusTopicDeleteTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

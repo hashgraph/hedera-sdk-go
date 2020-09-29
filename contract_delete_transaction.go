@@ -11,7 +11,7 @@ type ContractDeleteTransaction struct {
 	pb *proto.ContractDeleteTransactionBody
 }
 
-// NewContractDeleteTransaction creates a Contract Delete Transaction builder which can be used to construct and execute
+// NewContractDeleteTransaction creates a Contract Delete Transaction transaction which can be used to construct and execute
 // a Contract Delete Transaction.
 func NewContractDeleteTransaction() ContractDeleteTransaction {
 	pb := &proto.ContractDeleteTransactionBody{}
@@ -19,32 +19,32 @@ func NewContractDeleteTransaction() ContractDeleteTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ContractDeleteInstance{ContractDeleteInstance: pb}
 
-	builder := ContractDeleteTransaction{inner, pb}
+	transaction := ContractDeleteTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // SetContractID sets the Contract ID of the Contract to be deleted by the Contract Delete Transaction
-func (builder ContractDeleteTransaction) SetContractID(id ContractID) ContractDeleteTransaction {
-	builder.pb.ContractID = id.toProto()
-	return builder
+func (transaction ContractDeleteTransaction) SetContractID(id ContractID) ContractDeleteTransaction {
+	transaction.pb.ContractID = id.toProto()
+	return transaction
 }
 
 // SetTransferAccountID sets the Account ID which will receive remaining hbar tied to the Contract
-func (builder ContractDeleteTransaction) SetTransferAccountID(id AccountID) ContractDeleteTransaction {
-	builder.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+func (transaction ContractDeleteTransaction) SetTransferAccountID(id AccountID) ContractDeleteTransaction {
+	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
 		TransferAccountID: id.toProto(),
 	}
 
-	return builder
+	return transaction
 }
 
-func (builder ContractDeleteTransaction) SetTransferContractID(id ContractID) ContractDeleteTransaction {
-	builder.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+func (transaction ContractDeleteTransaction) SetTransferContractID(id ContractID) ContractDeleteTransaction {
+	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
 		TransferContractID: id.toProto(),
 	}
 
-	return builder
+	return transaction
 }
 
 //
@@ -53,26 +53,26 @@ func (builder ContractDeleteTransaction) SetTransferContractID(id ContractID) Co
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder ContractDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractDeleteTransaction {
-	return ContractDeleteTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction ContractDeleteTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractDeleteTransaction {
+	return ContractDeleteTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder ContractDeleteTransaction) SetTransactionMemo(memo string) ContractDeleteTransaction {
-	return ContractDeleteTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction ContractDeleteTransaction) SetTransactionMemo(memo string) ContractDeleteTransaction {
+	return ContractDeleteTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder ContractDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractDeleteTransaction {
-	return ContractDeleteTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction ContractDeleteTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractDeleteTransaction {
+	return ContractDeleteTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) ContractDeleteTransaction {
-	return ContractDeleteTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) ContractDeleteTransaction {
+	return ContractDeleteTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder ContractDeleteTransaction) SetNodeAccountID(nodeAccountID AccountID) ContractDeleteTransaction {
-	return ContractDeleteTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction ContractDeleteTransaction) SetNodeID(nodeAccountID AccountID) ContractDeleteTransaction {
+	return ContractDeleteTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

@@ -16,15 +16,15 @@ func NewGetBySolidityIDQuery() *GetBySolidityIDQuery {
 	return &GetBySolidityIDQuery{inner, pb}
 }
 
-func (builder *GetBySolidityIDQuery) SetSolidityID(id string) *GetBySolidityIDQuery {
-	builder.pb.SolidityID = id
-	return builder
+func (transaction *GetBySolidityIDQuery) SetSolidityID(id string) *GetBySolidityIDQuery {
+	transaction.pb.SolidityID = id
+	return transaction
 }
 
-func (builder *GetBySolidityIDQuery) Execute(client *Client) (EntityID, error) {
+func (transaction *GetBySolidityIDQuery) Execute(client *Client) (EntityID, error) {
 	var id EntityID = nil
 
-	resp, err := builder.execute(client)
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return nil, err
 	}
@@ -46,16 +46,16 @@ func (builder *GetBySolidityIDQuery) Execute(client *Client) (EntityID, error) {
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *GetBySolidityIDQuery) SetMaxQueryPayment(maxPayment Hbar) *GetBySolidityIDQuery {
-	return &GetBySolidityIDQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *GetBySolidityIDQuery) SetMaxQueryPayment(maxPayment Hbar) *GetBySolidityIDQuery {
+	return &GetBySolidityIDQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *GetBySolidityIDQuery) SetQueryPayment(paymentAmount Hbar) *GetBySolidityIDQuery {
-	return &GetBySolidityIDQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *GetBySolidityIDQuery) SetQueryPayment(paymentAmount Hbar) *GetBySolidityIDQuery {
+	return &GetBySolidityIDQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *GetBySolidityIDQuery) SetQueryPaymentTransaction(tx Transaction) *GetBySolidityIDQuery {
-	return &GetBySolidityIDQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *GetBySolidityIDQuery) SetQueryPaymentTransaction(tx Transaction) *GetBySolidityIDQuery {
+	return &GetBySolidityIDQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

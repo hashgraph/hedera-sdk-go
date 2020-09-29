@@ -18,7 +18,7 @@ type CryptoTransferTransaction struct {
 	pb *proto.CryptoTransferTransactionBody
 }
 
-// NewCryptoTransferTransaction creates a CryptoTransferTransaction builder which can be
+// NewCryptoTransferTransaction creates a CryptoTransferTransaction transaction which can be
 // used to construct and execute a Crypto Transfer Transaction.
 func NewCryptoTransferTransaction() CryptoTransferTransaction {
 	pb := &proto.CryptoTransferTransactionBody{
@@ -30,21 +30,21 @@ func NewCryptoTransferTransaction() CryptoTransferTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_CryptoTransfer{CryptoTransfer: pb}
 
-	builder := CryptoTransferTransaction{inner, pb}
+	transaction := CryptoTransferTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // AddSender adds an account and the amount of hbar (as a positive value) to be sent from the sender. If any sender
 // account fails to have a sufficient balance to do the withdrawal, then the entire transaction fails, and none of those
 // transfers occur, though the transaction fee is still charged.
-func (builder CryptoTransferTransaction) AddSender(id AccountID, amount Hbar) CryptoTransferTransaction {
-	return builder.AddTransfer(id, amount.negated())
+func (transaction CryptoTransferTransaction) AddSender(id AccountID, amount Hbar) CryptoTransferTransaction {
+	return transaction.AddTransfer(id, amount.negated())
 }
 
 // AddRecipient adds a recipient account and the amount of hbar to be received from the sender(s).
-func (builder CryptoTransferTransaction) AddRecipient(id AccountID, amount Hbar) CryptoTransferTransaction {
-	return builder.AddTransfer(id, amount)
+func (transaction CryptoTransferTransaction) AddRecipient(id AccountID, amount Hbar) CryptoTransferTransaction {
+	return transaction.AddTransfer(id, amount)
 }
 
 // AddTransfer adds the accountID to the internal accounts list and the amounts to the internal amounts list. Each
@@ -52,13 +52,13 @@ func (builder CryptoTransferTransaction) AddRecipient(id AccountID, amount Hbar)
 // corresponding account (a receiver). The amounts list must sum to zero and there can be a maximum of 10 transfers.
 //
 // AddSender and AddRecipient are provided as convenience wrappers around AddTransfer.
-func (builder CryptoTransferTransaction) AddTransfer(id AccountID, amount Hbar) CryptoTransferTransaction {
-	builder.pb.Transfers.AccountAmounts = append(builder.pb.Transfers.AccountAmounts, &proto.AccountAmount{
+func (transaction CryptoTransferTransaction) AddTransfer(id AccountID, amount Hbar) CryptoTransferTransaction {
+	transaction.pb.Transfers.AccountAmounts = append(transaction.pb.Transfers.AccountAmounts, &proto.AccountAmount{
 		AccountID: id.toProto(),
 		Amount:    amount.AsTinybar(),
 	})
 
-	return builder
+	return transaction
 }
 
 //
@@ -67,26 +67,26 @@ func (builder CryptoTransferTransaction) AddTransfer(id AccountID, amount Hbar) 
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder CryptoTransferTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) CryptoTransferTransaction {
-	return CryptoTransferTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction CryptoTransferTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) CryptoTransferTransaction {
+	return CryptoTransferTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder CryptoTransferTransaction) SetTransactionMemo(memo string) CryptoTransferTransaction {
-	return CryptoTransferTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction CryptoTransferTransaction) SetTransactionMemo(memo string) CryptoTransferTransaction {
+	return CryptoTransferTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder CryptoTransferTransaction) SetTransactionValidDuration(validDuration time.Duration) CryptoTransferTransaction {
-	return CryptoTransferTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction CryptoTransferTransaction) SetTransactionValidDuration(validDuration time.Duration) CryptoTransferTransaction {
+	return CryptoTransferTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder CryptoTransferTransaction) SetTransactionID(transactionID TransactionID) CryptoTransferTransaction {
-	return CryptoTransferTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction CryptoTransferTransaction) SetTransactionID(transactionID TransactionID) CryptoTransferTransaction {
+	return CryptoTransferTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder CryptoTransferTransaction) SetNodeAccountID(nodeAccountID AccountID) CryptoTransferTransaction {
-	return CryptoTransferTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction CryptoTransferTransaction) SetNodeID(nodeAccountID AccountID) CryptoTransferTransaction {
+	return CryptoTransferTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

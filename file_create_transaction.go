@@ -20,7 +20,7 @@ type FileCreateTransaction struct {
 	pb *proto.FileCreateTransactionBody
 }
 
-// NewFileCreateTransaction creates a FileCreateTransaction builder which can be
+// NewFileCreateTransaction creates a FileCreateTransaction transaction which can be
 // used to construct and execute a File Create Transaction.
 func NewFileCreateTransaction() FileCreateTransaction {
 	pb := &proto.FileCreateTransactionBody{}
@@ -28,11 +28,11 @@ func NewFileCreateTransaction() FileCreateTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_FileCreate{FileCreate: pb}
 
-	builder := FileCreateTransaction{inner, pb}
-	builder.SetExpirationTime(time.Now().Add(7890000 * time.Second))
-	builder.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+	transaction := FileCreateTransaction{inner, pb}
+	transaction.SetExpirationTime(time.Now().Add(7890000 * time.Second))
+	transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 
-	return builder
+	return transaction
 }
 
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
@@ -45,26 +45,26 @@ func NewFileCreateTransaction() FileCreateTransaction {
 // If a file is created without adding ANY keys, the file is immutable and ONLY the
 // expirationTime of the file can be changed using FileUpdateTransaction. The file contents or its keys will not be
 // mutable.
-func (builder FileCreateTransaction) AddKey(publicKey PublicKey) FileCreateTransaction {
-	builder.pb.Keys.Keys = append(builder.pb.Keys.Keys, publicKey.toProto())
-	return builder
+func (transaction FileCreateTransaction) AddKey(publicKey PublicKey) FileCreateTransaction {
+	transaction.pb.Keys.Keys = append(transaction.pb.Keys.Keys, publicKey.toProto())
+	return transaction
 }
 
 // SetExpirationTime sets the time at which this file should expire (unless FileUpdateTransaction is used before then to
 // extend its life). The file will automatically disappear at the fileExpirationTime, unless its expiration is extended
 // by another transaction before that time. If the file is deleted, then its contents will become empty and it will be
 // marked as deleted until it expires, and then it will cease to exist.
-func (builder FileCreateTransaction) SetExpirationTime(expiration time.Time) FileCreateTransaction {
-	builder.pb.ExpirationTime = timeToProto(expiration)
-	return builder
+func (transaction FileCreateTransaction) SetExpirationTime(expiration time.Time) FileCreateTransaction {
+	transaction.pb.ExpirationTime = timeToProto(expiration)
+	return transaction
 }
 
 // SetContents sets the bytes that are the contents of the file (which can be empty). If the size of the file and other
 // fields in the transaction exceed the max transaction size then FileAppendTransaction can be used to continue
 // uploading the file.
-func (builder FileCreateTransaction) SetContents(contents []byte) FileCreateTransaction {
-	builder.pb.Contents = contents
-	return builder
+func (transaction FileCreateTransaction) SetContents(contents []byte) FileCreateTransaction {
+	transaction.pb.Contents = contents
+	return transaction
 }
 
 //
@@ -73,26 +73,26 @@ func (builder FileCreateTransaction) SetContents(contents []byte) FileCreateTran
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder FileCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileCreateTransaction {
-	return FileCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction FileCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FileCreateTransaction {
+	return FileCreateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder FileCreateTransaction) SetTransactionMemo(memo string) FileCreateTransaction {
-	return FileCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction FileCreateTransaction) SetTransactionMemo(memo string) FileCreateTransaction {
+	return FileCreateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder FileCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) FileCreateTransaction {
-	return FileCreateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction FileCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) FileCreateTransaction {
+	return FileCreateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder FileCreateTransaction) SetTransactionID(transactionID TransactionID) FileCreateTransaction {
-	return FileCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction FileCreateTransaction) SetTransactionID(transactionID TransactionID) FileCreateTransaction {
+	return FileCreateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder FileCreateTransaction) SetNodeAccountID(nodeAccountID AccountID) FileCreateTransaction {
-	return FileCreateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction FileCreateTransaction) SetNodeID(nodeAccountID AccountID) FileCreateTransaction {
+	return FileCreateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

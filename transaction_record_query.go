@@ -19,13 +19,13 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 }
 
 // SetTransactionID sets the TransactionID for which to request the TransactionRecord.
-func (builder *TransactionRecordQuery) SetTransactionID(id TransactionID) *TransactionRecordQuery {
-	builder.pb.TransactionID = id.toProto()
-	return builder
+func (transaction *TransactionRecordQuery) SetTransactionID(id TransactionID) *TransactionRecordQuery {
+	transaction.pb.TransactionID = id.toProto()
+	return transaction
 }
 
-func (builder *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
-	resp, err := builder.execute(client)
+func (transaction *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return TransactionRecord{}, err
 	}
@@ -39,16 +39,16 @@ func (builder *TransactionRecordQuery) Execute(client *Client) (TransactionRecor
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *TransactionRecordQuery) SetMaxQueryPayment(maxPayment Hbar) *TransactionRecordQuery {
-	return &TransactionRecordQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *TransactionRecordQuery) SetMaxQueryPayment(maxPayment Hbar) *TransactionRecordQuery {
+	return &TransactionRecordQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *TransactionRecordQuery) SetQueryPayment(paymentAmount Hbar) *TransactionRecordQuery {
-	return &TransactionRecordQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *TransactionRecordQuery) SetQueryPayment(paymentAmount Hbar) *TransactionRecordQuery {
+	return &TransactionRecordQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *TransactionRecordQuery) SetQueryPaymentTransaction(tx Transaction) *TransactionRecordQuery {
-	return &TransactionRecordQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *TransactionRecordQuery) SetQueryPaymentTransaction(tx Transaction) *TransactionRecordQuery {
+	return &TransactionRecordQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

@@ -9,7 +9,7 @@ type AccountRecordsQuery struct {
 	pb *proto.CryptoGetAccountRecordsQuery
 }
 
-// NewAccountRecordsQuery creates an AccountRecordsQuery builder which can be used to construct and execute
+// NewAccountRecordsQuery creates an AccountRecordsQuery transaction which can be used to construct and execute
 // an AccountRecordsQuery.
 //
 // It is recommended that you use this for creating new instances of an AccountRecordQuery
@@ -24,16 +24,16 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 }
 
 // SetAccountID sets the account ID for which the records should be retrieved.
-func (builder *AccountRecordsQuery) SetAccountID(id AccountID) *AccountRecordsQuery {
-	builder.pb.AccountID = id.toProto()
-	return builder
+func (transaction *AccountRecordsQuery) SetAccountID(id AccountID) *AccountRecordsQuery {
+	transaction.pb.AccountID = id.toProto()
+	return transaction
 }
 
 // Execute executes the AccountRecordsQuery using the provided client
-func (builder *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
+func (transaction *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
 	var records = []TransactionRecord{}
 
-	resp, err := builder.execute(client)
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return records, err
 	}
@@ -51,16 +51,16 @@ func (builder *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *AccountRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountRecordsQuery {
-	return &AccountRecordsQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *AccountRecordsQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountRecordsQuery {
+	return &AccountRecordsQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRecordsQuery {
-	return &AccountRecordsQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRecordsQuery {
+	return &AccountRecordsQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *AccountRecordsQuery) SetQueryPaymentTransaction(tx Transaction) *AccountRecordsQuery {
-	return &AccountRecordsQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *AccountRecordsQuery) SetQueryPaymentTransaction(tx Transaction) *AccountRecordsQuery {
+	return &AccountRecordsQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

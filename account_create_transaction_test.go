@@ -20,7 +20,7 @@ func TestSerializeAccountCreateTransaction(t *testing.T) {
 		SetInitialBalance(HbarFromTinybar(450)).
 		SetProxyAccountID(AccountID{Account: 1020}).
 		SetReceiverSignatureRequired(true).
-		SetNodeAccountID(AccountID{Account: 3}).
+		SetNodeID(AccountID{Account: 3}).
 		SetTransactionID(TransactionID{
 			AccountID:  AccountID{Account: 2},
 			ValidStart: date,

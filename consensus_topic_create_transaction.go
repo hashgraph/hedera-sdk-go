@@ -12,7 +12,7 @@ type ConsensusTopicCreateTransaction struct {
 	pb *proto.ConsensusCreateTopicTransactionBody
 }
 
-// NewConsensusTopicCreateTransaction creates a ConsensusTopicCreateTransaction builder which can be
+// NewConsensusTopicCreateTransaction creates a ConsensusTopicCreateTransaction transaction which can be
 // used to construct and execute a Consensus Create Topic Transaction.
 func NewConsensusTopicCreateTransaction() ConsensusTopicCreateTransaction {
 	pb := &proto.ConsensusCreateTopicTransactionBody{}
@@ -20,37 +20,37 @@ func NewConsensusTopicCreateTransaction() ConsensusTopicCreateTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ConsensusCreateTopic{ConsensusCreateTopic: pb}
 
-	builder := ConsensusTopicCreateTransaction{inner, pb}
+	transaction := ConsensusTopicCreateTransaction{inner, pb}
 
-	return builder.SetAutoRenewPeriod(7890000 * time.Second)
+	return transaction.SetAutoRenewPeriod(7890000 * time.Second)
 }
 
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
 // expirationTime.
-func (builder ConsensusTopicCreateTransaction) SetAdminKey(publicKey PublicKey) ConsensusTopicCreateTransaction {
-	builder.pb.AdminKey = publicKey.toProto()
-	return builder
+func (transaction ConsensusTopicCreateTransaction) SetAdminKey(publicKey PublicKey) ConsensusTopicCreateTransaction {
+	transaction.pb.AdminKey = publicKey.toProto()
+	return transaction
 }
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
-func (builder ConsensusTopicCreateTransaction) SetSubmitKey(publicKey PublicKey) ConsensusTopicCreateTransaction {
-	builder.pb.SubmitKey = publicKey.toProto()
-	return builder
+func (transaction ConsensusTopicCreateTransaction) SetSubmitKey(publicKey PublicKey) ConsensusTopicCreateTransaction {
+	transaction.pb.SubmitKey = publicKey.toProto()
+	return transaction
 }
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
-func (builder ConsensusTopicCreateTransaction) SetTopicMemo(memo string) ConsensusTopicCreateTransaction {
-	builder.pb.Memo = memo
-	return builder
+func (transaction ConsensusTopicCreateTransaction) SetTopicMemo(memo string) ConsensusTopicCreateTransaction {
+	transaction.pb.Memo = memo
+	return transaction
 }
 
 // SetAutoRenewPeriod sets the initial lifetime of the topic and the amount of time to extend the topic's lifetime
 // automatically at expirationTime if the autoRenewAccount is configured and has sufficient funds.
 //
 // Required. Limited to a maximum of 90 days (server-side configuration which may change).
-func (builder ConsensusTopicCreateTransaction) SetAutoRenewPeriod(period time.Duration) ConsensusTopicCreateTransaction {
-	builder.pb.AutoRenewPeriod = durationToProto(period)
-	return builder
+func (transaction ConsensusTopicCreateTransaction) SetAutoRenewPeriod(period time.Duration) ConsensusTopicCreateTransaction {
+	transaction.pb.AutoRenewPeriod = durationToProto(period)
+	return transaction
 }
 
 // SetAutoRenewAccountID sets an optional account to be used at the topic's expirationTime to extend the life of the
@@ -58,9 +58,9 @@ func (builder ConsensusTopicCreateTransaction) SetAutoRenewPeriod(period time.Du
 // extended using all funds on the account (whichever is the smaller duration/amount).
 //
 //If specified, there must be an adminKey and the autoRenewAccount must sign this transaction.
-func (builder ConsensusTopicCreateTransaction) SetAutoRenewAccountID(id AccountID) ConsensusTopicCreateTransaction {
-	builder.pb.AutoRenewAccount = id.toProto()
-	return builder
+func (transaction ConsensusTopicCreateTransaction) SetAutoRenewAccountID(id AccountID) ConsensusTopicCreateTransaction {
+	transaction.pb.AutoRenewAccount = id.toProto()
+	return transaction
 }
 
 //
@@ -69,26 +69,26 @@ func (builder ConsensusTopicCreateTransaction) SetAutoRenewAccountID(id AccountI
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder ConsensusTopicCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusTopicCreateTransaction {
-	return ConsensusTopicCreateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction ConsensusTopicCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ConsensusTopicCreateTransaction {
+	return ConsensusTopicCreateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder ConsensusTopicCreateTransaction) SetTransactionMemo(memo string) ConsensusTopicCreateTransaction {
-	return ConsensusTopicCreateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction ConsensusTopicCreateTransaction) SetTransactionMemo(memo string) ConsensusTopicCreateTransaction {
+	return ConsensusTopicCreateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder ConsensusTopicCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusTopicCreateTransaction {
-	return ConsensusTopicCreateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction ConsensusTopicCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) ConsensusTopicCreateTransaction {
+	return ConsensusTopicCreateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder ConsensusTopicCreateTransaction) SetTransactionID(transactionID TransactionID) ConsensusTopicCreateTransaction {
-	return ConsensusTopicCreateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction ConsensusTopicCreateTransaction) SetTransactionID(transactionID TransactionID) ConsensusTopicCreateTransaction {
+	return ConsensusTopicCreateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder ConsensusTopicCreateTransaction) SetNodeAccountID(nodeAccountID AccountID) ConsensusTopicCreateTransaction {
-	return ConsensusTopicCreateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction ConsensusTopicCreateTransaction) SetNodeID(nodeAccountID AccountID) ConsensusTopicCreateTransaction {
+	return ConsensusTopicCreateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

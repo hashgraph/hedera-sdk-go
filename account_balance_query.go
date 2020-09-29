@@ -9,7 +9,7 @@ type AccountBalanceQuery struct {
 	pb *proto.CryptoGetAccountBalanceQuery
 }
 
-// NewAccountBalanceQuery creates an AccountBalanceQuery builder which can be used to construct and execute
+// NewAccountBalanceQuery creates an AccountBalanceQuery transaction which can be used to construct and execute
 // an AccountBalanceQuery.
 // It is recommended that you use this for creating new instances of an AccountBalanceQuery
 // instead of manually creating an instance of the struct.
@@ -26,29 +26,29 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
-func (builder *AccountBalanceQuery) SetAccountID(id AccountID) *AccountBalanceQuery {
-	builder.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
+func (transaction *AccountBalanceQuery) SetAccountID(id AccountID) *AccountBalanceQuery {
+	transaction.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
 		AccountID: id.toProto(),
 	}
 
-	return builder
+	return transaction
 }
 
 // SetContractID sets the ContractID for which you wish to query the balance.
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
-func (builder *AccountBalanceQuery) SetContractID(id ContractID) *AccountBalanceQuery {
-	builder.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
+func (transaction *AccountBalanceQuery) SetContractID(id ContractID) *AccountBalanceQuery {
+	transaction.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
 		ContractID: id.toProto(),
 	}
 
-	return builder
+	return transaction
 }
 
 // Execute executes the AccountBalanceQuery using the provided client
-func (builder *AccountBalanceQuery) Execute(client *Client) (Hbar, error) {
-	resp, err := builder.execute(client)
+func (transaction *AccountBalanceQuery) Execute(client *Client) (Hbar, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return ZeroHbar, err
 	}
@@ -62,16 +62,16 @@ func (builder *AccountBalanceQuery) Execute(client *Client) (Hbar, error) {
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *AccountBalanceQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountBalanceQuery {
-	return &AccountBalanceQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *AccountBalanceQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountBalanceQuery {
+	return &AccountBalanceQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBalanceQuery {
-	return &AccountBalanceQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBalanceQuery {
+	return &AccountBalanceQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *AccountBalanceQuery) SetQueryPaymentTransaction(tx Transaction) *AccountBalanceQuery {
-	return &AccountBalanceQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *AccountBalanceQuery) SetQueryPaymentTransaction(tx Transaction) *AccountBalanceQuery {
+	return &AccountBalanceQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

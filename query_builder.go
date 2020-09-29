@@ -21,29 +21,29 @@ type QueryBuilder struct {
 }
 
 func newQueryBuilder(pbHeader *proto.QueryHeader) QueryBuilder {
-	builder := QueryBuilder{pb: &proto.Query{}, pbHeader: pbHeader}
-	return builder
+	transaction := QueryBuilder{pb: &proto.Query{}, pbHeader: pbHeader}
+	return transaction
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *QueryBuilder) SetMaxQueryPayment(maxPayment Hbar) *QueryBuilder {
-	builder.maxPayment = maxPayment
-	return builder
+func (transaction *QueryBuilder) SetMaxQueryPayment(maxPayment Hbar) *QueryBuilder {
+	transaction.maxPayment = maxPayment
+	return transaction
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *QueryBuilder) SetQueryPayment(paymentAmount Hbar) *QueryBuilder {
-	builder.payment = &paymentAmount
-	return builder
+func (transaction *QueryBuilder) SetQueryPayment(paymentAmount Hbar) *QueryBuilder {
+	transaction.payment = &paymentAmount
+	return transaction
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *QueryBuilder) SetQueryPaymentTransaction(tx Transaction) *QueryBuilder {
-	builder.pbHeader.Payment = tx.pb
-	return builder
+func (transaction *QueryBuilder) SetQueryPaymentTransaction(tx Transaction) *QueryBuilder {
+	transaction.pbHeader.Payment = tx.pb
+	return transaction
 }
 
-func (builder *QueryBuilder) GetCost(client *Client) (Hbar, error) {
+func (transaction *QueryBuilder) GetCost(client *Client) (Hbar, error) {
 	// An operator must be set on the client
 	if client == nil || client.operator == nil {
 		return ZeroHbar, newErrLocalValidationf("calling .GetCost() requires client.SetOperator")
@@ -51,25 +51,25 @@ func (builder *QueryBuilder) GetCost(client *Client) (Hbar, error) {
 
 	// Store the current response type and payment from the
 	// query header
-	currentResponseType := builder.pbHeader.ResponseType
-	currentPayment := builder.pbHeader.Payment
+	currentResponseType := transaction.pbHeader.ResponseType
+	currentPayment := transaction.pbHeader.Payment
 
 	defer func() {
 		// Reset the response type and payment transaction
 		// on the query header
-		builder.pbHeader.ResponseType = currentResponseType
-		builder.pbHeader.Payment = currentPayment
+		transaction.pbHeader.ResponseType = currentResponseType
+		transaction.pbHeader.Payment = currentPayment
 	}()
 
 	// Pick a random node for us to use
 	node := client.randomNode()
 
 	// COST_ANSWER tells Hedera to only return the cost for the given query body
-	builder.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	transaction.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 
 	// COST_ANSWER requires a "null" payment (it checks for it but does not process it)
 	tx, err := NewCryptoTransferTransaction().
-		SetNodeAccountID(node.id).
+		SetNodeID(node.id).
 		AddRecipient(node.id, ZeroHbar).
 		AddSender(client.operator.accountID, ZeroHbar).
 		Build(client)
@@ -80,9 +80,9 @@ func (builder *QueryBuilder) GetCost(client *Client) (Hbar, error) {
 
 	tx = tx.SignWithOperator(*client.operator)
 
-	builder.pbHeader.Payment = tx.pb
+	transaction.pbHeader.Payment = tx.pb
 
-	resp, err := execute(node, &tx.id, builder.pb, time.Now().Add(10*time.Second))
+	resp, err := execute(node, &tx.id, transaction.pb, time.Now().Add(10*time.Second))
 	if err != nil {
 		return ZeroHbar, err
 	}
@@ -90,7 +90,7 @@ func (builder *QueryBuilder) GetCost(client *Client) (Hbar, error) {
 	tbCost := int64(mapResponseHeader(resp).Cost)
 
 	// Some queries require more than the server requests, so 10% is added to the cost as an estimated max range
-	switch builder.pb.Query.(type) {
+	switch transaction.pb.Query.(type) {
 	case *proto.Query_ContractCallLocal:
 		tbCost = int64(float64(tbCost) * 1.1)
 		break
@@ -102,13 +102,13 @@ func (builder *QueryBuilder) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(tbCost), nil
 }
 
-func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
+func (transaction *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 	var node *node
 	var payment *TransactionID
 
-	if builder.isPaymentRequired() {
-		if builder.pbHeader.Payment != nil {
-			paymentBodyBytes := builder.pbHeader.Payment.GetBodyBytes()
+	if transaction.isPaymentRequired() {
+		if transaction.pbHeader.Payment != nil {
+			paymentBodyBytes := transaction.pbHeader.Payment.GetBodyBytes()
 			paymentBody := new(proto.TransactionBody)
 			err := protobuf.Unmarshal(paymentBodyBytes, paymentBody)
 			if err != nil {
@@ -120,34 +120,34 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 			txID := transactionIDFromProto(paymentBody.TransactionID)
 			payment = &txID
 			node = client.node(nodeID)
-		} else if builder.payment != nil {
+		} else if transaction.payment != nil {
 			node = client.randomNode()
-			txID, err := builder.generatePaymentTransaction(client, node, *builder.payment)
+			txID, err := transaction.generatePaymentTransaction(client, node, *transaction.payment)
 
 			if err != nil {
 				return nil, err
 			}
 
 			payment = &txID
-		} else if builder.maxPayment.AsTinybar() > 0 || client.maxQueryPayment.AsTinybar() > 0 {
+		} else if transaction.maxPayment.AsTinybar() > 0 || client.maxQueryPayment.AsTinybar() > 0 {
 			node = client.randomNode()
 
-			var maxPayment = builder.maxPayment
+			var maxPayment = transaction.maxPayment
 			if maxPayment.AsTinybar() == 0 {
 				maxPayment = client.maxQueryPayment
 			}
 
-			actualCost, err := builder.GetCost(client)
+			actualCost, err := transaction.GetCost(client)
 
 			if err != nil {
 				return nil, err
 			}
 
 			if actualCost.AsTinybar() > maxPayment.AsTinybar() {
-				return nil, newErrorMaxQueryPaymentExceeded(builder, actualCost, maxPayment)
+				return nil, newErrorMaxQueryPaymentExceeded(transaction, actualCost, maxPayment)
 			}
 
-			txID, err := builder.generatePaymentTransaction(client, node, actualCost)
+			txID, err := transaction.generatePaymentTransaction(client, node, actualCost)
 			if err != nil {
 				return nil, err
 			}
@@ -161,7 +161,7 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 
 	var deadline time.Time
 
-	switch builder.pb.Query.(type) {
+	switch transaction.pb.Query.(type) {
 	case *proto.Query_TransactionGetReceipt:
 		// Receipt queries want to wait at most 2 minutes
 		deadline = time.Now().Add(2 * time.Minute)
@@ -171,12 +171,12 @@ func (builder *QueryBuilder) execute(client *Client) (*proto.Response, error) {
 		deadline = time.Now().Add(10 * time.Second)
 	}
 
-	return execute(node, payment, builder.pb, deadline)
+	return execute(node, payment, transaction.pb, deadline)
 }
 
-func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount Hbar) (TransactionID, error) {
+func (transaction *QueryBuilder) generatePaymentTransaction(client *Client, node *node, amount Hbar) (TransactionID, error) {
 	tx, err := NewCryptoTransferTransaction().
-		SetNodeAccountID(node.id).
+		SetNodeID(node.id).
 		AddRecipient(node.id, amount).
 		AddSender(client.operator.accountID, amount).
 		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
@@ -190,13 +190,13 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 		tx = tx.SignWithOperator(*client.operator)
 	}
 
-	builder.pbHeader.Payment = tx.pb
+	transaction.pbHeader.Payment = tx.pb
 
 	return tx.id, nil
 }
 
-func (builder *QueryBuilder) isPaymentRequired() bool {
-	switch builder.pb.Query.(type) {
+func (transaction *QueryBuilder) isPaymentRequired() bool {
+	switch transaction.pb.Query.(type) {
 	case *proto.Query_TransactionGetReceipt:
 		return false
 

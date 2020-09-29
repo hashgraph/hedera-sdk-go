@@ -21,7 +21,7 @@ func TestSerializeConsensusMessageSubmitTransaction(t *testing.T) {
 		SetTopicID(testTopicID).
 		SetMessage([]byte("Hello Hashgraph")).
 		SetTransactionValidDuration(24 * time.Hour).
-		SetNodeAccountID(AccountID{Account: 3}).
+		SetNodeID(AccountID{Account: 3}).
 		SetTransactionID(TransactionID{
 			AccountID:  AccountID{Account: 2},
 			ValidStart: date,

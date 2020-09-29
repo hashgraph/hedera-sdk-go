@@ -28,13 +28,13 @@ func NewFileInfoQuery() *FileInfoQuery {
 	return &FileInfoQuery{inner, pb}
 }
 
-func (builder *FileInfoQuery) SetFileID(id FileID) *FileInfoQuery {
-	builder.pb.FileID = id.toProto()
-	return builder
+func (transaction *FileInfoQuery) SetFileID(id FileID) *FileInfoQuery {
+	transaction.pb.FileID = id.toProto()
+	return transaction
 }
 
-func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
-	resp, err := builder.execute(client)
+func (transaction *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return FileInfo{}, err
 	}
@@ -55,11 +55,11 @@ func (builder *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	}, nil
 }
 
-func (builder *FileInfoQuery) Cost(client *Client) (Hbar, error) {
+func (transaction *FileInfoQuery) Cost(client *Client) (Hbar, error) {
 	// deleted files return a COST_ANSWER of zero which triggers `INSUFFICIENT_TX_FEE`
 	// if you set that as the query payment; 25 tinybar seems to be enough to get
 	// `FILE_DELETED` back instead.
-	cost, err := builder.QueryBuilder.GetCost(client)
+	cost, err := transaction.QueryBuilder.GetCost(client)
 	if err != nil {
 		return ZeroHbar, err
 	}
@@ -78,16 +78,16 @@ func (builder *FileInfoQuery) Cost(client *Client) (Hbar, error) {
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
-	return &FileInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *FileInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *FileInfoQuery {
+	return &FileInfoQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
-	return &FileInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
+	return &FileInfoQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *FileInfoQuery) SetQueryPaymentTransaction(tx Transaction) *FileInfoQuery {
-	return &FileInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *FileInfoQuery) SetQueryPaymentTransaction(tx Transaction) *FileInfoQuery {
+	return &FileInfoQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

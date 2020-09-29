@@ -8,7 +8,7 @@ type FileContentsQuery struct {
 	pb *proto.FileGetContentsQuery
 }
 
-// NewFileContentsQuery creates a FileContentsQuery builder which can be used to construct and execute a
+// NewFileContentsQuery creates a FileContentsQuery transaction which can be used to construct and execute a
 // File Get Contents Query.
 func NewFileContentsQuery() *FileContentsQuery {
 	pb := &proto.FileGetContentsQuery{Header: &proto.QueryHeader{}}
@@ -20,15 +20,15 @@ func NewFileContentsQuery() *FileContentsQuery {
 }
 
 // SetFileID sets the FileID of the file whose contents are requested.
-func (builder *FileContentsQuery) SetFileID(id FileID) *FileContentsQuery {
-	builder.pb.FileID = id.toProto()
-	return builder
+func (transaction *FileContentsQuery) SetFileID(id FileID) *FileContentsQuery {
+	transaction.pb.FileID = id.toProto()
+	return transaction
 }
 
 // Execute executes the FileContentsQuery using the provided client. The returned byte slice will be empty if the file
 // is empty.
-func (builder *FileContentsQuery) Execute(client *Client) ([]byte, error) {
-	resp, err := builder.execute(client)
+func (transaction *FileContentsQuery) Execute(client *Client) ([]byte, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -42,16 +42,16 @@ func (builder *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
-	return &FileContentsQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *FileContentsQuery) SetMaxQueryPayment(maxPayment Hbar) *FileContentsQuery {
+	return &FileContentsQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
-	return &FileContentsQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContentsQuery {
+	return &FileContentsQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *FileContentsQuery) SetQueryPaymentTransaction(tx Transaction) *FileContentsQuery {
-	return &FileContentsQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *FileContentsQuery) SetQueryPaymentTransaction(tx Transaction) *FileContentsQuery {
+	return &FileContentsQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

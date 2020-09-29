@@ -24,7 +24,7 @@ type ContractUpdateTransaction struct {
 	pb *proto.ContractUpdateTransactionBody
 }
 
-// NewContractUpdateTransaction creates a ContractUpdateTransaction builder which can be
+// NewContractUpdateTransaction creates a ContractUpdateTransaction transaction which can be
 // used to construct and execute a Contract Update Transaction.
 func NewContractUpdateTransaction() ContractUpdateTransaction {
 	pb := &proto.ContractUpdateTransactionBody{}
@@ -32,59 +32,59 @@ func NewContractUpdateTransaction() ContractUpdateTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ContractUpdateInstance{ContractUpdateInstance: pb}
 
-	builder := ContractUpdateTransaction{inner, pb}
+	transaction := ContractUpdateTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
-func (builder ContractUpdateTransaction) SetContractID(id ContractID) ContractUpdateTransaction {
-	builder.pb.ContractID = id.toProto()
-	return builder
+func (transaction ContractUpdateTransaction) SetContractID(id ContractID) ContractUpdateTransaction {
+	transaction.pb.ContractID = id.toProto()
+	return transaction
 }
 
 // SetBytecodeFileID sets the file ID of file containing the smart contract byte code. A copy will be made and held by
 // the contract instance, and have the same expiration time as the instance.
-func (builder ContractUpdateTransaction) SetBytecodeFileID(id FileID) ContractUpdateTransaction {
-	builder.pb.FileID = id.toProto()
-	return builder
+func (transaction ContractUpdateTransaction) SetBytecodeFileID(id FileID) ContractUpdateTransaction {
+	transaction.pb.FileID = id.toProto()
+	return transaction
 }
 
 // SetAdminKey sets the key which can be used to arbitrarily modify the state of the instance by signing a
 // ContractUpdateTransaction to modify it. If the admin key was never set then such modifications are not possible,
 // and there is no administrator that can override the normal operation of the smart contract instance.
-func (builder ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) ContractUpdateTransaction {
-	builder.pb.AdminKey = publicKey.toProto()
-	return builder
+func (transaction ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) ContractUpdateTransaction {
+	transaction.pb.AdminKey = publicKey.toProto()
+	return transaction
 }
 
 // SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,
 // is an invalid account, or is an account that isn't a node, then this contract is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was never set.
-func (builder ContractUpdateTransaction) SetProxyAccountID(id AccountID) ContractUpdateTransaction {
-	builder.pb.ProxyAccountID = id.toProto()
-	return builder
+func (transaction ContractUpdateTransaction) SetProxyAccountID(id AccountID) ContractUpdateTransaction {
+	transaction.pb.ProxyAccountID = id.toProto()
+	return transaction
 }
 
 // SetAutoRenewPeriod sets the duration for which the contract instance will automatically charge its account to
 // renew for.
-func (builder ContractUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) ContractUpdateTransaction {
-	builder.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
-	return builder
+func (transaction ContractUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) ContractUpdateTransaction {
+	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	return transaction
 }
 
 // SetExpirationTime extends the expiration of the instance and its account to the provided time. If the time provided
 // is the current or past time, then there will be no effect.
-func (builder ContractUpdateTransaction) SetExpirationTime(expiration time.Time) ContractUpdateTransaction {
-	builder.pb.ExpirationTime = timeToProto(expiration)
-	return builder
+func (transaction ContractUpdateTransaction) SetExpirationTime(expiration time.Time) ContractUpdateTransaction {
+	transaction.pb.ExpirationTime = timeToProto(expiration)
+	return transaction
 }
 
 // SetContractMemo sets the memo associated with the contract (max 100 bytes)
-func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUpdateTransaction {
-	builder.pb.Memo = memo
-	return builder
+func (transaction ContractUpdateTransaction) SetContractMemo(memo string) ContractUpdateTransaction {
+	transaction.pb.Memo = memo
+	return transaction
 }
 
 //
@@ -93,26 +93,26 @@ func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUp
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder ContractUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractUpdateTransaction {
-	return ContractUpdateTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction ContractUpdateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) ContractUpdateTransaction {
+	return ContractUpdateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder ContractUpdateTransaction) SetTransactionMemo(memo string) ContractUpdateTransaction {
-	return ContractUpdateTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction ContractUpdateTransaction) SetTransactionMemo(memo string) ContractUpdateTransaction {
+	return ContractUpdateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder ContractUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractUpdateTransaction {
-	return ContractUpdateTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction ContractUpdateTransaction) SetTransactionValidDuration(validDuration time.Duration) ContractUpdateTransaction {
+	return ContractUpdateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder ContractUpdateTransaction) SetTransactionID(transactionID TransactionID) ContractUpdateTransaction {
-	return ContractUpdateTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction ContractUpdateTransaction) SetTransactionID(transactionID TransactionID) ContractUpdateTransaction {
+	return ContractUpdateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder ContractUpdateTransaction) SetNodeAccountID(nodeAccountID AccountID) ContractUpdateTransaction {
-	return ContractUpdateTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction ContractUpdateTransaction) SetNodeID(nodeAccountID AccountID) ContractUpdateTransaction {
+	return ContractUpdateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

@@ -25,7 +25,7 @@ type ContractInfo struct {
 	ContractMemo      string
 }
 
-// NewContractInfoQuery creates a ContractInfoQuery builder which can be used to construct and execute a
+// NewContractInfoQuery creates a ContractInfoQuery transaction which can be used to construct and execute a
 // Contract Get Info Query.
 func NewContractInfoQuery() *ContractInfoQuery {
 	pb := &proto.ContractGetInfoQuery{Header: &proto.QueryHeader{}}
@@ -37,14 +37,14 @@ func NewContractInfoQuery() *ContractInfoQuery {
 }
 
 // SetContractID sets the contract for which information is requested
-func (builder *ContractInfoQuery) SetContractID(id ContractID) *ContractInfoQuery {
-	builder.pb.ContractID = id.toProto()
-	return builder
+func (transaction *ContractInfoQuery) SetContractID(id ContractID) *ContractInfoQuery {
+	transaction.pb.ContractID = id.toProto()
+	return transaction
 }
 
 // Execute executes the ContractInfoQuery using the provided client
-func (builder *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
-	resp, err := builder.execute(client)
+func (transaction *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return ContractInfo{}, err
 	}
@@ -69,8 +69,8 @@ func (builder *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) 
 // Cost is a wrapper around the standard Cost function for a query. It must exist because deleted files return a
 // COST_ANSWER of zero which triggers an INSUFFICIENT_TX_FEE response Status if set as the query payment. However,
 // 25 tinybar seems to be enough to get FILE_DELETED back instead, so that is used instead.
-func (builder *ContractInfoQuery) Cost(client *Client) (Hbar, error) {
-	cost, err := builder.QueryBuilder.GetCost(client)
+func (transaction *ContractInfoQuery) Cost(client *Client) (Hbar, error) {
+	cost, err := transaction.QueryBuilder.GetCost(client)
 	if err != nil {
 		return ZeroHbar, err
 	}
@@ -89,16 +89,16 @@ func (builder *ContractInfoQuery) Cost(client *Client) (Hbar, error) {
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *ContractInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractInfoQuery {
-	return &ContractInfoQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *ContractInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *ContractInfoQuery {
+	return &ContractInfoQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInfoQuery {
-	return &ContractInfoQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInfoQuery {
+	return &ContractInfoQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *ContractInfoQuery) SetQueryPaymentTransaction(tx Transaction) *ContractInfoQuery {
-	return &ContractInfoQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *ContractInfoQuery) SetQueryPaymentTransaction(tx Transaction) *ContractInfoQuery {
+	return &ContractInfoQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

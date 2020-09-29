@@ -9,7 +9,7 @@ type AccountStakersQuery struct {
 	pb *proto.CryptoGetStakersQuery
 }
 
-// NewAccountStakersQuery creates an AccountStakersQuery builder which can be used to construct and execute
+// NewAccountStakersQuery creates an AccountStakersQuery transaction which can be used to construct and execute
 // an AccountStakersQuery.
 //
 // It is recommended that you use this for creating new instances of an AccountStakersQuery
@@ -24,14 +24,14 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 }
 
 // SetAccountID sets the Account ID for which the stakers should be retrieved
-func (builder *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQuery {
-	builder.pb.AccountID = id.toProto()
-	return builder
+func (transaction *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQuery {
+	transaction.pb.AccountID = id.toProto()
+	return transaction
 }
 
 // Execute executes the AccountStakersQuery using the provided client.
-func (builder *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
-	resp, err := builder.execute(client)
+func (transaction *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
+	resp, err := transaction.execute(client)
 	if err != nil {
 		return []Transfer{}, err
 	}
@@ -54,16 +54,16 @@ func (builder *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) 
 //
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (builder *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
-	return &AccountStakersQuery{*builder.QueryBuilder.SetMaxQueryPayment(maxPayment), builder.pb}
+func (transaction *AccountStakersQuery) SetMaxQueryPayment(maxPayment Hbar) *AccountStakersQuery {
+	return &AccountStakersQuery{*transaction.QueryBuilder.SetMaxQueryPayment(maxPayment), transaction.pb}
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (builder *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
-	return &AccountStakersQuery{*builder.QueryBuilder.SetQueryPayment(paymentAmount), builder.pb}
+func (transaction *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountStakersQuery {
+	return &AccountStakersQuery{*transaction.QueryBuilder.SetQueryPayment(paymentAmount), transaction.pb}
 }
 
 // SetQueryPaymentTransaction sets the payment Transaction for this Query.
-func (builder *AccountStakersQuery) SetQueryPaymentTransaction(tx Transaction) *AccountStakersQuery {
-	return &AccountStakersQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
+func (transaction *AccountStakersQuery) SetQueryPaymentTransaction(tx Transaction) *AccountStakersQuery {
+	return &AccountStakersQuery{*transaction.QueryBuilder.SetQueryPaymentTransaction(tx), transaction.pb}
 }

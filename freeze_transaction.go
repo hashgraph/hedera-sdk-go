@@ -17,21 +17,21 @@ func NewFreezeTransaction() FreezeTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_Freeze{Freeze: pb}
 
-	builder := FreezeTransaction{inner, pb}
+	transaction := FreezeTransaction{inner, pb}
 
-	return builder
+	return transaction
 }
 
-func (builder FreezeTransaction) SetStartTime(hour uint8, minute uint8) FreezeTransaction {
-	builder.pb.StartHour = int32(hour)
-	builder.pb.StartMin = int32(minute)
-	return builder
+func (transaction FreezeTransaction) SetStartTime(hour uint8, minute uint8) FreezeTransaction {
+	transaction.pb.StartHour = int32(hour)
+	transaction.pb.StartMin = int32(minute)
+	return transaction
 }
 
-func (builder FreezeTransaction) SetEndTime(hour uint8, minute uint8) FreezeTransaction {
-	builder.pb.EndHour = int32(hour)
-	builder.pb.EndMin = int32(minute)
-	return builder
+func (transaction FreezeTransaction) SetEndTime(hour uint8, minute uint8) FreezeTransaction {
+	transaction.pb.EndHour = int32(hour)
+	transaction.pb.EndMin = int32(minute)
+	return transaction
 }
 
 //
@@ -40,26 +40,26 @@ func (builder FreezeTransaction) SetEndTime(hour uint8, minute uint8) FreezeTran
 //
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (builder FreezeTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FreezeTransaction {
-	return FreezeTransaction{builder.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), builder.pb}
+func (transaction FreezeTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) FreezeTransaction {
+	return FreezeTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (builder FreezeTransaction) SetTransactionMemo(memo string) FreezeTransaction {
-	return FreezeTransaction{builder.TransactionBuilder.SetTransactionMemo(memo), builder.pb}
+func (transaction FreezeTransaction) SetTransactionMemo(memo string) FreezeTransaction {
+	return FreezeTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (builder FreezeTransaction) SetTransactionValidDuration(validDuration time.Duration) FreezeTransaction {
-	return FreezeTransaction{builder.TransactionBuilder.SetTransactionValidDuration(validDuration), builder.pb}
+func (transaction FreezeTransaction) SetTransactionValidDuration(validDuration time.Duration) FreezeTransaction {
+	return FreezeTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (builder FreezeTransaction) SetTransactionID(transactionID TransactionID) FreezeTransaction {
-	return FreezeTransaction{builder.TransactionBuilder.SetTransactionID(transactionID), builder.pb}
+func (transaction FreezeTransaction) SetTransactionID(transactionID TransactionID) FreezeTransaction {
+	return FreezeTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
-func (builder FreezeTransaction) SetNodeAccountID(nodeAccountID AccountID) FreezeTransaction {
-	return FreezeTransaction{builder.TransactionBuilder.SetNodeAccountID(nodeAccountID), builder.pb}
+// SetNodeID sets the node AccountID for this Transaction.
+func (transaction FreezeTransaction) SetNodeID(nodeAccountID AccountID) FreezeTransaction {
+	return FreezeTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
 }

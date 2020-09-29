@@ -21,7 +21,7 @@ func TestSerializeConsensusTopicDeleteTransaction(t *testing.T) {
 	tx, err := NewConsensusTopicDeleteTransaction().
 		SetTopicID(testTopicID).
 		SetTransactionValidDuration(24 * time.Hour).
-		SetNodeAccountID(AccountID{Account: 3}).
+		SetNodeID(AccountID{Account: 3}).
 		SetTransactionID(TransactionID{
 			AccountID:  AccountID{Account: 2},
 			ValidStart: date,
