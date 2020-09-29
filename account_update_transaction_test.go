@@ -29,7 +29,7 @@ func TestSerializeAccountUpdateTransaction(t *testing.T) {
 }
 
 func TestAccountUpdateTransaction_Execute(t *testing.T) {
-	client, err := ClientFromFile(os.Getenv("CONFIG_FILE"))
+	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
 		client = ClientForTestnet()

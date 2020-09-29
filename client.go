@@ -26,6 +26,9 @@ type Client struct {
 
 	networkNodes   map[AccountID]*node
 	networkNodeIds []AccountID
+
+	mirrorChannels map[string]*grpc.ClientConn
+	mirrorNetwork  []string
 }
 
 type node struct {
@@ -44,31 +47,39 @@ type operator struct {
 	signer     TransactionSigner
 }
 
-var mainnetNodes = map[string]AccountID{
-	"35.237.200.180:50211": {Account: 3},
-	"35.186.191.247:50211": {Account: 4},
-	"35.192.2.25:50211":    {Account: 5},
-	"35.199.161.108:50211": {Account: 6},
-	"35.203.82.240:50211":  {Account: 7},
-	"35.236.5.219:50211":   {Account: 8},
-	"35.197.192.225:50211": {Account: 9},
-	"35.242.233.154:50211": {Account: 10},
-	"35.240.118.96:50211":  {Account: 11},
-	"35.204.86.32:50211":   {Account: 12},
+var mainnetNodes = map[AccountID]string{
+	{Account: 3}:  "35.237.200.180:50211",
+	{Account: 4}:  "35.186.191.247:50211",
+	{Account: 5}:  "35.192.2.25:50211",
+	{Account: 6}:  "35.199.161.108:50211",
+	{Account: 7}:  "35.203.82.240:50211",
+	{Account: 8}:  "35.236.5.219:50211",
+	{Account: 9}:  "35.197.192.225:50211",
+	{Account: 10}: "35.242.233.154:50211",
+	{Account: 11}: "35.240.118.96:50211",
+	{Account: 12}: "35.204.86.32:50211",
 }
 
-var testnetNodes = map[string]AccountID{
-	"0.testnet.hedera.com:50211": {Account: 3},
-	"1.testnet.hedera.com:50211": {Account: 4},
-	"2.testnet.hedera.com:50211": {Account: 5},
-	"3.testnet.hedera.com:50211": {Account: 6},
+var testnetNodes = map[AccountID]string{
+	{Account: 3}: "0.testnet.hedera.com:50211",
+	{Account: 4}: "1.testnet.hedera.com:50211",
+	{Account: 5}: "2.testnet.hedera.com:50211",
+	{Account: 6}: "3.testnet.hedera.com:50211",
 }
 
-var previewnetNodes = map[string]AccountID{
-	"0.previewnet.hedera.com:50211": {Account: 3},
-	"1.previewnet.hedera.com:50211": {Account: 4},
-	"2.previewnet.hedera.com:50211": {Account: 5},
-	"3.previewnet.hedera.com:50211": {Account: 6},
+var previewnetNodes = map[AccountID]string{
+	{Account: 3}: "0.previewnet.hedera.com:50211",
+	{Account: 4}: "1.previewnet.hedera.com:50211",
+	{Account: 5}: "2.previewnet.hedera.com:50211",
+	{Account: 6}: "3.previewnet.hedera.com:50211",
+}
+
+var mainnetMirror = []string{"hcs.mainnet.mirrornode.hedera.com:5600"}
+var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
+var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
+
+func ClientForNetwork(network map[AccountID]string) *Client {
+    return newClient(network, []string{})
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
@@ -76,7 +87,7 @@ var previewnetNodes = map[string]AccountID{
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return NewClient(mainnetNodes)
+	return newClient(mainnetNodes, mainnetMirror)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -84,7 +95,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return NewClient(testnetNodes)
+	return newClient(testnetNodes, testnetMirror)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -92,20 +103,23 @@ func ClientForTestnet() *Client {
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return NewClient(previewnetNodes)
+	return newClient(previewnetNodes, previewnetMirror)
 }
 
-// NewClient takes in a map of node addresses to their respective IDS (network)
+// newClient takes in a map of node addresses to their respective IDS (network)
 // and returns a Client instance which can be used to
-func NewClient(network map[string]AccountID) *Client {
+func newClient(network map[AccountID]string, mirrorNetwork []string) *Client {
 	client := &Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
 		maxTransactionFee: defaultMaxTransactionFee,
 		networkNodes:      map[AccountID]*node{},
 		networkNodeIds:    []AccountID{},
+		mirrorChannels:    map[string]*grpc.ClientConn{},
+		mirrorNetwork:     []string{},
 	}
 
-	client.ReplaceNodes(network)
+	client.SetNetwork(network)
+    client.SetMirrorNetwork(mirrorNetwork)
 
 	return client
 }
@@ -115,8 +129,10 @@ type configOperator struct {
 	PrivateKey string `json:"privateKey"`
 }
 
+// TODO: Implement complete spec: https://gitlab.com/launchbadge/hedera/sdk/python/-/issues/45
 type clientConfig struct {
 	Network  map[string]string `json:"network"`
+    MirrorNetwork []string `json:"mirrorNetwork"`
 	Operator *configOperator   `json:"operator"`
 }
 
@@ -130,7 +146,7 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-	var network map[string]AccountID = make(map[string]AccountID)
+	var network map[AccountID]string = make(map[AccountID]string)
 
 	for id, url := range clientConfig.Network {
 		accountID, err := AccountIDFromString(id)
@@ -138,10 +154,10 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 			return nil, err
 		}
 
-		network[url] = accountID
+		network[accountID] = url
 	}
 
-	client := NewClient(network)
+	client := newClient(network, clientConfig.MirrorNetwork)
 
 	// if the operator is not provided, finish here
 	if clientConfig.Operator == nil {
@@ -170,9 +186,9 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 	return client, nil
 }
 
-// ClientFromFile takes a filename string representing the path to a JSON encoded
+// ClientFromJsonFile takes a filename string representing the path to a JSON encoded
 // Client file and returns a Client based on the configuration.
-func ClientFromFile(filename string) (*Client, error) {
+func ClientFromJsonFile(filename string) (*Client, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -204,16 +220,24 @@ func (client *Client) Close() error {
 	return nil
 }
 
-// ReplaceNodes replaces all nodes in the Client with a new set of nodes.
+// SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) ReplaceNodes(network map[string]AccountID) *Client {
-	for address, id := range network {
+func (client *Client) SetNetwork(network map[AccountID]string) *Client {
+	for id, address := range network {
 		client.networkNodeIds = append(client.networkNodeIds, id)
 		client.networkNodes[id] = &node{
 			id:      id,
 			address: address,
 		}
 	}
+
+	return client
+}
+
+// SetNetwork replaces all nodes in the Client with a new set of nodes.
+// (e.g. for an Address Book update).
+func (client *Client) SetMirrorNetwork(mirrorNetwork []string) *Client {
+    client.mirrorNetwork= mirrorNetwork
 
 	return client
 }

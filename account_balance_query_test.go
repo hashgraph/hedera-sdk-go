@@ -31,7 +31,7 @@ func TestNewAccountBalanceQuery_ForContract(t *testing.T) {
 }
 
 func TestAccountBalanceQuery_Execute(t *testing.T) {
-	client, err := ClientFromFile(os.Getenv("CONFIG_FILE"))
+	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
 		client = ClientForTestnet()

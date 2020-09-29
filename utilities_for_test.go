@@ -18,7 +18,7 @@ func newMockClient() (*Client, error) {
 		return nil, err
 	}
 
-	client := NewClient(map[string]AccountID{
+	client := newClient(map[string]AccountID{
 		"nonexistent-testnet": {
 			Shard:   0,
 			Realm:   0,

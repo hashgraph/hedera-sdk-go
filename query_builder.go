@@ -78,7 +78,7 @@ func (builder *QueryBuilder) GetCost(client *Client) (Hbar, error) {
 		return ZeroHbar, err
 	}
 
-	tx = tx.signWithOperator(*client.operator)
+	tx = tx.SignWithOperator(*client.operator)
 
 	builder.pbHeader.Payment = tx.pb
 
@@ -187,7 +187,7 @@ func (builder *QueryBuilder) generatePaymentTransaction(client *Client, node *no
 	}
 
 	if client.operator != nil {
-		tx = tx.signWithOperator(*client.operator)
+		tx = tx.SignWithOperator(*client.operator)
 	}
 
 	builder.pbHeader.Payment = tx.pb

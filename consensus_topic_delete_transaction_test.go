@@ -37,7 +37,7 @@ func TestSerializeConsensusTopicDeleteTransaction(t *testing.T) {
 }
 
 func TestConsensusTopicDeleteTransaction_Execute(t *testing.T) {
-	client, err := ClientFromFile(os.Getenv("CONFIG_FILE"))
+	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
 		client = ClientForTestnet()

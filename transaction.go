@@ -39,7 +39,7 @@ func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
-func (transaction Transaction) signWithOperator(operator operator) Transaction {
+func (transaction Transaction) SignWithOperator(operator operator) Transaction {
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
@@ -79,7 +79,7 @@ func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer Trans
 
 func (transaction Transaction) executeForResponse(client *Client) (TransactionID, *proto.TransactionResponse, error) {
 	if client.operator != nil {
-		transaction.signWithOperator(*client.operator)
+		transaction.SignWithOperator(*client.operator)
 	}
 
 	transactionBody := transaction.body()
