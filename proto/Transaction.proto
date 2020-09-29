@@ -4,13 +4,31 @@ package proto;
 
 option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
-option java_package = "com.hedera.hashgraph.proto";
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
 option java_multiple_files = true;
 
 
-import "proto/Duration.proto";
 import "proto/BasicTypes.proto";
-import "proto/TransactionBody.proto";
 
 
 
@@ -18,10 +36,7 @@ import "proto/TransactionBody.proto";
  * The SignatureList field is deprecated and succeeded by SignatureMap.
  */
 message Transaction {
-	oneof bodyData {
-		TransactionBody body = 1 [deprecated = true]; // the body of the transaction, which needs to be signed
-	    bytes  bodyBytes = 4; // TransactionBody serialized into bytes , which needs to be signed
-    }
-    SignatureList sigs = 2 [deprecated = true]; // The signatures on the body, to authorize the transaction; deprecated and to be succeeded by SignatureMap field
-    SignatureMap sigMap = 3; // The signatures on the body with the new format, to authorize the transaction
+    bytes signedTransactionBytes = 5; // SignedTransaction serialized into bytes
+    bytes bodyBytes = 4 [deprecated = true]; // TransactionBody serialized into bytes, which needs to be signed
+    SignatureMap sigMap = 3 [deprecated = true]; // The signatures on the body with the new format, to authorize the transaction
 }
