@@ -15,7 +15,7 @@ import (
 // The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0,
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
-	TransactionBuilder
+	Transaction
 	pb *proto.CryptoCreateTransactionBody
 }
 
@@ -24,10 +24,11 @@ type AccountCreateTransaction struct {
 func NewAccountCreateTransaction() AccountCreateTransaction {
 	pb := &proto.CryptoCreateTransactionBody{}
 
-	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_CryptoCreateAccount{CryptoCreateAccount: pb}
+	transaction := AccountCreateTransaction{pb: pb}
 
-	transaction := AccountCreateTransaction{inner, pb}
+	transaction.Transaction = newTransaction()
+	transaction.Transaction.pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{CryptoCreateAccount: pb}
+
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
 
 	// Default to maximum values for record thresholds. Without this records would be
@@ -42,7 +43,7 @@ func NewAccountCreateTransaction() AccountCreateTransaction {
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (transaction AccountCreateTransaction) SetKey(publicKey PublicKey) AccountCreateTransaction {
-	transaction.pb.Key = publicKey.toProto()
+	transaction.pb.Key = publicKey.toProtobuf()
 	return transaction
 }
 
@@ -86,7 +87,7 @@ func (transaction AccountCreateTransaction) SetReceiveRecordThreshold(recordThre
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
 func (transaction AccountCreateTransaction) SetProxyAccountID(id AccountID) AccountCreateTransaction {
-	transaction.pb.ProxyAccountID = id.toProto()
+	transaction.pb.ProxyAccountID = id.toProtobuf()
 	return transaction
 }
 
@@ -101,31 +102,86 @@ func (transaction AccountCreateTransaction) SetReceiverSignatureRequired(require
 }
 
 //
-// The following _5_ must be copy-pasted at the bottom of **every** _transaction.go file
+// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
 
-// SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (transaction AccountCreateTransaction) SetMaxTransactionFee(maxTransactionFee Hbar) AccountCreateTransaction {
-	return AccountCreateTransaction{transaction.TransactionBuilder.SetMaxTransactionFee(maxTransactionFee), transaction.pb}
+func (transaction AccountCreateTransaction) onFreeze(pbBody *proto.TransactionBody) bool {
+	tx := AccountCreateTransaction(transaction)
+
+	pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{
+		CryptoCreateAccount: tx.pb,
+	}
+
+	return true
 }
 
-// SetTransactionMemo sets the memo for this Transaction.
+func (transaction AccountCreateTransaction) IsFrozen() bool {
+	return len(transaction.Transaction.transactions) > 0
+}
+
+func (transaction AccountCreateTransaction) Freeze() error {
+	return transaction.FreezeWith(nil)
+}
+
+func (transaction AccountCreateTransaction) FreezeWith(client *Client) error {
+	if _, err := transaction.Transaction.freezeWith(client, transaction.IsFrozen, transaction.onFreeze); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction AccountCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
+	return transaction.Transaction.execute(client, transaction.IsFrozen, transaction.FreezeWith)
+}
+
+func (transaction AccountCreateTransaction) GetMaxTransactionFee() Hbar {
+	return HbarFromTinybar(int64(transaction.pbBody.TransactionFee))
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this AccountCreateTransaction.
+func (transaction AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) AccountCreateTransaction {
+	transaction.pbBody.TransactionFee = uint64(fee.AsTinybar())
+	return transaction
+}
+
+func (transaction AccountCreateTransaction) GetTransactionMemo() string {
+	return transaction.pbBody.Memo
+}
+
+// SetTransactionMemo sets the memo for this AccountCreateTransaction.
 func (transaction AccountCreateTransaction) SetTransactionMemo(memo string) AccountCreateTransaction {
-	return AccountCreateTransaction{transaction.TransactionBuilder.SetTransactionMemo(memo), transaction.pb}
+	transaction.pbBody.Memo = memo
+	return transaction
 }
 
-// SetTransactionValidDuration sets the valid duration for this Transaction.
-func (transaction AccountCreateTransaction) SetTransactionValidDuration(validDuration time.Duration) AccountCreateTransaction {
-	return AccountCreateTransaction{transaction.TransactionBuilder.SetTransactionValidDuration(validDuration), transaction.pb}
+func (transaction AccountCreateTransaction) GetTransactionValidDuration() time.Duration {
+	return durationFromProto(transaction.pbBody.TransactionValidDuration)
 }
 
-// SetTransactionID sets the TransactionID for this Transaction.
+// SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
+func (transaction AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) AccountCreateTransaction {
+	transaction.pbBody.TransactionValidDuration = durationToProto(duration)
+	return transaction
+}
+
+func (transaction AccountCreateTransaction) GetTransactionID() TransactionID {
+	return transactionIDFromProto(transaction.pbBody.TransactionID)
+}
+
+// SetTransactionID sets the TransactionID for this AccountCreateTransaction.
 func (transaction AccountCreateTransaction) SetTransactionID(transactionID TransactionID) AccountCreateTransaction {
-	return AccountCreateTransaction{transaction.TransactionBuilder.SetTransactionID(transactionID), transaction.pb}
+	transaction.pbBody.TransactionID = transactionID.toProtobuf()
+	return transaction
 }
 
-// SetNodeID sets the node AccountID for this Transaction.
+func (transaction AccountCreateTransaction) GetNodeID() AccountID {
+	return accountIDFromProto(transaction.pbBody.NodeAccountID)
+}
+
+// SetNodeID sets the node AccountID for this AccountCreateTransaction.
 func (transaction AccountCreateTransaction) SetNodeID(nodeAccountID AccountID) AccountCreateTransaction {
-	return AccountCreateTransaction{transaction.TransactionBuilder.SetNodeID(nodeAccountID), transaction.pb}
+	transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
+	return transaction
 }

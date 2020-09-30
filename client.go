@@ -3,12 +3,10 @@ package hedera
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	// "github.com/hashgraph/hedera-sdk-go/proto"
 	"google.golang.org/grpc"
 )
 
@@ -29,6 +27,8 @@ type Client struct {
 
 	mirrorChannels map[string]*grpc.ClientConn
 	mirrorNetwork  []string
+
+	nextNodeIndex uint
 }
 
 type node struct {
@@ -42,8 +42,8 @@ type TransactionSigner func(message []byte) []byte
 
 type operator struct {
 	accountID  AccountID
-	privateKey *Ed25519PrivateKey
-	publicKey  Ed25519PublicKey
+	privateKey *PrivateKey
+	publicKey  PublicKey
 	signer     TransactionSigner
 }
 
@@ -116,6 +116,7 @@ func newClient(network map[AccountID]string, mirrorNetwork []string) *Client {
 		networkNodeIds:    []AccountID{},
 		mirrorChannels:    map[string]*grpc.ClientConn{},
 		mirrorNetwork:     []string{},
+		nextNodeIndex:     0,
 	}
 
 	client.SetNetwork(network)
@@ -169,7 +170,7 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-	operatorKey, err := Ed25519PrivateKeyFromString(clientConfig.Operator.PrivateKey)
+	operatorKey, err := PrivateKeyFromString(clientConfig.Operator.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +246,7 @@ func (client *Client) SetMirrorNetwork(mirrorNetwork []string) *Client {
 // SetOperator sets that account that will, by default, be paying for
 // transactions and queries built with the client and the associated key
 // with which to automatically sign transactions.
-func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519PrivateKey) *Client {
+func (client *Client) SetOperator(accountID AccountID, privateKey PrivateKey) *Client {
 	client.operator = &operator{
 		accountID:  accountID,
 		privateKey: &privateKey,
@@ -257,9 +258,9 @@ func (client *Client) SetOperator(accountID AccountID, privateKey Ed25519Private
 }
 
 // SetOperatorWith sets that account that will, by default, be paying for
-// transactions and queries built with the client, the account's Ed25519PublicKey
+// transactions and queries built with the client, the account's PublicKey
 // and a callback that will be invoked when a transaction needs to be signed.
-func (client *Client) SetOperatorWith(accountID AccountID, publicKey Ed25519PublicKey, signer TransactionSigner) *Client {
+func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, signer TransactionSigner) *Client {
 	client.operator = &operator{
 		accountID:  accountID,
 		privateKey: nil,
@@ -276,7 +277,7 @@ func (client *Client) GetOperatorID() AccountID {
 }
 
 // GetOperatorKey returns the Key for the operator
-func (client *Client) GetOperatorKey() Ed25519PublicKey {
+func (client *Client) GetOperatorKey() PublicKey {
 	return client.operator.publicKey
 }
 
@@ -295,46 +296,50 @@ func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 	return client
 }
 
-// Ping sends an AccountBalanceQuery to the specified node returning nil if no
-// problems occur. Otherwise, an error representing the status of the node will
-// be returned.
-func (client *Client) Ping(nodeID AccountID) error {
-	node := client.networkNodes[nodeID]
-	if node == nil {
-		return fmt.Errorf("node with ID %s not registered on this client", nodeID)
-	}
+// // Ping sends an AccountBalanceQuery to the specified node returning nil if no
+// // problems occur. Otherwise, an error representing the status of the node will
+// // be returned.
+// func (client *Client) Ping(nodeID AccountID) error {
+// 	node := client.networkNodes[nodeID]
+// 	if node == nil {
+// 		return fmt.Errorf("node with ID %s not registered on this client", nodeID)
+// 	}
 
-	pingQuery := NewAccountBalanceQuery().
-		SetAccountID(nodeID)
+// 	pingQuery := NewAccountBalanceQuery().
+// 		SetAccountID(nodeID)
 
-	pb := pingQuery.QueryBuilder.pb
+// 	pb := pingQuery.QueryBuilder.pb
 
-	resp := new(proto.Response)
+// 	resp := new(proto.Response)
 
-	err := node.invoke(methodName(pb), pb, resp)
+// 	err := node.invoke(methodName(pb), pb, resp)
 
-	if err != nil {
-		return newErrPingStatus(err)
-	}
+// 	if err != nil {
+// 		return newErrPingStatus(err)
+// 	}
 
-	respHeader := mapResponseHeader(resp)
+// 	respHeader := mapResponseHeader(resp)
 
-	if respHeader.NodeTransactionPrecheckCode == proto.ResponseCodeEnum_BUSY {
-		return newErrPingStatus(fmt.Errorf("%s", Status(respHeader.NodeTransactionPrecheckCode).String()))
-	}
+// 	if respHeader.NodeTransactionPrecheckCode == proto.ResponseCodeEnum_BUSY {
+// 		return newErrPingStatus(fmt.Errorf("%s", Status(respHeader.NodeTransactionPrecheckCode).String()))
+// 	}
 
-	if isResponseUnknown(resp) {
-		return newErrPingStatus(fmt.Errorf("unknown"))
-	}
+// 	if isResponseUnknown(resp) {
+// 		return newErrPingStatus(fmt.Errorf("unknown"))
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (client *Client) randomNode() *node {
-	nodeIndex := rand.Intn(len(client.networkNodeIds))
-	nodeID := client.networkNodeIds[nodeIndex]
+func (client *Client) getNextNode() *node {
+	nodeID := client.networkNodeIds[client.nextNodeIndex]
+	client.nextNodeIndex += 1
 
 	return client.networkNodes[nodeID]
+}
+
+func (client *Client) getNumberOfNodesForTransaction() int {
+	return (len(client.networkNodeIds) + 3 - 1) / 3
 }
 
 func (client *Client) node(id AccountID) *node {

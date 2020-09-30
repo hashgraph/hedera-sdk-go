@@ -126,30 +126,30 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	return json.Marshal(keystore)
 }
 
-func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, error) {
+func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) {
 	keyStore := keystore{}
 
 	err := json.Unmarshal(keystoreBytes, &keyStore)
 
 	if err != nil {
-		return Ed25519PrivateKey{}, err
+		return PrivateKey{}, err
 	}
 
 	if keyStore.Version != 1 {
 		// todo: change to a switch and handle differently if future keystore versions are added
-		return Ed25519PrivateKey{}, newErrBadKeyf("unsupported keystore version: %v", keyStore.Version)
+		return PrivateKey{}, newErrBadKeyf("unsupported keystore version: %v", keyStore.Version)
 	}
 
 	if keyStore.Crypto.KDF != "pbkdf2" {
-		return Ed25519PrivateKey{}, newErrBadKeyf("unsupported KDF: %v", keyStore.Crypto.KDF)
+		return PrivateKey{}, newErrBadKeyf("unsupported KDF: %v", keyStore.Crypto.KDF)
 	}
 
 	if keyStore.Crypto.Cipher != Aes128Ctr {
-		return Ed25519PrivateKey{}, newErrBadKeyf("unsupported keystore cipher: %v", keyStore.Crypto.Cipher)
+		return PrivateKey{}, newErrBadKeyf("unsupported keystore cipher: %v", keyStore.Crypto.Cipher)
 	}
 
 	if keyStore.Crypto.KDFParams.PRF != HmacSha256 {
-		return Ed25519PrivateKey{}, newErrBadKeyf(
+		return PrivateKey{}, newErrBadKeyf(
 			"unsupported PRF: %v",
 			keyStore.Crypto.KDFParams.PRF)
 	}
@@ -157,19 +157,19 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, 
 	salt, err := hex.DecodeString(keyStore.Crypto.KDFParams.Salt)
 
 	if err != nil {
-		return Ed25519PrivateKey{}, err
+		return PrivateKey{}, err
 	}
 
 	iv, err := hex.DecodeString(keyStore.Crypto.CipherParams.IV)
 
 	if err != nil {
-		return Ed25519PrivateKey{}, err
+		return PrivateKey{}, err
 	}
 
 	cipherBytes, err := hex.DecodeString(keyStore.Crypto.CipherText)
 
 	if err != nil {
-		return Ed25519PrivateKey{}, err
+		return PrivateKey{}, err
 	}
 
 	key := pbkdf2.Key([]byte(passphrase), salt, keyStore.Crypto.KDFParams.Count, dkLen, sha256.New)
@@ -177,7 +177,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, 
 	mac, err := hex.DecodeString(keyStore.Crypto.Mac)
 
 	if err != nil {
-		return Ed25519PrivateKey{}, err
+		return PrivateKey{}, err
 	}
 
 	h := hmac.New(sha512.New384, key[16:])
@@ -185,18 +185,18 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, 
 	_, err = h.Write(cipherBytes)
 
 	if err != nil {
-		return Ed25519PrivateKey{}, err
+		return PrivateKey{}, err
 	}
 
 	verifyMac := h.Sum(nil)
 
 	if !bytes.Equal(mac, verifyMac) {
-		return Ed25519PrivateKey{}, newErrBadKeyf("hmac mismatch; passphrase is incorrect")
+		return PrivateKey{}, newErrBadKeyf("hmac mismatch; passphrase is incorrect")
 	}
 
 	block, err := aes.NewCipher(key[:16])
 	if err != nil {
-		return Ed25519PrivateKey{}, nil
+		return PrivateKey{}, nil
 	}
 
 	decipher := cipher2.NewCTR(block, iv)
@@ -204,5 +204,5 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (Ed25519PrivateKey, 
 
 	decipher.XORKeyStream(pkBytes, cipherBytes)
 
-	return Ed25519PrivateKeyFromBytes(pkBytes)
+	return PrivateKeyFromBytes(pkBytes)
 }

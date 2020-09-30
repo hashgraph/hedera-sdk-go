@@ -3,7 +3,7 @@ package hedera
 import (
 	"errors"
 	"fmt"
-	"reflect"
+	// "reflect"
 
 	"google.golang.org/grpc/codes"
 	status2 "google.golang.org/grpc/status"
@@ -16,6 +16,8 @@ type ErrMaxChunksExceeded struct {
 
 var errTransactionIsFrozen = errors.New("transaction is immutable; it has at least one signature or has been explicitly frozen")
 var errNoClientOrTransactionID = errors.New("`client` must have an `operator` or `transactionId` must be set")
+var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided or both `nodeId` and `transactionId` must be set")
+var errClientOperatorSigning = errors.New("`client` must have an `operator` to sign with the operator")
 
 func (err ErrMaxChunksExceeded) Error() string {
 	return fmt.Sprintf("Message requires %d chunks, but max chunks is %d", err.Chunks, err.MaxChunks)
@@ -33,13 +35,13 @@ type ErrMaxQueryPaymentExceeded struct {
 	query string
 }
 
-func newErrorMaxQueryPaymentExceeded(transaction *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
-	return ErrMaxQueryPaymentExceeded{
-		QueryCost:       queryCost,
-		MaxQueryPayment: maxQueryPayment,
-		query:           reflect.TypeOf(*transaction).Name(),
-	}
-}
+// func newErrorMaxQueryPaymentExceeded(transaction *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
+// 	return ErrMaxQueryPaymentExceeded{
+// 		QueryCost:       queryCost,
+// 		MaxQueryPayment: maxQueryPayment,
+// 		query:           reflect.TypeOf(*transaction).Name(),
+// 	}
+// }
 
 // Error() implements the Error interface
 func (e ErrMaxQueryPaymentExceeded) Error() string {

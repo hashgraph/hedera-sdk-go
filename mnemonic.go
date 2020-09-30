@@ -10,8 +10,8 @@ type Mnemonic struct {
 	words string
 }
 
-func (m Mnemonic) ToPrivateKey(passPhrase string) (Ed25519PrivateKey, error) {
-	return Ed25519PrivateKeyFromMnemonic(m, passPhrase)
+func (m Mnemonic) ToPrivateKey(passPhrase string) (PrivateKey, error) {
+	return PrivateKeyFromMnemonic(m, passPhrase)
 }
 
 // GenerateMnemonic generates a random 24-word mnemonic

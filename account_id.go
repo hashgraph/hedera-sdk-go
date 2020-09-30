@@ -56,7 +56,7 @@ func (id AccountID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.Account)
 }
 
-func (id AccountID) toProto() *proto.AccountID {
+func (id AccountID) toProtobuf() *proto.AccountID {
 	return &proto.AccountID{
 		ShardNum:   int64(id.Shard),
 		RealmNum:   int64(id.Realm),

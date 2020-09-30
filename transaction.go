@@ -11,15 +11,8 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-type iTransaction interface {
-	IsFrozen() bool
-	onFreeze(pbBody *proto.TransactionBody) bool
-}
-
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.
 type Transaction struct {
-	super  iTransaction
-	pb     *proto.Transaction
 	pbBody *proto.TransactionBody
 
 	id TransactionID
@@ -29,17 +22,28 @@ type Transaction struct {
 	noTXFee bool
 
 	transactions []*proto.Transaction
+	signatures   []*proto.SignatureMap
+	nodeIDs      []AccountID
+}
+
+func newTransaction() Transaction {
+	return Transaction{
+		pbBody: &proto.TransactionBody{
+			TransactionValidDuration: durationToProto(120 * time.Second),
+		},
+	}
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
-	transaction.pb = new(proto.Transaction)
-	if err := protobuf.Unmarshal(txBytes, transaction.pb); err != nil {
+	transaction.transactions = []*proto.Transaction{}
+	transaction.transactions = append(transaction.transactions, &proto.Transaction{})
+	if err := protobuf.Unmarshal(txBytes, transaction.transactions[0]); err != nil {
 		return err
 	}
 
 	var txBody proto.TransactionBody
-	if err := protobuf.Unmarshal(transaction.pb.GetBodyBytes(), &txBody); err != nil {
+	if err := protobuf.Unmarshal(transaction.transactions[0].GetBodyBytes(), &txBody); err != nil {
 		return err
 	}
 
@@ -55,49 +59,66 @@ func TransactionFromBytes(bytes []byte) Transaction {
 }
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+func (transaction Transaction) Sign(
+	privateKey PrivateKey,
+	isFrozen func() bool,
+	freezeWith func(client *Client) error,
+) Transaction {
+	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign, isFrozen, freezeWith)
 }
 
-func (transaction Transaction) SignWithOperator(operator operator) Transaction {
+func (transaction Transaction) SignWithOperator(
+	client *Client,
+	isFrozen func() bool,
+	freezeWith func(client *Client) error,
+) (Transaction, error) {
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
-	var signedByOperator bool
-	operatorPublicKey := operator.publicKey.keyData
-
-	for _, sigPair := range transaction.pb.SigMap.SigPair {
-		if bytes.Equal(sigPair.PubKeyPrefix, operatorPublicKey) {
-			signedByOperator = true
-			break
-		}
+	if client.operator == nil {
+		return Transaction{}, errClientOperatorSigning
 	}
 
-	if !signedByOperator {
-		if operator.privateKey != nil {
-			transaction.Sign(*operator.privateKey)
-		} else {
-			transaction.SignWith(operator.publicKey, operator.signer)
-		}
+	if !isFrozen() {
+		freezeWith(client)
 	}
 
-	return transaction
+	return transaction.SignWith(client.operator.publicKey, client.operator.signer, isFrozen, freezeWith), nil
 }
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
-func (transaction Transaction) SignWith(publicKey Ed25519PublicKey, signer TransactionSigner) Transaction {
-	signature := signer(transaction.pb.GetBodyBytes())
+func (transaction Transaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+	isFrozen func() bool,
+	freezeWith func(client *Client) error,
+) Transaction {
+	if !isFrozen() {
+		freezeWith(nil)
+	}
 
-	transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, &proto.SignaturePair{
-		PubKeyPrefix: publicKey.keyData,
-		Signature:    &proto.SignaturePair_Ed25519{Ed25519: signature},
-	})
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	for index, tx := range transaction.transactions {
+		signature := signer(tx.GetBodyBytes())
+
+		transaction.signatures[index].SigPair = append(
+			transaction.signatures[index].SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
 
 	return transaction
 }
 
-func (transaction Transaction) FreezeWith(client *Client) (Transaction, error) {
+func (transaction Transaction) freezeWith(
+	client *Client,
+	isFrozen func() bool,
+	onFreeze func(pbBody *proto.TransactionBody) bool,
+) (Transaction, error) {
 	if client != nil {
 		if !transaction.noTXFee && transaction.pbBody.TransactionFee == 0 {
 			transaction.SetMaxTransactionFee(client.maxTransactionFee)
@@ -112,32 +133,117 @@ func (transaction Transaction) FreezeWith(client *Client) (Transaction, error) {
 		}
 	}
 
-	if transaction.onFreeze(transaction.pbBody) {
+	if onFreeze(transaction.pbBody) {
 		return transaction, nil
 	}
 
-	return transaction, nil
+	if transaction.pbBody.TransactionID != nil && transaction.pbBody.NodeAccountID != nil {
+		transaction.signatures = []*proto.SignatureMap{}
+		transaction.transactions = []*proto.Transaction{}
+
+		bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+		if err != nil {
+			// This should be unreachable
+			// From the documentation this appears to only be possible if there are missing proto types
+			panic(err)
+		}
+
+		protoTransaction := proto.Transaction{
+			BodyBytes: bodyBytes,
+		}
+
+		transaction.transactions = append(transaction.transactions, &protoTransaction)
+
+		return transaction, nil
+	}
+
+	if transaction.pbBody.TransactionID != nil && len(transaction.nodeIDs) > 0 {
+		transaction.signatures = []*proto.SignatureMap{}
+		transaction.transactions = []*proto.Transaction{}
+
+		for _, id := range transaction.nodeIDs {
+			transaction.pbBody.NodeAccountID = id.toProtobuf()
+			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+			if err != nil {
+				// This should be unreachable
+				// From the documentation this appears to only be possible if there are missing proto types
+				panic(err)
+			}
+
+			transaction.signatures = append(transaction.signatures, &proto.SignatureMap{})
+			transaction.transactions = append(transaction.transactions, &proto.Transaction{
+				BodyBytes: bodyBytes,
+			})
+		}
+
+		return transaction, nil
+	}
+
+	if client != nil && transaction.pbBody.TransactionID != nil {
+		size := client.getNumberOfNodesForTransaction()
+
+		transaction.signatures = []*proto.SignatureMap{}
+		transaction.transactions = []*proto.Transaction{}
+		transaction.nodeIDs = []AccountID{}
+
+		for index := 0; index < size; index++ {
+			node := client.getNextNode()
+
+			transaction.nodeIDs = append(transaction.nodeIDs, node.id)
+
+			transaction.pbBody.NodeAccountID = node.id.toProtobuf()
+			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+			if err != nil {
+				// This should be unreachable
+				// From the documentation this appears to only be possible if there are missing proto types
+				panic(err)
+			}
+
+			transaction.signatures = append(transaction.signatures, &proto.SignatureMap{})
+			transaction.transactions = append(transaction.transactions, &proto.Transaction{
+				BodyBytes: bodyBytes,
+			})
+		}
+
+		return transaction, nil
+	}
+
+	return Transaction{}, errNoClientOrTransactionIDOrNodeId
 }
 
-func (transaction Transaction) IsFrozen() bool {
-	return transaction.super.IsFrozen()
+func defaultIsFrozen(transaction Transaction) bool {
+	return len(transaction.transactions) > 0
 }
 
-func (transaction Transaction) requireNotFrozen() error {
-	if transaction.IsFrozen() {
+func (transaction Transaction) requireNotFrozen(isFrozen func() bool) error {
+	if isFrozen() {
 		return errTransactionIsFrozen
 	}
 
 	return nil
 }
 
-func (transaction Transaction) onFreeze(pbBody *proto.TransactionBody) bool {
-	return transaction.super.onFreeze(pbBody)
+func (transaction Transaction) keyAlreadySigned(pk PublicKey) bool {
+	if len(transaction.signatures) > 0 {
+		for _, pair := range transaction.signatures[0].SigPair {
+			if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
-func (transaction Transaction) executeForResponse(client *Client) (TransactionID, *proto.TransactionResponse, error) {
+func (transaction Transaction) executeForResponse(
+	client *Client,
+	isFrozen func() bool,
+	freezeWith func(client *Client) error,
+) (TransactionID, *proto.TransactionResponse, error) {
 	if client.operator != nil {
-		transaction.SignWithOperator(*client.operator)
+		if _, err := transaction.SignWithOperator(client, isFrozen, freezeWith); err != nil {
+			return TransactionID{}, nil, err
+		}
 	}
 
 	transactionBody := transaction.body()
@@ -158,8 +264,11 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 
 	validUntil := time.Now().Add(time.Duration(transactionBody.TransactionValidDuration.Seconds) * time.Second)
 	resp := new(proto.TransactionResponse)
+	length := len(transaction.transactions)
 
 	for attempt := 0; true; attempt++ {
+		tx := transaction.transactions[attempt%length]
+
 		if attempt > 0 && time.Now().After(validUntil) {
 			// Timed out
 			break
@@ -171,7 +280,7 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 			time.Sleep(time.Duration(delay) * time.Millisecond)
 		}
 
-		err := node.invoke(methodName, transaction.pb, resp)
+		err := node.invoke(methodName, tx, resp)
 		if err != nil {
 			statusCode := err.(ErrHederaNetwork).StatusCode
 
@@ -201,32 +310,36 @@ func (transaction Transaction) executeForResponse(client *Client) (TransactionID
 }
 
 // Execute executes the Transaction with the provided client
-func (transaction Transaction) Execute(client *Client) (TransactionID, error) {
-	id, resp, err := transaction.executeForResponse(client)
+func (transaction Transaction) execute(
+	client *Client,
+	isFrozen func() bool,
+	freezeWith func(client *Client) error,
+) (TransactionResponse, error) {
+	id, resp, err := transaction.executeForResponse(client, isFrozen, freezeWith)
 
 	if err != nil {
-		return id, err
+		return TransactionResponse{}, err
 	}
 
 	status := Status(resp.NodeTransactionPrecheckCode)
 
 	if status.isExceptional(true) {
 		// precheck failed
-		return id, newErrHederaPreCheckStatus(transaction.id, status)
+		return TransactionResponse{TransactionID: id}, newErrHederaPreCheckStatus(transaction.id, status)
 	}
 
 	// success
-	return id, nil
+	return TransactionResponse{TransactionID: id}, nil
 }
 
 func (transaction Transaction) String() string {
-	return protobuf.MarshalTextString(transaction.pb) +
+	return protobuf.MarshalTextString(transaction.transactions[0]) +
 		protobuf.MarshalTextString(transaction.body())
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (transaction Transaction) MarshalBinary() ([]byte, error) {
-	return protobuf.Marshal(transaction.pb)
+	return protobuf.Marshal(transaction.transactions[0])
 }
 
 func (transaction Transaction) ToBytes() ([]byte, error) {
@@ -238,7 +351,7 @@ func (transaction Transaction) ToBytes() ([]byte, error) {
 // properly execute it
 func (transaction Transaction) body() *proto.TransactionBody {
 	transactionBody := new(proto.TransactionBody)
-	err := protobuf.Unmarshal(transaction.pb.GetBodyBytes(), transactionBody)
+	err := protobuf.Unmarshal(transaction.transactions[0].GetBodyBytes(), transactionBody)
 	if err != nil {
 		// The bodyBytes inside of the transaction at this point have been verified and this should be impossible
 		panic(err)
@@ -354,7 +467,7 @@ func (transaction Transaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this Transaction.
 func (transaction Transaction) SetTransactionID(transactionID TransactionID) Transaction {
-	transaction.pbBody.TransactionID = transactionID.toProto()
+	transaction.pbBody.TransactionID = transactionID.toProtobuf()
 	return transaction
 }
 
@@ -364,6 +477,6 @@ func (transaction Transaction) GetNodeID() AccountID {
 
 // SetNodeID sets the node AccountID for this Transaction.
 func (transaction Transaction) SetNodeID(nodeAccountID AccountID) Transaction {
-	transaction.pbBody.NodeAccountID = nodeAccountID.toProto()
+	transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
 	return transaction
 }
