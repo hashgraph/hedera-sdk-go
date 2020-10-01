@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"context"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -22,19 +21,14 @@ type Client struct {
 
 	operator *operator
 
-	networkNodes   map[AccountID]*node
-	networkNodeIds []AccountID
+	networkChannels map[AccountID]*channel
+	networkNodeIds  []AccountID
+	network         map[AccountID]string
 
 	mirrorChannels map[string]*grpc.ClientConn
 	mirrorNetwork  []string
 
 	nextNodeIndex uint
-}
-
-type node struct {
-	conn    *grpc.ClientConn
-	id      AccountID
-	address string
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -109,20 +103,21 @@ func ClientForPreviewnet() *Client {
 // newClient takes in a map of node addresses to their respective IDS (network)
 // and returns a Client instance which can be used to
 func newClient(network map[AccountID]string, mirrorNetwork []string) *Client {
-	client := &Client{
+	client := Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
 		maxTransactionFee: defaultMaxTransactionFee,
-		networkNodes:      map[AccountID]*node{},
-		networkNodeIds:    []AccountID{},
-		mirrorChannels:    map[string]*grpc.ClientConn{},
-		mirrorNetwork:     []string{},
+		networkChannels:   make(map[AccountID]*channel),
+		networkNodeIds:    make([]AccountID, 0),
+		network:           make(map[AccountID]string),
+		mirrorChannels:    make(map[string]*grpc.ClientConn),
+		mirrorNetwork:     make([]string, 0),
 		nextNodeIndex:     0,
 	}
 
 	client.SetNetwork(network)
 	client.SetMirrorNetwork(mirrorNetwork)
 
-	return client
+	return &client
 }
 
 type configOperator struct {
@@ -209,9 +204,9 @@ func ClientFromJsonFile(filename string) (*Client, error) {
 
 // Close is used to disconnect the Client from the network
 func (client *Client) Close() error {
-	for _, node := range client.networkNodes {
-		if node.conn != nil {
-			err := node.conn.Close()
+	for _, conn := range client.networkChannels {
+		if conn != nil {
+			err := conn.client.Close()
 			if err != nil {
 				return err
 			}
@@ -226,10 +221,7 @@ func (client *Client) Close() error {
 func (client *Client) SetNetwork(network map[AccountID]string) *Client {
 	for id, address := range network {
 		client.networkNodeIds = append(client.networkNodeIds, id)
-		client.networkNodes[id] = &node{
-			id:      id,
-			address: address,
-		}
+		client.network[id] = address
 	}
 
 	return client
@@ -273,12 +265,20 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, 
 
 // GetOperatorID returns the ID for the operator
 func (client *Client) GetOperatorID() AccountID {
-	return client.operator.accountID
+    if client.operator != nil {
+        return client.operator.accountID
+    } else {
+        return AccountID{}
+    }
 }
 
 // GetOperatorKey returns the Key for the operator
 func (client *Client) GetOperatorKey() PublicKey {
-	return client.operator.publicKey
+    if client.operator != nil {
+        return client.operator.publicKey
+    } else {
+        return PublicKey{}
+    }
 }
 
 // SetMaxTransactionFee sets the maximum fee to be paid for the transactions
@@ -331,36 +331,47 @@ func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 // 	return nil
 // }
 
-func (client *Client) getNextNode() *node {
+func (client *Client) getNextNode() AccountID {
 	nodeID := client.networkNodeIds[client.nextNodeIndex]
 	client.nextNodeIndex += 1
 
-	return client.networkNodes[nodeID]
+	return nodeID
 }
 
 func (client *Client) getNumberOfNodesForTransaction() int {
 	return (len(client.networkNodeIds) + 3 - 1) / 3
 }
 
-func (client *Client) node(id AccountID) *node {
-	return client.networkNodes[id]
-}
-
-func (node *node) invoke(method string, in interface{}, out interface{}) error {
-	if node.conn == nil {
-		conn, err := grpc.Dial(node.address, grpc.WithInsecure())
-		if err != nil {
-			return newErrHederaNetwork(err)
-		}
-
-		node.conn = conn
+func (client *Client) getChannel(id AccountID) (*channel, error) {
+	if client.networkChannels[id] != nil {
+		return client.networkChannels[id], nil
 	}
 
-	err := node.conn.Invoke(context.TODO(), method, in, out)
-
+	conn, err := grpc.Dial(client.network[id], grpc.WithInsecure())
 	if err != nil {
-		return newErrHederaNetwork(err)
+		return nil, err
 	}
 
-	return nil
+	ch := newChannel(conn)
+	client.networkChannels[id] = &ch
+	return &ch, nil
 }
+
+// func (node *node) invoke(method string, in interface{}, out interface{}) error {
+// 	if node.conn == nil {
+// 		conn, err := grpc.Dial(node.address, grpc.WithInsecure())
+// 		if err != nil {
+// 			return newErrHederaNetwork(err)
+// 		}
+
+// 		node.conn = conn
+// 	}
+
+// 	err := node.conn.Invoke(context.TODO(), method, in, out)
+
+// 	if err != nil {
+// 		return newErrHederaNetwork(err)
+// 	}
+
+// 	return nil
+// }

@@ -24,10 +24,10 @@ type AccountCreateTransaction struct {
 func NewAccountCreateTransaction() AccountCreateTransaction {
 	pb := &proto.CryptoCreateTransactionBody{}
 
-	transaction := AccountCreateTransaction{pb: pb}
-
-	transaction.Transaction = newTransaction()
-	transaction.Transaction.pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{CryptoCreateAccount: pb}
+	transaction := AccountCreateTransaction{
+		pb:          pb,
+		Transaction: newTransaction(),
+	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
 
@@ -106,6 +106,30 @@ func (transaction AccountCreateTransaction) SetReceiverSignatureRequired(require
 // We override the embedded fluent setter methods to return the outer type
 //
 
+func (transaction AccountCreateTransaction) getMethod(channel *channel) method {
+	return method{
+		transaction: channel.getCrypto().CreateAccount,
+	}
+}
+
+// Execute executes the Transaction with the provided client
+func (transaction AccountCreateTransaction) Execute(
+	client *Client,
+) (TransactionResponse, error) {
+	_, err := transaction.Transaction.execute(
+		client,
+        nil,
+		transaction.FreezeWith,
+		transaction.getMethod,
+	)
+
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+
+	return TransactionResponse{TransactionID: transaction.id}, nil
+}
+
 func (transaction AccountCreateTransaction) onFreeze(pbBody *proto.TransactionBody) bool {
 	tx := AccountCreateTransaction(transaction)
 
@@ -116,72 +140,61 @@ func (transaction AccountCreateTransaction) onFreeze(pbBody *proto.TransactionBo
 	return true
 }
 
-func (transaction AccountCreateTransaction) IsFrozen() bool {
-	return len(transaction.Transaction.transactions) > 0
-}
-
 func (transaction AccountCreateTransaction) Freeze() error {
 	return transaction.FreezeWith(nil)
 }
 
 func (transaction AccountCreateTransaction) FreezeWith(client *Client) error {
-	if _, err := transaction.Transaction.freezeWith(client, transaction.IsFrozen, transaction.onFreeze); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (transaction AccountCreateTransaction) Execute(client *Client) (TransactionResponse, error) {
-	return transaction.Transaction.execute(client, transaction.IsFrozen, transaction.FreezeWith)
+	err := transaction.Transaction.freezeWith(client, transaction.Transaction.isFrozen, transaction.onFreeze)
+	return err
 }
 
 func (transaction AccountCreateTransaction) GetMaxTransactionFee() Hbar {
-	return HbarFromTinybar(int64(transaction.pbBody.TransactionFee))
+	return transaction.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this AccountCreateTransaction.
 func (transaction AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) AccountCreateTransaction {
-	transaction.pbBody.TransactionFee = uint64(fee.AsTinybar())
+	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 func (transaction AccountCreateTransaction) GetTransactionMemo() string {
-	return transaction.pbBody.Memo
+	return transaction.Transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this AccountCreateTransaction.
 func (transaction AccountCreateTransaction) SetTransactionMemo(memo string) AccountCreateTransaction {
-	transaction.pbBody.Memo = memo
+	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
 func (transaction AccountCreateTransaction) GetTransactionValidDuration() time.Duration {
-	return durationFromProto(transaction.pbBody.TransactionValidDuration)
+	return transaction.Transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
 func (transaction AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) AccountCreateTransaction {
-	transaction.pbBody.TransactionValidDuration = durationToProto(duration)
+	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
 func (transaction AccountCreateTransaction) GetTransactionID() TransactionID {
-	return transactionIDFromProto(transaction.pbBody.TransactionID)
+	return transaction.Transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this AccountCreateTransaction.
 func (transaction AccountCreateTransaction) SetTransactionID(transactionID TransactionID) AccountCreateTransaction {
-	transaction.pbBody.TransactionID = transactionID.toProtobuf()
+	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
 func (transaction AccountCreateTransaction) GetNodeID() AccountID {
-	return accountIDFromProto(transaction.pbBody.NodeAccountID)
+	return transaction.Transaction.GetNodeID()
 }
 
 // SetNodeID sets the node AccountID for this AccountCreateTransaction.
-func (transaction AccountCreateTransaction) SetNodeID(nodeAccountID AccountID) AccountCreateTransaction {
-	transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
+func (transaction AccountCreateTransaction) SetNodeID(nodeID AccountID) AccountCreateTransaction {
+	transaction.Transaction.SetNodeID(nodeID)
 	return transaction
 }

@@ -51,56 +51,56 @@ R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
 
 const pemPassphrase = "this is a passphrase"
 
-func TestEd25519PrivateKeyGenerate(t *testing.T) {
-	key, err := GenerateEd25519PrivateKey()
+func TestPrivateKeyGenerate(t *testing.T) {
+	key, err := GeneratePrivateKey()
 
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(key.String(), ed25519PrivateKeyPrefix))
 }
 
-func TestEd25519PrivateKeyExternalSerialization(t *testing.T) {
-	key, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+func TestPrivateKeyExternalSerialization(t *testing.T) {
+	key, err := PrivateKeyFromString(testPrivateKeyStr)
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
-func TestEd25519PrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
+func TestPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
-	key, err := Ed25519PrivateKeyFromString(keyStr)
+	key, err := PrivateKeyFromString(keyStr)
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
-func TestEd25519PrivateKeyExternalSerializationForRawHex(t *testing.T) {
+func TestPrivateKeyExternalSerializationForRawHex(t *testing.T) {
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
-	key, err := Ed25519PrivateKeyFromString(keyStr)
+	key, err := PrivateKeyFromString(keyStr)
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
-func TestEd25519PublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
-	key, err := Ed25519PublicKeyFromString(testPublicKeyStr)
+func TestPublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
+	key, err := PublicKeyFromString(testPublicKeyStr)
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPublicKeyStr, key.String())
 }
 
-func TestEd25519PublicKeyExternalSerializationForRawHex(t *testing.T) {
+func TestPublicKeyExternalSerializationForRawHex(t *testing.T) {
 	keyStr := "e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
-	key, err := Ed25519PublicKeyFromString(keyStr)
+	key, err := PublicKeyFromString(keyStr)
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPublicKeyStr, key.String())
 }
 
-func TestEd25519PrivateKeyFromMnemonic(t *testing.T) {
+func TestPrivateKeyFromMnemonic(t *testing.T) {
 	mnemonic, err := MnemonicFromString(testMnemonic)
 	assert.NoError(t, err)
 
-	key, err := Ed25519PrivateKeyFromMnemonic(mnemonic, "")
+	key, err := PrivateKeyFromMnemonic(mnemonic, "")
 
 	assert.NoError(t, err)
 	assert.Equal(t, testMnemonicKey, key.String())
@@ -110,13 +110,13 @@ func TestIOSPrivateKeyFromMnemonic(t *testing.T) {
 	mnemonic, err := MnemonicFromString(iosMnemonicString)
 	assert.NoError(t, err)
 
-	key, err := Ed25519PrivateKeyFromMnemonic(mnemonic, "")
+	key, err := PrivateKeyFromMnemonic(mnemonic, "")
 	assert.NoError(t, err)
 
 	derivedKey, err := key.Derive(0)
 	assert.NoError(t, err)
 
-	expectedKey, err := Ed25519PrivateKeyFromString(iosDefaultPrivateKey)
+	expectedKey, err := PrivateKeyFromString(iosDefaultPrivateKey)
 	assert.NoError(t, err)
 
 	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
@@ -126,21 +126,21 @@ func TestAndroidPrivateKeyFromMnemonic(t *testing.T) {
 	mnemonic, err := MnemonicFromString(androidMnemonicString)
 	assert.NoError(t, err)
 
-	key, err := Ed25519PrivateKeyFromMnemonic(mnemonic, "")
+	key, err := PrivateKeyFromMnemonic(mnemonic, "")
 	assert.NoError(t, err)
 
 	derivedKey, err := key.Derive(0)
 	assert.NoError(t, err)
 
-	expectedKey, err := Ed25519PrivateKeyFromString(androidDefaultPrivateKey)
+	expectedKey, err := PrivateKeyFromString(androidDefaultPrivateKey)
 	assert.NoError(t, err)
 
 	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
 }
 
 func TestSigning(t *testing.T) {
-	priKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
-	pubKey, err := Ed25519PublicKeyFromString(testPublicKeyStr)
+	priKey, err := PrivateKeyFromString(testPrivateKeyStr)
+	pubKey, err := PublicKeyFromString(testPublicKeyStr)
 	testSignData := []byte("this is the test data to sign")
 	signature := priKey.Sign(testSignData)
 
@@ -164,18 +164,18 @@ func TestGeneratedMnemonicToWorkingPrivateKey(t *testing.T) {
 	assert.True(t, ed25519.Verify(privateKey.PublicKey().Bytes(), message, signature))
 }
 
-func TestEd25519PrivateKeyFromKeystore(t *testing.T) {
-	privatekey, err := Ed25519PrivateKeyFromKeystore([]byte(testKeystore), passphrase)
+func TestPrivateKeyFromKeystore(t *testing.T) {
+	privatekey, err := PrivateKeyFromKeystore([]byte(testKeystore), passphrase)
 	assert.NoError(t, err)
 
-	actualPrivateKey, err := Ed25519PrivateKeyFromString(testKeystoreKeyString)
+	actualPrivateKey, err := PrivateKeyFromString(testKeystoreKeyString)
 	assert.NoError(t, err)
 
 	assert.Equal(t, actualPrivateKey.keyData, privatekey.keyData)
 }
 
-func TestEd25519PrivateKey_Keystore(t *testing.T) {
-	privateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+func TestPrivateKey_Keystore(t *testing.T) {
+	privateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 
 	keystore, err := privateKey.Keystore(passphrase)
@@ -187,33 +187,33 @@ func TestEd25519PrivateKey_Keystore(t *testing.T) {
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
 }
 
-func TestEd25519PrivateKey_ReadKeystore(t *testing.T) {
-	actualPrivateKey, err := Ed25519PrivateKeyFromString(testKeystoreKeyString)
+func TestPrivateKey_ReadKeystore(t *testing.T) {
+	actualPrivateKey, err := PrivateKeyFromString(testKeystoreKeyString)
 	assert.NoError(t, err)
 
 	keystoreReader := bytes.NewReader([]byte(testKeystore))
 
-	privateKey, err := Ed25519PrivateKeyReadKeystore(keystoreReader, passphrase)
+	privateKey, err := PrivateKeyReadKeystore(keystoreReader, passphrase)
 	assert.NoError(t, err)
 
 	assert.Equal(t, actualPrivateKey.keyData, privateKey.keyData)
 }
 
-func TestEd25519PrivateKey_FromPem(t *testing.T) {
-	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+func TestPrivateKey_FromPem(t *testing.T) {
+	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 
-	privateKey, err := Ed25519PrivateKeyFromPem([]byte(pemString), "")
+	privateKey, err := PrivateKeyFromPem([]byte(pemString), "")
 	assert.NoError(t, err)
 
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
 
-func TestEd25519PrivateKey_FromPemWithPassphrase(t *testing.T) {
-	actualPrivateKey, err := Ed25519PrivateKeyFromString(testPrivateKeyStr)
+func TestPrivateKey_FromPemWithPassphrase(t *testing.T) {
+	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 
-	privateKey, err := Ed25519PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
+	privateKey, err := PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
 	assert.NoError(t, err)
 
 	assert.Equal(t, actualPrivateKey, privateKey)
