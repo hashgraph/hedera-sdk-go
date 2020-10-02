@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"time"
 
@@ -33,53 +32,51 @@ type intermediateResponse struct {
 	transaction TransactionResponse
 }
 
-type request struct {
+type protoRequest struct {
 	query       *proto.Query
 	transaction *proto.Transaction
 }
 
+type request struct {
+    // query Query
+    transaction *Transaction
+}
+
 func execute(
 	client *Client,
-	isFrozen func() bool,
-	freezeWith func(client *Client) error,
-	shouldRetry func(Status) bool,
-	makeRequest func() request,
-	advanceRequest func(),
-	getNodeId func(*Client) AccountID,
+    request request,
+	shouldRetry func(request, Status) bool,
+	makeRequest func(request) protoRequest,
+	advanceRequest func(request),
+	getNodeId func(request, *Client) AccountID,
 	getMethod func(*channel) method,
-	mapResponseStatus func(response) Status,
-	mapResponse func(response, AccountID, request) (intermediateResponse, error),
+	mapResponseStatus func(request, response) Status,
+	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
-	println("aaaaaaaaaaaaaaaaaa")
 	for attempt := 0; ; /* loop forever */ attempt++ {
 		delay := time.Duration(250*int64(math.Pow(2, float64(attempt)))) * time.Millisecond
-		println("[execute] delay", delay)
-		request := makeRequest()
-		fmt.Printf("[execute] request %+v\n", request)
-		node := getNodeId(client)
-		println("[execute] node", node.String())
+		protoRequest := makeRequest(request)
+		node := getNodeId(request, client)
 
 		channel, err := client.getChannel(node)
 		if err != nil {
 			return intermediateResponse{}, nil
 		}
 
-		fmt.Printf("[execute] channel %+v\n", channel)
-
 		method := getMethod(channel)
 
-		advanceRequest()
+		advanceRequest(request)
 
 		resp := response{}
 		if method.query != nil {
-			r, err := method.query(context.TODO(), request.query)
+			r, err := method.query(context.TODO(), protoRequest.query)
 			if err != nil {
 				return intermediateResponse{}, nil
 			}
 
 			resp.query = r
 		} else {
-			r, err := method.transaction(context.TODO(), request.transaction)
+			r, err := method.transaction(context.TODO(), protoRequest.transaction)
 			if err != nil {
 				return intermediateResponse{}, nil
 			}
@@ -87,12 +84,9 @@ func execute(
 			resp.transaction = r
 		}
 
-		println("-----------------RESPONSE-----------------")
-		fmt.Printf("%+v\n", resp)
+		status := mapResponseStatus(request, resp)
 
-		status := mapResponseStatus(resp)
-
-		if shouldRetry(status) {
+		if shouldRetry(request, status) {
 			time.Sleep(delay)
 			continue
 		}
@@ -101,6 +95,6 @@ func execute(
 			return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
 		}
 
-		return mapResponse(resp, node, request)
+		return mapResponse(request, resp, node, protoRequest)
 	}
 }

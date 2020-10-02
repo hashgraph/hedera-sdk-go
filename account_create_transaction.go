@@ -21,7 +21,7 @@ type AccountCreateTransaction struct {
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
 // execute a Crypto Create Transaction.
-func NewAccountCreateTransaction() AccountCreateTransaction {
+func NewAccountCreateTransaction() *AccountCreateTransaction {
 	pb := &proto.CryptoCreateTransactionBody{}
 
 	transaction := AccountCreateTransaction{
@@ -37,18 +37,18 @@ func NewAccountCreateTransaction() AccountCreateTransaction {
 	transaction.SetReceiveRecordThreshold(MaxHbar)
 	transaction.SetSendRecordThreshold(MaxHbar)
 
-	return transaction
+	return &transaction
 }
 
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
-func (transaction AccountCreateTransaction) SetKey(publicKey PublicKey) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetKey(publicKey PublicKey) *AccountCreateTransaction {
 	transaction.pb.Key = publicKey.toProtobuf()
 	return transaction
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
-func (transaction AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) *AccountCreateTransaction {
 	transaction.pb.InitialBalance = uint64(initialBalance.AsTinybar())
 	return transaction
 }
@@ -59,7 +59,7 @@ func (transaction AccountCreateTransaction) SetInitialBalance(initialBalance Hba
 // renew for another auto renew period. If it does not have enough hbars to renew for that long, then the  remaining
 // hbars are used to extend its expiration as long as possible. If it is has a zero balance when it expires,
 // then it is deleted.
-func (transaction AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountCreateTransaction {
 	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
 	return transaction
 }
@@ -68,7 +68,7 @@ func (transaction AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod t
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (transaction AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
 	transaction.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
 }
@@ -77,7 +77,7 @@ func (transaction AccountCreateTransaction) SetSendRecordThreshold(recordThresho
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (transaction AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
 	transaction.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
 }
@@ -86,7 +86,7 @@ func (transaction AccountCreateTransaction) SetReceiveRecordThreshold(recordThre
 // is an invalid account, or is an account that isn't a node, then this account is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
-func (transaction AccountCreateTransaction) SetProxyAccountID(id AccountID) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *AccountCreateTransaction {
 	transaction.pb.ProxyAccountID = id.toProtobuf()
 	return transaction
 }
@@ -96,7 +96,7 @@ func (transaction AccountCreateTransaction) SetProxyAccountID(id AccountID) Acco
 // then only transfers out have to be signed by it. This transaction must be signed by the
 // payer account. If receiverSigRequired is false, then the transaction does not have to be signed by the keys in the
 // keys field. If it is true, then it must be signed by them, in addition to the keys of the payer account.
-func (transaction AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetReceiverSignatureRequired(required bool) *AccountCreateTransaction {
 	transaction.pb.ReceiverSigRequired = required
 	return transaction
 }
@@ -106,21 +106,95 @@ func (transaction AccountCreateTransaction) SetReceiverSignatureRequired(require
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func (transaction AccountCreateTransaction) getMethod(channel *channel) method {
+func accountCreateTransaction_getMethod(channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().CreateAccount,
 	}
 }
 
+func (transaction *AccountCreateTransaction) IsFrozen() bool {
+	return transaction.isFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (transaction *AccountCreateTransaction) Sign(
+	privateKey PrivateKey,
+) *AccountCreateTransaction {
+	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (transaction *AccountCreateTransaction) SignWithOperator(
+	client *Client,
+) (*AccountCreateTransaction, error) {
+	// If the transaction is not signed by the operator, we need
+	// to sign the transaction with the operator
+
+	if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (transaction *AccountCreateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *AccountCreateTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+    for index := 0; index < len(transaction.transactions); index++ {
+		signature := signer(transaction.transactions[index].GetBodyBytes())
+
+		transaction.signatures[index].SigPair = append(
+			transaction.signatures[index].SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	return transaction
+}
+
 // Execute executes the Transaction with the provided client
-func (transaction AccountCreateTransaction) Execute(
+func (transaction *AccountCreateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	_, err := transaction.Transaction.execute(
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	transactionID := transaction.id
+
+	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+		transaction.SignWith(
+			client.GetOperatorKey(),
+			client.operator.signer,
+		)
+	}
+
+	_, err := execute(
 		client,
-        nil,
-		transaction.FreezeWith,
-		transaction.getMethod,
+        request {
+            transaction: &transaction.Transaction,
+        },
+		transaction_shouldRetry,
+		transaction_makeRequest,
+		transaction_advanceRequest,
+		transaction_getNodeId,
+		accountCreateTransaction_getMethod,
+		transaction_mapResponseStatus,
+		transaction_mapResponse,
 	)
 
 	if err != nil {
@@ -130,71 +204,79 @@ func (transaction AccountCreateTransaction) Execute(
 	return TransactionResponse{TransactionID: transaction.id}, nil
 }
 
-func (transaction AccountCreateTransaction) onFreeze(pbBody *proto.TransactionBody) bool {
-	tx := AccountCreateTransaction(transaction)
-
+func (transaction *AccountCreateTransaction) onFreeze(
+	pbBody *proto.TransactionBody,
+) bool {
 	pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{
-		CryptoCreateAccount: tx.pb,
+		CryptoCreateAccount: transaction.pb,
 	}
 
 	return true
 }
 
-func (transaction AccountCreateTransaction) Freeze() error {
+func (transaction *AccountCreateTransaction) Freeze() error {
 	return transaction.FreezeWith(nil)
 }
 
-func (transaction AccountCreateTransaction) FreezeWith(client *Client) error {
-	err := transaction.Transaction.freezeWith(client, transaction.Transaction.isFrozen, transaction.onFreeze)
-	return err
+func (transaction *AccountCreateTransaction) FreezeWith(client *Client) error {
+	transaction.initFee(client)
+	if err := transaction.initTransactionID(client); err != nil {
+		return err
+	}
+
+	if !transaction.onFreeze(transaction.pbBody) {
+		return nil
+	}
+
+    return transaction_freezeWith(&transaction.Transaction, client)
 }
 
-func (transaction AccountCreateTransaction) GetMaxTransactionFee() Hbar {
+func (transaction *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this AccountCreateTransaction.
-func (transaction AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *AccountCreateTransaction {
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
-func (transaction AccountCreateTransaction) GetTransactionMemo() string {
+func (transaction *AccountCreateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this AccountCreateTransaction.
-func (transaction AccountCreateTransaction) SetTransactionMemo(memo string) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
-func (transaction AccountCreateTransaction) GetTransactionValidDuration() time.Duration {
+func (transaction *AccountCreateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
-func (transaction AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
-func (transaction AccountCreateTransaction) GetTransactionID() TransactionID {
+func (transaction *AccountCreateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this AccountCreateTransaction.
-func (transaction AccountCreateTransaction) SetTransactionID(transactionID TransactionID) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction AccountCreateTransaction) GetNodeID() AccountID {
+func (transaction *AccountCreateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
 // SetNodeID sets the node AccountID for this AccountCreateTransaction.
-func (transaction AccountCreateTransaction) SetNodeID(nodeID AccountID) AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetNodeID(nodeID AccountID) *AccountCreateTransaction {
 	transaction.Transaction.SetNodeID(nodeID)
 	return transaction
 }

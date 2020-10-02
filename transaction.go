@@ -20,9 +20,11 @@ type Transaction struct {
 
 	nextTransactionIndex int
 
-	transactions []proto.Transaction
-	signatures   []proto.SignatureMap
+	transactions []*proto.Transaction
+	signatures   []*proto.SignatureMap
 	nodeIDs      []AccountID
+
+	fff string
 }
 
 func newTransaction() Transaction {
@@ -33,17 +35,17 @@ func newTransaction() Transaction {
 		id:                   TransactionID{},
 		noTXFee:              false,
 		nextTransactionIndex: 0,
-		transactions:         make([]proto.Transaction, 0),
-		signatures:           make([]proto.SignatureMap, 0),
+		transactions:         make([]*proto.Transaction, 0),
+		signatures:           make([]*proto.SignatureMap, 0),
 		nodeIDs:              make([]AccountID, 0),
 	}
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
-	transaction.transactions = make([]proto.Transaction, 0)
-	transaction.transactions = append(transaction.transactions, proto.Transaction{})
-	if err := protobuf.Unmarshal(txBytes, &transaction.transactions[0]); err != nil {
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = append(transaction.transactions, &proto.Transaction{})
+	if err := protobuf.Unmarshal(txBytes, transaction.transactions[0]); err != nil {
 		return err
 	}
 
@@ -63,85 +65,33 @@ func TransactionFromBytes(bytes []byte) Transaction {
 	return tx
 }
 
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *Transaction) Sign(
-	privateKey PrivateKey,
-	isFrozen func() bool,
-	freezeWith func(client *Client) error,
-) *Transaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign, isFrozen, freezeWith)
+func (transaction *Transaction) initFee(client *Client) {
+	if client != nil && transaction.pbBody.TransactionFee == 0 {
+		transaction.SetMaxTransactionFee(client.maxTransactionFee)
+	}
 }
 
-func (transaction *Transaction) SignWithOperator(
+func (transaction *Transaction) initTransactionID(client *Client) error {
+	if transaction.pbBody.TransactionID == nil {
+		if client.operator != nil {
+            transaction.id = NewTransactionID(client.operator.accountID)
+			transaction.SetTransactionID(transaction.id)
+		} else {
+			return errNoClientOrTransactionID
+		}
+	}
+
+	return nil
+}
+
+func (transaction *Transaction) isFrozen() bool {
+	return len(transaction.transactions) > 0
+}
+
+func transaction_freezeWith(
+    transaction *Transaction,
 	client *Client,
-	isFrozen func() bool,
-	freezeWith func(client *Client) error,
-) (*Transaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
-
-	if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !isFrozen() {
-		freezeWith(client)
-	}
-
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer, isFrozen, freezeWith), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (transaction *Transaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-	isFrozen func() bool,
-	freezeWith func(client *Client) error,
-) *Transaction {
-	if !isFrozen() {
-		freezeWith(nil)
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	for index, tx := range transaction.transactions {
-		signature := signer(tx.GetBodyBytes())
-
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
-		)
-	}
-
-	return transaction
-}
-
-func (transaction *Transaction) freezeWith(
-	client *Client,
-	isFrozen func() bool,
-	onFreeze func(pbBody *proto.TransactionBody) bool,
 ) error {
-	if client != nil {
-		if transaction.pbBody.TransactionFee == 0 {
-			transaction.SetMaxTransactionFee(client.maxTransactionFee)
-		}
-
-		if transaction.pbBody.TransactionID == nil {
-			if client.operator != nil {
-				transaction.SetTransactionID(NewTransactionID(client.operator.accountID))
-			} else {
-				return errNoClientOrTransactionID
-			}
-		}
-	}
-
-	if !onFreeze(transaction.pbBody) {
-		return nil
-	}
-
 	if transaction.pbBody.TransactionID != nil && transaction.pbBody.NodeAccountID != nil {
 		bodyBytes, err := protobuf.Marshal(transaction.pbBody)
 		if err != nil {
@@ -150,8 +100,7 @@ func (transaction *Transaction) freezeWith(
 			panic(err)
 		}
 
-
-		transaction.transactions = append(transaction.transactions, proto.Transaction{
+		transaction.transactions = append(transaction.transactions, &proto.Transaction{
 			BodyBytes: bodyBytes,
 		})
 
@@ -168,8 +117,8 @@ func (transaction *Transaction) freezeWith(
 				panic(err)
 			}
 
-			transaction.signatures = append(transaction.signatures, proto.SignatureMap{})
-			transaction.transactions = append(transaction.transactions, proto.Transaction{
+			transaction.signatures = append(transaction.signatures, &proto.SignatureMap{})
+			transaction.transactions = append(transaction.transactions, &proto.Transaction{
 				BodyBytes: bodyBytes,
 			})
 		}
@@ -177,14 +126,11 @@ func (transaction *Transaction) freezeWith(
 		return nil
 	}
 
-    println("kkkkkkkkkkkkkkkk")
 	if client != nil && transaction.pbBody.TransactionID != nil {
 		size := client.getNumberOfNodesForTransaction()
-        println("[freezeWith] size", size)
 
 		for index := 0; index < size; index++ {
 			node := client.getNextNode()
-            println("[freezeWith] node", node.String())
 
 			transaction.nodeIDs = append(transaction.nodeIDs, node)
 
@@ -196,33 +142,23 @@ func (transaction *Transaction) freezeWith(
 				panic(err)
 			}
 
-			transaction.signatures = append(transaction.signatures, proto.SignatureMap{})
-			transaction.transactions = append(transaction.transactions, proto.Transaction{
+            sigmap := proto.SignatureMap{}
+			transaction.signatures = append(transaction.signatures, &sigmap)
+			transaction.transactions = append(transaction.transactions, &proto.Transaction{
 				BodyBytes: bodyBytes,
+                SigMap: &sigmap,
 			})
-            println("[freezeWith] transactions", len(transaction.transactions))
 		}
 
-        println("[freezeWith::end] transactions", len(transaction.transactions))
 		return nil
 	}
 
 	return errNoClientOrTransactionIDOrNodeId
 }
 
-func defaultIsFrozen(transaction *Transaction) bool {
-	return len(transaction.transactions) > 0
-}
-
-func (transaction *Transaction) requireNotFrozen(isFrozen func() bool) error {
-	if isFrozen() {
-		return errTransactionIsFrozen
-	}
-
-	return nil
-}
-
-func (transaction *Transaction) keyAlreadySigned(pk PublicKey) bool {
+func (transaction *Transaction) keyAlreadySigned(
+	pk PublicKey,
+) bool {
 	if len(transaction.signatures) > 0 {
 		for _, pair := range transaction.signatures[0].SigPair {
 			if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
@@ -234,39 +170,36 @@ func (transaction *Transaction) keyAlreadySigned(pk PublicKey) bool {
 	return false
 }
 
-func (transaction *Transaction) shouldRetry(status Status) bool {
+func transaction_shouldRetry(_ request, status Status) bool {
 	return status == StatusBusy
 }
 
-func (transaction *Transaction) makeRequest() request {
-	println("ffffffffffffffffF")
-	println(len(transaction.transactions))
-	println(transaction.nextTransactionIndex)
-	return request{
-		transaction: &transaction.transactions[transaction.nextTransactionIndex],
+func transaction_makeRequest(request request) protoRequest {
+	return protoRequest{
+		transaction: request.transaction.transactions[request.transaction.nextTransactionIndex],
 	}
 }
 
-func (transaction *Transaction) advanceRequest() {
-	transaction.nextTransactionIndex++
+func transaction_advanceRequest(request request) {
+	request.transaction.nextTransactionIndex++
 }
 
-func (transaction *Transaction) getNodeId(client *Client) AccountID {
-	node := transaction.GetNodeID()
-
-	if node.Shard == 0 && node.Realm == 0 && node.Account == 0 {
-		return client.getNextNode()
-	} else {
-		return node
-	}
+func transaction_getNodeId(
+	request request,
+	client *Client,
+) AccountID {
+    return request.transaction.nodeIDs[request.transaction.nextTransactionIndex]
 }
 
-func (transaction *Transaction) mapResponseStatus(response response) Status {
+func transaction_mapResponseStatus(
+	_ request,
+	response response,
+) Status {
 	return Status(response.transaction.NodeTransactionPrecheckCode)
 }
 
-func (transaction *Transaction) mapResponse(_ response, nodeID AccountID, request request) (intermediateResponse, error) {
-	hash, err := protobuf.Marshal(request.transaction)
+func transaction_mapResponse(request request, _ response, nodeID AccountID, protoRequest protoRequest) (intermediateResponse, error) {
+	hash, err := protobuf.Marshal(protoRequest.transaction)
 	if err != nil {
 		return intermediateResponse{}, err
 	}
@@ -274,66 +207,20 @@ func (transaction *Transaction) mapResponse(_ response, nodeID AccountID, reques
 	return intermediateResponse{
 		transaction: TransactionResponse{
 			NodeID:        nodeID,
-			TransactionID: transaction.id,
+			TransactionID: request.transaction.id,
 			Hash:          hash,
 		},
 	}, nil
 }
 
-func (transaction *Transaction) isFrozen() bool {
-	return len(transaction.transactions) > 0
-}
-
-// Execute executes the Transaction with the provided client
-func (transaction *Transaction) execute(
-	client *Client,
-	isFrozen func() bool,
-	freezeWith func(client *Client) error,
-	getMethod func(*channel) method,
-) (TransactionResponse, error) {
-	var isFrozen_ func() bool
-	if isFrozen != nil {
-		isFrozen_ = isFrozen
-	} else {
-		isFrozen_ = transaction.isFrozen
-	}
-
-	if !isFrozen_() {
-		freezeWith(client)
-        println("[Transaction.execute] transactions", len(transaction.transactions))
-	}
-
-	operatorID := client.GetOperatorID()
-	transactionID := transaction.id
-
-	if (operatorID.Shard != 0 && operatorID.Realm != 0 && operatorID.Account != 0) && (operatorID.Shard != transactionID.AccountID.Shard && operatorID.Realm != transactionID.AccountID.Realm && operatorID.Account != transactionID.AccountID.Account) {
-		transaction.SignWith(client.GetOperatorKey(), client.operator.signer, isFrozen_, freezeWith)
-	}
-
-	response, err := execute(
-		client,
-		transaction.isFrozen,
-		freezeWith,
-		transaction.shouldRetry,
-		transaction.makeRequest,
-		transaction.advanceRequest,
-		transaction.getNodeId,
-		getMethod,
-		transaction.mapResponseStatus,
-		transaction.mapResponse,
-	)
-
-	return response.transaction, err
-}
-
 func (transaction *Transaction) String() string {
-	return protobuf.MarshalTextString(&transaction.transactions[0]) +
+	return protobuf.MarshalTextString(transaction.transactions[0]) +
 		protobuf.MarshalTextString(transaction.body())
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (transaction *Transaction) MarshalBinary() ([]byte, error) {
-	return protobuf.Marshal(&transaction.transactions[0])
+	return protobuf.Marshal(transaction.transactions[0])
 }
 
 func (transaction *Transaction) ToBytes() ([]byte, error) {
@@ -415,7 +302,8 @@ func (transaction *Transaction) GetNodeID() AccountID {
 }
 
 // SetNodeID sets the node AccountID for this Transaction.
-func (transaction *Transaction) SetNodeID(nodeAccountID AccountID) *Transaction {
-	transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
+func (transaction *Transaction) SetNodeID(nodeID AccountID) *Transaction {
+	transaction.pbBody.NodeAccountID = nodeID.toProtobuf()
+    transaction.nodeIDs = append(transaction.nodeIDs, nodeID)
 	return transaction
 }

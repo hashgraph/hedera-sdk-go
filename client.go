@@ -265,20 +265,20 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, 
 
 // GetOperatorID returns the ID for the operator
 func (client *Client) GetOperatorID() AccountID {
-    if client.operator != nil {
-        return client.operator.accountID
-    } else {
-        return AccountID{}
-    }
+	if client.operator != nil {
+		return client.operator.accountID
+	} else {
+		return AccountID{}
+	}
 }
 
 // GetOperatorKey returns the Key for the operator
 func (client *Client) GetOperatorKey() PublicKey {
-    if client.operator != nil {
-        return client.operator.publicKey
-    } else {
-        return PublicKey{}
-    }
+	if client.operator != nil {
+		return client.operator.publicKey
+	} else {
+		return PublicKey{}
+	}
 }
 
 // SetMaxTransactionFee sets the maximum fee to be paid for the transactions

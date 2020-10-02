@@ -85,3 +85,11 @@ func accountIDFromProto(pb *proto.AccountID) AccountID {
 		Account: uint64(pb.AccountNum),
 	}
 }
+
+func (id AccountID) isZero() bool {
+	return id.Shard != 0 && id.Realm != 0 && id.Account != 0
+}
+
+func (id AccountID) equals(other AccountID) bool {
+	return id.Shard == other.Shard && id.Realm == other.Realm && id.Account == other.Account
+}
