@@ -154,7 +154,7 @@ func (transaction *AccountCreateTransaction) SignWith(
 		return transaction
 	}
 
-    for index := 0; index < len(transaction.transactions); index++ {
+	for index := 0; index < len(transaction.transactions); index++ {
 		signature := signer(transaction.transactions[index].GetBodyBytes())
 
 		transaction.signatures[index].SigPair = append(
@@ -185,9 +185,9 @@ func (transaction *AccountCreateTransaction) Execute(
 
 	_, err := execute(
 		client,
-        request {
-            transaction: &transaction.Transaction,
-        },
+		request{
+			transaction: &transaction.Transaction,
+		},
 		transaction_shouldRetry,
 		transaction_makeRequest,
 		transaction_advanceRequest,
@@ -214,21 +214,21 @@ func (transaction *AccountCreateTransaction) onFreeze(
 	return true
 }
 
-func (transaction *AccountCreateTransaction) Freeze() error {
+func (transaction *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
 
-func (transaction *AccountCreateTransaction) FreezeWith(client *Client) error {
+func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return err
+		return transaction, err
 	}
 
 	if !transaction.onFreeze(transaction.pbBody) {
-		return nil
+		return transaction, nil
 	}
 
-    return transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client)
 }
 
 func (transaction *AccountCreateTransaction) GetMaxTransactionFee() Hbar {

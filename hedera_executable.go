@@ -38,13 +38,13 @@ type protoRequest struct {
 }
 
 type request struct {
-    // query Query
-    transaction *Transaction
+	// query Query
+	transaction *Transaction
 }
 
 func execute(
 	client *Client,
-    request request,
+	request request,
 	shouldRetry func(request, Status) bool,
 	makeRequest func(request) protoRequest,
 	advanceRequest func(request),

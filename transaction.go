@@ -74,7 +74,7 @@ func (transaction *Transaction) initFee(client *Client) {
 func (transaction *Transaction) initTransactionID(client *Client) error {
 	if transaction.pbBody.TransactionID == nil {
 		if client.operator != nil {
-            transaction.id = NewTransactionID(client.operator.accountID)
+			transaction.id = NewTransactionID(client.operator.accountID)
 			transaction.SetTransactionID(transaction.id)
 		} else {
 			return errNoClientOrTransactionID
@@ -89,7 +89,7 @@ func (transaction *Transaction) isFrozen() bool {
 }
 
 func transaction_freezeWith(
-    transaction *Transaction,
+	transaction *Transaction,
 	client *Client,
 ) error {
 	if transaction.pbBody.TransactionID != nil && transaction.pbBody.NodeAccountID != nil {
@@ -100,8 +100,13 @@ func transaction_freezeWith(
 			panic(err)
 		}
 
+        sigmap := proto.SignatureMap{
+            SigPair: make([]*proto.SignaturePair, 0),
+        }
+        transaction.signatures = append(transaction.signatures, &sigmap)
 		transaction.transactions = append(transaction.transactions, &proto.Transaction{
 			BodyBytes: bodyBytes,
+            SigMap: &sigmap,
 		})
 
 		return nil
@@ -117,9 +122,13 @@ func transaction_freezeWith(
 				panic(err)
 			}
 
-			transaction.signatures = append(transaction.signatures, &proto.SignatureMap{})
+			sigmap := proto.SignatureMap{
+                SigPair: make([]*proto.SignaturePair, 0),
+            }
+			transaction.signatures = append(transaction.signatures, &sigmap)
 			transaction.transactions = append(transaction.transactions, &proto.Transaction{
 				BodyBytes: bodyBytes,
+                SigMap: &sigmap,
 			})
 		}
 
@@ -142,11 +151,13 @@ func transaction_freezeWith(
 				panic(err)
 			}
 
-            sigmap := proto.SignatureMap{}
+			sigmap := proto.SignatureMap{
+                SigPair: make([]*proto.SignaturePair, 0),
+            }
 			transaction.signatures = append(transaction.signatures, &sigmap)
 			transaction.transactions = append(transaction.transactions, &proto.Transaction{
 				BodyBytes: bodyBytes,
-                SigMap: &sigmap,
+				SigMap:    &sigmap,
 			})
 		}
 
@@ -188,7 +199,7 @@ func transaction_getNodeId(
 	request request,
 	client *Client,
 ) AccountID {
-    return request.transaction.nodeIDs[request.transaction.nextTransactionIndex]
+	return request.transaction.nodeIDs[request.transaction.nextTransactionIndex]
 }
 
 func transaction_mapResponseStatus(
@@ -304,6 +315,6 @@ func (transaction *Transaction) GetNodeID() AccountID {
 // SetNodeID sets the node AccountID for this Transaction.
 func (transaction *Transaction) SetNodeID(nodeID AccountID) *Transaction {
 	transaction.pbBody.NodeAccountID = nodeID.toProtobuf()
-    transaction.nodeIDs = append(transaction.nodeIDs, nodeID)
+	transaction.nodeIDs = append(transaction.nodeIDs, nodeID)
 	return transaction
 }
