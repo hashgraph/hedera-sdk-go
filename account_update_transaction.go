@@ -22,7 +22,7 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 }
 
 func (transaction *AccountUpdateTransaction) SetKey(publicKey PublicKey) *AccountUpdateTransaction {
-	transaction.pb.Key = publicKey.toProtobuf()
+	transaction.pb.Key = publicKey.toProtoKey()
 	return transaction
 }
 

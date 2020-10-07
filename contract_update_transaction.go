@@ -35,8 +35,6 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 		Transaction: newTransaction(),
 	}
 
-	transaction.SetAutoRenewPeriod(7890000 * time.Second)
-
 	return &transaction
 }
 
