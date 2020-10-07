@@ -24,7 +24,7 @@ const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
 type Key interface {
-	toProtobuf() *proto.Key
+	toProtoKey() *proto.Key
 }
 
 func publicKeyFromProto(pbKey *proto.Key) (Key, error) {
@@ -346,7 +346,7 @@ func (pk PublicKey) Bytes() []byte {
 	return pk.keyData
 }
 
-func (pk PublicKey) toProtobuf() *proto.Key {
+func (pk PublicKey) toProtoKey() *proto.Key {
 	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
 }
 

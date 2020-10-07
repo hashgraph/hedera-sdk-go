@@ -43,7 +43,7 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (transaction *AccountCreateTransaction) SetKey(publicKey PublicKey) *AccountCreateTransaction {
-	transaction.pb.Key = publicKey.toProtobuf()
+	transaction.pb.Key = publicKey.toProtoKey()
 	return transaction
 }
 

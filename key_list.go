@@ -24,7 +24,7 @@ func NewKeyList() *KeyList {
 }
 
 func (kl *KeyList) Add(key Key) *KeyList {
-	kl.keys = append(kl.keys, key.toProtobuf())
+	kl.keys = append(kl.keys, key.toProtoKey())
 	return kl
 }
 
@@ -36,7 +36,7 @@ func (kl *KeyList) AddAll(keys []Key) *KeyList {
 	return kl
 }
 
-func (kl *KeyList) toProtobuf() *proto.Key {
+func (kl *KeyList) toProtoKey() *proto.Key {
 	if kl.threshold >= 0 {
 		return &proto.Key{
 			Key: &proto.Key_ThresholdKey{
@@ -56,5 +56,17 @@ func (kl *KeyList) toProtobuf() *proto.Key {
 				},
 			},
 		}
+	}
+}
+
+func (kl *KeyList) toProtoKeyList() *proto.KeyList {
+	return &proto.KeyList{
+		Keys: kl.keys,
+	}
+}
+
+func keyListFromProto(pb *proto.KeyList) KeyList {
+	return KeyList{
+		keys: pb.Keys,
 	}
 }
