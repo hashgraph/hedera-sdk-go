@@ -39,13 +39,13 @@ func (transaction *ContractCreateTransaction) GetAdminKey()  Key{
 	return key
 }
 
-func (transaction *ContractCreateTransaction) SetGas(gas int64) *ContractCreateTransaction {
-	transaction.pb.Gas = gas
+func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {
+	transaction.pb.Gas = int64(gas)
 	return transaction
 }
 
-func (transaction *ContractCreateTransaction) GetGas() int64 {
-	return transaction.pb.GetGas()
+func (transaction *ContractCreateTransaction) GetGas() uint64 {
+	return uint64(transaction.pb.GetGas())
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account

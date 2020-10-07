@@ -30,11 +30,26 @@ func (transaction *ContractDeleteTransaction) GetContractId() ContractID {
 }
 
 func (transaction *ContractDeleteTransaction) SetTransferContractId(contractId ContractID) *ContractDeleteTransaction {
-	transaction.pb.Tra = contractId.toProto()
+	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+		TransferContractID: contractId.toProto(),
+	}
+
 	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) GetTransferContractId() ContractID {
-	return transaction.GetContractId()
+	return transaction.GetTransferContractId()
+}
+
+func (transaction *ContractDeleteTransaction) SetTransferAccountId(accountId AccountID) *ContractDeleteTransaction {
+	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+		TransferAccountID: accountId.toProtobuf(),
+	}
+
+	return transaction
+}
+
+func (transaction *ContractDeleteTransaction) GetTransferAccountId() AccountID {
+	return transaction.GetTransferAccountId()
 }
 
