@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"log"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
@@ -67,13 +66,8 @@ func (transaction *ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) *
 	return transaction
 }
 
-func (transaction *ContractUpdateTransaction) GetAdminKey() Key {
-	var key, err = publicKeyFromProto(transaction.pb.GetAdminKey())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return key
+func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
+	return publicKeyFromProto(transaction.pb.GetAdminKey())
 }
 
 // SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,

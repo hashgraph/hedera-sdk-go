@@ -45,8 +45,15 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 // If a file is created without adding ANY keys, the file is immutable and ONLY the
 // expirationTime of the file can be changed using FileUpdateTransaction. The file contents or its keys will not be
 // mutable.
-func (transaction *FileCreateTransaction) SetKeys(keys KeyList) *FileCreateTransaction {
-	transaction.pb.Keys = keys.toProtoKeyList()
+func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransaction {
+	if transaction.pb.Keys == nil {
+		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+	}
+	keyList := KeyList{keys: []*proto.Key{}}
+	keyList.AddAll(keys)
+
+	transaction.pb.Keys = keyList.toProtoKeyList()
+
 	return transaction
 }
 

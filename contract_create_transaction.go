@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"log"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/proto"
@@ -30,13 +29,8 @@ func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *Contrac
 	return transaction
 }
 
-func (transaction *ContractCreateTransaction) GetAdminKey()  Key{
-	var key, err = publicKeyFromProto(transaction.pb.GetAdminKey())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return key
+func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
+	return publicKeyFromProto(transaction.pb.GetAdminKey())
 }
 
 func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {

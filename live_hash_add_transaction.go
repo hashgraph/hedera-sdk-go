@@ -29,8 +29,15 @@ func (transaction *LiveHashAddTransaction) GetHash() []byte {
 	return transaction.pb.GetLiveHash().GetHash()
 }
 
-func (transaction *LiveHashAddTransaction) SetKeys(keyList KeyList) *LiveHashAddTransaction {
+func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
+	if transaction.pb.LiveHash.Keys == nil {
+		transaction.pb.LiveHash.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+	}
+	keyList := KeyList{keys: []*proto.Key{}}
+	keyList.AddAll(keys)
+
 	transaction.pb.LiveHash.Keys = keyList.toProtoKeyList()
+
 	return transaction
 }
 

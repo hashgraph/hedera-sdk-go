@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
-	"log"
 	"time"
 )
 
@@ -26,13 +25,8 @@ func (transaction *AccountUpdateTransaction) SetKey(publicKey PublicKey) *Accoun
 	return transaction
 }
 
-func (transaction *AccountUpdateTransaction) GetKey() Key {
-	var key, err = publicKeyFromProto(transaction.pb.GetKey())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return key
+func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
+	return publicKeyFromProto(transaction.pb.GetKey())
 }
 
 func (transaction *AccountUpdateTransaction ) SetAccountId(accountId AccountID) *AccountUpdateTransaction {
