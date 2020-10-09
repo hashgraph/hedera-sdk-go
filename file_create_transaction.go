@@ -86,3 +86,182 @@ func (transaction *FileCreateTransaction) GetContents() []byte {
 	return transaction.pb.GetContents()
 }
 
+//
+// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func fileCreateTransaction_getMethod(channel *channel) method {
+	return method{
+		transaction: channel.getCrypto().CreateAccount,
+	}
+}
+
+func (transaction *FileCreateTransaction) IsFrozen() bool {
+	return transaction.isFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (transaction *FileCreateTransaction) Sign(
+	privateKey PrivateKey,
+) *FileCreateTransaction {
+	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (transaction *FileCreateTransaction) SignWithOperator(
+	client *Client,
+) (*FileCreateTransaction, error) {
+	// If the transaction is not signed by the operator, we need
+	// to sign the transaction with the operator
+
+	if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (transaction *FileCreateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *FileCreateTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	for index := 0; index < len(transaction.transactions); index++ {
+		signature := signer(transaction.transactions[index].GetBodyBytes())
+
+		transaction.signatures[index].SigPair = append(
+			transaction.signatures[index].SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	return transaction
+}
+
+// Execute executes the Transaction with the provided client
+func (transaction *FileCreateTransaction) Execute(
+	client *Client,
+) (TransactionResponse, error) {
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	transactionID := transaction.id
+
+	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+		transaction.SignWith(
+			client.GetOperatorKey(),
+			client.operator.signer,
+		)
+	}
+
+	_, err := execute(
+		client,
+		request{
+			transaction: &transaction.Transaction,
+		},
+		transaction_shouldRetry,
+		transaction_makeRequest,
+		transaction_advanceRequest,
+		transaction_getNodeId,
+		fileCreateTransaction_getMethod,
+		transaction_mapResponseStatus,
+		transaction_mapResponse,
+	)
+
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+
+	return TransactionResponse{TransactionID: transaction.id}, nil
+}
+
+func (transaction *FileCreateTransaction) onFreeze(
+	pbBody *proto.TransactionBody,
+) bool {
+	pbBody.Data = &proto.TransactionBody_FileCreate{
+		FileCreate: transaction.pb,
+	}
+
+	return true
+}
+
+func (transaction *FileCreateTransaction) Freeze() (*FileCreateTransaction, error) {
+	return transaction.FreezeWith(nil)
+}
+
+func (transaction *FileCreateTransaction) FreezeWith(client *Client) (*FileCreateTransaction, error) {
+	transaction.initFee(client)
+	if err := transaction.initTransactionID(client); err != nil {
+		return transaction, err
+	}
+
+	if !transaction.onFreeze(transaction.pbBody) {
+		return transaction, nil
+	}
+
+	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+}
+
+func (transaction *FileCreateTransaction) GetMaxTransactionFee() Hbar {
+	return transaction.Transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this FileCreateTransaction.
+func (transaction *FileCreateTransaction) SetMaxTransactionFee(fee Hbar) *FileCreateTransaction {
+	transaction.Transaction.SetMaxTransactionFee(fee)
+	return transaction
+}
+
+func (transaction *FileCreateTransaction) GetTransactionMemo() string {
+	return transaction.Transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this FileCreateTransaction.
+func (transaction *FileCreateTransaction) SetTransactionMemo(memo string) *FileCreateTransaction {
+	transaction.Transaction.SetTransactionMemo(memo)
+	return transaction
+}
+
+func (transaction *FileCreateTransaction) GetTransactionValidDuration() time.Duration {
+	return transaction.Transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this FileCreateTransaction.
+func (transaction *FileCreateTransaction) SetTransactionValidDuration(duration time.Duration) *FileCreateTransaction {
+	transaction.Transaction.SetTransactionValidDuration(duration)
+	return transaction
+}
+
+func (transaction *FileCreateTransaction) GetTransactionID() TransactionID {
+	return transaction.Transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this FileCreateTransaction.
+func (transaction *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
+	transaction.Transaction.SetTransactionID(transactionID)
+	return transaction
+}
+
+func (transaction *FileCreateTransaction) GetNodeID() AccountID {
+	return transaction.Transaction.GetNodeID()
+}
+
+// SetNodeID sets the node AccountID for this FileCreateTransaction.
+func (transaction *FileCreateTransaction) SetNodeID(nodeID AccountID) *FileCreateTransaction {
+	transaction.Transaction.SetNodeID(nodeID)
+	return transaction
+}

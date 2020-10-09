@@ -68,7 +68,7 @@ func (transaction *TopicCreateTransaction) GetTopicMemo() string {
 // SetAutoRenewPeriod sets the initial lifetime of the topic and the amount of time to extend the topic's lifetime
 // automatically at expirationTime if the autoRenewAccount is configured and has sufficient funds.
 //
-// Required. Limited to a maximum of 90 days (server-side configuration which may change).
+// Required. Limited to a maximum of 90 days (server-sIDe configuration which may change).
 func (transaction *TopicCreateTransaction) SetAutoRenewPeriod(period time.Duration) *TopicCreateTransaction {
 	transaction.pb.AutoRenewPeriod = durationToProto(period)
 	return transaction
@@ -83,12 +83,191 @@ func (transaction *TopicCreateTransaction) GetAutoRenewPeriod() time.Duration {
 // extended using all funds on the account (whichever is the smaller duration/amount).
 //
 //If specified, there must be an adminKey and the autoRenewAccount must sign this transaction.
-func (transaction *TopicCreateTransaction) SetAutoRenewAccountId(accountId AccountID) *TopicCreateTransaction {
-	transaction.pb.AutoRenewAccount = accountId.toProtobuf()
+func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(accountID AccountID) *TopicCreateTransaction {
+	transaction.pb.AutoRenewAccount = accountID.toProtobuf()
 	return transaction
 }
 
-func (transaction *TopicCreateTransaction) GetAutoRenewAccoutnId() AccountID {
+func (transaction *TopicCreateTransaction) GetAutoRenewAccoutnID() AccountID {
 	return accountIDFromProto(transaction.pb.GetAutoRenewAccount())
 }
 
+//
+// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func topicCreateTransaction_getMethod(channel *channel) method {
+	return method{
+		transaction: channel.getCrypto().CreateAccount,
+	}
+}
+
+func (transaction *TopicCreateTransaction) IsFrozen() bool {
+	return transaction.isFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (transaction *TopicCreateTransaction) Sign(
+	privateKey PrivateKey,
+) *TopicCreateTransaction {
+	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (transaction *TopicCreateTransaction) SignWithOperator(
+	client *Client,
+) (*TopicCreateTransaction, error) {
+	// If the transaction is not signed by the operator, we need
+	// to sign the transaction with the operator
+
+	if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (transaction *TopicCreateTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TopicCreateTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	for index := 0; index < len(transaction.transactions); index++ {
+		signature := signer(transaction.transactions[index].GetBodyBytes())
+
+		transaction.signatures[index].SigPair = append(
+			transaction.signatures[index].SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	return transaction
+}
+
+// Execute executes the Transaction with the provided client
+func (transaction *TopicCreateTransaction) Execute(
+	client *Client,
+) (TransactionResponse, error) {
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	transactionID := transaction.id
+
+	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+		transaction.SignWith(
+			client.GetOperatorKey(),
+			client.operator.signer,
+		)
+	}
+
+	_, err := execute(
+		client,
+		request{
+			transaction: &transaction.Transaction,
+		},
+		transaction_shouldRetry,
+		transaction_makeRequest,
+		transaction_advanceRequest,
+		transaction_getNodeId,
+		topicCreateTransaction_getMethod,
+		transaction_mapResponseStatus,
+		transaction_mapResponse,
+	)
+
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+
+	return TransactionResponse{TransactionID: transaction.id}, nil
+}
+
+func (transaction *TopicCreateTransaction) onFreeze(
+	pbBody *proto.TransactionBody,
+) bool {
+	pbBody.Data = &proto.TransactionBody_ConsensusCreateTopic{
+		ConsensusCreateTopic: transaction.pb,
+	}
+
+	return true
+}
+
+func (transaction *TopicCreateTransaction) Freeze() (*TopicCreateTransaction, error) {
+	return transaction.FreezeWith(nil)
+}
+
+func (transaction *TopicCreateTransaction) FreezeWith(client *Client) (*TopicCreateTransaction, error) {
+	transaction.initFee(client)
+	if err := transaction.initTransactionID(client); err != nil {
+		return transaction, err
+	}
+
+	if !transaction.onFreeze(transaction.pbBody) {
+		return transaction, nil
+	}
+
+	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+}
+
+func (transaction *TopicCreateTransaction) GetMaxTransactionFee() Hbar {
+	return transaction.Transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this TopicCreateTransaction.
+func (transaction *TopicCreateTransaction) SetMaxTransactionFee(fee Hbar) *TopicCreateTransaction {
+	transaction.Transaction.SetMaxTransactionFee(fee)
+	return transaction
+}
+
+func (transaction *TopicCreateTransaction) GetTransactionMemo() string {
+	return transaction.Transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this TopicCreateTransaction.
+func (transaction *TopicCreateTransaction) SetTransactionMemo(memo string) *TopicCreateTransaction {
+	transaction.Transaction.SetTransactionMemo(memo)
+	return transaction
+}
+
+func (transaction *TopicCreateTransaction) GetTransactionValidDuration() time.Duration {
+	return transaction.Transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this TopicCreateTransaction.
+func (transaction *TopicCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TopicCreateTransaction {
+	transaction.Transaction.SetTransactionValidDuration(duration)
+	return transaction
+}
+
+func (transaction *TopicCreateTransaction) GetTransactionID() TransactionID {
+	return transaction.Transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this TopicCreateTransaction.
+func (transaction *TopicCreateTransaction) SetTransactionID(transactionID TransactionID) *TopicCreateTransaction {
+	transaction.Transaction.SetTransactionID(transactionID)
+	return transaction
+}
+
+func (transaction *TopicCreateTransaction) GetNodeID() AccountID {
+	return transaction.Transaction.GetNodeID()
+}
+
+// SetNodeID sets the node AccountID for this TopicCreateTransaction.
+func (transaction *TopicCreateTransaction) SetNodeID(nodeID AccountID) *TopicCreateTransaction {
+	transaction.Transaction.SetNodeID(nodeID)
+	return transaction
+}

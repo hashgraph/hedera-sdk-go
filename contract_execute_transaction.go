@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
+	"time"
 )
 
 // ContractExecuteTransaction calls a function of the given smart contract instance, giving it ContractFuncionParams as
@@ -30,12 +31,12 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 }
 
 // SetContractID sets the contract instance to call.
-func (transaction *ContractExecuteTransaction) SetContractID(id ContractID) *ContractExecuteTransaction {
-	transaction.pb.ContractID = id.toProto()
+func (transaction *ContractExecuteTransaction) SetContractID(ID ContractID) *ContractExecuteTransaction {
+	transaction.pb.ContractID = ID.toProto()
 	return transaction
 }
 
-func (transaction ContractExecuteTransaction) GetContractID(id ContractID)  ContractID{
+func (transaction ContractExecuteTransaction) GetContractID()  ContractID{
 	return contractIDFromProto(transaction.pb.GetContractID())
 }
 
@@ -73,3 +74,183 @@ func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 //	transaction.pb.FunctionParameters = params.build(&name)
 //	return transaction
 //}
+
+//
+// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
+// We override the embedded fluent setter methods to return the outer type
+//
+
+func contractExecuteTransaction_getMethod(channel *channel) method {
+	return method{
+		transaction: channel.getCrypto().CreateAccount,
+	}
+}
+
+func (transaction *ContractExecuteTransaction) IsFrozen() bool {
+	return transaction.isFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (transaction *ContractExecuteTransaction) Sign(
+	privateKey PrivateKey,
+) *ContractExecuteTransaction {
+	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (transaction *ContractExecuteTransaction) SignWithOperator(
+	client *Client,
+) (*ContractExecuteTransaction, error) {
+	// If the transaction is not signed by the operator, we need
+	// to sign the transaction with the operator
+
+	if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (transaction *ContractExecuteTransaction) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *ContractExecuteTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	for index := 0; index < len(transaction.transactions); index++ {
+		signature := signer(transaction.transactions[index].GetBodyBytes())
+
+		transaction.signatures[index].SigPair = append(
+			transaction.signatures[index].SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	return transaction
+}
+
+// Execute executes the Transaction with the provided client
+func (transaction *ContractExecuteTransaction) Execute(
+	client *Client,
+) (TransactionResponse, error) {
+	if !transaction.IsFrozen() {
+		transaction.FreezeWith(client)
+	}
+
+	transactionID := transaction.id
+
+	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+		transaction.SignWith(
+			client.GetOperatorKey(),
+			client.operator.signer,
+		)
+	}
+
+	_, err := execute(
+		client,
+		request{
+			transaction: &transaction.Transaction,
+		},
+		transaction_shouldRetry,
+		transaction_makeRequest,
+		transaction_advanceRequest,
+		transaction_getNodeId,
+		contractExecuteTransaction_getMethod,
+		transaction_mapResponseStatus,
+		transaction_mapResponse,
+	)
+
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+
+	return TransactionResponse{TransactionID: transaction.id}, nil
+}
+
+func (transaction *ContractExecuteTransaction) onFreeze(
+	pbBody *proto.TransactionBody,
+) bool {
+	pbBody.Data = &proto.TransactionBody_ContractCall{
+		ContractCall: transaction.pb,
+	}
+
+	return true
+}
+
+func (transaction *ContractExecuteTransaction) Freeze() (*ContractExecuteTransaction, error) {
+	return transaction.FreezeWith(nil)
+}
+
+func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*ContractExecuteTransaction, error) {
+	transaction.initFee(client)
+	if err := transaction.initTransactionID(client); err != nil {
+		return transaction, err
+	}
+
+	if !transaction.onFreeze(transaction.pbBody) {
+		return transaction, nil
+	}
+
+	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+}
+
+func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
+	return transaction.Transaction.GetMaxTransactionFee()
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this ContractExecuteTransaction.
+func (transaction *ContractExecuteTransaction) SetMaxTransactionFee(fee Hbar) *ContractExecuteTransaction {
+	transaction.Transaction.SetMaxTransactionFee(fee)
+	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) GetTransactionMemo() string {
+	return transaction.Transaction.GetTransactionMemo()
+}
+
+// SetTransactionMemo sets the memo for this ContractExecuteTransaction.
+func (transaction *ContractExecuteTransaction) SetTransactionMemo(memo string) *ContractExecuteTransaction {
+	transaction.Transaction.SetTransactionMemo(memo)
+	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) GetTransactionValidDuration() time.Duration {
+	return transaction.Transaction.GetTransactionValidDuration()
+}
+
+// SetTransactionValidDuration sets the valid duration for this ContractExecuteTransaction.
+func (transaction *ContractExecuteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractExecuteTransaction {
+	transaction.Transaction.SetTransactionValidDuration(duration)
+	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) GetTransactionID() TransactionID {
+	return transaction.Transaction.GetTransactionID()
+}
+
+// SetTransactionID sets the TransactionID for this ContractExecuteTransaction.
+func (transaction *ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) *ContractExecuteTransaction {
+	transaction.Transaction.SetTransactionID(transactionID)
+	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) GetNodeID() AccountID {
+	return transaction.Transaction.GetNodeID()
+}
+
+// SetNodeID sets the node AccountID for this ContractExecuteTransaction.
+func (transaction *ContractExecuteTransaction) SetNodeID(nodeID AccountID) *ContractExecuteTransaction {
+	transaction.Transaction.SetNodeID(nodeID)
+	return transaction
+}

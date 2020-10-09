@@ -67,6 +67,7 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
+
 	assert.NoError(t, err)
 
 	println("TransactionID", resp.TransactionID.String())
