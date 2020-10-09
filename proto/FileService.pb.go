@@ -9,7 +9,6 @@ package proto
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	hedera_sdk_go "github.com/hashgraph/hedera-sdk-go"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -71,17 +70,19 @@ var file_proto_FileService_proto_rawDesc = []byte{
 	0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74,
 	0x69, 0x6f, 0x6e, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x6e,
 	0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42,
-	0x28, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68, 0x61, 0x73,
+	0x52, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68, 0x61, 0x73,
 	0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f,
+	0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_proto_FileService_proto_goTypes = []interface{}{
-	(*hedera_sdk_go.Transaction)(nil),         // 0: proto.Transaction
-	(*hedera_sdk_go.Query)(nil),               // 1: proto.Query
-	(*hedera_sdk_go.TransactionResponse)(nil), // 2: proto.TransactionResponse
-	(*hedera_sdk_go.Response)(nil),            // 3: proto.Response
+	(*Transaction)(nil),         // 0: proto.Transaction
+	(*Query)(nil),               // 1: proto.Query
+	(*TransactionResponse)(nil), // 2: proto.TransactionResponse
+	(*Response)(nil),            // 3: proto.Response
 }
 var file_proto_FileService_proto_depIdxs = []int32{
 	0, // 0: proto.FileService.createFile:input_type -> proto.Transaction
@@ -112,6 +113,10 @@ func file_proto_FileService_proto_init() {
 	if File_proto_FileService_proto != nil {
 		return
 	}
+	file_proto_Query_proto_init()
+	file_proto_Response_proto_init()
+	file_proto_TransactionResponse_proto_init()
+	file_proto_Transaction_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
@@ -144,21 +149,21 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type FileServiceClient interface {
 	// Creates a file
-	CreateFile(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	CreateFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Updates a file
-	UpdateFile(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Deletes a file
-	DeleteFile(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Appends to a file
-	AppendContent(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	AppendContent(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Retrieves the file contents
-	GetFileContent(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetFileContent(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the file information
-	GetFileInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetFileInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Deletes a file if the submitting account has network admin privileges
-	SystemDelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	SystemDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Undeletes a file if the submitting account has network admin privileges
-	SystemUndelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	SystemUndelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
 
 type fileServiceClient struct {
@@ -169,8 +174,8 @@ func NewFileServiceClient(cc grpc.ClientConnInterface) FileServiceClient {
 	return &fileServiceClient{cc}
 }
 
-func (c *fileServiceClient) CreateFile(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *fileServiceClient) CreateFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.FileService/createFile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -178,8 +183,8 @@ func (c *fileServiceClient) CreateFile(ctx context.Context, in *hedera_sdk_go.Tr
 	return out, nil
 }
 
-func (c *fileServiceClient) UpdateFile(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *fileServiceClient) UpdateFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.FileService/updateFile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -187,8 +192,8 @@ func (c *fileServiceClient) UpdateFile(ctx context.Context, in *hedera_sdk_go.Tr
 	return out, nil
 }
 
-func (c *fileServiceClient) DeleteFile(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *fileServiceClient) DeleteFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.FileService/deleteFile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -196,8 +201,8 @@ func (c *fileServiceClient) DeleteFile(ctx context.Context, in *hedera_sdk_go.Tr
 	return out, nil
 }
 
-func (c *fileServiceClient) AppendContent(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *fileServiceClient) AppendContent(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.FileService/appendContent", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -205,8 +210,8 @@ func (c *fileServiceClient) AppendContent(ctx context.Context, in *hedera_sdk_go
 	return out, nil
 }
 
-func (c *fileServiceClient) GetFileContent(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *fileServiceClient) GetFileContent(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.FileService/getFileContent", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -214,8 +219,8 @@ func (c *fileServiceClient) GetFileContent(ctx context.Context, in *hedera_sdk_g
 	return out, nil
 }
 
-func (c *fileServiceClient) GetFileInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *fileServiceClient) GetFileInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.FileService/getFileInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -223,8 +228,8 @@ func (c *fileServiceClient) GetFileInfo(ctx context.Context, in *hedera_sdk_go.Q
 	return out, nil
 }
 
-func (c *fileServiceClient) SystemDelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *fileServiceClient) SystemDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.FileService/systemDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -232,8 +237,8 @@ func (c *fileServiceClient) SystemDelete(ctx context.Context, in *hedera_sdk_go.
 	return out, nil
 }
 
-func (c *fileServiceClient) SystemUndelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *fileServiceClient) SystemUndelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.FileService/systemUndelete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -244,49 +249,49 @@ func (c *fileServiceClient) SystemUndelete(ctx context.Context, in *hedera_sdk_g
 // FileServiceServer is the server API for FileService service.
 type FileServiceServer interface {
 	// Creates a file
-	CreateFile(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	CreateFile(context.Context, *Transaction) (*TransactionResponse, error)
 	// Updates a file
-	UpdateFile(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateFile(context.Context, *Transaction) (*TransactionResponse, error)
 	// Deletes a file
-	DeleteFile(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteFile(context.Context, *Transaction) (*TransactionResponse, error)
 	// Appends to a file
-	AppendContent(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	AppendContent(context.Context, *Transaction) (*TransactionResponse, error)
 	// Retrieves the file contents
-	GetFileContent(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetFileContent(context.Context, *Query) (*Response, error)
 	// Retrieves the file information
-	GetFileInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetFileInfo(context.Context, *Query) (*Response, error)
 	// Deletes a file if the submitting account has network admin privileges
-	SystemDelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	SystemDelete(context.Context, *Transaction) (*TransactionResponse, error)
 	// Undeletes a file if the submitting account has network admin privileges
-	SystemUndelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	SystemUndelete(context.Context, *Transaction) (*TransactionResponse, error)
 }
 
 // UnimplementedFileServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedFileServiceServer struct {
 }
 
-func (*UnimplementedFileServiceServer) CreateFile(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedFileServiceServer) CreateFile(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFile not implemented")
 }
-func (*UnimplementedFileServiceServer) UpdateFile(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedFileServiceServer) UpdateFile(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
 }
-func (*UnimplementedFileServiceServer) DeleteFile(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedFileServiceServer) DeleteFile(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFile not implemented")
 }
-func (*UnimplementedFileServiceServer) AppendContent(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedFileServiceServer) AppendContent(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AppendContent not implemented")
 }
-func (*UnimplementedFileServiceServer) GetFileContent(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedFileServiceServer) GetFileContent(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFileContent not implemented")
 }
-func (*UnimplementedFileServiceServer) GetFileInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedFileServiceServer) GetFileInfo(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFileInfo not implemented")
 }
-func (*UnimplementedFileServiceServer) SystemDelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedFileServiceServer) SystemDelete(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SystemDelete not implemented")
 }
-func (*UnimplementedFileServiceServer) SystemUndelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedFileServiceServer) SystemUndelete(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SystemUndelete not implemented")
 }
 
@@ -295,7 +300,7 @@ func RegisterFileServiceServer(s *grpc.Server, srv FileServiceServer) {
 }
 
 func _FileService_CreateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -307,13 +312,13 @@ func _FileService_CreateFile_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/proto.FileService/CreateFile",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).CreateFile(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(FileServiceServer).CreateFile(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FileService_UpdateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -325,13 +330,13 @@ func _FileService_UpdateFile_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/proto.FileService/UpdateFile",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).UpdateFile(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(FileServiceServer).UpdateFile(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FileService_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -343,13 +348,13 @@ func _FileService_DeleteFile_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/proto.FileService/DeleteFile",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).DeleteFile(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(FileServiceServer).DeleteFile(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FileService_AppendContent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -361,13 +366,13 @@ func _FileService_AppendContent_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/proto.FileService/AppendContent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).AppendContent(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(FileServiceServer).AppendContent(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FileService_GetFileContent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -379,13 +384,13 @@ func _FileService_GetFileContent_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/proto.FileService/GetFileContent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).GetFileContent(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(FileServiceServer).GetFileContent(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FileService_GetFileInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -397,13 +402,13 @@ func _FileService_GetFileInfo_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/proto.FileService/GetFileInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).GetFileInfo(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(FileServiceServer).GetFileInfo(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FileService_SystemDelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -415,13 +420,13 @@ func _FileService_SystemDelete_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/proto.FileService/SystemDelete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).SystemDelete(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(FileServiceServer).SystemDelete(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FileService_SystemUndelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -433,7 +438,7 @@ func _FileService_SystemUndelete_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/proto.FileService/SystemUndelete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).SystemUndelete(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(FileServiceServer).SystemUndelete(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }

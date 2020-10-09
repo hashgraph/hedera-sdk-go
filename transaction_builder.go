@@ -58,8 +58,8 @@ func (builder TransactionBuilder) Build(client *Client) (Transaction, error) {
 	}
 
 	pb := &proto.Transaction{
-		BodyData: &proto.Transaction_BodyBytes{BodyBytes: bodyBytes},
-		SigMap:   &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
+		BodyBytes: bodyBytes,
+		SigMap:    &proto.SignatureMap{SigPair: []*proto.SignaturePair{}},
 	}
 
 	return Transaction{pb, transactionIDFromProto(builder.pb.TransactionID)}, nil

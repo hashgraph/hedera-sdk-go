@@ -9,7 +9,6 @@ package proto
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	hedera_sdk_go "github.com/hashgraph/hedera-sdk-go"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -48,17 +47,20 @@ var file_proto_NetworkService_proto_rawDesc = []byte{
 	0x63, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x12, 0x12, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f,
 	0x6e, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61,
-	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x28, 0x0a,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x52, 0x0a,
 	0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68, 0x61, 0x73, 0x68, 0x67,
 	0x72, 0x61, 0x70, 0x68, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65,
+	0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_proto_NetworkService_proto_goTypes = []interface{}{
-	(*hedera_sdk_go.Query)(nil),               // 0: proto.Query
-	(*hedera_sdk_go.Transaction)(nil),         // 1: proto.Transaction
-	(*hedera_sdk_go.Response)(nil),            // 2: proto.Response
-	(*hedera_sdk_go.TransactionResponse)(nil), // 3: proto.TransactionResponse
+	(*Query)(nil),               // 0: proto.Query
+	(*Transaction)(nil),         // 1: proto.Transaction
+	(*Response)(nil),            // 2: proto.Response
+	(*TransactionResponse)(nil), // 3: proto.TransactionResponse
 }
 var file_proto_NetworkService_proto_depIdxs = []int32{
 	0, // 0: proto.NetworkService.getVersionInfo:input_type -> proto.Query
@@ -77,6 +79,10 @@ func file_proto_NetworkService_proto_init() {
 	if File_proto_NetworkService_proto != nil {
 		return
 	}
+	file_proto_Query_proto_init()
+	file_proto_Response_proto_init()
+	file_proto_TransactionResponse_proto_init()
+	file_proto_Transaction_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
@@ -108,8 +114,8 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type NetworkServiceClient interface {
-	GetVersionInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
-	UncheckedSubmit(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	GetVersionInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	UncheckedSubmit(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
 
 type networkServiceClient struct {
@@ -120,8 +126,8 @@ func NewNetworkServiceClient(cc grpc.ClientConnInterface) NetworkServiceClient {
 	return &networkServiceClient{cc}
 }
 
-func (c *networkServiceClient) GetVersionInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *networkServiceClient) GetVersionInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.NetworkService/getVersionInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -129,8 +135,8 @@ func (c *networkServiceClient) GetVersionInfo(ctx context.Context, in *hedera_sd
 	return out, nil
 }
 
-func (c *networkServiceClient) UncheckedSubmit(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *networkServiceClient) UncheckedSubmit(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.NetworkService/uncheckedSubmit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -140,18 +146,18 @@ func (c *networkServiceClient) UncheckedSubmit(ctx context.Context, in *hedera_s
 
 // NetworkServiceServer is the server API for NetworkService service.
 type NetworkServiceServer interface {
-	GetVersionInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
-	UncheckedSubmit(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	GetVersionInfo(context.Context, *Query) (*Response, error)
+	UncheckedSubmit(context.Context, *Transaction) (*TransactionResponse, error)
 }
 
 // UnimplementedNetworkServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedNetworkServiceServer struct {
 }
 
-func (*UnimplementedNetworkServiceServer) GetVersionInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedNetworkServiceServer) GetVersionInfo(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVersionInfo not implemented")
 }
-func (*UnimplementedNetworkServiceServer) UncheckedSubmit(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedNetworkServiceServer) UncheckedSubmit(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UncheckedSubmit not implemented")
 }
 
@@ -160,7 +166,7 @@ func RegisterNetworkServiceServer(s *grpc.Server, srv NetworkServiceServer) {
 }
 
 func _NetworkService_GetVersionInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -172,13 +178,13 @@ func _NetworkService_GetVersionInfo_Handler(srv interface{}, ctx context.Context
 		FullMethod: "/proto.NetworkService/GetVersionInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetVersionInfo(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(NetworkServiceServer).GetVersionInfo(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _NetworkService_UncheckedSubmit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -190,7 +196,7 @@ func _NetworkService_UncheckedSubmit_Handler(srv interface{}, ctx context.Contex
 		FullMethod: "/proto.NetworkService/UncheckedSubmit",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).UncheckedSubmit(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(NetworkServiceServer).UncheckedSubmit(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }

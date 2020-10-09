@@ -9,7 +9,6 @@ package proto
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	hedera_sdk_go "github.com/hashgraph/hedera-sdk-go"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -92,17 +91,19 @@ var file_proto_CryptoService_proto_rawDesc = []byte{
 	0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x73, 0x42, 0x79, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e,
 	0x74, 0x49, 0x44, 0x12, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x51, 0x75, 0x65, 0x72,
 	0x79, 0x1a, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x42, 0x28, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61,
+	0x73, 0x65, 0x42, 0x52, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61,
 	0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x5a, 0x28, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61,
+	0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f,
+	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_proto_CryptoService_proto_goTypes = []interface{}{
-	(*hedera_sdk_go.Transaction)(nil),         // 0: proto.Transaction
-	(*hedera_sdk_go.Query)(nil),               // 1: proto.Query
-	(*hedera_sdk_go.TransactionResponse)(nil), // 2: proto.TransactionResponse
-	(*hedera_sdk_go.Response)(nil),            // 3: proto.Response
+	(*Transaction)(nil),         // 0: proto.Transaction
+	(*Query)(nil),               // 1: proto.Query
+	(*TransactionResponse)(nil), // 2: proto.TransactionResponse
+	(*Response)(nil),            // 3: proto.Response
 }
 var file_proto_CryptoService_proto_depIdxs = []int32{
 	0,  // 0: proto.CryptoService.createAccount:input_type -> proto.Transaction
@@ -145,6 +146,10 @@ func file_proto_CryptoService_proto_init() {
 	if File_proto_CryptoService_proto != nil {
 		return
 	}
+	file_proto_Query_proto_init()
+	file_proto_Response_proto_init()
+	file_proto_TransactionResponse_proto_init()
+	file_proto_Transaction_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
@@ -177,33 +182,33 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CryptoServiceClient interface {
 	// Creates a new account by submitting the transaction
-	CreateAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	CreateAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Updates an account by submitting the transaction
-	UpdateAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Initiates a transfer by submitting the transaction
-	CryptoTransfer(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	CryptoTransfer(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Deletes and account by submitting the transaction
-	CryptoDelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	CryptoDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Adds a livehash
-	AddLiveHash(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	AddLiveHash(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Deletes a livehash
-	DeleteLiveHash(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteLiveHash(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Retrieves a livehash for an account
-	GetLiveHash(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetLiveHash(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the 25-hour records stored for an account
-	GetAccountRecords(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetAccountRecords(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the balance of an account
-	CryptoGetBalance(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	CryptoGetBalance(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the metadata of an account
-	GetAccountInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetAccountInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the latest receipt for a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
-	GetTransactionReceipts(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetTransactionReceipts(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// (NOT CURRENTLY SUPPORTED) Returns the records of transactions recently funded by an account
-	GetFastTransactionRecord(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetFastTransactionRecord(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the record of a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
-	GetTxRecordByTxID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetTxRecordByTxID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// (NOT CURRENTLY SUPPORTED) Retrieves the stakers for a node by account id
-	GetStakersByAccountID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetStakersByAccountID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 }
 
 type cryptoServiceClient struct {
@@ -214,8 +219,8 @@ func NewCryptoServiceClient(cc grpc.ClientConnInterface) CryptoServiceClient {
 	return &cryptoServiceClient{cc}
 }
 
-func (c *cryptoServiceClient) CreateAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *cryptoServiceClient) CreateAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/createAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -223,8 +228,8 @@ func (c *cryptoServiceClient) CreateAccount(ctx context.Context, in *hedera_sdk_
 	return out, nil
 }
 
-func (c *cryptoServiceClient) UpdateAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *cryptoServiceClient) UpdateAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/updateAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -232,8 +237,8 @@ func (c *cryptoServiceClient) UpdateAccount(ctx context.Context, in *hedera_sdk_
 	return out, nil
 }
 
-func (c *cryptoServiceClient) CryptoTransfer(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *cryptoServiceClient) CryptoTransfer(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/cryptoTransfer", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -241,8 +246,8 @@ func (c *cryptoServiceClient) CryptoTransfer(ctx context.Context, in *hedera_sdk
 	return out, nil
 }
 
-func (c *cryptoServiceClient) CryptoDelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *cryptoServiceClient) CryptoDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/cryptoDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -250,8 +255,8 @@ func (c *cryptoServiceClient) CryptoDelete(ctx context.Context, in *hedera_sdk_g
 	return out, nil
 }
 
-func (c *cryptoServiceClient) AddLiveHash(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *cryptoServiceClient) AddLiveHash(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/addLiveHash", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -259,8 +264,8 @@ func (c *cryptoServiceClient) AddLiveHash(ctx context.Context, in *hedera_sdk_go
 	return out, nil
 }
 
-func (c *cryptoServiceClient) DeleteLiveHash(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *cryptoServiceClient) DeleteLiveHash(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/deleteLiveHash", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -268,8 +273,8 @@ func (c *cryptoServiceClient) DeleteLiveHash(ctx context.Context, in *hedera_sdk
 	return out, nil
 }
 
-func (c *cryptoServiceClient) GetLiveHash(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) GetLiveHash(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/getLiveHash", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -277,8 +282,8 @@ func (c *cryptoServiceClient) GetLiveHash(ctx context.Context, in *hedera_sdk_go
 	return out, nil
 }
 
-func (c *cryptoServiceClient) GetAccountRecords(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) GetAccountRecords(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/getAccountRecords", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -286,8 +291,8 @@ func (c *cryptoServiceClient) GetAccountRecords(ctx context.Context, in *hedera_
 	return out, nil
 }
 
-func (c *cryptoServiceClient) CryptoGetBalance(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) CryptoGetBalance(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/cryptoGetBalance", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -295,8 +300,8 @@ func (c *cryptoServiceClient) CryptoGetBalance(ctx context.Context, in *hedera_s
 	return out, nil
 }
 
-func (c *cryptoServiceClient) GetAccountInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) GetAccountInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/getAccountInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -304,8 +309,8 @@ func (c *cryptoServiceClient) GetAccountInfo(ctx context.Context, in *hedera_sdk
 	return out, nil
 }
 
-func (c *cryptoServiceClient) GetTransactionReceipts(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) GetTransactionReceipts(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/getTransactionReceipts", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -313,8 +318,8 @@ func (c *cryptoServiceClient) GetTransactionReceipts(ctx context.Context, in *he
 	return out, nil
 }
 
-func (c *cryptoServiceClient) GetFastTransactionRecord(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) GetFastTransactionRecord(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/getFastTransactionRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -322,8 +327,8 @@ func (c *cryptoServiceClient) GetFastTransactionRecord(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *cryptoServiceClient) GetTxRecordByTxID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) GetTxRecordByTxID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/getTxRecordByTxID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -331,8 +336,8 @@ func (c *cryptoServiceClient) GetTxRecordByTxID(ctx context.Context, in *hedera_
 	return out, nil
 }
 
-func (c *cryptoServiceClient) GetStakersByAccountID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *cryptoServiceClient) GetStakersByAccountID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.CryptoService/getStakersByAccountID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -343,79 +348,79 @@ func (c *cryptoServiceClient) GetStakersByAccountID(ctx context.Context, in *hed
 // CryptoServiceServer is the server API for CryptoService service.
 type CryptoServiceServer interface {
 	// Creates a new account by submitting the transaction
-	CreateAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	CreateAccount(context.Context, *Transaction) (*TransactionResponse, error)
 	// Updates an account by submitting the transaction
-	UpdateAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateAccount(context.Context, *Transaction) (*TransactionResponse, error)
 	// Initiates a transfer by submitting the transaction
-	CryptoTransfer(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	CryptoTransfer(context.Context, *Transaction) (*TransactionResponse, error)
 	// Deletes and account by submitting the transaction
-	CryptoDelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	CryptoDelete(context.Context, *Transaction) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Adds a livehash
-	AddLiveHash(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	AddLiveHash(context.Context, *Transaction) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Deletes a livehash
-	DeleteLiveHash(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteLiveHash(context.Context, *Transaction) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Retrieves a livehash for an account
-	GetLiveHash(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetLiveHash(context.Context, *Query) (*Response, error)
 	// Retrieves the 25-hour records stored for an account
-	GetAccountRecords(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetAccountRecords(context.Context, *Query) (*Response, error)
 	// Retrieves the balance of an account
-	CryptoGetBalance(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	CryptoGetBalance(context.Context, *Query) (*Response, error)
 	// Retrieves the metadata of an account
-	GetAccountInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetAccountInfo(context.Context, *Query) (*Response, error)
 	// Retrieves the latest receipt for a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
-	GetTransactionReceipts(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetTransactionReceipts(context.Context, *Query) (*Response, error)
 	// (NOT CURRENTLY SUPPORTED) Returns the records of transactions recently funded by an account
-	GetFastTransactionRecord(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetFastTransactionRecord(context.Context, *Query) (*Response, error)
 	// Retrieves the record of a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
-	GetTxRecordByTxID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetTxRecordByTxID(context.Context, *Query) (*Response, error)
 	// (NOT CURRENTLY SUPPORTED) Retrieves the stakers for a node by account id
-	GetStakersByAccountID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetStakersByAccountID(context.Context, *Query) (*Response, error)
 }
 
 // UnimplementedCryptoServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedCryptoServiceServer struct {
 }
 
-func (*UnimplementedCryptoServiceServer) CreateAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedCryptoServiceServer) CreateAccount(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAccount not implemented")
 }
-func (*UnimplementedCryptoServiceServer) UpdateAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedCryptoServiceServer) UpdateAccount(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAccount not implemented")
 }
-func (*UnimplementedCryptoServiceServer) CryptoTransfer(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedCryptoServiceServer) CryptoTransfer(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CryptoTransfer not implemented")
 }
-func (*UnimplementedCryptoServiceServer) CryptoDelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedCryptoServiceServer) CryptoDelete(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CryptoDelete not implemented")
 }
-func (*UnimplementedCryptoServiceServer) AddLiveHash(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedCryptoServiceServer) AddLiveHash(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddLiveHash not implemented")
 }
-func (*UnimplementedCryptoServiceServer) DeleteLiveHash(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedCryptoServiceServer) DeleteLiveHash(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLiveHash not implemented")
 }
-func (*UnimplementedCryptoServiceServer) GetLiveHash(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) GetLiveHash(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLiveHash not implemented")
 }
-func (*UnimplementedCryptoServiceServer) GetAccountRecords(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) GetAccountRecords(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccountRecords not implemented")
 }
-func (*UnimplementedCryptoServiceServer) CryptoGetBalance(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) CryptoGetBalance(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CryptoGetBalance not implemented")
 }
-func (*UnimplementedCryptoServiceServer) GetAccountInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) GetAccountInfo(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccountInfo not implemented")
 }
-func (*UnimplementedCryptoServiceServer) GetTransactionReceipts(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) GetTransactionReceipts(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTransactionReceipts not implemented")
 }
-func (*UnimplementedCryptoServiceServer) GetFastTransactionRecord(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) GetFastTransactionRecord(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFastTransactionRecord not implemented")
 }
-func (*UnimplementedCryptoServiceServer) GetTxRecordByTxID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) GetTxRecordByTxID(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTxRecordByTxID not implemented")
 }
-func (*UnimplementedCryptoServiceServer) GetStakersByAccountID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedCryptoServiceServer) GetStakersByAccountID(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStakersByAccountID not implemented")
 }
 
@@ -424,7 +429,7 @@ func RegisterCryptoServiceServer(s *grpc.Server, srv CryptoServiceServer) {
 }
 
 func _CryptoService_CreateAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -436,13 +441,13 @@ func _CryptoService_CreateAccount_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/proto.CryptoService/CreateAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).CreateAccount(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(CryptoServiceServer).CreateAccount(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_UpdateAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -454,13 +459,13 @@ func _CryptoService_UpdateAccount_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/proto.CryptoService/UpdateAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).UpdateAccount(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(CryptoServiceServer).UpdateAccount(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_CryptoTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -472,13 +477,13 @@ func _CryptoService_CryptoTransfer_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/proto.CryptoService/CryptoTransfer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).CryptoTransfer(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(CryptoServiceServer).CryptoTransfer(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_CryptoDelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -490,13 +495,13 @@ func _CryptoService_CryptoDelete_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/proto.CryptoService/CryptoDelete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).CryptoDelete(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(CryptoServiceServer).CryptoDelete(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_AddLiveHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -508,13 +513,13 @@ func _CryptoService_AddLiveHash_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/proto.CryptoService/AddLiveHash",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).AddLiveHash(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(CryptoServiceServer).AddLiveHash(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_DeleteLiveHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -526,13 +531,13 @@ func _CryptoService_DeleteLiveHash_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/proto.CryptoService/DeleteLiveHash",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).DeleteLiveHash(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(CryptoServiceServer).DeleteLiveHash(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_GetLiveHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -544,13 +549,13 @@ func _CryptoService_GetLiveHash_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/proto.CryptoService/GetLiveHash",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).GetLiveHash(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).GetLiveHash(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_GetAccountRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -562,13 +567,13 @@ func _CryptoService_GetAccountRecords_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/proto.CryptoService/GetAccountRecords",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).GetAccountRecords(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).GetAccountRecords(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_CryptoGetBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -580,13 +585,13 @@ func _CryptoService_CryptoGetBalance_Handler(srv interface{}, ctx context.Contex
 		FullMethod: "/proto.CryptoService/CryptoGetBalance",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).CryptoGetBalance(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).CryptoGetBalance(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_GetAccountInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -598,13 +603,13 @@ func _CryptoService_GetAccountInfo_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/proto.CryptoService/GetAccountInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).GetAccountInfo(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).GetAccountInfo(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_GetTransactionReceipts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -616,13 +621,13 @@ func _CryptoService_GetTransactionReceipts_Handler(srv interface{}, ctx context.
 		FullMethod: "/proto.CryptoService/GetTransactionReceipts",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).GetTransactionReceipts(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).GetTransactionReceipts(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_GetFastTransactionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -634,13 +639,13 @@ func _CryptoService_GetFastTransactionRecord_Handler(srv interface{}, ctx contex
 		FullMethod: "/proto.CryptoService/GetFastTransactionRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).GetFastTransactionRecord(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).GetFastTransactionRecord(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_GetTxRecordByTxID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -652,13 +657,13 @@ func _CryptoService_GetTxRecordByTxID_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/proto.CryptoService/GetTxRecordByTxID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).GetTxRecordByTxID(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).GetTxRecordByTxID(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CryptoService_GetStakersByAccountID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -670,7 +675,7 @@ func _CryptoService_GetStakersByAccountID_Handler(srv interface{}, ctx context.C
 		FullMethod: "/proto.CryptoService/GetStakersByAccountID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CryptoServiceServer).GetStakersByAccountID(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(CryptoServiceServer).GetStakersByAccountID(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }

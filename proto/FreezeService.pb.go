@@ -9,7 +9,6 @@ package proto
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	hedera_sdk_go "github.com/hashgraph/hedera-sdk-go"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -42,15 +41,18 @@ var file_proto_FreezeService_proto_rawDesc = []byte{
 	0x06, 0x66, 0x72, 0x65, 0x65, 0x7a, 0x65, 0x12, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
 	0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x1a, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x28, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x52, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68,
 	0x65, 0x64, 0x65, 0x72, 0x61, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x73,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76,
-	0x61, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61,
+	0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73,
+	0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var file_proto_FreezeService_proto_goTypes = []interface{}{
-	(*hedera_sdk_go.Transaction)(nil),         // 0: proto.Transaction
-	(*hedera_sdk_go.TransactionResponse)(nil), // 1: proto.TransactionResponse
+	(*Transaction)(nil),         // 0: proto.Transaction
+	(*TransactionResponse)(nil), // 1: proto.TransactionResponse
 }
 var file_proto_FreezeService_proto_depIdxs = []int32{
 	0, // 0: proto.FreezeService.freeze:input_type -> proto.Transaction
@@ -67,6 +69,8 @@ func file_proto_FreezeService_proto_init() {
 	if File_proto_FreezeService_proto != nil {
 		return
 	}
+	file_proto_TransactionResponse_proto_init()
+	file_proto_Transaction_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
@@ -98,7 +102,7 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type FreezeServiceClient interface {
-	Freeze(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	Freeze(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
 
 type freezeServiceClient struct {
@@ -109,8 +113,8 @@ func NewFreezeServiceClient(cc grpc.ClientConnInterface) FreezeServiceClient {
 	return &freezeServiceClient{cc}
 }
 
-func (c *freezeServiceClient) Freeze(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *freezeServiceClient) Freeze(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.FreezeService/freeze", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -120,14 +124,14 @@ func (c *freezeServiceClient) Freeze(ctx context.Context, in *hedera_sdk_go.Tran
 
 // FreezeServiceServer is the server API for FreezeService service.
 type FreezeServiceServer interface {
-	Freeze(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	Freeze(context.Context, *Transaction) (*TransactionResponse, error)
 }
 
 // UnimplementedFreezeServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedFreezeServiceServer struct {
 }
 
-func (*UnimplementedFreezeServiceServer) Freeze(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedFreezeServiceServer) Freeze(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Freeze not implemented")
 }
 
@@ -136,7 +140,7 @@ func RegisterFreezeServiceServer(s *grpc.Server, srv FreezeServiceServer) {
 }
 
 func _FreezeService_Freeze_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -148,7 +152,7 @@ func _FreezeService_Freeze_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/proto.FreezeService/Freeze",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FreezeServiceServer).Freeze(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(FreezeServiceServer).Freeze(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }

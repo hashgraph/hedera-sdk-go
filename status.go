@@ -3,128 +3,164 @@ package hedera
 type Status uint32
 
 const (
-	StatusOk                                  Status = 0
-	StatusInvalidTransaction                  Status = 1
-	StatusPayerAccountNotFound                Status = 2
-	StatusInvalidNodeAccount                  Status = 3
-	StatusTransactionExpired                  Status = 4
-	StatusInvalidTransactionStart             Status = 5
-	StatusInvalidTransactionDuration          Status = 6
-	StatusInvalidSignature                    Status = 7
-	StatusMemoTooLong                         Status = 8
-	StatusInsufficientTxFee                   Status = 9
-	StatusInsufficientPayerBalance            Status = 10
-	StatusDuplicateTransaction                Status = 11
-	StatusBusy                                Status = 12
-	StatusNotSupported                        Status = 13
-	StatusInvalidFileID                       Status = 14
-	StatusInvalidAccountID                    Status = 15
-	StatusInvalidContractID                   Status = 16
-	StatusInvalidTransactionID                Status = 17
-	StatusReceiptNotFound                     Status = 18
-	StatusRecordNotFound                      Status = 19
-	StatusInvalidSolidityID                   Status = 20
-	StatusUnknown                             Status = 21
-	StatusSuccess                             Status = 22
-	StatusFailInvalid                         Status = 23
-	StatusFailFee                             Status = 24
-	StatusFailBalance                         Status = 25
-	StatusKeyRequired                         Status = 26
-	StatusBadEncoding                         Status = 27
-	StatusInsufficientAccountBalance          Status = 28
-	StatusInvalidSolidityAddress              Status = 29
-	StatusInsufficientGas                     Status = 30
-	StatusContractSizeLimitExceeded           Status = 31
-	StatusLocalCallModificationException      Status = 32
-	StatusContractRevertExecuted              Status = 33
-	StatusContractExecutionException          Status = 34
-	StatusInvalidReceivingNodeAccount         Status = 35
-	StatusMissingQueryHeader                  Status = 36
-	StatusAccountUpdateFailed                 Status = 37
-	StatusInvalidKeyEncoding                  Status = 38
-	StatusNullSolidityAddress                 Status = 39
-	StatusContractUpdateFailed                Status = 40
-	StatusInvalidQueryHeader                  Status = 41
-	StatusInvalidFeeSubmitted                 Status = 42
-	StatusInvalidPayerSignature               Status = 43
-	StatusKeyNotProvided                      Status = 44
-	StatusInvalidExpirationTime               Status = 45
-	StatusNoWaclKey                           Status = 46
-	StatusFileContentEmpty                    Status = 47
-	StatusInvalidAccountAmounts               Status = 48
-	StatusEmptyTransactionBody                Status = 49
-	StatusInvalidTransactionBody              Status = 50
-	StatusInvalidSignatureTypeMismatchingKey  Status = 51
-	StatusInvalidSignatureCountMismatchingKey Status = 52
-	StatusEmptyClaimBody                      Status = 53
-	StatusEmptyClaimHash                      Status = 54
-	StatusEmptyClaimKeys                      Status = 55
-	StatusInvalidClaimHashSize                Status = 56
-	StatusEmptyQueryBody                      Status = 57
-	StatusEmptyClaimQuery                     Status = 58
-	StatusClaimNotFound                       Status = 59
-	StatusAccountIDDoesNotExist               Status = 60
-	StatusClaimAlreadyExists                  Status = 61
-	StatusInvalidFileWacl                     Status = 62
-	StatusSerializationFailed                 Status = 63
-	StatusTransactionOversize                 Status = 64
-	StatusTransactionTooManyLayers            Status = 65
-	StatusContractDeleted                     Status = 66
-	StatusPlatformNotActive                   Status = 67
-	StatusKeyPrefixMismatch                   Status = 68
-	StatusPlatformTransactionNotCreated       Status = 69
-	StatusInvalidRenewalPeriod                Status = 70
-	StatusInvalidPayerAccountID               Status = 71
-	StatusAccountDeleted                      Status = 72
-	StatusFileDeleted                         Status = 73
-	StatusAccountRepeatedInAccountAmounts     Status = 74
-	StatusSettingNegativeAccountBalance       Status = 75
-	StatusObtainerRequired                    Status = 76
-	StatusObtainerSameContractID              Status = 77
-	StatusObtainerDoesNotExist                Status = 78
-	StatusModifyingImmutableContract          Status = 79
-	StatusFileSystemException                 Status = 80
-	StatusAutorenewDurationNotInRange         Status = 81
-	StatusErrorDecodingBytestring             Status = 82
-	StatusContractFileEmpty                   Status = 83
-	StatusContractBytecodeEmpty               Status = 84
-	StatusInvalidInitialBalance               Status = 85
-	StatusInvalidReceiveRecordThreshold       Status = 86
-	StatusInvalidSendRecordThreshold          Status = 87
-	StatusAccountIsNotGenesisAccount          Status = 88
-	StatusPayerAccountUnauthorized            Status = 89
-	StatusInvalidFreezeTransactionBody        Status = 90
-	StatusFreezeTransactionBodyNotFound       Status = 91
-	StatusTransferListSizeLimitExceeded       Status = 92
-	StatusResultSizeLimitExceeded             Status = 93
-	StatusNotSpecialAccount                   Status = 94
-	StatusContractNegativeGas                 Status = 95
-	StatusContractNegativeValue               Status = 96
-	StatusInvalidFeeFile                      Status = 97
-	StatusInvalidExchangeRateFile             Status = 98
-	StatusInsufficientLocalCallGas            Status = 99
-	StatusEntityNotAllowedToDelete            Status = 100
-	StatusAuthorizationFailed                 Status = 101
-	StatusFileUploadedProtoInvalid            Status = 102
-	StatusFileUploadedProtoNotSavedToDisk     Status = 103
-	StatusFeeScheduleFilePartUploaded         Status = 104
-	StatusExchangeRateChangeLimitExceeded     Status = 105
-	StatusMaxContractStorageExceeded          Status = 106
-	StatusTransferAccountSameAsDeleteAccount  Status = 107
-	StatusTotalLedgerBalanceInvalid           Status = 108
-	StatusExpirationReductionNotAllowed       Status = 110
-	StatusMaxGasLimitExceeded                 Status = 111
-	StatusMaxFileSizeExceeded                 Status = 112
-	StatusInvalidTopicID                      Status = 150
-	StatusInvalidAdminKey                     Status = 155
-	StatusInvalidSubmitKey                    Status = 156
-	StatusUnauthorized                        Status = 157
-	StatusInvalidTopicMessage                 Status = 158
-	StatusInvalidAutoRenewAccount             Status = 159
-	StatusAutoRenewAccountNotAllowed          Status = 160
-	StatusTopicExpired                        Status = 162
-	StatusInvalidChunkNumber                  Status = 163
-	StatusInvalidChunkTransactionId           Status = 164
+	StatusOk                                   Status = 0
+	StatusInvalidTransaction                   Status = 1
+	StatusPayerAccountNotFound                 Status = 2
+	StatusInvalidNodeAccount                   Status = 3
+	StatusTransactionExpired                   Status = 4
+	StatusInvalidTransactionStart              Status = 5
+	StatusInvalidTransactionDuration           Status = 6
+	StatusInvalidSignature                     Status = 7
+	StatusMemoTooLong                          Status = 8
+	StatusInsufficientTxFee                    Status = 9
+	StatusInsufficientPayerBalance             Status = 10
+	StatusDuplicateTransaction                 Status = 11
+	StatusBusy                                 Status = 12
+	StatusNotSupported                         Status = 13
+	StatusInvalidFileID                        Status = 14
+	StatusInvalidAccountID                     Status = 15
+	StatusInvalidContractID                    Status = 16
+	StatusInvalidTransactionID                 Status = 17
+	StatusReceiptNotFound                      Status = 18
+	StatusRecordNotFound                       Status = 19
+	StatusInvalidSolidityID                    Status = 20
+	StatusUnknown                              Status = 21
+	StatusSuccess                              Status = 22
+	StatusFailInvalid                          Status = 23
+	StatusFailFee                              Status = 24
+	StatusFailBalance                          Status = 25
+	StatusKeyRequired                          Status = 26
+	StatusBadEncoding                          Status = 27
+	StatusInsufficientAccountBalance           Status = 28
+	StatusInvalidSolidityAddress               Status = 29
+	StatusInsufficientGas                      Status = 30
+	StatusContractSizeLimitExceeded            Status = 31
+	StatusLocalCallModificationException       Status = 32
+	StatusContractRevertExecuted               Status = 33
+	StatusContractExecutionException           Status = 34
+	StatusInvalidReceivingNodeAccount          Status = 35
+	StatusMissingQueryHeader                   Status = 36
+	StatusAccountUpdateFailed                  Status = 37
+	StatusInvalidKeyEncoding                   Status = 38
+	StatusNullSolidityAddress                  Status = 39
+	StatusContractUpdateFailed                 Status = 40
+	StatusInvalidQueryHeader                   Status = 41
+	StatusInvalidFeeSubmitted                  Status = 42
+	StatusInvalidPayerSignature                Status = 43
+	StatusKeyNotProvided                       Status = 44
+	StatusInvalidExpirationTime                Status = 45
+	StatusNoWaclKey                            Status = 46
+	StatusFileContentEmpty                     Status = 47
+	StatusInvalidAccountAmounts                Status = 48
+	StatusEmptyTransactionBody                 Status = 49
+	StatusInvalidTransactionBody               Status = 50
+	StatusInvalidSignatureTypeMismatchingKey   Status = 51
+	StatusInvalidSignatureCountMismatchingKey  Status = 52
+	StatusEmptyClaimBody                       Status = 53
+	StatusEmptyClaimHash                       Status = 54
+	StatusEmptyClaimKeys                       Status = 55
+	StatusInvalidClaimHashSize                 Status = 56
+	StatusEmptyQueryBody                       Status = 57
+	StatusEmptyClaimQuery                      Status = 58
+	StatusClaimNotFound                        Status = 59
+	StatusAccountIDDoesNotExist                Status = 60
+	StatusClaimAlreadyExists                   Status = 61
+	StatusInvalidFileWacl                      Status = 62
+	StatusSerializationFailed                  Status = 63
+	StatusTransactionOversize                  Status = 64
+	StatusTransactionTooManyLayers             Status = 65
+	StatusContractDeleted                      Status = 66
+	StatusPlatformNotActive                    Status = 67
+	StatusKeyPrefixMismatch                    Status = 68
+	StatusPlatformTransactionNotCreated        Status = 69
+	StatusInvalidRenewalPeriod                 Status = 70
+	StatusInvalidPayerAccountID                Status = 71
+	StatusAccountDeleted                       Status = 72
+	StatusFileDeleted                          Status = 73
+	StatusAccountRepeatedInAccountAmounts      Status = 74
+	StatusSettingNegativeAccountBalance        Status = 75
+	StatusObtainerRequired                     Status = 76
+	StatusObtainerSameContractID               Status = 77
+	StatusObtainerDoesNotExist                 Status = 78
+	StatusModifyingImmutableContract           Status = 79
+	StatusFileSystemException                  Status = 80
+	StatusAutorenewDurationNotInRange          Status = 81
+	StatusErrorDecodingBytestring              Status = 82
+	StatusContractFileEmpty                    Status = 83
+	StatusContractBytecodeEmpty                Status = 84
+	StatusInvalidInitialBalance                Status = 85
+	StatusInvalidReceiveRecordThreshold        Status = 86
+	StatusInvalidSendRecordThreshold           Status = 87
+	StatusAccountIsNotGenesisAccount           Status = 88
+	StatusPayerAccountUnauthorized             Status = 89
+	StatusInvalidFreezeTransactionBody         Status = 90
+	StatusFreezeTransactionBodyNotFound        Status = 91
+	StatusTransferListSizeLimitExceeded        Status = 92
+	StatusResultSizeLimitExceeded              Status = 93
+	StatusNotSpecialAccount                    Status = 94
+	StatusContractNegativeGas                  Status = 95
+	StatusContractNegativeValue                Status = 96
+	StatusInvalidFeeFile                       Status = 97
+	StatusInvalidExchangeRateFile              Status = 98
+	StatusInsufficientLocalCallGas             Status = 99
+	StatusEntityNotAllowedToDelete             Status = 100
+	StatusAuthorizationFailed                  Status = 101
+	StatusFileUploadedProtoInvalid             Status = 102
+	StatusFileUploadedProtoNotSavedToDisk      Status = 103
+	StatusFeeScheduleFilePartUploaded          Status = 104
+	StatusExchangeRateChangeLimitExceeded      Status = 105
+	StatusMaxContractStorageExceeded           Status = 106
+	StatusTransferAccountSameAsDeleteAccount   Status = 107
+	StatusTotalLedgerBalanceInvalid            Status = 108
+	StatusExpirationReductionNotAllowed        Status = 110
+	StatusMaxGasLimitExceeded                  Status = 111
+	StatusMaxFileSizeExceeded                  Status = 112
+	StatusInvalidTopicID                       Status = 150
+	StatusInvalidAdminKey                      Status = 155
+	StatusInvalidSubmitKey                     Status = 156
+	StatusUnauthorized                         Status = 157
+	StatusInvalidTopicMessage                  Status = 158
+	StatusInvalidAutoRenewAccount              Status = 159
+	StatusAutoRenewAccountNotAllowed           Status = 160
+	StatusTopicExpired                         Status = 162
+	StatusInvalidChunkNumber                   Status = 163
+	StatusInvalidChunkTransactionId            Status = 164
+	StatusAccountFrozenForToken                Status = 165
+	StatusTokensPerAccountLimitExceeded        Status = 166
+	StatusInvalidTokenId                       Status = 167
+	StatusInvalidTokenDecimals                 Status = 168
+	StatusInvalidTokenInitialSupply            Status = 169
+	StatusInvalidTreasuryAccountForToken       Status = 170
+	StatusInvalidTokenSymbol                   Status = 171
+	StatusTokenHasNoFreezeKey                  Status = 172
+	StatusTransfersNotZeroSumForToken          Status = 173
+	StatusMissingTokenSymbol                   Status = 174
+	StatusTokenSymbolTooLong                   Status = 175
+	StatusAccountKycNotGrantedForToken         Status = 176
+	StatusTokenHasNoKycKey                     Status = 177
+	StatusInsufficientTokenBalance             Status = 178
+	StatusTokenWasDeleted                      Status = 179
+	StatusTokenHasNoSupplyKey                  Status = 180
+	StatusTokenHasNoWipeKey                    Status = 181
+	StatusInvalidTokenMintAmount               Status = 182
+	StatusInvalidTokenBurnAmount               Status = 183
+	StatusTokenNotAssociatedToAccount          Status = 184
+	StatusCannotWipeTokenTreasuryAccount       Status = 185
+	StatusInvalidKycKey                        Status = 186
+	StatusInvalidWipeKey                       Status = 187
+	StatusInvalidFreezeKey                     Status = 188
+	StatusInvalidSupplyKey                     Status = 189
+	StatusMissingTokenName                     Status = 190
+	StatusTokenNameTooLong                     Status = 191
+	StatusInvalidWipingAmount                  Status = 192
+	StatusTOKEN_IS_IMMUTABLE                   Status = 193
+	StatusTokenAlreadyAssociatedToAccount      Status = 194
+	StatusTransactionRequiresZeroTokenBalances Status = 195
+	StatusAccountIsTreasury                    Status = 196
+	StatusTokenIdRepeatedInTokenList           Status = 197
+	StatusTokenTransferListSizeLimitExceeded   Status = 198
+	StatusEmptyTokenTransferBody               Status = 199
+	StatusEmptyTokenTransferAccountAmounts     Status = 200
 )
 
 func (status Status) isExceptional(includeUnknown bool) bool {
@@ -388,6 +424,78 @@ func (status Status) String() string {
 		return "INVALID_CHUNK_NUMBER"
 	case StatusInvalidChunkTransactionId:
 		return "INVALID_CHUNK_TRANSACTION_ID"
+	case StatusAccountFrozenForToken:
+		return "ACCOUNT_FROZEN_FOR_TOKEN_STATUS"
+	case StatusTokensPerAccountLimitExceeded:
+		return "TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED_STATUS"
+	case StatusInvalidTokenId:
+		return "INVALID_TOKEN_ID_STATUS"
+	case StatusInvalidTokenDecimals:
+		return "INVALID_TOKEN_DECIMALS_STATUS"
+	case StatusInvalidTokenInitialSupply:
+		return "INVALID_TOKEN_INITIAL_SUPPLY_STATUS"
+	case StatusInvalidTreasuryAccountForToken:
+		return "INVALID_TREASURY_ACCOUNT_FOR_TOKEN_STATUS"
+	case StatusInvalidTokenSymbol:
+		return "INVALID_TOKEN_SYMBOL_STATUS"
+	case StatusTokenHasNoFreezeKey:
+		return "TOKEN_HAS_NO_FREEZE_KEY_STATUS"
+	case StatusTransfersNotZeroSumForToken:
+		return "TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN_STATUS"
+	case StatusMissingTokenSymbol:
+		return "MISSING_TOKEN_SYMBOL_STATUS"
+	case StatusTokenSymbolTooLong:
+		return "TOKEN_SYMBOL_TOO_LONG_STATUS"
+	case StatusAccountKycNotGrantedForToken:
+		return "ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN_STATUS"
+	case StatusTokenHasNoKycKey:
+		return "TOKEN_HAS_NO_KYC_KEY_STATUS"
+	case StatusInsufficientTokenBalance:
+		return "INSUFFICIENT_TOKEN_BALANCE_STATUS"
+	case StatusTokenWasDeleted:
+		return "TOKEN_WAS_DELETED_STATUS"
+	case StatusTokenHasNoSupplyKey:
+		return "TOKEN_HAS_NO_SUPPLY_KEY_STATUS"
+	case StatusTokenHasNoWipeKey:
+		return "TOKEN_HAS_NO_WIPE_KEY_STATUS"
+	case StatusInvalidTokenMintAmount:
+		return "INVALID_TOKEN_MINT_AMOUNT_STATUS"
+	case StatusInvalidTokenBurnAmount:
+		return "INVALID_TOKEN_BURN_AMOUNT_STATUS"
+	case StatusTokenNotAssociatedToAccount:
+		return "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT_STATUS"
+	case StatusCannotWipeTokenTreasuryAccount:
+		return "CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT_STATUS"
+	case StatusInvalidKycKey:
+		return "INVALID_KYC_KEY_STATUS"
+	case StatusInvalidWipeKey:
+		return "INVALID_WIPE_KEY_STATUS"
+	case StatusInvalidFreezeKey:
+		return "INVALID_FREEZE_KEY_STATUS"
+	case StatusInvalidSupplyKey:
+		return "INVALID_SUPPLY_KEY_STATUS"
+	case StatusMissingTokenName:
+		return "MISSING_TOKEN_NAME_STATUS"
+	case StatusTokenNameTooLong:
+		return "TOKEN_NAME_TOO_LONG_STATUS"
+	case StatusInvalidWipingAmount:
+		return "INVALID_WIPING_AMOUNT_STATUS"
+	case StatusTOKEN_IS_IMMUTABLE:
+		return "TOKEN_IS_IMMUTABLE_STATUS"
+	case StatusTokenAlreadyAssociatedToAccount:
+		return "TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT_STATUS"
+	case StatusTransactionRequiresZeroTokenBalances:
+		return "TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES_STATUS"
+	case StatusAccountIsTreasury:
+		return "ACCOUNT_IS_TREASURY_STATUS"
+	case StatusTokenIdRepeatedInTokenList:
+		return "TOKEN_ID_REPEATED_IN_TOKEN_LIST_STATUS"
+	case StatusTokenTransferListSizeLimitExceeded:
+		return "TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED_STATUS"
+	case StatusEmptyTokenTransferBody:
+		return "EMPTY_TOKEN_TRANSFER_BODY_STATUS"
+	case StatusEmptyTokenTransferAccountAmounts:
+		return "EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS_STATUS"
 	}
 
 	panic("unreacahble: Status.String() switch statement is non-exhaustive")

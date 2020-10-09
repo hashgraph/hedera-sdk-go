@@ -9,7 +9,6 @@ package proto
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	hedera_sdk_go "github.com/hashgraph/hedera-sdk-go"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -98,17 +97,20 @@ var file_proto_TokenService_proto_rawDesc = []byte{
 	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2d,
 	0x0a, 0x0c, 0x67, 0x65, 0x74, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x0c,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x1a, 0x0f, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x28, 0x0a,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x52, 0x0a,
 	0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68, 0x61, 0x73, 0x68, 0x67,
 	0x72, 0x61, 0x70, 0x68, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65,
+	0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_proto_TokenService_proto_goTypes = []interface{}{
-	(*hedera_sdk_go.Transaction)(nil),         // 0: proto.Transaction
-	(*hedera_sdk_go.Query)(nil),               // 1: proto.Query
-	(*hedera_sdk_go.TransactionResponse)(nil), // 2: proto.TransactionResponse
-	(*hedera_sdk_go.Response)(nil),            // 3: proto.Response
+	(*Transaction)(nil),         // 0: proto.Transaction
+	(*Query)(nil),               // 1: proto.Query
+	(*TransactionResponse)(nil), // 2: proto.TransactionResponse
+	(*Response)(nil),            // 3: proto.Response
 }
 var file_proto_TokenService_proto_depIdxs = []int32{
 	0,  // 0: proto.TokenService.createToken:input_type -> proto.Transaction
@@ -151,6 +153,10 @@ func file_proto_TokenService_proto_init() {
 	if File_proto_TokenService_proto != nil {
 		return
 	}
+	file_proto_Query_proto_init()
+	file_proto_Response_proto_init()
+	file_proto_TransactionResponse_proto_init()
+	file_proto_Transaction_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
@@ -183,33 +189,33 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TokenServiceClient interface {
 	// Creates a new Token by submitting the transaction
-	CreateToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	CreateToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Updates the account by submitting the transaction
-	UpdateToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Mints an amount of the token to the defined treasury account
-	MintToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	MintToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Burns an amount of the token from the defined treasury account
-	BurnToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	BurnToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Deletes a Token
-	DeleteToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Wipes the provided amount of tokens from the specified Account ID
-	WipeTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	WipeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Freezes the transfer of tokens to or from the specified Account ID
-	FreezeTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	FreezeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Unfreezes the transfer of tokens to or from the specified Account ID
-	UnfreezeTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	UnfreezeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Flags the provided Account ID as having gone through KYC
-	GrantKycToTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	GrantKycToTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Removes the KYC flag of the provided Account ID
-	RevokeKycFromTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	RevokeKycFromTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Initiates a Token transfer by submitting the transaction
-	TransferTokens(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	TransferTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Associates tokens to an account
-	AssociateTokens(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	AssociateTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Dissociates tokens from an account
-	DissociateTokens(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	DissociateTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Retrieves the metadata of a token
-	GetTokenInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetTokenInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 }
 
 type tokenServiceClient struct {
@@ -220,8 +226,8 @@ func NewTokenServiceClient(cc grpc.ClientConnInterface) TokenServiceClient {
 	return &tokenServiceClient{cc}
 }
 
-func (c *tokenServiceClient) CreateToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) CreateToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/createToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -229,8 +235,8 @@ func (c *tokenServiceClient) CreateToken(ctx context.Context, in *hedera_sdk_go.
 	return out, nil
 }
 
-func (c *tokenServiceClient) UpdateToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) UpdateToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/updateToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -238,8 +244,8 @@ func (c *tokenServiceClient) UpdateToken(ctx context.Context, in *hedera_sdk_go.
 	return out, nil
 }
 
-func (c *tokenServiceClient) MintToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) MintToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/mintToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -247,8 +253,8 @@ func (c *tokenServiceClient) MintToken(ctx context.Context, in *hedera_sdk_go.Tr
 	return out, nil
 }
 
-func (c *tokenServiceClient) BurnToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) BurnToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/burnToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -256,8 +262,8 @@ func (c *tokenServiceClient) BurnToken(ctx context.Context, in *hedera_sdk_go.Tr
 	return out, nil
 }
 
-func (c *tokenServiceClient) DeleteToken(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) DeleteToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/deleteToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -265,8 +271,8 @@ func (c *tokenServiceClient) DeleteToken(ctx context.Context, in *hedera_sdk_go.
 	return out, nil
 }
 
-func (c *tokenServiceClient) WipeTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) WipeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/wipeTokenAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -274,8 +280,8 @@ func (c *tokenServiceClient) WipeTokenAccount(ctx context.Context, in *hedera_sd
 	return out, nil
 }
 
-func (c *tokenServiceClient) FreezeTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) FreezeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/freezeTokenAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -283,8 +289,8 @@ func (c *tokenServiceClient) FreezeTokenAccount(ctx context.Context, in *hedera_
 	return out, nil
 }
 
-func (c *tokenServiceClient) UnfreezeTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) UnfreezeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/unfreezeTokenAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -292,8 +298,8 @@ func (c *tokenServiceClient) UnfreezeTokenAccount(ctx context.Context, in *heder
 	return out, nil
 }
 
-func (c *tokenServiceClient) GrantKycToTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) GrantKycToTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/grantKycToTokenAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -301,8 +307,8 @@ func (c *tokenServiceClient) GrantKycToTokenAccount(ctx context.Context, in *hed
 	return out, nil
 }
 
-func (c *tokenServiceClient) RevokeKycFromTokenAccount(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) RevokeKycFromTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/revokeKycFromTokenAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -310,8 +316,8 @@ func (c *tokenServiceClient) RevokeKycFromTokenAccount(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *tokenServiceClient) TransferTokens(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) TransferTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/transferTokens", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -319,8 +325,8 @@ func (c *tokenServiceClient) TransferTokens(ctx context.Context, in *hedera_sdk_
 	return out, nil
 }
 
-func (c *tokenServiceClient) AssociateTokens(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) AssociateTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/associateTokens", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -328,8 +334,8 @@ func (c *tokenServiceClient) AssociateTokens(ctx context.Context, in *hedera_sdk
 	return out, nil
 }
 
-func (c *tokenServiceClient) DissociateTokens(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *tokenServiceClient) DissociateTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/dissociateTokens", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -337,8 +343,8 @@ func (c *tokenServiceClient) DissociateTokens(ctx context.Context, in *hedera_sd
 	return out, nil
 }
 
-func (c *tokenServiceClient) GetTokenInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *tokenServiceClient) GetTokenInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/getTokenInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -349,79 +355,79 @@ func (c *tokenServiceClient) GetTokenInfo(ctx context.Context, in *hedera_sdk_go
 // TokenServiceServer is the server API for TokenService service.
 type TokenServiceServer interface {
 	// Creates a new Token by submitting the transaction
-	CreateToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	CreateToken(context.Context, *Transaction) (*TransactionResponse, error)
 	// Updates the account by submitting the transaction
-	UpdateToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateToken(context.Context, *Transaction) (*TransactionResponse, error)
 	// Mints an amount of the token to the defined treasury account
-	MintToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	MintToken(context.Context, *Transaction) (*TransactionResponse, error)
 	// Burns an amount of the token from the defined treasury account
-	BurnToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	BurnToken(context.Context, *Transaction) (*TransactionResponse, error)
 	// (NOT CURRENTLY SUPPORTED) Deletes a Token
-	DeleteToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteToken(context.Context, *Transaction) (*TransactionResponse, error)
 	// Wipes the provided amount of tokens from the specified Account ID
-	WipeTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	WipeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
 	// Freezes the transfer of tokens to or from the specified Account ID
-	FreezeTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	FreezeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
 	// Unfreezes the transfer of tokens to or from the specified Account ID
-	UnfreezeTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	UnfreezeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
 	// Flags the provided Account ID as having gone through KYC
-	GrantKycToTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	GrantKycToTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
 	// Removes the KYC flag of the provided Account ID
-	RevokeKycFromTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	RevokeKycFromTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
 	// Initiates a Token transfer by submitting the transaction
-	TransferTokens(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	TransferTokens(context.Context, *Transaction) (*TransactionResponse, error)
 	// Associates tokens to an account
-	AssociateTokens(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	AssociateTokens(context.Context, *Transaction) (*TransactionResponse, error)
 	// Dissociates tokens from an account
-	DissociateTokens(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	DissociateTokens(context.Context, *Transaction) (*TransactionResponse, error)
 	// Retrieves the metadata of a token
-	GetTokenInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetTokenInfo(context.Context, *Query) (*Response, error)
 }
 
 // UnimplementedTokenServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedTokenServiceServer struct {
 }
 
-func (*UnimplementedTokenServiceServer) CreateToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) CreateToken(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateToken not implemented")
 }
-func (*UnimplementedTokenServiceServer) UpdateToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) UpdateToken(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateToken not implemented")
 }
-func (*UnimplementedTokenServiceServer) MintToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) MintToken(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MintToken not implemented")
 }
-func (*UnimplementedTokenServiceServer) BurnToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) BurnToken(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BurnToken not implemented")
 }
-func (*UnimplementedTokenServiceServer) DeleteToken(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) DeleteToken(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteToken not implemented")
 }
-func (*UnimplementedTokenServiceServer) WipeTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) WipeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WipeTokenAccount not implemented")
 }
-func (*UnimplementedTokenServiceServer) FreezeTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) FreezeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FreezeTokenAccount not implemented")
 }
-func (*UnimplementedTokenServiceServer) UnfreezeTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) UnfreezeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnfreezeTokenAccount not implemented")
 }
-func (*UnimplementedTokenServiceServer) GrantKycToTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) GrantKycToTokenAccount(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GrantKycToTokenAccount not implemented")
 }
-func (*UnimplementedTokenServiceServer) RevokeKycFromTokenAccount(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) RevokeKycFromTokenAccount(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RevokeKycFromTokenAccount not implemented")
 }
-func (*UnimplementedTokenServiceServer) TransferTokens(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) TransferTokens(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransferTokens not implemented")
 }
-func (*UnimplementedTokenServiceServer) AssociateTokens(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) AssociateTokens(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AssociateTokens not implemented")
 }
-func (*UnimplementedTokenServiceServer) DissociateTokens(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedTokenServiceServer) DissociateTokens(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DissociateTokens not implemented")
 }
-func (*UnimplementedTokenServiceServer) GetTokenInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedTokenServiceServer) GetTokenInfo(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTokenInfo not implemented")
 }
 
@@ -430,7 +436,7 @@ func RegisterTokenServiceServer(s *grpc.Server, srv TokenServiceServer) {
 }
 
 func _TokenService_CreateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -442,13 +448,13 @@ func _TokenService_CreateToken_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/proto.TokenService/CreateToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).CreateToken(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).CreateToken(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_UpdateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -460,13 +466,13 @@ func _TokenService_UpdateToken_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/proto.TokenService/UpdateToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).UpdateToken(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).UpdateToken(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_MintToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -478,13 +484,13 @@ func _TokenService_MintToken_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/proto.TokenService/MintToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).MintToken(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).MintToken(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_BurnToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -496,13 +502,13 @@ func _TokenService_BurnToken_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/proto.TokenService/BurnToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).BurnToken(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).BurnToken(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_DeleteToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -514,13 +520,13 @@ func _TokenService_DeleteToken_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/proto.TokenService/DeleteToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).DeleteToken(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).DeleteToken(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_WipeTokenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -532,13 +538,13 @@ func _TokenService_WipeTokenAccount_Handler(srv interface{}, ctx context.Context
 		FullMethod: "/proto.TokenService/WipeTokenAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).WipeTokenAccount(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).WipeTokenAccount(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_FreezeTokenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -550,13 +556,13 @@ func _TokenService_FreezeTokenAccount_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/proto.TokenService/FreezeTokenAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).FreezeTokenAccount(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).FreezeTokenAccount(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_UnfreezeTokenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -568,13 +574,13 @@ func _TokenService_UnfreezeTokenAccount_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/proto.TokenService/UnfreezeTokenAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).UnfreezeTokenAccount(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).UnfreezeTokenAccount(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_GrantKycToTokenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -586,13 +592,13 @@ func _TokenService_GrantKycToTokenAccount_Handler(srv interface{}, ctx context.C
 		FullMethod: "/proto.TokenService/GrantKycToTokenAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).GrantKycToTokenAccount(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).GrantKycToTokenAccount(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_RevokeKycFromTokenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -604,13 +610,13 @@ func _TokenService_RevokeKycFromTokenAccount_Handler(srv interface{}, ctx contex
 		FullMethod: "/proto.TokenService/RevokeKycFromTokenAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).RevokeKycFromTokenAccount(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).RevokeKycFromTokenAccount(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_TransferTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -622,13 +628,13 @@ func _TokenService_TransferTokens_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/proto.TokenService/TransferTokens",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).TransferTokens(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).TransferTokens(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_AssociateTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -640,13 +646,13 @@ func _TokenService_AssociateTokens_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/proto.TokenService/AssociateTokens",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).AssociateTokens(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).AssociateTokens(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_DissociateTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -658,13 +664,13 @@ func _TokenService_DissociateTokens_Handler(srv interface{}, ctx context.Context
 		FullMethod: "/proto.TokenService/DissociateTokens",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).DissociateTokens(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(TokenServiceServer).DissociateTokens(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TokenService_GetTokenInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -676,7 +682,7 @@ func _TokenService_GetTokenInfo_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/proto.TokenService/GetTokenInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).GetTokenInfo(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(TokenServiceServer).GetTokenInfo(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }

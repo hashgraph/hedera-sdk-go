@@ -9,7 +9,6 @@ package proto
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	hedera_sdk_go "github.com/hashgraph/hedera-sdk-go"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -84,17 +83,19 @@ var file_proto_SmartContractService_proto_rawDesc = []byte{
 	0x65, 0x12, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61,
 	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72,
 	0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x42, 0x28, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68,
+	0x65, 0x42, 0x52, 0x0a, 0x26, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68,
 	0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x5a, 0x28, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70,
+	0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_proto_SmartContractService_proto_goTypes = []interface{}{
-	(*hedera_sdk_go.Transaction)(nil),         // 0: proto.Transaction
-	(*hedera_sdk_go.Query)(nil),               // 1: proto.Query
-	(*hedera_sdk_go.TransactionResponse)(nil), // 2: proto.TransactionResponse
-	(*hedera_sdk_go.Response)(nil),            // 3: proto.Response
+	(*Transaction)(nil),         // 0: proto.Transaction
+	(*Query)(nil),               // 1: proto.Query
+	(*TransactionResponse)(nil), // 2: proto.TransactionResponse
+	(*Response)(nil),            // 3: proto.Response
 }
 var file_proto_SmartContractService_proto_depIdxs = []int32{
 	0,  // 0: proto.SmartContractService.createContract:input_type -> proto.Transaction
@@ -131,6 +132,10 @@ func file_proto_SmartContractService_proto_init() {
 	if File_proto_SmartContractService_proto != nil {
 		return
 	}
+	file_proto_TransactionResponse_proto_init()
+	file_proto_Query_proto_init()
+	file_proto_Response_proto_init()
+	file_proto_Transaction_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
@@ -163,27 +168,27 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type SmartContractServiceClient interface {
 	// Creates a contract
-	CreateContract(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	CreateContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Updates a contract with the content
-	UpdateContract(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Calls a contract
-	ContractCallMethod(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	ContractCallMethod(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Retrieves the contract information
-	GetContractInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetContractInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Calls a smart contract to be run on a single node
-	ContractCallLocalMethod(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	ContractCallLocalMethod(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the byte code of a contract
-	ContractGetBytecode(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	ContractGetBytecode(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves a contract by its Solidity address
-	GetBySolidityID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetBySolidityID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Retrieves the 25-hour records stored for a contract
-	GetTxRecordByContractID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error)
+	GetTxRecordByContractID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Deletes a contract instance and transfers any remaining hbars to a specified receiver
-	DeleteContract(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Deletes a contract if the submitting account has network admin privileges
-	SystemDelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	SystemDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Undeletes a contract if the submitting account has network admin privileges
-	SystemUndelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error)
+	SystemUndelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
 
 type smartContractServiceClient struct {
@@ -194,8 +199,8 @@ func NewSmartContractServiceClient(cc grpc.ClientConnInterface) SmartContractSer
 	return &smartContractServiceClient{cc}
 }
 
-func (c *smartContractServiceClient) CreateContract(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *smartContractServiceClient) CreateContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/createContract", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -203,8 +208,8 @@ func (c *smartContractServiceClient) CreateContract(ctx context.Context, in *hed
 	return out, nil
 }
 
-func (c *smartContractServiceClient) UpdateContract(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *smartContractServiceClient) UpdateContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/updateContract", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -212,8 +217,8 @@ func (c *smartContractServiceClient) UpdateContract(ctx context.Context, in *hed
 	return out, nil
 }
 
-func (c *smartContractServiceClient) ContractCallMethod(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *smartContractServiceClient) ContractCallMethod(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/contractCallMethod", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -221,8 +226,8 @@ func (c *smartContractServiceClient) ContractCallMethod(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *smartContractServiceClient) GetContractInfo(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *smartContractServiceClient) GetContractInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/getContractInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -230,8 +235,8 @@ func (c *smartContractServiceClient) GetContractInfo(ctx context.Context, in *he
 	return out, nil
 }
 
-func (c *smartContractServiceClient) ContractCallLocalMethod(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *smartContractServiceClient) ContractCallLocalMethod(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/contractCallLocalMethod", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -239,8 +244,8 @@ func (c *smartContractServiceClient) ContractCallLocalMethod(ctx context.Context
 	return out, nil
 }
 
-func (c *smartContractServiceClient) ContractGetBytecode(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *smartContractServiceClient) ContractGetBytecode(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/ContractGetBytecode", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -248,8 +253,8 @@ func (c *smartContractServiceClient) ContractGetBytecode(ctx context.Context, in
 	return out, nil
 }
 
-func (c *smartContractServiceClient) GetBySolidityID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *smartContractServiceClient) GetBySolidityID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/getBySolidityID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -257,8 +262,8 @@ func (c *smartContractServiceClient) GetBySolidityID(ctx context.Context, in *he
 	return out, nil
 }
 
-func (c *smartContractServiceClient) GetTxRecordByContractID(ctx context.Context, in *hedera_sdk_go.Query, opts ...grpc.CallOption) (*hedera_sdk_go.Response, error) {
-	out := new(hedera_sdk_go.Response)
+func (c *smartContractServiceClient) GetTxRecordByContractID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/getTxRecordByContractID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -266,8 +271,8 @@ func (c *smartContractServiceClient) GetTxRecordByContractID(ctx context.Context
 	return out, nil
 }
 
-func (c *smartContractServiceClient) DeleteContract(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *smartContractServiceClient) DeleteContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/deleteContract", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -275,8 +280,8 @@ func (c *smartContractServiceClient) DeleteContract(ctx context.Context, in *hed
 	return out, nil
 }
 
-func (c *smartContractServiceClient) SystemDelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *smartContractServiceClient) SystemDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/systemDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -284,8 +289,8 @@ func (c *smartContractServiceClient) SystemDelete(ctx context.Context, in *heder
 	return out, nil
 }
 
-func (c *smartContractServiceClient) SystemUndelete(ctx context.Context, in *hedera_sdk_go.Transaction, opts ...grpc.CallOption) (*hedera_sdk_go.TransactionResponse, error) {
-	out := new(hedera_sdk_go.TransactionResponse)
+func (c *smartContractServiceClient) SystemUndelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
+	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.SmartContractService/systemUndelete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -296,64 +301,64 @@ func (c *smartContractServiceClient) SystemUndelete(ctx context.Context, in *hed
 // SmartContractServiceServer is the server API for SmartContractService service.
 type SmartContractServiceServer interface {
 	// Creates a contract
-	CreateContract(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	CreateContract(context.Context, *Transaction) (*TransactionResponse, error)
 	// Updates a contract with the content
-	UpdateContract(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	UpdateContract(context.Context, *Transaction) (*TransactionResponse, error)
 	// Calls a contract
-	ContractCallMethod(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	ContractCallMethod(context.Context, *Transaction) (*TransactionResponse, error)
 	// Retrieves the contract information
-	GetContractInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetContractInfo(context.Context, *Query) (*Response, error)
 	// Calls a smart contract to be run on a single node
-	ContractCallLocalMethod(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	ContractCallLocalMethod(context.Context, *Query) (*Response, error)
 	// Retrieves the byte code of a contract
-	ContractGetBytecode(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	ContractGetBytecode(context.Context, *Query) (*Response, error)
 	// Retrieves a contract by its Solidity address
-	GetBySolidityID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetBySolidityID(context.Context, *Query) (*Response, error)
 	// Retrieves the 25-hour records stored for a contract
-	GetTxRecordByContractID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error)
+	GetTxRecordByContractID(context.Context, *Query) (*Response, error)
 	// Deletes a contract instance and transfers any remaining hbars to a specified receiver
-	DeleteContract(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	DeleteContract(context.Context, *Transaction) (*TransactionResponse, error)
 	// Deletes a contract if the submitting account has network admin privileges
-	SystemDelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	SystemDelete(context.Context, *Transaction) (*TransactionResponse, error)
 	// Undeletes a contract if the submitting account has network admin privileges
-	SystemUndelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error)
+	SystemUndelete(context.Context, *Transaction) (*TransactionResponse, error)
 }
 
 // UnimplementedSmartContractServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedSmartContractServiceServer struct {
 }
 
-func (*UnimplementedSmartContractServiceServer) CreateContract(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedSmartContractServiceServer) CreateContract(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateContract not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) UpdateContract(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedSmartContractServiceServer) UpdateContract(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateContract not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) ContractCallMethod(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedSmartContractServiceServer) ContractCallMethod(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContractCallMethod not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) GetContractInfo(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedSmartContractServiceServer) GetContractInfo(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContractInfo not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) ContractCallLocalMethod(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedSmartContractServiceServer) ContractCallLocalMethod(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContractCallLocalMethod not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) ContractGetBytecode(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedSmartContractServiceServer) ContractGetBytecode(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContractGetBytecode not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) GetBySolidityID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedSmartContractServiceServer) GetBySolidityID(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBySolidityID not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) GetTxRecordByContractID(context.Context, *hedera_sdk_go.Query) (*hedera_sdk_go.Response, error) {
+func (*UnimplementedSmartContractServiceServer) GetTxRecordByContractID(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTxRecordByContractID not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) DeleteContract(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedSmartContractServiceServer) DeleteContract(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteContract not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) SystemDelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedSmartContractServiceServer) SystemDelete(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SystemDelete not implemented")
 }
-func (*UnimplementedSmartContractServiceServer) SystemUndelete(context.Context, *hedera_sdk_go.Transaction) (*hedera_sdk_go.TransactionResponse, error) {
+func (*UnimplementedSmartContractServiceServer) SystemUndelete(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SystemUndelete not implemented")
 }
 
@@ -362,7 +367,7 @@ func RegisterSmartContractServiceServer(s *grpc.Server, srv SmartContractService
 }
 
 func _SmartContractService_CreateContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -374,13 +379,13 @@ func _SmartContractService_CreateContract_Handler(srv interface{}, ctx context.C
 		FullMethod: "/proto.SmartContractService/CreateContract",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).CreateContract(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(SmartContractServiceServer).CreateContract(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_UpdateContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -392,13 +397,13 @@ func _SmartContractService_UpdateContract_Handler(srv interface{}, ctx context.C
 		FullMethod: "/proto.SmartContractService/UpdateContract",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).UpdateContract(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(SmartContractServiceServer).UpdateContract(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_ContractCallMethod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -410,13 +415,13 @@ func _SmartContractService_ContractCallMethod_Handler(srv interface{}, ctx conte
 		FullMethod: "/proto.SmartContractService/ContractCallMethod",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).ContractCallMethod(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(SmartContractServiceServer).ContractCallMethod(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_GetContractInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -428,13 +433,13 @@ func _SmartContractService_GetContractInfo_Handler(srv interface{}, ctx context.
 		FullMethod: "/proto.SmartContractService/GetContractInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).GetContractInfo(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(SmartContractServiceServer).GetContractInfo(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_ContractCallLocalMethod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -446,13 +451,13 @@ func _SmartContractService_ContractCallLocalMethod_Handler(srv interface{}, ctx 
 		FullMethod: "/proto.SmartContractService/ContractCallLocalMethod",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).ContractCallLocalMethod(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(SmartContractServiceServer).ContractCallLocalMethod(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_ContractGetBytecode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -464,13 +469,13 @@ func _SmartContractService_ContractGetBytecode_Handler(srv interface{}, ctx cont
 		FullMethod: "/proto.SmartContractService/ContractGetBytecode",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).ContractGetBytecode(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(SmartContractServiceServer).ContractGetBytecode(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_GetBySolidityID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -482,13 +487,13 @@ func _SmartContractService_GetBySolidityID_Handler(srv interface{}, ctx context.
 		FullMethod: "/proto.SmartContractService/GetBySolidityID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).GetBySolidityID(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(SmartContractServiceServer).GetBySolidityID(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_GetTxRecordByContractID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Query)
+	in := new(Query)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -500,13 +505,13 @@ func _SmartContractService_GetTxRecordByContractID_Handler(srv interface{}, ctx 
 		FullMethod: "/proto.SmartContractService/GetTxRecordByContractID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).GetTxRecordByContractID(ctx, req.(*hedera_sdk_go.Query))
+		return srv.(SmartContractServiceServer).GetTxRecordByContractID(ctx, req.(*Query))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_DeleteContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -518,13 +523,13 @@ func _SmartContractService_DeleteContract_Handler(srv interface{}, ctx context.C
 		FullMethod: "/proto.SmartContractService/DeleteContract",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).DeleteContract(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(SmartContractServiceServer).DeleteContract(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_SystemDelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -536,13 +541,13 @@ func _SmartContractService_SystemDelete_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/proto.SmartContractService/SystemDelete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).SystemDelete(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(SmartContractServiceServer).SystemDelete(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SmartContractService_SystemUndelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(hedera_sdk_go.Transaction)
+	in := new(Transaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -554,7 +559,7 @@ func _SmartContractService_SystemUndelete_Handler(srv interface{}, ctx context.C
 		FullMethod: "/proto.SmartContractService/SystemUndelete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmartContractServiceServer).SystemUndelete(ctx, req.(*hedera_sdk_go.Transaction))
+		return srv.(SmartContractServiceServer).SystemUndelete(ctx, req.(*Transaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }

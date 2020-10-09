@@ -22,6 +22,7 @@ package proto;
  * ‍
  */
 option java_package = "com.hederahashgraph.service.proto.java";
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 
 import "proto/Query.proto";
 import "proto/Response.proto";
