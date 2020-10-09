@@ -24,6 +24,15 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 	return &transaction
 }
 
+func (transaction *ContractCreateTransaction) SetBytecodeFileId(bytecodeFileId FileID) *ContractCreateTransaction {
+	transaction.pb.FileID = bytecodeFileId.toProto()
+	return transaction
+}
+
+func (transaction *ContractCreateTransaction) GetBytecodeFileId() FileID {
+	return fileIDFromProto(transaction.pb.FileID)
+}
+
 func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
 	transaction.pb.AdminKey = adminKey.toProtoKey()
 	return transaction
