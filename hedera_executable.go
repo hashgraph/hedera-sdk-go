@@ -28,7 +28,7 @@ type response struct {
 }
 
 type intermediateResponse struct {
-	// query *proto.Response
+	query *proto.Response
 	transaction TransactionResponse
 }
 
@@ -37,8 +37,12 @@ type protoRequest struct {
 	transaction *proto.Transaction
 }
 
+type protoResponseHeader struct {
+	responseHeader proto.ResponseHeader
+}
+
 type request struct {
-	// query Query
+	query *Query
 	transaction *Transaction
 }
 
