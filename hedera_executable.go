@@ -49,7 +49,7 @@ func execute(
 	makeRequest func(request) protoRequest,
 	advanceRequest func(request),
 	getNodeId func(request, *Client) AccountID,
-	getMethod func(*channel) method,
+	getMethod func(request, *channel) method,
 	mapResponseStatus func(request, response) Status,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
@@ -63,7 +63,7 @@ func execute(
 			return intermediateResponse{}, nil
 		}
 
-		method := getMethod(channel)
+		method := getMethod(request, channel)
 
 		advanceRequest(request)
 

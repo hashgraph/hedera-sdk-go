@@ -43,9 +43,9 @@ func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func liveHashDeleteTransaction_getMethod(channel *channel) method {
+func liveHashDeleteTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getCrypto().DeleteLiveHash,
 	}
 }
 

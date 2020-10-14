@@ -56,9 +56,9 @@ func (transaction *FreezeTransaction) GetEndTime() time.Time {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func freezeTransaction_getMethod(channel *channel) method {
+func freezeTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getFreeze().Freeze,
 	}
 }
 

@@ -44,9 +44,16 @@ func (transaction *SystemUndeleteTransaction) GetFileID() FileID {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func systemUndeleteTransaction_getMethod(channel *channel) method {
-	return method{
-		transaction: channel.getCrypto().CreateAccount,
+func systemUndeleteTransaction_getMethod(request request, channel *channel) method {
+	switch request.transaction.pbBody.GetSystemUndelete().Id.(type) {
+	case *proto.SystemUndeleteTransactionBody_ContractID:
+		return method{
+			transaction: channel.getContract().SystemUndelete,
+		}
+	default:
+		return method{
+			transaction: channel.getFile().SystemUndelete,
+		}
 	}
 }
 

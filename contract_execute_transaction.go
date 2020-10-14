@@ -80,9 +80,9 @@ func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func contractExecuteTransaction_getMethod(channel *channel) method {
+func contractExecuteTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getContract().ContractCallMethod,
 	}
 }
 

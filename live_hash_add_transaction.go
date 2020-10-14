@@ -68,9 +68,9 @@ func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func liveHashAddTransaction_getMethod(channel *channel) method {
+func liveHashAddTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getCrypto().AddLiveHash,
 	}
 }
 

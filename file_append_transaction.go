@@ -51,9 +51,9 @@ func (transaction *FileAppendTransaction) GetContents() []byte {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func fileAppendTransaction_getMethod(channel *channel) method {
+func fileAppendTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getFile().AppendContent,
 	}
 }
 

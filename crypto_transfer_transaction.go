@@ -42,9 +42,9 @@ func (transaction *CryptoTransferTransaction) AddRecipient(accountID AccountID, 
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func cryptoTransferTransaction_getMethod(channel *channel) method {
+func cryptoTransferTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getCrypto().CryptoTransfer,
 	}
 }
 

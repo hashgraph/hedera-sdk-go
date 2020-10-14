@@ -35,9 +35,9 @@ func (transaction *FileDeleteTransaction) GetFileID() FileID {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func fileDeleteTransaction_getMethod(channel *channel) method {
+func fileDeleteTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getFile().DeleteFile,
 	}
 }
 

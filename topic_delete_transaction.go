@@ -39,9 +39,9 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func topicDeleteTransaction_getMethod(channel *channel) method {
+func topicDeleteTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getTopic().DeleteTopic,
 	}
 }
 

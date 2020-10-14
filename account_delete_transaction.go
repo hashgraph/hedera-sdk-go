@@ -51,9 +51,9 @@ func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccoun
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func accountDeleteTransaction_getMethod(channel *channel) method {
+func accountDeleteTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getCrypto().CryptoDelete,
 	}
 }
 

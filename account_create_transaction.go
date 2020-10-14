@@ -106,7 +106,7 @@ func (transaction *AccountCreateTransaction) SetReceiverSignatureRequired(requir
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func accountCreateTransaction_getMethod(channel *channel) method {
+func accountCreateTransaction_getMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().CreateAccount,
 	}

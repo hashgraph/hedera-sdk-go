@@ -113,9 +113,9 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func contractCreateTransaction_getMethod(channel *channel) method {
+func contractCreateTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getCrypto().CreateAccount,
+		transaction: channel.getContract().CreateContract,
 	}
 }
 
