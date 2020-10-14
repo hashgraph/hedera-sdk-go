@@ -5,15 +5,15 @@ import (
 )
 
 type ExchangeRate struct {
-	Hbars int32
-	cents int32
+	Hbars          int32
+	cents          int32
 	expirationTime *proto.TimestampSeconds
 }
 
-func NewExchangeRate(hbars int32, cents int32, expirationTime int64) *ExchangeRate {
+func newExchangeRate(hbars int32, cents int32, expirationTime int64) *ExchangeRate {
 	exchange := ExchangeRate{
-		Hbars: hbars,
-		cents: cents,
+		Hbars:          hbars,
+		cents:          cents,
 		expirationTime: &proto.TimestampSeconds{Seconds: expirationTime},
 	}
 
@@ -21,7 +21,7 @@ func NewExchangeRate(hbars int32, cents int32, expirationTime int64) *ExchangeRa
 }
 
 func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
-	return	ExchangeRate{
+	return ExchangeRate{
 		protoExchange.HbarEquiv,
 		protoExchange.CentEquiv,
 		protoExchange.ExpirationTime,
@@ -30,8 +30,8 @@ func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
 
 func (exchange *ExchangeRate) toProtobuf() *proto.ExchangeRate {
 	return &proto.ExchangeRate{
-		HbarEquiv: exchange.Hbars,
-		CentEquiv: exchange.cents,
+		HbarEquiv:      exchange.Hbars,
+		CentEquiv:      exchange.cents,
 		ExpirationTime: exchange.expirationTime,
 	}
 }

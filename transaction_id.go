@@ -17,7 +17,7 @@ type TransactionID struct {
 
 // NewTransactionID constructs a new Transaction id struct with the provided AccountID and the valid start time set
 // to the current time - 10 seconds.
-func NewTransactionID(accountID AccountID) TransactionID {
+func TransactionIDGenerate(accountID AccountID) TransactionID {
 	allowance := -(time.Duration(rand.Intn(5*int(time.Second))) + (8 * time.Second))
 	validStart := time.Now().UTC().Add(allowance)
 
@@ -30,26 +30,26 @@ func NewTransactionIDWithValidStart(accountID AccountID, validStart time.Time) T
 	return TransactionID{accountID, validStart}
 }
 
-// // GetReceipt queries the network for a receipt corresponding to the TransactionID's transaction. If the status of the
-// // receipt is exceptional an ErrHederaReceiptStatus will be returned alongside the receipt, otherwise only the receipt
-// // will be returned.
-// func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
-// 	receipt, err := NewTransactionReceiptQuery().
-// 		SetTransactionID(id).
-// 		Execute(client)
+// GetReceipt queries the network for a receipt corresponding to the TransactionID's transaction. If the status of the
+// receipt is exceptional an ErrHederaReceiptStatus will be returned alongside the receipt, otherwise only the receipt
+// will be returned.
+func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
+	receipt, err := NewTransactionReceiptQuery().
+		SetTransactionID(id).
+		Execute(client)
 
-// 	if err != nil {
-// 		// something went wrong with the query
-// 		return TransactionReceipt{}, err
-// 	}
+	if err != nil {
+		// something went wrong with the query
+		return TransactionReceipt{}, err
+	}
 
-// 	if receipt.Status.isExceptional(true) {
-// 		// the receipt's status was exceptional, return the receipt AND the error
-// 		return receipt, newErrHederaReceiptStatus(id, receipt.Status)
-// 	}
+	if receipt.Status.isExceptional(true) {
+		// the receipt's status was exceptional, return the receipt AND the error
+		return receipt, newErrHederaReceiptStatus(id, receipt.Status)
+	}
 
-// 	return receipt, nil
-// }
+	return receipt, nil
+}
 
 // // GetRecord queries the network for a record corresponding to the TransactionID's transaction. If the status of the
 // // record's receipt is exceptional an ErrHederaRecordStatus will be returned alongside the record, otherwise, only the

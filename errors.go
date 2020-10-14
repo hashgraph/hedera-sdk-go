@@ -18,6 +18,7 @@ var errTransactionIsFrozen = errors.New("transaction is immutable; it has at lea
 var errNoClientOrTransactionID = errors.New("`client` must have an `operator` or `transactionId` must be set")
 var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided or both `nodeId` and `transactionId` must be set")
 var errClientOperatorSigning = errors.New("`client` must have an `operator` to sign with the operator")
+var errNoClientProvided = errors.New("`client` must be provided and have an operator")
 
 func (err ErrMaxChunksExceeded) Error() string {
 	return fmt.Sprintf("Message requires %d chunks, but max chunks is %d", err.Chunks, err.MaxChunks)

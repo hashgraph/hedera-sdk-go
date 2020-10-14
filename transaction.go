@@ -23,8 +23,6 @@ type Transaction struct {
 	transactions []*proto.Transaction
 	signatures   []*proto.SignatureMap
 	nodeIDs      []AccountID
-
-	fff string
 }
 
 func newTransaction() Transaction {
@@ -74,7 +72,7 @@ func (transaction *Transaction) initFee(client *Client) {
 func (transaction *Transaction) initTransactionID(client *Client) error {
 	if transaction.pbBody.TransactionID == nil {
 		if client.operator != nil {
-			transaction.id = NewTransactionID(client.operator.accountID)
+			transaction.id = TransactionIDGenerate(client.operator.accountID)
 			transaction.SetTransactionID(transaction.id)
 		} else {
 			return errNoClientOrTransactionID
@@ -181,7 +179,7 @@ func (transaction *Transaction) keyAlreadySigned(
 	return false
 }
 
-func transaction_shouldRetry(_ request, status Status) bool {
+func transaction_shouldRetry(status Status, _ response) bool {
 	return status == StatusBusy
 }
 

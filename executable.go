@@ -28,7 +28,7 @@ type response struct {
 }
 
 type intermediateResponse struct {
-	query *proto.Response
+	query       *proto.Response
 	transaction TransactionResponse
 }
 
@@ -42,14 +42,14 @@ type protoResponseHeader struct {
 }
 
 type request struct {
-	query *Query
+	query       *Query
 	transaction *Transaction
 }
 
 func execute(
 	client *Client,
 	request request,
-	shouldRetry func(request, Status) bool,
+	shouldRetry func(Status, response) bool,
 	makeRequest func(request) protoRequest,
 	advanceRequest func(request),
 	getNodeId func(request, *Client) AccountID,
@@ -90,7 +90,7 @@ func execute(
 
 		status := mapResponseStatus(request, resp)
 
-		if shouldRetry(request, status) {
+		if shouldRetry(status, resp) {
 			time.Sleep(delay)
 			continue
 		}

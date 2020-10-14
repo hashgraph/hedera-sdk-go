@@ -73,11 +73,13 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 	println("TransactionID", resp.TransactionID.String())
 	println("NodeID", resp.NodeID.String())
 
-	// receipt, err := txID.GetReceipt(client)
-	// assert.NoError(t, err)
+	receipt, err := resp.TransactionID.GetReceipt(client)
+	assert.NoError(t, err)
 
-	// accountID := receipt.GetAccountID()
-	// assert.NoError(t, err)
+	accountID := receipt.AccountID
+	assert.NoError(t, err)
+
+	println("AccountId", accountID.String())
 
 	// tx, err := NewAccountDeleteTransaction().
 	// 	SetDeleteAccountID(accountID).
