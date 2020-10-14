@@ -264,6 +264,9 @@ func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 	case *proto.Response_TransactionGetReceipt:
 		return resp.GetTransactionGetReceipt().Header
 
+	case *proto.Response_TransactionGetRecord:
+		return resp.GetTransactionGetRecord().Header
+
 	case *proto.Response_CryptogetAccountBalance:
 		return resp.GetCryptogetAccountBalance().Header
 
@@ -272,9 +275,6 @@ func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 
 	case *proto.Response_CryptoGetInfo:
 		return resp.GetCryptoGetInfo().Header
-
-	case *proto.Response_TransactionGetRecord:
-		return resp.GetTransactionGetRecord().Header
 
 	case *proto.Response_CryptoGetProxyStakers:
 		return resp.GetCryptoGetProxyStakers().Header
@@ -378,12 +378,41 @@ func execute(node *node, paymentID *TransactionID, pb *proto.Query, deadline tim
 			continue
 		}
 
-		if isResponseUnknown(resp) {
-			// Receipts and Records can be flagged as unknown
-			continue
+		// If the query is `Transaction[Receipt|Record]Query` we need to inspect the
+		// receipts status and retry on that as well as the `resp.NodeTransactionPrecheckCode`
+		var receiptStatus *proto.ResponseCodeEnum = nil
+		switch resp_ := resp.Response.(type) {
+		case *proto.Response_TransactionGetRecord:
+			if resp_.TransactionGetRecord.GetTransactionRecord() != nil {
+				receiptStatus = &resp_.TransactionGetRecord.TransactionRecord.Receipt.Status
+			}
+		case *proto.Response_TransactionGetReceipt:
+			if resp_.TransactionGetReceipt.GetReceipt() != nil {
+				receiptStatus = &resp_.TransactionGetReceipt.Receipt.Status
+			}
+		}
+
+		if receiptStatus != nil {
+			switch *receiptStatus {
+			case proto.ResponseCodeEnum_OK,
+				proto.ResponseCodeEnum_BUSY,
+				proto.ResponseCodeEnum_PLATFORM_NOT_ACTIVE,
+				proto.ResponseCodeEnum_RECEIPT_NOT_FOUND,
+				proto.ResponseCodeEnum_RECORD_NOT_FOUND,
+				proto.ResponseCodeEnum_UNKNOWN:
+				continue
+			}
 		}
 
 		status := Status(respHeader.NodeTransactionPrecheckCode)
+
+		switch status {
+		case StatusBusy,
+			StatusPlatformNotActive,
+			StatusReceiptNotFound,
+			StatusRecordNotFound:
+			continue
+		}
 
 		if status.isExceptional(true) {
 			// precheck failed, paymentID should never be nil in this case
