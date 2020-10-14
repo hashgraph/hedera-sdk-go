@@ -29,7 +29,7 @@ func (transaction *LiveHashDeleteTransaction) GetHash() []byte {
 	return transaction.pb.GetLiveHashToDelete()
 }
 
-func (transaction *LiveHashDeleteTransaction ) SetAccountID(accountID AccountID) *LiveHashDeleteTransaction {
+func (transaction *LiveHashDeleteTransaction) SetAccountID(accountID AccountID) *LiveHashDeleteTransaction {
 	transaction.pb.AccountOfLiveHash = accountID.toProtobuf()
 	return transaction
 }

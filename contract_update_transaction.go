@@ -115,7 +115,6 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type

@@ -32,7 +32,7 @@ func (transaction *FreezeTransaction) GetStartTime() time.Time {
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(transaction.pb.StartHour), int(transaction.pb.StartMin),
 		0, time.Now().Nanosecond(), time.Now().Location(),
-		)
+	)
 	return t1
 }
 
@@ -47,7 +47,7 @@ func (transaction *FreezeTransaction) GetEndTime() time.Time {
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(transaction.pb.EndHour), int(transaction.pb.EndMin),
 		0, time.Now().Nanosecond(), time.Now().Location(),
-		)
+	)
 	return t1
 }
 

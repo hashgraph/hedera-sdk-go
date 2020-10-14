@@ -28,21 +28,21 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	return &transaction
 }
 
-func (transaction *AccountDeleteTransaction ) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
+func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	transaction.pb.DeleteAccountID = accountID.toProtobuf()
 	return transaction
 }
 
-func (transaction *AccountDeleteTransaction ) GetAccountID() AccountID {
+func (transaction *AccountDeleteTransaction) GetAccountID() AccountID {
 	return accountIDFromProto(transaction.pb.GetDeleteAccountID())
 }
 
-func (transaction *AccountDeleteTransaction ) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
+func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
 	transaction.pb.TransferAccountID = transferAccountID.toProtobuf()
 	return transaction
 }
 
-func (transaction *AccountDeleteTransaction ) GetTransferAccountID(transferAccountID AccountID) AccountID {
+func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccountID AccountID) AccountID {
 	return accountIDFromProto(transaction.pb.GetTransferAccountID())
 }
 

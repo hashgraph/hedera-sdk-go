@@ -54,7 +54,7 @@ func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
 	return durationFromProto(transaction.pb.GetLiveHash().GetDuration())
 }
 
-func (transaction *LiveHashAddTransaction ) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
+func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
 	transaction.pb.LiveHash.AccountId = accountID.toProtobuf()
 	return transaction
 }

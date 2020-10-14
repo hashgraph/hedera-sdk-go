@@ -100,13 +100,13 @@ func transaction_freezeWith(
 			panic(err)
 		}
 
-        sigmap := proto.SignatureMap{
-            SigPair: make([]*proto.SignaturePair, 0),
-        }
-        transaction.signatures = append(transaction.signatures, &sigmap)
+		sigmap := proto.SignatureMap{
+			SigPair: make([]*proto.SignaturePair, 0),
+		}
+		transaction.signatures = append(transaction.signatures, &sigmap)
 		transaction.transactions = append(transaction.transactions, &proto.Transaction{
 			BodyBytes: bodyBytes,
-            SigMap: &sigmap,
+			SigMap:    &sigmap,
 		})
 
 		return nil
@@ -123,12 +123,12 @@ func transaction_freezeWith(
 			}
 
 			sigmap := proto.SignatureMap{
-                SigPair: make([]*proto.SignaturePair, 0),
-            }
+				SigPair: make([]*proto.SignaturePair, 0),
+			}
 			transaction.signatures = append(transaction.signatures, &sigmap)
 			transaction.transactions = append(transaction.transactions, &proto.Transaction{
 				BodyBytes: bodyBytes,
-                SigMap: &sigmap,
+				SigMap:    &sigmap,
 			})
 		}
 
@@ -152,8 +152,8 @@ func transaction_freezeWith(
 			}
 
 			sigmap := proto.SignatureMap{
-                SigPair: make([]*proto.SignaturePair, 0),
-            }
+				SigPair: make([]*proto.SignaturePair, 0),
+			}
 			transaction.signatures = append(transaction.signatures, &sigmap)
 			transaction.transactions = append(transaction.transactions, &proto.Transaction{
 				BodyBytes: bodyBytes,

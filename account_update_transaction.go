@@ -29,7 +29,7 @@ func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
 	return publicKeyFromProto(transaction.pb.GetKey())
 }
 
-func (transaction *AccountUpdateTransaction ) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
 	transaction.pb.AccountIDToUpdate = accountID.toProtobuf()
 	return transaction
 }
@@ -38,16 +38,16 @@ func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
 	return accountIDFromProto(transaction.pb.GetAccountIDToUpdate())
 }
 
-func (transaction *AccountUpdateTransaction ) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
 	transaction.pb.GetReceiverSigRequiredWrapper().Value = receiverSignatureRequired
 	return transaction
 }
 
-func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired()  bool {
+func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired() bool {
 	return transaction.pb.GetReceiverSigRequiredWrapper().GetValue()
 }
 
-func (transaction *AccountUpdateTransaction ) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
 	transaction.pb.ProxyAccountID = proxyAccountID.toProtobuf()
 	return transaction
 }
@@ -56,7 +56,7 @@ func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
 	return accountIDFromProto(transaction.pb.GetProxyAccountID())
 }
 
-func (transaction *AccountUpdateTransaction ) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
 	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
 	return transaction
 }
@@ -65,7 +65,7 @@ func (transaction *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration 
 	return durationFromProto(transaction.pb.GetAutoRenewPeriod())
 }
 
-func (transaction *AccountUpdateTransaction ) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
 	transaction.pb.ExpirationTime = timeToProto(expirationTime)
 	return transaction
 }

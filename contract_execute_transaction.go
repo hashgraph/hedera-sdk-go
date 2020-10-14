@@ -36,7 +36,7 @@ func (transaction *ContractExecuteTransaction) SetContractID(ID ContractID) *Con
 	return transaction
 }
 
-func (transaction ContractExecuteTransaction) GetContractID()  ContractID{
+func (transaction ContractExecuteTransaction) GetContractID() ContractID {
 	return contractIDFromProto(transaction.pb.GetContractID())
 }
 
@@ -52,7 +52,7 @@ func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *Co
 	return transaction
 }
 
-func (transaction ContractExecuteTransaction) GetPayableAmount()  uint64{
+func (transaction ContractExecuteTransaction) GetPayableAmount() uint64 {
 	return uint64(transaction.pb.Gas)
 }
 
