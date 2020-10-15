@@ -140,6 +140,7 @@ func (transaction *SystemUndeleteTransaction) Execute(
 		systemUndeleteTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
+		query_makePaymentTransaction,
 	)
 
 	if err != nil {

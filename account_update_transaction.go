@@ -168,6 +168,7 @@ func (transaction *AccountUpdateTransaction) Execute(
 		accountUpdateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
+		query_makePaymentTransaction,
 	)
 
 	if err != nil {

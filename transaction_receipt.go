@@ -21,7 +21,7 @@ func newTransactionReceipt(
 	topicID TopicID, fileID FileID,
 	contractID ContractID, accountID AccountID,
 	topicSequenceNumber uint64, topicRunningHash []byte,
-	topicRunningHashVersion uint64) *TransactionReceipt {
+	topicRunningHashVersion uint64) TransactionReceipt {
 
 	receipt := TransactionReceipt{
 		Status:                  status,
@@ -35,7 +35,7 @@ func newTransactionReceipt(
 		TopicRunningHashVersion: topicRunningHashVersion,
 	}
 
-	return &receipt
+	return receipt
 
 }
 
@@ -83,8 +83,8 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 	}
 }
 
-func (receipt TransactionReceipt) toProtobuf() proto.TransactionReceipt {
-	return proto.TransactionReceipt{
+func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
+	return &proto.TransactionReceipt{
 		Status:     proto.ResponseCodeEnum(receipt.Status),
 		AccountID:  receipt.AccountID.toProtobuf(),
 		FileID:     receipt.FileID.toProto(),

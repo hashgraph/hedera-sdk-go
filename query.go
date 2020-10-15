@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -88,5 +89,72 @@ func query_advanceRequest(request request) {
 func query_mapResponse(request request, response response, _ AccountID, protoRequest protoRequest) (intermediateResponse, error) {
 	return intermediateResponse{
 		query: response.query,
+		//transaction: TransactionResponse{
+		//	TransactionID: request.transaction.id,
+		//	NodeID:        request.transaction.nodeIDs[request.transaction.nextTransactionIndex],
+		//},
+	}, nil
+}
+
+//func query_mapResponseHeader(request request, response response) (protoResponseHeader, error) {
+//	return protoResponseHeader{
+//		responseHeader: proto.ResponseHeader{
+//			NodeTransactionPrecheckCode: response.transaction.NodeTransactionPrecheckCode,
+//			ResponseType:                request.query.pbHeader.ResponseType,
+//			Cost:                        response.transaction.Cost,
+//		},
+//	}, nil
+//}
+//
+//func query_mapRequestHeader(request request, response response) (QueryHeader, error) {
+//	return QueryHeader{
+//		header: &proto.QueryHeader{
+//			Payment:      request.transaction.,
+//			ResponseType: 0,
+//		},
+//	}, nil
+//}
+
+func query_makePaymentTransaction(transactionID TransactionID, nodeID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
+	accountAmounts := make([]*proto.AccountAmount, 0)
+	accountAmounts = append(accountAmounts, &proto.AccountAmount{
+		AccountID: nodeID.toProtobuf(),
+		Amount:    cost.tinybar,
+	})
+	accountAmounts = append(accountAmounts, &proto.AccountAmount{
+		AccountID: nodeID.toProtobuf(),
+		Amount:    -cost.tinybar,
+	})
+
+	body := proto.TransactionBody{
+		TransactionID:  transactionID.toProtobuf(),
+		NodeAccountID:  nodeID.toProtobuf(),
+		TransactionFee: uint64(NewHbar(1).tinybar),
+		TransactionValidDuration: &proto.Duration{
+			Seconds: 120,
+		},
+		Data: &proto.TransactionBody_CryptoTransfer{
+			CryptoTransfer: &proto.CryptoTransferTransactionBody{
+				Transfers: &proto.TransferList{
+					AccountAmounts: accountAmounts,
+				},
+			},
+		},
+	}
+
+	bodyBytes, err := protobuf.Marshal(&body)
+	if err != nil {
+		return nil, err
+	}
+
+	signature := operator.signer(bodyBytes)
+	sigPairs := make([]*proto.SignaturePair, 0)
+	sigPairs = append(sigPairs, operator.publicKey.toSignaturePairProtobuf(signature))
+
+	return &proto.Transaction{
+		BodyBytes: bodyBytes,
+		SigMap: &proto.SignatureMap{
+			SigPair: sigPairs,
+		},
 	}, nil
 }

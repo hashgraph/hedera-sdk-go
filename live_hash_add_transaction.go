@@ -157,6 +157,7 @@ func (transaction *LiveHashAddTransaction) Execute(
 		liveHashAddTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
+		query_makePaymentTransaction,
 	)
 
 	if err != nil {

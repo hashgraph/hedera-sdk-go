@@ -223,6 +223,7 @@ func (transaction *TopicUpdateTransaction) Execute(
 		topicUpdateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
+		query_makePaymentTransaction,
 	)
 
 	if err != nil {

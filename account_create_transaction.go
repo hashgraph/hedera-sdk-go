@@ -195,6 +195,7 @@ func (transaction *AccountCreateTransaction) Execute(
 		accountCreateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
+		query_makePaymentTransaction,
 	)
 
 	if err != nil {
