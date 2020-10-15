@@ -333,7 +333,7 @@ func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 
 func (client *Client) getNextNode() AccountID {
 	nodeID := client.networkNodeIds[client.nextNodeIndex]
-	client.nextNodeIndex += 1
+	client.nextNodeIndex = (client.nextNodeIndex + 1) % uint(len(client.networkNodeIds))
 
 	return nodeID
 }
@@ -356,22 +356,3 @@ func (client *Client) getChannel(id AccountID) (*channel, error) {
 	client.networkChannels[id] = &ch
 	return &ch, nil
 }
-
-// func (node *node) invoke(method string, in interface{}, out interface{}) error {
-// 	if node.conn == nil {
-// 		conn, err := grpc.Dial(node.address, grpc.WithInsecure())
-// 		if err != nil {
-// 			return newErrHederaNetwork(err)
-// 		}
-
-// 		node.conn = conn
-// 	}
-
-// 	err := node.conn.Invoke(context.TODO(), method, in, out)
-
-// 	if err != nil {
-// 		return newErrHederaNetwork(err)
-// 	}
-
-// 	return nil
-// }

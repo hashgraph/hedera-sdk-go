@@ -14,6 +14,9 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	header := proto.QueryHeader{}
 	query := newQuery(false, &header)
 	pb := &proto.TransactionGetReceiptQuery{Header: &header}
+	query.pb.Query = &proto.Query_TransactionGetReceipt{
+		TransactionGetReceipt: pb,
+	}
 
 	return &TransactionReceiptQuery{
 		Query: query,
@@ -22,25 +25,21 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 }
 
 func transactionReceiptQuery_shouldRetry(status Status, response response) bool {
-	if status == StatusBusy {
-		return true
-	}
-
-	fmt.Printf("%+v\n", response.query)
-
-	status = Status(response.query.GetTransactionGetReceipt().Receipt.Status)
-
 	switch status {
-	case StatusBusy:
-	case StatusUnknown:
-	case StatusOk:
-	case StatusReceiptNotFound:
+	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return true
 	default:
 		return false
 	}
 
-	return false
+	status = Status(response.query.GetTransactionGetReceipt().Receipt.Status)
+
+	switch status {
+	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound:
+		return true
+	default:
+		return false
+	}
 }
 
 func transactionReceiptQuery_mapResponseStatus(_ request, response response) Status {
@@ -91,32 +90,33 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		return TransactionReceipt{}, errNoClientProvided
 	}
 
-	query.queryPayment = NewHbar(2)
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	// query.queryPayment = NewHbar(0)
+	// query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
-	cost := query.queryPayment
+	// cost := query.queryPayment
+	// cost := NewHbar(0)
 
-	if len(query.paymentTransactionNodeIDs) == 0 {
-		size := client.getNumberOfNodesForTransaction()
-		for i := 0; i < size; i++ {
-			query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, client.getNextNode())
-		}
-	}
+	// if len(query.paymentTransactionNodeIDs) == 0 {
+	// 	size := client.getNumberOfNodesForTransaction()
+	// 	for i := 0; i < size; i++ {
+	// 		query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, client.getNextNode())
+	// 	}
+	// }
 
-	for _, nodeID := range query.paymentTransactionNodeIDs {
-		transaction, err := query_makePaymentTransaction(
-			query.paymentTransactionID,
-			nodeID,
-			client.operator,
-			cost,
-		)
-		if err != nil {
-			return TransactionReceipt{}, err
-		}
+	// for _, nodeID := range query.paymentTransactionNodeIDs {
+	// 	transaction, err := query_makePaymentTransaction(
+	// 		query.paymentTransactionID,
+	// 		nodeID,
+	// 		client.operator,
+	// 		cost,
+	// 	)
+	// 	if err != nil {
+	// 		return TransactionReceipt{}, err
+	// 	}
 
-		query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, nodeID)
-		query.paymentTransactions = append(query.paymentTransactions, transaction)
-	}
+	// 	query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, nodeID)
+	// 	query.paymentTransactions = append(query.paymentTransactions, transaction)
+	// }
 
 	resp, err := execute(
 		client,

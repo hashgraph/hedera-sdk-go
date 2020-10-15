@@ -43,11 +43,6 @@ func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
 		return TransactionReceipt{}, err
 	}
 
-	if receipt.Status.isExceptional(true) {
-		// the receipt's status was exceptional, return the receipt AND the error
-		return receipt, newErrHederaReceiptStatus(id, receipt.Status)
-	}
-
 	return receipt, nil
 }
 
