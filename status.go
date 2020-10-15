@@ -153,7 +153,7 @@ const (
 	StatusMissingTokenName                     Status = 190
 	StatusTokenNameTooLong                     Status = 191
 	StatusInvalidWipingAmount                  Status = 192
-	StatusTOKEN_IS_IMMUTABLE                   Status = 193
+	StatusTokenIsImmutable                     Status = 193
 	StatusTokenAlreadyAssociatedToAccount      Status = 194
 	StatusTransactionRequiresZeroTokenBalances Status = 195
 	StatusAccountIsTreasury                    Status = 196
@@ -480,7 +480,7 @@ func (status Status) String() string {
 		return "TOKEN_NAME_TOO_LONG_STATUS"
 	case StatusInvalidWipingAmount:
 		return "INVALID_WIPING_AMOUNT_STATUS"
-	case StatusTOKEN_IS_IMMUTABLE:
+	case StatusTokenIsImmutable:
 		return "TOKEN_IS_IMMUTABLE_STATUS"
 	case StatusTokenAlreadyAssociatedToAccount:
 		return "TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT_STATUS"
