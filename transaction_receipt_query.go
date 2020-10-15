@@ -130,7 +130,6 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		transactionReceiptQuery_getMethod,
 		transactionReceiptQuery_mapResponseStatus,
 		query_mapResponse,
-		query_makePaymentTransaction,
 	)
 
 	if err != nil {

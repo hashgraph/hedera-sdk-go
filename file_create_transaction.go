@@ -180,7 +180,6 @@ func (transaction *FileCreateTransaction) Execute(
 		fileCreateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
-		query_makePaymentTransaction,
 	)
 
 	if err != nil {

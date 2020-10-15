@@ -131,7 +131,6 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		TransactionRecordQuery_getMethod,
 		TransactionRecordQuery_mapResponseStatus,
 		query_mapResponse,
-		query_makePaymentTransaction,
 	)
 
 	if err != nil {
@@ -140,5 +139,3 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 
 	return TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord), nil
 }
-
-

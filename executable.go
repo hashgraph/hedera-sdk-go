@@ -60,7 +60,6 @@ func execute(
 	getMethod func(request, *channel) method,
 	mapResponseStatus func(request, response) Status,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
-	makePayment func(TransactionID,AccountID, *operator,Hbar) (*proto.Transaction, error),
 ) (intermediateResponse, error) {
 	for attempt := 0; ; /* loop forever */ attempt++ {
 		delay := time.Duration(250*int64(math.Pow(2, float64(attempt)))) * time.Millisecond

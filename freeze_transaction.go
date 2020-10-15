@@ -145,7 +145,6 @@ func (transaction *FreezeTransaction) Execute(
 		freezeTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
-		query_makePaymentTransaction,
 	)
 
 	if err != nil {

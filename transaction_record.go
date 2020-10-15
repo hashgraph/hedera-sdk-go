@@ -21,7 +21,7 @@ type TransactionRecord struct {
 
 func newTransactionRecord(
 	receipt TransactionReceipt, transactionHash []byte,
-	consensusTimestamp time.Time,  transactionID TransactionID,
+	consensusTimestamp time.Time, transactionID TransactionID,
 	transactionMemo string, transactionFee Hbar,
 	transfers []Transfer, CallResult *ContractFunctionResult,
 	CallResultIsCreate bool) TransactionRecord {

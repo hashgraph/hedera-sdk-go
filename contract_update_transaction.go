@@ -209,7 +209,6 @@ func (transaction *ContractUpdateTransaction) Execute(
 		contractUpdateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
-		query_makePaymentTransaction,
 	)
 
 	if err != nil {

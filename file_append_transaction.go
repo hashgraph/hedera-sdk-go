@@ -140,7 +140,6 @@ func (transaction *FileAppendTransaction) Execute(
 		fileAppendTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
-		query_makePaymentTransaction,
 	)
 
 	if err != nil {
