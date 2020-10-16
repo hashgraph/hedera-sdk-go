@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -22,26 +21,19 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 }
 
 func TransactionRecordQuery_shouldRetry(status Status, response response) bool {
-	if status == StatusBusy {
+	switch status {
+	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return true
 	}
-
-	fmt.Printf("%+v\n", response.query)
 
 	status = Status(response.query.GetTransactionGetRecord().TransactionRecord.Receipt.Status)
 
 	switch status {
-	case StatusBusy:
-	case StatusUnknown:
-	case StatusOk:
-	case StatusReceiptNotFound:
-	case StatusRecordNotFound:
+	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
 		return true
 	default:
 		return false
 	}
-
-	return false
 }
 
 func TransactionRecordQuery_mapResponseStatus(_ request, response response) Status {
