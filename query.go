@@ -58,17 +58,23 @@ func query_getNodeId(request request, client *Client) AccountID {
 	}
 }
 
-func (query *Query) SetQueryPayment(queryPayment Hbar) *Query {
-	query.queryPayment = queryPayment
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+func (query *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
+	query.maxQueryPayment = maxPayment
 	return query
 }
 
-func (query *Query) SetMaxQueryPayment(queryMaxPayment Hbar) *Query {
-	query.maxQueryPayment = queryMaxPayment
+// SetQueryPayment sets the payment amount for this Query.
+func (query *Query) SetQueryPayment(paymentAmount Hbar) *Query {
+	query.queryPayment = paymentAmount
 	return query
 }
 
-func (query *Query) IsPaymentRequired() bool {
+func (query *Query) getTransactionID(paymentAmount Hbar) TransactionID {
+	return query.paymentTransactionID
+}
+
+func (query *Query) getIsPaymentRequired() bool {
 	return true
 }
 
