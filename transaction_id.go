@@ -82,20 +82,20 @@ func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
 
 // String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos` format
 func (id TransactionID) String() string {
-	pb := timeToProto(id.ValidStart)
+	pb := timeToProtobuf(id.ValidStart)
 	return fmt.Sprintf("%v@%v.%v", id.AccountID, pb.Seconds, pb.Nanos)
 }
 
 func (id TransactionID) toProtobuf() *proto.TransactionID {
 	return &proto.TransactionID{
-		TransactionValidStart: timeToProto(id.ValidStart),
+		TransactionValidStart: timeToProtobuf(id.ValidStart),
 		AccountID:             id.AccountID.toProtobuf(),
 	}
 }
 
-func transactionIDFromProto(pb *proto.TransactionID) TransactionID {
-	validStart := timeFromProto(pb.TransactionValidStart)
-	accountID := accountIDFromProto(pb.AccountID)
+func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
+	validStart := timeFromProtobuf(pb.TransactionValidStart)
+	accountID := accountIDFromProtobuf(pb.AccountID)
 
 	return TransactionID{accountID, validStart}
 }

@@ -62,14 +62,14 @@ func TransactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 	var transferList = make([]Transfer, len(pb.TransferList.AccountAmounts))
 
 	for i, element := range pb.TransferList.AccountAmounts {
-		transferList[i] = transferFromProto(element)
+		transferList[i] = transferFromProtobuf(element)
 	}
 
 	txRecord := TransactionRecord{
 		Receipt:            transactionReceiptFromProtobuf(pb.Receipt),
 		TransactionHash:    pb.TransactionHash,
-		ConsensusTimestamp: timeFromProto(pb.ConsensusTimestamp),
-		TransactionID:      transactionIDFromProto(pb.TransactionID),
+		ConsensusTimestamp: timeFromProtobuf(pb.ConsensusTimestamp),
+		TransactionID:      transactionIDFromProtobuf(pb.TransactionID),
 		TransactionMemo:    pb.Memo,
 		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:          transferList,
@@ -78,11 +78,11 @@ func TransactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 	}
 
 	if pb.GetContractCreateResult() != nil {
-		result := contractFunctionResultFromProto(pb.GetContractCreateResult())
+		result := contractFunctionResultFromProtobuf(pb.GetContractCreateResult())
 
 		txRecord.CallResult = &result
 	} else if pb.GetContractCallResult() != nil {
-		result := contractFunctionResultFromProto(pb.GetContractCallResult())
+		result := contractFunctionResultFromProtobuf(pb.GetContractCallResult())
 
 		txRecord.CallResult = &result
 		txRecord.CallResultIsCreate = false

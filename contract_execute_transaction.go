@@ -32,12 +32,12 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 
 // SetContractID sets the contract instance to call.
 func (transaction *ContractExecuteTransaction) SetContractID(ID ContractID) *ContractExecuteTransaction {
-	transaction.pb.ContractID = ID.toProto()
+	transaction.pb.ContractID = ID.toProtobuf()
 	return transaction
 }
 
 func (transaction ContractExecuteTransaction) GetContractID() ContractID {
-	return contractIDFromProto(transaction.pb.GetContractID())
+	return contractIDFromProtobuf(transaction.pb.GetContractID())
 }
 
 // SetGas sets the maximum amount of gas to use for the call.
@@ -157,7 +157,7 @@ func (transaction *ContractExecuteTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -175,7 +175,10 @@ func (transaction *ContractExecuteTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *ContractExecuteTransaction) onFreeze(
@@ -241,6 +244,7 @@ func (transaction *ContractExecuteTransaction) GetTransactionID() TransactionID 
 
 // SetTransactionID sets the TransactionID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) *ContractExecuteTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -249,8 +253,8 @@ func (transaction *ContractExecuteTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this ContractExecuteTransaction.
-func (transaction *ContractExecuteTransaction) SetNodeID(nodeID AccountID) *ContractExecuteTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this ContractExecuteTransaction.
+func (transaction *ContractExecuteTransaction) SetNodeAccountID(nodeID AccountID) *ContractExecuteTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

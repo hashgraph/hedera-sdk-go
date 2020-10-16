@@ -31,7 +31,7 @@ func (id TopicID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic)
 }
 
-func (id TopicID) toProto() *proto.TopicID {
+func (id TopicID) toProtobuf() *proto.TopicID {
 	return &proto.TopicID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
@@ -39,7 +39,7 @@ func (id TopicID) toProto() *proto.TopicID {
 	}
 }
 
-func TopicIDFromProto(pb *proto.TopicID) TopicID {
+func TopicIDFromProtobuf(pb *proto.TopicID) TopicID {
 	return TopicID{
 		Shard: uint64(pb.ShardNum),
 		Realm: uint64(pb.RealmNum),

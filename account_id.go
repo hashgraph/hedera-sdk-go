@@ -78,7 +78,7 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func accountIDFromProto(pb *proto.AccountID) AccountID {
+func accountIDFromProtobuf(pb *proto.AccountID) AccountID {
 	return AccountID{
 		Shard:   uint64(pb.ShardNum),
 		Realm:   uint64(pb.RealmNum),

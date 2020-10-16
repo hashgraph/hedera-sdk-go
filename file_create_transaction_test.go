@@ -19,7 +19,7 @@ func TestSerializeFileCreateTransaction(t *testing.T) {
 		SetKeys(key.PublicKey()).
 		SetContents([]byte{1, 2, 3, 4}).
 		SetExpirationTime(date).
-		SetNodeID(AccountID{Account: 3}).
+		SetNodeAccountID(AccountID{Account: 3}).
 		SetTransactionID(TransactionID{
 			AccountID:  AccountID{Account: 2},
 			ValidStart: date,

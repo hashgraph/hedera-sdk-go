@@ -34,21 +34,21 @@ func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
 }
 
 func (transaction *SystemDeleteTransaction) SetContractID(contractID ContractID) *SystemDeleteTransaction {
-	transaction.pb.Id = &proto.SystemDeleteTransactionBody_ContractID{ContractID: contractID.toProto()}
+	transaction.pb.Id = &proto.SystemDeleteTransactionBody_ContractID{ContractID: contractID.toProtobuf()}
 	return transaction
 }
 
 func (transaction *SystemDeleteTransaction) GetContract() ContractID {
-	return contractIDFromProto(transaction.pb.GetContractID())
+	return contractIDFromProtobuf(transaction.pb.GetContractID())
 }
 
 func (transaction *SystemDeleteTransaction) SetFileID(fileID FileID) *SystemDeleteTransaction {
-	transaction.pb.Id = &proto.SystemDeleteTransactionBody_FileID{FileID: fileID.toProto()}
+	transaction.pb.Id = &proto.SystemDeleteTransactionBody_FileID{FileID: fileID.toProtobuf()}
 	return transaction
 }
 
 func (transaction *SystemDeleteTransaction) GetFileID() FileID {
-	return fileIDFromProto(transaction.pb.GetFileID())
+	return fileIDFromProtobuf(transaction.pb.GetFileID())
 }
 
 //
@@ -140,7 +140,7 @@ func (transaction *SystemDeleteTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -158,7 +158,10 @@ func (transaction *SystemDeleteTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *SystemDeleteTransaction) onFreeze(
@@ -224,6 +227,7 @@ func (transaction *SystemDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemDeleteTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -232,8 +236,8 @@ func (transaction *SystemDeleteTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this SystemDeleteTransaction.
-func (transaction *SystemDeleteTransaction) SetNodeID(nodeID AccountID) *SystemDeleteTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this SystemDeleteTransaction.
+func (transaction *SystemDeleteTransaction) SetNodeAccountID(nodeID AccountID) *SystemDeleteTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

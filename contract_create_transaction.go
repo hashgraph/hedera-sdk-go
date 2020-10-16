@@ -25,12 +25,12 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 }
 
 func (transaction *ContractCreateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractCreateTransaction {
-	transaction.pb.FileID = bytecodeFileID.toProto()
+	transaction.pb.FileID = bytecodeFileID.toProtobuf()
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
-	return fileIDFromProto(transaction.pb.FileID)
+	return fileIDFromProtobuf(transaction.pb.FileID)
 }
 
 func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
@@ -39,7 +39,7 @@ func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *Contrac
 }
 
 func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
-	return publicKeyFromProto(transaction.pb.GetAdminKey())
+	return publicKeyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {
@@ -69,12 +69,12 @@ func (transaction *ContractCreateTransaction) GetInitialBalance() Hbar {
 // hbars are used to extend its expiration as long as possible. If it is has a zero balance when it expires,
 // then it is deleted.
 func (transaction *ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateTransaction {
-	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	return durationFromProto(transaction.pb.GetAutoRenewPeriod())
+	return durationFromProtobuf(transaction.pb.GetAutoRenewPeriod())
 }
 
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
@@ -87,7 +87,7 @@ func (transaction *ContractCreateTransaction) SetProxyAccountID(ID AccountID) *C
 }
 
 func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.ProxyAccountID)
+	return accountIDFromProtobuf(transaction.pb.ProxyAccountID)
 }
 
 func (transaction *ContractCreateTransaction) SetConstructorParameters(params []byte) *ContractCreateTransaction {
@@ -190,7 +190,7 @@ func (transaction *ContractCreateTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -208,7 +208,10 @@ func (transaction *ContractCreateTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *ContractCreateTransaction) onFreeze(
@@ -274,6 +277,7 @@ func (transaction *ContractCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ContractCreateTransaction.
 func (transaction *ContractCreateTransaction) SetTransactionID(transactionID TransactionID) *ContractCreateTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -282,8 +286,8 @@ func (transaction *ContractCreateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this ContractCreateTransaction.
-func (transaction *ContractCreateTransaction) SetNodeID(nodeID AccountID) *ContractCreateTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this ContractCreateTransaction.
+func (transaction *ContractCreateTransaction) SetNodeAccountID(nodeID AccountID) *ContractCreateTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

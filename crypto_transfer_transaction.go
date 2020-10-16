@@ -119,7 +119,7 @@ func (transaction *CryptoTransferTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -137,7 +137,10 @@ func (transaction *CryptoTransferTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *CryptoTransferTransaction) onFreeze(
@@ -203,6 +206,7 @@ func (transaction *CryptoTransferTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this CryptoTransferTransaction.
 func (transaction *CryptoTransferTransaction) SetTransactionID(transactionID TransactionID) *CryptoTransferTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -211,8 +215,8 @@ func (transaction *CryptoTransferTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this CryptoTransferTransaction.
-func (transaction *CryptoTransferTransaction) SetNodeID(nodeID AccountID) *CryptoTransferTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this CryptoTransferTransaction.
+func (transaction *CryptoTransferTransaction) SetNodeAccountID(nodeID AccountID) *CryptoTransferTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

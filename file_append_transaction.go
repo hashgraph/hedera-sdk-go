@@ -28,12 +28,12 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
 func (transaction *FileAppendTransaction) SetFileID(ID FileID) *FileAppendTransaction {
-	transaction.pb.FileID = ID.toProto()
+	transaction.pb.FileID = ID.toProtobuf()
 	return transaction
 }
 
 func (transaction *FileAppendTransaction) GetFileID() FileID {
-	return fileIDFromProto(transaction.pb.GetFileID())
+	return fileIDFromProtobuf(transaction.pb.GetFileID())
 }
 
 // SetContents sets the bytes to append to the contents of the file.
@@ -128,7 +128,7 @@ func (transaction *FileAppendTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -146,7 +146,10 @@ func (transaction *FileAppendTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *FileAppendTransaction) onFreeze(
@@ -212,6 +215,7 @@ func (transaction *FileAppendTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *FileAppendTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -220,8 +224,8 @@ func (transaction *FileAppendTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) SetNodeID(nodeID AccountID) *FileAppendTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this FileAppendTransaction.
+func (transaction *FileAppendTransaction) SetNodeAccountID(nodeID AccountID) *FileAppendTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

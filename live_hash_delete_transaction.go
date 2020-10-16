@@ -35,7 +35,7 @@ func (transaction *LiveHashDeleteTransaction) SetAccountID(accountID AccountID) 
 }
 
 func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.GetAccountOfLiveHash())
+	return accountIDFromProtobuf(transaction.pb.GetAccountOfLiveHash())
 }
 
 //
@@ -120,7 +120,7 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -138,7 +138,10 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *LiveHashDeleteTransaction) onFreeze(
@@ -204,6 +207,7 @@ func (transaction *LiveHashDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetTransactionID(transactionID TransactionID) *LiveHashDeleteTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -212,8 +216,8 @@ func (transaction *LiveHashDeleteTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this LiveHashDeleteTransaction.
-func (transaction *LiveHashDeleteTransaction) SetNodeID(nodeID AccountID) *LiveHashDeleteTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this LiveHashDeleteTransaction.
+func (transaction *LiveHashDeleteTransaction) SetNodeAccountID(nodeID AccountID) *LiveHashDeleteTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

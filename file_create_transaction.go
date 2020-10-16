@@ -58,7 +58,7 @@ func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransa
 }
 
 func (transaction *FileCreateTransaction) GetKeys() KeyList {
-	return keyListFromProto(transaction.pb.GetKeys())
+	return keyListFromProtobuf(transaction.pb.GetKeys())
 }
 
 // SetExpirationTime sets the time at which this file should expire (unless FileUpdateTransaction is used before then to
@@ -66,12 +66,12 @@ func (transaction *FileCreateTransaction) GetKeys() KeyList {
 // by another transaction before that time. If the file is deleted, then its contents will become empty and it will be
 // marked as deleted until it expires, and then it will cease to exist.
 func (transaction *FileCreateTransaction) SetExpirationTime(expiration time.Time) *FileCreateTransaction {
-	transaction.pb.ExpirationTime = timeToProto(expiration)
+	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
 	return transaction
 }
 
 func (transaction *FileCreateTransaction) GetExpirationTime() time.Time {
-	return timeFromProto(transaction.pb.GetExpirationTime())
+	return timeFromProtobuf(transaction.pb.GetExpirationTime())
 }
 
 // SetContents sets the bytes that are the contents of the file (which can be empty). If the size of the file and other
@@ -168,7 +168,7 @@ func (transaction *FileCreateTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -186,7 +186,10 @@ func (transaction *FileCreateTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *FileCreateTransaction) onFreeze(
@@ -252,6 +255,7 @@ func (transaction *FileCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -260,8 +264,8 @@ func (transaction *FileCreateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this FileCreateTransaction.
-func (transaction *FileCreateTransaction) SetNodeID(nodeID AccountID) *FileCreateTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this FileCreateTransaction.
+func (transaction *FileCreateTransaction) SetNodeAccountID(nodeID AccountID) *FileCreateTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

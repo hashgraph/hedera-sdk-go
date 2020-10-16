@@ -60,7 +60,7 @@ func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hb
 // hbars are used to extend its expiration as long as possible. If it is has a zero balance when it expires,
 // then it is deleted.
 func (transaction *AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountCreateTransaction {
-	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
 
@@ -183,7 +183,7 @@ func (transaction *AccountCreateTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -201,7 +201,10 @@ func (transaction *AccountCreateTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *AccountCreateTransaction) onFreeze(
@@ -267,6 +270,7 @@ func (transaction *AccountCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -275,8 +279,8 @@ func (transaction *AccountCreateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this AccountCreateTransaction.
-func (transaction *AccountCreateTransaction) SetNodeID(nodeID AccountID) *AccountCreateTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
+func (transaction *AccountCreateTransaction) SetNodeAccountID(nodeID AccountID) *AccountCreateTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

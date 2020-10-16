@@ -23,12 +23,12 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 }
 
 func (transaction *FileUpdateTransaction) SetFileID(ID FileID) *FileUpdateTransaction {
-	transaction.pb.FileID = ID.toProto()
+	transaction.pb.FileID = ID.toProtobuf()
 	return transaction
 }
 
 func (transaction *FileUpdateTransaction) GetFileID() FileID {
-	return fileIDFromProto(transaction.pb.GetFileID())
+	return fileIDFromProtobuf(transaction.pb.GetFileID())
 }
 
 func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
@@ -44,16 +44,16 @@ func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransa
 }
 
 func (transaction *FileUpdateTransaction) GetKeys() KeyList {
-	return keyListFromProto(transaction.pb.Keys)
+	return keyListFromProtobuf(transaction.pb.Keys)
 }
 
 func (transaction *FileUpdateTransaction) SetExpirationTime(expiration time.Time) *FileUpdateTransaction {
-	transaction.pb.ExpirationTime = timeToProto(expiration)
+	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
 	return transaction
 }
 
 func (transaction *FileUpdateTransaction) GetExpirationTime() time.Time {
-	return timeFromProto(transaction.pb.ExpirationTime)
+	return timeFromProtobuf(transaction.pb.ExpirationTime)
 }
 
 func (transaction *FileUpdateTransaction) SetContents(contents []byte) *FileUpdateTransaction {
@@ -147,7 +147,7 @@ func (transaction *FileUpdateTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -165,7 +165,10 @@ func (transaction *FileUpdateTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *FileUpdateTransaction) onFreeze(
@@ -231,6 +234,7 @@ func (transaction *FileUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileUpdateTransaction.
 func (transaction *FileUpdateTransaction) SetTransactionID(transactionID TransactionID) *FileUpdateTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -239,8 +243,8 @@ func (transaction *FileUpdateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this FileUpdateTransaction.
-func (transaction *FileUpdateTransaction) SetNodeID(nodeID AccountID) *FileUpdateTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this FileUpdateTransaction.
+func (transaction *FileUpdateTransaction) SetNodeAccountID(nodeID AccountID) *FileUpdateTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

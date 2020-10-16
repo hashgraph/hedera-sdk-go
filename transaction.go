@@ -28,7 +28,7 @@ type Transaction struct {
 func newTransaction() Transaction {
 	return Transaction{
 		pbBody: &proto.TransactionBody{
-			TransactionValidDuration: durationToProto(120 * time.Second),
+			TransactionValidDuration: durationToProtobuf(120 * time.Second),
 		},
 		id:                   TransactionID{},
 		noTXFee:              false,
@@ -52,7 +52,7 @@ func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
 		return err
 	}
 
-	transaction.id = transactionIDFromProto(txBody.TransactionID)
+	transaction.id = transactionIDFromProtobuf(txBody.TransactionID)
 
 	return nil
 }
@@ -276,7 +276,7 @@ func (transaction *Transaction) SetTransactionMemo(memo string) *Transaction {
 
 func (transaction *Transaction) GetTransactionValidDuration() time.Duration {
 	if transaction.pbBody.TransactionValidDuration != nil {
-		return durationFromProto(transaction.pbBody.TransactionValidDuration)
+		return durationFromProtobuf(transaction.pbBody.TransactionValidDuration)
 	} else {
 		return 0
 	}
@@ -284,13 +284,13 @@ func (transaction *Transaction) GetTransactionValidDuration() time.Duration {
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
 func (transaction *Transaction) SetTransactionValidDuration(duration time.Duration) *Transaction {
-	transaction.pbBody.TransactionValidDuration = durationToProto(duration)
+	transaction.pbBody.TransactionValidDuration = durationToProtobuf(duration)
 	return transaction
 }
 
 func (transaction *Transaction) GetTransactionID() TransactionID {
 	if transaction.pbBody.TransactionID != nil {
-		return transactionIDFromProto(transaction.pbBody.TransactionID)
+		return transactionIDFromProtobuf(transaction.pbBody.TransactionID)
 	} else {
 		return TransactionID{}
 	}
@@ -304,14 +304,14 @@ func (transaction *Transaction) SetTransactionID(transactionID TransactionID) *T
 
 func (transaction *Transaction) GetNodeID() AccountID {
 	if transaction.pbBody.NodeAccountID != nil {
-		return accountIDFromProto(transaction.pbBody.NodeAccountID)
+		return accountIDFromProtobuf(transaction.pbBody.NodeAccountID)
 	} else {
 		return AccountID{}
 	}
 }
 
-// SetNodeID sets the node AccountID for this Transaction.
-func (transaction *Transaction) SetNodeID(nodeID AccountID) *Transaction {
+// SetNodeAccountID sets the node AccountID for this Transaction.
+func (transaction *Transaction) SetNodeAccountID(nodeID AccountID) *Transaction {
 	transaction.pbBody.NodeAccountID = nodeID.toProtobuf()
 	transaction.nodeIDs = append(transaction.nodeIDs, nodeID)
 	return transaction

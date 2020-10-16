@@ -7,14 +7,14 @@ type Transfer struct {
 	Amount    Hbar
 }
 
-func transferFromProto(pb *proto.AccountAmount) Transfer {
+func transferFromProtobuf(pb *proto.AccountAmount) Transfer {
 	return Transfer{
-		AccountID: accountIDFromProto(pb.AccountID),
+		AccountID: accountIDFromProtobuf(pb.AccountID),
 		Amount:    HbarFromTinybar(pb.Amount),
 	}
 }
 
-func (transfer Transfer) toProto() proto.TransferList {
+func (transfer Transfer) toProtobuf() proto.TransferList {
 	var ammounts = make([]*proto.AccountAmount, 0)
 	ammounts = append(ammounts, &proto.AccountAmount{
 		AccountID: transfer.AccountID.toProtobuf(),

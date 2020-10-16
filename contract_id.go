@@ -50,7 +50,7 @@ func (id ContractID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.Contract)
 }
 
-func (id ContractID) toProto() *proto.ContractID {
+func (id ContractID) toProtobuf() *proto.ContractID {
 	return &proto.ContractID{
 		ShardNum:    int64(id.Shard),
 		RealmNum:    int64(id.Realm),
@@ -58,7 +58,7 @@ func (id ContractID) toProto() *proto.ContractID {
 	}
 }
 
-func contractIDFromProto(pb *proto.ContractID) ContractID {
+func contractIDFromProtobuf(pb *proto.ContractID) ContractID {
 	return ContractID{
 		Shard:    uint64(pb.ShardNum),
 		Realm:    uint64(pb.RealmNum),

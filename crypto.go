@@ -27,14 +27,14 @@ type Key interface {
 	toProtoKey() *proto.Key
 }
 
-func publicKeyFromProto(pbKey *proto.Key) (Key, error) {
+func publicKeyFromProtobuf(pbKey *proto.Key) (Key, error) {
 	switch key := pbKey.GetKey().(type) {
 	case *proto.Key_Ed25519:
 		return PublicKeyFromBytes(key.Ed25519)
 
 	case *proto.Key_ThresholdKey:
 		threshold := key.ThresholdKey.GetThreshold()
-		keys, err := publicKeyListFromProto(key.ThresholdKey.GetKeys())
+		keys, err := publicKeyListFromProtobuf(key.ThresholdKey.GetKeys())
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +42,7 @@ func publicKeyFromProto(pbKey *proto.Key) (Key, error) {
 		return KeyListWithThreshold(uint(threshold)).AddAll(keys), nil
 
 	case *proto.Key_KeyList:
-		keys, err := publicKeyListFromProto(key.KeyList)
+		keys, err := publicKeyListFromProtobuf(key.KeyList)
 		if err != nil {
 			return nil, err
 		}
@@ -54,11 +54,11 @@ func publicKeyFromProto(pbKey *proto.Key) (Key, error) {
 	}
 }
 
-func publicKeyListFromProto(pb *proto.KeyList) ([]Key, error) {
+func publicKeyListFromProtobuf(pb *proto.KeyList) ([]Key, error) {
 	var keys []Key = make([]Key, len(pb.Keys))
 
 	for i, pbKey := range pb.Keys {
-		key, err := publicKeyFromProto(pbKey)
+		key, err := publicKeyFromProtobuf(pbKey)
 
 		if err != nil {
 			return nil, err

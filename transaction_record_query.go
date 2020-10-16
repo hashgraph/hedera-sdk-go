@@ -59,13 +59,13 @@ func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionI
 	return query
 }
 
-func (query *TransactionRecordQuery) SetNodeId(accountID AccountID) *TransactionRecordQuery {
+func (query *TransactionRecordQuery) SetNodeAccountID(accountID AccountID) *TransactionRecordQuery {
 	query.paymentTransactionNodeIDs = make([]AccountID, 0)
 	query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, accountID)
 	return query
 }
 
-func (query *TransactionRecordQuery) GetNodeId(client *Client) AccountID {
+func (query *TransactionRecordQuery) GetNodeAccountId(client *Client) AccountID {
 	if query.paymentTransactionNodeIDs != nil {
 		return query.paymentTransactionNodeIDs[query.nextPaymentTransactionIndex]
 	}

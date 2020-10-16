@@ -22,12 +22,12 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 }
 
 func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
-	transaction.pb.FileID = fileID.toProto()
+	transaction.pb.FileID = fileID.toProtobuf()
 	return transaction
 }
 
 func (transaction *FileDeleteTransaction) GetFileID() FileID {
-	return fileIDFromProto(transaction.pb.GetFileID())
+	return fileIDFromProtobuf(transaction.pb.GetFileID())
 }
 
 //
@@ -112,7 +112,7 @@ func (transaction *FileDeleteTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -130,7 +130,10 @@ func (transaction *FileDeleteTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *FileDeleteTransaction) onFreeze(
@@ -196,6 +199,7 @@ func (transaction *FileDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *FileDeleteTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -204,8 +208,8 @@ func (transaction *FileDeleteTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) SetNodeID(nodeID AccountID) *FileDeleteTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this FileDeleteTransaction.
+func (transaction *FileDeleteTransaction) SetNodeAccountID(nodeID AccountID) *FileDeleteTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

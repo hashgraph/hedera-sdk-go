@@ -29,12 +29,12 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 
 // SetTopicID sets the topic to be updated.
 func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpdateTransaction {
-	transaction.pb.TopicID = topicID.toProto()
+	transaction.pb.TopicID = topicID.toProtobuf()
 	return transaction
 }
 
 func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
-	return TopicIDFromProto(transaction.pb.GetTopicID())
+	return TopicIDFromProtobuf(transaction.pb.GetTopicID())
 }
 
 // SetAdminKey sets the key required to update/delete the topic. If unset, the key will not be changed.
@@ -46,7 +46,7 @@ func (transaction *TopicUpdateTransaction) SetAdminKey(publicKey PublicKey) *Top
 }
 
 func (transaction *TopicUpdateTransaction) GetAdminKey() (Key, error) {
-	return publicKeyFromProto(transaction.pb.GetAdminKey())
+	return publicKeyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 // SetSubmitKey will set the key allowed to submit messages to the topic.  If unset, the key will not be changed.
@@ -58,7 +58,7 @@ func (transaction *TopicUpdateTransaction) SetSubmitKey(publicKey PublicKey) *To
 }
 
 func (transaction *TopicUpdateTransaction) GetSubmitKey() (Key, error) {
-	return publicKeyFromProto(transaction.pb.GetSubmitKey())
+	return publicKeyFromProtobuf(transaction.pb.GetSubmitKey())
 }
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
@@ -74,24 +74,24 @@ func (transaction *TopicUpdateTransaction) GetTopicMemo() string {
 // SetExpirationTime sets the effective  timestamp at (and after) which all  transactions and queries
 // will fail. The expirationTime may be no longer than 90 days from the  timestamp of this transaction.
 func (transaction *TopicUpdateTransaction) SetExpirationTime(expiration time.Time) *TopicUpdateTransaction {
-	transaction.pb.ExpirationTime = timeToProto(expiration)
+	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
 	return transaction
 }
 
 func (transaction *TopicUpdateTransaction) GetExpirationTime() time.Time {
-	return timeFromProto(transaction.pb.GetExpirationTime())
+	return timeFromProtobuf(transaction.pb.GetExpirationTime())
 }
 
 // SetAutoRenewPeriod sets the amount of time to extend the topic's lifetime automatically at expirationTime if the
 // autoRenewAccount is configured and has funds. This is limited to a maximum of 90 days (server-sIDe configuration
 // which may change).
 func (transaction *TopicUpdateTransaction) SetAutoRenewPeriod(period time.Duration) *TopicUpdateTransaction {
-	transaction.pb.AutoRenewPeriod = durationToProto(period)
+	transaction.pb.AutoRenewPeriod = durationToProtobuf(period)
 	return transaction
 }
 
 func (transaction *TopicUpdateTransaction) GetAutoRenewPeriod() time.Duration {
-	return durationFromProto(transaction.pb.GetAutoRenewPeriod())
+	return durationFromProtobuf(transaction.pb.GetAutoRenewPeriod())
 }
 
 // SetAutoRenewAccountID sets the optional account to be used at the topic's expirationTime to extend the life of the
@@ -104,7 +104,7 @@ func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(accountID Accou
 }
 
 func (transaction *TopicUpdateTransaction) GetAutoRenewAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.GetAutoRenewAccount())
+	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
 }
 
 // ClearTopicMemo explicitly clears any memo on the topic by sending an empty string as the memo
@@ -211,7 +211,7 @@ func (transaction *TopicUpdateTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -229,7 +229,10 @@ func (transaction *TopicUpdateTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *TopicUpdateTransaction) onFreeze(
@@ -295,6 +298,7 @@ func (transaction *TopicUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) SetTransactionID(transactionID TransactionID) *TopicUpdateTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -303,8 +307,8 @@ func (transaction *TopicUpdateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this TopicUpdateTransaction.
-func (transaction *TopicUpdateTransaction) SetNodeID(nodeID AccountID) *TopicUpdateTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this TopicUpdateTransaction.
+func (transaction *TopicUpdateTransaction) SetNodeAccountID(nodeID AccountID) *TopicUpdateTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

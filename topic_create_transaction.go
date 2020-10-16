@@ -42,7 +42,7 @@ func (transaction *TopicCreateTransaction) SetAdminKey(publicKey PublicKey) *Top
 }
 
 func (transaction *TopicCreateTransaction) GetAdminKey() (Key, error) {
-	return publicKeyFromProto(transaction.pb.GetAdminKey())
+	return publicKeyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
@@ -52,7 +52,7 @@ func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey PublicKey) *To
 }
 
 func (transaction *TopicCreateTransaction) GetSubmitKey() (Key, error) {
-	return publicKeyFromProto(transaction.pb.GetSubmitKey())
+	return publicKeyFromProtobuf(transaction.pb.GetSubmitKey())
 }
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
@@ -70,12 +70,12 @@ func (transaction *TopicCreateTransaction) GetTopicMemo() string {
 //
 // Required. Limited to a maximum of 90 days (server-sIDe configuration which may change).
 func (transaction *TopicCreateTransaction) SetAutoRenewPeriod(period time.Duration) *TopicCreateTransaction {
-	transaction.pb.AutoRenewPeriod = durationToProto(period)
+	transaction.pb.AutoRenewPeriod = durationToProtobuf(period)
 	return transaction
 }
 
 func (transaction *TopicCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	return durationFromProto(transaction.pb.GetAutoRenewPeriod())
+	return durationFromProtobuf(transaction.pb.GetAutoRenewPeriod())
 }
 
 // SetAutoRenewAccountID sets an optional account to be used at the topic's expirationTime to extend the life of the
@@ -89,7 +89,7 @@ func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(accountID Accou
 }
 
 func (transaction *TopicCreateTransaction) GetAutoRenewAccoutnID() AccountID {
-	return accountIDFromProto(transaction.pb.GetAutoRenewAccount())
+	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
 }
 
 //
@@ -174,7 +174,7 @@ func (transaction *TopicCreateTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -192,7 +192,10 @@ func (transaction *TopicCreateTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *TopicCreateTransaction) onFreeze(
@@ -258,6 +261,7 @@ func (transaction *TopicCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TopicCreateTransaction.
 func (transaction *TopicCreateTransaction) SetTransactionID(transactionID TransactionID) *TopicCreateTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -266,8 +270,8 @@ func (transaction *TopicCreateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this TopicCreateTransaction.
-func (transaction *TopicCreateTransaction) SetNodeID(nodeID AccountID) *TopicCreateTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this TopicCreateTransaction.
+func (transaction *TopicCreateTransaction) SetNodeAccountID(nodeID AccountID) *TopicCreateTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

@@ -32,15 +32,17 @@ func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
 		paymentTransactions:       make([]*proto.Transaction, 0),
 		paymentTransactionNodeIDs: make([]AccountID, 0),
 		isPaymentRequired:         isPaymentRequired,
+		maxQueryPayment:           NewHbar(0),
+		queryPayment:              NewHbar(0),
 	}
 }
 
-func (query *Query) SetNodeId(accountID AccountID) *Query {
+func (query *Query) SetNodeAccountID(accountID AccountID) *Query {
 	query.nodeID = accountID
 	return query
 }
 
-func (query *Query) GetNodeId() AccountID {
+func (query *Query) GetNodeAccountId() AccountID {
 	return query.nodeID
 }
 
@@ -70,6 +72,10 @@ func (query *Query) IsPaymentRequired() bool {
 	return true
 }
 
+func query_shouldRetry(status Status, _ response) bool {
+	return status == StatusBusy
+}
+
 func query_makeRequest(request request) protoRequest {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
@@ -82,38 +88,41 @@ func query_makeRequest(request request) protoRequest {
 
 func query_advanceRequest(request request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.nextPaymentTransactionIndex++
+		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
 	}
 }
 
 func query_mapResponse(request request, response response, _ AccountID, protoRequest protoRequest) (intermediateResponse, error) {
 	return intermediateResponse{
 		query: response.query,
-		//transaction: TransactionResponse{
-		//	TransactionID: request.transaction.id,
-		//	NodeID:        request.transaction.nodeIDs[request.transaction.nextTransactionIndex],
-		//},
 	}, nil
 }
 
-//func query_mapResponseHeader(request request, response response) (protoResponseHeader, error) {
-//	return protoResponseHeader{
-//		responseHeader: proto.ResponseHeader{
-//			NodeTransactionPrecheckCode: response.transaction.NodeTransactionPrecheckCode,
-//			ResponseType:                request.query.pbHeader.ResponseType,
-//			Cost:                        response.transaction.Cost,
-//		},
-//	}, nil
-//}
-//
-//func query_mapRequestHeader(request request, response response) (QueryHeader, error) {
-//	return QueryHeader{
-//		header: &proto.QueryHeader{
-//			Payment:      request.transaction.,
-//			ResponseType: 0,
-//		},
-//	}, nil
-//}
+func query_generatePayments(query *Query, client *Client, cost Hbar) error {
+	if len(query.paymentTransactionNodeIDs) == 0 {
+		size := client.getNumberOfNodesForTransaction()
+		for i := 0; i < size; i++ {
+			query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, client.getNextNode())
+		}
+	}
+
+	for _, nodeID := range query.paymentTransactionNodeIDs {
+		transaction, err := query_makePaymentTransaction(
+			query.paymentTransactionID,
+			nodeID,
+			client.operator,
+			cost,
+		)
+		if err != nil {
+			return err
+		}
+
+		query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, nodeID)
+		query.paymentTransactions = append(query.paymentTransactions, transaction)
+	}
+
+	return nil
+}
 
 func query_makePaymentTransaction(transactionID TransactionID, nodeID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
 	accountAmounts := make([]*proto.AccountAmount, 0)
@@ -122,7 +131,7 @@ func query_makePaymentTransaction(transactionID TransactionID, nodeID AccountID,
 		Amount:    cost.tinybar,
 	})
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
-		AccountID: nodeID.toProtobuf(),
+		AccountID: operator.accountID.toProtobuf(),
 		Amount:    -cost.tinybar,
 	})
 

@@ -26,12 +26,12 @@ func NewConsensusTopicDeleteTransaction() *TopicDeleteTransaction {
 
 // SetTopicID sets the topic IDentifier.
 func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTransaction {
-	transaction.pb.TopicID = ID.toProto()
+	transaction.pb.TopicID = ID.toProtobuf()
 	return transaction
 }
 
 func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
-	return TopicIDFromProto(transaction.pb.GetTopicID())
+	return TopicIDFromProtobuf(transaction.pb.GetTopicID())
 }
 
 //
@@ -116,7 +116,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -134,7 +134,10 @@ func (transaction *TopicDeleteTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *TopicDeleteTransaction) onFreeze(
@@ -200,6 +203,7 @@ func (transaction *TopicDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetTransactionID(transactionID TransactionID) *TopicDeleteTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -208,8 +212,8 @@ func (transaction *TopicDeleteTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this TopicDeleteTransaction.
-func (transaction *TopicDeleteTransaction) SetNodeID(nodeID AccountID) *TopicDeleteTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this TopicDeleteTransaction.
+func (transaction *TopicDeleteTransaction) SetNodeAccountID(nodeID AccountID) *TopicDeleteTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

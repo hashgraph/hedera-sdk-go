@@ -133,7 +133,7 @@ func (transaction *FreezeTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -151,7 +151,10 @@ func (transaction *FreezeTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *FreezeTransaction) onFreeze(
@@ -217,6 +220,7 @@ func (transaction *FreezeTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FreezeTransaction.
 func (transaction *FreezeTransaction) SetTransactionID(transactionID TransactionID) *FreezeTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -225,8 +229,8 @@ func (transaction *FreezeTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this FreezeTransaction.
-func (transaction *FreezeTransaction) SetNodeID(nodeID AccountID) *FreezeTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this FreezeTransaction.
+func (transaction *FreezeTransaction) SetNodeAccountID(nodeID AccountID) *FreezeTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

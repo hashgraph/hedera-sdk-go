@@ -22,24 +22,24 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 }
 
 func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
-	transaction.pb.ContractID = contractID.toProto()
+	transaction.pb.ContractID = contractID.toProtobuf()
 	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
-	return contractIDFromProto(transaction.pb.GetContractID())
+	return contractIDFromProtobuf(transaction.pb.GetContractID())
 }
 
 func (transaction *ContractDeleteTransaction) SetTransferContractID(contractID ContractID) *ContractDeleteTransaction {
 	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
-		TransferContractID: contractID.toProto(),
+		TransferContractID: contractID.toProtobuf(),
 	}
 
 	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID {
-	return contractIDFromProto(transaction.pb.GetTransferContractID())
+	return contractIDFromProtobuf(transaction.pb.GetTransferContractID())
 }
 
 func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
@@ -51,7 +51,7 @@ func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID Acc
 }
 
 func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.GetTransferAccountID())
+	return accountIDFromProtobuf(transaction.pb.GetTransferAccountID())
 }
 
 //
@@ -136,7 +136,7 @@ func (transaction *ContractDeleteTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -154,7 +154,10 @@ func (transaction *ContractDeleteTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *ContractDeleteTransaction) onFreeze(
@@ -220,6 +223,7 @@ func (transaction *ContractDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -228,8 +232,8 @@ func (transaction *ContractDeleteTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this ContractDeleteTransaction.
-func (transaction *ContractDeleteTransaction) SetNodeID(nodeID AccountID) *ContractDeleteTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this ContractDeleteTransaction.
+func (transaction *ContractDeleteTransaction) SetNodeAccountID(nodeID AccountID) *ContractDeleteTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

@@ -42,16 +42,16 @@ func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTran
 }
 
 func (transaction *LiveHashAddTransaction) GetKeys() KeyList {
-	return keyListFromProto(transaction.pb.GetLiveHash().GetKeys())
+	return keyListFromProtobuf(transaction.pb.GetLiveHash().GetKeys())
 }
 
 func (transaction *LiveHashAddTransaction) SetDuration(duration time.Duration) *LiveHashAddTransaction {
-	transaction.pb.LiveHash.Duration = durationToProto(duration)
+	transaction.pb.LiveHash.Duration = durationToProtobuf(duration)
 	return transaction
 }
 
 func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
-	return durationFromProto(transaction.pb.GetLiveHash().GetDuration())
+	return durationFromProtobuf(transaction.pb.GetLiveHash().GetDuration())
 }
 
 func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
@@ -60,7 +60,7 @@ func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *Li
 }
 
 func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.LiveHash.GetAccountId())
+	return accountIDFromProtobuf(transaction.pb.LiveHash.GetAccountId())
 }
 
 //
@@ -145,7 +145,7 @@ func (transaction *LiveHashAddTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -163,7 +163,10 @@ func (transaction *LiveHashAddTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *LiveHashAddTransaction) onFreeze(
@@ -229,6 +232,7 @@ func (transaction *LiveHashAddTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -237,8 +241,8 @@ func (transaction *LiveHashAddTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this LiveHashAddTransaction.
-func (transaction *LiveHashAddTransaction) SetNodeID(nodeID AccountID) *LiveHashAddTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this LiveHashAddTransaction.
+func (transaction *LiveHashAddTransaction) SetNodeAccountID(nodeID AccountID) *LiveHashAddTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

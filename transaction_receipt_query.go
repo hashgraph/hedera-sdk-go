@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -28,8 +27,6 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 	switch status {
 	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return true
-	default:
-		return false
 	}
 
 	status = Status(response.query.GetTransactionGetReceipt().Receipt.Status)
@@ -57,13 +54,13 @@ func (query *TransactionReceiptQuery) SetTransactionID(transactionID Transaction
 	return query
 }
 
-func (query *TransactionReceiptQuery) SetNodeId(accountID AccountID) *TransactionReceiptQuery {
+func (query *TransactionReceiptQuery) SetNodeAccountID(accountID AccountID) *TransactionReceiptQuery {
 	query.paymentTransactionNodeIDs = make([]AccountID, 0)
 	query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, accountID)
 	return query
 }
 
-func (query *TransactionReceiptQuery) GetNodeId(client *Client) AccountID {
+func (query *TransactionReceiptQuery) GetNodeAccountId(client *Client) AccountID {
 	if query.paymentTransactionNodeIDs != nil {
 		return query.paymentTransactionNodeIDs[query.nextPaymentTransactionIndex]
 	}
@@ -89,34 +86,6 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	if client == nil || client.operator == nil {
 		return TransactionReceipt{}, errNoClientProvided
 	}
-
-	// query.queryPayment = NewHbar(0)
-	// query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
-
-	// cost := query.queryPayment
-	// cost := NewHbar(0)
-
-	// if len(query.paymentTransactionNodeIDs) == 0 {
-	// 	size := client.getNumberOfNodesForTransaction()
-	// 	for i := 0; i < size; i++ {
-	// 		query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, client.getNextNode())
-	// 	}
-	// }
-
-	// for _, nodeID := range query.paymentTransactionNodeIDs {
-	// 	transaction, err := query_makePaymentTransaction(
-	// 		query.paymentTransactionID,
-	// 		nodeID,
-	// 		client.operator,
-	// 		cost,
-	// 	)
-	// 	if err != nil {
-	// 		return TransactionReceipt{}, err
-	// 	}
-
-	// 	query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, nodeID)
-	// 	query.paymentTransactions = append(query.paymentTransactions, transaction)
-	// }
 
 	resp, err := execute(
 		client,

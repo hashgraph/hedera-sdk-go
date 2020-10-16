@@ -34,7 +34,7 @@ func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *
 }
 
 func (transaction *AccountDeleteTransaction) GetAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.GetDeleteAccountID())
+	return accountIDFromProtobuf(transaction.pb.GetDeleteAccountID())
 }
 
 func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
@@ -43,7 +43,7 @@ func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccoun
 }
 
 func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccountID AccountID) AccountID {
-	return accountIDFromProto(transaction.pb.GetTransferAccountID())
+	return accountIDFromProtobuf(transaction.pb.GetTransferAccountID())
 }
 
 //
@@ -128,7 +128,7 @@ func (transaction *AccountDeleteTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -146,7 +146,10 @@ func (transaction *AccountDeleteTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *AccountDeleteTransaction) onFreeze(
@@ -212,6 +215,7 @@ func (transaction *AccountDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountDeleteTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -220,8 +224,8 @@ func (transaction *AccountDeleteTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this AccountDeleteTransaction.
-func (transaction *AccountDeleteTransaction) SetNodeID(nodeID AccountID) *AccountDeleteTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this AccountDeleteTransaction.
+func (transaction *AccountDeleteTransaction) SetNodeAccountID(nodeID AccountID) *AccountDeleteTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }

@@ -97,11 +97,11 @@ func (result ContractFunctionResult) AsBytes() []byte {
 	return result.ContractCallResult
 }
 
-func contractFunctionResultFromProto(pb *proto.ContractFunctionResult) ContractFunctionResult {
+func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) ContractFunctionResult {
 	infos := make([]ContractLogInfo, len(pb.LogInfo))
 
 	for i, info := range pb.LogInfo {
-		infos[i] = contractLogInfoFromProto(info)
+		infos[i] = contractLogInfoFromProtobuf(info)
 	}
 
 	result := ContractFunctionResult{
@@ -114,7 +114,7 @@ func contractFunctionResultFromProto(pb *proto.ContractFunctionResult) ContractF
 	}
 
 	if pb.ContractID != nil {
-		contractID := contractIDFromProto(pb.ContractID)
+		contractID := contractIDFromProtobuf(pb.ContractID)
 		result.ContractID = &contractID
 	}
 
@@ -131,11 +131,11 @@ func (contractFuncRes ContractFunctionResult) toProtobuf() *proto.ContractFuncti
 	contractIDs := make([]*proto.ContractID, len(contractFuncRes.CreatedContractIDs))
 
 	for i, contractID := range contractFuncRes.CreatedContractIDs {
-		contractIDs[i] = contractID.toProto()
+		contractIDs[i] = contractID.toProtobuf()
 	}
 
 	return &proto.ContractFunctionResult{
-		ContractID:         contractFuncRes.ContractID.toProto(),
+		ContractID:         contractFuncRes.ContractID.toProtobuf(),
 		ContractCallResult: contractFuncRes.ContractCallResult,
 		ErrorMessage:       contractFuncRes.ErrorMessage,
 		Bloom:              contractFuncRes.Bloom,

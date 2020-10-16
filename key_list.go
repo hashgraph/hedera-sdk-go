@@ -65,7 +65,7 @@ func (kl *KeyList) toProtoKeyList() *proto.KeyList {
 	}
 }
 
-func keyListFromProto(pb *proto.KeyList) KeyList {
+func keyListFromProtobuf(pb *proto.KeyList) KeyList {
 	return KeyList{
 		keys: pb.Keys,
 	}

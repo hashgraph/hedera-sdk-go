@@ -64,7 +64,7 @@ func (id FileID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.File)
 }
 
-func (id FileID) toProto() *proto.FileID {
+func (id FileID) toProtobuf() *proto.FileID {
 	return &proto.FileID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
@@ -72,7 +72,7 @@ func (id FileID) toProto() *proto.FileID {
 	}
 }
 
-func fileIDFromProto(pb *proto.FileID) FileID {
+func fileIDFromProtobuf(pb *proto.FileID) FileID {
 	return FileID{
 		Shard: uint64(pb.ShardNum),
 		Realm: uint64(pb.RealmNum),

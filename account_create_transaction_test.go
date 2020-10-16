@@ -20,7 +20,7 @@ func TestSerializeAccountCreateTransaction(t *testing.T) {
 		SetInitialBalance(HbarFromTinybar(450)).
 		SetProxyAccountID(AccountID{Account: 1020}).
 		SetReceiverSignatureRequired(true).
-		SetNodeID(AccountID{Account: 3}).
+		SetNodeAccountID(AccountID{Account: 3}).
 		SetTransactionID(TransactionID{
 			AccountID:  AccountID{Account: 2},
 			ValidStart: date,
@@ -73,27 +73,27 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 	println("TransactionID", resp.TransactionID.String())
 	println("NodeID", resp.NodeID.String())
 
-	receipt, err := resp.TransactionID.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	accountID := receipt.AccountID
-	assert.NoError(t, err)
+	accountID := *receipt.AccountID
 
 	println("AccountId", accountID.String())
 
-	// tx, err := NewAccountDeleteTransaction().
-	// 	SetDeleteAccountID(accountID).
-	// 	SetTransferAccountID(client.GetOperatorID()).
-	// 	SetMaxTransactionFee(NewHbar(1)).
-	// 	SetTransactionID(NewTransactionID(accountID)).
-	// 	Build(client)
-	// assert.NoError(t, err)
+	tx, err := NewAccountDeleteTransaction().
+		SetNodeAccountID(resp.NodeID).
+		SetAccountID(accountID).
+		SetTransferAccountID(client.GetOperatorID()).
+		SetMaxTransactionFee(NewHbar(1)).
+		SetTransactionID(TransactionIDGenerate(accountID)).
+		FreezeWith(client)
+	assert.NoError(t, err)
 
-	// txID, err = tx.
-	// 	Sign(newKey).
-	// 	Execute(client)
-	// assert.NoError(t, err)
+	resp, err = tx.
+		Sign(newKey).
+		Execute(client)
+	assert.NoError(t, err)
 
-	// _, err = txID.GetReceipt(client)
-	// assert.NoError(t, err)
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 }

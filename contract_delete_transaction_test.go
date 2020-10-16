@@ -18,7 +18,7 @@ func TestSerializeContractDeleteTransaction(t *testing.T) {
 		SetContractID(ContractID{Contract: 5}).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
-		SetNodeID(AccountID{Account: 3}).
+		SetNodeAccountID(AccountID{Account: 3}).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		FreezeWith(mockClient)
 
@@ -38,7 +38,7 @@ func TestSerializeContractDeleteTransaction_WithAccountIDObtainer(t *testing.T) 
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransferAccountID(AccountID{Account: 3}).
 		SetTransactionID(testTransactionID).
-		SetNodeID(AccountID{Account: 3}).
+		SetNodeAccountID(AccountID{Account: 3}).
 		Freeze()
 
 	assert.NoError(t, err)
@@ -60,7 +60,7 @@ func TestSerializeContractDeleteTransaction_WithContractIDObtainer(t *testing.T)
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransferContractID(ContractID{Contract: 3}).
 		SetTransactionID(testTransactionID).
-		SetNodeID(AccountID{Account: 3}).
+		SetNodeAccountID(AccountID{Account: 3}).
 		Freeze()
 
 	assert.NoError(t, err)

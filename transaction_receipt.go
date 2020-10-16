@@ -42,25 +42,25 @@ func newTransactionReceipt(
 func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) TransactionReceipt {
 	var accountID *AccountID
 	if protoReceipt.AccountID != nil {
-		accountIDValue := accountIDFromProto(protoReceipt.AccountID)
+		accountIDValue := accountIDFromProtobuf(protoReceipt.AccountID)
 		accountID = &accountIDValue
 	}
 
 	var contractID *ContractID
 	if protoReceipt.ContractID != nil {
-		contractIDValue := contractIDFromProto(protoReceipt.ContractID)
+		contractIDValue := contractIDFromProtobuf(protoReceipt.ContractID)
 		contractID = &contractIDValue
 	}
 
 	var fileID *FileID
 	if protoReceipt.FileID != nil {
-		fileIDValue := fileIDFromProto(protoReceipt.FileID)
+		fileIDValue := fileIDFromProtobuf(protoReceipt.FileID)
 		fileID = &fileIDValue
 	}
 
 	var topicID *TopicID
 	if protoReceipt.TopicID != nil {
-		topicIDValue := TopicIDFromProto(protoReceipt.TopicID)
+		topicIDValue := TopicIDFromProtobuf(protoReceipt.TopicID)
 		topicID = &topicIDValue
 	}
 
@@ -87,13 +87,13 @@ func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
 	return &proto.TransactionReceipt{
 		Status:     proto.ResponseCodeEnum(receipt.Status),
 		AccountID:  receipt.AccountID.toProtobuf(),
-		FileID:     receipt.FileID.toProto(),
-		ContractID: receipt.ContractID.toProto(),
+		FileID:     receipt.FileID.toProtobuf(),
+		ContractID: receipt.ContractID.toProtobuf(),
 		ExchangeRate: &proto.ExchangeRateSet{
 			CurrentRate: receipt.ExchangeRate.toProtobuf(),
 			NextRate:    receipt.ExchangeRate.toProtobuf(),
 		},
-		TopicID:                 receipt.TopicID.toProto(),
+		TopicID:                 receipt.TopicID.toProtobuf(),
 		TopicSequenceNumber:     receipt.TopicSequenceNumber,
 		TopicRunningHash:        receipt.TopicRunningHash,
 		TopicRunningHashVersion: receipt.TopicRunningHashVersion,

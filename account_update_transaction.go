@@ -26,7 +26,7 @@ func (transaction *AccountUpdateTransaction) SetKey(publicKey PublicKey) *Accoun
 }
 
 func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
-	return publicKeyFromProto(transaction.pb.GetKey())
+	return publicKeyFromProtobuf(transaction.pb.GetKey())
 }
 
 func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
@@ -35,7 +35,7 @@ func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *
 }
 
 func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.GetAccountIDToUpdate())
+	return accountIDFromProtobuf(transaction.pb.GetAccountIDToUpdate())
 }
 
 func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
@@ -53,25 +53,25 @@ func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID Ac
 }
 
 func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
-	return accountIDFromProto(transaction.pb.GetProxyAccountID())
+	return accountIDFromProtobuf(transaction.pb.GetProxyAccountID())
 }
 
 func (transaction *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
-	transaction.pb.AutoRenewPeriod = durationToProto(autoRenewPeriod)
+	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
 
 func (transaction *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration {
-	return durationFromProto(transaction.pb.GetAutoRenewPeriod())
+	return durationFromProtobuf(transaction.pb.GetAutoRenewPeriod())
 }
 
 func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
-	transaction.pb.ExpirationTime = timeToProto(expirationTime)
+	transaction.pb.ExpirationTime = timeToProtobuf(expirationTime)
 	return transaction
 }
 
 func (transaction *AccountUpdateTransaction) GetExpirationTime() time.Time {
-	return timeFromProto(transaction.pb.ExpirationTime)
+	return timeFromProtobuf(transaction.pb.ExpirationTime)
 }
 
 //
@@ -156,7 +156,7 @@ func (transaction *AccountUpdateTransaction) Execute(
 		)
 	}
 
-	_, err := execute(
+	resp, err := execute(
 		client,
 		request{
 			transaction: &transaction.Transaction,
@@ -174,7 +174,10 @@ func (transaction *AccountUpdateTransaction) Execute(
 		return TransactionResponse{}, err
 	}
 
-	return TransactionResponse{TransactionID: transaction.id}, nil
+	return TransactionResponse{
+		TransactionID: transaction.id,
+		NodeID:        resp.transaction.NodeID,
+	}, nil
 }
 
 func (transaction *AccountUpdateTransaction) onFreeze(
@@ -240,6 +243,7 @@ func (transaction *AccountUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) *AccountUpdateTransaction {
+	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
@@ -248,8 +252,8 @@ func (transaction *AccountUpdateTransaction) GetNodeID() AccountID {
 	return transaction.Transaction.GetNodeID()
 }
 
-// SetNodeID sets the node AccountID for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) SetNodeID(nodeID AccountID) *AccountUpdateTransaction {
-	transaction.Transaction.SetNodeID(nodeID)
+// SetNodeAccountID sets the node AccountID for this AccountUpdateTransaction.
+func (transaction *AccountUpdateTransaction) SetNodeAccountID(nodeID AccountID) *AccountUpdateTransaction {
+	transaction.Transaction.SetNodeAccountID(nodeID)
 	return transaction
 }
