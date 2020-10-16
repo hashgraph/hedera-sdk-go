@@ -66,7 +66,6 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		return []byte{}, err
 	}
 
-
 	resp, err := execute(
 		client,
 		request{
@@ -104,4 +103,3 @@ func (query *FileContentsQuery) SetNodeAccountID(accountID AccountID) *FileConte
 func (query *FileContentsQuery) GetNodeAccountId() AccountID {
 	return query.Query.GetNodeAccountId()
 }
-

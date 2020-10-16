@@ -79,7 +79,6 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-
 	resp, err := execute(
 		client,
 		request{
@@ -108,13 +107,13 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		AccountID:         accountIDFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.AccountID),
 		ContractID:        contractIDFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.ContractID),
 		ContractAccountID: resp.query.GetContractGetInfo().ContractInfo.ContractAccountID,
-		AdminKey:          PublicKey{
+		AdminKey: PublicKey{
 			keyData: adminKey.toProtoKey().GetEd25519(),
 		},
-		ExpirationTime:    timeFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.ExpirationTime),
-		AutoRenewPeriod:   durationFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.AutoRenewPeriod),
-		Storage:           uint64(resp.query.GetContractGetInfo().ContractInfo.Storage),
-		ContractMemo:      resp.query.GetContractGetInfo().ContractInfo.Memo,
+		ExpirationTime:  timeFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.ExpirationTime),
+		AutoRenewPeriod: durationFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.AutoRenewPeriod),
+		Storage:         uint64(resp.query.GetContractGetInfo().ContractInfo.Storage),
+		ContractMemo:    resp.query.GetContractGetInfo().ContractInfo.Memo,
 	}, nil
 }
 

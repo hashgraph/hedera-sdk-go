@@ -7,9 +7,9 @@ import (
 
 type LiveHash struct {
 	AccountID AccountID
-	Hash []byte
-	Keys KeyList
-	Duration time.Time
+	Hash      []byte
+	Keys      KeyList
+	Duration  time.Time
 }
 
 func newLiveHash(accountId AccountID, hash []byte,
@@ -27,7 +27,7 @@ func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
 		AccountId: liveHash.AccountID.toProtobuf(),
 		Hash:      liveHash.Hash,
 		Keys:      liveHash.Keys.toProtoKeyList(),
-		Duration:  &proto.Duration{
+		Duration: &proto.Duration{
 			Seconds: int64(liveHash.Duration.Second()),
 		},
 	}
@@ -38,9 +38,9 @@ func liveHashFromProtobuf(hash *proto.LiveHash) LiveHash {
 		AccountID: accountIDFromProtobuf(hash.GetAccountId()),
 		Hash:      hash.Hash,
 		Keys:      keyListFromProtobuf(hash.Keys),
-		Duration:  time.Date(time.Now().Year(), time.Now().Month(),
-							time.Now().Day(), time.Now().Hour(), time.Now().Minute(),
-							int(hash.Duration.Seconds), time.Now().Nanosecond(), time.Now().Location()),
+		Duration: time.Date(time.Now().Year(), time.Now().Month(),
+			time.Now().Day(), time.Now().Hour(), time.Now().Minute(),
+			int(hash.Duration.Seconds), time.Now().Nanosecond(), time.Now().Location()),
 	}
 
 }

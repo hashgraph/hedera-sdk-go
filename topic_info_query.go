@@ -54,7 +54,6 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-
 	resp, err := execute(
 		client,
 		request{

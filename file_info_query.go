@@ -64,7 +64,6 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-
 	resp, err := execute(
 		client,
 		request{

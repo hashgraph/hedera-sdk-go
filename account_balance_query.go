@@ -26,6 +26,7 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 		pb:    &pb,
 	}
 }
+
 // SetAccountID sets the AccountID for which you wish to query the balance.
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,

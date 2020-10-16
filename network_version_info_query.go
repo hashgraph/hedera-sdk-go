@@ -53,7 +53,6 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		return NetworkVersionInfo{}, err
 	}
 
-
 	resp, err := execute(
 		client,
 		request{

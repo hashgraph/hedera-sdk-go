@@ -55,14 +55,14 @@ func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {
 	}
 
 	return &proto.FileGetInfoResponse_FileInfo{
-		FileID:         fileInfo.FileID.toProtobuf(),
-		Size:           fileInfo.Size,
+		FileID: fileInfo.FileID.toProtobuf(),
+		Size:   fileInfo.Size,
 		ExpirationTime: &proto.Timestamp{
 			Seconds: int64(fileInfo.ExpirationTime.Second()),
 			Nanos:   int32(fileInfo.ExpirationTime.Nanosecond()),
 		},
-		Deleted:        fileInfo.IsDeleted,
-		Keys:           &proto.KeyList{
+		Deleted: fileInfo.IsDeleted,
+		Keys: &proto.KeyList{
 			Keys: keys,
 		},
 	}

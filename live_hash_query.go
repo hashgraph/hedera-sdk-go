@@ -73,7 +73,6 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-
 	resp, err := execute(
 		client,
 		request{

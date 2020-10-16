@@ -67,7 +67,6 @@ func (query *ContractRecordsQuery) Execute(client *Client) ([]TransactionRecord,
 		return []TransactionRecord{}, err
 	}
 
-
 	resp, err := execute(
 		client,
 		request{
