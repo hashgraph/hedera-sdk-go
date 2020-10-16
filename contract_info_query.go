@@ -100,6 +100,10 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 
 	adminKey, err := publicKeyFromProtobuf(resp.query.GetContractGetInfo().GetContractInfo().GetAdminKey())
 
+	if err != nil {
+		return ContractInfo{}, err
+	}
+
 	return ContractInfo{
 		AccountID:         accountIDFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.AccountID),
 		ContractID:        contractIDFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.ContractID),
