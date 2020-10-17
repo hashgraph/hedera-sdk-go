@@ -19,7 +19,7 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 		Transaction: newTransaction(),
 	}
 
-	transaction.SetAutoRenewPeriod(7890000 * time.Second)
+	transaction.SetAutoRenewPeriod(131500 * time.Minute)
 
 	return &transaction
 }
@@ -90,13 +90,18 @@ func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.ProxyAccountID)
 }
 
-func (transaction *ContractCreateTransaction) SetConstructorParameters(params []byte) *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParams) *ContractCreateTransaction {
+	transaction.pb.ConstructorParameters = params.build(nil)
+	return transaction
+}
+
+func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
 	transaction.pb.ConstructorParameters = params
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte {
-	return transaction.pb.GetConstructorParameters()
+	return transaction.pb.ConstructorParameters
 }
 
 func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {

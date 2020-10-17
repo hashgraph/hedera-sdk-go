@@ -13,7 +13,7 @@ type TopicDeleteTransaction struct {
 
 // NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction transaction which can be used to construct
 // and execute a Consensus Delete Topic Transaction.
-func NewConsensusTopicDeleteTransaction() *TopicDeleteTransaction {
+func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	pb := &proto.ConsensusDeleteTopicTransactionBody{}
 
 	transaction := TopicDeleteTransaction{

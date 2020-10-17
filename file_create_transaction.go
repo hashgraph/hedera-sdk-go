@@ -30,7 +30,7 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 		Transaction: newTransaction(),
 	}
 
-	transaction.SetExpirationTime(time.Now().Add(7890000))
+	transaction.SetExpirationTime(time.Now().Add(7890000 * time.Second))
 
 	return &transaction
 }

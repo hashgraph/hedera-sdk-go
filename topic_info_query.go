@@ -12,13 +12,16 @@ type TopicInfoQuery struct {
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
-	header := proto.QueryHeader{}
+	header := proto.QueryHeader{
+		Payment:      nil,
+		ResponseType: 0,
+	}
 	query := newQuery(true, &header)
 	pb := proto.ConsensusGetTopicInfoQuery{Header: &header}
 	query.pb.Query = &proto.Query_ConsensusGetTopicInfo{
 		ConsensusGetTopicInfo: &pb,
 	}
-
+	println("nil")
 	return &TopicInfoQuery{
 		Query: query,
 		pb:    &pb,
@@ -27,8 +30,21 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
 func (query *TopicInfoQuery) SetTopicID(id TopicID) *TopicInfoQuery {
+	println("nil")
 	query.pb.TopicID = id.toProtobuf()
 	return query
+}
+
+func topicInfoQuery_mapResponseStatus(_ request, response response) Status {
+	println("nil",response.query.String())
+	return Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode)
+}
+
+func topicInfoQuery_getMethod(_ request, channel *channel) method {
+	println("nil", channel.getTopic().GetTopicInfo)
+	return method{
+		query: channel.getTopic().GetTopicInfo,
+	}
 }
 
 // Execute executes the TopicInfoQuery using the provided client
@@ -63,8 +79,8 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeId,
-		networkVersionInfoQuery_getMethod,
-		networkVersionInfoQuery_mapResponseStatus,
+		topicInfoQuery_getMethod,
+		topicInfoQuery_mapResponseStatus,
 		query_mapResponse,
 	)
 
@@ -95,4 +111,25 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	//}
 
 	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo), nil
+}
+
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
+func (query *TopicInfoQuery) SetMaxQueryPayment(maxPayment Hbar) *TopicInfoQuery {
+	query.Query.SetMaxQueryPayment(maxPayment)
+	return query
+}
+
+// SetQueryPayment sets the payment amount for this Query.
+func (query *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery {
+	query.Query.SetQueryPayment(paymentAmount)
+	return query
+}
+
+func (query *TopicInfoQuery) SetNodeAccountID(accountID AccountID) *TopicInfoQuery {
+	query.Query.SetNodeAccountID(accountID)
+	return query
+}
+
+func (query *TopicInfoQuery) GetNodeAccountId() AccountID {
+	return query.Query.GetNodeAccountId()
 }
