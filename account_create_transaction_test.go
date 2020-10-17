@@ -66,6 +66,7 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
+		SetNodeAccountID(AccountID{Account: 3}).
 		Execute(client)
 
 	assert.NoError(t, err)

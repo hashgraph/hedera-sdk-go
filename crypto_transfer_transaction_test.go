@@ -21,13 +21,6 @@ func TestSerializeCryptoTransferTransaction(t *testing.T) {
 		SetTransactionID(testTransactionID).
 		FreezeWith(mockClient)
 
-	// 	tx, err := NewCryptoTransferTransaction().
-	// 		AddSender(AccountID{Account: 2}, HbarFromTinybar(100)).
-	// 		AddRecipient(AccountID{Account: 3}, HbarFromTinybar(100)).
-	// 		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
-	// 		SetTransactionID(testTransactionID).
-	// 		Build(client)
-
 	assert.NoError(t, err)
 
 	tx.Sign(privateKey)
@@ -55,14 +48,14 @@ func TestCryptoTransferTransaction_Execute(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	txID, err := NewCryptoTransferTransaction().
+	resp, err := NewCryptoTransferTransaction().
 		AddSender(client.GetOperatorID(), NewHbar(1)).
 		AddRecipient(AccountID{Account: 3}, NewHbar(1)).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	println("TransactionID", txID.TransactionID.String())
-	//_, err = txID.GetReceipt(client)
-	//assert.NoError(t, err)
+	println("TransactionID", resp.TransactionID.String())
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 }

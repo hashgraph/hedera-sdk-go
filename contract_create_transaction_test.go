@@ -56,7 +56,7 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	txID, err := NewFileCreateTransaction().
+	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorKey()).
 		SetContents(testContractByteCode).
 		SetMaxTransactionFee(NewHbar(3)).
@@ -64,39 +64,41 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	println("TransactionID", txID.TransactionID.String())
+	println("TransactionID", resp.TransactionID.String())
 
-	//receipt, err := txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//fileID := receipt.GetFileID()
-	//assert.NotNil(t, fileID)
-	//
-	//txID, err = NewContractCreateTransaction().
-	//	SetAdminKey(client.GetOperatorKey()).
-	//	SetGas(2000).
-	//	SetConstructorParameters(NewContractFunctionParams().AddString("hello from hedera")).
-	//	SetBytecodeFileID(fileID).
-	//	SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
-	//	SetMaxTransactionFee(NewHbar(20)).
-	//	Execute(client)
-	//assert.NoError(t, err)
-	//
-	//receipt, err = txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//contractID := receipt.GetContractID()
-	//assert.NotNil(t, contractID)
-	//
-	//_, err = NewContractDeleteTransaction().
-	//	SetContractID(contractID).
-	//	SetMaxTransactionFee(NewHbar(5)).
-	//	Execute(client)
-	//assert.NoError(t, err)
-	//
-	//_, err = NewFileDeleteTransaction().
-	//	SetFileID(fileID).
-	//	SetMaxTransactionFee(NewHbar(5)).
-	//	Execute(client)
-	//assert.NoError(t, err)
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	fileID := *receipt.FileID
+	assert.NotNil(t, fileID)
+
+	resp, err = NewContractCreateTransaction().
+		SetAdminKey(client.GetOperatorKey()).
+		SetGas(2000).
+		SetConstructorParameters(NewContractFunctionParams().AddString("hello from hedera")).
+		SetBytecodeFileID(fileID).
+		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
+		SetMaxTransactionFee(NewHbar(20)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	contractID := *receipt.ContractID
+	assert.NotNil(t, contractID)
+
+	_, err = NewContractDeleteTransaction().
+		SetContractID(contractID).
+		SetNodeAccountID(resp.NodeID).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = NewFileDeleteTransaction().
+		SetFileID(fileID).
+		SetNodeAccountID(resp.NodeID).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+	assert.NoError(t, err)
 }

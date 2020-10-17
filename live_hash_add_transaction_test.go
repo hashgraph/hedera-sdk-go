@@ -59,15 +59,28 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	txID, err := NewLiveHashAddTransaction().
-		SetAccountID(AccountID{Account: 3}).
-		SetKeys(newKey.PublicKey()).
-		SetDuration((3000 * 10) * time.Millisecond).
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetMaxTransactionFee(NewHbar(2)).
+		SetInitialBalance(NewHbar(1)).
+		SetNodeAccountID(AccountID{Account: 3}).
+		Execute(client)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewLiveHashAddTransaction().
+		SetAccountID(accountID).
+		SetDuration(24*30*time.Hour).
+		SetNodeAccountID(resp.NodeID).
 		SetHash(_hash).
+		SetKeys(newKey.PublicKey()).
 		Execute(client)
 
 	assert.NoError(t, err)
 
-	println("TransactionID", txID.TransactionID.String())
-	println("NodeID", txID.NodeID.String())
+	println("TransactionID", resp.TransactionID.String())
+	println("NodeID", resp.NodeID.String())
 }

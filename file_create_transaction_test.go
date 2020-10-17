@@ -55,7 +55,7 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 	}
 
 	client.SetMaxTransactionFee(NewHbar(2))
-	txID, err := NewFileCreateTransaction().
+	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorKey()).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
@@ -63,19 +63,20 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	println("TransactionID", txID.TransactionID.String())
+	println("TransactionID", resp.TransactionID.String())
 
-	//receipt, err := txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//fileID := receipt.fileID
-	//assert.NotNil(t, fileID)
-	//
-	//txID, err = NewFileDeleteTransaction().
-	//	SetFileID(*fileID).
-	//	Execute(client)
-	//assert.NoError(t, err)
-	//
-	//_, err = txID.GetReceipt(client)
-	//assert.NoError(t, err)
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	fileID := *receipt.FileID
+	assert.NotNil(t, fileID)
+
+	resp, err = NewFileDeleteTransaction().
+		SetFileID(fileID).
+		SetNodeAccountID(resp.NodeID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 }

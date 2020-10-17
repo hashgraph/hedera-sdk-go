@@ -66,25 +66,24 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 	println("TransactionID", resp.TransactionID.String())
 	println("NodeID", resp.NodeID.String())
 
-	//receipt, err := txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//accountID := receipt.GetAccountID()
-	//assert.NoError(t, err)
-	//
-	//tx, err := NewAccountDeleteTransaction().
-	//	SetDeleteAccountID(accountID).
-	//	SetTransferAccountID(client.GetOperatorID()).
-	//	SetMaxTransactionFee(NewHbar(1)).
-	//	SetTransactionID(NewTransactionID(accountID)).
-	//	Build(client)
-	//assert.NoError(t, err)
-	//
-	//txID, err = tx.
-	//	Sign(newKey).
-	//	Execute(client)
-	//assert.NoError(t, err)
-	//
-	//_, err = txID.GetReceipt(client)
-	//assert.NoError(t, err)
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	accountID := receipt.AccountID
+	assert.NoError(t, err)
+
+	tx, err := NewAccountDeleteTransaction().
+		SetAccountID(*accountID).
+		SetTransferAccountID(client.GetOperatorID()).
+		SetNodeAccountID(resp.NodeID).
+		SetMaxTransactionFee(NewHbar(1)).
+		SetTransactionID(TransactionIDGenerate(*accountID)).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = tx.Sign(newKey).Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 }

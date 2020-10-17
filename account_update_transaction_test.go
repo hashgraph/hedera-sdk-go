@@ -17,6 +17,7 @@ func TestSerializeAccountUpdateTransaction(t *testing.T) {
 	tx, err := NewAccountUpdateTransaction().
 		SetAccountID(AccountID{Account: 3}).
 		SetKey(privateKey.PublicKey()).
+		SetNodeAccountID(AccountID{Account: 5}).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
 		FreezeWith(mockClient)
@@ -51,14 +52,14 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	//newKey2, err := GeneratePrivateKey()
-	//assert.NoError(t, err)
+	newKey2, err := GeneratePrivateKey()
+	assert.NoError(t, err)
 
 	newBalance := NewHbar(1)
 
 	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
-	txID, err := NewAccountCreateTransaction().
+	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
@@ -66,55 +67,54 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	println("TransactionID", txID.TransactionID.String())
-	println("NodeID", txID.NodeID.String())
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
 
-	//receipt, err := txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//accountID := receipt.GetAccountID()
-	//assert.NoError(t, err)
-	//
-	//tx, err := NewAccountUpdateTransaction().
-	//	SetAccountID(accountID).
-	//	SetKey(newKey2.PublicKey()).
-	//	SetMaxTransactionFee(NewHbar(1)).
-	//	Freeze()
-	//
-	//assert.NoError(t, err)
-	//
-	//tx.Sign(newKey)
-	//tx.Sign(newKey2)
-	//
-	//txID, err = tx.Execute(client)
-	//assert.NoError(t, err)
-	//
-	//_, err = txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//info, err := NewAccountInfoQuery().
-	//	SetAccountID(accountID).
-	//	SetMaxQueryPayment(NewHbar(1)).
-	//	Execute(client)
-	//assert.NoError(t, err)
-	//
-	//assert.Equal(t, newKey2.PublicKey(), info.Key)
-	//
-	//tx, err = NewAccountDeleteTransaction().
-	//	SetAccountID(accountID).
-	//	SetTransferAccountID(client.GetOperatorID()).
-	//	SetNodeAccountID(AccountID{Account: 3}).
-	//	SetMaxTransactionFee(HbarFromTinybar(1e6)).
-	//	Freeze()
-	//
-	//assert.NoError(t, err)
-	//
-	//tx.Sign(newKey2)
-	//
-	//txID, err = tx.Execute(client)
-	//assert.NoError(t, err)
-	//
-	//_, err = txID.GetReceipt(client)
-	//
-	//assert.NoError(t, err)
+	accountID := *receipt.AccountID
+	assert.NoError(t, err)
+
+	tx, err := NewAccountUpdateTransaction().
+		SetAccountID(accountID).
+		SetNodeAccountID(resp.NodeID).
+		SetKey(newKey2.PublicKey()).
+		SetMaxTransactionFee(NewHbar(1)).
+		FreezeWith(client)
+
+	assert.NoError(t, err)
+
+	tx.Sign(newKey)
+	tx.Sign(newKey2)
+
+	resp, err = tx.Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	info, err := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		SetNodeAccountID(resp.NodeID).
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, newKey2.PublicKey(), info.Key)
+
+	txDelete, err := NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetTransferAccountID(client.GetOperatorID()).
+		SetNodeAccountID(resp.NodeID).
+		SetMaxTransactionFee(NewHbar(1)).
+		FreezeWith(client)
+
+	assert.NoError(t, err)
+
+	txDelete.Sign(newKey2)
+
+	resp, err = txDelete.Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+
+	assert.NoError(t, err)
 }

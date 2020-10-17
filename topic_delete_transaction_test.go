@@ -18,7 +18,7 @@ func TestSerializeConsensusTopicDeleteTransaction(t *testing.T) {
 	key, err := PrivateKeyFromString("302e020100300506032b6570042204203b054fade7a2b0869c6bd4a63b7017cbae7855d12acc357bea718e2c3e805962")
 	assert.NoError(t, err)
 
-	tx, err := NewConsensusTopicDeleteTransaction().
+	tx, err := NewTopicDeleteTransaction().
 		SetTopicID(testTopicID).
 		SetTransactionValidDuration(24 * time.Hour).
 		SetNodeAccountID(AccountID{Account: 3}).
@@ -58,43 +58,48 @@ func TestConsensusTopicDeleteTransaction_Execute(t *testing.T) {
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 
-	txID, err := NewTopicCreateTransaction().
+	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
 		SetTopicMemo(topicMemo).
-		SetMaxTransactionFee(NewHbar(1)).
+		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
 
-	println("TransactionID", txID.TransactionID.String())
+	println("TransactionID", resp.TransactionID.String())
 
-	//receipt, err := txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//topicID := receipt.GetConsensusTopicID()
-	//assert.NotNil(t, topicID)
-	//
-	//_, err = NewConsensusTopicInfoQuery().
-	//	SetTopicID(topicID).
-	//	SetMaxQueryPayment(NewHbar(1)).
-	//	Execute(client)
-	//assert.NoError(t, err)
-	//
-	//txID, err = NewConsensusTopicDeleteTransaction().
-	//	SetTopicID(topicID).
-	//	SetMaxTransactionFee(NewHbar(1)).
-	//	Execute(client)
-	//assert.NoError(t, err)
-	//
-	//_, err = txID.GetReceipt(client)
-	//assert.NoError(t, err)
-	//
-	//_, err = NewConsensusTopicInfoQuery().
-	//	SetTopicID(topicID).
-	//	SetMaxQueryPayment(NewHbar(1)).
-	//	Execute(client)
-	//assert.Error(t, err)
-	//
-	//status := err.(ErrHederaPreCheckStatus).Status
-	//assert.Equal(t, StatusInvalidTopicID, status)
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	println("TransactionID", topicID.String())
+
+	_, err = NewTopicInfoQuery().
+		SetTopicID(topicID).
+		SetNodeAccountID(resp.NodeID).
+		SetQueryPayment(NewHbar(22)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountID(resp.NodeID).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	_, err = NewTopicInfoQuery().
+		SetTopicID(topicID).
+		SetNodeAccountID(resp.NodeID).
+		SetQueryPayment(NewHbar(22)).
+		Execute(client)
+	assert.Error(t, err)
+
+	status := err.(ErrHederaPreCheckStatus).Status
+	assert.Equal(t, StatusInvalidTopicID, status)
 }
