@@ -29,8 +29,12 @@ func (builder TokenDissociateTransaction) SetAccountID(id AccountID) TokenDissoc
 }
 
 // The tokens to be dissociated with the provided account
-func (builder TokenDissociateTransaction) AddTokenID(id TokenID) TokenDissociateTransaction {
-	builder.pb.Tokens = append(builder.pb.Tokens, id.toProto())
+func (builder TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) TokenDissociateTransaction {
+	tokens := make([]*proto.TokenID, len(ids))
+	for i, token := range ids {
+		tokens[i] = token.toProto()
+	}
+	builder.pb.Tokens = tokens
 	return builder
 }
 

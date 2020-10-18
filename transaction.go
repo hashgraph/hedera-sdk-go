@@ -253,6 +253,34 @@ func getMethodName(transactionBody *proto.TransactionBody) (string, error) {
 	case *proto.TransactionBody_ConsensusSubmitMessage:
 		return "/proto.ConsensusService/submitMessage", nil
 
+	// HTS
+	case *proto.TransactionBody_TokenAssociate:
+		return "/proto.TokenService/associateTokens", nil
+	case *proto.TransactionBody_TokenBurn:
+		return "/proto.TokenService/burnToken", nil
+	case *proto.TransactionBody_TokenCreation:
+		return "/proto.TokenService/createToken", nil
+	case *proto.TransactionBody_TokenDeletion:
+		return "/proto.TokenService/deleteToken", nil
+	case *proto.TransactionBody_TokenDissociate:
+		return "/proto.TokenService/dissociateTokens", nil
+	case *proto.TransactionBody_TokenFreeze:
+		return "/proto.TokenService/freezeTokenAccount", nil
+	case *proto.TransactionBody_TokenGrantKyc:
+		return "/proto.TokenService/grantKycToTokenAccount", nil
+	case *proto.TransactionBody_TokenMint:
+		return "/proto.TokenService/mintToken", nil
+	case *proto.TransactionBody_TokenRevokeKyc:
+		return "/proto.TokenService/revokeKycFromTokenAccount", nil
+	case *proto.TransactionBody_TokenTransfers:
+		return "/proto.TokenService/transferTokens", nil
+	case *proto.TransactionBody_TokenUnfreeze:
+		return "/proto.TokenService/unfreezeTokenAccount", nil
+	case *proto.TransactionBody_TokenUpdate:
+		return "/proto.TokenService/updateToke", nil
+	case *proto.TransactionBody_TokenWipe:
+		return "/proto.TokenService/wipeTokenAccount", nil
+
 	default:
 		return "", newErrLocalValidationf("Could not find method name for: %T", transactionBody.Data)
 	}

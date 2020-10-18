@@ -29,8 +29,12 @@ func (builder TokenAssociateTransaction) SetAccountID(id AccountID) TokenAssocia
 }
 
 // The tokens to be associated with the provided account
-func (builder TokenAssociateTransaction) AddTokenID(id TokenID) TokenAssociateTransaction {
-	builder.pb.Tokens = append(builder.pb.Tokens, id.toProto())
+func (builder TokenAssociateTransaction) SetTokenIDs(ids ...TokenID) TokenAssociateTransaction {
+	tokens := make([]*proto.TokenID, len(ids))
+	for i, token := range ids {
+		tokens[i] = token.toProto()
+	}
+	builder.pb.Tokens = tokens
 	return builder
 }
 

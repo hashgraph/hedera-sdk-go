@@ -13,6 +13,7 @@ type TransactionReceipt struct {
 	contractID                   *ContractID
 	fileID                       *FileID
 	consensusTopicID             *ConsensusTopicID
+	tokenID                      *TokenID
 	consensusTopicSequenceNumber uint64
 	consensusTopicRunningHash    []byte
 }
@@ -74,6 +75,21 @@ func (receipt TransactionReceipt) TryGetConsensusTopicID() (ConsensusTopicID, er
 		return ConsensusTopicID{}, fmt.Errorf("no consensus id exists on this receipt")
 	}
 	return receipt.GetConsensusTopicID(), nil
+}
+
+// GetTokenID returns the TokenID associated with the receipt's transaction or else panics if no TokenID exists
+func (receipt TransactionReceipt) GetTokenID() TokenID {
+	return *receipt.tokenID
+}
+
+// TryGetTokenID returns the TokenID associated with the receipt's transaction or else returns an error
+// if no TokenID exists
+func (receipt TransactionReceipt) TryGetTokenID() (TokenID, error) {
+	if receipt.tokenID == nil {
+		return TokenID{}, fmt.Errorf("no token id exists on this receipt")
+	}
+
+	return receipt.GetTokenID(), nil
 }
 
 // GetConsensusTopicSequenceNumber returns the topic sequence number associated with the
@@ -139,11 +155,18 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 		consensusTopicID = &consensusTopicIDValue
 	}
 
+	var tokenID *TokenID
+	if pb.TokenId != nil {
+		tokenIDValue := tokenIDFromProto(pb.TokenId)
+		tokenID = &tokenIDValue
+	}
+
 	return TransactionReceipt{
 		Status:                       Status(pb.Status),
 		accountID:                    accountID,
 		contractID:                   contractID,
 		fileID:                       fileID,
+		tokenID:                      tokenID,
 		consensusTopicID:             consensusTopicID,
 		consensusTopicSequenceNumber: pb.TopicSequenceNumber,
 		consensusTopicRunningHash:    pb.TopicRunningHash,
