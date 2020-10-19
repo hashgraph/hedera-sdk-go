@@ -378,6 +378,16 @@ func execute(node *node, paymentID *TransactionID, pb *proto.Query, deadline tim
 			continue
 		}
 
+		status := Status(respHeader.NodeTransactionPrecheckCode)
+
+		switch status {
+		case StatusBusy,
+			StatusPlatformNotActive,
+			StatusReceiptNotFound,
+			StatusRecordNotFound:
+			continue
+		}
+
 		// If the query is `Transaction[Receipt|Record]Query` we need to inspect the
 		// receipts status and retry on that as well as the `resp.NodeTransactionPrecheckCode`
 		var receiptStatus *proto.ResponseCodeEnum = nil
@@ -402,21 +412,16 @@ func execute(node *node, paymentID *TransactionID, pb *proto.Query, deadline tim
 				proto.ResponseCodeEnum_UNKNOWN:
 				continue
 			}
-		}
 
-		status := Status(respHeader.NodeTransactionPrecheckCode)
+			if status.isExceptional(true) {
+				// precheck failed, paymentID should never be nil in this case
+				return resp, newErrHederaPreCheckStatus(*paymentID, status)
+			}
 
-		switch status {
-		case StatusBusy,
-			StatusPlatformNotActive,
-			StatusReceiptNotFound,
-			StatusRecordNotFound:
-			continue
-		}
-
-		if status.isExceptional(true) {
-			// precheck failed, paymentID should never be nil in this case
-			return resp, newErrHederaPreCheckStatus(*paymentID, status)
+			if Status(*receiptStatus).isExceptional(true) {
+				// precheck failed, paymentID should never be nil in this case
+				return resp, newErrHederaPreCheckStatus(TransactionID{}, Status(*receiptStatus))
+			}
 		}
 
 		// success
