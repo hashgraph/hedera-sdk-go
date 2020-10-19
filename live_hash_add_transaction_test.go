@@ -71,6 +71,8 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
+
+	println("NodeID", resp.NodeID.String())
 	resp, err = NewLiveHashAddTransaction().
 		SetAccountID(accountID).
 		SetDuration(24*30*time.Hour).

@@ -12,16 +12,13 @@ type TopicInfoQuery struct {
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
-	header := proto.QueryHeader{
-		Payment:      nil,
-		ResponseType: 0,
-	}
+	header := proto.QueryHeader{}
 	query := newQuery(true, &header)
 	pb := proto.ConsensusGetTopicInfoQuery{Header: &header}
 	query.pb.Query = &proto.Query_ConsensusGetTopicInfo{
 		ConsensusGetTopicInfo: &pb,
 	}
-	println("nil")
+
 	return &TopicInfoQuery{
 		Query: query,
 		pb:    &pb,
@@ -30,18 +27,15 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
 func (query *TopicInfoQuery) SetTopicID(id TopicID) *TopicInfoQuery {
-	println("nil")
 	query.pb.TopicID = id.toProtobuf()
 	return query
 }
 
 func topicInfoQuery_mapResponseStatus(_ request, response response) Status {
-	println("nil",response.query.String())
 	return Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode)
 }
 
 func topicInfoQuery_getMethod(_ request, channel *channel) method {
-	println("nil", channel.getTopic().GetTopicInfo)
 	return method{
 		query: channel.getTopic().GetTopicInfo,
 	}
@@ -87,28 +81,6 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	if err != nil {
 		return TopicInfo{}, err
 	}
-
-	//ti := resp.query.GetConsensusGetTopicInfo().TopicInfo
-	//
-	//TopicInfo := topicinfo
-	//
-	//if adminKey := ti.AdminKey; adminKey != nil {
-	//	TopicInfo.AdminKey = &Ed25519PublicKey{
-	//		keyData: adminKey.GetEd25519(),
-	//	}
-	//}
-	//
-	//if submitKey := ti.SubmitKey; submitKey != nil {
-	//	TopicInfo.SubmitKey = &Ed25519PublicKey{
-	//		keyData: submitKey.GetEd25519(),
-	//	}
-	//}
-	//
-	//if ARAccountID := ti.AutoRenewAccount; ARAccountID != nil {
-	//	ID := accountIDFromProto(ARAccountID)
-	//
-	//	TopicInfo.AutoRenewAccountID = &ID
-	//}
 
 	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo), nil
 }

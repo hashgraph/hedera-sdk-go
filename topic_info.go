@@ -17,26 +17,35 @@ type TopicInfo struct {
 }
 
 func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) TopicInfo {
-	return TopicInfo{
+
+	tempTopicInfo := TopicInfo{
 		Memo:           topicInfo.Memo,
 		RunningHash:    topicInfo.RunningHash,
 		SequenceNumber: topicInfo.SequenceNumber,
 		ExpirationTime: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(),
 			time.Now().Hour(), time.Now().Minute(), int(topicInfo.ExpirationTime.Seconds),
 			int(topicInfo.ExpirationTime.Nanos), time.Now().Location()),
-		AdminKey: &PublicKey{
-			keyData: topicInfo.AdminKey.GetEd25519(),
-		},
-		SubmitKey: &PublicKey{
-			keyData: topicInfo.SubmitKey.GetEd25519(),
-		},
 		AutoRenewPeriod: durationFromProtobuf(topicInfo.AutoRenewPeriod),
-		AutoRenewAccountID: &AccountID{
-			Shard:   uint64(topicInfo.GetAutoRenewAccount().ShardNum),
-			Realm:   uint64(topicInfo.GetAutoRenewAccount().RealmNum),
-			Account: uint64(topicInfo.GetAutoRenewAccount().AccountNum),
-		},
 	}
+
+	if adminKey := topicInfo.AdminKey; adminKey != nil {
+		tempTopicInfo.AdminKey = &PublicKey{
+			keyData: adminKey.GetEd25519(),
+		}
+	}
+
+	if submitKey := topicInfo.SubmitKey; submitKey != nil {
+		tempTopicInfo.SubmitKey = &PublicKey{
+			keyData: submitKey.GetEd25519(),
+		}
+	}
+
+	if ARAccountID := topicInfo.AutoRenewAccount; ARAccountID != nil {
+		ID := accountIDFromProtobuf(ARAccountID)
+
+		tempTopicInfo.AutoRenewAccountID = &ID
+	}
+	return tempTopicInfo
 }
 
 func (topicInfo *TopicInfo) toProtobuf() *proto.ConsensusTopicInfo {

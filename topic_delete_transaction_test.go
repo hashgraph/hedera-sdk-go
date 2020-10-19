@@ -74,7 +74,7 @@ func TestConsensusTopicDeleteTransaction_Execute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	println("TransactionID", topicID.String())
+	println("TopicID", topicID.String())
 
 	_, err = NewTopicInfoQuery().
 		SetTopicID(topicID).

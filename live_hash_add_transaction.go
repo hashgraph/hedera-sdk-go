@@ -11,12 +11,7 @@ type LiveHashAddTransaction struct {
 }
 
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
-	pb := &proto.CryptoAddLiveHashTransactionBody{LiveHash: &proto.LiveHash{
-		AccountId: nil,
-		Hash:      nil,
-		Keys:      nil,
-		Duration:  nil,
-	}}
+	pb := &proto.CryptoAddLiveHashTransactionBody{LiveHash: &proto.LiveHash{}}
 
 	transaction := LiveHashAddTransaction{
 		pb:          pb,
@@ -35,9 +30,9 @@ func (transaction *LiveHashAddTransaction) GetHash() []byte {
 }
 
 func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
-	//if transaction.pb.LiveHash.Keys == nil {
-	//	transaction.pb.LiveHash.Keys = &proto.KeyList{Keys: []*proto.Key{}}
-	//}
+	if transaction.pb.LiveHash.Keys == nil {
+		transaction.pb.LiveHash.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+	}
 	keyList := KeyList{keys: []*proto.Key{}}
 	keyList.AddAll(keys)
 
