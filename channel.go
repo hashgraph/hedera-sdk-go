@@ -12,6 +12,7 @@ type channel struct {
 	topic    proto.ConsensusServiceClient
 	freeze   proto.FreezeServiceClient
 	network  proto.NetworkServiceClient
+	token    proto.TokenServiceClient
 	client   *grpc.ClientConn
 }
 
@@ -67,4 +68,12 @@ func (channel channel) getNetwork() proto.NetworkServiceClient {
 	}
 
 	return channel.network
+}
+
+func (channel channel) getToken() proto.TokenServiceClient {
+	if channel.token == nil {
+		channel.token = proto.NewTokenServiceClient(channel.client)
+	}
+
+	return channel.token
 }
