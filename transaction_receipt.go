@@ -70,6 +70,12 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 		rate = &exchangeRateValue
 	}
 
+	var topicSequenceHash []byte
+	if protoReceipt.TopicRunningHash != nil {
+		runningHash := protoReceipt.TopicRunningHash
+		topicSequenceHash = runningHash
+	}
+
 	return TransactionReceipt{
 		Status:                  Status(protoReceipt.Status),
 		ExchangeRate:            rate,
@@ -78,7 +84,7 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 		ContractID:              contractID,
 		AccountID:               accountID,
 		TopicSequenceNumber:     protoReceipt.TopicSequenceNumber,
-		TopicRunningHash:        protoReceipt.TopicRunningHash,
+		TopicRunningHash:        topicSequenceHash,
 		TopicRunningHashVersion: protoReceipt.TopicRunningHashVersion,
 	}
 }

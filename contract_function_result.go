@@ -105,7 +105,6 @@ func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) Contra
 	}
 
 	result := ContractFunctionResult{
-		ContractID:         nil,
 		ContractCallResult: pb.ContractCallResult,
 		ErrorMessage:       pb.ErrorMessage,
 		Bloom:              pb.Bloom,

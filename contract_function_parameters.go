@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-type ContractFunctionParams struct {
+type ContractFunctionParameters struct {
 	function  ContractFunctionSelector
 	arguments []Argument
 }
@@ -17,14 +17,14 @@ type Argument struct {
 	dynamic bool
 }
 
-func NewContractFunctionParams() *ContractFunctionParams {
-	return &ContractFunctionParams{
+func NewContractFunctionParameters() *ContractFunctionParameters {
+	return &ContractFunctionParameters{
 		function:  NewContractFunctionSelector(""),
 		arguments: []Argument{},
 	}
 }
 
-func (contract *ContractFunctionParams) AddBool(value bool) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddBool(value bool) *ContractFunctionParameters {
 	argument := newArgument()
 
 	if value {
@@ -39,7 +39,7 @@ func (contract *ContractFunctionParams) AddBool(value bool) *ContractFunctionPar
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddFunction(address string, selector ContractFunctionSelector) (*ContractFunctionParams, error) {
+func (contract *ContractFunctionParameters) AddFunction(address string, selector ContractFunctionSelector) (*ContractFunctionParameters, error) {
 	if len(address) != 40 {
 		return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
 	}
@@ -65,7 +65,7 @@ func (contract *ContractFunctionParams) AddFunction(address string, selector Con
 	return contract, nil
 }
 
-func (contract *ContractFunctionParams) AddInt8(value int8) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctionParameters {
 	argument := newArgument()
 
 	argument.value[31] = uint8(value)
@@ -76,7 +76,7 @@ func (contract *ContractFunctionParams) AddInt8(value int8) *ContractFunctionPar
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddInt32(value int32) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunctionParameters {
 	argument := newArgument()
 
 	binary.BigEndian.PutUint32(argument.value[28:32], uint32(value))
@@ -87,7 +87,7 @@ func (contract *ContractFunctionParams) AddInt32(value int32) *ContractFunctionP
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddInt64(value int64) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunctionParameters {
 	argument := newArgument()
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
@@ -98,7 +98,7 @@ func (contract *ContractFunctionParams) AddInt64(value int64) *ContractFunctionP
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddInt256(value []byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddInt256(value []byte) *ContractFunctionParameters {
 	argument := newArgument()
 
 	argument.value = value
@@ -109,7 +109,7 @@ func (contract *ContractFunctionParams) AddInt256(value []byte) *ContractFunctio
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddUint8(value uint8) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddUint8(value uint8) *ContractFunctionParameters {
 	argument := newArgument()
 
 	argument.value[31] = value
@@ -120,7 +120,7 @@ func (contract *ContractFunctionParams) AddUint8(value uint8) *ContractFunctionP
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddUint32(value uint32) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddUint32(value uint32) *ContractFunctionParameters {
 	argument := newArgument()
 
 	binary.BigEndian.PutUint32(argument.value[28:32], value)
@@ -131,7 +131,7 @@ func (contract *ContractFunctionParams) AddUint32(value uint32) *ContractFunctio
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddUint64(value uint64) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddUint64(value uint64) *ContractFunctionParameters {
 	argument := newArgument()
 
 	binary.BigEndian.PutUint64(argument.value[24:32], value)
@@ -142,7 +142,7 @@ func (contract *ContractFunctionParams) AddUint64(value uint64) *ContractFunctio
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddUint256(value []byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddUint256(value []byte) *ContractFunctionParameters {
 	argument := newArgument()
 
 	argument.value = value
@@ -153,7 +153,7 @@ func (contract *ContractFunctionParams) AddUint256(value []byte) *ContractFuncti
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddInt32Array(value []int32) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddInt32Array(value []int32) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -172,7 +172,7 @@ func (contract *ContractFunctionParams) AddInt32Array(value []int32) *ContractFu
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddInt64Array(value []int64) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddInt64Array(value []int64) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -191,7 +191,7 @@ func (contract *ContractFunctionParams) AddInt64Array(value []int64) *ContractFu
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddInt256Array(value [][32]byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddInt256Array(value [][32]byte) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -210,7 +210,7 @@ func (contract *ContractFunctionParams) AddInt256Array(value [][32]byte) *Contra
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddUint32Array(value []uint32) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddUint32Array(value []uint32) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -229,7 +229,7 @@ func (contract *ContractFunctionParams) AddUint32Array(value []uint32) *Contract
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddUint64Array(value []uint64) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddUint64Array(value []uint64) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -248,7 +248,7 @@ func (contract *ContractFunctionParams) AddUint64Array(value []uint64) *Contract
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddUint256Array(value [][32]byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddUint256Array(value [][32]byte) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -267,7 +267,7 @@ func (contract *ContractFunctionParams) AddUint256Array(value [][32]byte) *Contr
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddAddressArray(value []string) (*ContractFunctionParams, error) {
+func (contract *ContractFunctionParameters) AddAddressArray(value []string) (*ContractFunctionParameters, error) {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -295,7 +295,7 @@ func (contract *ContractFunctionParams) AddAddressArray(value []string) (*Contra
 	return contract, nil
 }
 
-func (contract *ContractFunctionParams) AddString(value string) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddString(value string) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -309,7 +309,7 @@ func (contract *ContractFunctionParams) AddString(value string) *ContractFunctio
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddBytes(value []byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddBytes(value []byte) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -322,7 +322,7 @@ func (contract *ContractFunctionParams) AddBytes(value []byte) *ContractFunction
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddBytes32(value [32]byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddBytes32(value [32]byte) *ContractFunctionParameters {
 	argument := newArgument()
 
 	argument.value = value[:]
@@ -333,7 +333,7 @@ func (contract *ContractFunctionParams) AddBytes32(value [32]byte) *ContractFunc
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddAddress(value string) (*ContractFunctionParams, error) {
+func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractFunctionParameters, error) {
 	if len(value) != 40 {
 		return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
 	}
@@ -356,7 +356,7 @@ func (contract *ContractFunctionParams) AddAddress(value string) (*ContractFunct
 	return contract, nil
 }
 
-func (contract *ContractFunctionParams) AddBytesArray(value [][]byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *ContractFunctionParameters {
 	argument := newArgument()
 
 	argument.dynamic = true
@@ -367,7 +367,7 @@ func (contract *ContractFunctionParams) AddBytesArray(value [][]byte) *ContractF
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddBytes32Array(value [][]byte) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -386,7 +386,7 @@ func (contract *ContractFunctionParams) AddBytes32Array(value [][]byte) *Contrac
 	return contract
 }
 
-func (contract *ContractFunctionParams) AddStringArray(value []string) *ContractFunctionParams {
+func (contract *ContractFunctionParameters) AddStringArray(value []string) *ContractFunctionParameters {
 	argument := newArgument()
 	argument.dynamic = true
 
@@ -401,7 +401,7 @@ func (contract *ContractFunctionParams) AddStringArray(value []string) *Contract
 	return contract
 }
 
-func (contract *ContractFunctionParams) build(functionName *string) []byte {
+func (contract *ContractFunctionParameters) build(functionName *string) []byte {
 	length := uint64(0)
 
 	functionOffset := uint64(0)

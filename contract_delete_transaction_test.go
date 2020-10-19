@@ -117,7 +117,7 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 		SetAdminKey(client.GetOperatorKey()).
 		SetGas(2000).
 		SetNodeAccountID(resp.NodeID).
-		SetConstructorParameters(NewContractFunctionParams().AddString("hello from hedera")).
+		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
 		SetMaxTransactionFee(NewHbar(20)).

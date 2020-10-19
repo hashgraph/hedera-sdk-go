@@ -53,12 +53,17 @@ func (query *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQuery
 }
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
-func (query *ContractCallQuery) SetFunction(name string, params *ContractFunctionParams) *ContractCallQuery {
+func (query *ContractCallQuery) SetFunction(name string, params *ContractFunctionParameters) *ContractCallQuery {
 	if params == nil {
-		params = NewContractFunctionParams()
+		params = NewContractFunctionParameters()
 	}
 
 	query.pb.FunctionParameters = params.build(&name)
+	return query
+}
+
+func (query *ContractCallQuery) SetFunctionString(name string) *ContractCallQuery {
+	query.pb.FunctionParameters = []byte(name)
 	return query
 }
 
@@ -75,6 +80,23 @@ func contractCallQuery_getMethod(_ request, channel *channel) method {
 func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
 	if client == nil || client.operator == nil {
 		return ContractFunctionResult{}, errNoClientProvided
+	}
+
+	query.queryPayment = NewHbar(2)
+	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+
+	var cost Hbar
+	if query.queryPayment.tinybar != 0 {
+		cost = query.queryPayment
+	} else {
+		cost = client.maxQueryPayment
+
+		// actualCost := CostQuery()
+	}
+
+	err := query_generatePayments(&query.Query, client, cost)
+	if err != nil {
+		return ContractFunctionResult{}, err
 	}
 
 	resp, err := execute(

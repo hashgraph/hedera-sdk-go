@@ -66,14 +66,14 @@ func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 }
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
-//func (transaction *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
-//	if params == nil {
-//		params = NewContractFunctionParams()
-//	}
-//
-//	transaction.pb.FunctionParameters = params.build(&name)
-//	return transaction
-//}
+func (transaction *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
+	if params == nil {
+		params = NewContractFunctionParameters()
+	}
+
+	transaction.pb.FunctionParameters = params.build(&name)
+	return transaction
+}
 
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file

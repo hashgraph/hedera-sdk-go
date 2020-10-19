@@ -46,39 +46,39 @@ func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
 	return receipt, nil
 }
 
-// // GetRecord queries the network for a record corresponding to the TransactionID's transaction. If the status of the
-// // record's receipt is exceptional an ErrHederaRecordStatus will be returned alongside the record, otherwise, only the
-// // record will be returned. If consensus has not been reached, this function will return a HederaReceiptError with a
-// // status of StatusBusy.
-// func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
-// 	receipt, err := NewTransactionReceiptQuery().
-// 		SetTransactionID(id).
-// 		Execute(client)
+// GetRecord queries the network for a record corresponding to the TransactionID's transaction. If the status of the
+// record's receipt is exceptional an ErrHederaRecordStatus will be returned alongside the record, otherwise, only the
+// record will be returned. If consensus has not been reached, this function will return a HederaReceiptError with a
+// status of StatusBusy.
+func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
+	receipt, err := NewTransactionReceiptQuery().
+		SetTransactionID(id).
+		Execute(client)
 
-// 	if err != nil {
-// 		// something went wrong with the receipt query
-// 		return TransactionRecord{}, err
-// 	}
+	if err != nil {
+		// something went wrong with the receipt query
+		return TransactionRecord{}, err
+	}
 
-// 	if receipt.Status == StatusBusy {
-// 		// Consensus has not been reached.
-// 		return TransactionRecord{}, newErrHederaReceiptStatus(id, receipt.Status)
-// 	}
+	if receipt.Status == StatusBusy {
+		// Consensus has not been reached.
+		return TransactionRecord{}, newErrHederaReceiptStatus(id, receipt.Status)
+	}
 
-// 	record, err := NewTransactionRecordQuery().SetTransactionID(id).Execute(client)
+	record, err := NewTransactionRecordQuery().SetTransactionID(id).Execute(client)
 
-// 	if err != nil {
-// 		// something went wrong with the record query
-// 		return TransactionRecord{}, err
-// 	}
+	if err != nil {
+		// something went wrong with the record query
+		return TransactionRecord{}, err
+	}
 
-// 	if record.Receipt.Status.isExceptional(true) {
-// 		// The receipt status of the record's receipt was exceptional, return the record AND the error
-// 		return record, newErrHederaRecordStatus(id, record.Receipt.Status)
-// 	}
+	if record.Receipt.Status.isExceptional(true) {
+		// The receipt status of the record's receipt was exceptional, return the record AND the error
+		return record, newErrHederaRecordStatus(id, record.Receipt.Status)
+	}
 
-// 	return record, nil
-// }
+	return record, nil
+}
 
 // String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos` format
 func (id TransactionID) String() string {

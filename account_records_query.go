@@ -16,7 +16,7 @@ type AccountRecordsQuery struct {
 // instead of manually creating an instance of the struct.
 func NewAccountRecordsQuery() *AccountRecordsQuery {
 	header := proto.QueryHeader{}
-	query := newQuery(false, &header)
+	query := newQuery(true, &header)
 	pb := proto.CryptoGetAccountRecordsQuery{Header: &header}
 	query.pb.Query = &proto.Query_CryptoGetAccountRecords{
 		CryptoGetAccountRecords: &pb,

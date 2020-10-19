@@ -1,8 +1,6 @@
 package hedera
 
 import (
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -11,18 +9,6 @@ import (
 type ContractInfoQuery struct {
 	Query
 	pb *proto.ContractGetInfoQuery
-}
-
-// ContractInfo is the information about the contract instance returned by a ContractInfoQuery
-type ContractInfo struct {
-	AccountID         AccountID
-	ContractID        ContractID
-	ContractAccountID string
-	AdminKey          PublicKey
-	ExpirationTime    time.Time
-	AutoRenewPeriod   time.Duration
-	Storage           uint64
-	ContractMemo      string
 }
 
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
@@ -97,24 +83,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	adminKey, err := publicKeyFromProtobuf(resp.query.GetContractGetInfo().GetContractInfo().GetAdminKey())
-
-	if err != nil {
-		return ContractInfo{}, err
-	}
-
-	return ContractInfo{
-		AccountID:         accountIDFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.AccountID),
-		ContractID:        contractIDFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.ContractID),
-		ContractAccountID: resp.query.GetContractGetInfo().ContractInfo.ContractAccountID,
-		AdminKey: PublicKey{
-			keyData: adminKey.toProtoKey().GetEd25519(),
-		},
-		ExpirationTime:  timeFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.ExpirationTime),
-		AutoRenewPeriod: durationFromProtobuf(resp.query.GetContractGetInfo().ContractInfo.AutoRenewPeriod),
-		Storage:         uint64(resp.query.GetContractGetInfo().ContractInfo.Storage),
-		ContractMemo:    resp.query.GetContractGetInfo().ContractInfo.Memo,
-	}, nil
+	return contractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

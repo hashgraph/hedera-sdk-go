@@ -21,10 +21,15 @@ func newExchangeRate(hbars int32, cents int32, expirationTime int64) *ExchangeRa
 }
 
 func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
+	var expirationTime *proto.TimestampSeconds
+	if protoExchange.ExpirationTime != nil{
+		expirationTime = protoExchange.ExpirationTime
+	}
+
 	return ExchangeRate{
 		protoExchange.HbarEquiv,
 		protoExchange.CentEquiv,
-		protoExchange.ExpirationTime,
+		expirationTime,
 	}
 }
 

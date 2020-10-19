@@ -75,7 +75,7 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
 		SetGas(2000).
-		SetConstructorParameters(NewContractFunctionParams().AddString("hello from hedera")).
+		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
 		SetMaxTransactionFee(NewHbar(20)).

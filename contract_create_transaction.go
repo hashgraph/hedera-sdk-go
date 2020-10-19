@@ -90,7 +90,7 @@ func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.ProxyAccountID)
 }
 
-func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParams) *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
 	transaction.pb.ConstructorParameters = params.build(nil)
 	return transaction
 }
