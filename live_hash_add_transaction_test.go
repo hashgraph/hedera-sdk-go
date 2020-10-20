@@ -13,7 +13,30 @@ func TestSerializeLiveHashAddTransaction(t *testing.T) {
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 	assert.NoError(t, err)
 
+	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
+
+	if err != nil {
+		client = ClientForTestnet()
+	}
+
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
+	if err != nil {
+		println("Decode Failed.")
+	}
+
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		operatorKey, err := PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
+
 	if err != nil {
 		println("Decode Failed.")
 	}
@@ -22,7 +45,7 @@ func TestSerializeLiveHashAddTransaction(t *testing.T) {
 		SetAccountID(AccountID{Account: 3}).
 		SetDuration((3000 * 10) * time.Millisecond).
 		SetHash(_hash).
-		Freeze()
+		FreezeWith(client)
 
 	assert.NoError(t, err)
 
@@ -71,7 +94,6 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-
 	println("NodeID", resp.NodeID.String())
 	resp, err = NewLiveHashAddTransaction().
 		SetAccountID(accountID).
@@ -85,4 +107,18 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 
 	println("TransactionID", resp.TransactionID.String())
 	println("NodeID", resp.NodeID.String())
+
+	_, err = NewLiveHashDeleteTransaction().
+		SetAccountID(accountID).
+		SetNodeAccountID(resp.NodeID).
+		SetHash(_hash).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_,err = NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetNodeAccountID(resp.NodeID).
+		SetTransferAccountID(client.GetOperatorID()).
+		Execute(client)
+	assert.NoError(t, err)
 }
