@@ -51,7 +51,7 @@ func TestNewAccountBalanceQuery(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	println("Success", query.String())
+	println("Success", query.Hbar.String())
 }
 
 func TestNewAccountBalanceQuery_ForContract(t *testing.T) {
@@ -96,7 +96,7 @@ func TestNewAccountBalanceQuery_ForContract(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	println("Success", query.String())
+	println("Success", query.Hbar.String())
 }
 
 func TestAccountBalanceQuery_Execute(t *testing.T) {

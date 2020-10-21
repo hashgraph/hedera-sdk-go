@@ -201,7 +201,7 @@ func (transaction *TokenCreateTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.TokenID) {
+	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorKey(),
 			client.operator.signer,

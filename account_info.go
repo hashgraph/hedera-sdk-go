@@ -21,6 +21,7 @@ type AccountInfo struct {
 	ReceiverSigRequired            bool
 	ExpirationTime                 time.Time
 	AutoRenewPeriod                time.Duration
+	TokenRelationships             []*TokenRelationship
 }
 
 func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {

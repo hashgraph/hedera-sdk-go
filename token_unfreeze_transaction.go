@@ -76,9 +76,9 @@ func (transaction *TokenUnfreezeTransaction) SignWithOperator(
 		return nil, errClientOperatorSigning
 	}
 
-	if !transaction.IsFrozen() {
-		transaction.UnfreezeWith(client)
-	}
+	//if !transaction.IsFrozen() {
+	//	transaction.UnfreezeWith(client)
+	//}
 
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
@@ -89,9 +89,9 @@ func (transaction *TokenUnfreezeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenUnfreezeTransaction {
-	if !transaction.IsFrozen() {
-		transaction.Unfreeze()
-	}
+	//if !transaction.IsFrozen() {
+	//	transaction.Unfreeze()
+	//}
 
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
@@ -119,7 +119,7 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.TokenID) {
+	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorKey(),
 			client.operator.signer,
@@ -174,7 +174,7 @@ func (transaction *TokenUnfreezeTransaction) UnfreezeWith(client *Client) (*Toke
 		return transaction, nil
 	}
 
-	return transaction, transaction_unfreezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client)
 }
 
 func (transaction *TokenUnfreezeTransaction) GetMaxTransactionFee() Hbar {

@@ -50,7 +50,7 @@ func (transaction *TokenRevokeKycTransaction) SetAccountID(accountID AccountID) 
 
 func tokenRevokeKycTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getToken().RevokeKycToTokenAccount,
+		transaction: channel.getToken().RevokeKycFromTokenAccount,
 	}
 }
 
@@ -118,7 +118,7 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.TokenID) {
+	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorKey(),
 			client.operator.signer,
