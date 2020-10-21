@@ -208,12 +208,12 @@ func (transaction *TopicDeleteTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *TopicDeleteTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TopicDeleteTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this TopicDeleteTransaction.
-func (transaction *TopicDeleteTransaction) SetNodeAccountID(nodeID AccountID) *TopicDeleteTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TopicDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicDeleteTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

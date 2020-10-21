@@ -29,27 +29,30 @@ func TestAccountRecordQuery(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	response, err := NewAccountCreateTransaction().
+	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := response.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	account := *receipt.AccountID
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	_, err = NewCryptoTransferTransaction().
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountID(nodeIDs).
 		AddRecipient(account, NewHbar(1)).
 		AddSender(client.GetOperatorID(), NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
 	recordsQuery, err := NewAccountRecordsQuery().
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetAccountID(client.GetOperatorID()).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)

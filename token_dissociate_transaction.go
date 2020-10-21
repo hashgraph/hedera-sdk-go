@@ -213,12 +213,12 @@ func (transaction *TokenDissociateTransaction) SetTransactionID(transactionID Tr
 	return transaction
 }
 
-func (transaction *TokenDissociateTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TokenDissociateTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenDissociateTransaction.
-func (transaction *TokenDissociateTransaction) SetNodeAccountID(nodeID AccountID) *TokenDissociateTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TokenDissociateTransaction) SetNodeAccountID(nodeID []AccountID) *TokenDissociateTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

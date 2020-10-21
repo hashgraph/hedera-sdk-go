@@ -70,9 +70,12 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NoError(t, err)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	info, err := NewTopicInfoQuery().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -86,7 +89,7 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 
 	resp, err = NewTopicUpdateTransaction().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetTopicMemo(newTopicMemo).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
@@ -97,7 +100,7 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 
 	info, err = NewTopicInfoQuery().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -107,10 +110,13 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorKey().String(), info.AdminKey.String())
 
-	_, err = NewTopicDeleteTransaction().
+	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

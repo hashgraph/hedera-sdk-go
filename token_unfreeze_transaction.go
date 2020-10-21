@@ -218,12 +218,12 @@ func (transaction *TokenUnfreezeTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-func (transaction *TokenUnfreezeTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TokenUnfreezeTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenUnfreezeTransaction.
-func (transaction *TokenUnfreezeTransaction) SetNodeAccountID(nodeID AccountID) *TokenUnfreezeTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TokenUnfreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUnfreezeTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

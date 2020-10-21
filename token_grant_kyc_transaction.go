@@ -217,12 +217,12 @@ func (transaction *TokenGrantKycTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-func (transaction *TokenGrantKycTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TokenGrantKycTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenGrantKycTransaction.
-func (transaction *TokenGrantKycTransaction) SetNodeAccountID(nodeID AccountID) *TokenGrantKycTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenGrantKycTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

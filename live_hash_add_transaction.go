@@ -237,12 +237,12 @@ func (transaction *LiveHashAddTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *LiveHashAddTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *LiveHashAddTransaction) GetNodeAccounntIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this LiveHashAddTransaction.
-func (transaction *LiveHashAddTransaction) SetNodeAccountID(nodeID AccountID) *LiveHashAddTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

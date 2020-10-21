@@ -54,22 +54,13 @@ func (query *TransactionReceiptQuery) SetTransactionID(transactionID Transaction
 	return query
 }
 
-func (query *TransactionReceiptQuery) SetNodeAccountID(accountID AccountID) *TransactionReceiptQuery {
-	query.paymentTransactionNodeIDs = make([]AccountID, 0)
-	query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, accountID)
+func (query *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionReceiptQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *TransactionReceiptQuery) GetNodeAccountId(client *Client) AccountID {
-	if query.paymentTransactionNodeIDs != nil {
-		return query.paymentTransactionNodeIDs[query.nextPaymentTransactionIndex]
-	}
-
-	if query.nodeID.isZero() {
-		return query.nodeID
-	} else {
-		return client.getNextNode()
-	}
+func (query *TransactionReceiptQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }
 
 func (query *TransactionReceiptQuery) SetQueryPayment(queryPayment Hbar) *TransactionReceiptQuery {
@@ -95,7 +86,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		transactionReceiptQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		transactionReceiptQuery_getMethod,
 		transactionReceiptQuery_mapResponseStatus,
 		query_mapResponse,

@@ -230,12 +230,12 @@ func (transaction *TokenAssociateTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-func (transaction *TokenAssociateTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TokenAssociateTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenAssociateTransaction.
-func (transaction *TokenAssociateTransaction) SetNodeAccountID(nodeID AccountID) *TokenAssociateTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TokenAssociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenAssociateTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

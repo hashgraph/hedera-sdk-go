@@ -102,7 +102,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		contractCallQuery_getMethod,
 		contractCallQuery_mapResponseStatus,
 		query_mapResponse,
@@ -127,11 +127,11 @@ func (query *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCal
 	return query
 }
 
-func (query *ContractCallQuery) SetNodeAccountID(accountID AccountID) *ContractCallQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *ContractCallQuery) SetNodeAccountID(accountID []AccountID) *ContractCallQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *ContractCallQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *ContractCallQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

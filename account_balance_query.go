@@ -76,7 +76,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		accountBalanceQuery_getMethod,
 		accountBalanceQuery_mapResponseStatus,
 		query_mapResponse,
@@ -109,11 +109,11 @@ func (query *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBa
 	return query
 }
 
-func (query *AccountBalanceQuery) SetNodeAccountID(accountID AccountID) *AccountBalanceQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *AccountBalanceQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *AccountBalanceQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *AccountBalanceQuery) GetNodeAccountIds() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

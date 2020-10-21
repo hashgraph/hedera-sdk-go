@@ -69,8 +69,12 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
+		SetNodeAccountIDs(nodeIDs).
 		SetGas(2000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -85,17 +89,23 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	contractID := *receipt.ContractID
 	assert.NotNil(t, contractID)
 
-	_, err = NewContractDeleteTransaction().
+	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = NewFileDeleteTransaction().
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

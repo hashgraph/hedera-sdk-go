@@ -232,12 +232,12 @@ func (transaction *SystemDeleteTransaction) SetTransactionID(transactionID Trans
 	return transaction
 }
 
-func (transaction *SystemDeleteTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *SystemDeleteTransaction) GetNodeAccounntIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this SystemDeleteTransaction.
-func (transaction *SystemDeleteTransaction) SetNodeAccountID(nodeID AccountID) *SystemDeleteTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *SystemDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemDeleteTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

@@ -35,38 +35,43 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 
 	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
-	response, err := NewAccountCreateTransaction().
+	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := response.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
 	assert.NoError(t, err)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	balance, err := NewAccountBalanceQuery().
 		SetAccountID(accountID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 	assert.Equal(t, newBalance, balance.Hbars)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
+		SetNodeAccountIDs(nodeIDs).
 		SetTransferAccountID(client.GetOperatorID()).
 		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	response, err = tx.
+	resp, err = tx.
 		Sign(newKey).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = response.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

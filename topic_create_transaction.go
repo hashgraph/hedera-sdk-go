@@ -266,12 +266,12 @@ func (transaction *TopicCreateTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *TopicCreateTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TopicCreateTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this TopicCreateTransaction.
-func (transaction *TopicCreateTransaction) SetNodeAccountID(nodeID AccountID) *TopicCreateTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TopicCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicCreateTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

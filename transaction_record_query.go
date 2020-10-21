@@ -53,22 +53,13 @@ func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionI
 	return query
 }
 
-func (query *TransactionRecordQuery) SetNodeAccountID(accountID AccountID) *TransactionRecordQuery {
-	query.paymentTransactionNodeIDs = make([]AccountID, 0)
-	query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, accountID)
+func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *TransactionRecordQuery) GetNodeAccountId(client *Client) AccountID {
-	if query.paymentTransactionNodeIDs != nil {
-		return query.paymentTransactionNodeIDs[query.nextPaymentTransactionIndex]
-	}
-
-	if query.nodeID.isZero() {
-		return query.nodeID
-	} else {
-		return client.getNextNode()
-	}
+func (query *TransactionRecordQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }
 
 func (query *TransactionRecordQuery) SetQueryPayment(queryPayment Hbar) *TransactionRecordQuery {
@@ -121,7 +112,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		transactionRecordQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		transactionRecordQuery_getMethod,
 		transactionRecordQuery_mapResponseStatus,
 		query_mapResponse,

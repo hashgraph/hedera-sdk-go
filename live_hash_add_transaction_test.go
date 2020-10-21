@@ -86,7 +86,6 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(NewHbar(1)).
-		SetNodeAccountID(AccountID{Account: 3}).
 		Execute(client)
 
 	receipt, err := resp.GetReceipt(client)
@@ -94,27 +93,36 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	resp, err = NewLiveHashAddTransaction().
 		SetAccountID(accountID).
 		SetDuration(24 * 30 * time.Hour).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetHash(_hash).
 		SetKeys(newKey.PublicKey()).
 		Execute(client)
 
 	assert.Error(t, err)
 
-	_, err = NewLiveHashDeleteTransaction().
+	resp, err = NewLiveHashDeleteTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetHash(_hash).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = NewAccountDeleteTransaction().
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetTransferAccountID(client.GetOperatorID()).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

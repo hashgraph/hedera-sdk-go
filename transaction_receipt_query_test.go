@@ -37,7 +37,6 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
-		SetNodeAccountID(AccountID{Account: 3}).
 		FreezeWith(client)
 	assert.NoError(t, err)
 
@@ -56,8 +55,11 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 	accountID := *record.Receipt.AccountID
 	assert.NotNil(t, accountID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	transcation, err := NewAccountDeleteTransaction().
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorID()).
 		SetMaxTransactionFee(NewHbar(1)).

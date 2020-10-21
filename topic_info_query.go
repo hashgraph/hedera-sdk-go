@@ -72,7 +72,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		topicInfoQuery_getMethod,
 		topicInfoQuery_mapResponseStatus,
 		query_mapResponse,
@@ -97,11 +97,11 @@ func (query *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery
 	return query
 }
 
-func (query *TopicInfoQuery) SetNodeAccountID(accountID AccountID) *TopicInfoQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *TopicInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TopicInfoQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *TopicInfoQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *TopicInfoQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

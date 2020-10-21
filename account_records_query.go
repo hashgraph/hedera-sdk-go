@@ -76,7 +76,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		accountRecordsQuery_getMethod,
 		accountRecordsQuery_mapResponseStatus,
 		query_mapResponse,
@@ -105,11 +105,11 @@ func (query *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRe
 	return query
 }
 
-func (query *AccountRecordsQuery) SetNodeAccountID(accountID AccountID) *AccountRecordsQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *AccountRecordsQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *AccountRecordsQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *AccountRecordsQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

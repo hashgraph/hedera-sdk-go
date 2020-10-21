@@ -42,9 +42,12 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	info, err := NewFileInfoQuery().
 		SetFileID(*fileID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountID(nodeIDs).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -55,6 +58,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 

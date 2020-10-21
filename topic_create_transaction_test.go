@@ -68,9 +68,12 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	info, err := NewTopicInfoQuery().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -80,10 +83,13 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorKey().String(), info.AdminKey.String())
 
-	_, err = NewTopicDeleteTransaction().
+	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

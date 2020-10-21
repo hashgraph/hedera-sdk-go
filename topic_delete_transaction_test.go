@@ -70,16 +70,19 @@ func TestConsensusTopicDeleteTransaction_Execute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	_, err = NewTopicInfoQuery().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.NoError(t, err)
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -89,10 +92,13 @@ func TestConsensusTopicDeleteTransaction_Execute(t *testing.T) {
 
 	_, err = NewTopicInfoQuery().
 		SetTopicID(topicID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.Error(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 
 	status := err.(ErrHederaPreCheckStatus).Status
 	assert.Equal(t, StatusInvalidTopicID, status)

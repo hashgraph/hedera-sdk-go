@@ -69,10 +69,13 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 	accountID := receipt.AccountID
 	assert.NoError(t, err)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(*accountID).
 		SetTransferAccountID(client.GetOperatorID()).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(*accountID)).
 		FreezeWith(client)

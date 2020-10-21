@@ -1,6 +1,9 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/proto"
+import (
+	"fmt"
+	"github.com/hashgraph/hedera-sdk-go/proto"
+)
 
 type TokenID struct {
 	Shard uint64
@@ -22,4 +25,8 @@ func (id *TokenID) toProtobuf() *proto.TokenID {
 		RealmNum: int64(id.Realm),
 		TokenNum: int64(id.Token),
 	}
+}
+
+func (id TokenID) String() string {
+	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
 }

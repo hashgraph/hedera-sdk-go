@@ -225,12 +225,12 @@ func (transaction *FreezeTransaction) SetTransactionID(transactionID Transaction
 	return transaction
 }
 
-func (transaction *FreezeTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *FreezeTransaction) GetNodeAccounntIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this FreezeTransaction.
-func (transaction *FreezeTransaction) SetNodeAccountID(nodeID AccountID) *FreezeTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

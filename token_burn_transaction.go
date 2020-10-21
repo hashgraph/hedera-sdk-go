@@ -218,12 +218,12 @@ func (transaction *TokenBurnTransaction) SetTransactionID(transactionID Transact
 	return transaction
 }
 
-func (transaction *TokenBurnTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TokenBurnTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenBurnTransaction.
-func (transaction *TokenBurnTransaction) SetNodeAccountID(nodeID AccountID) *TokenBurnTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TokenBurnTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenBurnTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

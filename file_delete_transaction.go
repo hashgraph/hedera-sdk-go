@@ -204,12 +204,12 @@ func (transaction *FileDeleteTransaction) SetTransactionID(transactionID Transac
 	return transaction
 }
 
-func (transaction *FileDeleteTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *FileDeleteTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this FileDeleteTransaction.
-func (transaction *FileDeleteTransaction) SetNodeAccountID(nodeID AccountID) *FileDeleteTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

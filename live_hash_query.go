@@ -81,7 +81,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		liveHashQuery_getMethod,
 		liveHashQuery_mapResponseStatus,
 		query_mapResponse,
@@ -106,11 +106,11 @@ func (query *LiveHashQuery) SetQueryPayment(paymentAmount Hbar) *LiveHashQuery {
 	return query
 }
 
-func (query *LiveHashQuery) SetNodeAccountID(accountID AccountID) *LiveHashQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *LiveHashQuery) SetNodeAccountIDs(accountID []AccountID) *LiveHashQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *LiveHashQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *LiveHashQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

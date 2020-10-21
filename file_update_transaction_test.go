@@ -68,9 +68,12 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 
 	var newContents = []byte("Good Night, World")
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	resp, err = NewFileUpdateTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetContents(newContents).
 		Execute(client)
 
@@ -81,7 +84,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 
 	contents, err := NewFileContentsQuery().
 		SetFileID(fileID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -89,7 +92,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 

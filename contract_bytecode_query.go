@@ -72,7 +72,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		contractBytecodeQuery_getMethod,
 		contractBytecodeQuery_mapResponseStatus,
 		query_mapResponse,
@@ -97,11 +97,11 @@ func (query *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *Contrac
 	return query
 }
 
-func (query *ContractBytecodeQuery) SetNodeAccountID(accountID AccountID) *ContractBytecodeQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *ContractBytecodeQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *ContractBytecodeQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *ContractBytecodeQuery) GetNodeAccountId() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

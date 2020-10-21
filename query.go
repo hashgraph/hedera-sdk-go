@@ -11,7 +11,7 @@ type Query struct {
 	pbHeader *proto.QueryHeader
 
 	paymentTransactionID        TransactionID
-	nodeID                      AccountID
+	nodeIDs                     []AccountID
 	maxQueryPayment             Hbar
 	queryPayment                Hbar
 	nextPaymentTransactionIndex int
@@ -37,22 +37,22 @@ func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
 	}
 }
 
-func (query *Query) SetNodeAccountID(accountID AccountID) *Query {
-	query.nodeID = accountID
+func (query *Query) SetNodeAccountIDs(accountID []AccountID) *Query {
+	query.nodeIDs = append(query.nodeIDs, accountID...)
 	return query
 }
 
-func (query *Query) GetNodeAccountId() AccountID {
-	return query.nodeID
+func (query *Query) GetNodeAccountIDs() []AccountID {
+	return query.nodeIDs
 }
 
-func query_getNodeId(request request, client *Client) AccountID {
+func query_getNodeAccountID(request request, client *Client) AccountID {
 	if len(request.query.paymentTransactionNodeIDs) > 0 {
 		return request.query.paymentTransactionNodeIDs[request.query.nextPaymentTransactionIndex]
 	}
 
-	if request.query.nodeID.isZero() {
-		return request.query.nodeID
+	if request.query.nodeIDs == nil {
+		return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 	} else {
 		return client.getNextNode()
 	}

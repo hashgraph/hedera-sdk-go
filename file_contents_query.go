@@ -74,7 +74,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		fileContentsQuery_getMethod,
 		fileContentsQuery_mapResponseStatus,
 		query_mapResponse,
@@ -95,11 +95,11 @@ func (query *FileContentsQuery) SetQueryPayment(paymentAmount Hbar) *FileContent
 	return query
 }
 
-func (query *FileContentsQuery) SetNodeAccountID(accountID AccountID) *FileContentsQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *FileContentsQuery) SetNodeAccountIDs(accountID []AccountID) *FileContentsQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *FileContentsQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *FileContentsQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

@@ -28,22 +28,25 @@ func TestContractBytecodeQuery(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	response, err := NewFileCreateTransaction().
+	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorKey()).
 		SetContents(smartContractBytecode).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := response.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetGas(2000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
@@ -60,7 +63,7 @@ func TestContractBytecodeQuery(t *testing.T) {
 	contractID := *contractReceipt.ContractID
 
 	bytecode, err := NewContractBytecodeQuery().
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(2)).
 		Execute(client)
@@ -68,15 +71,21 @@ func TestContractBytecodeQuery(t *testing.T) {
 
 	assert.Equal(t, len(bytecode), 798)
 
-	_, err = NewContractDeleteTransaction().
+	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = NewFileDeleteTransaction().
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

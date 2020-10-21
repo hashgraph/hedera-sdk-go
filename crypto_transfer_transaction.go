@@ -211,12 +211,12 @@ func (transaction *CryptoTransferTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-func (transaction *CryptoTransferTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *CryptoTransferTransaction) GetNodeAccounntIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this CryptoTransferTransaction.
-func (transaction *CryptoTransferTransaction) SetNodeAccountID(nodeID AccountID) *CryptoTransferTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *CryptoTransferTransaction) SetNodeAccountID(nodeID []AccountID) *CryptoTransferTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

@@ -220,12 +220,12 @@ func (transaction *AccountDeleteTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-func (transaction *AccountDeleteTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *AccountDeleteTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
-// SetNodeAccountID sets the node AccountID for this AccountDeleteTransaction.
-func (transaction *AccountDeleteTransaction) SetNodeAccountID(nodeID AccountID) *AccountDeleteTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+// SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
+func (transaction *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

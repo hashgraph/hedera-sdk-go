@@ -38,30 +38,13 @@ func (query *AccountInfoQuery) SetAccountID(accountID AccountID) *AccountInfoQue
 	return query
 }
 
-func (query *AccountInfoQuery) GetAccountID() AccountID {
-	if query.pb.AccountID != nil {
-		return AccountID{}
-	} else {
-		return accountIDFromProtobuf(query.pb.AccountID)
-	}
-}
-
-func (query *AccountInfoQuery) SetNodeAccountID(accountID AccountID) *AccountInfoQuery {
-	query.paymentTransactionNodeIDs = make([]AccountID, 0)
-	query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, accountID)
+func (query *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *AccountInfoQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *AccountInfoQuery) GetNodeAccountId(client *Client) AccountID {
-	if query.paymentTransactionNodeIDs != nil {
-		return query.paymentTransactionNodeIDs[query.nextPaymentTransactionIndex]
-	}
-
-	if query.nodeID.isZero() {
-		return query.nodeID
-	} else {
-		return client.getNextNode()
-	}
+func (query *AccountInfoQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }
 
 func (query *AccountInfoQuery) SetQueryPayment(queryPayment Hbar) *AccountInfoQuery {
@@ -104,7 +87,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		accountInfoQuery_getMethod,
 		accountInfoQuery_mapResponseStatus,
 		query_mapResponse,

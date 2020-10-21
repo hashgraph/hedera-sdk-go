@@ -61,7 +61,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		networkVersionInfoQuery_getMethod,
 		networkVersionInfoQuery_mapResponseStatus,
 		query_mapResponse,
@@ -86,11 +86,11 @@ func (query *NetworkVersionInfoQuery) SetQueryPayment(paymentAmount Hbar) *Netwo
 	return query
 }
 
-func (query *NetworkVersionInfoQuery) SetNodeAccountID(accountID AccountID) *NetworkVersionInfoQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *NetworkVersionInfoQuery) SetNodeAccountIDs(accountID []AccountID) *NetworkVersionInfoQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *NetworkVersionInfoQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *NetworkVersionInfoQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

@@ -41,9 +41,12 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetGas(2000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
@@ -60,7 +63,7 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 	contractID := *contractReceipt.ContractID
 
 	result, err := NewContractCallQuery().
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountID(nodeIDs).
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(1)).
 		SetGas(2000).
@@ -74,7 +77,7 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetGas(10000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		SetMaxTransactionFee(NewHbar(5)).
@@ -86,7 +89,7 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 
 	result, err = NewContractCallQuery().
 		SetContractID(contractID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountID(nodeIDs).
 		SetQueryPayment(NewHbar(5)).
 		SetGas(2000).
 		SetFunction("getMessage", nil).
@@ -97,7 +100,7 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -106,7 +109,7 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 

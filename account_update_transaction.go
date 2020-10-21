@@ -248,12 +248,12 @@ func (transaction *AccountUpdateTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-func (transaction *AccountUpdateTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *AccountUpdateTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this AccountUpdateTransaction.
-func (transaction *AccountUpdateTransaction) SetNodeAccountID(nodeID AccountID) *AccountUpdateTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

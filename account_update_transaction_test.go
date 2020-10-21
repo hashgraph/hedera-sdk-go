@@ -72,9 +72,12 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	accountID := *receipt.AccountID
 	assert.NoError(t, err)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	tx, err := NewAccountUpdateTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetKey(newKey2.PublicKey()).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
@@ -92,7 +95,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -102,7 +105,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorID()).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 

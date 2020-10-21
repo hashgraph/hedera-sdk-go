@@ -48,8 +48,7 @@ func kycStatusFromProtobuf(pb *proto.TokenKycStatus) *bool {
 	return kycStatus
 }
 
-func tokenInfoFromProtobuf(tokenInfoResponse *proto.TokenGetInfoResponse) TokenInfo {
-	tokenInfo := tokenInfoResponse.TokenInfo
+func tokenInfoFromProtobuf(tokenInfo *proto.TokenInfo) TokenInfo {
 	return TokenInfo{
 		TokenID:     tokenIDFromProtobuf(tokenInfo.TokenId),
 		Name:        tokenInfo.Name,

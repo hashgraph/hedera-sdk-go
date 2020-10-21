@@ -110,10 +110,13 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
 		SetGas(2000).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
@@ -129,7 +132,7 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -139,7 +142,7 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 
 	_, err = NewContractInfoQuery().
 		SetContractID(contractID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxQueryPayment(NewHbar(2)).
 		Execute(client)
 	// an error should occur if the contract was properly deleted
@@ -148,10 +151,13 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 	status := err.(ErrHederaPreCheckStatus).Status
 	assert.Equal(t, status, StatusContractDeleted)
 
-	_, err = NewFileDeleteTransaction().
+	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

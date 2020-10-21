@@ -217,12 +217,12 @@ func (transaction *TokenRevokeKycTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-func (transaction *TokenRevokeKycTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TokenRevokeKycTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenRevokeKycTransaction.
-func (transaction *TokenRevokeKycTransaction) SetNodeAccountID(nodeID AccountID) *TokenRevokeKycTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TokenRevokeKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenRevokeKycTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

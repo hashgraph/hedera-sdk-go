@@ -42,9 +42,13 @@ func TestContractRecordsQuery_Execute(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
 		SetGas(2000).
+		SetNodeAccountIDs(nodeIDs).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractInfoQuery_Execute").
@@ -60,22 +64,30 @@ func TestContractRecordsQuery_Execute(t *testing.T) {
 
 	records, err := NewContractRecordsQuery().
 		SetContractID(contractID).
-		SetNodeAccountID(resp.NodeID).
+		SetNodeAccountIDs(nodeIDs).
 		SetQueryPayment(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
 	assert.True(t, len(records) == 1)
 
-	_, err = NewContractDeleteTransaction().
+	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = NewFileDeleteTransaction().
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
+		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

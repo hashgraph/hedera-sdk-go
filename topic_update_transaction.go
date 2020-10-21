@@ -303,12 +303,12 @@ func (transaction *TopicUpdateTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *TopicUpdateTransaction) GetNodeID() AccountID {
-	return transaction.Transaction.GetNodeID()
+func (transaction *TopicUpdateTransaction) GetNodeAccountIDs() []AccountID {
+	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this TopicUpdateTransaction.
-func (transaction *TopicUpdateTransaction) SetNodeAccountID(nodeID AccountID) *TopicUpdateTransaction {
-	transaction.Transaction.SetNodeAccountID(nodeID)
+func (transaction *TopicUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicUpdateTransaction {
+	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

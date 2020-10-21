@@ -74,7 +74,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		query_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
-		query_getNodeId,
+		query_getNodeAccountID,
 		accountStakersQuery_getMethod,
 		accountStakersQuery_mapResponseStatus,
 		query_mapResponse,
@@ -108,11 +108,11 @@ func (query *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountSt
 	return query
 }
 
-func (query *AccountStakersQuery) SetNodeAccountID(accountID AccountID) *AccountStakersQuery {
-	query.Query.SetNodeAccountID(accountID)
+func (query *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *AccountStakersQuery {
+	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
-func (query *AccountStakersQuery) GetNodeAccountId() AccountID {
-	return query.Query.GetNodeAccountId()
+func (query *AccountStakersQuery) GetNodeAccountIDs() []AccountID {
+	return query.Query.GetNodeAccountIDs()
 }

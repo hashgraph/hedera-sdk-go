@@ -302,17 +302,19 @@ func (transaction *Transaction) SetTransactionID(transactionID TransactionID) *T
 	return transaction
 }
 
-func (transaction *Transaction) GetNodeID() AccountID {
-	if transaction.pbBody.NodeAccountID != nil {
-		return accountIDFromProtobuf(transaction.pbBody.NodeAccountID)
+func (transaction *Transaction) GetNodeAccountIDs() []AccountID {
+	if transaction.nodeIDs != nil {
+		return transaction.nodeIDs
 	} else {
-		return AccountID{}
+		return make([]AccountID, 0)
 	}
 }
 
 // SetNodeAccountID sets the node AccountID for this Transaction.
-func (transaction *Transaction) SetNodeAccountID(nodeID AccountID) *Transaction {
-	transaction.pbBody.NodeAccountID = nodeID.toProtobuf()
-	transaction.nodeIDs = append(transaction.nodeIDs, nodeID)
+func (transaction *Transaction) SetNodeAccountIDs(nodeID []AccountID) *Transaction {
+	if transaction.nodeIDs == nil {
+		transaction.nodeIDs = make([]AccountID, 0)
+	}
+	transaction.nodeIDs = append(transaction.nodeIDs, nodeID...)
 	return transaction
 }
