@@ -1,6 +1,8 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/proto"
+import (
+	"github.com/hashgraph/hedera-sdk-go/proto"
+)
 
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller
 // and faster reply than AccountInfoQuery, which returns the balance plus additional information.
@@ -61,9 +63,9 @@ func accountBalanceQuery_getMethod(_ request, channel *channel) method {
 	}
 }
 
-func (query *AccountBalanceQuery) Execute(client *Client) (Hbar, error) {
+func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
+		return AccountBalance{}, errNoClientProvided
 	}
 
 	resp, err := execute(
@@ -80,11 +82,38 @@ func (query *AccountBalanceQuery) Execute(client *Client) (Hbar, error) {
 		query_mapResponse,
 	)
 
+	//for _, id := range transaction.nodeIDs {
+	//	transaction.pbBody.NodeAccountID = id.toProtobuf()
+	//	bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+	//	if err != nil {
+	//		// This should be unreachable
+	//		// From the documentation this appears to only be possible if there are missing proto types
+	//		panic(err)
+	//	}
+	//
+	//	sigmap := proto.SignatureMap{
+	//		SigPair: make([]*proto.SignaturePair, 0),
+	//	}
+	//	transaction.signatures = append(transaction.signatures, &sigmap)
+	//	transaction.transactions = append(transaction.transactions, &proto.Transaction{
+	//		BodyBytes: bodyBytes,
+	//		SigMap:    &sigmap,
+	//	})
+	//}
+
 	if err != nil {
-		return Hbar{}, err
+		return AccountBalance{}, err
 	}
 
-	return HbarFromTinybar(int64(resp.query.GetCryptogetAccountBalance().Balance)), err
+	var tokens []TokenBalance
+	for i, token := range resp.query.GetCryptogetAccountBalance().TokenBalances {
+		tokens[i] = tokenBalancesFromProtobuf(token)
+	}
+
+	return AccountBalance{
+		Hbar:  HbarFromTinybar(int64(resp.query.GetCryptogetAccountBalance().Balance)),
+		Token: &tokens,
+	}, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
