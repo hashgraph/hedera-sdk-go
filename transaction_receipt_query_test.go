@@ -45,22 +45,18 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 
 	resp, err := tx.Execute(client)
 
-	println("NodeID", resp.NodeID.String())
-
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
-	println("AccountID", receipt.AccountID.String())
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 
 	record, err := resp.GetRecord(client)
-	println("Record", record.TransactionID.String())
+	assert.NoError(t, err)
 
 	accountID := *record.Receipt.AccountID
-	println("AccountID2", accountID)
-
 	assert.NotNil(t, accountID)
 
-	delete, err := NewAccountDeleteTransaction().
+	transcation, err := NewAccountDeleteTransaction().
 		SetNodeAccountID(resp.NodeID).
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorID()).
@@ -68,11 +64,11 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	respdelete, err := delete.
+	resp, err = transcation.
 		Sign(newKey).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = respdelete.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

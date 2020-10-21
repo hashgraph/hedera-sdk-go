@@ -12,3 +12,19 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 		SetNodeAccountID(response.NodeID).
 		Execute(client)
 }
+
+func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord, error) {
+	_, err := NewTransactionReceiptQuery().
+		SetTransactionID(response.TransactionID).
+		SetNodeAccountID(response.NodeID).
+		Execute(client)
+
+	if err != nil {
+		return TransactionRecord{}, err
+	}
+
+	return NewTransactionRecordQuery().
+		SetTransactionID(response.TransactionID).
+		SetNodeAccountID(response.NodeID).
+		Execute(client)
+}

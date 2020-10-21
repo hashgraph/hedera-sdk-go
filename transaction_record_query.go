@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -14,6 +13,9 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	header := proto.QueryHeader{}
 	query := newQuery(true, &header)
 	pb := &proto.TransactionGetRecordQuery{Header: &header}
+	query.pb.Query = &proto.Query_TransactionGetRecord{
+		TransactionGetRecord: pb,
+	}
 
 	return &TransactionRecordQuery{
 		Query: query,
@@ -26,7 +28,6 @@ func transactionRecordQuery_shouldRetry(status Status, response response) bool {
 	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return true
 	}
-	fmt.Printf("%+v\n", response.query)
 	status = Status(response.query.GetTransactionGetRecord().TransactionRecord.Receipt.Status)
 
 	switch status {
@@ -85,9 +86,6 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, errNoClientProvided
 	}
 
-	fmt.Printf("%+v\n", query.pb.Header)
-	fmt.Printf("%+v\n", query.pbHeader)
-
 	query.queryPayment = NewHbar(2)
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -114,10 +112,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, nodeID)
 		query.paymentTransactions = append(query.paymentTransactions, transaction)
 	}
-	println("transactionId10")
 
-	fmt.Printf("%+v\n", query.pb.Header.String())
-	fmt.Printf("%+v\n", query.pbHeader.String())
 	resp, err := execute(
 		client,
 		request{
@@ -131,8 +126,6 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		transactionRecordQuery_mapResponseStatus,
 		query_mapResponse,
 	)
-
-	println("transactionId11")
 
 	if err != nil {
 		return TransactionRecord{}, err
