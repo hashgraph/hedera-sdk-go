@@ -12,8 +12,7 @@ type LiveHash struct {
 	Duration  time.Time
 }
 
-func newLiveHash(accountId AccountID, hash []byte,
-	keys KeyList, duration time.Time) LiveHash {
+func newLiveHash(accountId AccountID, hash []byte, keys KeyList, duration time.Time) LiveHash {
 	return LiveHash{
 		AccountID: accountId,
 		Hash:      hash,
