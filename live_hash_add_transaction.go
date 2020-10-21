@@ -36,7 +36,6 @@ func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTran
 	keyList := KeyList{keys: []*proto.Key{}}
 	keyList.AddAll(keys)
 
-
 	transaction.pb.LiveHash.Keys = keyList.toProtoKeyList()
 
 	return transaction

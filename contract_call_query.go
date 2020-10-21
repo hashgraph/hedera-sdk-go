@@ -21,7 +21,7 @@ type ContractCallQuery struct {
 // Contract Call Local Query.
 func NewContractCallQuery() *ContractCallQuery {
 	header := proto.QueryHeader{}
-	query := newQuery(false, &header)
+	query := newQuery(true, &header)
 	pb := proto.ContractCallLocalQuery{Header: &header}
 	query.pb.Query = &proto.Query_ContractCallLocal{
 		ContractCallLocal: &pb,
@@ -59,11 +59,6 @@ func (query *ContractCallQuery) SetFunction(name string, params *ContractFunctio
 	}
 
 	query.pb.FunctionParameters = params.build(&name)
-	return query
-}
-
-func (query *ContractCallQuery) SetFunctionString(name string) *ContractCallQuery {
-	query.pb.FunctionParameters = []byte(name)
 	return query
 }
 

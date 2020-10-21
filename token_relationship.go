@@ -3,10 +3,10 @@ package hedera
 import "github.com/hashgraph/hedera-sdk-go/proto"
 
 type TokenRelationship struct {
-	TokenID TokenID
-	Symbol string
-	Balance uint64
-	KycStatus *bool
+	TokenID      TokenID
+	Symbol       string
+	Balance      uint64
+	KycStatus    *bool
 	FreezeStatus *bool
 }
 

@@ -14,7 +14,7 @@ func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
 	}
 
 	if err != nil {
-		println("Decode Failed.")
+
 	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
@@ -31,5 +31,5 @@ func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
 	}
 
 	_, err = NewNetworkVersionQuery().Execute(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }

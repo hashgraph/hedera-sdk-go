@@ -2,102 +2,11 @@ package hedera
 
 import (
 	"os"
-	"time"
 
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func TestNewAccountBalanceQuery(t *testing.T) {
-	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
-
-	if err != nil {
-		client = ClientForTestnet()
-	}
-
-	configOperatorID := os.Getenv("OPERATOR_ID")
-	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-	if configOperatorID != "" && configOperatorKey != "" {
-		operatorAccountID, err := AccountIDFromString(configOperatorID)
-		assert.NoError(t, err)
-
-		operatorKey, err := PrivateKeyFromString(configOperatorKey)
-		assert.NoError(t, err)
-
-		client.SetOperator(operatorAccountID, operatorKey)
-	}
-
-	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
-
-
-	response, err := NewAccountCreateTransaction().
-		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
-		SetInitialBalance(NewHbar(1)).
-		Execute(client)
-	assert.NoError(t, err)
-
-	receipt, err := response.TransactionID.GetReceipt(client)
-	assert.NoError(t, err)
-
-	account := *receipt.AccountID
-
-	query, err := NewAccountBalanceQuery().
-		SetAccountID(account).
-		SetNodeAccountID(response.NodeID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	println("Success", query.Hbar.String())
-}
-
-func TestNewAccountBalanceQuery_ForContract(t *testing.T) {
-	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
-
-	if err != nil {
-		client = ClientForTestnet()
-	}
-
-	configOperatorID := os.Getenv("OPERATOR_ID")
-	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-	if configOperatorID != "" && configOperatorKey != "" {
-		operatorAccountID, err := AccountIDFromString(configOperatorID)
-		assert.NoError(t, err)
-
-		operatorKey, err := PrivateKeyFromString(configOperatorKey)
-		assert.NoError(t, err)
-
-		client.SetOperator(operatorAccountID, operatorKey)
-	}
-
-	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
-
-
-	response, err := NewAccountCreateTransaction().
-		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
-		SetInitialBalance(NewHbar(1)).
-		Execute(client)
-	assert.NoError(t, err)
-
-	receipt, err := response.TransactionID.GetReceipt(client)
-	assert.NoError(t, err)
-
-	contract := *receipt.ContractID
-
-	query, err := NewAccountBalanceQuery().
-		SetContractID(contract).
-		SetNodeAccountID(response.NodeID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	println("Success", query.Hbar.String())
-}
 
 func TestAccountBalanceQuery_Execute(t *testing.T) {
 	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
@@ -143,13 +52,13 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 		SetAccountID(accountID).
 		Execute(client)
 	assert.NoError(t, err)
-	assert.Equal(t, newBalance, balance)
+	assert.Equal(t, newBalance, balance.Hbars)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorID()).
 		SetMaxTransactionFee(NewHbar(1)).
-		SetTransactionID(NewTransactionIDWithValidStart(accountID, time.Now())).
+		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(client)
 	assert.NoError(t, err)
 

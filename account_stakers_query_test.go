@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestAccountStakersQuery(t *testing.T) {
+func TestAccountStakersQuery_Execute(t *testing.T) {
 	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
@@ -30,5 +30,5 @@ func TestAccountStakersQuery(t *testing.T) {
 		SetAccountID(client.GetOperatorID()).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }

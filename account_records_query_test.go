@@ -29,7 +29,6 @@ func TestAccountRecordQuery(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-
 	response, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
@@ -37,18 +36,17 @@ func TestAccountRecordQuery(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := response.TransactionID.GetReceipt(client)
+	receipt, err := response.GetReceipt(client)
 	assert.NoError(t, err)
 
 	account := *receipt.AccountID
 
-	 _, err = NewCryptoTransferTransaction().
+	_, err = NewCryptoTransferTransaction().
 		SetNodeAccountID(response.NodeID).
 		AddRecipient(account, NewHbar(1)).
 		AddSender(client.GetOperatorID(), NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
-
 
 	recordsQuery, err := NewAccountRecordsQuery().
 		SetNodeAccountID(response.NodeID).

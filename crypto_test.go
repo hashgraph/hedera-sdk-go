@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"github.com/stretchr/testify/assert"
 	"strings"
+
 	"testing"
 )
 

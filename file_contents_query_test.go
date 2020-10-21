@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-
 func TestFileContentsQuery_Execute(t *testing.T) {
 	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
@@ -39,7 +38,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.TransactionID.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	fileID := receipt.FileID
@@ -60,6 +59,6 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = resp.TransactionID.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }

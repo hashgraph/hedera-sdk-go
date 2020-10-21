@@ -82,37 +82,18 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		query_mapResponse,
 	)
 
-	//for _, id := range transaction.nodeIDs {
-	//	transaction.pbBody.NodeAccountID = id.toProtobuf()
-	//	bodyBytes, err := protobuf.Marshal(transaction.pbBody)
-	//	if err != nil {
-	//		// This should be unreachable
-	//		// From the documentation this appears to only be possible if there are missing proto types
-	//		panic(err)
-	//	}
-	//
-	//	sigmap := proto.SignatureMap{
-	//		SigPair: make([]*proto.SignaturePair, 0),
-	//	}
-	//	transaction.signatures = append(transaction.signatures, &sigmap)
-	//	transaction.transactions = append(transaction.transactions, &proto.Transaction{
-	//		BodyBytes: bodyBytes,
-	//		SigMap:    &sigmap,
-	//	})
-	//}
-
 	if err != nil {
 		return AccountBalance{}, err
 	}
 
-	var tokens []TokenBalance
-	for i, token := range resp.query.GetCryptogetAccountBalance().TokenBalances {
-		tokens[i] = tokenBalancesFromProtobuf(token)
+	tokens := make(map[TokenID]uint64, len(resp.query.GetCryptogetAccountBalance().TokenBalances))
+	for _, token := range resp.query.GetCryptogetAccountBalance().TokenBalances {
+		tokens[tokenIDFromProtobuf(token.TokenId)] = token.Balance
 	}
 
 	return AccountBalance{
-		Hbar:  HbarFromTinybar(int64(resp.query.GetCryptogetAccountBalance().Balance)),
-		Token: &tokens,
+		Hbars: HbarFromTinybar(int64(resp.query.GetCryptogetAccountBalance().Balance)),
+		Token: tokens,
 	}, nil
 }
 

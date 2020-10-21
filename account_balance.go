@@ -1,6 +1,6 @@
 package hedera
 
 type AccountBalance struct {
-	Hbar Hbar
-	Token *[]TokenBalance
+	Hbars Hbar
+	Token map[TokenID]uint64
 }

@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-
 func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
@@ -37,7 +36,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.TransactionID.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	fileID := receipt.FileID
@@ -51,7 +50,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, *fileID, info.FileID)
-	assert.Equal(t, info.Size, 28)
+	assert.Equal(t, info.Size, int64(12))
 	assert.False(t, info.IsDeleted)
 
 	resp, err = NewFileDeleteTransaction().
@@ -59,7 +58,6 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = resp.TransactionID.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
-

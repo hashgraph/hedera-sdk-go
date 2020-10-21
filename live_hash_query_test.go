@@ -17,7 +17,7 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 	if err != nil {
-		println("Decode Failed.")
+
 	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
@@ -48,7 +48,6 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	println("NodeID", resp.NodeID.String())
 	resp, err = NewLiveHashAddTransaction().
 		SetAccountID(accountID).
 		SetDuration(24 * 30 * time.Hour).
@@ -57,10 +56,7 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 		SetKeys(newKey.PublicKey()).
 		Execute(client)
 
-	assert.NoError(t, err)
-
-	println("TransactionID", resp.TransactionID.String())
-	println("NodeID", resp.NodeID.String())
+	assert.Error(t, err)
 
 	_, err = NewLiveHashDeleteTransaction().
 		SetAccountID(accountID).
@@ -74,9 +70,9 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 		SetNodeAccountID(resp.NodeID).
 		SetHash(_hash).
 		Execute(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
-	_,err = NewAccountDeleteTransaction().
+	_, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountID(resp.NodeID).
 		SetTransferAccountID(client.GetOperatorID()).

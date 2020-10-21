@@ -17,7 +17,7 @@ type ContractInfo struct {
 	Balance           uint64
 }
 
-func newContractInfo(accountID  AccountID, contractID ContractID,
+func newContractInfo(accountID AccountID, contractID ContractID,
 	contractAccountID string, adminKey PublicKey, expirationTime time.Time,
 	autoRenewPeriod time.Duration, storage uint64, ContractMemo string) ContractInfo {
 	return ContractInfo{
@@ -53,7 +53,7 @@ func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_Contra
 	}, nil
 }
 
-func (contractInfo *ContractInfo) toProtobuf() *proto.ContractGetInfoResponse_ContractInfo{
+func (contractInfo *ContractInfo) toProtobuf() *proto.ContractGetInfoResponse_ContractInfo {
 	return &proto.ContractGetInfoResponse_ContractInfo{
 		ContractID:        contractInfo.ContractID.toProtobuf(),
 		AccountID:         contractInfo.AccountID.toProtobuf(),

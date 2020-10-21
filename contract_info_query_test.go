@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
-	"time"
 )
 
 func TestContractInfoQuery_Execute(t *testing.T) {
@@ -43,8 +42,6 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	time.Sleep(5 * time.Second)
-
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
 		SetGas(2000).
@@ -54,8 +51,6 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
-
-	time.Sleep(5 * time.Second)
 
 	receipt, err = resp.GetReceipt(client)
 	assert.NoError(t, err)

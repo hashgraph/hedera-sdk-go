@@ -13,8 +13,7 @@ type FileInfo struct {
 	Keys           []PublicKey
 }
 
-func newFileInfo(fileID FileID, size int64,
-	expirationTime time.Time, isDeleted bool, keys []PublicKey) FileInfo {
+func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys []PublicKey) FileInfo {
 	return FileInfo{
 		FileID:         fileID,
 		Size:           size,

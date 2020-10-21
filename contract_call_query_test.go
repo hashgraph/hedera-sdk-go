@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNewContractCallQuery(t *testing.T) {
+func TestNewContractCallQuery_Execute(t *testing.T) {
 	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
@@ -28,22 +28,22 @@ func TestNewContractCallQuery(t *testing.T) {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	response, err := NewFileCreateTransaction().
+	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorKey()).
 		SetContents(smartContractBytecode).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := response.TransactionID.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	contractResponse, err := NewContractCreateTransaction().
+	resp, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorKey()).
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountID(resp.NodeID).
 		SetGas(2000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
@@ -52,55 +52,64 @@ func TestNewContractCallQuery(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	contractReceipt, err := contractResponse.TransactionID.GetReceipt(client)
+	contractReceipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	assert.True(t, contractReceipt.ContractID.Contract > 0)
 
 	contractID := *contractReceipt.ContractID
 
-	callQuery, err := NewContractCallQuery().
-		SetNodeAccountID(response.NodeID).
+	result, err := NewContractCallQuery().
+		SetNodeAccountID(resp.NodeID).
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(1)).
 		SetGas(2000).
-	//test getCost
-		SetFunctionString("getMessage").
+		//test getCost
+		SetFunction("getMessage", nil).
 		SetMaxQueryPayment(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	assert.Equal(t,"Hello from Hedera.",callQuery.GetString(0))
+	assert.Equal(t, "Hello from Hedera.", result.GetString(0))
 
-	_, err = NewContractExecuteTransaction().
+	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountID(response.NodeID).
-		SetGas(2000).
+		SetNodeAccountID(resp.NodeID).
+		SetGas(10000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
-	result, err := NewContractCallQuery().
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	result, err = NewContractCallQuery().
 		SetContractID(contractID).
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountID(resp.NodeID).
 		SetQueryPayment(NewHbar(5)).
 		SetGas(2000).
-		SetFunctionString("getMessage").
+		SetFunction("getMessage", nil).
 		Execute(client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "new message", result.GetString(0))
 
-	_, err = NewContractDeleteTransaction().
+	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountID(resp.NodeID).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = NewFileDeleteTransaction().
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(response.NodeID).
+		SetNodeAccountID(resp.NodeID).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
