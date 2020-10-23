@@ -24,12 +24,14 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 
 // The account to be dissociated with the provided tokens
 func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
 }
 
 // The tokens to be dissociated with the provided account
 func (transaction *TokenDissociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Tokens = make([]*proto.TokenID, len(tokenIDs))
 
 	for i, tokenID := range tokenIDs {
@@ -178,6 +180,7 @@ func (transaction *TokenDissociateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -188,6 +191,7 @@ func (transaction *TokenDissociateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetTransactionMemo(memo string) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -198,6 +202,7 @@ func (transaction *TokenDissociateTransaction) GetTransactionValidDuration() tim
 
 // SetTransactionValidDuration sets the valid duration for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -208,6 +213,7 @@ func (transaction *TokenDissociateTransaction) GetTransactionID() TransactionID 
 
 // SetTransactionID sets the TransactionID for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetTransactionID(transactionID TransactionID) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -219,6 +225,7 @@ func (transaction *TokenDissociateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetNodeAccountID(nodeID []AccountID) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

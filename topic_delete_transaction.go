@@ -26,6 +26,7 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 
 // SetTopicID sets the topic IDentifier.
 func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.TopicID = ID.toProtobuf()
 	return transaction
 }
@@ -173,6 +174,7 @@ func (transaction *TopicDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetMaxTransactionFee(fee Hbar) *TopicDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -183,6 +185,7 @@ func (transaction *TopicDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetTransactionMemo(memo string) *TopicDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -193,6 +196,7 @@ func (transaction *TopicDeleteTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *TopicDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -203,6 +207,7 @@ func (transaction *TopicDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetTransactionID(transactionID TransactionID) *TopicDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -214,6 +219,7 @@ func (transaction *TopicDeleteTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

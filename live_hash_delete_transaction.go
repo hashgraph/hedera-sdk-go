@@ -21,6 +21,7 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 }
 
 func (transaction *LiveHashDeleteTransaction) SetHash(hash []byte) *LiveHashDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.LiveHashToDelete = hash
 	return transaction
 }
@@ -30,6 +31,7 @@ func (transaction *LiveHashDeleteTransaction) GetHash() []byte {
 }
 
 func (transaction *LiveHashDeleteTransaction) SetAccountID(accountID AccountID) *LiveHashDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AccountOfLiveHash = accountID.toProtobuf()
 	return transaction
 }
@@ -177,6 +179,7 @@ func (transaction *LiveHashDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -187,6 +190,7 @@ func (transaction *LiveHashDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetTransactionMemo(memo string) *LiveHashDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -197,6 +201,7 @@ func (transaction *LiveHashDeleteTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -207,17 +212,19 @@ func (transaction *LiveHashDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetTransactionID(transactionID TransactionID) *LiveHashDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *LiveHashDeleteTransaction) GetNodeAccounntIDs() []AccountID {
+func (transaction *LiveHashDeleteTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

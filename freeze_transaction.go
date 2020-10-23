@@ -22,6 +22,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 }
 
 func (transaction *FreezeTransaction) SetStartTime(startTime time.Time) *FreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.StartHour = int32(startTime.Hour())
 	transaction.pb.StartMin = int32(startTime.Minute())
 	return transaction
@@ -37,6 +38,7 @@ func (transaction *FreezeTransaction) GetStartTime() time.Time {
 }
 
 func (transaction *FreezeTransaction) SetEndTime(endTime time.Time) *FreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.StartHour = int32(endTime.Hour())
 	transaction.pb.StartMin = int32(endTime.Minute())
 	return transaction
@@ -190,6 +192,7 @@ func (transaction *FreezeTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this FreezeTransaction.
 func (transaction *FreezeTransaction) SetMaxTransactionFee(fee Hbar) *FreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -200,6 +203,7 @@ func (transaction *FreezeTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this FreezeTransaction.
 func (transaction *FreezeTransaction) SetTransactionMemo(memo string) *FreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -210,6 +214,7 @@ func (transaction *FreezeTransaction) GetTransactionValidDuration() time.Duratio
 
 // SetTransactionValidDuration sets the valid duration for this FreezeTransaction.
 func (transaction *FreezeTransaction) SetTransactionValidDuration(duration time.Duration) *FreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -220,17 +225,19 @@ func (transaction *FreezeTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FreezeTransaction.
 func (transaction *FreezeTransaction) SetTransactionID(transactionID TransactionID) *FreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *FreezeTransaction) GetNodeAccounntIDs() []AccountID {
+func (transaction *FreezeTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this FreezeTransaction.
 func (transaction *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

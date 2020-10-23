@@ -25,6 +25,7 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 }
 
 func (transaction *ContractCreateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FileID = bytecodeFileID.toProtobuf()
 	return transaction
 }
@@ -34,6 +35,7 @@ func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
 }
 
 func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = adminKey.toProtoKey()
 	return transaction
 }
@@ -43,6 +45,7 @@ func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
 }
 
 func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Gas = int64(gas)
 	return transaction
 }
@@ -53,6 +56,7 @@ func (transaction *ContractCreateTransaction) GetGas() uint64 {
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
 func (transaction *ContractCreateTransaction) SetInitialBalance(initialBalance Hbar) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.InitialBalance = initialBalance.AsTinybar()
 	return transaction
 }
@@ -69,6 +73,7 @@ func (transaction *ContractCreateTransaction) GetInitialBalance() Hbar {
 // hbars are used to extend its expiration as long as possible. If it is has a zero balance when it expires,
 // then it is deleted.
 func (transaction *ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
@@ -82,6 +87,7 @@ func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
 func (transaction *ContractCreateTransaction) SetProxyAccountID(ID AccountID) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ProxyAccountID = ID.toProtobuf()
 	return transaction
 }
@@ -91,11 +97,13 @@ func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
 }
 
 func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ConstructorParameters = params.build(nil)
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ConstructorParameters = params
 	return transaction
 }
@@ -105,6 +113,7 @@ func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte 
 }
 
 func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Memo = memo
 	return transaction
 }
@@ -252,6 +261,7 @@ func (transaction *ContractCreateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ContractCreateTransaction.
 func (transaction *ContractCreateTransaction) SetMaxTransactionFee(fee Hbar) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -262,6 +272,7 @@ func (transaction *ContractCreateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ContractCreateTransaction.
 func (transaction *ContractCreateTransaction) SetTransactionMemo(memo string) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -272,6 +283,7 @@ func (transaction *ContractCreateTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this ContractCreateTransaction.
 func (transaction *ContractCreateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -282,6 +294,7 @@ func (transaction *ContractCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ContractCreateTransaction.
 func (transaction *ContractCreateTransaction) SetTransactionID(transactionID TransactionID) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -293,6 +306,7 @@ func (transaction *ContractCreateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this ContractCreateTransaction.
 func (transaction *ContractCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

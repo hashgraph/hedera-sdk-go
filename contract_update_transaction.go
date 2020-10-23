@@ -50,6 +50,7 @@ func (transaction *ContractUpdateTransaction) GetContractID() ContractID {
 // SetBytecodeFileID sets the file ID of file containing the smart contract byte code. A copy will be made and held by
 // the contract instance, and have the same expiration time as the instance.
 func (transaction *ContractUpdateTransaction) SetBytecodeFileID(fileID FileID) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FileID = fileID.toProtobuf()
 	return transaction
 }
@@ -62,6 +63,7 @@ func (transaction *ContractUpdateTransaction) GetBytecodeFileID() FileID {
 // ContractUpdateTransaction to modify it. If the admin key was never set then such modifications are not possible,
 // and there is no administrator that can overrIDe the normal operation of the smart contract instance.
 func (transaction *ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
 }
@@ -75,6 +77,7 @@ func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was never set.
 func (transaction *ContractUpdateTransaction) SetProxyAccountID(accountID AccountID) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ProxyAccountID = accountID.toProtobuf()
 	return transaction
 }
@@ -86,6 +89,7 @@ func (transaction *ContractUpdateTransaction) GetProxyAccountID() AccountID {
 // SetAutoRenewPeriod sets the duration for which the contract instance will automatically charge its account to
 // renew for.
 func (transaction *ContractUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
@@ -97,6 +101,7 @@ func (transaction *ContractUpdateTransaction) GetAutoRenewPeriod() time.Duration
 // SetExpirationTime extends the expiration of the instance and its account to the provIDed time. If the time provIDed
 // is the current or past time, then there will be no effect.
 func (transaction *ContractUpdateTransaction) SetExpirationTime(expiration time.Time) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
 	return transaction
 }
@@ -107,6 +112,7 @@ func (transaction *ContractUpdateTransaction) GetExpirationTime() time.Time {
 
 // SetContractMemo sets the memo associated with the contract (max 100 bytes)
 func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Memo = memo
 	return transaction
 }
@@ -254,6 +260,7 @@ func (transaction *ContractUpdateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ContractUpdateTransaction.
 func (transaction *ContractUpdateTransaction) SetMaxTransactionFee(fee Hbar) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -264,6 +271,7 @@ func (transaction *ContractUpdateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ContractUpdateTransaction.
 func (transaction *ContractUpdateTransaction) SetTransactionMemo(memo string) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -274,6 +282,7 @@ func (transaction *ContractUpdateTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this ContractUpdateTransaction.
 func (transaction *ContractUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -284,17 +293,19 @@ func (transaction *ContractUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ContractUpdateTransaction.
 func (transaction *ContractUpdateTransaction) SetTransactionID(transactionID TransactionID) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *ContractUpdateTransaction) GetNodeAccounntID() []AccountID {
+func (transaction *ContractUpdateTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this ContractUpdateTransaction.
-func (transaction *ContractUpdateTransaction) SetNodeAccountID(nodeID []AccountID) *ContractUpdateTransaction {
+func (transaction *ContractUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

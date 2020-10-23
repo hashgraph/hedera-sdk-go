@@ -32,6 +32,7 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 // The token for which to mint tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Token = tokenID.toProtobuf()
 	return transaction
 }
@@ -40,6 +41,7 @@ func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintT
 // bigger than the token balance of the treasury account (0; balance], represented in the lowest
 // denomination.
 func (transaction *TokenMintTransaction) SetAmount(amount uint64) *TokenMintTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Amount = amount
 	return transaction
 }
@@ -183,6 +185,7 @@ func (transaction *TokenMintTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenMintTransaction.
 func (transaction *TokenMintTransaction) SetMaxTransactionFee(fee Hbar) *TokenMintTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -193,6 +196,7 @@ func (transaction *TokenMintTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenMintTransaction.
 func (transaction *TokenMintTransaction) SetTransactionMemo(memo string) *TokenMintTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -203,6 +207,7 @@ func (transaction *TokenMintTransaction) GetTransactionValidDuration() time.Dura
 
 // SetTransactionValidDuration sets the valid duration for this TokenMintTransaction.
 func (transaction *TokenMintTransaction) SetTransactionValidDuration(duration time.Duration) *TokenMintTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -213,6 +218,7 @@ func (transaction *TokenMintTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenMintTransaction.
 func (transaction *TokenMintTransaction) SetTransactionID(transactionID TransactionID) *TokenMintTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -224,6 +230,7 @@ func (transaction *TokenMintTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenMintTransaction.
 func (transaction *TokenMintTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenMintTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

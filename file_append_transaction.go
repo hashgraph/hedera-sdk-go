@@ -28,6 +28,7 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
 func (transaction *FileAppendTransaction) SetFileID(ID FileID) *FileAppendTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FileID = ID.toProtobuf()
 	return transaction
 }
@@ -38,6 +39,7 @@ func (transaction *FileAppendTransaction) GetFileID() FileID {
 
 // SetContents sets the bytes to append to the contents of the file.
 func (transaction *FileAppendTransaction) SetContents(contents []byte) *FileAppendTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Contents = contents
 	return transaction
 }
@@ -185,6 +187,7 @@ func (transaction *FileAppendTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAppendTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -195,6 +198,7 @@ func (transaction *FileAppendTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetTransactionMemo(memo string) *FileAppendTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -205,6 +209,7 @@ func (transaction *FileAppendTransaction) GetTransactionValidDuration() time.Dur
 
 // SetTransactionValidDuration sets the valid duration for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetTransactionValidDuration(duration time.Duration) *FileAppendTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -215,6 +220,7 @@ func (transaction *FileAppendTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetTransactionID(transactionID TransactionID) *FileAppendTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -225,7 +231,8 @@ func (transaction *FileAppendTransaction) GetNodeAccountIDs() []AccountID {
 }
 
 // SetNodeAccountID sets the node AccountID for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) SetNodeAccountID(nodeID []AccountID) *FileAppendTransaction {
+func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileAppendTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

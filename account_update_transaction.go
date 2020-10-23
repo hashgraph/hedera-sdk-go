@@ -21,6 +21,7 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 }
 
 func (transaction *AccountUpdateTransaction) SetKey(publicKey PublicKey) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Key = publicKey.toProtoKey()
 	return transaction
 }
@@ -30,6 +31,7 @@ func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
 }
 
 func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AccountIDToUpdate = accountID.toProtobuf()
 	return transaction
 }
@@ -39,6 +41,7 @@ func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.GetReceiverSigRequiredWrapper().Value = receiverSignatureRequired
 	return transaction
 }
@@ -48,6 +51,7 @@ func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired() bool
 }
 
 func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ProxyAccountID = proxyAccountID.toProtobuf()
 	return transaction
 }
@@ -57,6 +61,7 @@ func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
 }
 
 func (transaction *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
@@ -66,6 +71,7 @@ func (transaction *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration 
 }
 
 func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ExpirationTime = timeToProtobuf(expirationTime)
 	return transaction
 }
@@ -213,6 +219,7 @@ func (transaction *AccountUpdateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetMaxTransactionFee(fee Hbar) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -223,6 +230,7 @@ func (transaction *AccountUpdateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetTransactionMemo(memo string) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -233,6 +241,7 @@ func (transaction *AccountUpdateTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -243,6 +252,7 @@ func (transaction *AccountUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -254,6 +264,7 @@ func (transaction *AccountUpdateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

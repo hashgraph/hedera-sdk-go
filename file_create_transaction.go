@@ -46,6 +46,7 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 // expirationTime of the file can be changed using FileUpdateTransaction. The file contents or its keys will not be
 // mutable.
 func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	if transaction.pb.Keys == nil {
 		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 	}
@@ -66,6 +67,7 @@ func (transaction *FileCreateTransaction) GetKeys() KeyList {
 // by another transaction before that time. If the file is deleted, then its contents will become empty and it will be
 // marked as deleted until it expires, and then it will cease to exist.
 func (transaction *FileCreateTransaction) SetExpirationTime(expiration time.Time) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
 	return transaction
 }
@@ -78,6 +80,7 @@ func (transaction *FileCreateTransaction) GetExpirationTime() time.Time {
 // fields in the transaction exceed the max transaction size then FileAppendTransaction can be used to continue
 // uploading the file.
 func (transaction *FileCreateTransaction) SetContents(contents []byte) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Contents = contents
 	return transaction
 }
@@ -225,6 +228,7 @@ func (transaction *FileCreateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetMaxTransactionFee(fee Hbar) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -235,6 +239,7 @@ func (transaction *FileCreateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionMemo(memo string) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -245,6 +250,7 @@ func (transaction *FileCreateTransaction) GetTransactionValidDuration() time.Dur
 
 // SetTransactionValidDuration sets the valid duration for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionValidDuration(duration time.Duration) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -255,17 +261,19 @@ func (transaction *FileCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *FileCreateTransaction) GetNodeAccounntIDs() []AccountID {
+func (transaction *FileCreateTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

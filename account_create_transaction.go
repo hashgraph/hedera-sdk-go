@@ -43,12 +43,14 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (transaction *AccountCreateTransaction) SetKey(publicKey PublicKey) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Key = publicKey.toProtoKey()
 	return transaction
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
 func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.InitialBalance = uint64(initialBalance.AsTinybar())
 	return transaction
 }
@@ -60,6 +62,7 @@ func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hb
 // hbars are used to extend its expiration as long as possible. If it is has a zero balance when it expires,
 // then it is deleted.
 func (transaction *AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
@@ -69,6 +72,7 @@ func (transaction *AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod 
 //
 // Deprecated: No longer used by Hedera
 func (transaction *AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
 }
@@ -78,6 +82,7 @@ func (transaction *AccountCreateTransaction) SetSendRecordThreshold(recordThresh
 //
 // Deprecated: No longer used by Hedera
 func (transaction *AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
 }
@@ -87,6 +92,7 @@ func (transaction *AccountCreateTransaction) SetReceiveRecordThreshold(recordThr
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
 func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ProxyAccountID = id.toProtobuf()
 	return transaction
 }
@@ -240,6 +246,7 @@ func (transaction *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -250,6 +257,7 @@ func (transaction *AccountCreateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -260,6 +268,7 @@ func (transaction *AccountCreateTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -270,6 +279,7 @@ func (transaction *AccountCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -281,6 +291,7 @@ func (transaction *AccountCreateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

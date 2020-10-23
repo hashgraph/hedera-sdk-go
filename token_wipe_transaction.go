@@ -42,12 +42,14 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 // The token for which the account will be wiped. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Token = tokenID.toProtobuf()
 	return transaction
 }
 
 // The account to be wiped
 func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
 }
@@ -56,6 +58,7 @@ func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *Toke
 // number in the lowest denomination possible, not bigger than the token balance of the account
 // (0; balance]
 func (transaction *TokenWipeTransaction) SetAmount(amount uint64) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Amount = amount
 	return transaction
 }
@@ -199,6 +202,7 @@ func (transaction *TokenWipeTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetMaxTransactionFee(fee Hbar) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -209,6 +213,7 @@ func (transaction *TokenWipeTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionMemo(memo string) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -219,6 +224,7 @@ func (transaction *TokenWipeTransaction) GetTransactionValidDuration() time.Dura
 
 // SetTransactionValidDuration sets the valid duration for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -229,6 +235,7 @@ func (transaction *TokenWipeTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionID(transactionID TransactionID) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -240,6 +247,7 @@ func (transaction *TokenWipeTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

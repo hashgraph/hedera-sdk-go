@@ -23,6 +23,7 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 }
 
 func (transaction *FileUpdateTransaction) SetFileID(ID FileID) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FileID = ID.toProtobuf()
 	return transaction
 }
@@ -32,6 +33,7 @@ func (transaction *FileUpdateTransaction) GetFileID() FileID {
 }
 
 func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	if transaction.pb.Keys == nil {
 		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 	}
@@ -48,6 +50,7 @@ func (transaction *FileUpdateTransaction) GetKeys() KeyList {
 }
 
 func (transaction *FileUpdateTransaction) SetExpirationTime(expiration time.Time) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
 	return transaction
 }
@@ -57,6 +60,7 @@ func (transaction *FileUpdateTransaction) GetExpirationTime() time.Time {
 }
 
 func (transaction *FileUpdateTransaction) SetContents(contents []byte) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Contents = contents
 	return transaction
 }
@@ -204,6 +208,7 @@ func (transaction *FileUpdateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this FileUpdateTransaction.
 func (transaction *FileUpdateTransaction) SetMaxTransactionFee(fee Hbar) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -214,6 +219,7 @@ func (transaction *FileUpdateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this FileUpdateTransaction.
 func (transaction *FileUpdateTransaction) SetTransactionMemo(memo string) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -224,6 +230,7 @@ func (transaction *FileUpdateTransaction) GetTransactionValidDuration() time.Dur
 
 // SetTransactionValidDuration sets the valid duration for this FileUpdateTransaction.
 func (transaction *FileUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -234,6 +241,7 @@ func (transaction *FileUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileUpdateTransaction.
 func (transaction *FileUpdateTransaction) SetTransactionID(transactionID TransactionID) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -245,6 +253,7 @@ func (transaction *FileUpdateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this FileUpdateTransaction.
 func (transaction *FileUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

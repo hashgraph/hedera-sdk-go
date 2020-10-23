@@ -22,6 +22,7 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 }
 
 func (transaction *SystemUndeleteTransaction) SetContractID(contractID ContractID) *SystemUndeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: contractID.toProtobuf()}
 	return transaction
 }
@@ -31,6 +32,7 @@ func (transaction *SystemUndeleteTransaction) GetContract() ContractID {
 }
 
 func (transaction *SystemUndeleteTransaction) SetFileID(fileID FileID) *SystemUndeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: fileID.toProtobuf()}
 	return transaction
 }
@@ -185,6 +187,7 @@ func (transaction *SystemUndeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) SetMaxTransactionFee(fee Hbar) *SystemUndeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -195,6 +198,7 @@ func (transaction *SystemUndeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) SetTransactionMemo(memo string) *SystemUndeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -205,6 +209,7 @@ func (transaction *SystemUndeleteTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) SetTransactionValidDuration(duration time.Duration) *SystemUndeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -215,17 +220,19 @@ func (transaction *SystemUndeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemUndeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *SystemUndeleteTransaction) GetNodeAccounntIDs() []AccountID {
+func (transaction *SystemUndeleteTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemUndeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

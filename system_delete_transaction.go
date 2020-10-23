@@ -23,6 +23,7 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 }
 
 func (transaction *SystemDeleteTransaction) SetExpirationTime(expiration time.Time) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ExpirationTime = &proto.TimestampSeconds{
 		Seconds: expiration.Unix(),
 	}
@@ -34,6 +35,7 @@ func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
 }
 
 func (transaction *SystemDeleteTransaction) SetContractID(contractID ContractID) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Id = &proto.SystemDeleteTransactionBody_ContractID{ContractID: contractID.toProtobuf()}
 	return transaction
 }
@@ -43,6 +45,7 @@ func (transaction *SystemDeleteTransaction) GetContract() ContractID {
 }
 
 func (transaction *SystemDeleteTransaction) SetFileID(fileID FileID) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Id = &proto.SystemDeleteTransactionBody_FileID{FileID: fileID.toProtobuf()}
 	return transaction
 }
@@ -197,6 +200,7 @@ func (transaction *SystemDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetMaxTransactionFee(fee Hbar) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -207,6 +211,7 @@ func (transaction *SystemDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionMemo(memo string) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -217,6 +222,7 @@ func (transaction *SystemDeleteTransaction) GetTransactionValidDuration() time.D
 
 // SetTransactionValidDuration sets the valid duration for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -227,17 +233,19 @@ func (transaction *SystemDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *SystemDeleteTransaction) GetNodeAccounntIDs() []AccountID {
+func (transaction *SystemDeleteTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

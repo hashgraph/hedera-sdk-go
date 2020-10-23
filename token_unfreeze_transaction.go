@@ -34,12 +34,14 @@ func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 
 // The token for which this account will be unfrozen. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenUnfreezeTransaction) SetTokenID(tokenID TokenID) *TokenUnfreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Token = tokenID.toProtobuf()
 	return transaction
 }
 
 // The account to be unfrozen
 func (transaction *TokenUnfreezeTransaction) SetAccountID(accountID AccountID) *TokenUnfreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
 }
@@ -183,6 +185,7 @@ func (transaction *TokenUnfreezeTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) SetMaxTransactionFee(fee Hbar) *TokenUnfreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -193,6 +196,7 @@ func (transaction *TokenUnfreezeTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) SetTransactionMemo(memo string) *TokenUnfreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -203,6 +207,7 @@ func (transaction *TokenUnfreezeTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenUnfreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -213,6 +218,7 @@ func (transaction *TokenUnfreezeTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) SetTransactionID(transactionID TransactionID) *TokenUnfreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -224,6 +230,7 @@ func (transaction *TokenUnfreezeTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUnfreezeTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

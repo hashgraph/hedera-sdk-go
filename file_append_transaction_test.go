@@ -69,7 +69,7 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 
 	resp, err = NewFileAppendTransaction().
 		SetFileID(fileID).
-		SetNodeAccountID(nodeIDs).
+		SetNodeAccountIDs(nodeIDs).
 		SetContents([]byte(" world!")).
 		Execute(client)
 

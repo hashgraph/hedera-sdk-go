@@ -33,12 +33,14 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenGrantKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Token = tokenID.toProtobuf()
 	return transaction
 }
 
 // The account to be KYCed
 func (transaction *TokenGrantKycTransaction) SetAccountID(accountID AccountID) *TokenGrantKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
 }
@@ -182,6 +184,7 @@ func (transaction *TokenGrantKycTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetMaxTransactionFee(fee Hbar) *TokenGrantKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -192,6 +195,7 @@ func (transaction *TokenGrantKycTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetTransactionMemo(memo string) *TokenGrantKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -202,6 +206,7 @@ func (transaction *TokenGrantKycTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetTransactionValidDuration(duration time.Duration) *TokenGrantKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -212,6 +217,7 @@ func (transaction *TokenGrantKycTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetTransactionID(transactionID TransactionID) *TokenGrantKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -223,6 +229,7 @@ func (transaction *TokenGrantKycTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenGrantKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

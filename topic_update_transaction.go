@@ -29,6 +29,7 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 
 // SetTopicID sets the topic to be updated.
 func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.TopicID = topicID.toProtobuf()
 	return transaction
 }
@@ -41,6 +42,7 @@ func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
 //
 // Setting the AdminKey to an empty KeyList will clear the adminKey.
 func (transaction *TopicUpdateTransaction) SetAdminKey(publicKey PublicKey) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
 }
@@ -53,6 +55,7 @@ func (transaction *TopicUpdateTransaction) GetAdminKey() (Key, error) {
 //
 // Setting the submitKey to an empty KeyList will clear the submitKey.
 func (transaction *TopicUpdateTransaction) SetSubmitKey(publicKey PublicKey) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.SubmitKey = publicKey.toProtoKey()
 	return transaction
 }
@@ -63,6 +66,7 @@ func (transaction *TopicUpdateTransaction) GetSubmitKey() (Key, error) {
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
 func (transaction *TopicUpdateTransaction) SetTopicMemo(memo string) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Memo = &proto.StringValue{Value: memo}
 	return transaction
 }
@@ -74,6 +78,7 @@ func (transaction *TopicUpdateTransaction) GetTopicMemo() string {
 // SetExpirationTime sets the effective  timestamp at (and after) which all  transactions and queries
 // will fail. The expirationTime may be no longer than 90 days from the  timestamp of this transaction.
 func (transaction *TopicUpdateTransaction) SetExpirationTime(expiration time.Time) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
 	return transaction
 }
@@ -86,6 +91,7 @@ func (transaction *TopicUpdateTransaction) GetExpirationTime() time.Time {
 // autoRenewAccount is configured and has funds. This is limited to a maximum of 90 days (server-sIDe configuration
 // which may change).
 func (transaction *TopicUpdateTransaction) SetAutoRenewPeriod(period time.Duration) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(period)
 	return transaction
 }
@@ -99,6 +105,7 @@ func (transaction *TopicUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 // extended using all funds on the account (whichever is the smaller duration/amount). If specified as the default value
 // (0.0.0), the autoRenewAccount will be removed.
 func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(accountID AccountID) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewAccount = accountID.toProtobuf()
 	return transaction
 }
@@ -268,6 +275,7 @@ func (transaction *TopicUpdateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -278,6 +286,7 @@ func (transaction *TopicUpdateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) SetTransactionMemo(memo string) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -288,6 +297,7 @@ func (transaction *TopicUpdateTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -298,6 +308,7 @@ func (transaction *TopicUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) SetTransactionID(transactionID TransactionID) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -309,6 +320,7 @@ func (transaction *TopicUpdateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicUpdateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

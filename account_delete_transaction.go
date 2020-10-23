@@ -29,6 +29,7 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 }
 
 func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.DeleteAccountID = accountID.toProtobuf()
 	return transaction
 }
@@ -38,6 +39,7 @@ func (transaction *AccountDeleteTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.TransferAccountID = transferAccountID.toProtobuf()
 	return transaction
 }
@@ -185,6 +187,7 @@ func (transaction *AccountDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetMaxTransactionFee(fee Hbar) *AccountDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -195,6 +198,7 @@ func (transaction *AccountDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetTransactionMemo(memo string) *AccountDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -205,6 +209,7 @@ func (transaction *AccountDeleteTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -215,6 +220,7 @@ func (transaction *AccountDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -226,6 +232,7 @@ func (transaction *AccountDeleteTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
 func (transaction *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

@@ -37,6 +37,7 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
 // expirationTime.
 func (transaction *TopicCreateTransaction) SetAdminKey(publicKey PublicKey) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
 }
@@ -47,6 +48,7 @@ func (transaction *TopicCreateTransaction) GetAdminKey() (Key, error) {
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
 func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey PublicKey) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.SubmitKey = publicKey.toProtoKey()
 	return transaction
 }
@@ -57,6 +59,7 @@ func (transaction *TopicCreateTransaction) GetSubmitKey() (Key, error) {
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
 func (transaction *TopicCreateTransaction) SetTopicMemo(memo string) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Memo = memo
 	return transaction
 }
@@ -70,6 +73,7 @@ func (transaction *TopicCreateTransaction) GetTopicMemo() string {
 //
 // Required. Limited to a maximum of 90 days (server-sIDe configuration which may change).
 func (transaction *TopicCreateTransaction) SetAutoRenewPeriod(period time.Duration) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(period)
 	return transaction
 }
@@ -84,6 +88,7 @@ func (transaction *TopicCreateTransaction) GetAutoRenewPeriod() time.Duration {
 //
 //If specified, there must be an adminKey and the autoRenewAccount must sign this transaction.
 func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(accountID AccountID) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewAccount = accountID.toProtobuf()
 	return transaction
 }
@@ -231,6 +236,7 @@ func (transaction *TopicCreateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicCreateTransaction.
 func (transaction *TopicCreateTransaction) SetMaxTransactionFee(fee Hbar) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -241,6 +247,7 @@ func (transaction *TopicCreateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TopicCreateTransaction.
 func (transaction *TopicCreateTransaction) SetTransactionMemo(memo string) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -251,6 +258,7 @@ func (transaction *TopicCreateTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this TopicCreateTransaction.
 func (transaction *TopicCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -261,6 +269,7 @@ func (transaction *TopicCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TopicCreateTransaction.
 func (transaction *TopicCreateTransaction) SetTransactionID(transactionID TransactionID) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -272,6 +281,7 @@ func (transaction *TopicCreateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this TopicCreateTransaction.
 func (transaction *TopicCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

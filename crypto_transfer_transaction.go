@@ -25,15 +25,18 @@ func NewCryptoTransferTransaction() *CryptoTransferTransaction {
 }
 
 func (transaction *CryptoTransferTransaction) AddTransfer(accountID AccountID, amount Hbar) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Transfers.AccountAmounts = append(transaction.pb.Transfers.AccountAmounts, &proto.AccountAmount{AccountID: accountID.toProtobuf(), Amount: amount.tinybar})
 	return transaction
 }
 
 func (transaction *CryptoTransferTransaction) AddSender(accountID AccountID, amount Hbar) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	return transaction.AddTransfer(accountID, amount.negated())
 }
 
 func (transaction *CryptoTransferTransaction) AddRecipient(accountID AccountID, amount Hbar) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	return transaction.AddTransfer(accountID, amount)
 }
 
@@ -176,6 +179,7 @@ func (transaction *CryptoTransferTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this CryptoTransferTransaction.
 func (transaction *CryptoTransferTransaction) SetMaxTransactionFee(fee Hbar) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -186,6 +190,7 @@ func (transaction *CryptoTransferTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this CryptoTransferTransaction.
 func (transaction *CryptoTransferTransaction) SetTransactionMemo(memo string) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -196,6 +201,7 @@ func (transaction *CryptoTransferTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this CryptoTransferTransaction.
 func (transaction *CryptoTransferTransaction) SetTransactionValidDuration(duration time.Duration) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -206,17 +212,19 @@ func (transaction *CryptoTransferTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this CryptoTransferTransaction.
 func (transaction *CryptoTransferTransaction) SetTransactionID(transactionID TransactionID) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *CryptoTransferTransaction) GetNodeAccounntIDs() []AccountID {
+func (transaction *CryptoTransferTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this CryptoTransferTransaction.
 func (transaction *CryptoTransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *CryptoTransferTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

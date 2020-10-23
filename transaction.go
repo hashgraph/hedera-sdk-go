@@ -75,7 +75,7 @@ func (transaction *Transaction) getTransactionHash() map[AccountID][]byte {
 	}
 	hash.Write(bytes)
 
-	byteHash :=  hex.EncodeToString(hash.Sum(nil))
+	byteHash := hex.EncodeToString(hash.Sum(nil))
 
 	transactionHash := make(map[AccountID][]byte)
 
@@ -107,6 +107,12 @@ func (transaction *Transaction) initTransactionID(client *Client) error {
 
 func (transaction *Transaction) isFrozen() bool {
 	return len(transaction.transactions) > 0
+}
+
+func (transaction *Transaction) requireNotFrozen() {
+	if transaction.isFrozen() {
+		panic("Transaction is immutable; it has at least one signature or has been explicitly frozen\"")
+	}
 }
 
 func transaction_freezeWith(

@@ -32,6 +32,7 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 
 // SetContractID sets the contract instance to call.
 func (transaction *ContractExecuteTransaction) SetContractID(ID ContractID) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ContractID = ID.toProtobuf()
 	return transaction
 }
@@ -42,12 +43,14 @@ func (transaction ContractExecuteTransaction) GetContractID() ContractID {
 
 // SetGas sets the maximum amount of gas to use for the call.
 func (transaction *ContractExecuteTransaction) SetGas(gas uint64) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Gas = int64(gas)
 	return transaction
 }
 
 // SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
 func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Amount = amount.AsTinybar()
 	return transaction
 }
@@ -57,6 +60,7 @@ func (transaction ContractExecuteTransaction) GetPayableAmount() uint64 {
 }
 
 func (transaction *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FunctionParameters = params
 	return transaction
 }
@@ -67,6 +71,7 @@ func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
 func (transaction *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	if params == nil {
 		params = NewContractFunctionParameters()
 	}
@@ -214,6 +219,7 @@ func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetMaxTransactionFee(fee Hbar) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -224,6 +230,7 @@ func (transaction *ContractExecuteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetTransactionMemo(memo string) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -234,6 +241,7 @@ func (transaction *ContractExecuteTransaction) GetTransactionValidDuration() tim
 
 // SetTransactionValidDuration sets the valid duration for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -244,6 +252,7 @@ func (transaction *ContractExecuteTransaction) GetTransactionID() TransactionID 
 
 // SetTransactionID sets the TransactionID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -255,6 +264,7 @@ func (transaction *ContractExecuteTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

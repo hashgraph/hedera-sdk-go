@@ -21,6 +21,7 @@ func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 }
 
 func (transaction *LiveHashAddTransaction) SetHash(hash []byte) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.LiveHash.Hash = hash
 	return transaction
 }
@@ -30,6 +31,7 @@ func (transaction *LiveHashAddTransaction) GetHash() []byte {
 }
 
 func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	if transaction.pb.LiveHash.Keys == nil {
 		transaction.pb.LiveHash.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 	}
@@ -46,6 +48,7 @@ func (transaction *LiveHashAddTransaction) GetKeys() KeyList {
 }
 
 func (transaction *LiveHashAddTransaction) SetDuration(duration time.Duration) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.LiveHash.Duration = durationToProtobuf(duration)
 	return transaction
 }
@@ -55,6 +58,7 @@ func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
 }
 
 func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.LiveHash.AccountId = accountID.toProtobuf()
 	return transaction
 }
@@ -202,6 +206,7 @@ func (transaction *LiveHashAddTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -212,6 +217,7 @@ func (transaction *LiveHashAddTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionMemo(memo string) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -222,6 +228,7 @@ func (transaction *LiveHashAddTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -232,17 +239,19 @@ func (transaction *LiveHashAddTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *LiveHashAddTransaction) GetNodeAccounntIDs() []AccountID {
+func (transaction *LiveHashAddTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeAccountID sets the node AccountID for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

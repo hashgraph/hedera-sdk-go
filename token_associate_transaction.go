@@ -41,12 +41,14 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 
 // The account to be associated with the provided tokens
 func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
 }
 
 // The tokens to be associated with the provided account
 func (transaction *TokenAssociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Tokens = make([]*proto.TokenID, len(tokenIDs))
 
 	for i, tokenID := range tokenIDs {
@@ -195,6 +197,7 @@ func (transaction *TokenAssociateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenAssociateTransaction.
 func (transaction *TokenAssociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -205,6 +208,7 @@ func (transaction *TokenAssociateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenAssociateTransaction.
 func (transaction *TokenAssociateTransaction) SetTransactionMemo(memo string) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -215,6 +219,7 @@ func (transaction *TokenAssociateTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this TokenAssociateTransaction.
 func (transaction *TokenAssociateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -225,6 +230,7 @@ func (transaction *TokenAssociateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenAssociateTransaction.
 func (transaction *TokenAssociateTransaction) SetTransactionID(transactionID TransactionID) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -236,6 +242,7 @@ func (transaction *TokenAssociateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenAssociateTransaction.
 func (transaction *TokenAssociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

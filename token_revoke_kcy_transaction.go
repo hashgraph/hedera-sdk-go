@@ -33,12 +33,14 @@ func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 
 // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *TokenRevokeKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Token = tokenID.toProtobuf()
 	return transaction
 }
 
 // The account to be KYC Revoked
 func (transaction *TokenRevokeKycTransaction) SetAccountID(accountID AccountID) *TokenRevokeKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
 }
@@ -182,6 +184,7 @@ func (transaction *TokenRevokeKycTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetMaxTransactionFee(fee Hbar) *TokenRevokeKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -192,6 +195,7 @@ func (transaction *TokenRevokeKycTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetTransactionMemo(memo string) *TokenRevokeKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -202,6 +206,7 @@ func (transaction *TokenRevokeKycTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetTransactionValidDuration(duration time.Duration) *TokenRevokeKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -212,6 +217,7 @@ func (transaction *TokenRevokeKycTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetTransactionID(transactionID TransactionID) *TokenRevokeKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -223,6 +229,7 @@ func (transaction *TokenRevokeKycTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenRevokeKycTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

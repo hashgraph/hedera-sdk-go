@@ -43,54 +43,63 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 
 // The publicly visible name of the token, specified as a string of only ASCII characters
 func (transaction *TokenCreateTransaction) SetName(name string) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Name = name
 	return transaction
 }
 
 // The publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
 func (transaction *TokenCreateTransaction) SetSymbol(symbol string) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Symbol = symbol
 	return transaction
 }
 
 // The number of decimal places a token is divisible by. This field can never be changed!
 func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Decimals = uint32(decimals)
 	return transaction
 }
 
 // Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
 func (transaction *TokenCreateTransaction) SetTreasury(treasury AccountID) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Treasury = treasury.toProtobuf()
 	return transaction
 }
 
 // The account which will act as a treasury for the token. This account will receive the specified initial supply
 func (transaction *TokenCreateTransaction) SetAdminKey(publicKey PublicKey) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
 func (transaction *TokenCreateTransaction) SetKycKey(publicKey PublicKey) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.KycKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
 func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey PublicKey) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FreezeKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
 func (transaction *TokenCreateTransaction) SetWipeKey(publicKey PublicKey) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.WipeKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can wipe the token balance of an account. If empty, wipe is not possible
 func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey PublicKey) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.SupplyKey = publicKey.toProtoKey()
 	return transaction
 }
@@ -98,30 +107,35 @@ func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey PublicKey) *To
 // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
 // SetInitialBalance sets the initial number of Hbar to put into the token
 func (transaction *TokenCreateTransaction) SetInitialSupply(initialSupply uint64) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.InitialSupply = initialSupply
 	return transaction
 }
 
 // The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
 func (transaction *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FreezeDefault = freezeDefault
 	return transaction
 }
 
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
 func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime uint64) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Expiry = expirationTime
 	return transaction
 }
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
 func (transaction *TokenCreateTransaction) SetAutoRenewAccount(autoRenewAccount AccountID) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewAccount = autoRenewAccount.toProtobuf()
 	return transaction
 }
 
 // The interval at which the auto-renew account will be charged to extend the token's expiry
 func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = autoRenewPeriod
 	return transaction
 }
@@ -265,6 +279,7 @@ func (transaction *TokenCreateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetMaxTransactionFee(fee Hbar) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -275,6 +290,7 @@ func (transaction *TokenCreateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetTransactionMemo(memo string) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -285,6 +301,7 @@ func (transaction *TokenCreateTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -295,6 +312,7 @@ func (transaction *TokenCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetTransactionID(transactionID TransactionID) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -306,6 +324,7 @@ func (transaction *TokenCreateTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeTokenID sets the node TokenID for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

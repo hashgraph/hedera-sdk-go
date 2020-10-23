@@ -22,6 +22,7 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 }
 
 func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.ContractID = contractID.toProtobuf()
 	return transaction
 }
@@ -31,6 +32,7 @@ func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
 }
 
 func (transaction *ContractDeleteTransaction) SetTransferContractID(contractID ContractID) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
 		TransferContractID: contractID.toProtobuf(),
 	}
@@ -43,6 +45,7 @@ func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID
 }
 
 func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
 		TransferAccountID: accountID.toProtobuf(),
 	}
@@ -193,6 +196,7 @@ func (transaction *ContractDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -203,6 +207,7 @@ func (transaction *ContractDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetTransactionMemo(memo string) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -213,6 +218,7 @@ func (transaction *ContractDeleteTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -223,6 +229,7 @@ func (transaction *ContractDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -234,6 +241,7 @@ func (transaction *ContractDeleteTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

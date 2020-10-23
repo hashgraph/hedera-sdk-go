@@ -22,6 +22,7 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 }
 
 func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.pb.FileID = fileID.toProtobuf()
 	return transaction
 }
@@ -169,6 +170,7 @@ func (transaction *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetMaxTransactionFee(fee Hbar) *FileDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -179,6 +181,7 @@ func (transaction *FileDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetTransactionMemo(memo string) *FileDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -189,6 +192,7 @@ func (transaction *FileDeleteTransaction) GetTransactionValidDuration() time.Dur
 
 // SetTransactionValidDuration sets the valid duration for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *FileDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -199,6 +203,7 @@ func (transaction *FileDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *FileDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -210,6 +215,7 @@ func (transaction *FileDeleteTransaction) GetNodeAccountIDs() []AccountID {
 
 // SetNodeAccountID sets the node AccountID for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
+	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
