@@ -11,6 +11,10 @@ func TestTransactionSerializationDeserialization(t *testing.T) {
 
 	assert.NoError(t, err)
 
+	_ = transaction.getTransactionHash()
+
+	assert.NoError(t, err)
+
 	txBytes, err := transaction.MarshalBinary()
 
 	assert.NoError(t, err)

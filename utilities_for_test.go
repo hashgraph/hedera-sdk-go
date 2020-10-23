@@ -44,11 +44,18 @@ func newMockTransaction() (Transaction, error) {
 		return Transaction{}, err
 	}
 
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0], err = AccountIDFromString("0.0.4")
+	if err != nil {
+		return Transaction{}, err
+	}
+
 	tx, err := NewCryptoTransferTransaction().
 		AddSender(AccountID{Account: 2}, HbarFromTinybar(100)).
 		AddRecipient(AccountID{Account: 3}, HbarFromTinybar(100)).
 		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs(nodeIDs).
 		FreezeWith(client)
 
 	if err != nil {

@@ -2,6 +2,8 @@ package hedera
 
 import (
 	"bytes"
+	"crypto/sha512"
+	"encoding/hex"
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
@@ -61,6 +63,27 @@ func TransactionFromBytes(bytes []byte) Transaction {
 	tx := Transaction{}
 	(&tx).UnmarshalBinary(bytes)
 	return tx
+}
+
+func (transaction *Transaction) getTransactionHash() map[AccountID][]byte {
+	hash := sha512.New384()
+	bytes, err := protobuf.Marshal(transaction.pbBody)
+	if err != nil {
+		// This should be unreachable
+		// From the documentation this appears to only be possible if there are missing proto types
+		panic(err)
+	}
+	hash.Write(bytes)
+
+	byteHash :=  hex.EncodeToString(hash.Sum(nil))
+
+	transactionHash := make(map[AccountID][]byte)
+
+	for _, node := range transaction.nodeIDs {
+		transactionHash[node] = []byte(byteHash)
+	}
+
+	return transactionHash
 }
 
 func (transaction *Transaction) initFee(client *Client) {
