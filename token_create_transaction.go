@@ -19,6 +19,7 @@ func NewTokenCreateTransaction() TokenCreateTransaction {
 
 	builder := TokenCreateTransaction{inner, pb}
 	builder.SetAutoRenewPeriod(7890000)
+	builder.SetExpirationTime(uint64(time.Now().Add(7890000 * time.Second).Unix()))
 
 	return builder
 }

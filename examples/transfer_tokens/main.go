@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashgraph/hedera-sdk-go"
 	"os"
-	"time"
 )
 
 func main() {
@@ -20,11 +19,7 @@ func main() {
 
 	operatorKey := operatorPrivateKey.PublicKey()
 
-	client, err := hedera.ClientFromFile(os.Getenv("CONFIG_FILE"))
-	if err != nil {
-		panic(err)
-	}
-
+	client := hedera.ClientForPreviewnet()
 	client.SetOperator(operatorID, operatorPrivateKey)
 
 	key, err := hedera.GenerateEd25519PrivateKey()
@@ -63,7 +58,6 @@ func main() {
 		SetKycKey(operatorKey).
 		SetSupplyKey(operatorKey).
 		SetFreezeDefault(false).
-		SetExpirationTime(uint64(time.Now().Add(7890000 * time.Second).Unix())).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -80,7 +74,7 @@ func main() {
 
 	transaction, err := hedera.NewTokenAssociateTransaction().
 		SetAccountID(accountID).
-		SetTokenIDs(tokenID).
+		AddTokenID(tokenID).
 		Build(client)
 	if err != nil {
 		panic(err)

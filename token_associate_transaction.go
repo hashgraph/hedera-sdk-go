@@ -12,7 +12,9 @@ type TokenAssociateTransaction struct {
 }
 
 func NewTokenAssociateTransaction() TokenAssociateTransaction {
-	pb := &proto.TokenAssociateTransactionBody{}
+	pb := &proto.TokenAssociateTransactionBody{
+		Tokens: make([]*proto.TokenID, 0),
+	}
 
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_TokenAssociate{TokenAssociate: pb}
@@ -29,12 +31,8 @@ func (builder TokenAssociateTransaction) SetAccountID(id AccountID) TokenAssocia
 }
 
 // The tokens to be associated with the provided account
-func (builder TokenAssociateTransaction) SetTokenIDs(ids ...TokenID) TokenAssociateTransaction {
-	tokens := make([]*proto.TokenID, len(ids))
-	for i, token := range ids {
-		tokens[i] = token.toProto()
-	}
-	builder.pb.Tokens = tokens
+func (builder TokenAssociateTransaction) AddTokenID(id TokenID) TokenAssociateTransaction {
+	builder.pb.Tokens = append(builder.pb.Tokens, id.toProto())
 	return builder
 }
 

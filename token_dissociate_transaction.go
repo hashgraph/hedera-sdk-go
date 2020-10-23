@@ -12,7 +12,9 @@ type TokenDissociateTransaction struct {
 }
 
 func NewTokenDissociateTransaction() TokenDissociateTransaction {
-	pb := &proto.TokenDissociateTransactionBody{}
+	pb := &proto.TokenDissociateTransactionBody{
+		Tokens: make([]*proto.TokenID, 0),
+	}
 
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_TokenDissociate{TokenDissociate: pb}
@@ -29,12 +31,8 @@ func (builder TokenDissociateTransaction) SetAccountID(id AccountID) TokenDissoc
 }
 
 // The tokens to be dissociated with the provided account
-func (builder TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) TokenDissociateTransaction {
-	tokens := make([]*proto.TokenID, len(ids))
-	for i, token := range ids {
-		tokens[i] = token.toProto()
-	}
-	builder.pb.Tokens = tokens
+func (builder TokenDissociateTransaction) AddTokenID(id TokenID) TokenDissociateTransaction {
+	builder.pb.Tokens = append(builder.pb.Tokens, id.toProto())
 	return builder
 }
 
