@@ -9,6 +9,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+const maxAttempts = 10;
+
 type method struct {
 	query func(
 		context.Context,
@@ -56,17 +58,17 @@ func execute(
 	shouldRetry func(Status, response) bool,
 	makeRequest func(request) protoRequest,
 	advanceRequest func(request),
-	getNodeId func(request, *Client) AccountID,
+	getNodeId func(request, *Client) NodeID,
 	getMethod func(request, *channel) method,
 	mapResponseStatus func(request, response) Status,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
-	for attempt := 0; ; /* loop forever */ attempt++ {
-		delay := time.Duration(250*int64(math.Pow(2, float64(attempt)))) * time.Millisecond
+	var attempt int64
+	for attempt = 0; ; /* loop forever */ attempt++ {
 		protoRequest := makeRequest(request)
 		node := getNodeId(request, client)
 
-		channel, err := client.getChannel(node)
+		channel, err := client.getChannel(node.AccountID)
 		if err != nil {
 			return intermediateResponse{}, nil
 		}
@@ -76,26 +78,35 @@ func execute(
 		advanceRequest(request)
 
 		resp := response{}
+
+		if !node.isHealthy(){
+			node.wait()
+		}
+
 		if method.query != nil {
 			r, err := method.query(context.TODO(), protoRequest.query)
 			if err != nil {
-				return intermediateResponse{}, nil
+				node.increaseDelay()
+				continue
 			}
 
 			resp.query = r
 		} else {
 			r, err := method.transaction(context.TODO(), protoRequest.transaction)
 			if err != nil {
-				return intermediateResponse{}, nil
+				node.increaseDelay()
+				continue
 			}
 
 			resp.transaction = r
 		}
 
+		node.decreaseDelay()
+
 		status := mapResponseStatus(request, resp)
 
-		if shouldRetry(status, resp) {
-			time.Sleep(delay)
+		if shouldRetry(status, resp) && attempt <= maxAttempts {
+			delayForAttempt(attempt)
 			continue
 		}
 
@@ -103,6 +114,12 @@ func execute(
 			return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
 		}
 
-		return mapResponse(request, resp, node, protoRequest)
+		return mapResponse(request, resp, node.AccountID, protoRequest)
 	}
+}
+
+func delayForAttempt(attempt int64) {
+	// 0.1s, 0.2s, 0.4s, 0.8s, ...
+	ms := int64(math.Floor(50 * math.Pow(2, float64(attempt))))
+	time.Sleep(time.Duration(ms) * time.Millisecond)
 }

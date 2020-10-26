@@ -24,7 +24,7 @@ type Transaction struct {
 
 	transactions []*proto.Transaction
 	signatures   []*proto.SignatureMap
-	nodeIDs      []AccountID
+	nodeIDs      []NodeID
 }
 
 func newTransaction() Transaction {
@@ -37,7 +37,7 @@ func newTransaction() Transaction {
 		nextTransactionIndex: 0,
 		transactions:         make([]*proto.Transaction, 0),
 		signatures:           make([]*proto.SignatureMap, 0),
-		nodeIDs:              make([]AccountID, 0),
+		nodeIDs:              make([]NodeID, 0),
 	}
 }
 
@@ -141,7 +141,7 @@ func transaction_freezeWith(
 
 	if transaction.pbBody.TransactionID != nil && len(transaction.nodeIDs) > 0 {
 		for _, id := range transaction.nodeIDs {
-			transaction.pbBody.NodeAccountID = id.toProtobuf()
+			transaction.pbBody.NodeAccountID = id.AccountID.toProtobuf()
 			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
 			if err != nil {
 				// This should be unreachable
@@ -170,7 +170,7 @@ func transaction_freezeWith(
 
 			transaction.nodeIDs = append(transaction.nodeIDs, node)
 
-			transaction.pbBody.NodeAccountID = node.toProtobuf()
+			transaction.pbBody.NodeAccountID = node.AccountID.toProtobuf()
 			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
 			if err != nil {
 				// This should be unreachable
@@ -225,7 +225,7 @@ func transaction_advanceRequest(request request) {
 func transaction_getNodeId(
 	request request,
 	client *Client,
-) AccountID {
+) NodeID {
 	return request.transaction.nodeIDs[request.transaction.nextTransactionIndex]
 }
 

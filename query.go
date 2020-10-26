@@ -17,7 +17,7 @@ type Query struct {
 	nextPaymentTransactionIndex int
 	nextTransactionIndex        int
 
-	paymentTransactionNodeIDs []AccountID
+	paymentTransactionNodeIDs []NodeID
 	paymentTransactions       []*proto.Transaction
 
 	isPaymentRequired bool
@@ -30,7 +30,7 @@ func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
 		paymentTransactionID:      TransactionID{},
 		nextTransactionIndex:      0,
 		paymentTransactions:       make([]*proto.Transaction, 0),
-		paymentTransactionNodeIDs: make([]AccountID, 0),
+		paymentTransactionNodeIDs: make([]NodeID, 0),
 		isPaymentRequired:         isPaymentRequired,
 		maxQueryPayment:           NewHbar(0),
 		queryPayment:              NewHbar(0),
@@ -130,10 +130,10 @@ func query_generatePayments(query *Query, client *Client, cost Hbar) error {
 	return nil
 }
 
-func query_makePaymentTransaction(transactionID TransactionID, nodeID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
+func query_makePaymentTransaction(transactionID TransactionID, nodeID NodeID, operator *operator, cost Hbar) (*proto.Transaction, error) {
 	accountAmounts := make([]*proto.AccountAmount, 0)
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
-		AccountID: nodeID.toProtobuf(),
+		AccountID: nodeID.AccountID.toProtobuf(),
 		Amount:    cost.tinybar,
 	})
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
@@ -143,7 +143,7 @@ func query_makePaymentTransaction(transactionID TransactionID, nodeID AccountID,
 
 	body := proto.TransactionBody{
 		TransactionID:  transactionID.toProtobuf(),
-		NodeAccountID:  nodeID.toProtobuf(),
+		NodeAccountID:  nodeID.AccountID.toProtobuf(),
 		TransactionFee: uint64(NewHbar(1).tinybar),
 		TransactionValidDuration: &proto.Duration{
 			Seconds: 120,
