@@ -22,8 +22,8 @@ type Client struct {
 	operator *operator
 
 	networkChannels map[AccountID]*channel
-	networkNodeIds  []AccountID
-	network         map[AccountID]string
+	networkNodeIds  []NodeID
+	network         map[string]NodeID
 
 	mirrorChannels map[string]*grpc.ClientConn
 	mirrorNetwork  []string
@@ -41,38 +41,38 @@ type operator struct {
 	signer     TransactionSigner
 }
 
-var mainnetNodes = map[AccountID]string{
-	{Account: 3}:  "35.237.200.180:50211",
-	{Account: 4}:  "35.186.191.247:50211",
-	{Account: 5}:  "35.192.2.25:50211",
-	{Account: 6}:  "35.199.161.108:50211",
-	{Account: 7}:  "35.203.82.240:50211",
-	{Account: 8}:  "35.236.5.219:50211",
-	{Account: 9}:  "35.197.192.225:50211",
-	{Account: 10}: "35.242.233.154:50211",
-	{Account: 11}: "35.240.118.96:50211",
-	{Account: 12}: "35.204.86.32:50211",
+var mainnetNodes = map[string]NodeID{
+	"35.237.200.180:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 3}, "35.237.200.180:50211"),
+	"35.186.191.247:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 4}, "35.186.191.247:50211"),
+	"35.192.2.25:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 5}, "35.192.2.25:50211"),
+	"35.199.161.108:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 6}, "35.199.161.108:50211"),
+	"35.203.82.240:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 7}, "35.203.82.240:50211"),
+	"35.236.5.219:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 8}, "35.236.5.219:50211"),
+	"35.197.192.225:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 9}, "35.197.192.225:50211"),
+	"35.242.233.154:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 10}, "35.242.233.154:50211"),
+	"35.240.118.96:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 11}, "35.240.118.96:50211"),
+	"35.204.86.32:50211" : NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 12}, "35.204.86.32:50211"),
 }
 
-var testnetNodes = map[AccountID]string{
-	{Account: 3}: "0.testnet.hedera.com:50211",
-	{Account: 4}: "1.testnet.hedera.com:50211",
-	{Account: 5}: "2.testnet.hedera.com:50211",
-	{Account: 6}: "3.testnet.hedera.com:50211",
+var testnetNodes = map[string]NodeID{
+	"0.testnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 3}, "0.previewnet.hedera.com:50211"),
+	"1.testnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 3}, "1.previewnet.hedera.com:50211"),
+	"2.testnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 3}, "2.previewnet.hedera.com:50211"),
+	"3.testnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 3}, "3.previewnet.hedera.com:50211"),
 }
 
-var previewnetNodes = map[AccountID]string{
-	{Account: 3}: "0.previewnet.hedera.com:50211",
-	{Account: 4}: "1.previewnet.hedera.com:50211",
-	{Account: 5}: "2.previewnet.hedera.com:50211",
-	{Account: 6}: "3.previewnet.hedera.com:50211",
+var previewnetNodes = map[string]NodeID {
+	"0.previewnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 3}, "0.previewnet.hedera.com:50211"),
+	"1.previewnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 4}, "1.previewnet.hedera.com:50211"),
+	"2.previewnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 5}, "2.previewnet.hedera.com:50211"),
+	"3.previewnet.hedera.com:50211": NewNodeID(AccountID{Shard:   0, Realm:   0, Account: 6}, "3.previewnet.hedera.com:50211"),
 }
 
 var mainnetMirror = []string{"hcs.mainnet.mirrornode.hedera.com:5600"}
 var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
-func ClientForNetwork(network map[AccountID]string) *Client {
+func ClientForNetwork(network map[string]NodeID) *Client {
 	return newClient(network, []string{})
 }
 
@@ -102,13 +102,13 @@ func ClientForPreviewnet() *Client {
 
 // newClient takes in a map of node addresses to their respective IDS (network)
 // and returns a Client instance which can be used to
-func newClient(network map[AccountID]string, mirrorNetwork []string) *Client {
+func newClient(network map[string]NodeID, mirrorNetwork []string) *Client {
 	client := Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
 		maxTransactionFee: defaultMaxTransactionFee,
 		networkChannels:   make(map[AccountID]*channel),
-		networkNodeIds:    make([]AccountID, 0),
-		network:           make(map[AccountID]string),
+		networkNodeIds:    make([]NodeID, 0),
+		network:           make(map[string]NodeID),
 		mirrorChannels:    make(map[string]*grpc.ClientConn),
 		mirrorNetwork:     make([]string, 0),
 		nextNodeIndex:     0,
@@ -142,15 +142,15 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-	var network map[AccountID]string = make(map[AccountID]string)
+	var network = make(map[string]NodeID)
 
-	for id, url := range clientConfig.Network {
+	for url, id := range clientConfig.Network {
 		accountID, err := AccountIDFromString(id)
 		if err != nil {
 			return nil, err
 		}
 
-		network[accountID] = url
+		network[url] = NewNodeID(accountID, url)
 	}
 
 	client := newClient(network, clientConfig.MirrorNetwork)
@@ -218,10 +218,10 @@ func (client *Client) Close() error {
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetNetwork(network map[AccountID]string) *Client {
-	for id, address := range network {
+func (client *Client) SetNetwork(network map[string]NodeID) *Client {
+	for address, id := range network {
 		client.networkNodeIds = append(client.networkNodeIds, id)
-		client.network[id] = address
+		client.network[address] = id
 	}
 
 	return client
@@ -331,7 +331,7 @@ func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 // 	return nil
 // }
 
-func (client *Client) getNextNode() AccountID {
+func (client *Client) getNextNode() NodeID {
 	nodeID := client.networkNodeIds[client.nextNodeIndex]
 	client.nextNodeIndex = (client.nextNodeIndex + 1) % uint(len(client.networkNodeIds))
 
@@ -342,17 +342,17 @@ func (client *Client) getNumberOfNodesForTransaction() int {
 	return (len(client.networkNodeIds) + 3 - 1) / 3
 }
 
-func (client *Client) getChannel(id AccountID) (*channel, error) {
-	if client.networkChannels[id] != nil {
-		return client.networkChannels[id], nil
+func (client *Client) getChannel(id NodeID) (*channel, error) {
+	if client.networkChannels[id.AccountID] != nil {
+		return client.networkChannels[id.AccountID], nil
 	}
 
-	conn, err := grpc.Dial(client.network[id], grpc.WithInsecure())
+	conn, err := grpc.Dial(id.Address, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 
 	ch := newChannel(conn)
-	client.networkChannels[id] = &ch
+	client.networkChannels[id.AccountID] = &ch
 	return &ch, nil
 }
