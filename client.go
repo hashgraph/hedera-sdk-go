@@ -132,7 +132,7 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 
 	var network map[string]AccountID = make(map[string]AccountID)
 
-	for id, url := range clientConfig.Network {
+	for url, id := range clientConfig.Network {
 		accountID, err := AccountIDFromString(id)
 		if err != nil {
 			return nil, err
