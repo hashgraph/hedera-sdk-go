@@ -25,7 +25,7 @@ func NewTokenTransferTransaction() *TokenTransferTransaction {
 func (transaction *TokenTransferTransaction) GetTransfers() map[TokenID][]TokenTransfer {
 	tokenTransferMap := make(map[TokenID][]TokenTransfer, len(transaction.pb.TokenTransfers))
 	for _, tokenTransfer := range transaction.pb.TokenTransfers {
-		for _, accountAmount := range tokenTransfer.Transfers{
+		for _, accountAmount := range tokenTransfer.Transfers {
 			token := tokenIDFromProtobuf(tokenTransfer.Token)
 			tokenTransferMap[token] = append(tokenTransferMap[token], tokenTransferFromProtobuf(accountAmount))
 		}

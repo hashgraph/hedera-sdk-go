@@ -114,7 +114,13 @@ func newClient(network map[AccountID]string, mirrorNetwork []string) *Client {
 		nextNodeIndex:     0,
 	}
 
-	client.SetNetwork(network)
+	fliped := make(map[string]AccountID)
+
+	for id, address := range network {
+		fliped[address] = id
+	}
+
+	client.SetNetwork(fliped)
 	client.SetMirrorNetwork(mirrorNetwork)
 
 	return &client
@@ -142,9 +148,9 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-	var network map[AccountID]string = make(map[AccountID]string)
+	network := make(map[AccountID]string)
 
-	for id, url := range clientConfig.Network {
+	for url, id := range clientConfig.Network {
 		accountID, err := AccountIDFromString(id)
 		if err != nil {
 			return nil, err
@@ -218,8 +224,8 @@ func (client *Client) Close() error {
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetNetwork(network map[AccountID]string) *Client {
-	for id, address := range network {
+func (client *Client) SetNetwork(network map[string]AccountID) *Client {
+	for address, id := range network {
 		client.networkNodeIds = append(client.networkNodeIds, id)
 		client.network[id] = address
 	}

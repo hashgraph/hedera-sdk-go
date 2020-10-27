@@ -4,13 +4,13 @@ import "github.com/hashgraph/hedera-sdk-go/proto"
 
 type TokenTransfer struct {
 	AccountID AccountID
-	Amount int64
+	Amount    int64
 }
 
 func NewTokenTransfer(accountID AccountID, amount int64) TokenTransfer {
 	return TokenTransfer{
 		AccountID: accountID,
-		Amount: amount,
+		Amount:    amount,
 	}
 }
 
