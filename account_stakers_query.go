@@ -34,6 +34,14 @@ func (query *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQuer
 	return query
 }
 
+func (query *AccountStakersQuery) GetAccountID() AccountID {
+	if query.pb.AccountID != nil {
+		return AccountID{}
+	} else {
+		return accountIDFromProtobuf(query.pb.AccountID)
+	}
+}
+
 func accountStakersQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode)
 }

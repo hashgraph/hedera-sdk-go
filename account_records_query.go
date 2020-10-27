@@ -34,6 +34,14 @@ func (query *AccountRecordsQuery) SetAccountID(id AccountID) *AccountRecordsQuer
 	return query
 }
 
+func (query *AccountRecordsQuery) GetAccountID() AccountID {
+	if query.pb.AccountID != nil {
+		return AccountID{}
+	} else {
+		return accountIDFromProtobuf(query.pb.AccountID)
+	}
+}
+
 func accountRecordsQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode)
 }

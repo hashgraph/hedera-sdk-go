@@ -41,6 +41,19 @@ func (query *AccountBalanceQuery) SetAccountID(id AccountID) *AccountBalanceQuer
 	return query
 }
 
+func (query *AccountBalanceQuery) GetAccountID() AccountID {
+	if query.pb.BalanceSource != nil {
+		return AccountID{}
+	} else {
+		switch id := query.pb.BalanceSource.(type) {
+		case *proto.CryptoGetAccountBalanceQuery_AccountID:
+			return accountIDFromProtobuf(id.AccountID)
+		default:
+			return AccountID{}
+		}
+	}
+}
+
 // SetContractID sets the ContractID for which you wish to query the balance.
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
@@ -51,6 +64,19 @@ func (query *AccountBalanceQuery) SetContractID(id ContractID) *AccountBalanceQu
 	}
 
 	return query
+}
+
+func (query *AccountBalanceQuery) GetContractID() ContractID {
+	if query.pb.BalanceSource != nil {
+		return ContractID{}
+	} else {
+		switch id := query.pb.BalanceSource.(type) {
+		case *proto.CryptoGetAccountBalanceQuery_ContractID:
+			return contractIDFromProtobuf(id.ContractID)
+		default:
+			return ContractID{}
+		}
+	}
 }
 
 func accountBalanceQuery_mapResponseStatus(_ request, response response) Status {

@@ -38,6 +38,14 @@ func (query *AccountInfoQuery) SetAccountID(accountID AccountID) *AccountInfoQue
 	return query
 }
 
+func (query *AccountInfoQuery) GetAccountID() AccountID {
+	if query.pb.AccountID != nil {
+		return AccountID{}
+	} else {
+		return accountIDFromProtobuf(query.pb.AccountID)
+	}
+}
+
 func (query *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *AccountInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
