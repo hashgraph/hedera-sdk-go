@@ -74,15 +74,8 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	balance, err := NewTokenBalanceQuery().
-		SetAccountID(accountID).
-		Execute(client)
-	assert.NoError(t, err)
-
 	receipt, err = txID.GetReceipt(client)
 	assert.NoError(t, err)
-
-	println("balance",receipt.tokenID.String(), " ", balance[*receipt.tokenID])
 
 	txID, err = NewTokenBurnTransaction().
 		SetTokenID(tokenID).
@@ -92,7 +85,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 
 	txID, err = NewTokenAssociateTransaction().
 		SetAccountID(accountID).
-		SetTokenIDs(tokenID).
+		AddTokenID(tokenID).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -135,7 +128,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 
 	txID, err = NewTokenDissociateTransaction().
 		SetAccountID(accountID).
-		SetTokenIDs(tokenID).
+		AddTokenID(tokenID).
 		Execute(client)
 	assert.NoError(t, err)
 
