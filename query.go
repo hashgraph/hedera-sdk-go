@@ -17,7 +17,7 @@ type Query struct {
 	nextPaymentTransactionIndex int
 	nextTransactionIndex        int
 
-	paymentTransactionNodeIDs []NodeID
+	paymentTransactionNodeIDs []AccountID
 	paymentTransactions       []*proto.Transaction
 
 	isPaymentRequired bool
@@ -30,7 +30,7 @@ func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
 		paymentTransactionID:      TransactionID{},
 		nextTransactionIndex:      0,
 		paymentTransactions:       make([]*proto.Transaction, 0),
-		paymentTransactionNodeIDs: make([]NodeID, 0),
+		paymentTransactionNodeIDs: make([]AccountID, 0),
 		isPaymentRequired:         isPaymentRequired,
 		maxQueryPayment:           NewHbar(0),
 		queryPayment:              NewHbar(0),
@@ -106,10 +106,7 @@ func query_mapResponse(request request, response response, _ AccountID, protoReq
 
 func query_generatePayments(query *Query, client *Client, cost Hbar) error {
 	if len(query.paymentTransactionNodeIDs) == 0 {
-		size := client.getNumberOfNodesForTransaction()
-		for i := 0; i < size; i++ {
-			query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, client.getNextNode())
-		}
+		query.paymentTransactionNodeIDs = client.getNodeAccountIDsForTransaction()
 	}
 
 	for _, nodeID := range query.paymentTransactionNodeIDs {
@@ -130,10 +127,10 @@ func query_generatePayments(query *Query, client *Client, cost Hbar) error {
 	return nil
 }
 
-func query_makePaymentTransaction(transactionID TransactionID, nodeID NodeID, operator *operator, cost Hbar) (*proto.Transaction, error) {
+func query_makePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
 	accountAmounts := make([]*proto.AccountAmount, 0)
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
-		AccountID: nodeID.AccountID.toProtobuf(),
+		AccountID: nodeAccountID.toProtobuf(),
 		Amount:    cost.tinybar,
 	})
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
@@ -143,7 +140,7 @@ func query_makePaymentTransaction(transactionID TransactionID, nodeID NodeID, op
 
 	body := proto.TransactionBody{
 		TransactionID:  transactionID.toProtobuf(),
-		NodeAccountID:  nodeID.AccountID.toProtobuf(),
+		NodeAccountID:  nodeAccountID.toProtobuf(),
 		TransactionFee: uint64(NewHbar(1).tinybar),
 		TransactionValidDuration: &proto.Duration{
 			Seconds: 120,

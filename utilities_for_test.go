@@ -18,17 +18,19 @@ func newMockClient() (*Client, error) {
 		return nil, err
 	}
 
-	client := newClient(map[AccountID]string{
-		{
-			Shard:   0,
-			Realm:   0,
-			Account: 3,
-		}: "nonexistent-testnet",
-	}, []string{""})
+	var net = make(map[AccountID]string, 1)
+	net[AccountID{
+		Shard:   0,
+		Realm:   0,
+		Account: 3,
+	}] = "nonexistent-testnet"
+
+	var client Client
+	client.SetNetwork(net)
 
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
-	return client, nil
+	return &client, nil
 }
 
 func newMockTransaction() (Transaction, error) {

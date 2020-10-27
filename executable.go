@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-const maxAttempts = 10;
+const maxAttempts = 10
 
 type method struct {
 	query func(
@@ -58,17 +58,16 @@ func execute(
 	shouldRetry func(Status, response) bool,
 	makeRequest func(request) protoRequest,
 	advanceRequest func(request),
-	getNodeId func(request, *Client) NodeID,
+	getNodeId func(request, *Client) AccountID,
 	getMethod func(request, *channel) method,
 	mapResponseStatus func(request, response) Status,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
-	var attempt int64
-	for attempt = 0; ; /* loop forever */ attempt++ {
+	for attempt := int64(0); ; /* loop forever */ attempt++ {
 		protoRequest := makeRequest(request)
-		node := getNodeId(request, client)
+		node := client.getNode(getNodeId(request, client))
 
-		channel, err := client.getChannel(node.AccountID)
+		channel, err := client.getChannel(node.accountID)
 		if err != nil {
 			return intermediateResponse{}, nil
 		}
@@ -79,7 +78,7 @@ func execute(
 
 		resp := response{}
 
-		if !node.isHealthy(){
+		if !node.isHealthy() {
 			node.wait()
 		}
 
@@ -114,7 +113,7 @@ func execute(
 			return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
 		}
 
-		return mapResponse(request, resp, node.AccountID, protoRequest)
+		return mapResponse(request, resp, node.accountID, protoRequest)
 	}
 }
 
