@@ -9,6 +9,14 @@ import (
 )
 
 func TestLiveHashQuery_Execute(t *testing.T) {
+	var client *Client
+
+	network := os.Getenv("HEDERA_NETWORK")
+
+	if network == "previewnet" {
+		client = ClientForPreviewnet()
+	}
+
 	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
