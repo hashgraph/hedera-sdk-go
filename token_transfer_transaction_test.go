@@ -19,7 +19,6 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	var err error
 	client, err = ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
-
 	if err != nil {
 		client = ClientForTestnet()
 	}
@@ -60,7 +59,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
-	
+
 	println("2")
 	resp, err = NewTokenCreateTransaction().
 		SetName("ffff").
@@ -74,7 +73,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 		SetKycKey(operatorKey.PublicKey()).
 		SetSupplyKey(operatorKey.PublicKey()).
 		SetFreezeDefault(false).
-		SetExpirationTime(uint64(time.Now().Unix() + 86400 * 90)).
+		SetExpirationTime(uint64(time.Now().Unix() + 86400*90)).
 		Execute(client)
 	assert.NoError(t, err)
 

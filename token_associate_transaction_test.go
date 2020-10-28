@@ -19,7 +19,6 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 	var err error
 	client, err = ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
 
-
 	if err != nil {
 		client = ClientForTestnet()
 	}
@@ -72,7 +71,7 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 		SetKycKey(operatorKey.PublicKey()).
 		SetSupplyKey(operatorKey.PublicKey()).
 		SetFreezeDefault(false).
-		SetExpirationTime(uint64(time.Now().Unix() + 86400 * 90)).
+		SetExpirationTime(uint64(time.Now().Unix() + 86400*90)).
 		Execute(client)
 	assert.NoError(t, err)
 
