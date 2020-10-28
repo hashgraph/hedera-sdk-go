@@ -64,5 +64,3 @@ func (builder *TokenBalanceQuery) SetQueryPayment(paymentAmount Hbar) *TokenBala
 func (builder *TokenBalanceQuery) SetQueryPaymentTransaction(tx Transaction) *TokenBalanceQuery {
 	return &TokenBalanceQuery{*builder.QueryBuilder.SetQueryPaymentTransaction(tx), builder.pb}
 }
-
-

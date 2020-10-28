@@ -2,33 +2,15 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 	"time"
 )
 
 func TestTokenTransferTransaction_Execute(t *testing.T) {
-	client, err := ClientFromFile(os.Getenv("CONFIG_FILE"))
+	client := newTestClient(t)
 
-	if err != nil {
-		client = ClientForTestnet()
-	}
-
-	configOperatorID := os.Getenv("OPERATOR_ID")
-	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-	var operatorAccountID AccountID
-	var operatorKey Ed25519PrivateKey
-
-	if configOperatorID != "" && configOperatorKey != "" {
-		operatorAccountID, err = AccountIDFromString(configOperatorID)
-		assert.NoError(t, err)
-
-		operatorKey, err = Ed25519PrivateKeyFromString(configOperatorKey)
-		assert.NoError(t, err)
-
-		client.SetOperator(operatorAccountID, operatorKey)
-	}
+	operatorKey := client.operator.privateKey
+	operatorAccountID := client.operator.accountID
 
 	newKey, err := GenerateEd25519PrivateKey()
 	assert.NoError(t, err)

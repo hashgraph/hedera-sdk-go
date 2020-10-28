@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -62,4 +63,34 @@ func TestClientFromJSONWithOperator(t *testing.T) {
 	assert.NotNil(t, client.operator)
 	assert.Equal(t, testOperatorKey.keyData, client.operator.privateKey.keyData)
 	assert.Equal(t, AccountID{Account: 3}, client.operator.accountID)
+}
+
+func newTestClient(t *testing.T) *Client {
+	var client *Client
+	var err error
+
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		client = ClientForPreviewnet()
+	} else {
+		client, err = ClientFromFile(os.Getenv("CONFIG_FILE"))
+
+		if err != nil {
+			client = ClientForTestnet()
+		}
+	}
+
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		operatorKey, err := Ed25519PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
+
+	return client
 }
