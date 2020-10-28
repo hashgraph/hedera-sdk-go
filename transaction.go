@@ -231,6 +231,7 @@ func transaction_mapResponseStatus(
 	_ request,
 	response response,
 ) Status {
+	println(Status(response.transaction.NodeTransactionPrecheckCode).String())
 	return Status(response.transaction.NodeTransactionPrecheckCode)
 }
 

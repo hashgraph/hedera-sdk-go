@@ -45,6 +45,8 @@ func (transaction *TokenTransferTransaction) AddRecipient(tokenID TokenID, accou
 func (transaction *TokenTransferTransaction) AddTransfer(tokenID TokenID, accountID AccountID, value int64) *TokenTransferTransaction {
 	transaction.requireNotFrozen()
 
+	println("value", value)
+
 	accountAmount := proto.AccountAmount{
 		AccountID: accountID.toProtobuf(),
 		Amount:    value,
@@ -52,6 +54,8 @@ func (transaction *TokenTransferTransaction) AddTransfer(tokenID TokenID, accoun
 
 	accountAmountArray := make([]*proto.AccountAmount, 1)
 	accountAmountArray[0] = &accountAmount
+
+	println("value", accountAmountArray[0].String())
 
 	tokenTransfers := &proto.TokenTransferList{
 		Token:     tokenID.toProtobuf(),
