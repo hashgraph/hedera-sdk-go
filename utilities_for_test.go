@@ -1,6 +1,9 @@
 package hedera
 
 import (
+	"github.com/stretchr/testify/assert"
+	"os"
+	"testing"
 	"time"
 )
 
@@ -67,4 +70,34 @@ func newMockTransaction() (Transaction, error) {
 	tx.Sign(privateKey)
 
 	return tx.Transaction, nil
+}
+
+func newTestClient(t *testing.T) *Client {
+	var client *Client
+	var err error
+
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		client = ClientForPreviewnet()
+	} else {
+		client, err = ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
+
+		if err != nil {
+			client = ClientForTestnet()
+		}
+	}
+
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		operatorKey, err := PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
+
+	return client
 }
