@@ -67,19 +67,18 @@ func TransactionFromBytes(bytes []byte) Transaction {
 
 func (transaction *Transaction) GetTransactionHash() map[AccountID][]byte {
 	hash := sha512.New384()
-	bytes, err := protobuf.Marshal(transaction.pbBody)
-	if err != nil {
-		// This should be unreachable
-		// From the documentation this appears to only be possible if there are missing proto types
-		panic(err)
-	}
-	hash.Write(bytes)
-
-	byteHash := hex.EncodeToString(hash.Sum(nil))
-
 	transactionHash := make(map[AccountID][]byte)
 
-	for _, node := range transaction.nodeIDs {
+	for i, node := range transaction.nodeIDs {
+		byt, err := protobuf.Marshal(transaction.transactions[i])
+		if err != nil {
+			// This should be unreachable
+			// From the documentation this appears to only be possible if there are missing proto types
+			panic(err)
+		}
+		hash.Write(byt)
+		byteHash := hex.EncodeToString(hash.Sum(nil))
+
 		transactionHash[node] = []byte(byteHash)
 	}
 
