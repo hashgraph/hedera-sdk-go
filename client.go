@@ -44,38 +44,38 @@ type operator struct {
 	signer     TransactionSigner
 }
 
-var mainnetNodes = map[AccountID]string{
-	{Account: 3}:  "35.237.200.180:50211",
-	{Account: 4}:  "35.186.191.247:50211",
-	{Account: 5}:  "35.192.2.25:50211",
-	{Account: 6}:  "35.199.161.108:50211",
-	{Account: 7}:  "35.203.82.240:50211",
-	{Account: 8}:  "35.236.5.219:50211",
-	{Account: 9}:  "35.197.192.225:50211",
-	{Account: 10}: "35.242.233.154:50211",
-	{Account: 11}: "35.240.118.96:50211",
-	{Account: 12}: "35.204.86.32:50211",
+var mainnetNodes = map[string]AccountID{
+	"35.237.200.180:50211": {Account: 3},
+	"35.186.191.247:50211": {Account: 4},
+	"35.192.2.25:50211":    {Account: 5},
+	"35.199.161.108:50211": {Account: 6},
+	"35.203.82.240:50211":  {Account: 7},
+	"35.236.5.219:50211":   {Account: 8},
+	"35.197.192.225:50211": {Account: 9},
+	"35.242.233.154:50211": {Account: 10},
+	"35.240.118.96:50211":  {Account: 11},
+	"35.204.86.32:50211":   {Account: 12},
 }
 
-var testnetNodes = map[AccountID]string{
-	{Account: 3}: "0.testnet.hedera.com:50211",
-	{Account: 4}: "1.testnet.hedera.com:50211",
-	{Account: 5}: "2.testnet.hedera.com:50211",
-	{Account: 6}: "3.testnet.hedera.com:50211",
+var testnetNodes = map[string]AccountID{
+	"0.testnet.hedera.com:50211": {Account: 3},
+	"1.testnet.hedera.com:50211": {Account: 4},
+	"2.testnet.hedera.com:50211": {Account: 5},
+	"3.testnet.hedera.com:50211": {Account: 6},
 }
 
-var previewnetNodes = map[AccountID]string{
-	{Account: 3}: "0.previewnet.hedera.com:50211",
-	{Account: 4}: "1.previewnet.hedera.com:50211",
-	{Account: 5}: "2.previewnet.hedera.com:50211",
-	{Account: 6}: "3.previewnet.hedera.com:50211",
+var previewnetNodes = map[string]AccountID{
+	"0.previewnet.hedera.com:50211": {Account: 3},
+	"1.previewnet.hedera.com:50211": {Account: 4},
+	"2.previewnet.hedera.com:50211": {Account: 5},
+	"3.previewnet.hedera.com:50211": {Account: 6},
 }
 
 var mainnetMirror = []string{"hcs.mainnet.mirrornode.hedera.com:5600"}
 var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
-func ClientForNetwork(network map[AccountID]string) *Client {
+func ClientForNetwork(network map[string]AccountID) *Client {
 	return newClient(network, []string{})
 }
 
@@ -105,9 +105,9 @@ func ClientForPreviewnet() *Client {
 
 // newClient takes in a map of node addresses to their respective IDS (network)
 // and returns a Client instance which can be used to
-func newClient(network map[AccountID]string, mirrorNetwork []string) *Client {
+func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
 	newNetwork := make(map[AccountID]node, len(network))
-	for accountID, node := range network {
+	for node, accountID := range network {
 		newNetwork[accountID] = newNode(accountID, node)
 	}
 
@@ -151,15 +151,15 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-	network := make(map[AccountID]string)
+	network := make(map[string]AccountID)
 
-	for id, url := range clientConfig.Network {
+	for url, id := range clientConfig.Network {
 		accountID, err := AccountIDFromString(id)
 		if err != nil {
 			return nil, err
 		}
 
-		network[accountID] = url
+		network[url] = accountID
 	}
 
 	client := newClient(network, clientConfig.MirrorNetwork)
@@ -227,8 +227,8 @@ func (client *Client) Close() error {
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetNetwork(network map[AccountID]string) *Client {
-	for id, node := range network {
+func (client *Client) SetNetwork(network map[string]AccountID) *Client {
+	for node, id := range network {
 		client.networkNodeIds = append(client.networkNodeIds, newNode(id, node))
 		client.network[id] = newNode(id, node)
 	}
