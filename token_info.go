@@ -9,11 +9,11 @@ type TokenInfo struct {
 	Decimals            uint32
 	TotalSupply         uint64
 	Treasury            AccountID
-	AdminKey            Key
-	KycKey              Key
-	FreezeKey           Key
-	WipeKey             Key
-	SupplyKey           Key
+	AdminKey            *Key
+	KycKey              *Key
+	FreezeKey           *Key
+	WipeKey             *Key
+	SupplyKey           *Key
 	DefaultFreezeStatus *bool
 	DefaultKycStatus    *bool
 	IsDelete            bool
@@ -49,27 +49,27 @@ func kycStatusFromProtobuf(pb *proto.TokenKycStatus) *bool {
 }
 
 func tokenInfoFromProtobuf(tokenInfo *proto.TokenInfo) TokenInfo {
-	var adminKey PublicKey
+	var adminKey Key
 	if tokenInfo.AdminKey != nil {
 		adminKey = PublicKey{keyData: tokenInfo.AdminKey.GetEd25519()}
 	}
 
-	var kycKey PublicKey
+	var kycKey Key
 	if tokenInfo.KycKey != nil {
 		kycKey = PublicKey{keyData: tokenInfo.KycKey.GetEd25519()}
 	}
 
-	var freezeKey PublicKey
+	var freezeKey Key
 	if tokenInfo.FreezeKey != nil {
 		freezeKey = PublicKey{keyData: tokenInfo.FreezeKey.GetEd25519()}
 	}
 
-	var wipeKey PublicKey
+	var wipeKey Key
 	if tokenInfo.WipeKey != nil {
 		wipeKey = PublicKey{keyData: tokenInfo.WipeKey.GetEd25519()}
 	}
 
-	var supplyKey PublicKey
+	var supplyKey Key
 	if tokenInfo.SupplyKey != nil {
 		supplyKey = PublicKey{keyData: tokenInfo.SupplyKey.GetEd25519()}
 	}
@@ -81,11 +81,11 @@ func tokenInfoFromProtobuf(tokenInfo *proto.TokenInfo) TokenInfo {
 		Decimals:            tokenInfo.Decimals,
 		TotalSupply:         tokenInfo.TotalSupply,
 		Treasury:            accountIDFromProtobuf(tokenInfo.Treasury),
-		AdminKey:            adminKey,
-		KycKey:              kycKey,
-		FreezeKey:           freezeKey,
-		WipeKey:             wipeKey,
-		SupplyKey:           supplyKey,
+		AdminKey:            &adminKey,
+		KycKey:              &kycKey,
+		FreezeKey:           &freezeKey,
+		WipeKey:             &wipeKey,
+		SupplyKey:           &supplyKey,
 		DefaultFreezeStatus: freezeStatusFromProtobuf(&tokenInfo.DefaultFreezeStatus),
 		DefaultKycStatus:    kycStatusFromProtobuf(&tokenInfo.DefaultKycStatus),
 		IsDelete:            tokenInfo.IsDeleted,
