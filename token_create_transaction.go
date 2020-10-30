@@ -37,7 +37,7 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	}
 
 	transaction.SetAutoRenewPeriod(7890000)
-	transaction.SetExpirationTime(uint64(time.Now().Add(7890000 * time.Second).Unix()))
+	transaction.SetExpirationTime(time.Now().Add(7890000 * time.Second))
 
 	return &transaction
 }
@@ -121,10 +121,14 @@ func (transaction *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) 
 }
 
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
-func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime uint64) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Expiry = expirationTime
+	transaction.pb.Expiry = uint64(expirationTime.UnixNano())
 	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
+	return time.Unix(0, int64(transaction.pb.GetExpiry()))
 }
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
@@ -134,12 +138,22 @@ func (transaction *TokenCreateTransaction) SetAutoRenewAccount(autoRenewAccount 
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
+}
+
+
 // The interval at which the auto-renew account will be charged to extend the token's expiry
-func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = autoRenewPeriod
+	transaction.pb.AutoRenewPeriod = uint64(autoRenewPeriod.Milliseconds())
 	return transaction
 }
+
+func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
+	return time.Duration(transaction.pb.GetAutoRenewPeriod())
+}
+
 
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
