@@ -217,7 +217,9 @@ func transaction_makeRequest(request request) protoRequest {
 }
 
 func transaction_advanceRequest(request request) {
-	request.transaction.nextTransactionIndex++
+	length := len(request.transaction.transactions)
+	currentIndex := request.transaction.nextTransactionIndex
+	request.transaction.nextTransactionIndex = (currentIndex + 1) % length
 }
 
 func transaction_getNodeId(
@@ -231,7 +233,6 @@ func transaction_mapResponseStatus(
 	_ request,
 	response response,
 ) Status {
-	println(Status(response.transaction.NodeTransactionPrecheckCode).String())
 	return Status(response.transaction.NodeTransactionPrecheckCode)
 }
 

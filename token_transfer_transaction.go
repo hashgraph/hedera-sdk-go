@@ -8,15 +8,17 @@ import (
 
 type TokenTransferTransaction struct {
 	Transaction
-	pb *proto.TokenTransfersTransactionBody
+	pb           *proto.TokenTransfersTransactionBody
+	tokenIndexes map[TokenID]int
 }
 
 func NewTokenTransferTransaction() *TokenTransferTransaction {
 	pb := &proto.TokenTransfersTransactionBody{}
 
 	transaction := TokenTransferTransaction{
-		pb:          pb,
-		Transaction: newTransaction(),
+		pb:           pb,
+		Transaction:  newTransaction(),
+		tokenIndexes: make(map[TokenID]int),
 	}
 
 	return &transaction
@@ -45,24 +47,23 @@ func (transaction *TokenTransferTransaction) AddRecipient(tokenID TokenID, accou
 func (transaction *TokenTransferTransaction) AddTransfer(tokenID TokenID, accountID AccountID, value int64) *TokenTransferTransaction {
 	transaction.requireNotFrozen()
 
-	println("value", value)
-
 	accountAmount := proto.AccountAmount{
 		AccountID: accountID.toProtobuf(),
 		Amount:    value,
 	}
 
-	accountAmountArray := make([]*proto.AccountAmount, 1)
-	accountAmountArray[0] = &accountAmount
-
-	println("value", accountAmountArray[0].String())
-
-	tokenTransfers := &proto.TokenTransferList{
-		Token:     tokenID.toProtobuf(),
-		Transfers: accountAmountArray,
+	if index, ok := transaction.tokenIndexes[tokenID]; ok {
+		transaction.pb.TokenTransfers[index].Transfers = append(
+			transaction.pb.TokenTransfers[index].Transfers,
+			&accountAmount,
+		)
+	} else {
+		transaction.tokenIndexes[tokenID] = len(transaction.pb.TokenTransfers)
+		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
+			Token:     tokenID.toProtobuf(),
+			Transfers: []*proto.AccountAmount{&accountAmount},
+		})
 	}
-
-	transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, tokenTransfers)
 
 	return transaction
 }
