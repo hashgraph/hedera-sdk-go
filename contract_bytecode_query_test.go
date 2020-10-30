@@ -7,7 +7,7 @@ import (
 )
 
 func TestContractBytecodeQuery(t *testing.T) {
-	client, err := ClientFromJsonFile(os.Getenv("CONFIG_FILE"))
+	client, err := ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 
 	if err != nil {
 		client = ClientForTestnet()

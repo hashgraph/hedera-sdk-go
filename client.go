@@ -141,9 +141,9 @@ type clientConfig struct {
 	Operator      *configOperator   `json:"operator"`
 }
 
-// ClientFromJSON takes in the byte slice representation of a JSON string or
+// ClientFromConfig takes in the byte slice representation of a JSON string or
 // document and returns Client based on the configuration.
-func ClientFromJSON(jsonBytes []byte) (*Client, error) {
+func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 	var clientConfig clientConfig
 
 	err := json.Unmarshal(jsonBytes, &clientConfig)
@@ -191,9 +191,9 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 	return client, nil
 }
 
-// ClientFromJsonFile takes a filename string representing the path to a JSON encoded
+// ClientFromConfigFile takes a filename string representing the path to a JSON encoded
 // Client file and returns a Client based on the configuration.
-func ClientFromJsonFile(filename string) (*Client, error) {
+func ClientFromConfigFile(filename string) (*Client, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -208,7 +208,7 @@ func ClientFromJsonFile(filename string) (*Client, error) {
 		return nil, err
 	}
 
-	return ClientFromJSON(configBytes)
+	return ClientFromConfig(configBytes)
 }
 
 // Close is used to disconnect the Client from the network

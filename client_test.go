@@ -40,8 +40,8 @@ const testClientJSONWithOperator string = `{
     }
 }`
 
-func TestClientFromJSON(t *testing.T) {
-	client, err := ClientFromJSON([]byte(testClientJSON))
+func TestClientFromConfig(t *testing.T) {
+	client, err := ClientFromConfig([]byte(testClientJSON))
 	assert.NoError(t, err)
 
 	assert.NotNil(t, client)
@@ -49,8 +49,8 @@ func TestClientFromJSON(t *testing.T) {
 	assert.Nil(t, client.operator)
 }
 
-func TestClientFromJSONWithOperator(t *testing.T) {
-	client, err := ClientFromJSON([]byte(testClientJSONWithOperator))
+func TestClientFromConfigWithOperator(t *testing.T) {
+	client, err := ClientFromConfig([]byte(testClientJSONWithOperator))
 	assert.NoError(t, err)
 
 	assert.NotNil(t, client)
