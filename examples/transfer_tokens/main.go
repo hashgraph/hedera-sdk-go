@@ -28,16 +28,22 @@ func main() {
 		client.SetOperator(operatorAccountID, operatorPrivateKey)
 	}
 
-	key, err := hedera.GeneratePrivateKey()
+	key1, err := hedera.GeneratePrivateKey()
+	if err != nil {
+		panic(err)
+	}
+	key2, err := hedera.GeneratePrivateKey()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("privateKey = %v\n", key.String())
-	fmt.Printf("publicKey = %v\n", key.PublicKey().String())
+	fmt.Printf("privateKey = %v\n", key1.String())
+	fmt.Printf("publicKey = %v\n", key1.PublicKey().String())
+	fmt.Printf("privateKey = %v\n", key2.String())
+	fmt.Printf("publicKey = %v\n", key2.PublicKey().String())
 
 	resp, err := hedera.NewAccountCreateTransaction().
-		SetKey(key.PublicKey()).
+		SetKey(key1.PublicKey()).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -48,17 +54,31 @@ func main() {
 		panic(err)
 	}
 
-	accountID := *receipt.AccountID
+	accountID1 := *receipt.AccountID
 
-	fmt.Printf("account = %v\n", accountID.String())
+	fmt.Printf("account = %v\n", accountID1.String())
 
-	nodeIDs := make([]hedera.AccountID, 1)
-	nodeIDs[0] = resp.NodeID
+	resp, err = hedera.NewAccountCreateTransaction().
+		SetKey(key1.PublicKey()).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	receipt, err = resp.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	accountID2 := *receipt.AccountID
+
+	fmt.Printf("account = %v\n", accountID2.String())
+
 
 	resp, err = hedera.NewTokenCreateTransaction().
 		SetName("ffff").
 		SetSymbol("F").
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
 		SetDecimals(3).
 		SetInitialSupply(1000000).
 		SetTreasury(client.GetOperatorID()).
@@ -83,8 +103,8 @@ func main() {
 	fmt.Printf("token = %v\n", tokenID.String())
 
 	transaction, err := hedera.NewTokenAssociateTransaction().
-		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetAccountID(accountID1).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
 	if err != nil {
@@ -92,7 +112,7 @@ func main() {
 	}
 
 	resp, err = transaction.
-		Sign(key).
+		Sign(key1).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -103,12 +123,35 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Associated account %v with token %v\n", accountID.String(), tokenID.String())
+	fmt.Printf("Associated account %v with token %v\n", accountID1.String(), tokenID.String())
+
+	transaction, err = hedera.NewTokenAssociateTransaction().
+		SetAccountID(accountID2).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
+		SetTokenIDs(tokenID).
+		FreezeWith(client)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err = transaction.
+		Sign(key2).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	receipt, err = resp.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Associated account %v with token %v\n", accountID2.String(), tokenID.String())
 
 	resp, err = hedera.NewTokenGrantKycTransaction().
 		SetTokenID(tokenID).
-		SetNodeAccountIDs(nodeIDs).
-		SetAccountID(accountID).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
+		SetAccountID(accountID1).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -119,11 +162,27 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Granted KYC for account %v on token %v\n", accountID.String(), tokenID.String())
+	fmt.Printf("Granted KYC for account %v on token %v\n", accountID1.String(), tokenID.String())
+
+	resp, err = hedera.NewTokenGrantKycTransaction().
+		SetTokenID(tokenID).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
+		SetAccountID(accountID2).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	receipt, err = resp.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Granted KYC for account %v on token %v\n", accountID2.String(), tokenID.String())
 
 	resp, err = hedera.NewTokenTransferTransaction().
 		AddSender(tokenID, client.GetOperatorID(), 10).
-		AddRecipient(tokenID, accountID, 10).
+		AddRecipient(tokenID, accountID1, 10).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -137,15 +196,13 @@ func main() {
 	fmt.Printf(
 		"Sent 10 tokens from account %v to account %v on token %v\n",
 		client.GetOperatorID().String(),
-		accountID.String(),
+		accountID1.String(),
 		tokenID.String(),
 	)
 
-	resp, err = hedera.NewTokenWipeTransaction().
-		SetTokenID(tokenID).
-		SetNodeAccountIDs(nodeIDs).
-		SetAccountID(accountID).
-		SetAmount(10).
+	resp, err = hedera.NewTokenTransferTransaction().
+		AddSender(tokenID, accountID1, 10).
+		AddRecipient(tokenID, accountID2, 10).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -156,11 +213,53 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Wiped balance of account %v\n", accountID.String())
+	fmt.Printf(
+		"Sent 10 tokens from account %v to account %v on token %v\n",
+		accountID1.String(),
+		accountID2.String(),
+		tokenID.String(),
+	)
+
+	resp, err = hedera.NewTokenTransferTransaction().
+		AddSender(tokenID, accountID2, 10).
+		AddRecipient(tokenID, accountID1, 10).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	receipt, err = resp.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf(
+		"Sent 10 tokens from account %v to account %v on token %v\n",
+		accountID2.String(),
+		accountID1.String(),
+		tokenID.String(),
+	)
+
+	resp, err = hedera.NewTokenWipeTransaction().
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
+		SetAccountID(accountID1).
+		SetTokenID(tokenID).
+		SetAmount(10).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = resp.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Wiped account %v on token %v\n", accountID1.String(), tokenID.String())
 
 	resp, err = hedera.NewTokenDeleteTransaction().
 		SetTokenID(tokenID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
 		Execute(client)
 
 	receipt, err = resp.GetReceipt(client)
@@ -171,8 +270,8 @@ func main() {
 	fmt.Printf("Deleted token %v\n", tokenID.String())
 
 	accountDeleteTx, err := hedera.NewAccountDeleteTransaction().
-		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetAccountID(accountID1).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
 		SetTransferAccountID(client.GetOperatorID()).
 		FreezeWith(client)
 	if err != nil {
@@ -180,7 +279,7 @@ func main() {
 	}
 
 	resp, err = accountDeleteTx.
-		Sign(key).
+		Sign(key1).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -191,5 +290,28 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Deleted account %v\n", accountID.String())
+	fmt.Printf("Deleted account %v\n", accountID1.String())
+
+	accountDeleteTx, err = hedera.NewAccountDeleteTransaction().
+		SetAccountID(accountID2).
+		SetNodeAccountIDs([]hedera.AccountID{resp.NodeID}).
+		SetTransferAccountID(client.GetOperatorID()).
+		FreezeWith(client)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err = accountDeleteTx.
+		Sign(key2).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	receipt, err = resp.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Deleted account %v\n", accountID2.String())
 }
