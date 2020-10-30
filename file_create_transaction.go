@@ -50,7 +50,7 @@ func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransa
 	if transaction.pb.Keys == nil {
 		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 	}
-	keyList := KeyList{keys: []*proto.Key{}}
+	keyList := NewKeyList()
 	keyList.AddAll(keys)
 
 	transaction.pb.Keys = keyList.toProtoKeyList()
@@ -59,7 +59,17 @@ func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransa
 }
 
 func (transaction *FileCreateTransaction) GetKeys() KeyList {
-	return keyListFromProtobuf(transaction.pb.GetKeys())
+	keys := transaction.pb.GetKeys()
+	if keys != nil {
+		keyList, err := keyListFromProtobuf(keys)
+		if err != nil {
+			return KeyList{}
+		}
+
+		return keyList
+	} else {
+		return KeyList{}
+	}
 }
 
 // SetExpirationTime sets the time at which this file should expire (unless FileUpdateTransaction is used before then to

@@ -21,13 +21,15 @@ type TokenInfo struct {
 	ExpirationTime      uint64
 }
 
-func freezeStatusFromProtobuf(pb *proto.TokenFreezeStatus) *bool {
+func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
 	var freezeStatus bool
 	switch pb.Number() {
 	case 1:
 		freezeStatus = true
+		break
 	case 2:
 		freezeStatus = false
+		break
 	default:
 		return nil
 	}
@@ -35,13 +37,15 @@ func freezeStatusFromProtobuf(pb *proto.TokenFreezeStatus) *bool {
 	return &freezeStatus
 }
 
-func kycStatusFromProtobuf(pb *proto.TokenKycStatus) *bool {
+func kycStatusFromProtobuf(pb proto.TokenKycStatus) *bool {
 	var kycStatus bool
 	switch pb.Number() {
 	case 1:
 		kycStatus = true
+		break
 	case 2:
 		kycStatus = false
+		break
 	default:
 		return nil
 	}
@@ -86,8 +90,8 @@ func tokenInfoFromProtobuf(tokenInfo *proto.TokenInfo) TokenInfo {
 		FreezeKey:           &freezeKey,
 		WipeKey:             &wipeKey,
 		SupplyKey:           &supplyKey,
-		DefaultFreezeStatus: freezeStatusFromProtobuf(&tokenInfo.DefaultFreezeStatus),
-		DefaultKycStatus:    kycStatusFromProtobuf(&tokenInfo.DefaultKycStatus),
+		DefaultFreezeStatus: freezeStatusFromProtobuf(tokenInfo.DefaultFreezeStatus),
+		DefaultKycStatus:    kycStatusFromProtobuf(tokenInfo.DefaultKycStatus),
 		IsDelete:            tokenInfo.IsDeleted,
 		AutoRenewPeriod:     tokenInfo.AutoRenewPeriod,
 		ExpirationTime:      tokenInfo.Expiry,

@@ -25,49 +25,35 @@ const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
 type Key interface {
 	toProtoKey() *proto.Key
+	String() string
 }
 
-func publicKeyFromProtobuf(pbKey *proto.Key) (Key, error) {
+func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 	switch key := pbKey.GetKey().(type) {
 	case *proto.Key_Ed25519:
 		return PublicKeyFromBytes(key.Ed25519)
 
 	case *proto.Key_ThresholdKey:
-		threshold := key.ThresholdKey.GetThreshold()
-		keys, err := publicKeyListFromProtobuf(key.ThresholdKey.GetKeys())
+		threshold := int(key.ThresholdKey.GetThreshold())
+		keys, err := keyListFromProtobuf(key.ThresholdKey.GetKeys())
 		if err != nil {
 			return nil, err
 		}
+		keys.threshold = threshold
 
-		return KeyListWithThreshold(uint(threshold)).AddAll(keys), nil
+		return &keys, nil
 
 	case *proto.Key_KeyList:
-		keys, err := publicKeyListFromProtobuf(key.KeyList)
+		keys, err := keyListFromProtobuf(key.KeyList)
 		if err != nil {
 			return nil, err
 		}
 
-		return NewKeyList().AddAll(keys), nil
+		return &keys, nil
 
 	default:
 		return nil, newErrBadKeyf("key type not implemented: %v", key)
 	}
-}
-
-func publicKeyListFromProtobuf(pb *proto.KeyList) ([]Key, error) {
-	var keys []Key = make([]Key, len(pb.Keys))
-
-	for i, pbKey := range pb.Keys {
-		key, err := publicKeyFromProtobuf(pbKey)
-
-		if err != nil {
-			return nil, err
-		}
-
-		keys[i] = key
-	}
-
-	return keys, nil
 }
 
 // PrivateKey is an ed25519 private key.

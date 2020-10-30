@@ -15,8 +15,8 @@ func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationshi
 		TokenID:      tokenIDFromProtobuf(pb.GetTokenId()),
 		Symbol:       pb.Symbol,
 		Balance:      pb.Balance,
-		KycStatus:    kycStatusFromProtobuf(&pb.KycStatus),
-		FreezeStatus: freezeStatusFromProtobuf(&pb.FreezeStatus),
+		KycStatus:    kycStatusFromProtobuf(pb.KycStatus),
+		FreezeStatus: freezeStatusFromProtobuf(pb.FreezeStatus),
 	}
 }
 

@@ -27,7 +27,7 @@ func (transaction *AccountUpdateTransaction) SetKey(publicKey PublicKey) *Accoun
 }
 
 func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
-	return publicKeyFromProtobuf(transaction.pb.GetKey())
+	return keyFromProtobuf(transaction.pb.GetKey())
 }
 
 func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {

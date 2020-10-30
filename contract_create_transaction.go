@@ -41,7 +41,7 @@ func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *Contrac
 }
 
 func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
-	return publicKeyFromProtobuf(transaction.pb.GetAdminKey())
+	return keyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {

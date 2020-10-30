@@ -35,7 +35,7 @@ func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTran
 	if transaction.pb.LiveHash.Keys == nil {
 		transaction.pb.LiveHash.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 	}
-	keyList := KeyList{keys: []*proto.Key{}}
+	keyList := NewKeyList()
 	keyList.AddAll(keys)
 
 	transaction.pb.LiveHash.Keys = keyList.toProtoKeyList()
@@ -44,7 +44,17 @@ func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTran
 }
 
 func (transaction *LiveHashAddTransaction) GetKeys() KeyList {
-	return keyListFromProtobuf(transaction.pb.GetLiveHash().GetKeys())
+	keys := transaction.pb.GetLiveHash().GetKeys()
+	if keys != nil {
+		keyList, err := keyListFromProtobuf(keys)
+		if err != nil {
+			return KeyList{}
+		}
+
+		return keyList
+	} else {
+		return KeyList{}
+	}
 }
 
 func (transaction *LiveHashAddTransaction) SetDuration(duration time.Duration) *LiveHashAddTransaction {

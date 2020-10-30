@@ -32,7 +32,7 @@ func newContractInfo(accountID AccountID, contractID ContractID, contractAccount
 }
 
 func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
-	adminKey, err := publicKeyFromProtobuf(contractInfo.GetAdminKey())
+	adminKey, err := keyFromProtobuf(contractInfo.GetAdminKey())
 	if err != nil {
 		return ContractInfo{}, err
 	}

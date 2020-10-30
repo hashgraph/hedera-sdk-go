@@ -82,7 +82,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	assert.Equal(t, newKey2.PublicKey(), info.Key)
+	assert.Equal(t, newKey2.PublicKey().String(), info.Key.String())
 
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

@@ -37,7 +37,7 @@ func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransa
 	if transaction.pb.Keys == nil {
 		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
 	}
-	keyList := KeyList{keys: []*proto.Key{}}
+	keyList := NewKeyList()
 	keyList.AddAll(keys)
 
 	transaction.pb.Keys = keyList.toProtoKeyList()
@@ -46,7 +46,17 @@ func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransa
 }
 
 func (transaction *FileUpdateTransaction) GetKeys() KeyList {
-	return keyListFromProtobuf(transaction.pb.Keys)
+	keys := transaction.pb.GetKeys()
+	if keys != nil {
+		keyList, err := keyListFromProtobuf(keys)
+		if err != nil {
+			return KeyList{}
+		}
+
+		return keyList
+	} else {
+		return KeyList{}
+	}
 }
 
 func (transaction *FileUpdateTransaction) SetExpirationTime(expiration time.Time) *FileUpdateTransaction {

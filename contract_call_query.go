@@ -127,7 +127,7 @@ func (query *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCal
 	return query
 }
 
-func (query *ContractCallQuery) SetNodeAccountID(accountID []AccountID) *ContractCallQuery {
+func (query *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *ContractCallQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }

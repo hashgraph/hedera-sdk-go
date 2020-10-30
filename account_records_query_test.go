@@ -2,29 +2,11 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 )
 
-func TestAccountRecordQuery(t *testing.T) {
-	client, err := ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
-
-	if err != nil {
-		client = ClientForTestnet()
-	}
-
-	configOperatorID := os.Getenv("OPERATOR_ID")
-	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-	if configOperatorID != "" && configOperatorKey != "" {
-		operatorAccountID, err := AccountIDFromString(configOperatorID)
-		assert.NoError(t, err)
-
-		operatorKey, err := PrivateKeyFromString(configOperatorKey)
-		assert.NoError(t, err)
-
-		client.SetOperator(operatorAccountID, operatorKey)
-	}
+func TestAccountRecordQuery_Execute(t *testing.T) {
+	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

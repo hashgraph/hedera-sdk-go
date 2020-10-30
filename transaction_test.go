@@ -11,7 +11,7 @@ func TestTransactionSerializationDeserialization(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	_ = transaction.getTransactionHash()
+	_ = transaction.GetTransactionHash()
 
 	assert.NoError(t, err)
 

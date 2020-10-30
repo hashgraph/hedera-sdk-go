@@ -69,7 +69,7 @@ func (transaction *ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) *
 }
 
 func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
-	return publicKeyFromProtobuf(transaction.pb.GetAdminKey())
+	return keyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 // SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,

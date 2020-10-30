@@ -93,10 +93,7 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs(nodeIDs).
 		SetHash(_hash).
 		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
 	resp, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).

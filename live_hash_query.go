@@ -91,7 +91,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	return liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash), err
+	return liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

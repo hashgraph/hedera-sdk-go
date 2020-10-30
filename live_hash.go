@@ -32,14 +32,18 @@ func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
 	}
 }
 
-func liveHashFromProtobuf(hash *proto.LiveHash) LiveHash {
+func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
+	keyList, err := keyListFromProtobuf(hash.Keys)
+	if err != nil {
+		return LiveHash{}, err
+	}
+
 	return LiveHash{
 		AccountID: accountIDFromProtobuf(hash.GetAccountId()),
 		Hash:      hash.Hash,
-		Keys:      keyListFromProtobuf(hash.Keys),
+		Keys:      keyList,
 		Duration: time.Date(time.Now().Year(), time.Now().Month(),
 			time.Now().Day(), time.Now().Hour(), time.Now().Minute(),
 			int(hash.Duration.Seconds), time.Now().Nanosecond(), time.Now().Location()),
-	}
-
+	}, nil
 }

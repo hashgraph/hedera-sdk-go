@@ -25,7 +25,7 @@ type AccountInfo struct {
 }
 
 func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
-	pubKey, err := publicKeyFromProtobuf(pb.Key)
+	pubKey, err := keyFromProtobuf(pb.Key)
 	if err != nil {
 		return AccountInfo{}, err
 	}

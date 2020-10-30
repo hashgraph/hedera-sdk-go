@@ -43,7 +43,7 @@ func (transaction *TopicCreateTransaction) SetAdminKey(publicKey PublicKey) *Top
 }
 
 func (transaction *TopicCreateTransaction) GetAdminKey() (Key, error) {
-	return publicKeyFromProtobuf(transaction.pb.GetAdminKey())
+	return keyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
@@ -54,7 +54,7 @@ func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey PublicKey) *To
 }
 
 func (transaction *TopicCreateTransaction) GetSubmitKey() (Key, error) {
-	return publicKeyFromProtobuf(transaction.pb.GetSubmitKey())
+	return keyFromProtobuf(transaction.pb.GetSubmitKey())
 }
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.

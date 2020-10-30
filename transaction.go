@@ -65,7 +65,7 @@ func TransactionFromBytes(bytes []byte) Transaction {
 	return tx
 }
 
-func (transaction *Transaction) getTransactionHash() map[AccountID][]byte {
+func (transaction *Transaction) GetTransactionHash() map[AccountID][]byte {
 	hash := sha512.New384()
 	bytes, err := protobuf.Marshal(transaction.pbBody)
 	if err != nil {

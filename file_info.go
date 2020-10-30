@@ -10,10 +10,10 @@ type FileInfo struct {
 	Size           int64
 	ExpirationTime time.Time
 	IsDeleted      bool
-	Keys           []PublicKey
+	Keys           []Key
 }
 
-func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys []PublicKey) FileInfo {
+func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys []Key) FileInfo {
 	return FileInfo{
 		FileID:         fileID,
 		Size:           size,
@@ -24,18 +24,14 @@ func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted 
 }
 
 func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {
-	pbKeys := fileInfo.Keys
-	keys, err := publicKeyListFromProtobuf(pbKeys)
+	var keys []Key
+	if fileInfo.Keys != nil {
+		keyList, err := keyListFromProtobuf(fileInfo.Keys)
+		if err != nil {
+			return FileInfo{}, err
+		}
 
-	if err != nil {
-		return FileInfo{}, err
-	}
-
-	var publicKeys = make([]PublicKey, 0)
-	for _, publicKey := range keys {
-		publicKeys = append(publicKeys, PublicKey{
-			keyData: publicKey.toProtoKey().GetEd25519(),
-		})
+		keys = keyList.keys
 	}
 
 	return FileInfo{
@@ -43,8 +39,8 @@ func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInf
 		Size:           fileInfo.Size,
 		ExpirationTime: timeFromProtobuf(fileInfo.ExpirationTime),
 		IsDeleted:      fileInfo.Deleted,
-		Keys:           publicKeys,
-	}, err
+		Keys:           keys,
+	}, nil
 }
 
 func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {

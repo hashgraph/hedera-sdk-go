@@ -47,7 +47,7 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 		SetNodeAccountIDs(nodeIDs).
 		SetHash(_hash).
 		Execute(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
 	_, err = NewLiveHashQuery().
 		SetAccountID(accountID).
@@ -55,9 +55,6 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 		SetHash(_hash).
 		Execute(client)
 	assert.Error(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 
 	resp, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
