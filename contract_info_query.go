@@ -33,6 +33,10 @@ func (query *ContractInfoQuery) SetContractID(id ContractID) *ContractInfoQuery 
 	return query
 }
 
+func (query *ContractInfoQuery) GetContractID() ContractID {
+	return contractIDFromProtobuf(query.pb.ContractID)
+}
+
 func contractInfoQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode)
 }
@@ -46,6 +50,10 @@ func contractInfoQuery_getMethod(_ request, channel *channel) method {
 func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	if client == nil || client.operator == nil {
 		return ContractInfo{}, errNoClientProvided
+	}
+
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
 	}
 
 	query.queryPayment = NewHbar(2)

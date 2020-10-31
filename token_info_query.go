@@ -31,6 +31,10 @@ func (query *TokenInfoQuery) SetTokenID(id TokenID) *TokenInfoQuery {
 	return query
 }
 
+func (query *TokenInfoQuery) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(query.pb.Token)
+}
+
 func tokenInfoQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode)
 }
@@ -45,6 +49,10 @@ func tokenInfoQuery_getMethod(_ request, channel *channel) method {
 func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	if client == nil || client.operator == nil {
 		return TokenInfo{}, errNoClientProvided
+	}
+
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
 	}
 
 	query.queryPayment = NewHbar(2)

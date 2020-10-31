@@ -31,6 +31,10 @@ func (query *TopicInfoQuery) SetTopicID(id TopicID) *TopicInfoQuery {
 	return query
 }
 
+func (query *TopicInfoQuery) GetTopicID() TopicID {
+	return TopicIDFromProtobuf(query.pb.TopicID)
+}
+
 func topicInfoQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode)
 }

@@ -56,6 +56,10 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, errNoClientProvided
 	}
 
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
+	}
+
 	query.queryPayment = NewHbar(2)
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 

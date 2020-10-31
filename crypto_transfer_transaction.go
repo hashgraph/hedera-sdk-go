@@ -30,6 +30,15 @@ func (transaction *CryptoTransferTransaction) AddTransfer(accountID AccountID, a
 	return transaction
 }
 
+func (transaction *CryptoTransferTransaction) GetTransfers() []Transfer {
+	transfers := make([]Transfer, len(transaction.pb.Transfers.AccountAmounts))
+	for i, transfer := range transaction.pb.Transfers.AccountAmounts {
+		transfers[i].AccountID = accountIDFromProtobuf(transfer.AccountID)
+		transfers[i].Amount = HbarFromTinybar(transfer.Amount)
+	}
+	return transfers
+}
+
 func (transaction *CryptoTransferTransaction) AddSender(accountID AccountID, amount Hbar) *CryptoTransferTransaction {
 	transaction.requireNotFrozen()
 	return transaction.AddTransfer(accountID, amount.negated())

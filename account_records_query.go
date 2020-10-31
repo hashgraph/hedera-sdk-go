@@ -57,6 +57,10 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		return []TransactionRecord{}, errNoClientProvided
 	}
 
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
+	}
+
 	var records = []TransactionRecord{}
 
 	query.queryPayment = NewHbar(2)

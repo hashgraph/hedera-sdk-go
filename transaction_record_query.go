@@ -53,6 +53,10 @@ func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionI
 	return query
 }
 
+func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
+	return transactionIDFromProtobuf(query.pb.TransactionID)
+}
+
 func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
@@ -75,6 +79,10 @@ func (query *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *T
 func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
 	if client == nil || client.operator == nil {
 		return TransactionRecord{}, errNoClientProvided
+	}
+
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
 	}
 
 	query.queryPayment = NewHbar(2)

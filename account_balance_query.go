@@ -94,6 +94,10 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, errNoClientProvided
 	}
 
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
+	}
+
 	resp, err := execute(
 		client,
 		request{
@@ -140,6 +144,6 @@ func (query *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 	return query
 }
 
-func (query *AccountBalanceQuery) GetNodeAccountIds() []AccountID {
+func (query *AccountBalanceQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }

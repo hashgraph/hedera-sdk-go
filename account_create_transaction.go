@@ -34,8 +34,8 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	// Default to maximum values for record thresholds. Without this records would be
 	// auto-created whenever a send or receive transaction takes place for this new account.
 	// This should be an explicit ask.
-	transaction.SetReceiveRecordThreshold(MaxHbar)
-	transaction.SetSendRecordThreshold(MaxHbar)
+	transaction.setReceiveRecordThreshold(MaxHbar)
+	transaction.setSendRecordThreshold(MaxHbar)
 
 	return &transaction
 }
@@ -48,11 +48,19 @@ func (transaction *AccountCreateTransaction) SetKey(publicKey PublicKey) *Accoun
 	return transaction
 }
 
+func (transaction *AccountCreateTransaction) GetKey() (Key, error) {
+	return keyFromProtobuf(transaction.pb.GetKey())
+}
+
 // SetInitialBalance sets the initial number of Hbar to put into the account
 func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.InitialBalance = uint64(initialBalance.AsTinybar())
 	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetInitialBalance() Hbar {
+	return HbarFromTinybar(int64(transaction.pb.GetInitialBalance()))
 }
 
 // SetAutoRenewPeriod sets the time duration for when account is charged to extend its expiration date. When the account
@@ -67,24 +75,36 @@ func (transaction *AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod 
 	return transaction
 }
 
+func (transaction *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration {
+	return durationFromProtobuf(transaction.pb.AutoRenewPeriod)
+}
+
 // SetSendRecordThreshold sets the threshold amount for which an account record is created for any send/withdraw
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (transaction *AccountCreateTransaction) SetSendRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) setSendRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
+}
+
+func (transaction *AccountCreateTransaction) getSendRecordThreshold() Hbar {
+	return HbarFromTinybar(int64(transaction.pb.GetSendRecordThreshold()))
 }
 
 // SetReceiveRecordThreshold sets the threshold amount for which an account record is created for any receive/deposit
 // transaction
 //
 // Deprecated: No longer used by Hedera
-func (transaction *AccountCreateTransaction) SetReceiveRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) setReceiveRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
+}
+
+func (transaction *AccountCreateTransaction) getReceiveRecordThreshold() Hbar {
+	return HbarFromTinybar(int64(transaction.pb.GetReceiveRecordThreshold()))
 }
 
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
@@ -97,6 +117,10 @@ func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *Ac
 	return transaction
 }
 
+func (transaction *AccountCreateTransaction) GetProxyAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetProxyAccountID())
+}
+
 // SetReceiverSignatureRequired sets the receiverSigRequired flag. If the receiverSigRequired flag is set to true, then
 // all cryptocurrency transfers must be signed by this account's key, both for transfers in and out. If it is false,
 // then only transfers out have to be signed by it. This transaction must be signed by the
@@ -105,6 +129,10 @@ func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *Ac
 func (transaction *AccountCreateTransaction) SetReceiverSignatureRequired(required bool) *AccountCreateTransaction {
 	transaction.pb.ReceiverSigRequired = required
 	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
+	return transaction.pb.GetReceiverSigRequired()
 }
 
 //

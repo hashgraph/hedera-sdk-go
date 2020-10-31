@@ -54,7 +54,7 @@ func query_getNodeAccountID(request request, client *Client) AccountID {
 	if len(request.query.nodeIDs) > 0 {
 		return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 	} else {
-		return client.getNextNode()
+		return AccountID{}
 	}
 }
 

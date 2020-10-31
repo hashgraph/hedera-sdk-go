@@ -1,10 +1,10 @@
 {
     "network": {
-        "0.0.3" : "0.testnet.hedera.com:50211",
-        "0.0.4" : "1.testnet.hedera.com:50211",
-        "0.0.5" : "2.testnet.hedera.com:50211",
-        "0.0.6" : "3.testnet.hedera.com:50211"
-    },
+        "0.testnet.hedera.com:50211" : "0.0.3",
+        "1.testnet.hedera.com:50211" : "0.0.4",
+        "2.testnet.hedera.com:50211" : "0.0.5",
+        "3.testnet.hedera.com:50211" : "0.0.6"
+    },ill
     "operator": {
         "accountId": "0.0.56313",
         "privateKey": "302e020100300506032b657004220420c581ebedb27097be2e22b4df5a2117fdc1c1e41ac7b43ece2eff5acfa6973739"

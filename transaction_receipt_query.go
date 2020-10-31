@@ -54,6 +54,10 @@ func (query *TransactionReceiptQuery) SetTransactionID(transactionID Transaction
 	return query
 }
 
+func (query *TransactionReceiptQuery) GetTransactionID() TransactionID {
+	return transactionIDFromProtobuf(query.pb.TransactionID)
+}
+
 func (query *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionReceiptQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
@@ -76,6 +80,10 @@ func (query *TransactionReceiptQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *
 func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
 	if client == nil || client.operator == nil {
 		return TransactionReceipt{}, errNoClientProvided
+	}
+
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
 	}
 
 	resp, err := execute(

@@ -39,10 +39,18 @@ func (query *ContractCallQuery) SetContractID(id ContractID) *ContractCallQuery 
 	return query
 }
 
+func (query *ContractCallQuery) GetContractID() ContractID {
+	return contractIDFromProtobuf(query.pb.ContractID)
+}
+
 // SetGas sets the amount of gas to use for the call. All of the gas offered will be charged for.
 func (query *ContractCallQuery) SetGas(gas uint64) *ContractCallQuery {
 	query.pb.Gas = int64(gas)
 	return query
+}
+
+func (query *ContractCallQuery) GetGas() uint64 {
+	return uint64(query.pb.Gas)
 }
 
 // SetMaxResultSize sets the max number of bytes that the result might include. The run will fail if it would have
@@ -62,6 +70,10 @@ func (query *ContractCallQuery) SetFunction(name string, params *ContractFunctio
 	return query
 }
 
+func (query *ContractCallQuery) GetFunctionParameters() []byte {
+	return query.pb.FunctionParameters
+}
+
 func contractCallQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode)
 }
@@ -75,6 +87,10 @@ func contractCallQuery_getMethod(_ request, channel *channel) method {
 func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
 	if client == nil || client.operator == nil {
 		return ContractFunctionResult{}, errNoClientProvided
+	}
+
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
 	}
 
 	query.queryPayment = NewHbar(2)
