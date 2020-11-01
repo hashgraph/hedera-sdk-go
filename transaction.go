@@ -163,12 +163,10 @@ func transaction_freezeWith(
 	}
 
 	if client != nil && transaction.pbBody.TransactionID != nil {
-		nodeAccountIDs := client.getNodeAccountIDsForTransaction()
+		transaction.nodeIDs = client.getNodeAccountIDsForTransaction()
 
-		for _, node := range nodeAccountIDs {
-			transaction.nodeIDs = append(transaction.nodeIDs, node)
-
-			transaction.pbBody.NodeAccountID = node.toProtobuf()
+		for _, nodeAccountID := range transaction.nodeIDs {
+			transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
 			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
 			if err != nil {
 				// This should be unreachable

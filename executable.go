@@ -65,7 +65,8 @@ func execute(
 ) (intermediateResponse, error) {
 	for attempt := int64(0); ; /* loop forever */ attempt++ {
 		protoRequest := makeRequest(request)
-		node := client.getNode(getNodeId(request, client))
+		nodeAccountID := getNodeId(request, client)
+		node := client.getNode(nodeAccountID)
 
 		channel, err := client.getChannel(node.accountID)
 		if err != nil {
@@ -110,7 +111,11 @@ func execute(
 		}
 
 		if status != StatusOk {
-			return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
+			if request.query != nil {
+				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
+			} else {
+				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.id, status)
+			}
 		}
 
 		return mapResponse(request, resp, node.accountID, protoRequest)

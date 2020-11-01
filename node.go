@@ -29,14 +29,15 @@ func newNode(accountID AccountID, address string) node {
 func (node *node) isHealthy() bool {
 	if node.lastUsed != nil {
 		lastUsed := *node.lastUsed
-		return lastUsed+node.delay < time.Now().UTC().UnixNano()/1e6
+		return lastUsed+node.delay < time.Now().UTC().UnixNano()
 	}
 
 	return true
 }
 
 func (node *node) increaseDelay() {
-	*node.lastUsed = time.Now().UTC().UnixNano() / 1e6
+	lastUsed := time.Now().UTC().UnixNano()
+	node.lastUsed = &lastUsed
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
 }
 
@@ -45,14 +46,14 @@ func (node *node) decreaseDelay() {
 }
 
 func (node *node) wait() {
-	delay := *node.lastUsed
+	var delay int64
 	if node.lastUsed != nil {
-		delay = delay + node.delay - time.Now().UTC().UnixNano()/1e6
+		delay = *node.lastUsed + node.delay - time.Now().UTC().UnixNano()
 	} else {
-		delay = node.delay - time.Now().UTC().UnixNano()/1e6
+		delay = 0 - time.Now().UTC().UnixNano()
 	}
 
-	time.Sleep(time.Duration(delay) * time.Millisecond)
+	time.Sleep(time.Duration(delay) * time.Nanosecond)
 }
 
 func (s nodes) Len() int {
@@ -63,30 +64,23 @@ func (s nodes) Swap(i, j int) {
 }
 func (s nodes) Less(i, j int) bool {
 	if s.nodes[i].isHealthy() && s.nodes[j].isHealthy() {
-		if rand.Int63n(1) == 0 {
-			return true
-		} else {
-			return false
-		}
+		return rand.Int63n(1) == 0
 	} else if s.nodes[i].isHealthy() && !s.nodes[j].isHealthy() {
 		return true
 	} else if !s.nodes[i].isHealthy() && s.nodes[j].isHealthy() {
 		return false
 	} else {
-		var aLastUsed = s.nodes[i].lastUsed
-		var bLastUsed = s.nodes[j].lastUsed
-		if aLastUsed == nil {
-			*aLastUsed = 0
+		aLastUsed := int64(0)
+		bLastUsed := int64(0)
+
+		if s.nodes[i].lastUsed != nil {
+			aLastUsed = *s.nodes[i].lastUsed
 		}
 
-		if bLastUsed == nil {
-			*bLastUsed = 0
+		if s.nodes[i].lastUsed == nil {
+			bLastUsed = *s.nodes[j].lastUsed
 		}
 
-		if *aLastUsed+s.nodes[i].delay < *bLastUsed+s.nodes[j].delay {
-			return true
-		} else {
-			return false
-		}
+		return aLastUsed+s.nodes[i].delay < bLastUsed+s.nodes[j].delay
 	}
 }

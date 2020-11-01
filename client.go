@@ -120,7 +120,7 @@ func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
 		mirrorChannels:           make(map[string]*grpc.ClientConn),
 		mirrorNetwork:            make([]string, 0),
 		nextNodeIndex:            0,
-		lastSortedNodeAccountIDs: time.Now().UTC().UnixNano() / 1e6,
+		lastSortedNodeAccountIDs: time.Now().UTC().UnixNano(),
 	}
 
 	client.SetNetwork(network)
@@ -367,9 +367,9 @@ func (client *Client) getChannel(id AccountID) (*channel, error) {
 }
 
 func (client *Client) getNodeAccountIDsForTransaction() []AccountID {
-	if client.lastSortedNodeAccountIDs+1000 < time.Now().UTC().UnixNano()/1e6 {
+	if client.lastSortedNodeAccountIDs+1000 < time.Now().UTC().UnixNano() {
 		sort.Sort(nodes{nodes: client.networkNodeIds})
-		client.lastSortedNodeAccountIDs = time.Now().UTC().UnixNano() / 1e6
+		client.lastSortedNodeAccountIDs = time.Now().UTC().UnixNano()
 	}
 
 	slice := client.networkNodeIds[0:client.getNumberOfNodesForTransaction()]

@@ -36,8 +36,8 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 		Transaction: newTransaction(),
 	}
 
-	transaction.SetAutoRenewPeriod(7890000)
-	transaction.SetExpirationTime(time.Now().Add(7890000 * time.Second))
+	transaction.SetAutoRenewPeriod(7890 * time.Second)
+	transaction.SetExpirationTime(time.Now().Add(7890 * time.Second))
 
 	return &transaction
 }
@@ -142,18 +142,16 @@ func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
 }
 
-
 // The interval at which the auto-renew account will be charged to extend the token's expiry
 func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = uint64(autoRenewPeriod.Milliseconds())
+	transaction.pb.AutoRenewPeriod = uint64(autoRenewPeriod.Seconds())
 	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
 	return time.Duration(transaction.pb.GetAutoRenewPeriod())
 }
-
 
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
