@@ -58,6 +58,10 @@ func query_getNodeAccountID(request request, client *Client) AccountID {
 	}
 }
 
+func costQuery_getNodeAccountID(request request, client *Client) AccountID {
+	return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
+}
+
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
 	query.maxQueryPayment = maxPayment
@@ -92,10 +96,20 @@ func query_makeRequest(request request) protoRequest {
 	}
 }
 
+func costQuery_makeRequest(request request) protoRequest {
+	return protoRequest{
+		query: request.query.pb,
+	}
+}
+
 func query_advanceRequest(request request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
 	}
+}
+
+func costQuery_advanceRequest(request request) {
+	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeIDs)
 }
 
 func query_mapResponse(request request, response response, _ AccountID, protoRequest protoRequest) (intermediateResponse, error) {
