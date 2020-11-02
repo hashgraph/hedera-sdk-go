@@ -306,6 +306,7 @@ func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 // be returned.
 func (client *Client) Ping(nodeID AccountID) error {
 	_, err := NewAccountBalanceQuery().
+		SetAccountID(client.GetOperatorID()).
 		SetNodeAccountIDs([]AccountID{nodeID}).
 		Execute(client)
 	return err

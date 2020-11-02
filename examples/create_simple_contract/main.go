@@ -96,7 +96,7 @@ func main() {
 	fmt.Printf("contract bytecode file: %v\n", byteCodeFileID)
 
 	// Instantiate the contract instance
-	contractTransactionID, err := hedera.NewContractCreateTransaction().
+	contractTransactionResponse, err := hedera.NewContractCreateTransaction().
 		SetMaxTransactionFee(hedera.NewHbar(15)).
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(2000).
@@ -109,7 +109,7 @@ func main() {
 		panic(err)
 	}
 
-	contractRecord, err := contractTransactionID.GetRecord(client)
+	contractRecord, err := contractTransactionResponse.GetRecord(client)
 	if err != nil {
 		panic(err)
 	}
@@ -140,7 +140,7 @@ func main() {
 	fmt.Printf("Message: %v\n", callResult.GetString(0))
 
 	// delete the transaction
-	deleteTransactionID, err := hedera.NewContractDeleteTransaction().
+	deleteTransactionResponse, err := hedera.NewContractDeleteTransaction().
 		SetContractID(newContractID).
 		Execute(client)
 
@@ -148,7 +148,7 @@ func main() {
 		panic(err)
 	}
 
-	deleteTransactionReceipt, err := deleteTransactionID.GetReceipt(client)
+	deleteTransactionReceipt, err := deleteTransactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}

@@ -75,7 +75,7 @@ func main() {
 	fmt.Printf("Contract bytecode size: %v bytes\n", len(smartContractByteCode))
 
 	// Upload a file containing the byte code
-	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
+	byteCodeTransactionResponse, err := hedera.NewFileCreateTransaction().
 		SetMaxTransactionFee(hedera.NewHbar(2)).
 		SetKeys(client.GetOperatorKey()).
 		SetContents([]byte(smartContractByteCode)).
@@ -85,7 +85,7 @@ func main() {
 		panic(err)
 	}
 
-	byteCodeTransactionReceipt, err := byteCodeTransactionID.GetReceipt(client)
+	byteCodeTransactionReceipt, err := byteCodeTransactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}

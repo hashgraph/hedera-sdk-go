@@ -43,25 +43,56 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("private = %v\n", newKey)
-	fmt.Printf("public = %v\n", newKey.PublicKey())
-
 	transactionResponse, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetTransactionMemo("go sdk example create_account/main.go").
+		SetMaxTransactionFee(hedera.NewHbar(2)).
+		SetInitialBalance(hedera.NewHbar(1)).
 		Execute(client)
-
 	if err != nil {
 		panic(err)
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
-
 	if err != nil {
 		panic(err)
 	}
 
-	newAccountID := *transactionReceipt.AccountID
+	accountID := *transactionReceipt.AccountID
+	if err != nil {
+		panic(err)
+	}
 
-	fmt.Printf("account = %v\n", newAccountID)
+	cost, err := hedera.NewAccountInfoQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		SetMaxQueryPayment(hedera.NewHbar(1)).
+		GetCost(client)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Estimated txCost to be applied is %v\n", cost)
+
+	transaction, err := hedera.NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		SetTransferAccountID(client.GetOperatorID()).
+		SetMaxTransactionFee(hedera.NewHbar(1)).
+		SetTransactionID(hedera.TransactionIDGenerate(accountID)).
+		FreezeWith(client)
+	if err != nil {
+		panic(err)
+	}
+
+	transactionResponse, err = transaction.
+		Sign(newKey).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = transactionResponse.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
 }

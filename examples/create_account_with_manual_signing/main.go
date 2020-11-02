@@ -60,7 +60,7 @@ func main() {
 		panic(err)
 	}
 
-	transactionID, err := transaction.
+	transactionResponse, err := transaction.
 		Sign(operatorKey).
 		Execute(client)
 
@@ -68,7 +68,7 @@ func main() {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionID.GetReceipt(client)
+	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}

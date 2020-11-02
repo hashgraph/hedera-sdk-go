@@ -48,7 +48,7 @@ func main() {
 	fmt.Printf("public = %v\n", newKey.PublicKey())
 
 	// first create an account
-	transactionID, err := hedera.NewAccountCreateTransaction().
+	transactionResponse, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(hedera.NewHbar(2)).
 		SetTransactionMemo("go sdk example delete_account/main.go").
@@ -58,7 +58,7 @@ func main() {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionID.GetReceipt(client)
+	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}
@@ -85,13 +85,13 @@ func main() {
 	deleteTransaction = deleteTransaction.Sign(newKey)
 
 	// Execute the transaction
-	deleteTransactionID, err := deleteTransaction.Execute(client)
+	deleteTransactionResponse, err := deleteTransaction.Execute(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	deleteTransactionReceipt, err := deleteTransactionID.GetReceipt(client)
+	deleteTransactionReceipt, err := deleteTransactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}

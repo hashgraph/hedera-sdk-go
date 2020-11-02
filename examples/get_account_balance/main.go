@@ -47,5 +47,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("balance = %v\n", balance)
+	fmt.Printf("balance = %v\n", balance.Hbars.String())
 }

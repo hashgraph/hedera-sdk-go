@@ -37,6 +37,14 @@ func (kl *KeyList) AddAll(keys []Key) *KeyList {
 	return kl
 }
 
+func (kl *KeyList) AddAllPublicKeys(keys []PublicKey) *KeyList {
+	for _, key := range keys {
+		kl.Add(key)
+	}
+
+	return kl
+}
+
 func (kl *KeyList) String() string {
 	var s string
 	if kl.threshold > 0 {

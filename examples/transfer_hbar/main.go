@@ -42,7 +42,7 @@ func main() {
 
 	fmt.Printf("Transferring 1 hbar from %v to 0.0.3\n", client.GetOperatorID())
 
-	transactionID, err := hedera.NewCryptoTransferTransaction().
+	transactionResponse, err := hedera.NewCryptoTransferTransaction().
 		AddSender(client.GetOperatorID(), hedera.NewHbar(1)).
 		AddRecipient(hedera.AccountID{Account: 3}, hedera.NewHbar(1)).
 		SetTransactionMemo("go sdk example send_hbar/main.go").
@@ -52,11 +52,11 @@ func main() {
 		panic(err)
 	}
 
-	receipt, err := transactionID.GetReceipt(client)
+	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("crypto transfer status: %v\n", receipt.Status)
+	fmt.Printf("crypto transfer status: %v\n", transactionReceipt.Status)
 }

@@ -41,7 +41,7 @@ func main() {
 	}
 
 	keys := make([]hedera.PrivateKey, 3)
-	pubKey := hedera.PublicKey{}
+	pubKeys := make([]hedera.PublicKey, 3)
 
 	fmt.Println("threshold key example")
 	fmt.Println("Keys: ")
@@ -62,49 +62,52 @@ func main() {
 
 	// A threshold key with a threshold of 2 and length of 3 requires
 	// at least 2 of the 3 keys to sign anything modifying the account
+	thresholdKey := hedera.KeyListWithThreshold(2).
+		AddAllPublicKeys(pubKeys)
 
 	//fmt.Printf("threshold key %v\n", thresholdKey)
 
 	transaction, err := hedera.NewAccountCreateTransaction().
-		SetKey(pubKeys).
+		SetKey(thresholdKey).
 		SetInitialBalance(hedera.NewHbar(6)).
-		SetTransactionID(hedera.NewTransactionID(operatorAccountID)).
+		SetTransactionID(hedera.TransactionIDGenerate(client.GetOperatorID())).
 		SetTransactionMemo("sdk example create_account_with_threshold_keys/main.go").
-		Build(client)
+		FreezeWith(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	transactionID, err := transaction.Sign(operatorPrivateKey).
+	transactionResponse, err := transaction.Sign(operatorKey).
 		Execute(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionID.GetReceipt(client)
+	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	newAccountID := transactionReceipt.GetAccountID()
+	newAccountID := *transactionReceipt.AccountID
 
 	fmt.Printf("account = %v\n", newAccountID)
 
 	transferTx, err := hedera.NewCryptoTransferTransaction().
-		SetTransactionID(hedera.NewTransactionID(newAccountID)).
+		SetTransactionID(hedera.TransactionIDGenerate(newAccountID)).
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		AddSender(newAccountID, hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
-		AddRecipient(operatorAccountID, hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
-		Build(client)
+		AddRecipient(client.GetOperatorID(), hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
+		FreezeWith(client)
 
 	if err != nil {
 		panic(err)
 	}
 
 	// Manually sign with 2 of the private keys provided in the threshold
-	transferID, err := transferTx.
+	transactionResponse, err = transferTx.
 		Sign(keys[0]).
 		Sign(keys[1]).
 		Execute(client)
@@ -114,23 +117,23 @@ func main() {
 	}
 
 	// Must wait for the transaction to go to consensus
-	receipt, err := transferID.GetReceipt(client)
+	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("status of transfer transaction: %v\n", receipt.Status)
+	fmt.Printf("status of transfer transaction: %v\n", transactionReceipt.Status)
 
 	// Operator must be set
-	client.SetOperator(operatorAccountID, operatorPrivateKey)
+	client.SetOperator(client.GetOperatorID(), operatorKey)
 
 	balance, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(newAccountID).
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		Execute(client)
-
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("account balance after transfer: %v\n", balance)
+	fmt.Printf("account balance after transfer: %v\n", balance.Hbars.String())
 }

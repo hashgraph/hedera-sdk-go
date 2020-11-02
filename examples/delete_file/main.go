@@ -42,7 +42,7 @@ func main() {
 
 	// first create a file
 
-	response, err := hedera.NewFileCreateTransaction().
+	transactionResponse, err := hedera.NewFileCreateTransaction().
 		SetContents([]byte("The quick brown fox jumps over the lazy dog")).
 		SetKeys(client.GetOperatorKey()).
 		SetTransactionMemo("go sdk example delete_file/main.go").
@@ -53,7 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	receipt, err := response.GetReceipt(client)
+	receipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}

@@ -9,21 +9,37 @@ import (
 )
 
 func main() {
-	client := hedera.ClientForTestnet()
+	var client *hedera.Client
+	var err error
 
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	if err != nil {
-		panic(err)
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		client = hedera.ClientForPreviewnet()
+	} else {
+		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
+
+		if err != nil {
+			client = hedera.ClientForTestnet()
+		}
 	}
 
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	if err != nil {
-		panic(err)
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
+		if err != nil {
+			panic(err)
+		}
+
+		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
+		if err != nil {
+			panic(err)
+		}
+
+		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	client.SetOperator(operatorAccountID, operatorPrivateKey)
-
-	transactionID, err := hedera.NewConsensusTopicCreateTransaction().
+	transactionResponse, err := hedera.NewTopicCreateTransaction().
 		SetTransactionMemo("go sdk example create_pub_sub_chunked/main.go").
 		Execute(client)
 
@@ -31,52 +47,73 @@ func main() {
 		panic(err)
 	}
 
-	transactionReceipt, err := transactionID.GetReceipt(client)
+	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
 		panic(err)
 	}
 
-	topicID := transactionReceipt.GetConsensusTopicID()
+	topicID := *transactionReceipt.TopicID
 
 	fmt.Printf("for topic %v\n", topicID)
 
 	fmt.Printf("wait to propagate...\n")
 	time.Sleep(10 * time.Second)
 
-	mirrorClient, err := hedera.NewMirrorClient(os.Getenv("MIRROR_NODE_ADDRESS"))
-	if err != nil {
-		panic(err)
-	}
+	wait := true
+	start := time.Now()
 
-	_, err = hedera.NewMirrorConsensusTopicQuery().
+	_, err = hedera.NewTopicMessageQuery().
 		SetTopicID(topicID).
-		Subscribe(mirrorClient, func(response hedera.MirrorConsensusTopicResponse) {
-			fmt.Printf("at %v ( seq = %v ) received topic message of %v bytes \n", response.ConsensusTimestamp, response.SequenceNumber, len(response.Message))
-		}, func(err error) {
-			panic(err)
+		SetStartTime(time.Unix(0, 0)).
+		Subscribe(client, func(message hedera.TopicMessage) {
+			if string(message.Contents) == bigContents {
+				wait = false
+			}
 		})
 
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = hedera.NewConsensusMessageSubmitTransaction().
-		SetTopicID(topicID).
+	_, err = hedera.NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		SetMessage([]byte(bigContents)).
-		SetMaxChunks(4). // default is 10
+		SetMaxChunks(4).
+		SetTopicID(topicID).
 		Execute(client)
-
 	if err != nil {
 		panic(err)
 	}
 
 	for {
-		time.Sleep(1 * time.Second)
+		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+			break
+		}
+
+		time.Sleep(2500)
+	}
+
+	transactionResponse, err = hedera.NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		SetMaxTransactionFee(hedera.NewHbar(5)).
+		Execute(client)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = transactionResponse.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	if wait {
+		panic("Message was not received within 30 seconds")
 	}
 }
 
 // 14k+ stuff to upload
-var bigContents = `
+const bigContents = `
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur aliquam augue sem, ut mattis dui laoreet a. Curabitur consequat est euismod, scelerisque metus et, tristique dui. Nulla commodo mauris ut faucibus ultricies. Quisque venenatis nisl nec augue tempus, at efficitur elit eleifend. Duis pharetra felis metus, sed dapibus urna vehicula id. Duis non venenatis turpis, sit amet ornare orci. Donec non interdum quam. Sed finibus nunc et risus finibus, non sagittis lorem cursus. Proin pellentesque tempor aliquam. Sed congue nisl in enim bibendum, condimentum vehicula nisi feugiat.
 
 Suspendisse non sodales arcu. Suspendisse sodales, lorem ac mollis blandit, ipsum neque porttitor nulla, et sodales arcu ante fermentum tellus. Integer sagittis dolor sed augue fringilla accumsan. Cras vitae finibus arcu, sit amet varius dolor. Etiam id finibus dolor, vitae luctus velit. Proin efficitur augue nec pharetra accumsan. Aliquam lobortis nisl diam, vel fermentum purus finibus id. Etiam at finibus orci, et tincidunt turpis. Aliquam imperdiet congue lacus vel facilisis. Phasellus id magna vitae enim dapibus vestibulum vitae quis augue. Morbi eu consequat enim. Maecenas neque nulla, pulvinar sit amet consequat sed, tempor sed magna. Mauris lacinia sem feugiat faucibus aliquet. Etiam congue non turpis at commodo. Nulla facilisi.

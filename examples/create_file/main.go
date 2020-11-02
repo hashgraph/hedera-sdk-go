@@ -40,7 +40,7 @@ func main() {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	resp, err := hedera.NewFileCreateTransaction().
+	transactionResponse, err := hedera.NewFileCreateTransaction().
 		// A file is not implicitly owned by anyone, even the operator
 		SetKeys(client.GetOperatorKey()).
 		SetContents([]byte("Hello, World")).
@@ -52,11 +52,11 @@ func main() {
 		panic(err)
 	}
 
-	receipt, err := resp.GetReceipt(client)
+	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("file = %v\n", *receipt.FileID)
+	fmt.Printf("file = %v\n", *transactionReceipt.FileID)
 }
