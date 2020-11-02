@@ -8,22 +8,38 @@ import (
 )
 
 func main() {
-	client := hedera.ClientForTestnet()
+	var client *hedera.Client
+	var err error
 
-	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	if err != nil {
-		panic(err)
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		client = hedera.ClientForPreviewnet()
+	} else {
+		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
+
+		if err != nil {
+			client = hedera.ClientForTestnet()
+		}
 	}
 
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	if err != nil {
-		panic(err)
-	}
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
 
-	client.SetOperator(operatorAccountID, operatorPrivateKey)
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
+		if err != nil {
+			panic(err)
+		}
+
+		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
+		if err != nil {
+			panic(err)
+		}
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
 
 	info, err := hedera.NewAccountInfoQuery().
-		SetAccountID(operatorAccountID).
+		SetAccountID(client.GetOperatorID()).
 		Execute(client)
 
 	if err != nil {
@@ -35,7 +51,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("info for account %v :\n", operatorAccountID)
+	fmt.Printf("info for account %v :\n", client.GetOperatorID())
 	fmt.Print(string(infoJSON))
 	fmt.Println()
 }

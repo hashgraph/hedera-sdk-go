@@ -22,7 +22,7 @@ func main() {
 
 	// We must manually construct a TransactionID with the accountID of the operator/sender
 	// This is the account that will be charged the transaction fee
-	txID := hedera.NewTransactionID(operatorAccountID)
+	txID := hedera.TransactionIDGenerate(operatorAccountID)
 
 	// The following steps are required for manually signing
 	transaction, err := hedera.NewCryptoTransferTransaction().
@@ -34,7 +34,7 @@ func main() {
 		AddRecipient(recipientAccountID, hedera.NewHbar(1)).
 		SetTransactionMemo("go sdk example multi_app_transfer/main.go").
 		// 4. build the transaction using the client that does not have a set operator
-		Build(client)
+		FreezeWith(client)
 
 	if err != nil {
 		panic(err)
@@ -61,7 +61,7 @@ func main() {
 	fmt.Printf("received bytes for signed transaction \n%v\n", signedTxBytes)
 
 	// unmarshal your bytes into the signed transaction
-	var signedTx hedera.Transaction
+	var signedTx hedera.CryptoTransferTransaction
 	err = signedTx.UnmarshalBinary(signedTxBytes)
 
 	if err != nil {
@@ -69,14 +69,14 @@ func main() {
 	}
 
 	// execute the transaction
-	txID, err = signedTx.Execute(client)
+	response, err := signedTx.Execute(client)
 
 	if err != nil {
 		panic(err)
 	}
 
 	// get the receipt of the transaction to check the status
-	receipt, err := txID.GetReceipt(client)
+	receipt, err := response.GetReceipt(client)
 
 	if err != nil {
 		panic(err)
@@ -92,13 +92,13 @@ func signingService(txBytes []byte) ([]byte, error) {
 	fmt.Println("signing service has received the transaction")
 
 	// Your signing service is aware of the operator's private key
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		return txBytes, err
 	}
 
 	// unmarshal the unsigned transaction's bytes
-	var unsignedTx hedera.Transaction
+	var unsignedTx hedera.CryptoTransferTransaction
 	err = unsignedTx.UnmarshalBinary(txBytes)
 
 	if err != nil {

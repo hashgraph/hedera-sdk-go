@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	privateKey, err := hedera.GenerateEd25519PrivateKey()
+	privateKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
 		panic(err)
 	}

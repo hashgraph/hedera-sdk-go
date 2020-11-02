@@ -17,20 +17,37 @@ type contract struct {
 }
 
 func main() {
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	if err != nil {
-		panic(err)
+	var client *hedera.Client
+	var err error
+
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		client = hedera.ClientForPreviewnet()
+	} else {
+		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
+
+		if err != nil {
+			println("not error", err.Error())
+			client = hedera.ClientForTestnet()
+		}
 	}
 
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	if err != nil {
-		panic(err)
-	}
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+	var operatorKey hedera.PrivateKey
 
-	client := hedera.ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey)
-		// SetMaxTransactionFee(hedera.HbarFrom(50, hedera.HbarUnits.Hbar)).
-		// SetMaxQueryPayment(hedera.HbarFrom(50, hedera.HbarUnits.Hbar))
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
+		if err != nil {
+			panic(err)
+		}
+
+		operatorKey, err = hedera.PrivateKeyFromString(configOperatorKey)
+		if err != nil {
+			panic(err)
+		}
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
 
 	defer func() {
 		err = client.Close()
@@ -59,7 +76,7 @@ func main() {
 	// Upload a file containing the byte code
 	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
 		SetMaxTransactionFee(hedera.NewHbar(2)).
-		AddKey(operatorPrivateKey.PublicKey()).
+		SetKeys(client.GetOperatorKey()).
 		SetContents(contractByteCode).
 		Execute(client)
 
@@ -74,7 +91,7 @@ func main() {
 
 	fmt.Printf("contract bytecode file upload fee: %v\n", byteCodeTransactionRecord.TransactionFee)
 
-	byteCodeFileID := byteCodeTransactionRecord.Receipt.GetFileID()
+	byteCodeFileID := *byteCodeTransactionRecord.Receipt.FileID
 
 	fmt.Printf("contract bytecode file: %v\n", byteCodeFileID)
 
@@ -85,7 +102,7 @@ func main() {
 		SetGas(2000).
 		SetBytecodeFileID(byteCodeFileID).
 		// Setting an admin key allows you to delete the contract in the future
-		SetAdminKey(operatorPrivateKey.PublicKey()).
+		SetAdminKey(client.GetOperatorKey()).
 		Execute(client)
 
 	if err != nil {
@@ -102,7 +119,7 @@ func main() {
 		panic(err)
 	}
 
-	newContractID := contractRecord.Receipt.GetContractID()
+	newContractID := *contractRecord.Receipt.ContractID
 
 	fmt.Printf("Contract create gas used: %v\n", contractCreateResult.GasUsed)
 	fmt.Printf("Contract create transaction fee: %v\n", contractRecord.TransactionFee)

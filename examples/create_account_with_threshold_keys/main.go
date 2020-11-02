@@ -8,24 +8,46 @@ import (
 )
 
 func main() {
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	if err != nil {
-		panic(err)
+	var client *hedera.Client
+	var err error
+
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		client = hedera.ClientForPreviewnet()
+	} else {
+		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
+
+		if err != nil {
+			println("not error", err.Error())
+			client = hedera.ClientForTestnet()
+		}
 	}
 
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	if err != nil {
-		panic(err)
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+	var operatorKey hedera.PrivateKey
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
+		if err != nil {
+			panic(err)
+		}
+
+		operatorKey, err = hedera.PrivateKeyFromString(configOperatorKey)
+		if err != nil {
+			panic(err)
+		}
+
+		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	keys := make([]hedera.Ed25519PrivateKey, 3)
-	pubKeys := make([]hedera.PublicKey, 3)
+	keys := make([]hedera.PrivateKey, 3)
+	pubKey := hedera.PublicKey{}
 
 	fmt.Println("threshold key example")
 	fmt.Println("Keys: ")
 
 	for i := range keys {
-		newKey, err := hedera.GenerateEd25519PrivateKey()
+		newKey, err := hedera.GeneratePrivateKey()
 		if err != nil {
 			panic(err)
 		}
@@ -38,17 +60,13 @@ func main() {
 		pubKeys[i] = newKey.PublicKey()
 	}
 
-	client := hedera.ClientForTestnet()
-
 	// A threshold key with a threshold of 2 and length of 3 requires
 	// at least 2 of the 3 keys to sign anything modifying the account
-	thresholdKey := hedera.NewThresholdKey(2).
-		AddAll(pubKeys)
 
-	fmt.Printf("threshold key %v\n", thresholdKey)
+	//fmt.Printf("threshold key %v\n", thresholdKey)
 
 	transaction, err := hedera.NewAccountCreateTransaction().
-		SetKey(thresholdKey).
+		SetKey(pubKeys).
 		SetInitialBalance(hedera.NewHbar(6)).
 		SetTransactionID(hedera.NewTransactionID(operatorAccountID)).
 		SetTransactionMemo("sdk example create_account_with_threshold_keys/main.go").

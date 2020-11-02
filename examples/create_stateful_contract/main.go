@@ -20,18 +20,35 @@ type contracts struct {
 }
 
 func main() {
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
-	if err != nil {
-		panic(err)
+	var client *hedera.Client
+	var err error
+
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		client = hedera.ClientForPreviewnet()
+	} else {
+		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
+
+		if err != nil {
+			client = hedera.ClientForTestnet()
+		}
 	}
 
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
-	if err != nil {
-		panic(err)
-	}
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
 
-	client := hedera.ClientForTestnet().
-		SetOperator(operatorAccountID, operatorPrivateKey)
+	if configOperatorID != "" && configOperatorKey != "" {
+		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
+		if err != nil {
+			panic(err)
+		}
+
+		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
+		if err != nil {
+			panic(err)
+		}
+
+		client.SetOperator(operatorAccountID, operatorKey)
+	}
 
 	defer func() {
 		err = client.Close()
@@ -60,7 +77,7 @@ func main() {
 	// Upload a file containing the byte code
 	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
 		SetMaxTransactionFee(hedera.NewHbar(2)).
-		AddKey(operatorPrivateKey.PublicKey()).
+		SetKeys(client.GetOperatorKey()).
 		SetContents([]byte(smartContractByteCode)).
 		Execute(client)
 
@@ -73,11 +90,11 @@ func main() {
 		panic(err)
 	}
 
-	byteCodeFileID := byteCodeTransactionReceipt.GetFileID()
+	byteCodeFileID := *byteCodeTransactionReceipt.FileID
 
 	fmt.Printf("contract bytecode file: %v\n", byteCodeFileID)
 
-	contractFunctionParams := hedera.NewContractFunctionParams().
+	contractFunctionParams := hedera.NewContractFunctionParameters().
 		AddString("hello from hedera")
 
 	// Instantiate the contract instance
@@ -86,7 +103,7 @@ func main() {
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(2000).
 		// Failing to set parameters when required will result in "CONTRACT_REVERT_EXECUTED" status
-		SetConstructorParams(contractFunctionParams).
+		SetConstructorParameters(contractFunctionParams).
 		SetBytecodeFileID(byteCodeFileID).
 		Execute(client)
 
@@ -104,7 +121,7 @@ func main() {
 		panic(err)
 	}
 
-	newContractID := contractRecord.Receipt.GetContractID()
+	newContractID := *contractRecord.Receipt.ContractID
 
 	fmt.Printf("Contract create gas used: %v\n", contractCreateResult.GasUsed)
 	fmt.Printf("Contract create transaction fee: %v\n", contractRecord.TransactionFee)
@@ -125,7 +142,7 @@ func main() {
 	fmt.Printf("Call gas used: %v\n", callResult.GasUsed)
 	fmt.Printf("Message: %v\n", callResult.GetString(0))
 
-	contractFunctionParams = hedera.NewContractFunctionParams().
+	contractFunctionParams = hedera.NewContractFunctionParameters().
 		AddString("Hello from Hedera again!")
 
 	// Update the message

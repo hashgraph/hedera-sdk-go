@@ -16,7 +16,7 @@ func main() {
 		panic(err)
 	}
 
-	operatorPrivateKey, err := hedera.Ed25519PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 
 	if err != nil {
 		panic(err)
@@ -24,7 +24,7 @@ func main() {
 
 	client.SetOperator(operatorAccountID, operatorPrivateKey)
 
-	transactionID, err := hedera.NewConsensusTopicCreateTransaction().
+	transactionID, err := hedera.NewTopicCreateTransaction().
 		SetTransactionMemo("go sdk example create_pub_sub/main.go").
 		// SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)
@@ -39,13 +39,14 @@ func main() {
 		panic(err)
 	}
 
-	topicID := transactionReceipt.GetConsensusTopicID()
+	topicID := *transactionReceipt.TopicID
 
 	fmt.Printf("topicID: %v\n", topicID)
 
 	mirrorNodeAddress := os.Getenv("MIRROR_NODE_ADDRESS")
 
-	mirrorClient, err := hedera.NewMirrorClient(mirrorNodeAddress)
+	mirrorClient := hedera.ClientForTestnet()
+	mirrorClient.SetMirrorNetwork([]string{mirrorNodeAddress})
 	if err != nil {
 		panic(err)
 	}
