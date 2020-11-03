@@ -20,9 +20,9 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return &transaction
 }
 
-func (transaction *AccountUpdateTransaction) SetKey(publicKey PublicKey) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Key = publicKey.toProtoKey()
+	transaction.pb.Key = key.toProtoKey()
 	return transaction
 }
 
