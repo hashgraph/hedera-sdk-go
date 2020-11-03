@@ -17,23 +17,21 @@ type Query struct {
 	nextPaymentTransactionIndex int
 	nextTransactionIndex        int
 
-	paymentTransactionNodeIDs []AccountID
-	paymentTransactions       []*proto.Transaction
+	paymentTransactions []*proto.Transaction
 
 	isPaymentRequired bool
 }
 
 func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
 	return Query{
-		pb:                        &proto.Query{},
-		pbHeader:                  queryHeader,
-		paymentTransactionID:      TransactionID{},
-		nextTransactionIndex:      0,
-		paymentTransactions:       make([]*proto.Transaction, 0),
-		paymentTransactionNodeIDs: make([]AccountID, 0),
-		isPaymentRequired:         isPaymentRequired,
-		maxQueryPayment:           NewHbar(0),
-		queryPayment:              NewHbar(0),
+		pb:                   &proto.Query{},
+		pbHeader:             queryHeader,
+		paymentTransactionID: TransactionID{},
+		nextTransactionIndex: 0,
+		paymentTransactions:  make([]*proto.Transaction, 0),
+		isPaymentRequired:    isPaymentRequired,
+		maxQueryPayment:      NewHbar(0),
+		queryPayment:         NewHbar(0),
 	}
 }
 
@@ -47,14 +45,10 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 }
 
 func query_getNodeAccountID(request request, client *Client) AccountID {
-	if len(request.query.paymentTransactionNodeIDs) > 0 {
-		return request.query.paymentTransactionNodeIDs[request.query.nextPaymentTransactionIndex]
-	}
-
 	if len(request.query.nodeIDs) > 0 {
 		return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 	} else {
-		return AccountID{}
+		panic("Query node AccountID's not set before executing")
 	}
 }
 
@@ -119,11 +113,7 @@ func query_mapResponse(request request, response response, _ AccountID, protoReq
 }
 
 func query_generatePayments(query *Query, client *Client, cost Hbar) error {
-	if len(query.paymentTransactionNodeIDs) == 0 {
-		query.paymentTransactionNodeIDs = client.getNodeAccountIDsForTransaction()
-	}
-
-	for _, nodeID := range query.paymentTransactionNodeIDs {
+	for _, nodeID := range query.nodeIDs {
 		transaction, err := query_makePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,
@@ -134,7 +124,6 @@ func query_generatePayments(query *Query, client *Client, cost Hbar) error {
 			return err
 		}
 
-		query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, nodeID)
 		query.paymentTransactions = append(query.paymentTransactions, transaction)
 	}
 

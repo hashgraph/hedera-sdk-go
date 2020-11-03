@@ -90,14 +90,11 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 
 	cost := query.queryPayment
 
-	if len(query.paymentTransactionNodeIDs) == 0 {
-		size := client.getNumberOfNodesForTransaction()
-		for i := 0; i < size; i++ {
-			query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, client.getNextNode())
-		}
+	if len(query.nodeIDs) == 0 {
+		query.nodeIDs = client.getNodeAccountIDsForTransaction()
 	}
 
-	for _, nodeID := range query.paymentTransactionNodeIDs {
+	for _, nodeID := range query.nodeIDs {
 		transaction, err := query_makePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,
@@ -108,7 +105,6 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 			return TransactionRecord{}, err
 		}
 
-		query.paymentTransactionNodeIDs = append(query.paymentTransactionNodeIDs, nodeID)
 		query.paymentTransactions = append(query.paymentTransactions, transaction)
 	}
 
