@@ -32,7 +32,7 @@ func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTr
 }
 
 func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
-	return TopicIDFromProtobuf(transaction.pb.GetTopicID())
+	return topicIDFromProtobuf(transaction.pb.GetTopicID())
 }
 
 //

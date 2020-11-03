@@ -61,7 +61,7 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 
 	var topicID *TopicID
 	if protoReceipt.TopicID != nil {
-		topicIDValue := TopicIDFromProtobuf(protoReceipt.TopicID)
+		topicIDValue := topicIDFromProtobuf(protoReceipt.TopicID)
 		topicID = &topicIDValue
 	}
 

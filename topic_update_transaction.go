@@ -35,7 +35,7 @@ func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpd
 }
 
 func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
-	return TopicIDFromProtobuf(transaction.pb.GetTopicID())
+	return topicIDFromProtobuf(transaction.pb.GetTopicID())
 }
 
 // SetAdminKey sets the key required to update/delete the topic. If unset, the key will not be changed.

@@ -39,7 +39,7 @@ func (id TopicID) toProtobuf() *proto.TopicID {
 	}
 }
 
-func TopicIDFromProtobuf(pb *proto.TopicID) TopicID {
+func topicIDFromProtobuf(pb *proto.TopicID) TopicID {
 	return TopicID{
 		Shard: uint64(pb.ShardNum),
 		Realm: uint64(pb.RealmNum),

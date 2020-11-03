@@ -7,7 +7,6 @@ import (
 	"sort"
 	"time"
 
-	// "github.com/hashgraph/hedera-sdk-go/proto"
 	"google.golang.org/grpc"
 )
 
@@ -27,8 +26,7 @@ type Client struct {
 	networkNodeIds  []node
 	network         map[AccountID]node
 
-	mirrorChannels map[string]*grpc.ClientConn
-	mirrorNetwork  []string
+	mirrorNetwork mirrorNetwork
 
 	nextNodeIndex            uint
 	lastSortedNodeAccountIDs int64
@@ -117,9 +115,7 @@ func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
 		networkChannels:          make(map[AccountID]*channel),
 		networkNodeIds:           make([]node, 0),
 		network:                  newNetwork,
-		mirrorChannels:           make(map[string]*grpc.ClientConn),
-		mirrorNetwork:            make([]string, 0),
-		nextNodeIndex:            0,
+		mirrorNetwork:            newMirrorNetwork(mirrorNetwork),
 		lastSortedNodeAccountIDs: time.Now().UTC().UnixNano(),
 	}
 
@@ -239,7 +235,7 @@ func (client *Client) SetNetwork(network map[string]AccountID) *Client {
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetMirrorNetwork(mirrorNetwork []string) *Client {
-	client.mirrorNetwork = mirrorNetwork
+	client.mirrorNetwork.setNetwork(mirrorNetwork)
 
 	return client
 }
@@ -305,40 +301,15 @@ func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 	return client
 }
 
-// // Ping sends an AccountBalanceQuery to the specified node returning nil if no
-// // problems occur. Otherwise, an error representing the status of the node will
-// // be returned.
-// func (client *Client) Ping(nodeID AccountID) error {
-// 	node := client.networkNodes[nodeID]
-// 	if node == nil {
-// 		return fmt.Errorf("node with ID %s not registered on this client", nodeID)
-// 	}
-
-// 	pingQuery := NewAccountBalanceQuery().
-// 		SetAccountID(nodeID)
-
-// 	pb := pingQuery.QueryBuilder.pb
-
-// 	resp := new(proto.Response)
-
-// 	err := node.invoke(methodName(pb), pb, resp)
-
-// 	if err != nil {
-// 		return newErrPingStatus(err)
-// 	}
-
-// 	respHeader := mapResponseHeader(resp)
-
-// 	if respHeader.NodeTransactionPrecheckCode == proto.ResponseCodeEnum_BUSY {
-// 		return newErrPingStatus(fmt.Errorf("%s", Status(respHeader.NodeTransactionPrecheckCode).String()))
-// 	}
-
-// 	if isResponseUnknown(resp) {
-// 		return newErrPingStatus(fmt.Errorf("unknown"))
-// 	}
-
-// 	return nil
-// }
+// Ping sends an AccountBalanceQuery to the specified node returning nil if no
+// problems occur. Otherwise, an error representing the status of the node will
+// be returned.
+func (client *Client) Ping(nodeID AccountID) error {
+	_, err := NewAccountBalanceQuery().
+		SetNodeAccountIDs([]AccountID{nodeID}).
+		Execute(client)
+	return err
+}
 
 func (client *Client) getNextNode() AccountID {
 	nodeID := client.networkNodeIds[client.nextNodeIndex]
