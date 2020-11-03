@@ -13,17 +13,15 @@ type TopicMessageSubmitTransaction struct {
 	Transaction
 	pb                  *proto.ConsensusSubmitMessageTransactionBody
 	maxChunks           uint64
-	chunkedTransactions []TopicMessageSubmitTransaction
+	chunkedTransactions []*singleTopicMessageSubmitTransaction
 }
 
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
-	pb := &proto.ConsensusSubmitMessageTransactionBody{}
-
 	transaction := TopicMessageSubmitTransaction{
-		pb:                  pb,
+		pb:                  &proto.ConsensusSubmitMessageTransactionBody{},
 		Transaction:         newTransaction(),
-		maxChunks:           0,
-		chunkedTransactions: make([]TopicMessageSubmitTransaction, 0),
+		maxChunks:           10,
+		chunkedTransactions: make([]*singleTopicMessageSubmitTransaction, 0),
 	}
 
 	return &transaction
@@ -49,13 +47,14 @@ func (transaction *TopicMessageSubmitTransaction) GetMessage() []byte {
 	return transaction.pb.GetMessage()
 }
 
-func (transaction *TopicMessageSubmitTransaction) SetChunkInfo(InitialTransactionID TransactionID, total uint32, number uint32) *TopicMessageSubmitTransaction {
+func (transaction *TopicMessageSubmitTransaction) SetChunkInfo(initialTransactionID TransactionID, total uint32, number uint32) *TopicMessageSubmitTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
-		InitialTransactionID: InitialTransactionID.toProtobuf(),
+		InitialTransactionID: initialTransactionID.toProtobuf(),
 		Total:                int32(total),
 		Number:               int32(number),
 	}
+	transaction.SetTransactionID(initialTransactionID)
 	return transaction
 }
 
@@ -82,12 +81,6 @@ func (transaction *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
 //
-
-func topicMessageSubmitTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getTopic().SubmitMessage,
-	}
-}
 
 func (transaction *TopicMessageSubmitTransaction) IsFrozen() bool {
 	return len(transaction.chunkedTransactions) > 0
@@ -138,8 +131,15 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
 func (transaction *TopicMessageSubmitTransaction) Execute(
+	client *Client,
+) (TransactionResponse, error) {
+	list, err := transaction.ExecuteAll(client)
+	return list[0], err
+}
+
+// ExecuteAll executes the all the Transactions with the provided client
+func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	client *Client,
 ) ([]TransactionResponse, error) {
 	if !transaction.IsFrozen() {
@@ -155,40 +155,15 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 		)
 	}
 
-	if transaction.pb.ChunkInfo != nil {
-		resp, err := execute(
-			client,
-			request{
-				transaction: &transaction.Transaction,
-			},
-			transaction_shouldRetry,
-			transaction_makeRequest,
-			transaction_advanceRequest,
-			transaction_getNodeId,
-			topicMessageSubmitTransaction_getMethod,
-			transaction_mapResponseStatus,
-			transaction_mapResponse,
-		)
-
-		if err != nil {
-			return []TransactionResponse{}, err
-		}
-
-		return []TransactionResponse{TransactionResponse{
-			TransactionID: transaction.id,
-			NodeID:        resp.transaction.NodeID,
-		}}, nil
-	}
-
 	list := make([]TransactionResponse, len(transaction.chunkedTransactions))
 
-	for _, tx := range transaction.chunkedTransactions {
+	for i, tx := range transaction.chunkedTransactions {
 		resp, err := tx.Execute(client)
 		if err != nil {
 			return []TransactionResponse{}, err
 		}
 
-		list = append(list, resp[0])
+		list[i] = resp
 	}
 
 	return list, nil
@@ -213,14 +188,19 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
-
-	if transaction.pb.ChunkInfo != nil {
-		if !transaction.onFreeze(transaction.pbBody) {
-			return transaction, nil
+	if transaction.pb.ChunkInfo != nil || len(transaction.GetMessage()) < chunkSize {
+		tx, err := newSingleTopicMessageSubmitTransaction(
+			protobuf.Clone(transaction.Transaction.pbBody).(*proto.TransactionBody),
+			protobuf.Clone(transaction.pb).(*proto.ConsensusSubmitMessageTransactionBody),
+			transaction.GetMessage(),
+			transaction.pb.ChunkInfo,
+		).FreezeWith(client)
+		if err != nil {
+			return transaction, err
 		}
 
-		err := transaction_freezeWith(&transaction.Transaction, client)
-		transaction.chunkedTransactions = append(transaction.chunkedTransactions, transaction)
+		transaction.chunkedTransactions = append(transaction.chunkedTransactions, tx)
+
 		return transaction, err
 	}
 
@@ -249,21 +229,23 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			end = len(transaction.GetMessage())
 		}
 
-		tx := NewTopicMessageSubmitTransaction()
-		tx.Transaction.pbBody = protobuf.Clone(transaction.Transaction.pbBody).(*proto.TransactionBody)
+		transaction.SetTransactionID(nextTransactionID)
 
-		tx, err := tx.
-			SetMessage(transaction.GetMessage()[start:end]).
-			SetTransactionID(nextTransactionID).
-			SetTopicID(transaction.GetTopicID()).
-			SetChunkInfo(initialTransactionID, uint32(chunks), uint32(i)+1).
-			FreezeWith(client)
-
+		tx, err := newSingleTopicMessageSubmitTransaction(
+			protobuf.Clone(transaction.Transaction.pbBody).(*proto.TransactionBody),
+			protobuf.Clone(transaction.pb).(*proto.ConsensusSubmitMessageTransactionBody),
+			transaction.pb.Message[start:end],
+			&proto.ConsensusMessageChunkInfo{
+				InitialTransactionID: initialTransactionID.toProtobuf(),
+				Total:                int32(chunks),
+				Number:               int32(i) + 1,
+			},
+		).FreezeWith(client)
 		if err != nil {
 			return transaction, err
 		}
 
-		transaction.chunkedTransactions = append(transaction.chunkedTransactions, tx.chunkedTransactions[0])
+		transaction.chunkedTransactions = append(transaction.chunkedTransactions, tx)
 		nextTransactionID.ValidStart = nextTransactionID.ValidStart.Add(1 * time.Nanosecond)
 	}
 
