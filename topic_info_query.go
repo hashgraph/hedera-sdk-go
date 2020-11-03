@@ -32,7 +32,7 @@ func (query *TopicInfoQuery) SetTopicID(id TopicID) *TopicInfoQuery {
 }
 
 func (query *TopicInfoQuery) GetTopicID() TopicID {
-	return TopicIDFromProtobuf(query.pb.TopicID)
+	return topicIDFromProtobuf(query.pb.TopicID)
 }
 
 func topicInfoQuery_mapResponseStatus(_ request, response response) Status {
