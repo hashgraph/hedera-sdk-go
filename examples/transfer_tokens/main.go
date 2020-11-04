@@ -74,7 +74,6 @@ func main() {
 
 	fmt.Printf("account = %v\n", accountID2.String())
 
-
 	transactionResponse, err = hedera.NewTokenCreateTransaction().
 		SetName("ffff").
 		SetSymbol("F").
@@ -88,6 +87,7 @@ func main() {
 		SetKycKey(client.GetOperatorKey()).
 		SetSupplyKey(client.GetOperatorKey()).
 		SetFreezeDefault(false).
+		SetMaxTransactionFee(hedera.NewHbar(1000)).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -180,9 +180,9 @@ func main() {
 
 	fmt.Printf("Granted KYC for account %v on token %v\n", accountID2.String(), tokenID.String())
 
-	transactionResponse, err = hedera.NewTokenTransferTransaction().
-		AddSender(tokenID, client.GetOperatorID(), 10).
-		AddRecipient(tokenID, accountID1, 10).
+	transactionResponse, err = hedera.NewTransferTransaction().
+		AddTokenTransfer(tokenID, client.GetOperatorID(), -10).
+		AddTokenTransfer(tokenID, accountID1, 10).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -200,9 +200,9 @@ func main() {
 		tokenID.String(),
 	)
 
-	transactionResponse, err = hedera.NewTokenTransferTransaction().
-		AddSender(tokenID, accountID1, 10).
-		AddRecipient(tokenID, accountID2, 10).
+	transactionResponse, err = hedera.NewTransferTransaction().
+		AddTokenTransfer(tokenID, accountID1, -10).
+		AddTokenTransfer(tokenID, accountID2, 10).
 		Execute(client)
 	if err != nil {
 		panic(err)
@@ -220,9 +220,9 @@ func main() {
 		tokenID.String(),
 	)
 
-	transactionResponse, err = hedera.NewTokenTransferTransaction().
-		AddSender(tokenID, accountID2, 10).
-		AddRecipient(tokenID, accountID1, 10).
+	transactionResponse, err = hedera.NewTransferTransaction().
+		AddTokenTransfer(tokenID, accountID2, -10).
+		AddTokenTransfer(tokenID, accountID1, 10).
 		Execute(client)
 	if err != nil {
 		panic(err)
