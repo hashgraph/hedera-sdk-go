@@ -128,7 +128,23 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	query.queryPayment = NewHbar(2)
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
-	cost := query.queryPayment
+	var cost Hbar
+	if query.queryPayment.tinybar != 0 {
+		cost = query.queryPayment
+	} else {
+		cost = client.maxQueryPayment
+
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return TransactionRecord{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return TransactionRecord{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
+	}
 
 	for _, nodeID := range query.nodeIDs {
 		transaction, err := query_makePaymentTransaction(

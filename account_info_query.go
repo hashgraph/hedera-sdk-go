@@ -123,7 +123,16 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return AccountInfo{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return AccountInfo{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

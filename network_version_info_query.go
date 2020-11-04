@@ -89,7 +89,16 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return NetworkVersionInfo{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return NetworkVersionInfo{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

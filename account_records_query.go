@@ -112,7 +112,16 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return []TransactionRecord{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return []TransactionRecord{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

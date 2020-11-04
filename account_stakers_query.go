@@ -74,7 +74,12 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	return HbarFromTinybar(int64(resp.query.GetCryptoGetInfo().Header.Cost)), nil
+	cost := int64(resp.query.GetCryptoGetProxyStakers().Header.Cost)
+	if cost < 25 {
+		return HbarFromTinybar(25), nil
+	} else {
+		return HbarFromTinybar(cost), nil
+	}
 }
 
 func accountStakersQuery_mapResponseStatus(_ request, response response) Status {
@@ -105,7 +110,16 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return []Transfer{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return []Transfer{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

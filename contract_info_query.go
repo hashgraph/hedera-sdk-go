@@ -104,8 +104,16 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		cost = query.queryPayment
 	} else {
 		cost = client.maxQueryPayment
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return ContractInfo{}, err
+		}
 
-		// actualCost := CostQuery()
+		if cost.tinybar > actualCost.tinybar {
+			return ContractInfo{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

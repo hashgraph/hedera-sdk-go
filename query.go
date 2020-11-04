@@ -5,7 +5,6 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-// Transaction contains the protobuf of a prepared transaction which can be signed and executed.
 type Query struct {
 	pb       *proto.Query
 	pbHeader *proto.QueryHeader

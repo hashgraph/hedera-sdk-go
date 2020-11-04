@@ -111,7 +111,12 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	return HbarFromTinybar(int64(resp.query.GetCryptoGetInfo().Header.Cost)), nil
+	cost := int64(resp.query.GetContractCallLocal().Header.Cost)
+	if cost < 25 {
+		return HbarFromTinybar(25), nil
+	} else {
+		return HbarFromTinybar(cost), nil
+	}
 }
 
 func contractCallQuery_mapResponseStatus(_ request, response response) Status {
@@ -142,7 +147,16 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return ContractFunctionResult{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return ContractFunctionResult{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

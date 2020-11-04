@@ -109,7 +109,16 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return LiveHash{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return LiveHash{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

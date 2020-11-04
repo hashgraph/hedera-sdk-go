@@ -100,7 +100,16 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return FileInfo{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return FileInfo{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)

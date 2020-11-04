@@ -104,7 +104,16 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	} else {
 		cost = client.maxQueryPayment
 
-		// actualCost := CostQuery()
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return TopicInfo{}, err
+		}
+
+		if cost.tinybar > actualCost.tinybar {
+			return TopicInfo{}, ErrMaxQueryPaymentExceeded{}
+		}
+
+		cost = actualCost
 	}
 
 	err := query_generatePayments(&query.Query, client, cost)
