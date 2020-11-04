@@ -46,7 +46,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
-	query.nodeIDs = client.getNodeAccountIdsForExecute()
+	query.nodeIDs = client.getNodeAccountIDsForExecute()
 
 	resp, err := execute(
 		client,
@@ -66,7 +66,12 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	return HbarFromTinybar(int64(resp.query.GetCryptoGetInfo().Header.Cost)), nil
+	cost := int64(resp.query.GetFileGetContents().Header.Cost)
+	if cost < 25 {
+		return HbarFromTinybar(25), nil
+	} else {
+		return HbarFromTinybar(cost), nil
+	}
 }
 
 func fileContentsQuery_mapResponseStatus(_ request, response response) Status {
@@ -85,7 +90,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.getNodeAccountIdsForExecute())
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
 	}
 
 	query.queryPayment = NewHbar(2)

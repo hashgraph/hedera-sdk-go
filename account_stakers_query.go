@@ -54,7 +54,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
-	query.nodeIDs = client.getNodeAccountIdsForExecute()
+	query.nodeIDs = client.getNodeAccountIDsForExecute()
 
 	resp, err := execute(
 		client,
@@ -93,7 +93,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.getNodeAccountIdsForExecute())
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
 	}
 
 	query.queryPayment = NewHbar(2)

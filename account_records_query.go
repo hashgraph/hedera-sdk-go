@@ -42,6 +42,46 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 	}
 }
 
+func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
+	if client == nil || client.operator == nil {
+		return Hbar{}, errNoClientProvided
+	}
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.pbHeader.Payment = paymentTransaction
+	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.nodeIDs = client.getNodeAccountIDsForExecute()
+
+	resp, err := execute(
+		client,
+		request{
+			query: &query.Query,
+		},
+		query_shouldRetry,
+		costQuery_makeRequest,
+		costQuery_advanceRequest,
+		costQuery_getNodeAccountID,
+		accountInfoQuery_getMethod,
+		accountInfoQuery_mapResponseStatus,
+		query_mapResponse,
+	)
+
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	cost := int64(resp.query.GetCryptoGetAccountRecords().Header.Cost)
+	if cost < 25 {
+		return HbarFromTinybar(25), nil
+	} else {
+		return HbarFromTinybar(cost), nil
+	}
+}
+
 func accountRecordsQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode)
 }
@@ -58,7 +98,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.getNodeAccountIdsForExecute())
+		query.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
 	}
 
 	var records = []TransactionRecord{}

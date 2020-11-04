@@ -338,7 +338,7 @@ func (client *Client) getChannel(id AccountID) (*channel, error) {
 	return &ch, nil
 }
 
-func (client *Client) getNodeAccountIdsForExecute() []AccountID {
+func (client *Client) getNodeAccountIDsForExecute() []AccountID {
 	if client.lastSortedNodeAccountIDs+1000 < time.Now().UTC().UnixNano() {
 		sort.Sort(nodes{nodes: client.networkNodeIds})
 		client.lastSortedNodeAccountIDs = time.Now().UTC().UnixNano()
