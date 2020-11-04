@@ -30,9 +30,9 @@ import (
 func TestCryptoTransferTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
 
-	resp, err := NewCryptoTransferTransaction().
-		AddSender(client.GetOperatorID(), NewHbar(1)).
-		AddRecipient(AccountID{Account: 3}, NewHbar(1)).
+	resp, err := NewTransferTransaction().
+		AddHbarTransfer(client.GetOperatorID(), NewHbar(1)).
+		AddHbarTransfer(AccountID{Account: 3}, NewHbar(-1)).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)

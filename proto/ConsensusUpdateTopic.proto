@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
-
 /*-
  * ‌
  * Hedera Network Services Protobuf
@@ -24,13 +22,15 @@ option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
  * ‍
  */
 
-option java_package = "com.hederahashgraph.api.proto.java";
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+
+option java_package = "com.hedera.hashgraph.proto";
 option java_multiple_files = true;
 
+import "proto/wrappers.proto";
 import "proto/BasicTypes.proto";
 import "proto/Duration.proto";
 import "proto/Timestamp.proto";
-import "proto/wrappers.proto";
 
 // All fields left null will not be updated.
 // See [ConsensusService.updateTopic()](#proto.ConsensusService)

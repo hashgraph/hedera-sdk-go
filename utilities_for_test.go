@@ -49,9 +49,9 @@ func newMockTransaction() (Transaction, error) {
 		return Transaction{}, err
 	}
 
-	tx, err := NewCryptoTransferTransaction().
-		AddSender(AccountID{Account: 2}, HbarFromTinybar(100)).
-		AddRecipient(AccountID{Account: 3}, HbarFromTinybar(100)).
+	tx, err := NewTransferTransaction().
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
 		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		SetTransactionID(testTransactionID).
 		SetNodeAccountIDs(nodeIDs).

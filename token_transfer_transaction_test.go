@@ -39,6 +39,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 		SetKycKey(client.GetOperatorKey()).
 		SetSupplyKey(client.GetOperatorKey()).
 		SetFreezeDefault(false).
+		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -74,10 +75,10 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	resp, err = NewTokenTransferTransaction().
+	resp, err = NewTransferTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).
-		AddSender(tokenID, client.GetOperatorID(), 10).
-		AddRecipient(tokenID, accountID, 10).
+		AddTokenTransfer(tokenID, client.GetOperatorID(), -10).
+		AddTokenTransfer(tokenID, accountID, 10).
 		Execute(client)
 	assert.NoError(t, err)
 

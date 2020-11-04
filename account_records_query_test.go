@@ -26,10 +26,10 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 	nodeIDs := make([]AccountID, 1)
 	nodeIDs[0] = resp.NodeID
 
-	_, err = NewCryptoTransferTransaction().
+	_, err = NewTransferTransaction().
 		SetNodeAccountIDs(nodeIDs).
-		AddRecipient(account, NewHbar(1)).
-		AddSender(client.GetOperatorID(), NewHbar(1)).
+		AddHbarTransfer(account, NewHbar(1)).
+		AddHbarTransfer(client.GetOperatorID(), NewHbar(-1)).
 		Execute(client)
 	assert.NoError(t, err)
 

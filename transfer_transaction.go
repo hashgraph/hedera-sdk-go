@@ -6,16 +6,20 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-type TokenTransferTransaction struct {
+type TransferTransaction struct {
 	Transaction
-	pb           *proto.TokenTransfersTransactionBody
+	pb           *proto.CryptoTransferTransactionBody
 	tokenIndexes map[TokenID]int
 }
 
-func NewTokenTransferTransaction() *TokenTransferTransaction {
-	pb := &proto.TokenTransfersTransactionBody{}
+func NewTransferTransaction() *TransferTransaction {
+	pb := &proto.CryptoTransferTransactionBody{
+		Transfers: &proto.TransferList{
+			AccountAmounts: []*proto.AccountAmount{},
+		},
+	}
 
-	transaction := TokenTransferTransaction{
+	transaction := TransferTransaction{
 		pb:           pb,
 		Transaction:  newTransaction(),
 		tokenIndexes: make(map[TokenID]int),
@@ -24,7 +28,7 @@ func NewTokenTransferTransaction() *TokenTransferTransaction {
 	return &transaction
 }
 
-func (transaction *TokenTransferTransaction) GetTransfers() map[TokenID][]TokenTransfer {
+func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenTransfer {
 	tokenTransferMap := make(map[TokenID][]TokenTransfer, len(transaction.pb.TokenTransfers))
 	for _, tokenTransfer := range transaction.pb.TokenTransfers {
 		for _, accountAmount := range tokenTransfer.Transfers {
@@ -36,15 +40,13 @@ func (transaction *TokenTransferTransaction) GetTransfers() map[TokenID][]TokenT
 	return tokenTransferMap
 }
 
-func (transaction *TokenTransferTransaction) AddSender(tokenID TokenID, accountID AccountID, value int64) *TokenTransferTransaction {
-	return transaction.AddTransfer(tokenID, accountID, -value)
+func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amount Hbar) *TransferTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Transfers.AccountAmounts = append(transaction.pb.Transfers.AccountAmounts, &proto.AccountAmount{AccountID: accountID.toProtobuf(), Amount: amount.tinybar})
+	return transaction
 }
 
-func (transaction *TokenTransferTransaction) AddRecipient(tokenID TokenID, accountID AccountID, value int64) *TokenTransferTransaction {
-	return transaction.AddTransfer(tokenID, accountID, value)
-}
-
-func (transaction *TokenTransferTransaction) AddTransfer(tokenID TokenID, accountID AccountID, value int64) *TokenTransferTransaction {
+func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, value int64) *TransferTransaction {
 	transaction.requireNotFrozen()
 
 	accountAmount := proto.AccountAmount{
@@ -68,26 +70,26 @@ func (transaction *TokenTransferTransaction) AddTransfer(tokenID TokenID, accoun
 	return transaction
 }
 
-func tokenTransferTransaction_getMethod(request request, channel *channel) method {
+func transferTransaction_getMethod(request request, channel *channel) method {
 	return method{
-		transaction: channel.getToken().TransferTokens,
+		transaction: channel.getCrypto().CryptoTransfer,
 	}
 }
 
-func (transaction *TokenTransferTransaction) IsFrozen() bool {
+func (transaction *TransferTransaction) IsFrozen() bool {
 	return transaction.isFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *TokenTransferTransaction) Sign(
+func (transaction *TransferTransaction) Sign(
 	privateKey PrivateKey,
-) *TokenTransferTransaction {
+) *TransferTransaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
-func (transaction *TokenTransferTransaction) SignWithOperator(
+func (transaction *TransferTransaction) SignWithOperator(
 	client *Client,
-) (*TokenTransferTransaction, error) {
+) (*TransferTransaction, error) {
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
@@ -104,10 +106,10 @@ func (transaction *TokenTransferTransaction) SignWithOperator(
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
-func (transaction *TokenTransferTransaction) SignWith(
+func (transaction *TransferTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
-) *TokenTransferTransaction {
+) *TransferTransaction {
 	if !transaction.IsFrozen() {
 		transaction.Freeze()
 	}
@@ -129,7 +131,7 @@ func (transaction *TokenTransferTransaction) SignWith(
 }
 
 // Execute executes the Transaction with the provided client
-func (transaction *TokenTransferTransaction) Execute(
+func (transaction *TransferTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
 	if !transaction.IsFrozen() {
@@ -154,7 +156,7 @@ func (transaction *TokenTransferTransaction) Execute(
 		transaction_makeRequest,
 		transaction_advanceRequest,
 		transaction_getNodeId,
-		tokenTransferTransaction_getMethod,
+		transferTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,
 	)
@@ -169,21 +171,21 @@ func (transaction *TokenTransferTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenTransferTransaction) onFreeze(
+func (transaction *TransferTransaction) onFreeze(
 	pbBody *proto.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenTransfers{
-		TokenTransfers: transaction.pb,
+	pbBody.Data = &proto.TransactionBody_CryptoTransfer{
+		CryptoTransfer: transaction.pb,
 	}
 
 	return true
 }
 
-func (transaction *TokenTransferTransaction) Freeze() (*TokenTransferTransaction, error) {
+func (transaction *TransferTransaction) Freeze() (*TransferTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
 
-func (transaction *TokenTransferTransaction) FreezeWith(client *Client) (*TokenTransferTransaction, error) {
+func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
@@ -196,57 +198,57 @@ func (transaction *TokenTransferTransaction) FreezeWith(client *Client) (*TokenT
 	return transaction, transaction_freezeWith(&transaction.Transaction, client)
 }
 
-func (transaction *TokenTransferTransaction) GetMaxTransactionFee() Hbar {
+func (transaction *TransferTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenUpdateTransaction.
-func (transaction *TokenTransferTransaction) SetMaxTransactionFee(fee Hbar) *TokenTransferTransaction {
+func (transaction *TransferTransaction) SetMaxTransactionFee(fee Hbar) *TransferTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
-func (transaction *TokenTransferTransaction) GetTransactionMemo() string {
+func (transaction *TransferTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this TokenUpdateTransaction.
-func (transaction *TokenTransferTransaction) SetTransactionMemo(memo string) *TokenTransferTransaction {
+func (transaction *TransferTransaction) SetTransactionMemo(memo string) *TransferTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
-func (transaction *TokenTransferTransaction) GetTransactionValidDuration() time.Duration {
+func (transaction *TransferTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenUpdateTransaction.
-func (transaction *TokenTransferTransaction) SetTransactionValidDuration(duration time.Duration) *TokenTransferTransaction {
+func (transaction *TransferTransaction) SetTransactionValidDuration(duration time.Duration) *TransferTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
-func (transaction *TokenTransferTransaction) GetTransactionID() TransactionID {
+func (transaction *TransferTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this TokenUpdateTransaction.
-func (transaction *TokenTransferTransaction) SetTransactionID(transactionID TransactionID) *TokenTransferTransaction {
+func (transaction *TransferTransaction) SetTransactionID(transactionID TransactionID) *TransferTransaction {
 	transaction.requireNotFrozen()
 	transaction.id = transactionID
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-func (transaction *TokenTransferTransaction) GetNodeAccountIDs() []AccountID {
+func (transaction *TransferTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenUpdateTransaction.
-func (transaction *TokenTransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenTransferTransaction {
+func (transaction *TransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *TransferTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
-
 /*-
  * ‌
  * Hedera Network Services Protobuf
@@ -23,7 +21,9 @@ option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
  * limitations under the License.
  * ‍
  */
-option java_package = "com.hederahashgraph.service.proto.java";
+option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+
+option java_package = "com.hedera.hashgraph.proto";
 
 import "proto/TransactionResponse.proto";
 import "proto/Transaction.proto";
