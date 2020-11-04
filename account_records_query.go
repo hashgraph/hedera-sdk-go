@@ -58,7 +58,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.getNodeAccountIDsForTransaction())
+		query.SetNodeAccountIDs(client.getNodeAccountIdsForExecute())
 	}
 
 	var records = []TransactionRecord{}

@@ -165,7 +165,7 @@ func transaction_freezeWith(
 	}
 
 	if client != nil && transaction.pbBody.TransactionID != nil {
-		transaction.nodeIDs = client.getNodeAccountIDsForTransaction()
+		transaction.nodeIDs = client.getNodeAccountIdsForExecute()
 
 		for _, nodeAccountID := range transaction.nodeIDs {
 			transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
