@@ -142,15 +142,17 @@ type ContractGetInfoResponse_ContractInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ContractID        *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`               // ID of the contract instance, in the format used in transactions
-	AccountID         *AccountID  `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`                 // ID of the cryptocurrency account owned by the contract instance, in the format used in transactions
-	ContractAccountID string      `protobuf:"bytes,3,opt,name=contractAccountID,proto3" json:"contractAccountID,omitempty"` // ID of both the contract instance and the cryptocurrency account owned by the contract instance, in the format used by Solidity
-	AdminKey          *Key        `protobuf:"bytes,4,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                   // the state of the instance and its fields can be modified arbitrarily if this key signs a transaction to modify it. If this is null, then such modifications are not possible, and there is no administrator that can override the normal operation of this smart contract instance. Note that if it is created with no admin keys, then there is no administrator to authorize changing the admin keys, so there can never be any admin keys for that instance. */
-	ExpirationTime    *Timestamp  `protobuf:"bytes,5,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`       // the current time at which this contract instance (and its account) is set to expire
-	AutoRenewPeriod   *Duration   `protobuf:"bytes,6,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`     // the expiration time will extend every this many seconds. If there are insufficient funds, then it extends as long as possible. If the account is empty when it expires, then it is deleted.
-	Storage           int64       `protobuf:"varint,7,opt,name=storage,proto3" json:"storage,omitempty"`                    // number of bytes of storage being used by this instance (which affects the cost to extend the expiration time)
-	Memo              string      `protobuf:"bytes,8,opt,name=memo,proto3" json:"memo,omitempty"`                           // the memo associated with the contract (max 100 bytes)
-	Balance           uint64      `protobuf:"varint,9,opt,name=balance,proto3" json:"balance,omitempty"`                    // The current balance, in tinybars
+	ContractID         *ContractID          `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`                  // ID of the contract instance, in the format used in transactions
+	AccountID          *AccountID           `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`                    // ID of the cryptocurrency account owned by the contract instance, in the format used in transactions
+	ContractAccountID  string               `protobuf:"bytes,3,opt,name=contractAccountID,proto3" json:"contractAccountID,omitempty"`    // ID of both the contract instance and the cryptocurrency account owned by the contract instance, in the format used by Solidity
+	AdminKey           *Key                 `protobuf:"bytes,4,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                      // the state of the instance and its fields can be modified arbitrarily if this key signs a transaction to modify it. If this is null, then such modifications are not possible, and there is no administrator that can override the normal operation of this smart contract instance. Note that if it is created with no admin keys, then there is no administrator to authorize changing the admin keys, so there can never be any admin keys for that instance. */
+	ExpirationTime     *Timestamp           `protobuf:"bytes,5,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`          // the current time at which this contract instance (and its account) is set to expire
+	AutoRenewPeriod    *Duration            `protobuf:"bytes,6,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`        // the expiration time will extend every this many seconds. If there are insufficient funds, then it extends as long as possible. If the account is empty when it expires, then it is deleted.
+	Storage            int64                `protobuf:"varint,7,opt,name=storage,proto3" json:"storage,omitempty"`                       // number of bytes of storage being used by this instance (which affects the cost to extend the expiration time)
+	Memo               string               `protobuf:"bytes,8,opt,name=memo,proto3" json:"memo,omitempty"`                              // the memo associated with the contract (max 100 bytes)
+	Balance            uint64               `protobuf:"varint,9,opt,name=balance,proto3" json:"balance,omitempty"`                       // The current balance, in tinybars
+	Deleted            bool                 `protobuf:"varint,10,opt,name=deleted,proto3" json:"deleted,omitempty"`                      // Whether the contract has been deleted
+	TokenRelationships []*TokenRelationship `protobuf:"bytes,11,rep,name=tokenRelationships,proto3" json:"tokenRelationships,omitempty"` // The tokens associated to the contract
 }
 
 func (x *ContractGetInfoResponse_ContractInfo) Reset() {
@@ -248,6 +250,20 @@ func (x *ContractGetInfoResponse_ContractInfo) GetBalance() uint64 {
 	return 0
 }
 
+func (x *ContractGetInfoResponse_ContractInfo) GetDeleted() bool {
+	if x != nil {
+		return x.Deleted
+	}
+	return false
+}
+
+func (x *ContractGetInfoResponse_ContractInfo) GetTokenRelationships() []*TokenRelationship {
+	if x != nil {
+		return x.TokenRelationships
+	}
+	return nil
+}
+
 var File_proto_ContractGetInfo_proto protoreflect.FileDescriptor
 
 var file_proto_ContractGetInfo_proto_rawDesc = []byte{
@@ -268,7 +284,7 @@ var file_proto_ContractGetInfo_proto_rawDesc = []byte{
 	0x65, 0x72, 0x12, 0x31, 0x0a, 0x0a, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49, 0x44,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43,
 	0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49, 0x44, 0x52, 0x0a, 0x63, 0x6f, 0x6e, 0x74, 0x72,
-	0x61, 0x63, 0x74, 0x49, 0x44, 0x22, 0xa0, 0x04, 0x0a, 0x17, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61,
+	0x61, 0x63, 0x74, 0x49, 0x44, 0x22, 0x84, 0x05, 0x0a, 0x17, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61,
 	0x63, 0x74, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x2d, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
@@ -278,7 +294,7 @@ var file_proto_ContractGetInfo_proto_rawDesc = []byte{
 	0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65,
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49,
 	0x6e, 0x66, 0x6f, 0x52, 0x0c, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49, 0x6e, 0x66,
-	0x6f, 0x1a, 0x84, 0x03, 0x0a, 0x0c, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49, 0x6e,
+	0x6f, 0x1a, 0xe8, 0x03, 0x0a, 0x0c, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49, 0x6e,
 	0x66, 0x6f, 0x12, 0x31, 0x0a, 0x0a, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49, 0x44,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43,
 	0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x49, 0x44, 0x52, 0x0a, 0x63, 0x6f, 0x6e, 0x74, 0x72,
@@ -302,13 +318,19 @@ var file_proto_ContractGetInfo_proto_rawDesc = []byte{
 	0x03, 0x52, 0x07, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6d, 0x65,
 	0x6d, 0x6f, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6d, 0x65, 0x6d, 0x6f, 0x12, 0x18,
 	0x0a, 0x07, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x07, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x42, 0x50, 0x0a, 0x22, 0x63, 0x6f, 0x6d, 0x2e,
-	0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e,
-	0x61, 0x70, 0x69, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61, 0x76, 0x61, 0x50, 0x01,
-	0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73,
-	0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64,
-	0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x07, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x64, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x64, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x64, 0x65, 0x6c, 0x65, 0x74,
+	0x65, 0x64, 0x12, 0x48, 0x0a, 0x12, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x6c, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x6c, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x12, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x52,
+	0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x73, 0x42, 0x50, 0x0a, 0x22,
+	0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72,
+	0x61, 0x70, 0x68, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6a, 0x61,
+	0x76, 0x61, 0x50, 0x01, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72,
+	0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -335,22 +357,24 @@ var file_proto_ContractGetInfo_proto_goTypes = []interface{}{
 	(*Key)(nil),                                  // 7: proto.Key
 	(*Timestamp)(nil),                            // 8: proto.Timestamp
 	(*Duration)(nil),                             // 9: proto.Duration
+	(*TokenRelationship)(nil),                    // 10: proto.TokenRelationship
 }
 var file_proto_ContractGetInfo_proto_depIdxs = []int32{
-	3, // 0: proto.ContractGetInfoQuery.header:type_name -> proto.QueryHeader
-	4, // 1: proto.ContractGetInfoQuery.contractID:type_name -> proto.ContractID
-	5, // 2: proto.ContractGetInfoResponse.header:type_name -> proto.ResponseHeader
-	2, // 3: proto.ContractGetInfoResponse.contractInfo:type_name -> proto.ContractGetInfoResponse.ContractInfo
-	4, // 4: proto.ContractGetInfoResponse.ContractInfo.contractID:type_name -> proto.ContractID
-	6, // 5: proto.ContractGetInfoResponse.ContractInfo.accountID:type_name -> proto.AccountID
-	7, // 6: proto.ContractGetInfoResponse.ContractInfo.adminKey:type_name -> proto.Key
-	8, // 7: proto.ContractGetInfoResponse.ContractInfo.expirationTime:type_name -> proto.Timestamp
-	9, // 8: proto.ContractGetInfoResponse.ContractInfo.autoRenewPeriod:type_name -> proto.Duration
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	3,  // 0: proto.ContractGetInfoQuery.header:type_name -> proto.QueryHeader
+	4,  // 1: proto.ContractGetInfoQuery.contractID:type_name -> proto.ContractID
+	5,  // 2: proto.ContractGetInfoResponse.header:type_name -> proto.ResponseHeader
+	2,  // 3: proto.ContractGetInfoResponse.contractInfo:type_name -> proto.ContractGetInfoResponse.ContractInfo
+	4,  // 4: proto.ContractGetInfoResponse.ContractInfo.contractID:type_name -> proto.ContractID
+	6,  // 5: proto.ContractGetInfoResponse.ContractInfo.accountID:type_name -> proto.AccountID
+	7,  // 6: proto.ContractGetInfoResponse.ContractInfo.adminKey:type_name -> proto.Key
+	8,  // 7: proto.ContractGetInfoResponse.ContractInfo.expirationTime:type_name -> proto.Timestamp
+	9,  // 8: proto.ContractGetInfoResponse.ContractInfo.autoRenewPeriod:type_name -> proto.Duration
+	10, // 9: proto.ContractGetInfoResponse.ContractInfo.tokenRelationships:type_name -> proto.TokenRelationship
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_proto_ContractGetInfo_proto_init() }

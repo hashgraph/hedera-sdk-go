@@ -3,7 +3,6 @@ package hedera
 import (
 	"time"
 
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -50,7 +49,7 @@ func (builder ConsensusTopicUpdateTransaction) SetSubmitKey(publicKey PublicKey)
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
 func (builder ConsensusTopicUpdateTransaction) SetTopicMemo(memo string) ConsensusTopicUpdateTransaction {
-	builder.pb.Memo = &wrappers.StringValue{Value: memo}
+	builder.pb.Memo = &proto.StringValue{Value: memo}
 	return builder
 }
 

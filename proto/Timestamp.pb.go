@@ -25,7 +25,7 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// An exact date and time. This is the same data structure as the protobuf Timestamp.proto (see the comments in https://github.com/google/protobuf/blob/master/src/google/protobuf/timestamp.proto)
+// An exact date and time. This is the same data structure as the protobuf Timestamp.proto (see the comments in https://github.com/blob/master/src/timestamp.proto)
 type Timestamp struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

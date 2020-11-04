@@ -23,8 +23,8 @@ package proto;
  */
 
 option java_package = "com.hederahashgraph.api.proto.java";
-option java_multiple_files = true;
 option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+option java_multiple_files = true;
 
 import "proto/SystemDelete.proto";
 import "proto/SystemUndelete.proto";
@@ -58,7 +58,6 @@ import "proto/ConsensusSubmitMessage.proto";
 import "proto/UncheckedSubmit.proto";
 
 import "proto/TokenCreate.proto";
-import "proto/TokenTransfer.proto";
 import "proto/TokenFreezeAccount.proto";
 import "proto/TokenUnfreezeAccount.proto";
 import "proto/TokenGrantKyc.proto";
@@ -108,7 +107,6 @@ message TransactionBody {
     UncheckedSubmitBody uncheckedSubmit = 28;
 
     TokenCreateTransactionBody tokenCreation = 29; // Creates a token instance
-    TokenTransfersTransactionBody tokenTransfers = 30; // Transfers tokens between accounts
     TokenFreezeAccountTransactionBody tokenFreeze = 31; // Freezes account not to be able to transact with a token
     TokenUnfreezeAccountTransactionBody tokenUnfreeze = 32; // Unfreezes account for a token
     TokenGrantKycTransactionBody tokenGrantKyc = 33; // Grants KYC to an account for a token

@@ -25,7 +25,7 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// Get all the records for an account for any transfers into it and out of it, that were above the threshold, during the last 25 hours.
+// Requests records of all transactions for which the given account was the effective payer in the last 3 minutes of consensus time and <tt>ledger.keepRecordsInState=true</tt> was true during <tt>handleTransaction</tt>.
 type CryptoGetAccountRecordsQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -81,15 +81,15 @@ func (x *CryptoGetAccountRecordsQuery) GetAccountID() *AccountID {
 	return nil
 }
 
-// Response when the client sends the node CryptoGetAccountRecordsQuery
+// Returns records of all transactions for which the given account was the effective payer in the last 3 minutes of consensus time and <tt>ledger.keepRecordsInState=true</tt> was true during <tt>handleTransaction</tt>.
 type CryptoGetAccountRecordsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header    *ResponseHeader      `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	Header    *ResponseHeader      `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
 	AccountID *AccountID           `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"` // The account that this record is for
-	Records   []*TransactionRecord `protobuf:"bytes,3,rep,name=records,proto3" json:"records,omitempty"`     // List of records, each with CryptoRecordBody as their body
+	Records   []*TransactionRecord `protobuf:"bytes,3,rep,name=records,proto3" json:"records,omitempty"`     // List of records
 }
 
 func (x *CryptoGetAccountRecordsResponse) Reset() {

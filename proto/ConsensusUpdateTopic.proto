@@ -23,10 +23,10 @@ package proto;
  */
 
 option java_package = "com.hederahashgraph.api.proto.java";
-option java_multiple_files = true;
 option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+option java_multiple_files = true;
 
-import "google/protobuf/wrappers.proto";
+import "proto/wrappers.proto";
 import "proto/BasicTypes.proto";
 import "proto/Duration.proto";
 import "proto/Timestamp.proto";
@@ -37,7 +37,7 @@ message ConsensusUpdateTopicTransactionBody {
     TopicID topicID = 1;
 
     // Short publicly visible memo about the topic. No guarantee of uniqueness. Null for "do not update".
-    google.protobuf.StringValue memo = 2;
+    StringValue memo = 2;
 
     // Effective consensus timestamp at (and after) which all consensus transactions and queries will fail.
     // The expirationTime may be no longer than MAX_AUTORENEW_PERIOD (8000001 seconds) from the consensus timestamp of

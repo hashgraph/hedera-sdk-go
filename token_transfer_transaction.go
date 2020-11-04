@@ -8,19 +8,24 @@ import (
 
 type TokenTransferTransaction struct {
 	TransactionBuilder
-	pb             *proto.TokenTransfersTransactionBody
+	pb             *proto.CryptoTransferTransactionBody
 	tokenIdIndexes map[string]int
 }
 
 // NewTokenTransferTransaction creates a TokenTransferTransaction builder which can be
 // used to construct and execute a Token Transfers Transaction.
+//
+// Deprecated: Use `TransferTransaction` instead
 func NewTokenTransferTransaction() TokenTransferTransaction {
-	pb := &proto.TokenTransfersTransactionBody{
+	pb := &proto.CryptoTransferTransactionBody{
+		Transfers: &proto.TransferList{
+			AccountAmounts: []*proto.AccountAmount{},
+		},
 		TokenTransfers: make([]*proto.TokenTransferList, 0),
 	}
 
 	inner := newTransactionBuilder()
-	inner.pb.Data = &proto.TransactionBody_TokenTransfers{TokenTransfers: pb}
+	inner.pb.Data = &proto.TransactionBody_CryptoTransfer{CryptoTransfer: pb}
 
 	builder := TokenTransferTransaction{inner, pb, make(map[string]int)}
 

@@ -110,9 +110,9 @@ func main() {
 
 	fmt.Printf("Granted KYC for account %v on token %v\n", accountID.String(), tokenID.String())
 
-	response, err = hedera.NewTokenTransferTransaction().
-		AddSender(tokenID, operatorID, 10).
-		AddRecipient(tokenID, accountID, 10).
+	response, err = hedera.NewTransferTransaction().
+		AddTokenSender(tokenID, operatorID, 10).
+		AddTokenRecipient(tokenID, accountID, 10).
 		Execute(client)
 	if err != nil {
 		panic(err)

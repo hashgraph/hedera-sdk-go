@@ -272,8 +272,6 @@ func getMethodName(transactionBody *proto.TransactionBody) (string, error) {
 		return "/proto.TokenService/mintToken", nil
 	case *proto.TransactionBody_TokenRevokeKyc:
 		return "/proto.TokenService/revokeKycFromTokenAccount", nil
-	case *proto.TransactionBody_TokenTransfers:
-		return "/proto.TokenService/transferTokens", nil
 	case *proto.TransactionBody_TokenUnfreeze:
 		return "/proto.TokenService/unfreezeTokenAccount", nil
 	case *proto.TransactionBody_TokenUpdate:

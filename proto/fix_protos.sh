@@ -2,6 +2,8 @@
 
 # Script must be run from within the proto directory
 
-sd 'option java_package = "com.hederahashgraph.(api|service).proto.java";' 'option go_package = "github.com/hashgraph/hedera-sdk-go/proto/proto";\n\noption java_package = "com.hedera.hashgraph.proto";' *.proto
-
-sd 'import "([A-Z].*)";' 'import "proto/$1";' *.proto
+sd 'import "(.*)";' 'import "proto/$1";' *.proto
+sd '(option java_package = "com.hederahashgraph.service.proto.java";)' '$1\noption go_package = "github.com/hashgraph/hedera-sdk-go/proto";' *.proto
+sd '(option java_package = "com.hederahashgraph.api.proto.java";)' '$1\noption go_package = "github.com/hashgraph/hedera-sdk-go/proto";' *.proto
+sd 'google/protobuf/' '' *.proto
+sd 'google.protobuf.' '' *.proto

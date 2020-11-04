@@ -13,6 +13,8 @@ import (
 // This transaction must be signed by the
 // keys for all the sending accounts, and for any receiving accounts that have receiverSigRequired == true. The
 // signatures are in the same order as the accounts, skipping those accounts that don't need a signature.
+//
+// Deprecated: Use `TransferTransaction` instead
 type CryptoTransferTransaction struct {
 	TransactionBuilder
 	pb *proto.CryptoTransferTransactionBody
