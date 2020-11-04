@@ -32,18 +32,6 @@ func NewTransferTransaction() TransferTransaction {
 	return builder
 }
 
-// AddSender adds an account and the amount of hbar (as a positive value) to be sent from the sender. If any sender
-// account fails to have a sufficient balance to do the withdrawal, then the entire transaction fails, and none of those
-// transfers occur, though the transaction fee is still charged.
-func (builder TransferTransaction) AddHbarSender(id AccountID, amount Hbar) TransferTransaction {
-	return builder.AddHbarTransfer(id, amount.negated())
-}
-
-// AddRecipient adds a recipient account and the amount of hbar to be received from the sender(s).
-func (builder TransferTransaction) AddHbarRecipient(id AccountID, amount Hbar) TransferTransaction {
-	return builder.AddHbarTransfer(id, amount)
-}
-
 // AddTransfer adds the accountID to the internal accounts list and the amounts to the internal amounts list. Each
 // negative amount is withdrawn from the corresponding account (a sender), and each positive one is added to the
 // corresponding account (a receiver). The amounts list must sum to zero and there can be a maximum of 10 transfers.
@@ -58,15 +46,7 @@ func (builder TransferTransaction) AddHbarTransfer(id AccountID, amount Hbar) Tr
 	return builder
 }
 
-func (builder TransferTransaction) AddTokenSender(tokenID TokenID, accountID AccountID, amount uint64) TransferTransaction {
-	return builder.AddTokenTransfers(tokenID, accountID, -int64(amount))
-}
-
-func (builder TransferTransaction) AddTokenRecipient(tokenID TokenID, accountID AccountID, amount uint64) TransferTransaction {
-	return builder.AddTokenTransfers(tokenID, accountID, int64(amount))
-}
-
-func (builder TransferTransaction) AddTokenTransfers(tokenID TokenID, accountID AccountID, amount int64) TransferTransaction {
+func (builder TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, amount int64) TransferTransaction {
 	index, ok := builder.tokenIdIndexes[tokenID.String()]
 
 	if !ok {
