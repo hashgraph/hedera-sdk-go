@@ -95,11 +95,11 @@ func main() {
 
 	fmt.Printf("account = %v\n", newAccountID)
 
-	transferTx, err := hedera.NewCryptoTransferTransaction().
+	transferTx, err := hedera.NewTransferTransaction().
 		SetTransactionID(hedera.TransactionIDGenerate(newAccountID)).
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
-		AddSender(newAccountID, hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
-		AddRecipient(client.GetOperatorID(), hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
+		AddHbarSender(newAccountID, hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
+		AddHbarRecipient(client.GetOperatorID(), hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
 		FreezeWith(client)
 
 	if err != nil {

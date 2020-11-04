@@ -25,13 +25,13 @@ func main() {
 	txID := hedera.TransactionIDGenerate(operatorAccountID)
 
 	// The following steps are required for manually signing
-	transaction, err := hedera.NewCryptoTransferTransaction().
+	transaction, err := hedera.NewTransferTransaction().
 		// 1. Manually set the transaction ID
 		SetTransactionID(txID).
 		// 2. Add your sender and amount to be send
-		AddSender(operatorAccountID, hedera.NewHbar(1)).
+		AddHbarTransfer(operatorAccountID, hedera.NewHbar(1)).
 		// 3. add the recipient(s) and amount to be received
-		AddRecipient(recipientAccountID, hedera.NewHbar(1)).
+		AddHbarTransfer(recipientAccountID, hedera.NewHbar(-1)).
 		SetTransactionMemo("go sdk example multi_app_transfer/main.go").
 		// 4. build the transaction using the client that does not have a set operator
 		FreezeWith(client)
@@ -61,7 +61,7 @@ func main() {
 	fmt.Printf("received bytes for signed transaction \n%v\n", signedTxBytes)
 
 	// unmarshal your bytes into the signed transaction
-	var signedTx hedera.CryptoTransferTransaction
+	var signedTx hedera.TransferTransaction
 	err = signedTx.UnmarshalBinary(signedTxBytes)
 
 	if err != nil {
@@ -98,7 +98,7 @@ func signingService(txBytes []byte) ([]byte, error) {
 	}
 
 	// unmarshal the unsigned transaction's bytes
-	var unsignedTx hedera.CryptoTransferTransaction
+	var unsignedTx hedera.TransferTransaction
 	err = unsignedTx.UnmarshalBinary(txBytes)
 
 	if err != nil {

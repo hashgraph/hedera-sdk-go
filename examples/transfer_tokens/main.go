@@ -77,6 +77,7 @@ func main() {
 	transactionResponse, err = hedera.NewTokenCreateTransaction().
 		SetName("ffff").
 		SetSymbol("F").
+		SetMaxTransactionFee(hedera.NewHbar(1000)).
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		SetDecimals(3).
 		SetInitialSupply(1000000).
