@@ -22,9 +22,8 @@ type Client struct {
 
 	operator *operator
 
-	networkChannels map[AccountID]*channel
-	networkNodeIds  []node
-	network         map[AccountID]node
+	networkNodeIds []node
+	network        map[AccountID]node
 
 	mirrorNetwork mirrorNetwork
 
@@ -112,7 +111,6 @@ func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
 	client := Client{
 		maxQueryPayment:          defaultMaxQueryPayment,
 		maxTransactionFee:        defaultMaxTransactionFee,
-		networkChannels:          make(map[AccountID]*channel),
 		networkNodeIds:           make([]node, 0),
 		network:                  newNetwork,
 		mirrorNetwork:            newMirrorNetwork(mirrorNetwork),
@@ -209,9 +207,9 @@ func ClientFromConfigFile(filename string) (*Client, error) {
 
 // Close is used to disconnect the Client from the network
 func (client *Client) Close() error {
-	for _, conn := range client.networkChannels {
-		if conn != nil {
-			err := conn.client.Close()
+	for _, conn := range client.networkNodeIds {
+		if conn.channel != nil {
+			err := conn.channel.client.Close()
 			if err != nil {
 				return err
 			}
@@ -324,8 +322,12 @@ func (client *Client) getNumberOfNodesForTransaction() int {
 }
 
 func (client *Client) getChannel(id AccountID) (*channel, error) {
-	if client.networkChannels[id] != nil {
-		return client.networkChannels[id], nil
+	var i int
+	var node node
+	for i, node = range client.networkNodeIds {
+		if node.accountID == id && node.channel != nil {
+			return client.networkNodeIds[i].channel, nil
+		}
 	}
 
 	conn, err := grpc.Dial(client.network[id].address, grpc.WithInsecure())
@@ -334,7 +336,7 @@ func (client *Client) getChannel(id AccountID) (*channel, error) {
 	}
 
 	ch := newChannel(conn)
-	client.networkChannels[id] = &ch
+	client.networkNodeIds[i].channel = &ch
 	return &ch, nil
 }
 

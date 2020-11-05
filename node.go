@@ -11,6 +11,7 @@ type node struct {
 	address   string
 	delay     int64
 	lastUsed  *int64
+	channel   *channel
 }
 
 type nodes struct {
@@ -23,6 +24,7 @@ func newNode(accountID AccountID, address string) node {
 		address:   address,
 		delay:     250,
 		lastUsed:  nil,
+		channel:   nil,
 	}
 }
 
