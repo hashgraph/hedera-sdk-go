@@ -59,6 +59,7 @@ func (network mirrorNetwork) setNetwork(newNetwork []string) {
 }
 
 func (network mirrorNetwork) getNextChannel() (mirror.ConsensusServiceClient, error) {
+	println("len", len(network.network), len(network.channels), network.index)
 	if channel, ok := network.channels[network.network[network.index]]; ok {
 		network.index = (network.index + 1) % uint(len(network.network))
 		return channel, nil

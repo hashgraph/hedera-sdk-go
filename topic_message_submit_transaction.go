@@ -134,7 +134,20 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 func (transaction *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	for _, accoundID := range transaction.Transaction.GetNodeAccountIDs() {
+		println("inexecute", accoundID.String())
+	}
+
+	if len(transaction.Transaction.GetNodeAccountIDs()) == 0 {
+		transaction.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
+	}
+
+	for _, accoundID := range transaction.Transaction.GetNodeAccountIDs(){
+		println("inexecute", accoundID.String())
+	}
+
 	list, err := transaction.ExecuteAll(client)
+
 	return list[0], err
 }
 

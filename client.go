@@ -156,7 +156,12 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 		network[url] = accountID
 	}
 
-	client := newClient(network, clientConfig.MirrorNetwork)
+	var client *Client
+	if clientConfig.MirrorNetwork != nil {
+		client = newClient(network, clientConfig.MirrorNetwork)
+	} else {
+		client = newClient(network, testnetMirror)
+	}
 
 	// if the operator is not provided, finish here
 	if clientConfig.Operator == nil {

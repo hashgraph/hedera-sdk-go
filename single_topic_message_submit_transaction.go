@@ -100,6 +100,10 @@ func (transaction *singleTopicMessageSubmitTransaction) Execute(
 		transaction.FreezeWith(client)
 	}
 
+	if len(transaction.Transaction.GetNodeAccountIDs()) == 0 {
+		transaction.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
+	}
+
 	transactionID := transaction.id
 
 	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {

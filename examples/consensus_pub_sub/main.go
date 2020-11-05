@@ -76,18 +76,19 @@ func main() {
 		panic(err)
 	}
 
-	messageQuery, err := hedera.NewTopicMessageSubmitTransaction().
-		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+	println(transactionResponse.NodeID.String())
+
+	_, err = hedera.NewTopicMessageSubmitTransaction().
 		SetMessage([]byte(content)).
 		SetTopicID(topicID).
-		FreezeWith(client)
+		Execute(client)
 	if err != nil {
 		panic(err)
 	}
 
-	println(string(messageQuery.GetMessage()))
+	//println(string(messageQuery.GetMessage()))
 
-	messageQuery.Execute(client)
+	//messageQuery.Execute(client)
 
 	for {
 		if !wait || uint64(time.Since(start).Seconds()) > 30 {
