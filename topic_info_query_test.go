@@ -2,10 +2,19 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
-func TestConsensusTopicInfoQuery_Execute(t *testing.T) {
+func TestSerializeTopicInfoQuery(t *testing.T) {
+	query := NewTopicInfoQuery().
+		SetTopicID(TopicID{Topic: 3}).
+		Query
+
+	assert.Equal(t, `consensusGetTopicInfo:{header:{}topicID:{topicNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
+}
+
+func TestTopicInfoQuery_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"

@@ -30,15 +30,15 @@ func newMockClient() (*Client, error) {
 	return client, nil
 }
 
-func newMockTransaction() (Transaction, error) {
+func newMockTransaction() (*TransferTransaction, error) {
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 	if err != nil {
-		return Transaction{}, err
+		return &TransferTransaction{}, err
 	}
 
 	client, err := newMockClient()
 	if err != nil {
-		return Transaction{}, err
+		return &TransferTransaction{}, err
 	}
 
 	tx, err := NewTransferTransaction().
@@ -49,12 +49,12 @@ func newMockTransaction() (Transaction, error) {
 		SetNodeAccountIDs([]AccountID{AccountID{0, 0, 4}}).
 		FreezeWith(client)
 	if err != nil {
-		return Transaction{}, err
+		return &TransferTransaction{}, err
 	}
 
 	tx.Sign(privateKey)
 
-	return tx.Transaction, nil
+	return tx, nil
 }
 
 func newTestClient(t *testing.T) *Client {

@@ -2,8 +2,17 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
+
+func TestSerializeAccountRecordsQuery(t *testing.T) {
+	query := NewAccountRecordsQuery().
+		SetAccountID(AccountID{Account: 3}).
+		Query
+
+	assert.Equal(t, `cryptoGetAccountRecords:{header:{}accountID:{accountNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
+}
 
 func TestAccountRecordQuery_Execute(t *testing.T) {
 	client := newTestClient(t)

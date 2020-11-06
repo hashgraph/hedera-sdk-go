@@ -2,30 +2,31 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
-// func TestSerializeAccountUpdateTransaction(t *testing.T) {
-// 	mockClient, err := newMockClient()
-// 	assert.NoError(t, err)
+func TestSerializeAccountUpdateTransaction(t *testing.T) {
+	mockClient, err := newMockClient()
+	assert.NoError(t, err)
 
-// 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
-// 	assert.NoError(t, err)
+	privateKey, err := PrivateKeyFromString(mockPrivateKey)
+	assert.NoError(t, err)
 
-// 	tx, err := NewAccountUpdateTransaction().
-// 		SetAccountID(AccountID{Account: 3}).
-// 		SetKey(privateKey.PublicKey()).
-// 		SetNodeAccountID(AccountID{Account: 5}).
-// 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
-// 		SetTransactionID(testTransactionID).
-// 		FreezeWith(mockClient)
+	tx, err := NewAccountUpdateTransaction().
+		SetAccountID(AccountID{Account: 3}).
+		SetKey(privateKey.PublicKey()).
+		SetNodeAccountIDs([]AccountID{{0, 0, 5}}).
+		SetMaxTransactionFee(HbarFromTinybar(1e6)).
+		SetTransactionID(testTransactionID).
+		FreezeWith(mockClient)
 
-// 	assert.NoError(t, err)
+	assert.NoError(t, err)
 
-// 	tx.Sign(privateKey)
+	tx.Sign(privateKey)
 
-// 	assert.Equal(t, `bodyBytes:"\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\003\030\300\204=\"\002\010xz(\022\002\030\003\032\"\022\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\253\254,\271\274\307\325G;U\001\017:\264\217\224\034V\336E\320\276\035\027\315\201+0y\3125\212Kb\240Ph\263\243\372zx\251w!\257;\313<\331\204\3138\206\225\263\377Y\255T}K\020\t">>transactionID:<transactionValidStart:<seconds:124124nanos:151515>accountID:<accountNum:3>>nodeAccountID:<accountNum:3>transactionFee:1000000transactionValidDuration:<seconds:120>cryptoUpdateAccount:<accountIDToUpdate:<accountNum:3>key:<ed25519:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216">>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
-// }
+	assert.Equal(t, `bodyBytes:"\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\005\030\300\204=\"\002\010xz(\022\002\030\003\032\"\022\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\030\254\253\207\312K\271Fs\013\352uT\227b6\215\355\007\322\352\335\365\260\337\340\024\274\031\016\341\224\376\354~\362\250\271\203\t\037=m\005\311\251\210\034;\017\025\361\230\226DM\350S\335B\t\033\n\t">>transactionID:<transactionValidStart:<seconds:124124nanos:151515>accountID:<accountNum:3>>nodeAccountID:<accountNum:5>transactionFee:1000000transactionValidDuration:<seconds:120>cryptoUpdateAccount:<accountIDToUpdate:<accountNum:3>key:<ed25519:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216">>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
+}
 
 func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)

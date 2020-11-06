@@ -2,8 +2,17 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
+
+func TestSerializeFileInfoQuery(t *testing.T) {
+	query := NewFileInfoQuery().
+		SetFileID(FileID{File: 3}).
+		Query
+
+	assert.Equal(t, `fileGetInfo:{header:{}fileID:{fileNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
+}
 
 func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)

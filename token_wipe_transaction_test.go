@@ -2,8 +2,30 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
+	"time"
 )
+
+func TestSerializeTokenWipeTransaction(t *testing.T) {
+	mockClient, err := newMockClient()
+	assert.NoError(t, err)
+
+	privateKey, err := PrivateKeyFromString(mockPrivateKey)
+	assert.NoError(t, err)
+
+	tx, err := NewTokenWipeTransaction().
+		SetTokenID(TokenID{Token: 3}).
+		SetAccountID(AccountID{Account: 3}).
+		SetAmount(10).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		FreezeWith(mockClient)
+	assert.NoError(t, err)
+
+	tx.Sign(privateKey)
+
+	assert.Equal(t, `bodyBytes:"\n\006\n\000\022\002\030\003\022\002\030\003\030\200\302\327/\"\002\010x\272\002\n\n\002\030\003\022\002\030\003\030\n"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\243\234?\202\227a\324WdW\377\371\372\3642\310>ZE\210d%g\302\337yi\374\251\216\374fw\366ULv\225J\364\253\270\006G\315\361!\276\022[W\243\013\237\374\301V\206c\367\004\226\211\t">>transactionID:<transactionValidStart:<>accountID:<accountNum:3>>nodeAccountID:<accountNum:3>transactionFee:100000000transactionValidDuration:<seconds:120>tokenWipe:<token:<tokenNum:3>account:<accountNum:3>amount:10>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
+}
 
 func TestTokenWipeTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)

@@ -3,55 +3,30 @@ package hedera
 import (
 	"encoding/hex"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 	"time"
 )
 
-//func TestSerializeLiveHashAddTransaction(t *testing.T) {
+func TestSerializeLiveHashAddTransaction(t *testing.T) {
+	client, err := newMockClient()
+	assert.NoError(t, err)
 
-//	privateKey, err := PrivateKeyFromString(mockPrivateKey)
-//	assert.NoError(t, err)
+	newKey, err := PrivateKeyFromString(mockPrivateKey)
+	assert.NoError(t, err)
 
-//	client, err := ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
+	tx, err := NewLiveHashAddTransaction().
+		SetAccountID(AccountID{Account: 3}).
+		SetDuration((3000 * 10) * time.Millisecond).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		FreezeWith(client)
 
-//	if err != nil {
-//		client = ClientForTestnet()
-//	}
+	assert.NoError(t, err)
 
-//	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
-//	if err != nil {
+	tx.Sign(newKey)
 
-//	}
-
-//	configOperatorID := os.Getenv("OPERATOR_ID")
-//	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-//	if configOperatorID != "" && configOperatorKey != "" {
-//		operatorAccountID, err := AccountIDFromString(configOperatorID)
-//		assert.NoError(t, err)
-
-//		operatorKey, err := PrivateKeyFromString(configOperatorKey)
-//		assert.NoError(t, err)
-
-//		client.SetOperator(operatorAccountID, operatorKey)
-//	}
-
-//	if err != nil {
-
-//	}
-
-//	tx, err := NewLiveHashAddTransaction().
-//		SetAccountID(AccountID{Account: 3}).
-//		SetDuration((3000 * 10) * time.Millisecond).
-//		SetHash(_hash).
-//		FreezeWith(client)
-
-//	assert.NoError(t, err)
-
-//	tx.Sign(privateKey)
-
-//	//assert.Equal(t, `bodyBytes:"\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\003\030\300\204=\"\002\010xz(\022\002\030\003\032\"\022\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\253\254,\271\274\307\325G;U\001\017:\264\217\224\034V\336E\320\276\035\027\315\201+0y\3125\212Kb\240Ph\263\243\372zx\251w!\257;\313<\331\204\3138\206\225\263\377Y\255T}K\020\t">>transactionID:<transactionValidStart:<seconds:124124nanos:151515>accountID:<accountNum:3>>nodeAccountID:<accountNum:3>transactionFee:1000000transactionValidDuration:<seconds:120>cryptoUpdateAccount:<accountIDToUpdate:<accountNum:3>key:<ed25519:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216">>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
-//}
+	assert.Equal(t, `bodyBytes:"\n\006\n\000\022\002\030\003\022\002\030\003\030\200\302\327/\"\002\010xR\n\032\010\n\002\030\003*\002\010\036"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\215\276Id\212\326\363f\353q\315l\211\207\334\245\244\203E\031\276\343q\236\203f\211\210c/\334\224\213+f\336\200\025{7\007\331\246/\206r\211\r\305J\212\3470\232\271G\301\2271\346\025\005">>transactionID:<transactionValidStart:<>accountID:<accountNum:3>>nodeAccountID:<accountNum:3>transactionFee:100000000transactionValidDuration:<seconds:120>cryptoAddLiveHash:<liveHash:<accountId:<accountNum:3>duration:<seconds:30>>>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
+}
 
 func TestLiveHashAddTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)

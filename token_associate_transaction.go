@@ -53,6 +53,10 @@ func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) 
 	return transaction
 }
 
+func (transaction *TokenAssociateTransaction) GetAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.Account)
+}
+
 // The tokens to be associated with the provided account
 func (transaction *TokenAssociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *TokenAssociateTransaction {
 	transaction.requireNotFrozen()
@@ -63,6 +67,16 @@ func (transaction *TokenAssociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *
 	}
 
 	return transaction
+}
+
+func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
+	tokenIDs := make([]TokenID, len(transaction.pb.Tokens))
+
+	for i, tokenID := range transaction.pb.Tokens {
+		tokenIDs[i] = tokenIDFromProtobuf(tokenID)
+	}
+
+	return tokenIDs
 }
 
 //

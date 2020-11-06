@@ -2,8 +2,17 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
+
+func TestSerializeContractCallQuery(t *testing.T) {
+	query := NewContractCallQuery().
+		SetContractID(ContractID{Contract: 3}).
+		Query
+
+	assert.Equal(t, `contractCallLocal:{header:{}contractID:{contractNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
+}
 
 func TestNewContractCallQuery_Execute(t *testing.T) {
 	client := newTestClient(t)

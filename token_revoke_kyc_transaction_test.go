@@ -2,8 +2,29 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
+	"time"
 )
+
+func TestSerializeTokenRevokeTransaction(t *testing.T) {
+	mockClient, err := newMockClient()
+	assert.NoError(t, err)
+
+	privateKey, err := PrivateKeyFromString(mockPrivateKey)
+	assert.NoError(t, err)
+
+	tx, err := NewTokenRevokeKycTransaction().
+		SetTokenID(TokenID{Token: 3}).
+		SetAccountID(AccountID{Account: 3}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		FreezeWith(mockClient)
+	assert.NoError(t, err)
+
+	tx.Sign(privateKey)
+
+	assert.Equal(t, `bodyBytes:"\n\006\n\000\022\002\030\003\022\002\030\003\030\200\302\327/\"\002\010x\222\002\010\n\002\030\003\022\002\030\003"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\273XT\211\203\205\316{\233u\233\000\217\022\346\215=\374tBe\001%n\356\034\200\257\032\221\021wH.\373\265\331\034\324\275\037{\377\220lg\024\205\033\000\3048\177!\302\037o\241}\020\364$\256\014">>transactionID:<transactionValidStart:<>accountID:<accountNum:3>>nodeAccountID:<accountNum:3>transactionFee:100000000transactionValidDuration:<seconds:120>tokenRevokeKyc:<token:<tokenNum:3>account:<accountNum:3>>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
+}
 
 func TestTokenRevokeKycTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
