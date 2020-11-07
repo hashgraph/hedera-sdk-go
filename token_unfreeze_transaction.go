@@ -46,11 +46,19 @@ func (transaction *TokenUnfreezeTransaction) SetTokenID(tokenID TokenID) *TokenU
 	return transaction
 }
 
+func (transaction *TokenUnfreezeTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.Token)
+}
+
 // The account to be unfrozen
 func (transaction *TokenUnfreezeTransaction) SetAccountID(accountID AccountID) *TokenUnfreezeTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
+}
+
+func (transaction *TokenUnfreezeTransaction) GetAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetAccount())
 }
 
 //

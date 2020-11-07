@@ -40,6 +40,10 @@ func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpd
 	return transaction
 }
 
+func (transaction *TokenUpdateTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.GetToken())
+}
+
 // The new Symbol of the Token. Must be UTF-8 capitalized alphabetical string identifying the token.
 func (transaction *TokenUpdateTransaction) SetTokenSymbol(symbol string) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
@@ -47,11 +51,19 @@ func (transaction *TokenUpdateTransaction) SetTokenSymbol(symbol string) *TokenU
 	return transaction
 }
 
+func (transaction *TokenUpdateTransaction) GetSymbol() string {
+	return transaction.pb.GetSymbol()
+}
+
 // The new Name of the Token. Must be a string of ASCII characters.
 func (transaction *TokenUpdateTransaction) SetTokenName(name string) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Name = name
 	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetNamel() string {
+	return transaction.pb.GetName()
 }
 
 // The new Treasury account of the Token. If the provided treasury account is not existing or
@@ -63,12 +75,25 @@ func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasury Account
 	return transaction
 }
 
+func (transaction *TokenUpdateTransaction) GetTreasuryAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetTreasuryAccountID())
+}
+
 // The new Admin key of the Token. If Token is immutable, transaction will resolve to
 // TOKEN_IS_IMMUTABlE.
 func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetAdminKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
 }
 
 // The new KYC key of the Token. If Token does not have currently a KYC key, transaction will
@@ -79,12 +104,30 @@ func (transaction *TokenUpdateTransaction) SetKycKey(publicKey Key) *TokenUpdate
 	return transaction
 }
 
+func (transaction *TokenUpdateTransaction) GetKycKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetKycKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
+}
+
 // The new Freeze key of the Token. If the Token does not have currently a Freeze key, transaction
 // will resolve to TOKEN_HAS_NO_FREEZE_KEY.
 func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FreezeKey = publicKey.toProtoKey()
 	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetFreezeKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
 }
 
 // The new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction
@@ -95,12 +138,30 @@ func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey Key) *TokenUpdat
 	return transaction
 }
 
+func (transaction *TokenUpdateTransaction) GetWipeKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetWipeKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
+}
+
 // The new Supply key of the Token. If the Token does not have currently a Supply key, transaction
 // will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
 func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SupplyKey = publicKey.toProtoKey()
 	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetSupplyKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
 }
 
 // The new account which will be automatically charged to renew the token's expiration, at
@@ -111,11 +172,19 @@ func (transaction *TokenUpdateTransaction) SetAutoRenewAccount(autoRenewAccount 
 	return transaction
 }
 
+func (transaction *TokenUpdateTransaction) GetAutoRenewAccount() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
+}
+
 // The new interval at which the auto-renew account will be charged to extend the token's expiry.
 func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = autoRenewPeriod
 	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() uint64 {
+	return transaction.pb.GetAutoRenewPeriod()
 }
 
 // The new expiry time of the token. Expiry can be updated even if admin key is not set. If the
@@ -125,6 +194,10 @@ func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime uint
 	transaction.requireNotFrozen()
 	transaction.pb.Expiry = expirationTime
 	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetExpirationTime() uint64 {
+	return transaction.pb.GetExpiry()
 }
 
 //

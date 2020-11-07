@@ -17,7 +17,7 @@ func TestSerializeTokenAssociateTransaction(t *testing.T) {
 	tx, err := NewTokenAssociateTransaction().
 		SetAccountID(AccountID{Account: 3}).
 		SetTokenIDs(TokenID{Token: 3}).
-		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
 		FreezeWith(mockClient)
 	assert.NoError(t, err)
 

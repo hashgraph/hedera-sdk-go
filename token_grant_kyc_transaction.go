@@ -45,11 +45,19 @@ func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenG
 	return transaction
 }
 
+func (transaction *TokenGrantKycTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.GetToken())
+}
+
 // The account to be KYCed
 func (transaction *TokenGrantKycTransaction) SetAccountID(accountID AccountID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
+}
+
+func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetAccount())
 }
 
 //

@@ -18,7 +18,7 @@ func TestSerializeLiveHashAddTransaction(t *testing.T) {
 	tx, err := NewLiveHashAddTransaction().
 		SetAccountID(AccountID{Account: 3}).
 		SetDuration((3000 * 10) * time.Millisecond).
-		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
 		FreezeWith(client)
 
 	assert.NoError(t, err)

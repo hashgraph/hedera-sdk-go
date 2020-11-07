@@ -17,7 +17,7 @@ func TestSerializeTokenTransferTransaction(t *testing.T) {
 	tx, err := NewTransferTransaction().
 		AddTokenTransfer(TokenID{Token: 3}, AccountID{Account: 3}, -10).
 		AddTokenTransfer(TokenID{Token: 3}, AccountID{Account: 4}, 10).
-		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
 		FreezeWith(mockClient)
 	assert.NoError(t, err)
 

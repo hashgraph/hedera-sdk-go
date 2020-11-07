@@ -54,11 +54,19 @@ func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeT
 	return transaction
 }
 
+func (transaction *TokenWipeTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.GetToken())
+}
+
 // The account to be wiped
 func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *TokenWipeTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
+}
+
+func (transaction *TokenWipeTransaction) GetAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetAccount())
 }
 
 // The amount of tokens to wipe from the specified account. Amount must be a positive non-zero
@@ -68,6 +76,10 @@ func (transaction *TokenWipeTransaction) SetAmount(amount uint64) *TokenWipeTran
 	transaction.requireNotFrozen()
 	transaction.pb.Amount = amount
 	return transaction
+}
+
+func (transaction *TokenWipeTransaction) GetAmount() uint64 {
+	return transaction.pb.GetAmount()
 }
 
 //

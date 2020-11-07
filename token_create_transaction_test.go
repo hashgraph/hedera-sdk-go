@@ -17,8 +17,8 @@ func TestSerializeTokenCreateTransaction(t *testing.T) {
 	tx, err := NewTokenCreateTransaction().
 		SetTreasury(AccountID{Account: 3}).
 		SetMaxTransactionFee(NewHbar(1000)).
-		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
-		SetExpirationTime(time.Unix(0,0)).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
+		SetExpirationTime(time.Unix(0, 0)).
 		FreezeWith(mockClient)
 	assert.NoError(t, err)
 

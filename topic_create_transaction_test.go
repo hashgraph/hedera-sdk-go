@@ -18,7 +18,7 @@ func TestSerializeTopicCreateTransaction(t *testing.T) {
 	tx, err := NewTopicCreateTransaction().
 		SetAdminKey(key.PublicKey()).
 		SetTopicMemo("this is a test topic").
-		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		FreezeWith(mockClient)
 

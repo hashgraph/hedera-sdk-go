@@ -16,7 +16,7 @@ func TestSerializeTokenDeleteTransaction(t *testing.T) {
 
 	tx, err := NewTokenDeleteTransaction().
 		SetTokenID(TokenID{Token: 3}).
-		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
 		FreezeWith(mockClient)
 	assert.NoError(t, err)
 

@@ -54,7 +54,7 @@ func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) 
 }
 
 func (transaction *TokenAssociateTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.Account)
+	return accountIDFromProtobuf(transaction.pb.GetAccount())
 }
 
 // The tokens to be associated with the provided account
@@ -69,10 +69,21 @@ func (transaction *TokenAssociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *
 	return transaction
 }
 
-func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
-	tokenIDs := make([]TokenID, len(transaction.pb.Tokens))
+func (transaction *TokenAssociateTransaction) AddTokenID(tokenID TokenID) *TokenAssociateTransaction {
+	transaction.requireNotFrozen()
+	if transaction.pb.Tokens == nil {
+		transaction.pb.Tokens = make([]*proto.TokenID, 0)
+	}
 
-	for i, tokenID := range transaction.pb.Tokens {
+	transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
+
+	return transaction
+}
+
+func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
+	tokenIDs := make([]TokenID, len(transaction.pb.GetTokens()))
+
+	for i, tokenID := range transaction.pb.GetTokens() {
 		tokenIDs[i] = tokenIDFromProtobuf(tokenID)
 	}
 

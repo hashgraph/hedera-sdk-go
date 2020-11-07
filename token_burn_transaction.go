@@ -44,6 +44,10 @@ func (transaction *TokenBurnTransaction) SetTokenID(tokenID TokenID) *TokenBurnT
 	return transaction
 }
 
+func (transaction *TokenBurnTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.GetToken())
+}
+
 // The amount to burn from the Treasury Account. Amount must be a positive non-zero number, not
 // bigger than the token balance of the treasury account (0; balance], represented in the lowest
 // denomination.
@@ -51,6 +55,10 @@ func (transaction *TokenBurnTransaction) SetAmount(amount uint64) *TokenBurnTran
 	transaction.requireNotFrozen()
 	transaction.pb.Amount = amount
 	return transaction
+}
+
+func (transaction *TokenBurnTransaction) GetAmmount() uint64 {
+	return transaction.pb.GetAmount()
 }
 
 //

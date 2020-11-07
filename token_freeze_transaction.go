@@ -47,11 +47,19 @@ func (transaction *TokenFreezeTransaction) SetTokenID(tokenID TokenID) *TokenFre
 	return transaction
 }
 
+func (transaction *TokenFreezeTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.GetToken())
+}
+
 // The account to be frozen
 func (transaction *TokenFreezeTransaction) SetAccountID(accountID AccountID) *TokenFreezeTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
+}
+
+func (transaction *TokenFreezeTransaction) GetAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetAccount())
 }
 
 //

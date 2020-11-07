@@ -44,6 +44,10 @@ func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintT
 	return transaction
 }
 
+func (transaction *TokenMintTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.Token)
+}
+
 // The amount to mint from the Treasury Account. Amount must be a positive non-zero number, not
 // bigger than the token balance of the treasury account (0; balance], represented in the lowest
 // denomination.
@@ -51,6 +55,10 @@ func (transaction *TokenMintTransaction) SetAmount(amount uint64) *TokenMintTran
 	transaction.requireNotFrozen()
 	transaction.pb.Amount = amount
 	return transaction
+}
+
+func (transaction *TokenMintTransaction) GetAmount() uint64 {
+	return transaction.pb.GetAmount()
 }
 
 //

@@ -36,6 +36,10 @@ func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID)
 	return transaction
 }
 
+func (transaction *TokenDissociateTransaction) GetAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.Account)
+}
+
 // The tokens to be dissociated with the provided account
 func (transaction *TokenDissociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *TokenDissociateTransaction {
 	transaction.requireNotFrozen()
@@ -45,6 +49,26 @@ func (transaction *TokenDissociateTransaction) SetTokenIDs(tokenIDs ...TokenID) 
 		transaction.pb.Tokens[i] = tokenID.toProtobuf()
 	}
 
+	return transaction
+}
+
+func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
+	tokenIDs := make([]TokenID, len(transaction.pb.Tokens))
+
+	for i, tokenID := range transaction.pb.Tokens {
+		tokenIDs[i] = tokenIDFromProtobuf(tokenID)
+	}
+
+	return tokenIDs
+}
+
+func (transaction *TokenDissociateTransaction) AddTokenID(tokenID TokenID) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
+	if transaction.pb.Tokens == nil {
+		transaction.pb.Tokens = make([]*proto.TokenID, 0)
+	}
+
+	transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
 	return transaction
 }
 

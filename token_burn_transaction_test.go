@@ -17,7 +17,7 @@ func TestSerializeTokenBurnTransaction(t *testing.T) {
 	tx, err := NewTokenBurnTransaction().
 		SetAmount(10).
 		SetTokenID(TokenID{Token: 3}).
-		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0,0)}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
 		FreezeWith(mockClient)
 	assert.NoError(t, err)
 

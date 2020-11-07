@@ -45,11 +45,19 @@ func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *Token
 	return transaction
 }
 
+func (transaction *TokenRevokeKycTransaction) GetTokenID() TokenID {
+	return tokenIDFromProtobuf(transaction.pb.GetToken())
+}
+
 // The account to be KYC Revoked
 func (transaction *TokenRevokeKycTransaction) SetAccountID(accountID AccountID) *TokenRevokeKycTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Account = accountID.toProtobuf()
 	return transaction
+}
+
+func (transaction *TokenRevokeKycTransaction) getAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.Account)
 }
 
 //

@@ -56,11 +56,19 @@ func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreat
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetName() string {
+	return transaction.pb.GetName()
+}
+
 // The publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
 func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Symbol = symbol
 	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetSymbol() string {
+	return transaction.pb.GetSymbol()
 }
 
 // The number of decimal places a token is divisible by. This field can never be changed!
@@ -70,11 +78,19 @@ func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCrea
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetDecimals() uint {
+	return uint(transaction.pb.GetDecimals())
+}
+
 // Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
 func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury AccountID) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Treasury = treasury.toProtobuf()
 	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetTreasuryAccountID())
 }
 
 // The account which will act as a treasury for the token. This account will receive the specified initial supply
@@ -84,11 +100,29 @@ func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCrea
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetAdminKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
+}
+
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
 func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.KycKey = publicKey.toProtoKey()
 	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetKycKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetKycKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
 }
 
 // The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
@@ -98,6 +132,15 @@ func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCre
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
+}
+
 // The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
 func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
@@ -105,11 +148,29 @@ func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreat
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetWipeKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetWipeKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
+}
+
 // The key which can wipe the token balance of an account. If empty, wipe is not possible
 func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SupplyKey = publicKey.toProtoKey()
 	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey())
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
 }
 
 // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
@@ -120,11 +181,19 @@ func (transaction *TokenCreateTransaction) SetInitialSupply(initialSupply uint64
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetInitialSupply() uint64 {
+	return transaction.pb.GetInitialSupply()
+}
+
 // The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
 func (transaction *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FreezeDefault = freezeDefault
 	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
+	return transaction.pb.GetFreezeDefault()
 }
 
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
