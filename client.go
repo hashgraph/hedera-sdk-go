@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"sort"
-	"time"
-
-	"google.golang.org/grpc"
 )
 
 // Default max fees and payments to 1 h-bar
@@ -22,13 +18,8 @@ type Client struct {
 
 	operator *operator
 
-	networkNodeIds []node
-	network        map[AccountID]node
-
+	network       network
 	mirrorNetwork mirrorNetwork
-
-	nextNodeIndex            uint
-	lastSortedNodeAccountIDs int64
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -103,18 +94,11 @@ func ClientForPreviewnet() *Client {
 // newClient takes in a map of node addresses to their respective IDS (network)
 // and returns a Client instance which can be used to
 func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
-	newNetwork := make(map[AccountID]node, len(network))
-	for node, accountID := range network {
-		newNetwork[accountID] = newNode(accountID, node)
-	}
-
 	client := Client{
-		maxQueryPayment:          defaultMaxQueryPayment,
-		maxTransactionFee:        defaultMaxTransactionFee,
-		networkNodeIds:           make([]node, 0),
-		network:                  newNetwork,
-		mirrorNetwork:            newMirrorNetwork(mirrorNetwork),
-		lastSortedNodeAccountIDs: time.Now().UTC().UnixNano(),
+		maxQueryPayment:   defaultMaxQueryPayment,
+		maxTransactionFee: defaultMaxTransactionFee,
+		network:           newNetwork(network),
+		mirrorNetwork:     newMirrorNetwork(mirrorNetwork),
 	}
 
 	client.SetNetwork(network)
@@ -212,14 +196,7 @@ func ClientFromConfigFile(filename string) (*Client, error) {
 
 // Close is used to disconnect the Client from the network
 func (client *Client) Close() error {
-	for _, conn := range client.networkNodeIds {
-		if conn.channel != nil {
-			err := conn.channel.client.Close()
-			if err != nil {
-				return err
-			}
-		}
-	}
+	client.network.Close()
 
 	return nil
 }
@@ -227,12 +204,25 @@ func (client *Client) Close() error {
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetNetwork(network map[string]AccountID) *Client {
-	for node, id := range network {
-		client.networkNodeIds = append(client.networkNodeIds, newNode(id, node))
-		client.network[id] = newNode(id, node)
-	}
+	client.network.SetNetwork(network)
 
 	return client
+}
+
+func (client *Client) GetNetwork() map[string]AccountID {
+	var net map[string]AccountID
+	if client.network.network != nil {
+		net = make(map[string]AccountID, len(client.network.network))
+		if len(client.network.network) > 0 {
+			for id, node := range client.network.network {
+				net[node.address] = id
+			}
+		}
+	} else {
+		return make(map[string]AccountID, 0)
+	}
+
+	return net
 }
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
@@ -241,6 +231,10 @@ func (client *Client) SetMirrorNetwork(mirrorNetwork []string) *Client {
 	client.mirrorNetwork.setNetwork(mirrorNetwork)
 
 	return client
+}
+
+func (client *Client) GetMirrorNetwork() []string {
+	return client.mirrorNetwork.network
 }
 
 // SetOperator sets that account that will, by default, be paying for
@@ -315,51 +309,6 @@ func (client *Client) Ping(nodeID AccountID) error {
 	return err
 }
 
-func (client *Client) getNextNode() AccountID {
-	nodeID := client.networkNodeIds[client.nextNodeIndex]
-	client.nextNodeIndex = (client.nextNodeIndex + 1) % uint(len(client.networkNodeIds))
-
-	return nodeID.accountID
-}
-
-func (client *Client) getNumberOfNodesForTransaction() int {
-	return (len(client.networkNodeIds) + 3 - 1) / 3
-}
-
-func (client *Client) getChannel(id AccountID) (*channel, error) {
-	var i int
-	var node node
-	for i, node = range client.networkNodeIds {
-		if node.accountID == id && node.channel != nil {
-			return client.networkNodeIds[i].channel, nil
-		}
-	}
-
-	conn, err := grpc.Dial(client.network[id].address, grpc.WithInsecure())
-	if err != nil {
-		return nil, err
-	}
-
-	ch := newChannel(conn)
-	client.networkNodeIds[i].channel = &ch
-	return &ch, nil
-}
-
-func (client *Client) getNodeAccountIDsForExecute() []AccountID {
-	if client.lastSortedNodeAccountIDs+1000 < time.Now().UTC().UnixNano() {
-		sort.Sort(nodes{nodes: client.networkNodeIds})
-		client.lastSortedNodeAccountIDs = time.Now().UTC().UnixNano()
-	}
-
-	slice := client.networkNodeIds[0:client.getNumberOfNodesForTransaction()]
-	var accountIDs = make([]AccountID, len(slice))
-	for i, id := range slice {
-		accountIDs[i] = id.accountID
-	}
-
-	return accountIDs
-}
-
 func (client *Client) getNode(accountID AccountID) node {
-	return client.network[accountID]
+	return client.network.network[accountID]
 }

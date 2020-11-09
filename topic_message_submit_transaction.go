@@ -139,10 +139,10 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 	}
 
 	if len(transaction.Transaction.GetNodeAccountIDs()) == 0 {
-		transaction.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
+		transaction.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	for _, accoundID := range transaction.Transaction.GetNodeAccountIDs(){
+	for _, accoundID := range transaction.Transaction.GetNodeAccountIDs() {
 		println("inexecute", accoundID.String())
 	}
 

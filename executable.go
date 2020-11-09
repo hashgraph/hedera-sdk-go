@@ -68,7 +68,7 @@ func execute(
 		nodeAccountID := getNodeId(request, client)
 		node := client.getNode(nodeAccountID)
 
-		channel, err := client.getChannel(node.accountID)
+		channel, err := client.network.getChannel(node.accountID)
 		if err != nil {
 			return intermediateResponse{}, nil
 		}

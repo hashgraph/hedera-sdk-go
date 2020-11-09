@@ -45,7 +45,7 @@ func TestClientFromConfig(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotNil(t, client)
-	assert.Equal(t, 10, len(client.networkNodeIds))
+	assert.Equal(t, 10, len(client.network.networkNodeIds))
 	assert.Nil(t, client.operator)
 }
 
@@ -58,7 +58,7 @@ func TestClientFromConfigWithOperator(t *testing.T) {
 	testOperatorKey, err := PrivateKeyFromString("302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10")
 	assert.NoError(t, err)
 
-	assert.Equal(t, 10, len(client.networkNodeIds))
+	assert.Equal(t, 10, len(client.network.networkNodeIds))
 	assert.NotNil(t, client.operator)
 	assert.Equal(t, testOperatorKey.keyData, client.operator.privateKey.keyData)
 	assert.Equal(t, AccountID{Account: 3}, client.operator.accountID)

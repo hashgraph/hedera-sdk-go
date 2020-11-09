@@ -101,7 +101,7 @@ func (transaction *singleTopicMessageSubmitTransaction) Execute(
 	}
 
 	if len(transaction.Transaction.GetNodeAccountIDs()) == 0 {
-		transaction.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
+		transaction.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
 	transactionID := transaction.id

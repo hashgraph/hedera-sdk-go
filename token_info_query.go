@@ -47,7 +47,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
-	query.nodeIDs = client.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	resp, err := execute(
 		client,
@@ -92,7 +92,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
 	query.queryPayment = NewHbar(2)
