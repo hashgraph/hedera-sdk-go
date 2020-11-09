@@ -121,7 +121,16 @@ func transaction_freezeWith(
 	transaction *Transaction,
 	client *Client,
 ) error {
-	if transaction.pbBody.TransactionID != nil && transaction.pbBody.NodeAccountID != nil {
+	if len(transaction.nodeIDs) == 0 {
+		if client == nil {
+			return errNoClientOrTransactionIDOrNodeId
+		} else {
+			transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
+		}
+	}
+
+	for _, nodeAccountID := range transaction.nodeIDs {
+		transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
 		bodyBytes, err := protobuf.Marshal(transaction.pbBody)
 		if err != nil {
 			// This should be unreachable
@@ -137,59 +146,9 @@ func transaction_freezeWith(
 			BodyBytes: bodyBytes,
 			SigMap:    &sigmap,
 		})
-
-		return nil
 	}
 
-	if transaction.pbBody.TransactionID != nil && len(transaction.nodeIDs) > 0 {
-		for _, id := range transaction.nodeIDs {
-			transaction.pbBody.NodeAccountID = id.toProtobuf()
-			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
-			if err != nil {
-				// This should be unreachable
-				// From the documentation this appears to only be possible if there are missing proto types
-				panic(err)
-			}
-
-			sigmap := proto.SignatureMap{
-				SigPair: make([]*proto.SignaturePair, 0),
-			}
-			transaction.signatures = append(transaction.signatures, &sigmap)
-			transaction.transactions = append(transaction.transactions, &proto.Transaction{
-				BodyBytes: bodyBytes,
-				SigMap:    &sigmap,
-			})
-		}
-
-		return nil
-	}
-
-	if client != nil && transaction.pbBody.TransactionID != nil {
-		transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
-
-		for _, nodeAccountID := range transaction.nodeIDs {
-			transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
-			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
-			if err != nil {
-				// This should be unreachable
-				// From the documentation this appears to only be possible if there are missing proto types
-				panic(err)
-			}
-
-			sigmap := proto.SignatureMap{
-				SigPair: make([]*proto.SignaturePair, 0),
-			}
-			transaction.signatures = append(transaction.signatures, &sigmap)
-			transaction.transactions = append(transaction.transactions, &proto.Transaction{
-				BodyBytes: bodyBytes,
-				SigMap:    &sigmap,
-			})
-		}
-
-		return nil
-	}
-
-	return errNoClientOrTransactionIDOrNodeId
+	return nil
 }
 
 func (transaction *Transaction) keyAlreadySigned(
@@ -222,10 +181,7 @@ func transaction_advanceRequest(request request) {
 	request.transaction.nextTransactionIndex = (currentIndex + 1) % length
 }
 
-func transaction_getNodeId(
-	request request,
-	client *Client,
-) AccountID {
+func transaction_getNodeAccountID(request request) AccountID {
 	return request.transaction.nodeIDs[request.transaction.nextTransactionIndex]
 }
 

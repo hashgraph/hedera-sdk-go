@@ -79,7 +79,7 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
 		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
@@ -96,7 +96,7 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 	nodeIDs[0] = resp.NodeID
 
 	resp, err = NewContractCreateTransaction().
-		SetAdminKey(client.GetOperatorKey()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		SetGas(2000).
 		SetNodeAccountIDs(nodeIDs).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).

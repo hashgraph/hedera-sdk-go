@@ -34,14 +34,14 @@ func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpd
 }
 
 // The new Symbol of the Token. Must be UTF-8 capitalized alphabetical string identifying the token.
-func (transaction *TokenUpdateTransaction) SetSymbol(symbol string) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetTokenSymbol(symbol string) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Symbol = symbol
 	return transaction
 }
 
 // The new Name of the Token. Must be a string of ASCII characters.
-func (transaction *TokenUpdateTransaction) SetName(name string) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetTokenName(name string) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Name = name
 	return transaction
@@ -50,7 +50,7 @@ func (transaction *TokenUpdateTransaction) SetName(name string) *TokenUpdateTran
 // The new Treasury account of the Token. If the provided treasury account is not existing or
 // deleted, the response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token
 // balance held in the previous Treasury Account is transferred to the new one.
-func (transaction *TokenUpdateTransaction) SetTreasury(treasury AccountID) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasury AccountID) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Treasury = treasury.toProtobuf()
 	return transaction
@@ -195,9 +195,9 @@ func (transaction *TokenUpdateTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
-			client.GetOperatorKey(),
+			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
@@ -210,7 +210,7 @@ func (transaction *TokenUpdateTransaction) Execute(
 		transaction_shouldRetry,
 		transaction_makeRequest,
 		transaction_advanceRequest,
-		transaction_getNodeId,
+		transaction_getNodeAccountID,
 		tokenUpdateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,

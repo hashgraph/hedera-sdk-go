@@ -28,17 +28,18 @@ func TestTokenMintTransaction_Execute(t *testing.T) {
 	accountID := *receipt.AccountID
 
 	resp, err = NewTokenCreateTransaction().
-		SetName("ffff").
-		SetSymbol("F").
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasury(client.GetOperatorID()).
-		SetAdminKey(client.GetOperatorKey()).
-		SetFreezeKey(client.GetOperatorKey()).
-		SetWipeKey(client.GetOperatorKey()).
-		SetKycKey(client.GetOperatorKey()).
-		SetSupplyKey(client.GetOperatorKey()).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetFreezeKey(client.GetOperatorPublicKey()).
+		SetWipeKey(client.GetOperatorPublicKey()).
+		SetKycKey(client.GetOperatorPublicKey()).
+		SetSupplyKey(client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
+		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -68,7 +69,7 @@ func TestTokenMintTransaction_Execute(t *testing.T) {
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorID()).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)
 	assert.NoError(t, err)
 

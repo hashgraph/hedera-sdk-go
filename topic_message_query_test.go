@@ -59,7 +59,7 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorKey()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 

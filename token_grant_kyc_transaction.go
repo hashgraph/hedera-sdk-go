@@ -120,9 +120,9 @@ func (transaction *TokenGrantKycTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
-			client.GetOperatorKey(),
+			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
@@ -135,7 +135,7 @@ func (transaction *TokenGrantKycTransaction) Execute(
 		transaction_shouldRetry,
 		transaction_makeRequest,
 		transaction_advanceRequest,
-		transaction_getNodeId,
+		transaction_getNodeAccountID,
 		tokenGrantKycTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,

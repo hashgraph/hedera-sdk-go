@@ -43,7 +43,7 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 	transcation, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs(nodeIDs).
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorID()).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 	assert.NoError(t, err)

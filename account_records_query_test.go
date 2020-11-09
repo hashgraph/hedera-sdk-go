@@ -29,13 +29,13 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 	_, err = NewTransferTransaction().
 		SetNodeAccountIDs(nodeIDs).
 		AddHbarTransfer(account, NewHbar(1)).
-		AddHbarTransfer(client.GetOperatorID(), NewHbar(-1)).
+		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(-1)).
 		Execute(client)
 	assert.NoError(t, err)
 
 	recordsQuery, err := NewAccountRecordsQuery().
 		SetNodeAccountIDs(nodeIDs).
-		SetAccountID(client.GetOperatorID()).
+		SetAccountID(client.GetOperatorAccountID()).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)

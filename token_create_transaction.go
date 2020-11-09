@@ -43,14 +43,14 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 }
 
 // The publicly visible name of the token, specified as a string of only ASCII characters
-func (transaction *TokenCreateTransaction) SetName(name string) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Name = name
 	return transaction
 }
 
 // The publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
-func (transaction *TokenCreateTransaction) SetSymbol(symbol string) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Symbol = symbol
 	return transaction
@@ -64,7 +64,7 @@ func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCrea
 }
 
 // Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
-func (transaction *TokenCreateTransaction) SetTreasury(treasury AccountID) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury AccountID) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Treasury = treasury.toProtobuf()
 	return transaction
@@ -228,9 +228,9 @@ func (transaction *TokenCreateTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
-			client.GetOperatorKey(),
+			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
@@ -243,7 +243,7 @@ func (transaction *TokenCreateTransaction) Execute(
 		transaction_shouldRetry,
 		transaction_makeRequest,
 		transaction_advanceRequest,
-		transaction_getNodeId,
+		transaction_getNodeAccountID,
 		tokenCreateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,

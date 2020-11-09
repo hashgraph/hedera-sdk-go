@@ -134,16 +134,8 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 func (transaction *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	for _, accoundID := range transaction.Transaction.GetNodeAccountIDs() {
-		println("inexecute", accoundID.String())
-	}
-
 	if len(transaction.Transaction.GetNodeAccountIDs()) == 0 {
 		transaction.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
-	}
-
-	for _, accoundID := range transaction.Transaction.GetNodeAccountIDs() {
-		println("inexecute", accoundID.String())
 	}
 
 	list, err := transaction.ExecuteAll(client)
@@ -161,9 +153,9 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
-			client.GetOperatorKey(),
+			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
@@ -229,7 +221,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	if transaction.Transaction.pbBody.TransactionID != nil {
 		initialTransactionID = transaction.GetTransactionID()
 	} else {
-		initialTransactionID = TransactionIDGenerate(client.GetOperatorID())
+		initialTransactionID = TransactionIDGenerate(client.GetOperatorAccountID())
 	}
 
 	nextTransactionID := initialTransactionID

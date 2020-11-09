@@ -38,7 +38,7 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
 		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
@@ -55,7 +55,7 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	nodeIDs[0] = resp.NodeID
 
 	resp, err = NewContractCreateTransaction().
-		SetAdminKey(client.GetOperatorKey()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(nodeIDs).
 		SetGas(2000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).

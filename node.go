@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"google.golang.org/grpc"
 	"math"
 	"math/rand"
 	"time"
@@ -28,7 +29,7 @@ func newNode(accountID AccountID, address string) node {
 	}
 }
 
-func (node *node) isHealthy() bool {
+func (node node) isHealthy() bool {
 	if node.lastUsed != nil {
 		lastUsed := *node.lastUsed
 		return lastUsed+node.delay < time.Now().UTC().UnixNano()
@@ -37,17 +38,17 @@ func (node *node) isHealthy() bool {
 	return true
 }
 
-func (node *node) increaseDelay() {
+func (node node) increaseDelay() {
 	lastUsed := time.Now().UTC().UnixNano()
 	node.lastUsed = &lastUsed
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
 }
 
-func (node *node) decreaseDelay() {
+func (node node) decreaseDelay() {
 	node.delay = int64(math.Max(float64(node.delay)/2, 250))
 }
 
-func (node *node) wait() {
+func (node node) wait() {
 	var delay int64
 	if node.lastUsed != nil {
 		delay = *node.lastUsed + node.delay - time.Now().UTC().UnixNano()
@@ -56,6 +57,26 @@ func (node *node) wait() {
 	}
 
 	time.Sleep(time.Duration(delay) * time.Nanosecond)
+}
+
+func (node node) getChannel() (*channel, error) {
+	if node.channel != nil {
+		return node.channel, nil
+	}
+
+	conn, err := grpc.Dial(node.address, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := newChannel(conn)
+	node.channel = &ch
+
+	return node.channel, nil
+}
+
+func (node node) close() error {
+	return node.channel.client.Close()
 }
 
 func (s nodes) Len() int {

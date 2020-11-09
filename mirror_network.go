@@ -2,28 +2,19 @@ package hedera
 
 import (
 	"math/rand"
-
-	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
-	"google.golang.org/grpc"
 )
 
 type mirrorNetwork struct {
-	channels map[string]mirror.ConsensusServiceClient
-	network  []string
-	index    uint
+	networkNodes map[string]*mirrorNode
+	network      []string
+	index        uint
 }
 
-func newMirrorNetwork(network []string) mirrorNetwork {
-	if len(network) > 0 {
-		rand.Shuffle(len(network), func(i, j int) {
-			network[i], network[j] = network[j], network[i]
-		})
-	}
-
-	return mirrorNetwork{
-		channels: make(map[string]mirror.ConsensusServiceClient),
-		network:  network,
-		index:    0,
+func newMirrorNetwork() *mirrorNetwork {
+	return &mirrorNetwork{
+		networkNodes: make(map[string]*mirrorNode),
+		network:      make([]string, 0),
+		index:        0,
 	}
 }
 
@@ -36,16 +27,17 @@ func contains(arr []string, str string) bool {
 	return false
 }
 
-func (network mirrorNetwork) setNetwork(newNetwork []string) {
+func (network *mirrorNetwork) setNetwork(newNetwork []string) {
 	for _, n := range network.network {
 		if !contains(newNetwork, n) {
-			delete(network.channels, n)
+			delete(network.networkNodes, n)
 		}
 	}
 
-	for _, n := range newNetwork {
-		if !contains(network.network, n) {
-			network.network = append(network.network, n)
+	for _, url := range newNetwork {
+		if !contains(network.network, url) {
+			network.network = append(network.network, url)
+			network.networkNodes[url] = newMirrorNode(url)
 		}
 	}
 
@@ -58,21 +50,8 @@ func (network mirrorNetwork) setNetwork(newNetwork []string) {
 	}
 }
 
-func (network mirrorNetwork) getNextChannel() (mirror.ConsensusServiceClient, error) {
-	println("len", len(network.network), len(network.channels), network.index)
-	if channel, ok := network.channels[network.network[network.index]]; ok {
-		network.index = (network.index + 1) % uint(len(network.network))
-		return channel, nil
-	}
-
-	conn, err := grpc.Dial(network.network[network.index], grpc.WithInsecure())
-	if err != nil {
-		return nil, err
-	}
-
-	channel := mirror.NewConsensusServiceClient(conn)
-
-	network.channels[network.network[network.index]] = channel
+func (network *mirrorNetwork) getNextMirrorNode() *mirrorNode {
+	node := network.networkNodes[network.network[network.index]]
 	network.index = (network.index + 1) % uint(len(network.network))
-	return channel, nil
+	return node
 }

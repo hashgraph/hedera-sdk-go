@@ -44,7 +44,7 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 	return query.nodeIDs
 }
 
-func query_getNodeAccountID(request request, client *Client) AccountID {
+func query_getNodeAccountID(request request) AccountID {
 	if len(request.query.nodeIDs) > 0 {
 		return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 	} else {
@@ -52,7 +52,7 @@ func query_getNodeAccountID(request request, client *Client) AccountID {
 	}
 }
 
-func costQuery_getNodeAccountID(request request, client *Client) AccountID {
+func costQuery_getNodeAccountID(request request) AccountID {
 	return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 }
 

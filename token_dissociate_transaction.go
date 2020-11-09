@@ -116,9 +116,9 @@ func (transaction *TokenDissociateTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
-			client.GetOperatorKey(),
+			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
@@ -131,7 +131,7 @@ func (transaction *TokenDissociateTransaction) Execute(
 		transaction_shouldRetry,
 		transaction_makeRequest,
 		transaction_advanceRequest,
-		transaction_getNodeId,
+		transaction_getNodeAccountID,
 		tokenDissociateTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,

@@ -20,6 +20,14 @@ var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided o
 var errClientOperatorSigning = errors.New("`client` must have an `operator` to sign with the operator")
 var errNoClientProvided = errors.New("`client` must be provided and have an operator")
 
+type ErrInvalidNodeAccountIDSet struct {
+	NodeAccountID AccountID
+}
+
+func (err ErrInvalidNodeAccountIDSet) Error() string {
+	return fmt.Sprintf("Invalid node AccountID was set for transaction: %v", err.NodeAccountID.String())
+}
+
 func (err ErrMaxChunksExceeded) Error() string {
 	return fmt.Sprintf("Message requires %d chunks, but max chunks is %d", err.Chunks, err.MaxChunks)
 }

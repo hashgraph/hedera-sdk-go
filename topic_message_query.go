@@ -83,11 +83,14 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 		var err error
 		attempt := 0
 		resubscribe := true
-		channel, _ := client.mirrorNetwork.getNextChannel()
+		channel, err := client.mirrorNetwork.getNextMirrorNode().getChannel()
+		if err != nil {
+			panic(err)
+		}
 
 		for {
 			if resubscribe {
-				subClient, err = channel.SubscribeTopic(ctx, query.pb)
+				subClient, err = (*channel).SubscribeTopic(ctx, query.pb)
 				if err != nil {
 					panic(err)
 				}

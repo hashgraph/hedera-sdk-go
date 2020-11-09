@@ -140,9 +140,9 @@ func (transaction *TransferTransaction) Execute(
 
 	transactionID := transaction.id
 
-	if !client.GetOperatorID().isZero() && client.GetOperatorID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
-			client.GetOperatorKey(),
+			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
@@ -155,7 +155,7 @@ func (transaction *TransferTransaction) Execute(
 		transaction_shouldRetry,
 		transaction_makeRequest,
 		transaction_advanceRequest,
-		transaction_getNodeId,
+		transaction_getNodeAccountID,
 		transferTransaction_getMethod,
 		transaction_mapResponseStatus,
 		transaction_mapResponse,

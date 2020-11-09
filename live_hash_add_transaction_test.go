@@ -98,7 +98,7 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 	resp, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs(nodeIDs).
-		SetTransferAccountID(client.GetOperatorID()).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		Execute(client)
 	assert.NoError(t, err)
 

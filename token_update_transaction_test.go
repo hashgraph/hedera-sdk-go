@@ -9,17 +9,18 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTokenCreateTransaction().
-		SetName("ffff").
-		SetSymbol("F").
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasury(client.GetOperatorID()).
-		SetAdminKey(client.GetOperatorKey()).
-		SetFreezeKey(client.GetOperatorKey()).
-		SetWipeKey(client.GetOperatorKey()).
-		SetKycKey(client.GetOperatorKey()).
-		SetSupplyKey(client.GetOperatorKey()).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetFreezeKey(client.GetOperatorPublicKey()).
+		SetWipeKey(client.GetOperatorPublicKey()).
+		SetKycKey(client.GetOperatorPublicKey()).
+		SetSupplyKey(client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
+		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -30,7 +31,7 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
-		SetSymbol("A").
+		SetTokenSymbol("A").
 		Execute(client)
 	assert.NoError(t, err)
 

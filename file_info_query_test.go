@@ -11,7 +11,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	client.SetMaxTransactionFee(NewHbar(2))
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(client)

@@ -19,7 +19,7 @@ type Client struct {
 	operator *operator
 
 	network       network
-	mirrorNetwork mirrorNetwork
+	mirrorNetwork *mirrorNetwork
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -97,8 +97,8 @@ func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
 	client := Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
 		maxTransactionFee: defaultMaxTransactionFee,
-		network:           newNetwork(network),
-		mirrorNetwork:     newMirrorNetwork(mirrorNetwork),
+		network:           newNetwork(),
+		mirrorNetwork:     newMirrorNetwork(),
 	}
 
 	client.SetNetwork(network)
@@ -203,34 +203,18 @@ func (client *Client) Close() error {
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetNetwork(network map[string]AccountID) *Client {
-	client.network.SetNetwork(network)
-
-	return client
+func (client *Client) SetNetwork(network map[string]AccountID) error {
+	return client.network.SetNetwork(network)
 }
 
 func (client *Client) GetNetwork() map[string]AccountID {
-	var net map[string]AccountID
-	if client.network.network != nil {
-		net = make(map[string]AccountID, len(client.network.network))
-		if len(client.network.network) > 0 {
-			for id, node := range client.network.network {
-				net[node.address] = id
-			}
-		}
-	} else {
-		return make(map[string]AccountID, 0)
-	}
-
-	return net
+	return client.network.network
 }
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetMirrorNetwork(mirrorNetwork []string) *Client {
+func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
 	client.mirrorNetwork.setNetwork(mirrorNetwork)
-
-	return client
 }
 
 func (client *Client) GetMirrorNetwork() []string {
@@ -265,8 +249,8 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, 
 	return client
 }
 
-// GetOperatorID returns the ID for the operator
-func (client *Client) GetOperatorID() AccountID {
+// GetOperatorAccountID returns the ID for the operator
+func (client *Client) GetOperatorAccountID() AccountID {
 	if client.operator != nil {
 		return client.operator.accountID
 	} else {
@@ -274,8 +258,8 @@ func (client *Client) GetOperatorID() AccountID {
 	}
 }
 
-// GetOperatorKey returns the Key for the operator
-func (client *Client) GetOperatorKey() PublicKey {
+// GetOperatorPublicKey returns the Key for the operator
+func (client *Client) GetOperatorPublicKey() PublicKey {
 	if client.operator != nil {
 		return client.operator.publicKey
 	} else {
@@ -303,12 +287,8 @@ func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
 // be returned.
 func (client *Client) Ping(nodeID AccountID) error {
 	_, err := NewAccountBalanceQuery().
-		SetAccountID(client.GetOperatorID()).
+		SetAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{nodeID}).
 		Execute(client)
 	return err
-}
-
-func (client *Client) getNode(accountID AccountID) node {
-	return client.network.network[accountID]
 }

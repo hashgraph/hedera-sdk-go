@@ -38,7 +38,7 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorKey()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(oldTopicMemo).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
@@ -64,7 +64,7 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 
 	assert.Equal(t, oldTopicMemo, info.Memo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
-	assert.Equal(t, client.GetOperatorKey().String(), info.AdminKey.String())
+	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
 	newTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::updated"
 
@@ -89,7 +89,7 @@ func TestConsensusTopicUpdateTransaction_Execute(t *testing.T) {
 
 	assert.Equal(t, newTopicMemo, info.Memo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
-	assert.Equal(t, client.GetOperatorKey().String(), info.AdminKey.String())
+	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).

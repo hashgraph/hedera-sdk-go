@@ -86,7 +86,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorID()).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)

@@ -157,6 +157,10 @@ const (
 	StatusTokenAlreadyAssociatedToAccount      Status = 194
 	StatusTransactionRequiresZeroTokenBalances Status = 195
 	StatusAccountIsTreasury                    Status = 196
+	TokenIdRepeatedInTokenList                 Status = 197
+	TokenTransferListSizeLimitExceeded         Status = 198
+	EmptyTokenTransferBody                     Status = 199
+	EmptyTokenTransferAccountAmounts           Status = 200
 )
 
 // String() returns a string representation of the status
@@ -470,6 +474,14 @@ func (status Status) String() string {
 		return "TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"
 	case StatusAccountIsTreasury:
 		return "ACCOUNT_IS_TREASURY"
+	case TokenIdRepeatedInTokenList:
+		return "TOKEN_ID_REPEATED_IN_TOKEN_LIST"
+	case TokenTransferListSizeLimitExceeded:
+		return "TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED"
+	case EmptyTokenTransferBody:
+		return "EMPTY_TOKEN_TRANSFER_BODY"
+	case EmptyTokenTransferAccountAmounts:
+		return "EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS"
 	}
 
 	panic("unreacahble: Status.String() switch statement is non-exhaustive")

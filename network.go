@@ -1,50 +1,66 @@
 package hedera
 
 import (
-	"google.golang.org/grpc"
 	"sort"
 	"time"
 )
 
 type network struct {
-	networkNodeIds []node
-	network        map[AccountID]node
+	network      map[string]AccountID
+	nodes        []node
+	networkNodes map[AccountID]node
 
 	lastSortedNodeAccountIDs int64
-	nextNodeIndex            uint
 }
 
-func newNetwork(net map[string]AccountID) network {
-	newNetwork := make(map[AccountID]node, len(net))
-	for node, accountID := range net {
-		newNetwork[accountID] = newNode(accountID, node)
-	}
-
+func newNetwork() network {
 	networkForReturn := network{
-		networkNodeIds:           make([]node, 0),
-		network:                  newNetwork,
-		lastSortedNodeAccountIDs: time.Now().UTC().UnixNano(),
+		network:                  make(map[string]AccountID),
+		nodes:                    make([]node, 0),
+		networkNodes:             make(map[AccountID]node),
+		lastSortedNodeAccountIDs: time.Now().UTC().Unix(),
 	}
 
 	return networkForReturn
 }
 
-func (network *network) SetNetwork(net map[string]AccountID) *network {
-	for node, id := range net {
-		network.networkNodeIds = append(network.networkNodeIds, newNode(id, node))
-		network.network[id] = newNode(id, node)
+func (network *network) SetNetwork(net map[string]AccountID) error {
+	for url, id := range network.network {
+		if _, ok := net[url]; !ok {
+			err := network.networkNodes[id].close()
+			if err != nil {
+				return err
+			}
+
+			delete(network.networkNodes, id)
+		}
 	}
 
-	return network
+	for url, id := range net {
+		if _, ok := network.network[url]; !ok {
+			network.networkNodes[id] = newNode(id, url)
+		}
+	}
+
+	network.nodes = make([]node, len(net))
+	i := 0
+	for _, node := range network.networkNodes {
+		network.nodes[i] = node
+		i++
+	}
+
+	network.network = net
+
+	return nil
 }
 
 func (network *network) getNodeAccountIDsForExecute() []AccountID {
-	if network.lastSortedNodeAccountIDs+1000 < time.Now().UTC().UnixNano() {
-		sort.Sort(nodes{nodes: network.networkNodeIds})
-		network.lastSortedNodeAccountIDs = time.Now().UTC().UnixNano()
+	if network.lastSortedNodeAccountIDs+1 < time.Now().UTC().Unix() {
+		sort.Sort(nodes{nodes: network.nodes})
+		network.lastSortedNodeAccountIDs = time.Now().UTC().Unix()
 	}
 
-	slice := network.networkNodeIds[0:network.getNumberOfNodesForTransaction()]
+	slice := network.nodes[0:network.getNumberOfNodesForTransaction()]
 	var accountIDs = make([]AccountID, len(slice))
 	for i, id := range slice {
 		accountIDs[i] = id.accountID
@@ -54,37 +70,11 @@ func (network *network) getNodeAccountIDsForExecute() []AccountID {
 }
 
 func (network *network) getNumberOfNodesForTransaction() int {
-	return (len(network.networkNodeIds) + 3 - 1) / 3
-}
-
-func (network *network) getNextNode() AccountID {
-	nodeID := network.networkNodeIds[network.nextNodeIndex]
-	network.nextNodeIndex = (network.nextNodeIndex + 1) % uint(len(network.networkNodeIds))
-
-	return nodeID.accountID
-}
-
-func (network *network) getChannel(id AccountID) (*channel, error) {
-	var i int
-	var node node
-	for i, node = range network.networkNodeIds {
-		if node.accountID == id && node.channel != nil {
-			return network.networkNodeIds[i].channel, nil
-		}
-	}
-
-	conn, err := grpc.Dial(network.network[id].address, grpc.WithInsecure())
-	if err != nil {
-		return nil, err
-	}
-
-	ch := newChannel(conn)
-	network.networkNodeIds[i].channel = &ch
-	return &ch, nil
+	return (len(network.nodes) + 3 - 1) / 3
 }
 
 func (network *network) Close() error {
-	for _, conn := range network.networkNodeIds {
+	for _, conn := range network.nodes {
 		if conn.channel != nil {
 			err := conn.channel.client.Close()
 			if err != nil {

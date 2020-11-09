@@ -13,7 +13,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 	var contents = []byte("Hellow world!")
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(contents).
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(client)

@@ -12,7 +12,7 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
 		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
@@ -31,7 +31,7 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 	nodeIDs[0] = resp.NodeID
 
 	resp, err = NewContractCreateTransaction().
-		SetAdminKey(client.GetOperatorKey()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		SetGas(2000).
 		SetNodeAccountIDs(nodeIDs).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
@@ -54,7 +54,7 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 		Execute(client)
 
 	assert.Equal(t, contractID, info.ContractID)
-	assert.Equal(t, client.GetOperatorKey(), info.AdminKey)
+	assert.Equal(t, client.GetOperatorPublicKey(), info.AdminKey)
 	assert.Equal(t, "hedera-sdk-go::TestContractInfoQuery_Execute", info.ContractMemo)
 
 	resp, err = NewContractDeleteTransaction().

@@ -58,17 +58,20 @@ func execute(
 	shouldRetry func(Status, response) bool,
 	makeRequest func(request) protoRequest,
 	advanceRequest func(request),
-	getNodeId func(request, *Client) AccountID,
+	getNodeAccountID func(request) AccountID,
 	getMethod func(request, *channel) method,
 	mapResponseStatus func(request, response) Status,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
 	for attempt := int64(0); ; /* loop forever */ attempt++ {
 		protoRequest := makeRequest(request)
-		nodeAccountID := getNodeId(request, client)
-		node := client.getNode(nodeAccountID)
+		nodeAccountID := getNodeAccountID(request)
+		node, ok := client.network.networkNodes[nodeAccountID]
+		if !ok {
+			return intermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+		}
 
-		channel, err := client.network.getChannel(node.accountID)
+		channel, err := node.getChannel()
 		if err != nil {
 			return intermediateResponse{}, nil
 		}

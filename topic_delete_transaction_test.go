@@ -38,7 +38,7 @@ func TestConsensusTopicDeleteTransaction_Execute(t *testing.T) {
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorKey()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(topicMemo).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
