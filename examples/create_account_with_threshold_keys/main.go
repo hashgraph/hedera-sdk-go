@@ -70,7 +70,7 @@ func main() {
 	transaction, err := hedera.NewAccountCreateTransaction().
 		SetKey(thresholdKey).
 		SetInitialBalance(hedera.NewHbar(6)).
-		SetTransactionID(hedera.TransactionIDGenerate(client.GetOperatorID())).
+		SetTransactionID(hedera.TransactionIDGenerate(client.GetOperatorAccountID())).
 		SetTransactionMemo("sdk example create_account_with_threshold_keys/main.go").
 		FreezeWith(client)
 
@@ -99,7 +99,7 @@ func main() {
 		SetTransactionID(hedera.TransactionIDGenerate(newAccountID)).
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		AddHbarSender(newAccountID, hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
-		AddHbarRecipient(client.GetOperatorID(), hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
+		AddHbarRecipient(client.GetOperatorAccountID(), hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
 		FreezeWith(client)
 
 	if err != nil {
@@ -125,7 +125,7 @@ func main() {
 	fmt.Printf("status of transfer transaction: %v\n", transactionReceipt.Status)
 
 	// Operator must be set
-	client.SetOperator(client.GetOperatorID(), operatorKey)
+	client.SetOperator(client.GetOperatorAccountID(), operatorKey)
 
 	balance, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(newAccountID).

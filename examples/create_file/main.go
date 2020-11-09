@@ -42,7 +42,7 @@ func main() {
 
 	transactionResponse, err := hedera.NewFileCreateTransaction().
 		// A file is not implicitly owned by anyone, even the operator
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk example create_file/main.go").
 		SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).

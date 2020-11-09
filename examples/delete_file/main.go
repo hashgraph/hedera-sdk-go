@@ -44,7 +44,7 @@ func main() {
 
 	transactionResponse, err := hedera.NewFileCreateTransaction().
 		SetContents([]byte("The quick brown fox jumps over the lazy dog")).
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetTransactionMemo("go sdk example delete_file/main.go").
 		SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)

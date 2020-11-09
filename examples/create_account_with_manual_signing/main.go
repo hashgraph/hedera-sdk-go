@@ -52,7 +52,7 @@ func main() {
 	transaction, err := hedera.NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(hedera.ZeroHbar).
-		SetTransactionID(hedera.TransactionIDGenerate(client.GetOperatorID())).
+		SetTransactionID(hedera.TransactionIDGenerate(client.GetOperatorAccountID())).
 		SetTransactionMemo("sdk example create_account__with_manual_signing/main.go").
 		FreezeWith(client)
 

@@ -76,7 +76,7 @@ func main() {
 	transaction, err := hedera.NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
-		SetTransferAccountID(client.GetOperatorID()).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetMaxTransactionFee(hedera.NewHbar(1)).
 		SetTransactionID(hedera.TransactionIDGenerate(accountID)).
 		FreezeWith(client)

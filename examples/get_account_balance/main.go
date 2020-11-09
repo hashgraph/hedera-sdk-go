@@ -40,7 +40,7 @@ func main() {
 
 
 	balance, err := hedera.NewAccountBalanceQuery().
-		SetAccountID(client.GetOperatorID()).
+		SetAccountID(client.GetOperatorAccountID()).
 		Execute(client)
 
 	if err != nil {

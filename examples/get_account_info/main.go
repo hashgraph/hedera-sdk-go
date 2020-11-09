@@ -39,7 +39,7 @@ func main() {
 	}
 
 	info, err := hedera.NewAccountInfoQuery().
-		SetAccountID(client.GetOperatorID()).
+		SetAccountID(client.GetOperatorAccountID()).
 		Execute(client)
 
 	if err != nil {
@@ -51,7 +51,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("info for account %v :\n", client.GetOperatorID())
+	fmt.Printf("info for account %v :\n", client.GetOperatorAccountID())
 	fmt.Print(string(infoJSON))
 	fmt.Println()
 }

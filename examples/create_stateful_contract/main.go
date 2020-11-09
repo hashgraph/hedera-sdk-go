@@ -77,7 +77,7 @@ func main() {
 	// Upload a file containing the byte code
 	byteCodeTransactionResponse, err := hedera.NewFileCreateTransaction().
 		SetMaxTransactionFee(hedera.NewHbar(2)).
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents([]byte(smartContractByteCode)).
 		Execute(client)
 

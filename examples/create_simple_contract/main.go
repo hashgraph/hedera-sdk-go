@@ -76,7 +76,7 @@ func main() {
 	// Upload a file containing the byte code
 	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
 		SetMaxTransactionFee(hedera.NewHbar(2)).
-		SetKeys(client.GetOperatorKey()).
+		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(contractByteCode).
 		Execute(client)
 
@@ -102,7 +102,7 @@ func main() {
 		SetGas(2000).
 		SetBytecodeFileID(byteCodeFileID).
 		// Setting an admin key allows you to delete the contract in the future
-		SetAdminKey(client.GetOperatorKey()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		Execute(client)
 
 	if err != nil {
