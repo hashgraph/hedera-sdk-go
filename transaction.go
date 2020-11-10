@@ -65,6 +65,22 @@ func TransactionFromBytes(bytes []byte) Transaction {
 	return tx
 }
 
+func (transaction *Transaction) ToBytes() ([]byte, error) {
+	data := make([]byte, len(transaction.transactions))
+
+	for i, _ := range transaction.nodeIDs {
+		marashaledBytes, err := protobuf.Marshal(transaction.transactions[i])
+		if err != nil {
+			// This should be unreachable
+			// From the documentation this appears to only be possible if there are missing proto types
+			return make([]byte, 0), err
+		}
+		data = append(data, marashaledBytes...)
+	}
+
+	return data, nil
+}
+
 func (transaction *Transaction) GetTransactionHash() (map[AccountID][]byte, error) {
 	transactionHash := make(map[AccountID][]byte)
 
@@ -215,10 +231,6 @@ func (transaction *Transaction) String() string {
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (transaction *Transaction) MarshalBinary() ([]byte, error) {
 	return protobuf.Marshal(transaction.transactions[0])
-}
-
-func (transaction *Transaction) ToBytes() ([]byte, error) {
-	return transaction.MarshalBinary()
 }
 
 // The protobuf stores the transaction body as raw bytes so we need to first
