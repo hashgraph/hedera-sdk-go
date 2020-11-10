@@ -131,9 +131,12 @@ func (transaction *TransferTransaction) SignWith(
 	for index := 0; index < len(transaction.transactions); index++ {
 		signature := signer(transaction.transactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+		newSig := &proto.SignatureMap{SigPair: make([]*proto.SignaturePair, 0)}
+		newSig.SigPair = append(newSig.SigPair,publicKey.toSignaturePairProtobuf(signature))
+
+		transaction.signatures = append(
+			transaction.signatures,
+			newSig,
 		)
 	}
 
