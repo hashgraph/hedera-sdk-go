@@ -41,7 +41,7 @@ func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
 // SetAdminKey sets the key required to update/delete the topic. If unset, the key will not be changed.
 //
 // Setting the AdminKey to an empty KeyList will clear the adminKey.
-func (transaction *TopicUpdateTransaction) SetAdminKey(publicKey PublicKey) *TopicUpdateTransaction {
+func (transaction *TopicUpdateTransaction) SetAdminKey(publicKey Key) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
@@ -54,7 +54,7 @@ func (transaction *TopicUpdateTransaction) GetAdminKey() (Key, error) {
 // SetSubmitKey will set the key allowed to submit messages to the topic.  If unset, the key will not be changed.
 //
 // Setting the submitKey to an empty KeyList will clear the submitKey.
-func (transaction *TopicUpdateTransaction) SetSubmitKey(publicKey PublicKey) *TopicUpdateTransaction {
+func (transaction *TopicUpdateTransaction) SetSubmitKey(publicKey Key) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SubmitKey = publicKey.toProtoKey()
 	return transaction

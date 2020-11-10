@@ -58,7 +58,7 @@ func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasury Account
 
 // The new Admin key of the Token. If Token is immutable, transaction will resolve to
 // TOKEN_IS_IMMUTABlE.
-func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey PublicKey) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
@@ -66,7 +66,7 @@ func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey PublicKey) *Tok
 
 // The new KYC key of the Token. If Token does not have currently a KYC key, transaction will
 // resolve to TOKEN_HAS_NO_KYC_KEY.
-func (transaction *TokenUpdateTransaction) SetKycKey(publicKey PublicKey) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetKycKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.KycKey = publicKey.toProtoKey()
 	return transaction
@@ -74,7 +74,7 @@ func (transaction *TokenUpdateTransaction) SetKycKey(publicKey PublicKey) *Token
 
 // The new Freeze key of the Token. If the Token does not have currently a Freeze key, transaction
 // will resolve to TOKEN_HAS_NO_FREEZE_KEY.
-func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey PublicKey) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FreezeKey = publicKey.toProtoKey()
 	return transaction
@@ -82,7 +82,7 @@ func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey PublicKey) *To
 
 // The new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction
 // will resolve to TOKEN_HAS_NO_WIPE_KEY.
-func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey PublicKey) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.WipeKey = publicKey.toProtoKey()
 	return transaction
@@ -90,7 +90,7 @@ func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey PublicKey) *Toke
 
 // The new Supply key of the Token. If the Token does not have currently a Supply key, transaction
 // will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
-func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey PublicKey) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey Key) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SupplyKey = publicKey.toProtoKey()
 	return transaction

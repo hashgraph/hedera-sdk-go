@@ -36,7 +36,7 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
 // expirationTime.
-func (transaction *TopicCreateTransaction) SetAdminKey(publicKey PublicKey) *TopicCreateTransaction {
+func (transaction *TopicCreateTransaction) SetAdminKey(publicKey Key) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
@@ -47,7 +47,7 @@ func (transaction *TopicCreateTransaction) GetAdminKey() (Key, error) {
 }
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
-func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey PublicKey) *TopicCreateTransaction {
+func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey Key) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SubmitKey = publicKey.toProtoKey()
 	return transaction

@@ -71,35 +71,35 @@ func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury Account
 }
 
 // The account which will act as a treasury for the token. This account will receive the specified initial supply
-func (transaction *TokenCreateTransaction) SetAdminKey(publicKey PublicKey) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
-func (transaction *TokenCreateTransaction) SetKycKey(publicKey PublicKey) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.KycKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
-func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey PublicKey) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FreezeKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
-func (transaction *TokenCreateTransaction) SetWipeKey(publicKey PublicKey) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.WipeKey = publicKey.toProtoKey()
 	return transaction
 }
 
 // The key which can wipe the token balance of an account. If empty, wipe is not possible
-func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey PublicKey) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SupplyKey = publicKey.toProtoKey()
 	return transaction
