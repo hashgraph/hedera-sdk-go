@@ -55,8 +55,8 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
-		accountInfoQuery_getMethod,
-		accountInfoQuery_mapResponseStatus,
+		fileInfoQuery_getMethod,
+		fileInfoQuery_mapResponseStatus,
 		query_mapResponse,
 	)
 

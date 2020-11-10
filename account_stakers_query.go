@@ -65,8 +65,8 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
-		accountInfoQuery_getMethod,
-		accountInfoQuery_mapResponseStatus,
+		accountStakersQuery_getMethod,
+		accountStakersQuery_mapResponseStatus,
 		query_mapResponse,
 	)
 

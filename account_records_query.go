@@ -65,8 +65,8 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
-		accountInfoQuery_getMethod,
-		accountInfoQuery_mapResponseStatus,
+		accountRecordsQuery_getMethod,
+		accountRecordsQuery_mapResponseStatus,
 		query_mapResponse,
 	)
 

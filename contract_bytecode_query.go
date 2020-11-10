@@ -59,8 +59,8 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
-		accountInfoQuery_getMethod,
-		accountInfoQuery_mapResponseStatus,
+		contractBytecodeQuery_getMethod,
+		contractBytecodeQuery_mapResponseStatus,
 		query_mapResponse,
 	)
 

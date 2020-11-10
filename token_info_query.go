@@ -58,8 +58,8 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
-		accountInfoQuery_getMethod,
-		accountInfoQuery_mapResponseStatus,
+		tokenInfoQuery_getMethod,
+		tokenInfoQuery_mapResponseStatus,
 		query_mapResponse,
 	)
 
