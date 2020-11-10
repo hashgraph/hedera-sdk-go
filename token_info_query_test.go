@@ -20,7 +20,6 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 		SetKycKey(client.GetOperatorPublicKey()).
 		SetSupplyKey(client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.NoError(t, err)
 

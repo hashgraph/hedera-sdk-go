@@ -65,8 +65,21 @@ func TransactionFromBytes(bytes []byte) Transaction {
 	return tx
 }
 
-func (transaction *Transaction) GetTransactionHash() (map[AccountID][]byte, error) {
+func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
+	hashes, err := transaction.GetTransactionHashPerNode()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return hashes[transaction.nodeIDs[0]], nil
+}
+
+func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
 	transactionHash := make(map[AccountID][]byte)
+
+	if len(transaction.transactions) == 0 {
+		return transactionHash, errTransactionIsNotFrozen
+	}
 
 	for i, node := range transaction.nodeIDs {
 		data, err := protobuf.Marshal(transaction.transactions[i])

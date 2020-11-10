@@ -40,7 +40,6 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 		SetTopicMemo(topicMemo).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
-
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(client)

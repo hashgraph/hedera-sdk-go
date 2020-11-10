@@ -19,6 +19,7 @@ var errNoClientOrTransactionID = errors.New("`client` must have an `operator` or
 var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided or both `nodeId` and `transactionId` must be set")
 var errClientOperatorSigning = errors.New("`client` must have an `operator` to sign with the operator")
 var errNoClientProvided = errors.New("`client` must be provided and have an operator")
+var errTransactionIsNotFrozen = errors.New("transaction is not frozen")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID

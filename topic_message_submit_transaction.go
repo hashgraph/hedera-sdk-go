@@ -13,6 +13,7 @@ type TopicMessageSubmitTransaction struct {
 	Transaction
 	pb                  *proto.ConsensusSubmitMessageTransactionBody
 	maxChunks           uint64
+	message             []byte
 	chunkedTransactions []*singleTopicMessageSubmitTransaction
 }
 
@@ -21,6 +22,7 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 		pb:                  &proto.ConsensusSubmitMessageTransactionBody{},
 		Transaction:         newTransaction(),
 		maxChunks:           10,
+		message:             make([]byte, 0),
 		chunkedTransactions: make([]*singleTopicMessageSubmitTransaction, 0),
 	}
 
@@ -39,32 +41,12 @@ func (transaction *TopicMessageSubmitTransaction) GetTopicID() TopicID {
 
 func (transaction *TopicMessageSubmitTransaction) SetMessage(message []byte) *TopicMessageSubmitTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Message = message
+	transaction.message = message
 	return transaction
 }
 
 func (transaction *TopicMessageSubmitTransaction) GetMessage() []byte {
 	return transaction.pb.GetMessage()
-}
-
-func (transaction *TopicMessageSubmitTransaction) SetChunkInfo(initialTransactionID TransactionID, total uint32, number uint32) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
-	transaction.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
-		InitialTransactionID: initialTransactionID.toProtobuf(),
-		Total:                int32(total),
-		Number:               int32(number),
-	}
-	transaction.SetTransactionID(initialTransactionID)
-	return transaction
-}
-
-func (transaction *TopicMessageSubmitTransaction) GetChunkInfo() (TransactionID, uint32, uint32) {
-	if transaction.pb.ChunkInfo != nil {
-		info := transaction.pb.GetChunkInfo()
-		return transactionIDFromProtobuf(info.InitialTransactionID), uint32(info.Total), uint32(info.Number)
-	} else {
-		return TransactionID{}, 0, 0
-	}
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetMaxChunks(maxChunks uint64) *TopicMessageSubmitTransaction {
