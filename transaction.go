@@ -327,14 +327,19 @@ func (transaction *Transaction) String() string {
 		protobuf.MarshalTextString(transaction.body())
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
-func (transaction *Transaction) MarshalBinary() ([]byte, error) {
-	return protobuf.Marshal(transaction.transactions[0])
+func (transaction *Transaction) ToBytes() ([]byte, error) {
+	buf := protobuf.NewBuffer(make([]byte, 0))
+
+	for _, tx := range transaction.transactions {
+		err := buf.Marshal(tx)
+		if err != nil {
+			return buf.Bytes(), err
+		}
+	}
+
+	return buf.Bytes(), nil
 }
 
-func (transaction *Transaction) ToBytes() ([]byte, error) {
-	return transaction.MarshalBinary()
-}
 
 // The protobuf stores the transaction body as raw bytes so we need to first
 // decode what we have to inspect the Kind, TransactionID, and the NodeAccountID so we know how to
