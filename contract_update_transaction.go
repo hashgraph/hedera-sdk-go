@@ -37,6 +37,13 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 	return &transaction
 }
 
+func contractUpdateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) ContractUpdateTransaction {
+	return ContractUpdateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetContractUpdateInstance(),
+	}
+}
+
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
 func (transaction *ContractUpdateTransaction) SetContractID(contractID ContractID) *ContractUpdateTransaction {
 	transaction.pb.ContractID = contractID.toProtobuf()

@@ -26,6 +26,13 @@ func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	return &transaction
 }
 
+func tokenUpdateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenUpdateTransaction {
+	return TokenUpdateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenUpdate(),
+	}
+}
+
 // The Token to be updated
 func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()

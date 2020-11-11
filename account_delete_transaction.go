@@ -18,6 +18,13 @@ type AccountDeleteTransaction struct {
 	pb *proto.CryptoDeleteTransactionBody
 }
 
+func accountDeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
+	return AccountDeleteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetCryptoDelete(),
+	}
+}
+
 func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	pb := &proto.CryptoDeleteTransactionBody{}
 

@@ -30,6 +30,13 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	return &transaction
 }
 
+func contractExecuteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) ContractExecuteTransaction {
+	return ContractExecuteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetContractCall(),
+	}
+}
+
 // SetContractID sets the contract instance to call.
 func (transaction *ContractExecuteTransaction) SetContractID(ID ContractID) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()

@@ -24,6 +24,13 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 	return &transaction
 }
 
+func contractCreateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) ContractCreateTransaction {
+	return ContractCreateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetContractCreateInstance(),
+	}
+}
+
 func (transaction *ContractCreateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FileID = bytecodeFileID.toProtobuf()

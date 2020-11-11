@@ -27,6 +27,13 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	return &transaction
 }
 
+func topicUpdateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TopicUpdateTransaction {
+	return TopicUpdateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetConsensusUpdateTopic(),
+	}
+}
+
 // SetTopicID sets the topic to be updated.
 func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()

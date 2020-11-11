@@ -35,6 +35,13 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	return &transaction
 }
 
+func fileCreateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) FileCreateTransaction {
+	return FileCreateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetFileCreate(),
+	}
+}
+
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
 // create or modify a file, but only one of them needs to sign in order to delete the file. Each of those "keys" may
 // itself be threshold key containing other keys (including other threshold keys). In other words, the behavior is an

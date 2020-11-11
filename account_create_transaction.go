@@ -40,6 +40,13 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	return &transaction
 }
 
+func accountCreateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) AccountCreateTransaction {
+	return AccountCreateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetCryptoCreateAccount(),
+	}
+}
+
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (transaction *AccountCreateTransaction) SetKey(key Key) *AccountCreateTransaction {

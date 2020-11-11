@@ -28,6 +28,13 @@ func NewTransferTransaction() *TransferTransaction {
 	return &transaction
 }
 
+func transferTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TransferTransaction {
+	return TransferTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetCryptoTransfer(),
+	}
+}
+
 func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenTransfer {
 	tokenTransferMap := make(map[TokenID][]TokenTransfer, len(transaction.pb.TokenTransfers))
 	for _, tokenTransfer := range transaction.pb.TokenTransfers {
@@ -131,12 +138,9 @@ func (transaction *TransferTransaction) SignWith(
 	for index := 0; index < len(transaction.transactions); index++ {
 		signature := signer(transaction.transactions[index].GetBodyBytes())
 
-		newSig := &proto.SignatureMap{SigPair: make([]*proto.SignaturePair, 0)}
-		newSig.SigPair = append(newSig.SigPair,publicKey.toSignaturePairProtobuf(signature))
-
-		transaction.signatures = append(
-			transaction.signatures,
-			newSig,
+		transaction.signatures[index].SigPair = append(
+			transaction.signatures[index].SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
 

@@ -16,10 +16,6 @@ type Transaction struct {
 
 	id TransactionID
 
-	// unfortunately; this is required to prevent setting the max TXFee if it is purposely set to 0
-	// (for example, when .GetCost() is called)
-	noTXFee bool
-
 	nextTransactionIndex int
 
 	transactions []*proto.Transaction
@@ -33,7 +29,6 @@ func newTransaction() Transaction {
 			TransactionValidDuration: durationToProtobuf(120 * time.Second),
 		},
 		id:                   TransactionID{},
-		noTXFee:              false,
 		nextTransactionIndex: 0,
 		transactions:         make([]*proto.Transaction, 0),
 		signatures:           make([]*proto.SignatureMap, 0),
@@ -41,28 +36,135 @@ func newTransaction() Transaction {
 	}
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
-	transaction.transactions = make([]*proto.Transaction, 0)
-	transaction.transactions = append(transaction.transactions, &proto.Transaction{})
-	if err := protobuf.Unmarshal(txBytes, transaction.transactions[0]); err != nil {
-		return err
+func transactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) Transaction {
+	tx := Transaction{
+		pbBody:               pb,
+		id:                   transactionIDFromProtobuf(pb.TransactionID),
+		nextTransactionIndex: 0,
+		transactions:         make([]*proto.Transaction, 0),
+		signatures:           make([]*proto.SignatureMap, 0),
+		nodeIDs:              make([]AccountID, 0),
 	}
 
-	var txBody proto.TransactionBody
-	if err := protobuf.Unmarshal(transaction.transactions[0].GetBodyBytes(), &txBody); err != nil {
-		return err
+	var protoTxs map[AccountID]*proto.Transaction
+	for _, m := range transactions {
+		protoTxs = m
+		break
 	}
 
-	transaction.id = transactionIDFromProtobuf(txBody.TransactionID)
+	for nodeAccountID, protoTx := range protoTxs {
+		tx.nodeIDs = append(tx.nodeIDs, nodeAccountID)
+		tx.transactions = append(tx.transactions, protoTx)
+		tx.signatures = append(tx.signatures, protoTx.GetSigMap())
+	}
 
-	return nil
+	return tx
 }
 
-func TransactionFromBytes(bytes []byte) Transaction {
-	tx := Transaction{}
-	(&tx).UnmarshalBinary(bytes)
-	return tx
+func TransactionFromBytes(bytes []byte) (interface{}, error) {
+	transactions := make(map[TransactionID]map[AccountID]*proto.Transaction)
+	buf := protobuf.NewBuffer(bytes)
+	var first *proto.TransactionBody = nil
+
+	for {
+		tx := proto.Transaction{}
+		if err := buf.Unmarshal(&tx); err != nil {
+			break
+		}
+
+		var txBody proto.TransactionBody
+		if err := protobuf.Unmarshal(tx.GetBodyBytes(), &txBody); err != nil {
+			return Transaction{}, err
+		}
+
+		if first == nil {
+			first = &txBody
+		}
+
+		transactionID := transactionIDFromProtobuf(txBody.TransactionID)
+		nodeAccountID := accountIDFromProtobuf(txBody.NodeAccountID)
+
+		if _, ok := transactions[transactionID]; !ok {
+			transactions[transactionID] = make(map[AccountID]*proto.Transaction)
+		}
+
+		transactions[transactionID][nodeAccountID] = &tx
+	}
+
+	if first == nil {
+		return nil, errNoTransactionInBytes
+	}
+
+	switch first.Data.(type) {
+	case *proto.TransactionBody_ContractCall:
+		return contractExecuteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_ContractCreateInstance:
+		return contractCreateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_ContractUpdateInstance:
+		return contractUpdateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_ContractDeleteInstance:
+		return contractDeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_CryptoAddLiveHash:
+		return liveHashAddTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_CryptoCreateAccount:
+		return accountCreateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_CryptoDelete:
+		return accountDeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_CryptoDeleteLiveHash:
+		return liveHashDeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_CryptoTransfer:
+		return transferTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_CryptoUpdateAccount:
+		return accountUpdateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_FileAppend:
+		return fileAppendTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_FileCreate:
+		return fileCreateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_FileDelete:
+		return fileDeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_FileUpdate:
+		return fileUpdateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_SystemDelete:
+		return systemDeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_SystemUndelete:
+		return systemUndeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_Freeze:
+		return freezeTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_ConsensusCreateTopic:
+		return topicCreateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_ConsensusUpdateTopic:
+		return topicUpdateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_ConsensusDeleteTopic:
+		return topicDeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_ConsensusSubmitMessage:
+		return topicMessageSubmitTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenCreation:
+		return tokenCreateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenFreeze:
+		return tokenFreezeTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenUnfreeze:
+		return tokenUnfreezeTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenGrantKyc:
+		return tokenGrantKycTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenRevokeKyc:
+		return tokenRevokeKycTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenDeletion:
+		return tokenDeleteTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenUpdate:
+		return tokenUpdateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenMint:
+		return tokenMintTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenBurn:
+		return tokenBurnTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenWipe:
+		return tokenWipeTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenAssociate:
+		return tokenAssociateTransactionFromProtobuf(transactions, first), nil
+	case *proto.TransactionBody_TokenDissociate:
+		return tokenDissociateTransactionFromProtobuf(transactions, first), nil
+	default:
+		return Transaction{}, errFailedToDeserializeBytes
+	}
 }
 
 func (transaction *Transaction) GetTransactionHash() ([]byte, error) {

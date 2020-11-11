@@ -22,6 +22,13 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	return &transaction
 }
 
+func tokenDissociateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenDissociateTransaction {
+	return TokenDissociateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenDissociate(),
+	}
+}
+
 // The account to be dissociated with the provided tokens
 func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
 	transaction.requireNotFrozen()

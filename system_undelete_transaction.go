@@ -21,6 +21,13 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	return &transaction
 }
 
+func systemUndeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetSystemUndelete(),
+	}
+}
+
 func (transaction *SystemUndeleteTransaction) SetContractID(contractID ContractID) *SystemUndeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: contractID.toProtobuf()}

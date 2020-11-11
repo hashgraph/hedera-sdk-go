@@ -29,6 +29,13 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 	return &transaction
 }
 
+func tokenBurnTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenBurnTransaction {
+	return TokenBurnTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenBurn(),
+	}
+}
+
 // The token for which to burn tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenBurnTransaction) SetTokenID(tokenID TokenID) *TokenBurnTransaction {

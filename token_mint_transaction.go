@@ -29,6 +29,13 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 	return &transaction
 }
 
+func tokenMintTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenMintTransaction {
+	return TokenMintTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenMint(),
+	}
+}
+
 // The token for which to mint tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintTransaction {

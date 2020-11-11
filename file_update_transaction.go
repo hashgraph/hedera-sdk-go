@@ -22,6 +22,13 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 	return &transaction
 }
 
+func fileUpdateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) FileUpdateTransaction {
+	return FileUpdateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetFileUpdate(),
+	}
+}
+
 func (transaction *FileUpdateTransaction) SetFileID(ID FileID) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FileID = ID.toProtobuf()

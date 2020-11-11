@@ -26,6 +26,13 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	return &transaction
 }
 
+func fileAppendTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) FileAppendTransaction {
+	return FileAppendTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetFileAppend(),
+	}
+}
+
 // SetFileID sets the FileID of the file to which the bytes are appended to.
 func (transaction *FileAppendTransaction) SetFileID(ID FileID) *FileAppendTransaction {
 	transaction.requireNotFrozen()

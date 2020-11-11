@@ -29,6 +29,25 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return &transaction
 }
 
+func topicMessageSubmitTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
+	tx := TopicMessageSubmitTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetConsensusSubmitMessage(),
+		maxChunks:           10,
+		message:             make([]byte, 0),
+		chunkedTransactions: make([]*singleTopicMessageSubmitTransaction, 0),
+	}
+
+	for transactionID, m := range transactions {
+		txs := make(map[TransactionID]map[AccountID]*proto.Transaction)
+		txs[transactionID] = m
+		singleTx := singleTopicMessageSubmitTransactionFromProtobuf(txs, pb)
+		tx.chunkedTransactions = append(tx.chunkedTransactions, &singleTx)
+	}
+
+	return tx
+}
+
 func (transaction *TopicMessageSubmitTransaction) SetTopicID(ID TopicID) *TopicMessageSubmitTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.TopicID = ID.toProtobuf()

@@ -26,6 +26,13 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	return &transaction
 }
 
+func tokenDeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenDeleteTransaction {
+	return TokenDeleteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenDeletion(),
+	}
+}
+
 // The Token to be deleted
 func (transaction *TokenDeleteTransaction) SetTokenID(tokenID TokenID) *TokenDeleteTransaction {
 	transaction.requireNotFrozen()

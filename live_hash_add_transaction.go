@@ -20,6 +20,13 @@ func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	return &transaction
 }
 
+func liveHashAddTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) LiveHashAddTransaction {
+	return LiveHashAddTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetCryptoAddLiveHash(),
+	}
+}
+
 func (transaction *LiveHashAddTransaction) SetHash(hash []byte) *LiveHashAddTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.LiveHash.Hash = hash

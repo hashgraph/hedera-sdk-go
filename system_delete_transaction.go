@@ -22,6 +22,13 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	return &transaction
 }
 
+func systemDeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) SystemDeleteTransaction {
+	return SystemDeleteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetSystemDelete(),
+	}
+}
+
 func (transaction *SystemDeleteTransaction) SetExpirationTime(expiration time.Time) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ExpirationTime = &proto.TimestampSeconds{

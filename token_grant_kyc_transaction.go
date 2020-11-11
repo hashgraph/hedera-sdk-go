@@ -31,6 +31,13 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	return &transaction
 }
 
+func tokenGrantKycTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenGrantKycTransaction {
+	return TokenGrantKycTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenGrantKyc(),
+	}
+}
+
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()

@@ -34,6 +34,13 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 
 }
 
+func topicCreateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TopicCreateTransaction {
+	return TopicCreateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetConsensusCreateTopic(),
+	}
+}
+
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
 // expirationTime.
 func (transaction *TopicCreateTransaction) SetAdminKey(publicKey Key) *TopicCreateTransaction {

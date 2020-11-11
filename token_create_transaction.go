@@ -42,6 +42,13 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	return &transaction
 }
 
+func tokenCreateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
+	return TokenCreateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenCreation(),
+	}
+}
+
 // The publicly visible name of the token, specified as a string of only ASCII characters
 func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
 	transaction.requireNotFrozen()

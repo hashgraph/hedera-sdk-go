@@ -39,6 +39,13 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 	return &transaction
 }
 
+func tokenWipeTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenWipeTransaction {
+	return TokenWipeTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenWipe(),
+	}
+}
+
 // The token for which the account will be wiped. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeTransaction {

@@ -20,6 +20,13 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	return &transaction
 }
 
+func liveHashDeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) LiveHashDeleteTransaction {
+	return LiveHashDeleteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetCryptoDeleteLiveHash(),
+	}
+}
+
 func (transaction *LiveHashDeleteTransaction) SetHash(hash []byte) *LiveHashDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.LiveHashToDelete = hash

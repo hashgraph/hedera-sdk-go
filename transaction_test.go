@@ -13,12 +13,19 @@ func TestTransactionSerializationDeserialization(t *testing.T) {
 	_, err = transaction.GetTransactionHash()
 	assert.NoError(t, err)
 
-	txBytes, err := transaction.MarshalBinary()
+	txBytes, err := transaction.ToBytes()
 	assert.NoError(t, err)
 
-	var deserializedTX Transaction
-	err = deserializedTX.UnmarshalBinary(txBytes)
+	deserializedTX, err := TransactionFromBytes(txBytes)
 	assert.NoError(t, err)
 
-	assert.Equal(t, transaction.String(), deserializedTX.String())
+	var deserializedTXTyped TransferTransaction
+	switch tx := deserializedTX.(type) {
+	case TransferTransaction:
+		deserializedTXTyped = tx
+	default:
+		panic("Transaction was not TransferTransaction")
+	}
+
+	assert.Equal(t, transaction.String(), deserializedTXTyped.String())
 }

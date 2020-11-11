@@ -20,6 +20,13 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return &transaction
 }
 
+func accountUpdateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) AccountUpdateTransaction {
+	return AccountUpdateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetCryptoUpdateAccount(),
+	}
+}
+
 func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Key = key.toProtoKey()

@@ -21,6 +21,13 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	return &transaction
 }
 
+func contractDeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) ContractDeleteTransaction {
+	return ContractDeleteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetContractDeleteInstance(),
+	}
+}
+
 func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ContractID = contractID.toProtobuf()

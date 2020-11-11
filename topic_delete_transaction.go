@@ -24,6 +24,13 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	return &transaction
 }
 
+func topicDeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TopicDeleteTransaction {
+	return TopicDeleteTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetConsensusDeleteTopic(),
+	}
+}
+
 // SetTopicID sets the topic IDentifier.
 func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTransaction {
 	transaction.requireNotFrozen()

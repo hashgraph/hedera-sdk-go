@@ -32,19 +32,11 @@ func newMockClient() (*Client, error) {
 
 func newMockTransaction() (Transaction, error) {
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
-
 	if err != nil {
 		return Transaction{}, err
 	}
 
 	client, err := newMockClient()
-
-	if err != nil {
-		return Transaction{}, err
-	}
-
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0], err = AccountIDFromString("0.0.4")
 	if err != nil {
 		return Transaction{}, err
 	}
@@ -54,9 +46,8 @@ func newMockTransaction() (Transaction, error) {
 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
 		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		SetTransactionID(testTransactionID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{AccountID{0, 0, 4}}).
 		FreezeWith(client)
-
 	if err != nil {
 		return Transaction{}, err
 	}

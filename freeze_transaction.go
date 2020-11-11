@@ -21,6 +21,13 @@ func NewFreezeTransaction() *FreezeTransaction {
 	return &transaction
 }
 
+func freezeTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) FreezeTransaction {
+	return FreezeTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetFreeze(),
+	}
+}
+
 func (transaction *FreezeTransaction) SetStartTime(startTime time.Time) *FreezeTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.StartHour = int32(startTime.Hour())

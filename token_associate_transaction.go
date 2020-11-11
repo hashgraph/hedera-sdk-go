@@ -39,6 +39,13 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 	return &transaction
 }
 
+func tokenAssociateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenAssociateTransaction {
+	return TokenAssociateTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetTokenAssociate(),
+	}
+}
+
 // The account to be associated with the provided tokens
 func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) *TokenAssociateTransaction {
 	transaction.requireNotFrozen()

@@ -26,7 +26,13 @@ func newSingleTopicMessageSubmitTransaction(
 		pb: pb,
 	}
 }
+func singleTopicMessageSubmitTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) singleTopicMessageSubmitTransaction {
+	return singleTopicMessageSubmitTransaction{
+		Transaction: transactionFromProtobuf(transactions, pb),
+		pb:          pb.GetConsensusSubmitMessage(),
+	}
 
+}
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
