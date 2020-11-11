@@ -31,6 +31,7 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
 		SetTokenSymbol("A").
+		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.NoError(t, err)
 

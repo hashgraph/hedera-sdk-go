@@ -84,11 +84,14 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 		})
 	assert.NoError(t, err)
 
-	_, err = NewTopicMessageSubmitTransaction().
+	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
 		SetTopicID(topicID).
 		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	for {

@@ -194,11 +194,11 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
-	if transaction.pb.ChunkInfo != nil || len(transaction.GetMessage()) < chunkSize {
+	if transaction.pb.ChunkInfo != nil || len(transaction.message) < chunkSize {
 		tx, err := newSingleTopicMessageSubmitTransaction(
 			protobuf.Clone(transaction.Transaction.pbBody).(*proto.TransactionBody),
 			protobuf.Clone(transaction.pb).(*proto.ConsensusSubmitMessageTransactionBody),
-			transaction.GetMessage(),
+			transaction.message,
 			transaction.pb.ChunkInfo,
 		).FreezeWith(client)
 		if err != nil {
@@ -210,7 +210,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		return transaction, err
 	}
 
-	chunks := uint64((len(transaction.GetMessage()) + (chunkSize - 1)) / chunkSize)
+	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
 	if chunks > transaction.maxChunks {
 		return transaction, ErrMaxChunksExceeded{
 			Chunks:    chunks,
@@ -231,8 +231,8 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		start := i * chunkSize
 		end := start + chunkSize
 
-		if end > len(transaction.GetMessage()) {
-			end = len(transaction.GetMessage())
+		if end > len(transaction.message) {
+			end = len(transaction.message)
 		}
 
 		transaction.SetTransactionID(nextTransactionID)
@@ -240,7 +240,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		tx, err := newSingleTopicMessageSubmitTransaction(
 			protobuf.Clone(transaction.Transaction.pbBody).(*proto.TransactionBody),
 			protobuf.Clone(transaction.pb).(*proto.ConsensusSubmitMessageTransactionBody),
-			transaction.pb.Message[start:end],
+			transaction.message[start:end],
 			&proto.ConsensusMessageChunkInfo{
 				InitialTransactionID: initialTransactionID.toProtobuf(),
 				Total:                int32(chunks),
