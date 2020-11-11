@@ -68,7 +68,7 @@ func TransactionFromBytes(bytes []byte) (interface{}, error) {
 
 	for {
 		tx := proto.Transaction{}
-		if err := buf.Unmarshal(&tx); err != nil {
+		if err := buf.DecodeMessage(&tx); err != nil {
 			break
 		}
 
@@ -81,8 +81,8 @@ func TransactionFromBytes(bytes []byte) (interface{}, error) {
 			first = &txBody
 		}
 
-		transactionID := transactionIDFromProtobuf(txBody.TransactionID)
-		nodeAccountID := accountIDFromProtobuf(txBody.NodeAccountID)
+		transactionID := transactionIDFromProtobuf(txBody.GetTransactionID())
+		nodeAccountID := accountIDFromProtobuf(txBody.GetNodeAccountID())
 
 		if _, ok := transactions[transactionID]; !ok {
 			transactions[transactionID] = make(map[AccountID]*proto.Transaction)
@@ -330,8 +330,12 @@ func (transaction *Transaction) String() string {
 func (transaction *Transaction) ToBytes() ([]byte, error) {
 	buf := protobuf.NewBuffer(make([]byte, 0))
 
+	if len(transaction.transactions) == 0 {
+		return buf.Bytes(), errTransactionIsNotFrozen
+	}
+
 	for _, tx := range transaction.transactions {
-		err := buf.Marshal(tx)
+		err := buf.EncodeMessage(tx)
 		if err != nil {
 			return buf.Bytes(), err
 		}
