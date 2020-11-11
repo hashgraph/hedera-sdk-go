@@ -66,35 +66,18 @@ func TransactionFromBytes(bytes []byte) Transaction {
 }
 
 func (transaction *Transaction) ToBytes() ([]byte, error) {
-	data := make([]byte, len(transaction.transactions))
+	buf := protobuf.NewBuffer(make([]byte, 0))
 
 	for i, _ := range transaction.nodeIDs {
-		marashaledBytes, err := protobuf.Marshal(transaction.transactions[i])
+		err := buf.Marshal(transaction.transactions[i])
 		if err != nil {
 			// This should be unreachable
 			// From the documentation this appears to only be possible if there are missing proto types
 			return make([]byte, 0), err
 		}
-		data = append(data, marashaledBytes...)
 	}
 
-	return data, nil
-}
-
-func (transaction *Transaction) ToBytesPerNode() (map[AccountID][]byte, error) {
-	data := make(map[AccountID][]byte, len(transaction.transactions))
-
-	for i, node := range transaction.nodeIDs {
-		marashaledBytes, err := protobuf.Marshal(transaction.transactions[i])
-		if err != nil {
-			// This should be unreachable
-			// From the documentation this appears to only be possible if there are missing proto types
-			return make(map[AccountID][]byte, 0), err
-		}
-		data[node] = marashaledBytes
-	}
-
-	return data, nil
+	return buf.Bytes(), nil
 }
 
 func (transaction *Transaction) GetTransactionHash() (map[AccountID][]byte, error) {
