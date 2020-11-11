@@ -68,12 +68,10 @@ func TransactionFromBytes(bytes []byte) Transaction {
 func (transaction *Transaction) ToBytes() ([]byte, error) {
 	buf := protobuf.NewBuffer(make([]byte, 0))
 
-	for i, _ := range transaction.nodeIDs {
-		err := buf.Marshal(transaction.transactions[i])
+	for _, tx := range transaction.transactions {
+		err := buf.Marshal(tx)
 		if err != nil {
-			// This should be unreachable
-			// From the documentation this appears to only be possible if there are missing proto types
-			return make([]byte, 0), err
+			return buf.Bytes(), err
 		}
 	}
 
