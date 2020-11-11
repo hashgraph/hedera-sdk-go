@@ -7,22 +7,16 @@ type TransactionResponse struct {
 }
 
 func (response TransactionResponse) GetReceipt(client *Client) (TransactionReceipt, error) {
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = response.NodeID
-
 	return NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
 }
 
 func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord, error) {
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = response.NodeID
-
 	_, err := NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
 
 	if err != nil {
@@ -31,6 +25,6 @@ func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord
 
 	return NewTransactionRecordQuery().
 		SetTransactionID(response.TransactionID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
 }
