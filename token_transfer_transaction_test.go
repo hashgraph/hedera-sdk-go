@@ -30,6 +30,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	resp, err = NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetDecimals(3).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
@@ -39,8 +40,6 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 		SetKycKey(client.GetOperatorPublicKey()).
 		SetSupplyKey(client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		SetMaxTransactionFee(NewHbar(1000)).
-		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.NoError(t, err)
 

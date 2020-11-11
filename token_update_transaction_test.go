@@ -20,7 +20,6 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 		SetKycKey(client.GetOperatorPublicKey()).
 		SetSupplyKey(client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -31,6 +30,7 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenSymbol("A").
 		Execute(client)
 	assert.NoError(t, err)
