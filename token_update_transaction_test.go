@@ -16,7 +16,7 @@ func TestSerializeTokenUpdateTransaction(t *testing.T) {
 
 	tx, err := NewTokenUpdateTransaction().
 		SetTokenID(TokenID{Token: 3}).
-		SetSymbol("A").
+		SetTokenSymbol("A").
 		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
 		FreezeWith(mockClient)
 	assert.NoError(t, err)

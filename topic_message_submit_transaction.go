@@ -31,8 +31,8 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 
 func topicMessageSubmitTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
 	tx := TopicMessageSubmitTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
-		pb:          pb.GetConsensusSubmitMessage(),
+		Transaction:         transactionFromProtobuf(transactions, pb),
+		pb:                  pb.GetConsensusSubmitMessage(),
 		maxChunks:           10,
 		message:             make([]byte, 0),
 		chunkedTransactions: make([]*singleTopicMessageSubmitTransaction, 0),

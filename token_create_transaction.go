@@ -56,7 +56,7 @@ func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreat
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetName() string {
+func (transaction *TokenCreateTransaction) GetTokenName() string {
 	return transaction.pb.GetName()
 }
 
@@ -67,7 +67,7 @@ func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenC
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetSymbol() string {
+func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
 	return transaction.pb.GetSymbol()
 }
 
@@ -90,7 +90,7 @@ func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury Account
 }
 
 func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetTreasuryAccountID())
+	return accountIDFromProtobuf(transaction.pb.GetTreasury())
 }
 
 // The account which will act as a treasury for the token. This account will receive the specified initial supply

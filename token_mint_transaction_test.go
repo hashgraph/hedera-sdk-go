@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestSerializeTokenMintTransaction(t *testing.T) {
@@ -16,6 +17,8 @@ func TestSerializeTokenMintTransaction(t *testing.T) {
 	tx, err := NewTokenMintTransaction().
 		SetAmount(10).
 		SetTokenID(TokenID{Token: 3}).
+		SetTransactionID(TransactionID{AccountID: AccountID{Account: 3}, ValidStart: time.Unix(0, 0)}).
+		SetNodeAccountIDs([]AccountID{{0, 0, 3}}).
 		FreezeWith(mockClient)
 	assert.NoError(t, err)
 

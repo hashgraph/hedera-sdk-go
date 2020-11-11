@@ -161,8 +161,6 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		tokens[tokenIDFromProtobuf(token.TokenId)] = token.Balance
 	}
 
-	println(query.Query.pb.String())
-
 	return AccountBalance{
 		Hbars: HbarFromTinybar(int64(resp.query.GetCryptogetAccountBalance().Balance)),
 		Token: tokens,

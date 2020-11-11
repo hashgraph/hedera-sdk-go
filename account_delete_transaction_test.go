@@ -18,6 +18,7 @@ func TestSerializeAccountDeleteTransaction(t *testing.T) {
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
+		SetNodeAccountIDs([]AccountID{{0, 0, 6}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)

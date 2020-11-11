@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -12,8 +11,6 @@ func TestSerializeAccountBalanceQuery(t *testing.T) {
 	query := NewAccountBalanceQuery().
 		SetAccountID(AccountID{Account: 3}).
 		Query
-
-	fmt.Printf("%+v/n", query.pb)
 
 	assert.Equal(t, `cryptogetAccountBalance:{header:{}accountID:{accountNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
 }

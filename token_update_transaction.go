@@ -51,7 +51,7 @@ func (transaction *TokenUpdateTransaction) SetTokenSymbol(symbol string) *TokenU
 	return transaction
 }
 
-func (transaction *TokenUpdateTransaction) GetSymbol() string {
+func (transaction *TokenUpdateTransaction) GetTokenSymbol() string {
 	return transaction.pb.GetSymbol()
 }
 
@@ -62,7 +62,7 @@ func (transaction *TokenUpdateTransaction) SetTokenName(name string) *TokenUpdat
 	return transaction
 }
 
-func (transaction *TokenUpdateTransaction) GetNamel() string {
+func (transaction *TokenUpdateTransaction) GetTokenName() string {
 	return transaction.pb.GetName()
 }
 
@@ -76,7 +76,7 @@ func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasury Account
 }
 
 func (transaction *TokenUpdateTransaction) GetTreasuryAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetTreasuryAccountID())
+	return accountIDFromProtobuf(transaction.pb.GetTreasury())
 }
 
 // The new Admin key of the Token. If Token is immutable, transaction will resolve to
@@ -177,9 +177,9 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewAccount() AccountID {
 }
 
 // The new interval at which the auto-renew account will be charged to extend the token's expiry.
-func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = autoRenewPeriod
+	transaction.pb.AutoRenewPeriod = uint64(autoRenewPeriod.Seconds())
 	return transaction
 }
 
@@ -190,9 +190,9 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() uint64 {
 // The new expiry time of the token. Expiry can be updated even if admin key is not set. If the
 // provided expiry is earlier than the current token expiry, transaction wil resolve to
 // INVALID_EXPIRATION_TIME
-func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime uint64) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime time.Time) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Expiry = expirationTime
+	transaction.pb.Expiry = uint64(expirationTime.UnixNano())
 	return transaction
 }
 

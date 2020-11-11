@@ -344,7 +344,6 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-
 // The protobuf stores the transaction body as raw bytes so we need to first
 // decode what we have to inspect the Kind, TransactionID, and the NodeAccountID so we know how to
 // properly execute it
