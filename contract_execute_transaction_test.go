@@ -24,6 +24,7 @@ func TestSerializeContractExecuteTransaction(t *testing.T) {
 		SetFunction("someFunction", parameters).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)

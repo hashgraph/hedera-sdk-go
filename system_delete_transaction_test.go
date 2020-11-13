@@ -20,6 +20,7 @@ func TestSerializeSystemDeleteFileIDTransaction(t *testing.T) {
 		SetExpirationTime(time.Unix(15415151511, 0)).
 		SetMaxTransactionFee(HbarFromTinybar(100_000)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)

@@ -18,6 +18,7 @@ func TestSerializeSystemUndeleteFileIDTransaction(t *testing.T) {
 		SetFileID(FileID{File: 3}).
 		SetMaxTransactionFee(HbarFromTinybar(100_000)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)
@@ -38,6 +39,7 @@ func TestSerializeSystemUndeleteContractIDTransaction(t *testing.T) {
 		SetContractID(ContractID{Contract: 3}).
 		SetMaxTransactionFee(HbarFromTinybar(100_000)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)

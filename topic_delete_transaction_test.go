@@ -9,8 +9,6 @@ import (
 )
 
 func TestSerializeTopicDeleteTransaction(t *testing.T) {
-	date := time.Unix(1554158542, 0)
-
 	testTopicID := TopicID{Topic: 99}
 
 	key, err := PrivateKeyFromString("302e020100300506032b6570042204203b054fade7a2b0869c6bd4a63b7017cbae7855d12acc357bea718e2c3e805962")
@@ -19,11 +17,8 @@ func TestSerializeTopicDeleteTransaction(t *testing.T) {
 	tx, err := NewTopicDeleteTransaction().
 		SetTopicID(testTopicID).
 		SetTransactionValidDuration(24 * time.Hour).
+		SetTransactionID(testTransactionID).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		SetTransactionID(TransactionID{
-			AccountID:  AccountID{Account: 2},
-			ValidStart: date,
-		}).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		Freeze()
 
@@ -31,7 +26,7 @@ func TestSerializeTopicDeleteTransaction(t *testing.T) {
 
 	tx.Sign(key)
 
-	assert.Equal(t, `bodyBytes:"\n\014\n\006\010\316\247\212\345\005\022\002\030\002\022\002\030\003\030\300\204=\"\004\010\200\243\005\322\001\004\n\002\030c"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"\340\240!e\360j(\230Y\352q\213\334,\335`+"`"+`\236v\247\326T\026c-\373&\024\004~\036P\304\024u\211\220\370\306R\267\024<\372\3220\272\205?\335J^:=\232\021NU2\207\315r\024\317\013">>transactionID:<transactionValidStart:<seconds:1554158542>accountID:<accountNum:2>>nodeAccountID:<accountNum:3>transactionFee:1000000transactionValidDuration:<seconds:86400>consensusDeleteTopic:<topicID:<topicNum:99>>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
+	assert.Equal(t, `bodyBytes:"\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\003\030\300\204=\"\004\010\200\243\005\322\001\004\n\002\030c"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"[\323`+"`"+`\236\326\3726\215:v\031\035\"\365@\360NXzVIP\304\031\r\315\243%\314\325\212\271\017\311\253h\"e\240\214\337\017\251\357\331\325\266\013A\314?\334^\223\031\211\320\344<\305\306\376'\003">>transactionID:<transactionValidStart:<seconds:124124nanos:151515>accountID:<accountNum:3>>nodeAccountID:<accountNum:3>transactionFee:1000000transactionValidDuration:<seconds:86400>consensusDeleteTopic:<topicID:<topicNum:99>>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
 }
 
 func TestTopicDeleteTransaction_Execute(t *testing.T) {

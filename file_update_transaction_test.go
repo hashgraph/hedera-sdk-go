@@ -22,6 +22,7 @@ func TestSerializeFileUpdateTransaction(t *testing.T) {
 		SetKeys(privateKey.PublicKey()).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)

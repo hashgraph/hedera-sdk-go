@@ -18,6 +18,7 @@ func TestSerializeTransferTransaction(t *testing.T) {
 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(-100)).
 		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)

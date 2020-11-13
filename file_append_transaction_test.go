@@ -19,6 +19,7 @@ func TestSerializeFileAppendTransaction(t *testing.T) {
 		SetContents([]byte("This is some random data")).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)

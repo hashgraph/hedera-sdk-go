@@ -24,6 +24,7 @@ func TestSerializeContractCreateTransaction(t *testing.T) {
 		SetAutoRenewPeriod(60 * 60 * 24 * 14 * time.Second).
 		SetMaxTransactionFee(HbarFromTinybar(1e6)).
 		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		FreezeWith(mockClient)
 
 	assert.NoError(t, err)
