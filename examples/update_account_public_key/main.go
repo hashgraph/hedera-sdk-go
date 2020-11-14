@@ -22,7 +22,7 @@ func main() {
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
 
-	if configOperatorID != "" && configOperatorKey != "" {
+	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
 			panic(err)

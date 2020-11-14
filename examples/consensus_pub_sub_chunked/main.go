@@ -93,6 +93,13 @@ func main() {
 		time.Sleep(2500)
 	}
 
+	receipt, err := transactionResponse.GetReceipt(client)
+	if err != nil {
+		panic(err)
+	}
+
+	println("status:", receipt.Status.String())
+
 	transactionResponse, err = hedera.NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
