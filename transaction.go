@@ -167,33 +167,37 @@ func TransactionFromBytes(bytes []byte) (interface{}, error) {
 	}
 }
 
-func (transaction *Transaction) GetSignatures() (map[*PublicKey][]byte, error) {
-	sigMap := make(map[*PublicKey][]byte, len(transaction.signatures))
+func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
+	returnMap := make(map[AccountID]map[*PublicKey][]byte, len(transaction.nodeIDs))
 
-	if len(transaction.signatures) == 0 {
-		return sigMap, nil
+	if len(transaction.transactions) == 0 {
+		return returnMap, nil
 	}
 
-	for _, signatureMap := range transaction.signatures {
-		for _, signature := range signatureMap.SigPair {
-			pubKey, err := PublicKeyFromBytes(signature.PubKeyPrefix)
+	for i, nodeID := range transaction.nodeIDs {
+		inner := make(map[*PublicKey][]byte, len(transaction.transactions[i].SigMap.SigPair))
+
+		for _, sigPair := range transaction.transactions[i].SigMap.SigPair {
+			key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
 			if err != nil {
-				return make(map[*PublicKey][]byte, 0), err
+				return make(map[AccountID]map[*PublicKey][]byte, 0), err
 			}
-			switch signature.Signature.(type) {
+			switch sigPair.Signature.(type) {
 			case *proto.SignaturePair_Contract:
-				sigMap[&pubKey] = signature.GetContract()
+				inner[&key] = sigPair.GetContract()
 			case *proto.SignaturePair_Ed25519:
-				sigMap[&pubKey] = signature.GetEd25519()
+				inner[&key] = sigPair.GetEd25519()
 			case *proto.SignaturePair_RSA_3072:
-				sigMap[&pubKey] = signature.GetRSA_3072()
+				inner[&key] = sigPair.GetRSA_3072()
 			case *proto.SignaturePair_ECDSA_384:
-				sigMap[&pubKey] = signature.GetECDSA_384()
+				inner[&key] = sigPair.GetECDSA_384()
 			}
 		}
+
+		returnMap[nodeID] = inner
 	}
 
-	return sigMap, nil
+	return returnMap, nil
 }
 
 func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
