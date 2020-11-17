@@ -167,6 +167,35 @@ func TransactionFromBytes(bytes []byte) (interface{}, error) {
 	}
 }
 
+func (transaction *Transaction) GetSignatures() (map[*PublicKey][]byte, error) {
+	sigMap := make(map[*PublicKey][]byte, len(transaction.signatures))
+
+	if len(transaction.signatures) == 0 {
+		return sigMap, nil
+	}
+
+	for _, signatureMap := range transaction.signatures {
+		for _, signature := range signatureMap.SigPair {
+			pubKey, err := PublicKeyFromBytes(signature.PubKeyPrefix)
+			if err != nil {
+				return make(map[*PublicKey][]byte, 0), err
+			}
+			switch signature.Signature.(type) {
+			case *proto.SignaturePair_Contract:
+				sigMap[&pubKey] = signature.GetContract()
+			case *proto.SignaturePair_Ed25519:
+				sigMap[&pubKey] = signature.GetEd25519()
+			case *proto.SignaturePair_RSA_3072:
+				sigMap[&pubKey] = signature.GetRSA_3072()
+			case *proto.SignaturePair_ECDSA_384:
+				sigMap[&pubKey] = signature.GetECDSA_384()
+			}
+		}
+	}
+
+	return sigMap, nil
+}
+
 func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
 	hashes, err := transaction.GetTransactionHashPerNode()
 	if err != nil {
