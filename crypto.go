@@ -332,6 +332,10 @@ func (pk PublicKey) Bytes() []byte {
 	return pk.keyData
 }
 
+func (sk PrivateKey) toProtoKey() *proto.Key {
+	return sk.PublicKey().toProtoKey()
+}
+
 func (pk PublicKey) toProtoKey() *proto.Key {
 	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
 }

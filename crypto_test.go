@@ -219,3 +219,40 @@ func TestPrivateKey_FromPemWithPassphrase(t *testing.T) {
 
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
+
+func TestSetKeyUsesAnyKey(t *testing.T) {
+	client := newTestClient(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(1)
+
+	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	keys := make([]PrivateKey, 3)
+	pubKeys := make([]PublicKey, 3)
+
+	for i := range keys {
+		newKey, err := GeneratePrivateKey()
+		if err != nil {
+			panic(err)
+		}
+
+		keys[i] = newKey
+		pubKeys[i] = newKey.PublicKey()
+	}
+
+	thresholdKey := KeyListWithThreshold(2).
+		AddAllPublicKeys(pubKeys)
+
+	_, err = NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetKey(newKey).
+		SetKey(thresholdKey).
+		SetMaxTransactionFee(NewHbar(2)).
+		SetInitialBalance(newBalance).
+		Execute(client)
+	assert.NoError(t, err)
+
+}
