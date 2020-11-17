@@ -166,6 +166,7 @@ func (query *AccountRecordsQuery) SetQueryPayment(paymentAmount Hbar) *AccountRe
 	return query
 }
 
+// SetNodeAccountIDs sets the node AccountID for this AccountRecordsQuery.
 func (query *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *AccountRecordsQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

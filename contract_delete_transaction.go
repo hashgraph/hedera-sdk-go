@@ -28,6 +28,7 @@ func contractDeleteTransactionFromProtobuf(transactions map[TransactionID]map[Ac
 	}
 }
 
+//Sets the contract ID which should be deleted.
 func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ContractID = contractID.toProtobuf()
@@ -38,6 +39,7 @@ func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
 	return contractIDFromProtobuf(transaction.pb.GetContractID())
 }
 
+//Sets the contract ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) SetTransferContractID(contractID ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
@@ -51,6 +53,7 @@ func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID
 	return contractIDFromProtobuf(transaction.pb.GetTransferContractID())
 }
 
+//Sets the account ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
@@ -246,7 +249,7 @@ func (transaction *ContractDeleteTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
-// SetNodeAccountID sets the node AccountID for this ContractDeleteTransaction.
+// SetNodeAccountIDs sets the node AccountID for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

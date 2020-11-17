@@ -179,6 +179,7 @@ func (query *AccountBalanceQuery) SetQueryPayment(paymentAmount Hbar) *AccountBa
 	return query
 }
 
+// SetNodeAccountIDs sets the node AccountID for this AccountBalanceQuery.
 func (query *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *AccountBalanceQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

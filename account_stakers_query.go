@@ -169,6 +169,7 @@ func (query *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountSt
 	return query
 }
 
+// SetNodeAccountIDs sets the node AccountID for this AccountStakersQuery.
 func (query *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *AccountStakersQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

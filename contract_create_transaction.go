@@ -41,6 +41,13 @@ func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
 	return fileIDFromProtobuf(transaction.pb.FileID)
 }
 
+/**
+     * Sets the state of the instance and its fields can be modified arbitrarily if this key signs a transaction
+     * to modify it. If this is null, then such modifications are not possible, and there is no administrator
+     * that can override the normal operation of this smart contract instance. Note that if it is created with no
+     * admin keys, then there is no administrator to authorize changing the admin keys, so
+     * there can never be any admin keys for that instance.
+ */
 func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = adminKey.toProtoKey()
@@ -51,6 +58,7 @@ func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
 	return keyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
+// Sets the gas to run the constructor.
 func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Gas = int64(gas)
@@ -103,12 +111,14 @@ func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.ProxyAccountID)
 }
 
+//Sets the constructor parameters
 func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ConstructorParameters = params.build(nil)
 	return transaction
 }
 
+//Sets the constructor parameters as their raw bytes.
 func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ConstructorParameters = params
@@ -119,6 +129,7 @@ func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte 
 	return transaction.pb.ConstructorParameters
 }
 
+//Sets the memo to be associated with this contract.
 func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Memo = memo
@@ -311,7 +322,7 @@ func (transaction *ContractCreateTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
-// SetNodeAccountID sets the node AccountID for this ContractCreateTransaction.
+// SetNodeAccountIDs sets the node AccountID for this ContractCreateTransaction.
 func (transaction *ContractCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

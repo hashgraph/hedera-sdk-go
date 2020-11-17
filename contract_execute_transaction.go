@@ -66,6 +66,7 @@ func (transaction ContractExecuteTransaction) GetPayableAmount() uint64 {
 	return uint64(transaction.pb.Gas)
 }
 
+//Sets the function parameters
 func (transaction *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FunctionParameters = params
@@ -269,7 +270,7 @@ func (transaction *ContractExecuteTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
-// SetNodeAccountID sets the node AccountID for this ContractExecuteTransaction.
+// SetNodeAccountIDs sets the node AccountID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

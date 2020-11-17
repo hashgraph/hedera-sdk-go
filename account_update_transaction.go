@@ -27,6 +27,7 @@ func accountUpdateTransactionFromProtobuf(transactions map[TransactionID]map[Acc
 	}
 }
 
+//Sets the new key.
 func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Key = key.toProtoKey()
@@ -37,6 +38,7 @@ func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
 	return keyFromProtobuf(transaction.pb.GetKey())
 }
 
+//Sets the account ID which is being updated in this transaction.
 func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AccountIDToUpdate = accountID.toProtobuf()
@@ -57,6 +59,7 @@ func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired() bool
 	return transaction.pb.GetReceiverSigRequiredWrapper().GetValue()
 }
 
+//Sets the ID of the account to which this account is proxy staked.
 func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ProxyAccountID = proxyAccountID.toProtobuf()
@@ -67,6 +70,7 @@ func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetProxyAccountID())
 }
 
+//Sets the duration in which it will automatically extend the expiration period.
 func (transaction *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
@@ -83,6 +87,7 @@ func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime ti
 	return transaction
 }
 
+//Sets the new expiration time to extend to (ignored if equal to or before the current one).
 func (transaction *AccountUpdateTransaction) GetExpirationTime() time.Time {
 	return timeFromProtobuf(transaction.pb.ExpirationTime)
 }
@@ -269,7 +274,7 @@ func (transaction *AccountUpdateTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
-// SetNodeAccountID sets the node AccountID for this AccountUpdateTransaction.
+// SetNodeAccountIDs sets the node AccountID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

@@ -33,6 +33,7 @@ func accountInfoQuery_getMethod(_ request, channel *channel) method {
 	}
 }
 
+// SetAccountID sets the AccountID for this AccountInfoQuery.
 func (query *AccountInfoQuery) SetAccountID(accountID AccountID) *AccountInfoQuery {
 	query.pb.AccountID = accountID.toProtobuf()
 	return query
@@ -86,6 +87,7 @@ func (query *AccountInfoQuery) GetAccountID() AccountID {
 	}
 }
 
+// SetNodeAccountIDs sets the node AccountID for this AccountInfoQuery.
 func (query *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *AccountInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
@@ -95,11 +97,13 @@ func (query *AccountInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 
+//SetQueryPayment sets the Hbar payment to pay the node a fee for handling this query
 func (query *AccountInfoQuery) SetQueryPayment(queryPayment Hbar) *AccountInfoQuery {
 	query.queryPayment = queryPayment
 	return query
 }
 
+//SetMaxQueryPayment sets the maximum payment allowable for this query.
 func (query *AccountInfoQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *AccountInfoQuery {
 	query.maxQueryPayment = queryMaxPayment
 	return query

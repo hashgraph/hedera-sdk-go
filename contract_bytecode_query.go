@@ -154,6 +154,7 @@ func (query *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *Contrac
 	return query
 }
 
+// SetNodeAccountIDs sets the node AccountID for this ContractBytecodeQuery.
 func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *ContractBytecodeQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

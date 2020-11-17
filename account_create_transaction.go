@@ -324,7 +324,7 @@ func (transaction *AccountCreateTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
-// SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
+// SetNodeAccountIDs sets the node AccountID for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

@@ -154,6 +154,7 @@ func (query *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInf
 	return query
 }
 
+// SetNodeAccountIDs sets the node AccountID for this ContractInfoQuery.
 func (query *ContractInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ContractInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

@@ -35,6 +35,7 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	return &transaction
 }
 
+// SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
 func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.DeleteAccountID = accountID.toProtobuf()
@@ -45,6 +46,7 @@ func (transaction *AccountDeleteTransaction) GetAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetDeleteAccountID())
 }
 
+// SetTransferAccountID sets the AccountID which will receive all remaining hbars.
 func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.TransferAccountID = transferAccountID.toProtobuf()
@@ -237,7 +239,7 @@ func (transaction *AccountDeleteTransaction) GetNodeAccountIDs() []AccountID {
 	return transaction.Transaction.GetNodeAccountIDs()
 }
 
-// SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
+// SetNodeAccountIDs sets the node AccountID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
