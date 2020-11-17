@@ -196,6 +196,22 @@ func (transaction *Transaction) GetSignatures() (map[*PublicKey][]byte, error) {
 	return sigMap, nil
 }
 
+func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
+	transaction.requireExactNode()
+
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signatures) == 0 {
+		return transaction
+	}
+
+	transaction.signatures[0].SigPair = append(transaction.signatures[0].SigPair, publicKey.toSignaturePairProtobuf(signature))
+
+	return transaction
+}
+
 func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
 	hashes, err := transaction.GetTransactionHashPerNode()
 	if err != nil {
@@ -257,7 +273,17 @@ func (transaction *Transaction) isFrozen() bool {
 
 func (transaction *Transaction) requireNotFrozen() {
 	if transaction.isFrozen() {
-		panic("Transaction is immutable; it has at least one signature or has been explicitly frozen\"")
+		panic("Transaction is immutable; it has at least one signature or has been explicitly frozen")
+	}
+}
+
+func (transaction *Transaction) requireExactNode() {
+	if len(transaction.nodeIDs) > 1 {
+		panic("Transaction has more than one node ID set")
+	}
+
+	if transaction.isFrozen() {
+		panic("Transaction did not have an exact node ID set")
 	}
 }
 
