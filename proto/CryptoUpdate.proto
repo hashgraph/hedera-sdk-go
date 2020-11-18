@@ -31,7 +31,6 @@ import "proto/BasicTypes.proto";
 import "proto/Duration.proto";
 import "proto/Timestamp.proto";
 import "proto/wrappers.proto";
-
 /*
 Change properties for the given account. Any null field is ignored (left unchanged). This transaction must be signed by the existing key for this account. If the transaction is changing the key field, then the transaction must be signed by both the old key (from before the change) and the new key. The old key must sign for security. The new key must sign as a safeguard to avoid accidentally changing to an invalid key, and then having no way to recover.
 */
