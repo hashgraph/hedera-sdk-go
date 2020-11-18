@@ -3,7 +3,7 @@ module github.com/hashgraph/hedera-sdk-go
 go 1.13
 
 require (
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/stretchr/testify v1.5.1
 	github.com/tyler-smith/go-bip39 v1.0.2
 	github.com/youmark/pkcs8 v0.0.0-20200520070018-fad002e585ce
