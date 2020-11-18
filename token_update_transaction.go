@@ -179,12 +179,12 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewAccount() AccountID {
 // The new interval at which the auto-renew account will be charged to extend the token's expiry.
 func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = uint64(autoRenewPeriod.Seconds())
+	transaction.pb.AutoRenewPeriod = &proto.Duration{Seconds: int64(autoRenewPeriod.Seconds())}
 	return transaction
 }
 
-func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() uint64 {
-	return transaction.pb.GetAutoRenewPeriod()
+func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() time.Duration {
+	return time.Duration(transaction.pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
 }
 
 // The new expiry time of the token. Expiry can be updated even if admin key is not set. If the
@@ -192,12 +192,15 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() uint64 {
 // INVALID_EXPIRATION_TIME
 func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime time.Time) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Expiry = uint64(expirationTime.UnixNano())
+	transaction.pb.Expiry = &proto.Timestamp{
+		Seconds: expirationTime.Unix(),
+		Nanos:   int32(expirationTime.UnixNano()),
+	}
 	return transaction
 }
 
-func (transaction *TokenUpdateTransaction) GetExpirationTime() uint64 {
-	return transaction.pb.GetExpiry()
+func (transaction *TokenUpdateTransaction) GetExpirationTime() time.Time {
+	return time.Unix(transaction.pb.GetExpiry().Seconds, int64(transaction.pb.GetExpiry().Nanos))
 }
 
 //

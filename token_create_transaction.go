@@ -199,12 +199,16 @@ func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
 func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Expiry = uint64(expirationTime.UnixNano())
+	transaction.pb.Expiry = &proto.Timestamp{
+		Seconds: expirationTime.Unix(),
+		Nanos:   int32(expirationTime.UnixNano()),
+	}
+
 	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
-	return time.Unix(0, int64(transaction.pb.GetExpiry()))
+	return time.Unix(transaction.pb.GetExpiry().Seconds, int64(transaction.pb.GetExpiry().Nanos))
 }
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
@@ -221,12 +225,12 @@ func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
 // The interval at which the auto-renew account will be charged to extend the token's expiry
 func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = uint64(autoRenewPeriod.Seconds())
+	transaction.pb.AutoRenewPeriod = &proto.Duration{Seconds: int64(autoRenewPeriod.Seconds())}
 	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	return time.Duration(transaction.pb.GetAutoRenewPeriod())
+	return time.Duration(transaction.pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
 }
 
 //

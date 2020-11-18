@@ -78,8 +78,8 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 	}
 
 	var tokenID *TokenID
-	if protoReceipt.TokenId != nil {
-		id := tokenIDFromProtobuf(protoReceipt.TokenId)
+	if protoReceipt.TokenID != nil {
+		id := tokenIDFromProtobuf(protoReceipt.TokenID)
 		tokenID = &id
 	}
 
@@ -111,6 +111,6 @@ func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
 		TopicSequenceNumber:     receipt.TopicSequenceNumber,
 		TopicRunningHash:        receipt.TopicRunningHash,
 		TopicRunningHashVersion: receipt.TopicRunningHashVersion,
-		TokenId:                 receipt.TokenID.toProtobuf(),
+		TokenID:                 receipt.TokenID.toProtobuf(),
 	}
 }

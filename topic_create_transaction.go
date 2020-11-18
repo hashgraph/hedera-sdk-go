@@ -100,7 +100,7 @@ func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(accountID Accou
 	return transaction
 }
 
-func (transaction *TopicCreateTransaction) GetAutoRenewAccoutnID() AccountID {
+func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
 }
 
