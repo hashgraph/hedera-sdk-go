@@ -52,6 +52,10 @@ func (hbar Hbar) String() string {
 	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()))
 }
 
+func (hbar Hbar) ToString(unit HbarUnit) string{
+	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(unit.numberOfTinybar()))
+}
+
 func (hbar Hbar) negated() Hbar {
 	return Hbar{
 		tinybar: -hbar.tinybar,
