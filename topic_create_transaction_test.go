@@ -36,6 +36,7 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
+		SetSubmitKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(topicMemo).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
