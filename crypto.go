@@ -349,17 +349,15 @@ func (pk PublicKey) toSignaturePairProtobuf(signature []byte) *proto.SignaturePa
 	}
 }
 
-func (sk PrivateKey) SignTransaction(transaction Transaction) []byte {
+func (sk PrivateKey) SignTransaction(transaction Transaction) ([]byte, error) {
 	transaction.requireExactNode()
 
 	if len(transaction.transactions) == 0 {
-		return make([]byte, 0)
+		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
 	}
 
-	transactionToSign := transaction.transactions[0]
-	signature := sk.Sign(transactionToSign.GetBodyBytes())
-
+	signature := sk.Sign(transaction.transactions[0].GetBodyBytes())
 	transaction.AddSignature(sk.PublicKey(), signature)
 
-	return signature
+	return signature, nil
 }

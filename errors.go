@@ -22,6 +22,7 @@ var errNoClientProvided = errors.New("`client` must be provided and have an oper
 var errTransactionIsNotFrozen = errors.New("transaction is not frozen")
 var errFailedToDeserializeBytes = errors.New("Failed to deserialize bytes")
 var errNoTransactionInBytes = errors.New("No transaction was found in bytes")
+var errTransactionRequiresSingleNodeAccountID = errors.New("`PrivateKey.SignTransaction()` requires `Transaction` to have a single node `AccountID` set")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID
