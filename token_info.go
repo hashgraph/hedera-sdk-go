@@ -20,8 +20,8 @@ type TokenInfo struct {
 	DefaultFreezeStatus *bool
 	DefaultKycStatus    *bool
 	Deleted             bool
-	AutoRenewPeriod     time.Duration
-	ExpirationTime      time.Time
+	AutoRenewPeriod     *time.Duration
+	ExpirationTime      *time.Time
 }
 
 func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
@@ -123,6 +123,16 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		supplyKey = PublicKey{keyData: pb.SupplyKey.GetEd25519()}
 	}
 
+	var autoRP time.Duration
+	if pb.GetAutoRenewPeriod() != nil {
+		autoRP = time.Duration(pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
+	}
+
+	var expirationTime time.Time
+	if pb.GetExpiry() != nil {
+		expirationTime = time.Unix(pb.GetExpiry().Seconds, int64(pb.GetExpiry().Nanos))
+	}
+
 	return TokenInfo{
 		TokenID:             tokenIDFromProtobuf(pb.TokenId),
 		Name:                pb.Name,
@@ -138,8 +148,8 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		DefaultFreezeStatus: freezeStatusFromProtobuf(pb.DefaultFreezeStatus),
 		DefaultKycStatus:    kycStatusFromProtobuf(pb.DefaultKycStatus),
 		Deleted:             pb.Deleted,
-		AutoRenewPeriod:     time.Duration(pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds()),
-		ExpirationTime:      time.Unix(pb.GetExpiry().Seconds, int64(pb.GetExpiry().Nanos)),
+		AutoRenewPeriod:     &autoRP,
+		ExpirationTime:      &expirationTime,
 	}
 }
 
@@ -169,6 +179,16 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		supplyKey = *tokenInfo.SupplyKey
 	}
 
+	var autoRP *proto.Duration
+	if tokenInfo.AutoRenewPeriod != nil {
+		autoRP = durationToProtobuf(*tokenInfo.AutoRenewPeriod)
+	}
+
+	var expirationTime *proto.Timestamp
+	if tokenInfo.ExpirationTime != nil {
+		expirationTime = timeToProtobuf(*tokenInfo.ExpirationTime)
+	}
+
 	return &proto.TokenInfo{
 		TokenId:             tokenInfo.TokenID.toProtobuf(),
 		Name:                tokenInfo.Name,
@@ -184,7 +204,7 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		DefaultFreezeStatus: *tokenInfo.FreezeStatusToProtobuf(),
 		DefaultKycStatus:    *tokenInfo.KycStatusToProtobuf(),
 		Deleted:             tokenInfo.Deleted,
-		AutoRenewPeriod:     durationToProtobuf(tokenInfo.AutoRenewPeriod),
-		Expiry:              timeToProtobuf(tokenInfo.ExpirationTime),
+		AutoRenewPeriod:     autoRP,
+		Expiry:              expirationTime,
 	}
 }
