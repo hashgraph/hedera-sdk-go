@@ -45,6 +45,9 @@ func main() {
 
 	mirrorNodeAddress := os.Getenv("MIRROR_NODE_ADDRESS")
 
+	fmt.Printf("wait to propagate...\n")
+	time.Sleep(10 * time.Second)
+
 	mirrorClient, err := hedera.NewMirrorClient(mirrorNodeAddress)
 	if err != nil {
 		panic(err)
