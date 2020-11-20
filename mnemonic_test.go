@@ -79,6 +79,32 @@ func TestNew12MnemonicFromGeneratedMnemonic(t *testing.T) {
 	assert.Equal(t, gKey.keyData, stKey.keyData)
 }
 
+func TestLegacyMnemonic(t *testing.T) {
+	legacyString := "jolly,kidnap,tom,lawn,drunk,chick,optic,lust,mutter,mole,bride,galley,dense,member,sage,neural,widow,decide,curb,aboard,margin,manure"
+
+	mnemonicLegacy, err := NewMnemonic(strings.Split(legacyString, ","))
+	assert.NoError(t, err)
+
+	legacyWithSpaces := strings.Join(strings.Split(legacyString, ","), " ")
+
+	mnemonicFromString, err := MnemonicFromString(legacyWithSpaces)
+	assert.NoError(t, err)
+	assert.Equal(t, mnemonicLegacy, mnemonicFromString)
+
+	gKey, err := mnemonicLegacy.ToLegacyPrivateKey()
+	assert.NoError(t, err)
+
+	slKey, err := mnemonicLegacy.ToLegacyPrivateKey()
+	assert.NoError(t, err)
+
+	stKey, err := mnemonicLegacy.ToLegacyPrivateKey()
+	assert.NoError(t, err)
+
+	assert.Equal(t, gKey.keyData, slKey.keyData)
+	assert.Equal(t, gKey.keyData, stKey.keyData)
+	assert.Equal(t, gKey.String(), "302e020100300506032b657004220420882a565ad8cb45643892b5366c1ee1c1ef4a730c5ce821a219ff49b6bf173ddf")
+}
+
 func TestMnemonicBreaksWithBadLength(t *testing.T) {
 	// note this mnemonic is probably invalid and is only used to test breakage based on length
 	shortMnemonic := "inmate flip alley wear offer often piece magnet surge toddler submit right business"
