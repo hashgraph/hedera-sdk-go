@@ -42,11 +42,11 @@ func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
 }
 
 /**
-     * Sets the state of the instance and its fields can be modified arbitrarily if this key signs a transaction
-     * to modify it. If this is null, then such modifications are not possible, and there is no administrator
-     * that can override the normal operation of this smart contract instance. Note that if it is created with no
-     * admin keys, then there is no administrator to authorize changing the admin keys, so
-     * there can never be any admin keys for that instance.
+ * Sets the state of the instance and its fields can be modified arbitrarily if this key signs a transaction
+ * to modify it. If this is null, then such modifications are not possible, and there is no administrator
+ * that can override the normal operation of this smart contract instance. Note that if it is created with no
+ * admin keys, then there is no administrator to authorize changing the admin keys, so
+ * there can never be any admin keys for that instance.
  */
 func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
 	transaction.requireNotFrozen()

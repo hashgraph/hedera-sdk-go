@@ -149,8 +149,24 @@ func TestSigning(t *testing.T) {
 	assert.True(t, ed25519.Verify(pubKey.Bytes(), []byte("this is the test data to sign"), signature))
 }
 
-func TestGeneratedMnemonicToWorkingPrivateKey(t *testing.T) {
-	mnemonic, err := GenerateMnemonic()
+func TestGenerated24MnemonicToWorkingPrivateKey(t *testing.T) {
+	mnemonic, err := GenerateMnemonic24()
+
+	assert.NoError(t, err)
+
+	privateKey, err := mnemonic.ToPrivateKey("")
+
+	assert.NoError(t, err)
+
+	message := []byte("this is a test message")
+
+	signature := privateKey.Sign(message)
+
+	assert.True(t, ed25519.Verify(privateKey.PublicKey().Bytes(), message, signature))
+}
+
+func TestGenerated12MnemonicToWorkingPrivateKey(t *testing.T) {
+	mnemonic, err := GenerateMnemonic12()
 
 	assert.NoError(t, err)
 
