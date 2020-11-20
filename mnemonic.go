@@ -15,8 +15,27 @@ func (m Mnemonic) ToPrivateKey(passPhrase string) (PrivateKey, error) {
 }
 
 // GenerateMnemonic generates a random 24-word mnemonic
-func GenerateMnemonic() (Mnemonic, error) {
+func GenerateMnemonic24() (Mnemonic, error) {
 	entropy, err := bip39.NewEntropy(256)
+
+	if err != nil {
+		// It is only possible for there to be an error if the operating
+		// system's rng is unreadable
+		return Mnemonic{}, fmt.Errorf("could not retrieve random bytes from the operating system")
+	}
+
+	mnemonic, err := bip39.NewMnemonic(entropy)
+
+	// Note that this should never actually fail since it is being provided by library generated mnemonic
+	if err != nil {
+		return Mnemonic{}, err
+	}
+
+	return Mnemonic{mnemonic}, nil
+}
+
+func GenerateMnemonic12() (Mnemonic, error) {
+	entropy, err := bip39.NewEntropy(128)
 
 	if err != nil {
 		// It is only possible for there to be an error if the operating
@@ -53,11 +72,11 @@ func (m Mnemonic) Words() []string {
 //
 // Keys are lazily generated
 func NewMnemonic(words []string) (Mnemonic, error) {
-	if len(words) != 24 {
+	if len(words) == 24 || len(words) == 12 {
+		return Mnemonic{
+			words: strings.Join(words, " "),
+		}, nil
+	} else {
 		return Mnemonic{}, fmt.Errorf("invalid mnemonic string")
 	}
-
-	return Mnemonic{
-		words: strings.Join(words, " "),
-	}, nil
 }
