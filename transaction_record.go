@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TransactionRecord struct {

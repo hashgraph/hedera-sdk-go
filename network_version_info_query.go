@@ -1,6 +1,6 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/proto"
+import "github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 type NetworkVersionInfoQuery struct {
 	Query

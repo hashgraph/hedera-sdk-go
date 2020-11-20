@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go"
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {

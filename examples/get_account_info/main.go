@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go"
+	"github.com/hashgraph/hedera-sdk-go/v2"
 	"os"
 )
 

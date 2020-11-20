@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // *TopicUpdateTransaction updates all fields on a Topic that are set in the transaction.

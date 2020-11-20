@@ -1,6 +1,6 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/proto"
+import "github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 // ContractLogInfo is the log info for events returned by a function
 type ContractLogInfo struct {

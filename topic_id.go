@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // TopicID is a unique identifier for a topic (used by the  service)

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hashgraph/hedera-sdk-go"
+	"github.com/hashgraph/hedera-sdk-go/v2"
 	"os"
 )
 

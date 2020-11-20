@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // A TopicCreateTransaction is for creating a new Topic on HCS.

@@ -3,7 +3,7 @@ package hedera
 import (
 	"encoding/binary"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ContractFunctionResult is the result returned by a call to a smart contract function. This is The response to

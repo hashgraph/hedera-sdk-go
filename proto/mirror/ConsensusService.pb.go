@@ -28,7 +28,7 @@ package mirror
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	proto1 "github.com/hashgraph/hedera-sdk-go/proto"
+	proto1 "github.com/hashgraph/hedera-sdk-go/v2/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go"
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {

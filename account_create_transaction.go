@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // AccountCreateTransaction creates a new account. After the account is created, the AccountID for it is in the receipt,

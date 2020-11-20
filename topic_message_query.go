@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

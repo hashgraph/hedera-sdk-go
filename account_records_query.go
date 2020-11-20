@@ -1,6 +1,6 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/proto"
+import "github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
 // it, that were above the threshold, during the last 25 hours.

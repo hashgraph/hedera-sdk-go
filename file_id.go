@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // A FileID is the ID for a file on the network.

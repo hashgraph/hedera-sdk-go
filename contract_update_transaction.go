@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ContractUpdateTransaction is used to modify a smart contract instance to have the given parameter values. Any nil

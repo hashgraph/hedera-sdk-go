@@ -16,7 +16,7 @@ import (
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/youmark/pkcs8"
 )
 

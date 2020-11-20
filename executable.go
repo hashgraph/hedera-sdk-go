@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"google.golang.org/grpc"
 )
 

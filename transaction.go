@@ -7,7 +7,7 @@ import (
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.

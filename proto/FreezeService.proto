@@ -21,7 +21,7 @@ package proto;
  * limitations under the License.
  * ‍
  */
-option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
+option go_package = "github.com/hashgraph/hedera-sdk-go/v2/proto";
 
 option java_package = "com.hedera.hashgraph.proto";
 

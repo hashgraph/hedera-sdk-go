@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto/mirror"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"google.golang.org/grpc"
 )
 

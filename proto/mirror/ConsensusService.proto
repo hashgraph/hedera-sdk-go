@@ -25,7 +25,7 @@ package com.hedera.mirror.api.proto;
 option java_multiple_files = true; // Required for the reactor-grpc generator to work correctly
 option java_package = "com.hedera.hashgraph.proto.mirror";
 
-option go_package = "github.com/hashgraph/hedera-sdk-go/mirror";
+option go_package = "github.com/hashgraph/hedera-sdk-go/v2/mirror";
 
 import "proto/BasicTypes.proto";
 import "proto/Timestamp.proto";

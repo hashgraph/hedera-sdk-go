@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TopicInfoQuery struct {

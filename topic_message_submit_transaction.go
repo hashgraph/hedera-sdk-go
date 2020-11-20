@@ -4,7 +4,7 @@ import (
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 const chunkSize = 4096

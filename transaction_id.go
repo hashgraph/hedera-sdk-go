@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // TransactionID is the id used to identify a Transaction on the Hedera network. It consists of an AccountID and a
