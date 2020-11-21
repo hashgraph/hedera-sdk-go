@@ -75,15 +75,20 @@ func (m Mnemonic) Words() []string {
 //
 // Keys are lazily generated
 func NewMnemonic(words []string) (Mnemonic, error) {
+	joinedString := strings.Join(words, " ")
+
 	if len(words) == 24 || len(words) == 12 || len(words) == 22 {
 		if len(words) == 22 {
 			return Mnemonic{
-				words: strings.Join(words, " "),
+				words: joinedString,
 			}.legacyValidate()
+		} else if bip39.IsMnemonicValid(joinedString) {
+			return Mnemonic{
+				words: joinedString,
+			}, nil
+		} else {
+			return Mnemonic{}, fmt.Errorf("invalid mnemonic composition")
 		}
-		return Mnemonic{
-			words: strings.Join(words, " "),
-		}, nil
 	} else {
 		return Mnemonic{}, fmt.Errorf("invalid mnemonic string")
 	}
@@ -139,7 +144,7 @@ func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
 	for i, number := range entropy {
 		password[i] = number
 	}
-	for i := len(entropy); i<len(password); i++ {
+	for i := len(entropy); i < len(password); i++ {
 		password[i] = 0xFF
 	}
 	salt := []byte{0xFF}
