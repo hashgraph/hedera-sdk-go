@@ -50,7 +50,7 @@ func (kl *KeyList) String() string {
 	if kl.threshold > 0 {
 		s = "{threshold:" + fmt.Sprint(kl.threshold) + ",["
 	} else {
-		s = "{threshold: 0, ["
+		s = "{["
 	}
 
 	for i, key := range kl.keys {
