@@ -21,9 +21,9 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	return &transaction
 }
 
-func systemUndeleteTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) SystemUndeleteTransaction {
+func systemUndeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemUndeleteTransaction {
 	return SystemUndeleteTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
+		Transaction: transaction,
 		pb:          pb.GetSystemUndelete(),
 	}
 }
@@ -108,11 +108,11 @@ func (transaction *SystemUndeleteTransaction) SignWith(
 		return transaction
 	}
 
-	for index := 0; index < len(transaction.transactions); index++ {
-		signature := signer(transaction.transactions[index].GetBodyBytes())
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
 			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
@@ -128,7 +128,7 @@ func (transaction *SystemUndeleteTransaction) Execute(
 		transaction.FreezeWith(client)
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -156,7 +156,7 @@ func (transaction *SystemUndeleteTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.id,
+		TransactionID: transaction.transactionIDs[0],
 		NodeID:        resp.transaction.NodeID,
 	}, nil
 }
@@ -228,7 +228,7 @@ func (transaction *SystemUndeleteTransaction) GetTransactionID() TransactionID {
 // SetTransactionID sets the TransactionID for this SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemUndeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.id = transactionID
+
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }

@@ -350,7 +350,7 @@ func (pk PublicKey) toSignaturePairProtobuf(signature []byte) *proto.SignaturePa
 }
 
 func (sk PrivateKey) SignTransaction(transaction Transaction) ([]byte, error) {
-	transaction.requireExactNode()
+	transaction.requireOneNodeAccountID()
 
 	if len(transaction.transactions) == 0 {
 		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID

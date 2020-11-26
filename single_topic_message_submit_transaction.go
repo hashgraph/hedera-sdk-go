@@ -21,17 +21,16 @@ func newSingleTopicMessageSubmitTransaction(
 	return &singleTopicMessageSubmitTransaction{
 		Transaction: Transaction{
 			pbBody: pbBody,
-			id:     transactionIDFromProtobuf(pbBody.TransactionID),
+			transactionIDs: []TransactionID{transactionIDFromProtobuf(pbBody.TransactionID)},
 		},
 		pb: pb,
 	}
 }
-func singleTopicMessageSubmitTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) singleTopicMessageSubmitTransaction {
+func singleTopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) singleTopicMessageSubmitTransaction {
 	return singleTopicMessageSubmitTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
+		Transaction: transaction,
 		pb:          pb.GetConsensusSubmitMessage(),
 	}
-
 }
 
 //
@@ -87,11 +86,11 @@ func (transaction *singleTopicMessageSubmitTransaction) SignWith(
 		return transaction
 	}
 
-	for index := 0; index < len(transaction.transactions); index++ {
-		signature := signer(transaction.transactions[index].GetBodyBytes())
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
 			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
@@ -111,7 +110,7 @@ func (transaction *singleTopicMessageSubmitTransaction) Execute(
 		transaction.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -139,7 +138,7 @@ func (transaction *singleTopicMessageSubmitTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.id,
+		TransactionID: transaction.transactionIDs[0],
 		NodeID:        resp.transaction.NodeID,
 	}, nil
 }

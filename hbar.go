@@ -52,7 +52,7 @@ func (hbar Hbar) String() string {
 	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()))
 }
 
-func (hbar Hbar) ToString(unit HbarUnit) string{
+func (hbar Hbar) ToString(unit HbarUnit) string {
 	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(unit.numberOfTinybar()))
 }
 

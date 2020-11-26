@@ -117,7 +117,7 @@ func execute(
 			if request.query != nil {
 				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
 			} else {
-				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.id, status)
+				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.GetTransactionID(), status)
 			}
 		}
 

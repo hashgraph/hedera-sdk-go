@@ -31,9 +31,9 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	return &transaction
 }
 
-func tokenGrantKycTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenGrantKycTransaction {
+func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenGrantKycTransaction {
 	return TokenGrantKycTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
+		Transaction: transaction,
 		pb:          pb.GetTokenGrantKyc(),
 	}
 }
@@ -113,11 +113,11 @@ func (transaction *TokenGrantKycTransaction) SignWith(
 		return transaction
 	}
 
-	for index := 0; index < len(transaction.transactions); index++ {
-		signature := signer(transaction.transactions[index].GetBodyBytes())
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
 			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
@@ -133,7 +133,7 @@ func (transaction *TokenGrantKycTransaction) Execute(
 		transaction.FreezeWith(client)
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -161,7 +161,7 @@ func (transaction *TokenGrantKycTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.id,
+		TransactionID: transaction.transactionIDs[0],
 		NodeID:        resp.transaction.NodeID,
 	}, nil
 }
@@ -233,7 +233,7 @@ func (transaction *TokenGrantKycTransaction) GetTransactionID() TransactionID {
 // SetTransactionID sets the TransactionID for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetTransactionID(transactionID TransactionID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.id = transactionID
+
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }

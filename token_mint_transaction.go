@@ -29,9 +29,9 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 	return &transaction
 }
 
-func tokenMintTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TokenMintTransaction {
+func tokenMintTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenMintTransaction {
 	return TokenMintTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
+		Transaction: transaction,
 		pb:          pb.GetTokenMint(),
 	}
 }
@@ -114,11 +114,11 @@ func (transaction *TokenMintTransaction) SignWith(
 		return transaction
 	}
 
-	for index := 0; index < len(transaction.transactions); index++ {
-		signature := signer(transaction.transactions[index].GetBodyBytes())
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
 			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
@@ -134,7 +134,7 @@ func (transaction *TokenMintTransaction) Execute(
 		transaction.FreezeWith(client)
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -162,7 +162,7 @@ func (transaction *TokenMintTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.id,
+		TransactionID: transaction.transactionIDs[0],
 		NodeID:        resp.transaction.NodeID,
 	}, nil
 }
@@ -234,7 +234,7 @@ func (transaction *TokenMintTransaction) GetTransactionID() TransactionID {
 // SetTransactionID sets the TransactionID for this TokenMintTransaction.
 func (transaction *TokenMintTransaction) SetTransactionID(transactionID TransactionID) *TokenMintTransaction {
 	transaction.requireNotFrozen()
-	transaction.id = transactionID
+
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }

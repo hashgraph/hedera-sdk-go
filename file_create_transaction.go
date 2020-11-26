@@ -35,9 +35,9 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	return &transaction
 }
 
-func fileCreateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) FileCreateTransaction {
+func fileCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileCreateTransaction {
 	return FileCreateTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
+		Transaction: transaction,
 		pb:          pb.GetFileCreate(),
 	}
 }
@@ -159,11 +159,11 @@ func (transaction *FileCreateTransaction) SignWith(
 		return transaction
 	}
 
-	for index := 0; index < len(transaction.transactions); index++ {
-		signature := signer(transaction.transactions[index].GetBodyBytes())
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
 			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
@@ -179,7 +179,7 @@ func (transaction *FileCreateTransaction) Execute(
 		transaction.FreezeWith(client)
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -207,7 +207,7 @@ func (transaction *FileCreateTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.id,
+		TransactionID: transaction.transactionIDs[0],
 		NodeID:        resp.transaction.NodeID,
 	}, nil
 }
@@ -279,7 +279,7 @@ func (transaction *FileCreateTransaction) GetTransactionID() TransactionID {
 // SetTransactionID sets the TransactionID for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.id = transactionID
+
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }

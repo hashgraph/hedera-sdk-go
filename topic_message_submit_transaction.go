@@ -29,19 +29,17 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return &transaction
 }
 
-func topicMessageSubmitTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
+func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
 	tx := TopicMessageSubmitTransaction{
-		Transaction:         transactionFromProtobuf(transactions, pb),
+		Transaction:         transaction,
 		pb:                  pb.GetConsensusSubmitMessage(),
 		maxChunks:           10,
 		message:             make([]byte, 0),
 		chunkedTransactions: make([]*singleTopicMessageSubmitTransaction, 0),
 	}
 
-	for transactionID, m := range transactions {
-		txs := make(map[TransactionID]map[AccountID]*proto.Transaction)
-		txs[transactionID] = m
-		singleTx := singleTopicMessageSubmitTransactionFromProtobuf(txs, pb)
+	for _, _ = range transaction.transactions {
+		singleTx := singleTopicMessageSubmitTransactionFromProtobuf(transaction, pb)
 		tx.chunkedTransactions = append(tx.chunkedTransactions, &singleTx)
 	}
 
@@ -152,7 +150,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		transaction.FreezeWith(client)
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -302,7 +300,7 @@ func (transaction *TopicMessageSubmitTransaction) GetTransactionID() Transaction
 // SetTransactionID sets the TransactionID for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) *TopicMessageSubmitTransaction {
 	transaction.requireNotFrozen()
-	transaction.id = transactionID
+
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }

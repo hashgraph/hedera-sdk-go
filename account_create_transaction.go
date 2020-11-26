@@ -40,9 +40,9 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	return &transaction
 }
 
-func accountCreateTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) AccountCreateTransaction {
+func accountCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountCreateTransaction {
 	return AccountCreateTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
+		Transaction: transaction,
 		pb:          pb.GetCryptoCreateAccount(),
 	}
 }
@@ -189,17 +189,19 @@ func (transaction *AccountCreateTransaction) SignWith(
 ) *AccountCreateTransaction {
 	if !transaction.IsFrozen() {
 		transaction.Freeze()
+	} else {
+		transaction.transactions = make([]*proto.Transaction, len(transaction.signedTransactions))
 	}
 
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
 
-	for index := 0; index < len(transaction.transactions); index++ {
-		signature := signer(transaction.transactions[index].GetBodyBytes())
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
 			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
@@ -215,7 +217,7 @@ func (transaction *AccountCreateTransaction) Execute(
 		transaction.FreezeWith(client)
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -243,7 +245,7 @@ func (transaction *AccountCreateTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.id,
+		TransactionID: transaction.transactionIDs[0],
 		NodeID:        resp.transaction.NodeID,
 	}, nil
 }
@@ -315,7 +317,7 @@ func (transaction *AccountCreateTransaction) GetTransactionID() TransactionID {
 // SetTransactionID sets the TransactionID for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.id = transactionID
+
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }

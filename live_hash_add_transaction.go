@@ -20,9 +20,9 @@ func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	return &transaction
 }
 
-func liveHashAddTransactionFromProtobuf(transactions map[TransactionID]map[AccountID]*proto.Transaction, pb *proto.TransactionBody) LiveHashAddTransaction {
+func liveHashAddTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) LiveHashAddTransaction {
 	return LiveHashAddTransaction{
-		Transaction: transactionFromProtobuf(transactions, pb),
+		Transaction: transaction,
 		pb:          pb.GetCryptoAddLiveHash(),
 	}
 }
@@ -137,11 +137,11 @@ func (transaction *LiveHashAddTransaction) SignWith(
 		return transaction
 	}
 
-	for index := 0; index < len(transaction.transactions); index++ {
-		signature := signer(transaction.transactions[index].GetBodyBytes())
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
 
-		transaction.signatures[index].SigPair = append(
-			transaction.signatures[index].SigPair,
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
 			publicKey.toSignaturePairProtobuf(signature),
 		)
 	}
@@ -157,7 +157,7 @@ func (transaction *LiveHashAddTransaction) Execute(
 		transaction.FreezeWith(client)
 	}
 
-	transactionID := transaction.id
+	transactionID := transaction.transactionIDs[0]
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -185,7 +185,7 @@ func (transaction *LiveHashAddTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.id,
+		TransactionID: transaction.transactionIDs[0],
 		NodeID:        resp.transaction.NodeID,
 	}, nil
 }
@@ -257,7 +257,7 @@ func (transaction *LiveHashAddTransaction) GetTransactionID() TransactionID {
 // SetTransactionID sets the TransactionID for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
 	transaction.requireNotFrozen()
-	transaction.id = transactionID
+
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
