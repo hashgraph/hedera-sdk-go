@@ -9,6 +9,6 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20200520070018-fad002e585ce
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 	golang.org/x/text v0.3.2 // indirect
-	google.golang.org/grpc v1.28.0
+	google.golang.org/grpc v1.32.0
 	google.golang.org/protobuf v1.25.0
 )
