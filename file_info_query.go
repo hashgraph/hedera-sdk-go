@@ -72,11 +72,6 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
-func (query *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
-	query.nodeIDs = append(query.nodeIDs, accountID...)
-	return query
-}
-
 func fileInfoQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode)
 }
@@ -155,11 +150,16 @@ func (query *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
 	return query
 }
 
-func (query *FileInfoQuery) SetNodeAccountID(accountID []AccountID) *FileInfoQuery {
+func (query *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
 func (query *FileInfoQuery) GetNodeAccountId() []AccountID {
 	return query.Query.GetNodeAccountIDs()
+}
+
+func (query *FileInfoQuery) SetMaxRetry(count int) *FileInfoQuery {
+	query.Query.SetMaxRetry(count)
+	return query
 }

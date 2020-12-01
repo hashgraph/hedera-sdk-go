@@ -255,3 +255,8 @@ func (transaction *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountI
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *TokenGrantKycTransaction) SetMaxRetry(count int) *TokenGrantKycTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

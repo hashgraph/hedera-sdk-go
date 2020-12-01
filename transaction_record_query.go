@@ -116,6 +116,11 @@ func (query *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *T
 	return query
 }
 
+func (query *TransactionRecordQuery) SetMaxRetry(count int) *TransactionRecordQuery {
+	query.Query.SetMaxRetry(count)
+	return query
+}
+
 func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
 	if client == nil || client.operator == nil {
 		return TransactionRecord{}, errNoClientProvided

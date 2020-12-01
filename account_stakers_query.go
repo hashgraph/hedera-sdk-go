@@ -178,3 +178,8 @@ func (query *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 func (query *AccountStakersQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
+
+func (query *AccountStakersQuery) SetMaxRetry(count int) *AccountStakersQuery {
+	query.Query.SetMaxRetry(count)
+	return query
+}

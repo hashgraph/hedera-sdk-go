@@ -109,6 +109,11 @@ func (query *AccountInfoQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *Account
 	return query
 }
 
+func (query *AccountInfoQuery) SetMaxRetry(count int) *AccountInfoQuery {
+	query.Query.SetMaxRetry(count)
+	return query
+}
+
 func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	if client == nil || client.operator == nil {
 		return AccountInfo{}, errNoClientProvided

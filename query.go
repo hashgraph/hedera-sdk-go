@@ -15,6 +15,7 @@ type Query struct {
 	queryPayment                Hbar
 	nextPaymentTransactionIndex int
 	nextTransactionIndex        int
+	maxRetry                    int
 
 	paymentTransactions []*proto.Transaction
 
@@ -27,6 +28,7 @@ func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
 		pbHeader:             queryHeader,
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
+		maxRetry:             10,
 		paymentTransactions:  make([]*proto.Transaction, 0),
 		isPaymentRequired:    isPaymentRequired,
 		maxQueryPayment:      NewHbar(0),
@@ -64,6 +66,15 @@ func (query *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
 // SetQueryPayment sets the payment amount for this Query.
 func (query *Query) SetQueryPayment(paymentAmount Hbar) *Query {
 	query.queryPayment = paymentAmount
+	return query
+}
+
+func (query *Query) GetMaxRetryCount() int {
+	return query.maxRetry
+}
+
+func (query *Query) SetMaxRetry(count int) *Query {
+	query.maxRetry = count
 	return query
 }
 

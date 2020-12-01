@@ -257,3 +257,8 @@ func (transaction *TokenFreezeTransaction) SetNodeAccountIDs(nodeID []AccountID)
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *TokenFreezeTransaction) SetMaxRetry(count int) *TokenFreezeTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

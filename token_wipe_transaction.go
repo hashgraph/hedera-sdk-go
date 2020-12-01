@@ -277,3 +277,8 @@ func (transaction *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

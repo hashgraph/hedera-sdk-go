@@ -255,3 +255,8 @@ func (transaction *TokenRevokeKycTransaction) SetNodeAccountIDs(nodeID []Account
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *TokenRevokeKycTransaction) SetMaxRetry(count int) *TokenRevokeKycTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

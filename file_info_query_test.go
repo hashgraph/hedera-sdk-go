@@ -38,7 +38,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 
 	info, err := NewFileInfoQuery().
 		SetFileID(*fileID).
-		SetNodeAccountID(nodeIDs).
+		SetNodeAccountIDs(nodeIDs).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.NoError(t, err)

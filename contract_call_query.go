@@ -206,3 +206,8 @@ func (query *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *Contra
 func (query *ContractCallQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
+
+func (query *ContractCallQuery) SetMaxRetry(count int) *ContractCallQuery {
+	query.Query.SetMaxRetry(count)
+	return query
+}

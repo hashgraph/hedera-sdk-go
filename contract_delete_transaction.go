@@ -262,3 +262,8 @@ func (transaction *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []Account
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDeleteTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

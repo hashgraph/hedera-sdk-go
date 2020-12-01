@@ -325,3 +325,8 @@ func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeID []AccountID) 
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *FileAppendTransaction) SetMaxRetry(count int) *FileAppendTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

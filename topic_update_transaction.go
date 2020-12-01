@@ -338,3 +338,8 @@ func (transaction *TopicUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID)
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *TopicUpdateTransaction) SetMaxRetry(count int) *TopicUpdateTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

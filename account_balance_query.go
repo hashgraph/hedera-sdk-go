@@ -185,6 +185,7 @@ func (query *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 	return query
 }
 
-func (query *AccountBalanceQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
+func (query *AccountBalanceQuery) SetMaxRetry(count int) *AccountBalanceQuery {
+	query.Query.SetMaxRetry(count)
+	return query
 }

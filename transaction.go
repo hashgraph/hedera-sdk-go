@@ -16,6 +16,7 @@ type Transaction struct {
 
 	nextNodeIndex        int
 	nextTransactionIndex int
+	maxRetry             int
 
 	transactionIDs     []TransactionID
 	transactions       []*proto.Transaction
@@ -30,6 +31,7 @@ func newTransaction() Transaction {
 		},
 		nextNodeIndex:        0,
 		nextTransactionIndex: 0,
+		maxRetry:             10,
 		transactionIDs:       make([]TransactionID, 0),
 		transactions:         make([]*proto.Transaction, 0),
 		signedTransactions:   make([]*proto.SignedTransaction, 0),
@@ -47,6 +49,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 	tx := Transaction{
 		nextNodeIndex:        0,
 		nextTransactionIndex: 0,
+		maxRetry:             10,
 		transactionIDs:       make([]TransactionID, 0),
 		transactions:         list.TransactionList,
 		signedTransactions:   make([]*proto.SignedTransaction, 0),
@@ -488,5 +491,14 @@ func (transaction *Transaction) SetNodeAccountIDs(nodeID []AccountID) *Transacti
 		transaction.nodeIDs = make([]AccountID, 0)
 	}
 	transaction.nodeIDs = append(transaction.nodeIDs, nodeID...)
+	return transaction
+}
+
+func (transaction *Transaction) GetMaxRetry() int {
+	return transaction.maxRetry
+}
+
+func (transaction *Transaction) SetMaxRetry(count int) *Transaction {
+	transaction.maxRetry = count
 	return transaction
 }

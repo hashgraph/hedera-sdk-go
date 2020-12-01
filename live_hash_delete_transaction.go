@@ -242,3 +242,8 @@ func (transaction *LiveHashDeleteTransaction) SetNodeAccountIDs(nodeID []Account
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *LiveHashDeleteTransaction) SetMaxRetry(count int) *LiveHashDeleteTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

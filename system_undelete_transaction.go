@@ -250,3 +250,8 @@ func (transaction *SystemUndeleteTransaction) SetNodeAccountIDs(nodeID []Account
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *SystemUndeleteTransaction) SetMaxRetry(count int) *SystemUndeleteTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

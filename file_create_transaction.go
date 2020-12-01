@@ -301,3 +301,8 @@ func (transaction *FileCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) 
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *FileCreateTransaction) SetMaxRetry(count int) *FileCreateTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

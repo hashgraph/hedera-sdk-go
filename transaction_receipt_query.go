@@ -117,6 +117,11 @@ func (query *TransactionReceiptQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *
 	return query
 }
 
+func (query *TransactionReceiptQuery) SetMaxRetry(count int) *TransactionReceiptQuery {
+	query.Query.SetMaxRetry(count)
+	return query
+}
+
 func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
 	if client == nil || client.operator == nil {
 		return TransactionReceipt{}, errNoClientProvided

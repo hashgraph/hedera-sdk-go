@@ -182,19 +182,11 @@ func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDel
 	return transaction, transaction_freezeWith(&transaction.Transaction, client)
 }
 
-func (transaction *TopicDeleteTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
-}
-
 // SetMaxTransactionFee sets the max transaction fee for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetMaxTransactionFee(fee Hbar) *TopicDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
-}
-
-func (transaction *TopicDeleteTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this TopicDeleteTransaction.
@@ -204,19 +196,11 @@ func (transaction *TopicDeleteTransaction) SetTransactionMemo(memo string) *Topi
 	return transaction
 }
 
-func (transaction *TopicDeleteTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
-}
-
 // SetTransactionValidDuration sets the valid duration for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *TopicDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
-}
-
-func (transaction *TopicDeleteTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this TopicDeleteTransaction.
@@ -227,13 +211,14 @@ func (transaction *TopicDeleteTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *TopicDeleteTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	return transaction
+}
+
+func (transaction *TopicDeleteTransaction) SetMaxRetry(count int) *TopicDeleteTransaction {
+	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }

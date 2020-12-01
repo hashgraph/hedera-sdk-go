@@ -256,3 +256,8 @@ func (transaction *TokenMintTransaction) SetNodeAccountIDs(nodeID []AccountID) *
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *TokenMintTransaction) SetMaxRetry(count int) *TokenMintTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

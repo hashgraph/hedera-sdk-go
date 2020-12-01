@@ -267,3 +267,8 @@ func (transaction *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []Accoun
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
+
+func (transaction *TokenDissociateTransaction) SetMaxRetry(count int) *TokenDissociateTransaction {
+	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}

@@ -59,7 +59,14 @@ func execute(
 	mapResponseStatus func(request, response) Status,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
-	for attempt := int64(0); attempt < 10; attempt++ {
+	maxAttempts := 10
+	if request.query != nil {
+		maxAttempts = request.query.maxRetry
+	} else {
+		maxAttempts = request.transaction.maxRetry
+	}
+
+	for attempt := int64(0); attempt < int64(maxAttempts); attempt++ {
 		protoRequest := makeRequest(request)
 		nodeAccountID := getNodeAccountID(request)
 		node, ok := client.network.networkNodes[nodeAccountID]
@@ -104,7 +111,7 @@ func execute(
 
 		status := mapResponseStatus(request, resp)
 
-		if shouldRetry(status, resp) && attempt <= maxAttempts {
+		if shouldRetry(status, resp) && attempt <= int64(maxAttempts) {
 			delayForAttempt(attempt)
 			continue
 		}
