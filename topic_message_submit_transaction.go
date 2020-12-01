@@ -11,19 +11,17 @@ const chunkSize = 4096
 
 type TopicMessageSubmitTransaction struct {
 	Transaction
-	pb                  *proto.ConsensusSubmitMessageTransactionBody
-	maxChunks           uint64
-	message             []byte
-	chunkedTransactions []*singleTopicMessageSubmitTransaction
+	pb        *proto.ConsensusSubmitMessageTransactionBody
+	maxChunks uint64
+	message   []byte
 }
 
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	transaction := TopicMessageSubmitTransaction{
-		pb:                  &proto.ConsensusSubmitMessageTransactionBody{},
-		Transaction:         newTransaction(),
-		maxChunks:           10,
-		message:             make([]byte, 0),
-		chunkedTransactions: make([]*singleTopicMessageSubmitTransaction, 0),
+		pb:          &proto.ConsensusSubmitMessageTransactionBody{},
+		Transaction: newTransaction(),
+		maxChunks:   10,
+		message:     make([]byte, 0),
 	}
 
 	return &transaction
@@ -31,16 +29,10 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 
 func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
 	tx := TopicMessageSubmitTransaction{
-		Transaction:         transaction,
-		pb:                  pb.GetConsensusSubmitMessage(),
-		maxChunks:           10,
-		message:             make([]byte, 0),
-		chunkedTransactions: make([]*singleTopicMessageSubmitTransaction, 0),
-	}
-
-	for _, _ = range transaction.transactions {
-		singleTx := singleTopicMessageSubmitTransactionFromProtobuf(transaction, pb)
-		tx.chunkedTransactions = append(tx.chunkedTransactions, &singleTx)
+		Transaction: transaction,
+		pb:          pb.GetConsensusSubmitMessage(),
+		maxChunks:   10,
+		message:     make([]byte, 0),
 	}
 
 	return tx
@@ -63,7 +55,7 @@ func (transaction *TopicMessageSubmitTransaction) SetMessage(message []byte) *To
 }
 
 func (transaction *TopicMessageSubmitTransaction) GetMessage() []byte {
-	return transaction.pb.GetMessage()
+	return transaction.message
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetMaxChunks(maxChunks uint64) *TopicMessageSubmitTransaction {
@@ -82,7 +74,7 @@ func (transaction *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
 //
 
 func (transaction *TopicMessageSubmitTransaction) IsFrozen() bool {
-	return len(transaction.chunkedTransactions) > 0
+	return transaction.Transaction.isFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -103,9 +95,11 @@ func (transaction *TopicMessageSubmitTransaction) SignWithOperator(
 	}
 
 	if !transaction.IsFrozen() {
-		transaction.FreezeWith(client)
+		_, err := transaction.FreezeWith(client)
+		if err != nil {
+			return transaction, err
+		}
 	}
-
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
@@ -116,15 +110,22 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	signer TransactionSigner,
 ) *TopicMessageSubmitTransaction {
 	if !transaction.IsFrozen() {
-		transaction.Freeze()
+		_, _ = transaction.Freeze()
+	} else {
+		transaction.transactions = make([]*proto.Transaction, 0)
 	}
 
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
 
-	for _, tx := range transaction.chunkedTransactions {
-		tx.SignWith(publicKey, signer)
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
+
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
 	}
 
 	return transaction
@@ -133,13 +134,13 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 func (transaction *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if len(transaction.Transaction.GetNodeAccountIDs()) == 0 {
-		transaction.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
-	}
-
 	list, err := transaction.ExecuteAll(client)
 
-	return list[0], err
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+
+	return list[0], nil
 }
 
 // ExecuteAll executes the all the Transactions with the provided client
@@ -147,7 +148,10 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	client *Client,
 ) ([]TransactionResponse, error) {
 	if !transaction.IsFrozen() {
-		transaction.FreezeWith(client)
+		_, err := transaction.FreezeWith(client)
+		if err != nil {
+			return []TransactionResponse{}, err
+		}
 	}
 
 	transactionID := transaction.transactionIDs[0]
@@ -159,28 +163,32 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		)
 	}
 
-	list := make([]TransactionResponse, len(transaction.chunkedTransactions))
+	size := len(transaction.signedTransactions) / len(transaction.nodeIDs)
+	list := make([]TransactionResponse, size)
 
-	for i, tx := range transaction.chunkedTransactions {
-		resp, err := tx.Execute(client)
+	for i := 0; i < size; i++ {
+		resp, err := execute(
+			client,
+			request{
+				transaction: &transaction.Transaction,
+			},
+			transaction_shouldRetry,
+			transaction_makeRequest,
+			transaction_advanceRequest,
+			transaction_getNodeAccountID,
+			topicMessageSubmitTransaction_getMethod,
+			transaction_mapResponseStatus,
+			transaction_mapResponse,
+		)
+
 		if err != nil {
 			return []TransactionResponse{}, err
 		}
 
-		list[i] = resp
+		list[i] = resp.transaction
 	}
 
 	return list, nil
-}
-
-func (transaction *TopicMessageSubmitTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ConsensusSubmitMessage{
-		ConsensusSubmitMessage: transaction.pb,
-	}
-
-	return true
 }
 
 func (transaction *TopicMessageSubmitTransaction) Freeze() (*TopicMessageSubmitTransaction, error) {
@@ -188,23 +196,16 @@ func (transaction *TopicMessageSubmitTransaction) Freeze() (*TopicMessageSubmitT
 }
 
 func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*TopicMessageSubmitTransaction, error) {
+	if len(transaction.nodeIDs) == 0 {
+		if client == nil {
+			return transaction, errNoClientOrTransactionIDOrNodeId
+		} else {
+			transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
+		}
+	}
+
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
-	}
-	if transaction.pb.ChunkInfo != nil || len(transaction.message) < chunkSize {
-		tx, err := newSingleTopicMessageSubmitTransaction(
-			protobuf.Clone(transaction.Transaction.pbBody).(*proto.TransactionBody),
-			protobuf.Clone(transaction.pb).(*proto.ConsensusSubmitMessageTransactionBody),
-			transaction.message,
-			transaction.pb.ChunkInfo,
-		).FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-
-		transaction.chunkedTransactions = append(transaction.chunkedTransactions, tx)
-
 		return transaction, err
 	}
 
@@ -216,14 +217,12 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		}
 	}
 
-	var initialTransactionID TransactionID
-	if transaction.Transaction.pbBody.TransactionID != nil {
-		initialTransactionID = transaction.GetTransactionID()
-	} else {
-		initialTransactionID = TransactionIDGenerate(client.GetOperatorAccountID())
-	}
-
+	initialTransactionID := transaction.transactionIDs[0]
 	nextTransactionID := initialTransactionID
+
+	transaction.transactionIDs = []TransactionID{}
+	transaction.transactions = []*proto.Transaction{}
+	transaction.signedTransactions = []*proto.SignedTransaction{}
 
 	for i := 0; uint64(i) < chunks; i += 1 {
 		start := i * chunkSize
@@ -233,31 +232,44 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			end = len(transaction.message)
 		}
 
-		transaction.SetTransactionID(nextTransactionID)
+		transaction.transactionIDs = append(transaction.transactionIDs, nextTransactionID)
 
-		tx, err := newSingleTopicMessageSubmitTransaction(
-			protobuf.Clone(transaction.Transaction.pbBody).(*proto.TransactionBody),
-			protobuf.Clone(transaction.pb).(*proto.ConsensusSubmitMessageTransactionBody),
-			transaction.message[start:end],
-			&proto.ConsensusMessageChunkInfo{
-				InitialTransactionID: initialTransactionID.toProtobuf(),
-				Total:                int32(chunks),
-				Number:               int32(i) + 1,
-			},
-		).FreezeWith(client)
-		if err != nil {
-			return transaction, err
+		transaction.pb.Message = transaction.message[start:end]
+		transaction.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
+			InitialTransactionID: initialTransactionID.toProtobuf(),
+			Total:                int32(chunks),
+			Number:               int32(i) + 1,
 		}
 
-		transaction.chunkedTransactions = append(transaction.chunkedTransactions, tx)
+		transaction.pbBody.TransactionID = nextTransactionID.toProtobuf()
+		transaction.pbBody.Data = &proto.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: transaction.pb,
+		}
+
+		for _, nodeAccountID := range transaction.nodeIDs {
+			transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
+
+			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+			if err != nil {
+				return transaction, err
+			}
+
+			transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+				BodyBytes: bodyBytes,
+				SigMap:    &proto.SignatureMap{},
+			})
+		}
+
 		nextTransactionID.ValidStart = nextTransactionID.ValidStart.Add(1 * time.Nanosecond)
 	}
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
+	return transaction, nil
+}
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+func topicMessageSubmitTransaction_getMethod(request request, channel *channel) method {
+	return method{
+		transaction: channel.getTopic().SubmitMessage,
+	}
 }
 
 func (transaction *TopicMessageSubmitTransaction) GetMaxTransactionFee() Hbar {

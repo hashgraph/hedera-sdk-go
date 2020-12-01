@@ -2,29 +2,8 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
-
-func TestSerializeTokenTransferTransaction(t *testing.T) {
-	mockClient, err := newMockClient()
-	assert.NoError(t, err)
-
-	privateKey, err := PrivateKeyFromString(mockPrivateKey)
-	assert.NoError(t, err)
-
-	tx, err := NewTransferTransaction().
-		AddTokenTransfer(TokenID{Token: 3}, AccountID{Account: 3}, -10).
-		AddTokenTransfer(TokenID{Token: 3}, AccountID{Account: 4}, 10).
-		SetTransactionID(testTransactionID).
-		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		FreezeWith(mockClient)
-	assert.NoError(t, err)
-
-	tx.Sign(privateKey)
-
-	assert.Equal(t, `bodyBytes:"\n\016\n\010\010\334\311\007\020\333\237\t\022\002\030\003\022\002\030\003\030\200\302\327/\"\002\010xr\030\n\000\022\024\n\002\030\003\022\006\n\002\030\003\020\023\022\006\n\002\030\004\020\024"sigMap:<sigPair:<pubKeyPrefix:"\344\361\300\353L}\315\303\347\353\021p\263\010\212=\022\242\227\364\243\353\342\362\205\003\375g5F\355\216"ed25519:"V\2155\321\300_=\264\353\240\351M\203\272\364D\233,Z\270@dWeWA\365\360\340\262\331\2463\203\311\266\223H\356Bb=\244\373E\262\302\t\276\226\355\361H\217)\025\\\260s\035\350'\002">>transactionID:<transactionValidStart:<seconds:124124nanos:151515>accountID:<accountNum:3>>nodeAccountID:<accountNum:3>transactionFee:100000000transactionValidDuration:<seconds:120>cryptoTransfer:<transfers:<>tokenTransfers:<token:<tokenNum:3>transfers:<accountID:<accountNum:3>amount:-10>transfers:<accountID:<accountNum:4>amount:10>>>`, strings.ReplaceAll(strings.ReplaceAll(tx.String(), " ", ""), "\n", ""))
-}
 
 func TestTokenTransferTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)

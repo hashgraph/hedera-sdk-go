@@ -80,9 +80,11 @@ func (transaction *LiveHashDeleteTransaction) SignWithOperator(
 	}
 
 	if !transaction.IsFrozen() {
-		transaction.FreezeWith(client)
+		_, err := transaction.FreezeWith(client)
+		if err != nil {
+			return transaction, err
+		}
 	}
-
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
@@ -93,7 +95,9 @@ func (transaction *LiveHashDeleteTransaction) SignWith(
 	signer TransactionSigner,
 ) *LiveHashDeleteTransaction {
 	if !transaction.IsFrozen() {
-		transaction.Freeze()
+		_, _ = transaction.Freeze()
+	} else {
+		transaction.transactions = make([]*proto.Transaction, 0)
 	}
 
 	if transaction.keyAlreadySigned(publicKey) {
@@ -117,7 +121,10 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
 	if !transaction.IsFrozen() {
-		transaction.FreezeWith(client)
+		_, err := transaction.FreezeWith(client)
+		if err != nil {
+			return TransactionResponse{}, err
+		}
 	}
 
 	transactionID := transaction.transactionIDs[0]

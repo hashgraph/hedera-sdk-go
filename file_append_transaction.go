@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
 )
@@ -10,7 +11,9 @@ import (
 // to create the entire file.
 type FileAppendTransaction struct {
 	Transaction
-	pb *proto.FileAppendTransactionBody
+	pb        *proto.FileAppendTransactionBody
+	maxChunks uint64
+	contents  []byte
 }
 
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
@@ -21,6 +24,8 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	transaction := FileAppendTransaction{
 		pb:          pb,
 		Transaction: newTransaction(),
+		maxChunks:   10,
+		contents:    make([]byte, 0),
 	}
 
 	return &transaction
@@ -30,6 +35,8 @@ func fileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	return FileAppendTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileAppend(),
+		maxChunks:   10,
+		contents:    make([]byte, 0),
 	}
 }
 
@@ -47,12 +54,12 @@ func (transaction *FileAppendTransaction) GetFileID() FileID {
 // SetContents sets the bytes to append to the contents of the file.
 func (transaction *FileAppendTransaction) SetContents(contents []byte) *FileAppendTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Contents = contents
+	transaction.contents = contents
 	return transaction
 }
 
 func (transaction *FileAppendTransaction) GetContents() []byte {
-	return transaction.pb.GetContents()
+	return transaction.contents
 }
 
 //
@@ -88,9 +95,11 @@ func (transaction *FileAppendTransaction) SignWithOperator(
 	}
 
 	if !transaction.IsFrozen() {
-		transaction.FreezeWith(client)
+		_, err := transaction.FreezeWith(client)
+		if err != nil {
+			return transaction, err
+		}
 	}
-
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
@@ -101,7 +110,9 @@ func (transaction *FileAppendTransaction) SignWith(
 	signer TransactionSigner,
 ) *FileAppendTransaction {
 	if !transaction.IsFrozen() {
-		transaction.Freeze()
+		_, _ = transaction.Freeze()
+	} else {
+		transaction.transactions = make([]*proto.Transaction, 0)
 	}
 
 	if transaction.keyAlreadySigned(publicKey) {
@@ -124,8 +135,24 @@ func (transaction *FileAppendTransaction) SignWith(
 func (transaction *FileAppendTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	list, err := transaction.ExecuteAll(client)
+
+	if err != nil {
+		return TransactionResponse{}, err
+	}
+
+	return list[0], nil
+}
+
+// ExecuteAll executes the all the Transactions with the provided client
+func (transaction *FileAppendTransaction) ExecuteAll(
+	client *Client,
+) ([]TransactionResponse, error) {
 	if !transaction.IsFrozen() {
-		transaction.FreezeWith(client)
+		_, err := transaction.FreezeWith(client)
+		if err != nil {
+			return []TransactionResponse{}, err
+		}
 	}
 
 	transactionID := transaction.transactionIDs[0]
@@ -137,38 +164,40 @@ func (transaction *FileAppendTransaction) Execute(
 		)
 	}
 
-	resp, err := execute(
-		client,
-		request{
-			transaction: &transaction.Transaction,
-		},
-		transaction_shouldRetry,
-		transaction_makeRequest,
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		fileAppendTransaction_getMethod,
-		transaction_mapResponseStatus,
-		transaction_mapResponse,
-	)
+	size := len(transaction.signedTransactions) / len(transaction.nodeIDs)
+	list := make([]TransactionResponse, size)
 
-	if err != nil {
-		return TransactionResponse{}, err
+	for i := 0; i < size; i++ {
+		resp, err := execute(
+			client,
+			request{
+				transaction: &transaction.Transaction,
+			},
+			transaction_shouldRetry,
+			transaction_makeRequest,
+			transaction_advanceRequest,
+			transaction_getNodeAccountID,
+			fileAppendTransaction_getMethod,
+			transaction_mapResponseStatus,
+			transaction_mapResponse,
+		)
+
+		if err != nil {
+			return list, err
+		}
+
+		list[i] = resp.transaction
+
+		_, err = NewTransactionReceiptQuery().
+			SetNodeAccountIDs([]AccountID{resp.transaction.NodeID}).
+			SetTransactionID(resp.transaction.TransactionID).
+			Execute(client)
+		if err != nil {
+			return list, err
+		}
 	}
 
-	return TransactionResponse{
-		TransactionID: transaction.transactionIDs[0],
-		NodeID:        resp.transaction.NodeID,
-	}, nil
-}
-
-func (transaction *FileAppendTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_FileAppend{
-		FileAppend: transaction.pb,
-	}
-
-	return true
+	return list, nil
 }
 
 func (transaction *FileAppendTransaction) Freeze() (*FileAppendTransaction, error) {
@@ -176,16 +205,69 @@ func (transaction *FileAppendTransaction) Freeze() (*FileAppendTransaction, erro
 }
 
 func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppendTransaction, error) {
+	if len(transaction.nodeIDs) == 0 {
+		if client == nil {
+			return transaction, errNoClientOrTransactionIDOrNodeId
+		} else {
+			transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
+		}
+	}
+
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
+	chunks := uint64((len(transaction.contents) + (chunkSize - 1)) / chunkSize)
+	if chunks > transaction.maxChunks {
+		return transaction, ErrMaxChunksExceeded{
+			Chunks:    chunks,
+			MaxChunks: transaction.maxChunks,
+		}
 	}
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	initialTransactionID := transaction.transactionIDs[0]
+	nextTransactionID := initialTransactionID
+
+	transaction.transactionIDs = []TransactionID{}
+	transaction.transactions = []*proto.Transaction{}
+	transaction.signedTransactions = []*proto.SignedTransaction{}
+
+	for i := 0; uint64(i) < chunks; i += 1 {
+		start := i * chunkSize
+		end := start + chunkSize
+
+		if end > len(transaction.contents) {
+			end = len(transaction.contents)
+		}
+
+		transaction.transactionIDs = append(transaction.transactionIDs, nextTransactionID)
+
+		transaction.pb.Contents = transaction.contents[start:end]
+
+		transaction.pbBody.TransactionID = nextTransactionID.toProtobuf()
+		transaction.pbBody.Data = &proto.TransactionBody_FileAppend{
+			FileAppend: transaction.pb,
+		}
+
+		for _, nodeAccountID := range transaction.nodeIDs {
+			transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
+
+			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+			if err != nil {
+				return transaction, err
+			}
+
+			transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+				BodyBytes: bodyBytes,
+				SigMap:    &proto.SignatureMap{},
+			})
+		}
+
+		nextTransactionID.ValidStart = nextTransactionID.ValidStart.Add(1 * time.Nanosecond)
+	}
+
+	return transaction, nil
 }
 
 func (transaction *FileAppendTransaction) GetMaxTransactionFee() Hbar {

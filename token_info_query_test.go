@@ -43,6 +43,7 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 		SetQueryPayment(NewHbar(2)).
 		SetTokenID(tokenID).
 		Execute(client)
+	assert.NoError(t, err)
 
 	assert.Equal(t, info.TokenID, tokenID)
 	assert.Equal(t, info.Name, "ffff")

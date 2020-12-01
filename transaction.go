@@ -236,8 +236,13 @@ func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
 func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
 	transactionHash := make(map[AccountID][]byte)
 
-	if len(transaction.transactions) == 0 {
+	if !transaction.isFrozen() {
 		return transactionHash, errTransactionIsNotFrozen
+	}
+
+	err := transaction.buildTransactions(len(transaction.signedTransactions))
+	if err != nil {
+		return transactionHash, err
 	}
 
 	for i, node := range transaction.nodeIDs {
@@ -273,7 +278,7 @@ func (transaction *Transaction) initTransactionID(client *Client) error {
 }
 
 func (transaction *Transaction) isFrozen() bool {
-	return len(transaction.transactions) > 0
+	return len(transaction.signedTransactions) > 0
 }
 
 func (transaction *Transaction) requireNotFrozen() {
@@ -283,12 +288,8 @@ func (transaction *Transaction) requireNotFrozen() {
 }
 
 func (transaction *Transaction) requireOneNodeAccountID() {
-	if len(transaction.nodeIDs) > 1 {
+	if len(transaction.nodeIDs) != 1 {
 		panic("Transaction has more than one node ID set")
-	}
-
-	if transaction.isFrozen() {
-		panic("Transaction did not have an exact node ID set")
 	}
 }
 
@@ -297,10 +298,10 @@ func transaction_freezeWith(
 	client *Client,
 ) error {
 	if len(transaction.nodeIDs) == 0 {
-		if client == nil {
-			return errNoClientOrTransactionIDOrNodeId
-		} else {
+		if client != nil {
 			transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
+		} else {
+			return errNoClientOrTransactionIDOrNodeId
 		}
 	}
 
@@ -315,7 +316,7 @@ func transaction_freezeWith(
 
 		transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
 			BodyBytes: bodyBytes,
-			SigMap:    &proto.SignatureMap{
+			SigMap: &proto.SignatureMap{
 				SigPair: make([]*proto.SignaturePair, 0),
 			},
 		})
@@ -343,7 +344,7 @@ func transaction_shouldRetry(status Status, _ response) bool {
 }
 
 func transaction_makeRequest(request request) protoRequest {
-	index := len(request.transaction.nodeIDs) * request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
+	index := len(request.transaction.nodeIDs)*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
 	_ = request.transaction.buildTransactions(index + 1)
 
 	return protoRequest{
@@ -352,7 +353,7 @@ func transaction_makeRequest(request request) protoRequest {
 }
 
 func transaction_advanceRequest(request request) {
-	length := len(request.transaction.transactions)
+	length := len(request.transaction.nodeIDs)
 	currentIndex := request.transaction.nextNodeIndex
 	request.transaction.nextNodeIndex = (currentIndex + 1) % length
 }
@@ -392,8 +393,13 @@ func (transaction *Transaction) String() string {
 }
 
 func (transaction *Transaction) ToBytes() ([]byte, error) {
-	if len(transaction.transactions) == 0 {
+	if !transaction.isFrozen() {
 		return make([]byte, 0), errTransactionIsNotFrozen
+	}
+
+	err := transaction.buildTransactions(len(transaction.signedTransactions))
+	if err != nil {
+		return make([]byte, 0), err
 	}
 
 	return protobuf.Marshal(&proto.TransactionList{

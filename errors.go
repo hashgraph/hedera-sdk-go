@@ -20,9 +20,10 @@ var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided o
 var errClientOperatorSigning = errors.New("`client` must have an `operator` to sign with the operator")
 var errNoClientProvided = errors.New("`client` must be provided and have an operator")
 var errTransactionIsNotFrozen = errors.New("transaction is not frozen")
-var errFailedToDeserializeBytes = errors.New("Failed to deserialize bytes")
-var errNoTransactionInBytes = errors.New("No transaction was found in bytes")
+var errFailedToDeserializeBytes = errors.New("failed to deserialize bytes")
+var errNoTransactionInBytes = errors.New("no transaction was found in bytes")
 var errTransactionRequiresSingleNodeAccountID = errors.New("`PrivateKey.SignTransaction()` requires `Transaction` to have a single node `AccountID` set")
+var errMaxRetryCountHit = errors.New("max retry count has been hit")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID

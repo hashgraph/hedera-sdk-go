@@ -10,6 +10,9 @@ func TestTransactionSerializationDeserialization(t *testing.T) {
 	transaction, err := newMockTransaction()
 	assert.NoError(t, err)
 
+	_, err = transaction.Freeze()
+	assert.NoError(t, err)
+
 	_, err = transaction.GetSignatures()
 	assert.NoError(t, err)
 

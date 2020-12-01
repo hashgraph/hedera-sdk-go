@@ -72,6 +72,11 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
+func (query *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
+	query.nodeIDs = append(query.nodeIDs, accountID...)
+	return query
+}
+
 func fileInfoQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode)
 }

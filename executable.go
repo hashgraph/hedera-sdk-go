@@ -43,10 +43,6 @@ type QueryHeader struct {
 	header *proto.QueryHeader
 }
 
-type protoResponseHeader struct {
-	responseHeader proto.ResponseHeader
-}
-
 type request struct {
 	query       *Query
 	transaction *Transaction
@@ -63,7 +59,7 @@ func execute(
 	mapResponseStatus func(request, response) Status,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
-	for attempt := int64(0); ; /* loop forever */ attempt++ {
+	for attempt := int64(0); attempt < 10; attempt++ {
 		protoRequest := makeRequest(request)
 		nodeAccountID := getNodeAccountID(request)
 		node, ok := client.network.networkNodes[nodeAccountID]
@@ -123,6 +119,8 @@ func execute(
 
 		return mapResponse(request, resp, node.accountID, protoRequest)
 	}
+
+	return intermediateResponse{}, errMaxRetryCountHit
 }
 
 func delayForAttempt(attempt int64) {

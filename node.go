@@ -32,7 +32,7 @@ func newNode(accountID AccountID, address string) node {
 func (node node) isHealthy() bool {
 	if node.lastUsed != nil {
 		lastUsed := *node.lastUsed
-		return lastUsed+node.delay < time.Now().UTC().UnixNano()
+		return lastUsed+node.delay*1000000 < time.Now().UTC().UnixNano()
 	}
 
 	return true
@@ -49,14 +49,10 @@ func (node node) decreaseDelay() {
 }
 
 func (node node) wait() {
-	var delay int64
 	if node.lastUsed != nil {
-		delay = *node.lastUsed + node.delay - time.Now().UTC().UnixNano()
-	} else {
-		delay = 0 - time.Now().UTC().UnixNano()
+		delay := *node.lastUsed + node.delay*1000000 - time.Now().UTC().UnixNano()
+		time.Sleep(time.Duration(delay) * time.Nanosecond)
 	}
-
-	time.Sleep(time.Duration(delay) * time.Nanosecond)
 }
 
 func (node node) getChannel() (*channel, error) {

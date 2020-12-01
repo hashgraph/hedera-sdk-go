@@ -20,8 +20,8 @@ type TokenInfo struct {
 	DefaultFreezeStatus *bool
 	DefaultKycStatus    *bool
 	Deleted             bool
-	AutoRenewPeriod     time.Duration
-	ExpirationTime      time.Time
+	AutoRenewPeriod     *time.Duration
+	ExpirationTime      *time.Time
 }
 
 func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
@@ -123,6 +123,16 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		supplyKey = PublicKey{keyData: pb.SupplyKey.GetEd25519()}
 	}
 
+	var autoRenewPeriod time.Duration
+	if pb.AutoRenewPeriod != nil {
+		autoRenewPeriod = time.Duration(pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
+	}
+
+	var expirationTime time.Time
+	if pb.Expiry != nil {
+		expirationTime = time.Unix(pb.GetExpiry().Seconds, int64(pb.GetExpiry().Nanos))
+	}
+
 	return TokenInfo{
 		TokenID:             tokenIDFromProtobuf(pb.TokenId),
 		Name:                pb.Name,
@@ -138,35 +148,45 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		DefaultFreezeStatus: freezeStatusFromProtobuf(pb.DefaultFreezeStatus),
 		DefaultKycStatus:    kycStatusFromProtobuf(pb.DefaultKycStatus),
 		Deleted:             pb.Deleted,
-		AutoRenewPeriod:     time.Duration(pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds()),
-		ExpirationTime:      time.Unix(pb.GetExpiry().Seconds, int64(pb.GetExpiry().Nanos)),
+		AutoRenewPeriod:     &autoRenewPeriod,
+		ExpirationTime:      &expirationTime,
 	}
 }
 
 func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
-	var adminKey Key
+	var adminKey *proto.Key
 	if tokenInfo.AdminKey != nil {
-		adminKey = *tokenInfo.AdminKey
+		adminKey = (*tokenInfo.AdminKey).toProtoKey()
 	}
 
-	var kycKey Key
+	var kycKey *proto.Key
 	if tokenInfo.KycKey != nil {
-		kycKey = *tokenInfo.KycKey
+		kycKey = (*tokenInfo.KycKey).toProtoKey()
 	}
 
-	var freezeKey Key
+	var freezeKey *proto.Key
 	if tokenInfo.FreezeKey != nil {
-		freezeKey = *tokenInfo.FreezeKey
+		freezeKey = (*tokenInfo.FreezeKey).toProtoKey()
 	}
 
-	var wipeKey Key
+	var wipeKey *proto.Key
 	if tokenInfo.WipeKey != nil {
-		wipeKey = *tokenInfo.WipeKey
+		wipeKey = (*tokenInfo.WipeKey).toProtoKey()
 	}
 
-	var supplyKey Key
+	var supplyKey *proto.Key
 	if tokenInfo.SupplyKey != nil {
-		supplyKey = *tokenInfo.SupplyKey
+		supplyKey = (*tokenInfo.SupplyKey).toProtoKey()
+	}
+
+	var autoRenewPeriod *proto.Duration
+	if tokenInfo.AutoRenewPeriod != nil {
+		autoRenewPeriod = durationToProtobuf(*tokenInfo.AutoRenewPeriod)
+	}
+
+	var expirationTime *proto.Timestamp
+	if tokenInfo.ExpirationTime != nil {
+		expirationTime = timeToProtobuf(*tokenInfo.ExpirationTime)
 	}
 
 	return &proto.TokenInfo{
@@ -176,15 +196,15 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		Decimals:            tokenInfo.Decimals,
 		TotalSupply:         tokenInfo.TotalSupply,
 		Treasury:            tokenInfo.Treasury.toProtobuf(),
-		AdminKey:            adminKey.toProtoKey(),
-		KycKey:              kycKey.toProtoKey(),
-		FreezeKey:           freezeKey.toProtoKey(),
-		WipeKey:             wipeKey.toProtoKey(),
-		SupplyKey:           supplyKey.toProtoKey(),
+		AdminKey:            adminKey,
+		KycKey:              kycKey,
+		FreezeKey:           freezeKey,
+		WipeKey:             wipeKey,
+		SupplyKey:           supplyKey,
 		DefaultFreezeStatus: *tokenInfo.FreezeStatusToProtobuf(),
 		DefaultKycStatus:    *tokenInfo.KycStatusToProtobuf(),
 		Deleted:             tokenInfo.Deleted,
-		AutoRenewPeriod:     durationToProtobuf(tokenInfo.AutoRenewPeriod),
-		Expiry:              timeToProtobuf(tokenInfo.ExpirationTime),
+		AutoRenewPeriod:     autoRenewPeriod,
+		Expiry:              expirationTime,
 	}
 }
