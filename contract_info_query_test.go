@@ -53,8 +53,8 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 	receipt, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
+	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
-	assert.NotNil(t, contractID)
 
 	info, err := NewContractInfoQuery().
 		SetContractID(contractID).

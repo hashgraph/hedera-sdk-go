@@ -43,8 +43,10 @@ func TestContractBytecodeQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	contractReceipt, err := contractResponse.TransactionID.GetReceipt(client)
+	contractReceipt, err := contractResponse.GetReceipt(client)
 	assert.NoError(t, err)
+
+	assert.NotNil(t, contractReceipt.ContractID)
 
 	assert.True(t, contractReceipt.ContractID.Contract > 0)
 

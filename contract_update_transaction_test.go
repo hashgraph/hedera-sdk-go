@@ -39,22 +39,25 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 	receipt, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
+	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
-	assert.NotNil(t, contractID)
 
 	info, err := NewContractInfoQuery().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
 		Execute(client)
+	assert.NoError(t, err)
 
+	assert.NotNil(t, info)
 	assert.NotNil(t, info, info.Storage)
+	assert.NotNil(t, info.ContractID)
 	assert.Equal(t, info.ContractID, contractID)
 	assert.NotNil(t, info.AccountID)
 	assert.Equal(t, info.AccountID.String(), contractID.String())
 	assert.NotNil(t, info.AdminKey)
 	assert.Equal(t, info.AdminKey.String(), client.GetOperatorPublicKey().String())
-	//assert.Equal(t, info.Storage, uint64(926))
+	assert.Equal(t, info.Storage, uint64(523))
 	assert.Equal(t, info.ContractMemo, "[e2e::ContractCreateTransaction]")
 
 	resp, err = NewContractUpdateTransaction().
@@ -71,14 +74,16 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(5)).
 		Execute(client)
+	assert.NoError(t, err)
 
 	assert.NotNil(t, info)
+	assert.NotNil(t, info.ContractID)
 	assert.Equal(t, info.ContractID, contractID)
 	assert.NotNil(t, info.AccountID)
 	assert.Equal(t, info.AccountID.String(), contractID.String())
 	assert.NotNil(t, info.AdminKey)
 	assert.Equal(t, info.AdminKey.String(), client.GetOperatorPublicKey().String())
-	//assert.Equal(t, info.Storage, uint64(926))
+	assert.Equal(t, info.Storage, uint64(523))
 	assert.Equal(t, info.ContractMemo, "[e2e::ContractUpdateTransaction]")
 
 	resp, err = NewContractDeleteTransaction().

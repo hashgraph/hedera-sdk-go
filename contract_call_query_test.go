@@ -48,6 +48,8 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 
 	assert.True(t, contractReceipt.ContractID.Contract > 0)
 
+	assert.NotNil(t, contractReceipt.ContractID)
+
 	contractID := *contractReceipt.ContractID
 
 	result, err := NewContractCallQuery().
