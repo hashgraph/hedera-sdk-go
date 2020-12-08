@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -120,14 +121,16 @@ func (transaction *AccountUpdateTransaction) SignWithOperator(
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
-	if client.operator == nil {
-		return nil, errClientOperatorSigning
+	if client == nil {
+		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+	} else if client.operator == nil {
+		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, err
+			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -165,10 +168,14 @@ func (transaction *AccountUpdateTransaction) SignWith(
 func (transaction *AccountUpdateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return TransactionResponse{}, errors.Wrap(errNoClientProvided, "for Execution")
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return TransactionResponse{}, err
+			return TransactionResponse{}, errors.Wrap(err, "FreezeWith in execute")
 		}
 	}
 
@@ -196,7 +203,7 @@ func (transaction *AccountUpdateTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{}, errors.Wrap(err, "Execution error")
 	}
 
 	return TransactionResponse{
@@ -222,7 +229,7 @@ func (transaction *AccountUpdateTransaction) Freeze() (*AccountUpdateTransaction
 func (transaction *AccountUpdateTransaction) FreezeWith(client *Client) (*AccountUpdateTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
+		return transaction, errors.Wrap(err, "initTransactionID in AccountUpdateTransaction.FreezeWith")
 	}
 
 	if !transaction.onFreeze(transaction.pbBody) {

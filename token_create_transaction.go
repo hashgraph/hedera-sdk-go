@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/pkg/errors"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -261,14 +262,16 @@ func (transaction *TokenCreateTransaction) SignWithOperator(
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
-	if client.operator == nil {
-		return nil, errClientOperatorSigning
+	if client == nil {
+		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+	} else if client.operator == nil {
+		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, err
+			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -309,7 +312,7 @@ func (transaction *TokenCreateTransaction) Execute(
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return TransactionResponse{}, err
+			return TransactionResponse{}, errors.Wrap(err, "FreezeWith in Execute")
 		}
 	}
 
@@ -337,7 +340,7 @@ func (transaction *TokenCreateTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{}, errors.Wrap(err, "execution error")
 	}
 
 	return TransactionResponse{
@@ -363,7 +366,7 @@ func (transaction *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, er
 func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
+		return transaction, errors.Wrap(err, "initTransactionID in TokenCreateTransaction.FreezeWith")
 	}
 
 	if !transaction.onFreeze(transaction.pbBody) {

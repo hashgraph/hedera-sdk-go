@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -116,14 +117,16 @@ func (transaction *ContractExecuteTransaction) SignWithOperator(
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
-	if client.operator == nil {
-		return nil, errClientOperatorSigning
+	if client == nil {
+		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+	} else if client.operator == nil {
+		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, err
+			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -161,10 +164,14 @@ func (transaction *ContractExecuteTransaction) SignWith(
 func (transaction *ContractExecuteTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return TransactionResponse{}, errors.Wrap(errNoClientProvided, "for Execution")
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return TransactionResponse{}, err
+			return TransactionResponse{}, errors.Wrap(err, "FreezeWith in Execute")
 		}
 	}
 
@@ -192,7 +199,7 @@ func (transaction *ContractExecuteTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{}, errors.Wrap(err, "execution error")
 	}
 
 	return TransactionResponse{
@@ -218,7 +225,7 @@ func (transaction *ContractExecuteTransaction) Freeze() (*ContractExecuteTransac
 func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*ContractExecuteTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
+		return transaction, errors.Wrap(err, "initTransactionID in ContractExecuteTransaction.FreezeWith")
 	}
 
 	if !transaction.onFreeze(transaction.pbBody) {

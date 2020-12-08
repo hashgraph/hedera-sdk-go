@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 )
 
 type TopicInfoQuery struct {
@@ -37,12 +38,12 @@ func (query *TopicInfoQuery) GetTopicID() TopicID {
 
 func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
+		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error making payment transaction")
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -64,7 +65,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error getting cost")
 	}
 
 	cost := int64(resp.query.GetConsensusGetTopicInfo().Header.Cost)
@@ -88,7 +89,7 @@ func topicInfoQuery_getMethod(_ request, channel *channel) method {
 // Execute executes the TopicInfoQuery using the provided client
 func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	if client == nil || client.operator == nil {
-		return TopicInfo{}, errNoClientProvided
+		return TopicInfo{}, errors.Wrap(errNoClientProvided, "for execution")
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -106,7 +107,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return TopicInfo{}, err
+			return TopicInfo{}, errors.Wrap(err, "error getting cost during execution")
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -118,7 +119,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return TopicInfo{}, err
+		return TopicInfo{}, errors.Wrap(err, "error generating payments")
 	}
 
 	resp, err := execute(
@@ -136,7 +137,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	)
 
 	if err != nil {
-		return TopicInfo{}, err
+		return TopicInfo{}, errors.Wrap(err, "execution error")
 	}
 
 	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo), nil

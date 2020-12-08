@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -24,7 +25,7 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 
 	conn, err := grpc.Dial(node.address, grpc.WithInsecure())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "error connecting to %s", node.address)
 	}
 
 	channel := mirror.NewConsensusServiceClient(conn)

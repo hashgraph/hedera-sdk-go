@@ -3,6 +3,7 @@ package hedera
 import (
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -90,14 +91,16 @@ func (transaction *FileAppendTransaction) SignWithOperator(
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
-	if client.operator == nil {
-		return nil, errClientOperatorSigning
+	if client == nil {
+		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+	} else if client.operator == nil {
+		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, err
+			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -148,10 +151,14 @@ func (transaction *FileAppendTransaction) Execute(
 func (transaction *FileAppendTransaction) ExecuteAll(
 	client *Client,
 ) ([]TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return []TransactionResponse{}, errors.Wrap(errNoClientProvided, "for Execution")
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return []TransactionResponse{}, err
+			return []TransactionResponse{}, errors.Wrap(err, "FreezeWith in Execute")
 		}
 	}
 
@@ -193,7 +200,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 			SetTransactionID(resp.transaction.TransactionID).
 			Execute(client)
 		if err != nil {
-			return list, err
+			return list, errors.Wrap(err, "NewTransactionReceiptQuery error in Execute")
 		}
 	}
 
@@ -207,7 +214,7 @@ func (transaction *FileAppendTransaction) Freeze() (*FileAppendTransaction, erro
 func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppendTransaction, error) {
 	if len(transaction.nodeIDs) == 0 {
 		if client == nil {
-			return transaction, errNoClientOrTransactionIDOrNodeId
+			return transaction, errors.Wrap(errNoClientOrTransactionIDOrNodeId, "FileAppendTransaction.FreezeWith")
 		} else {
 			transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
 		}
@@ -215,7 +222,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
+		return transaction, errors.Wrap(err, "initTransactionID in FileAppendTransaction.FreezeWith")
 	}
 
 	chunks := uint64((len(transaction.contents) + (chunkSize - 1)) / chunkSize)
@@ -255,7 +262,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 
 			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
 			if err != nil {
-				return transaction, err
+				return transaction, errors.Wrap(err, "marshal error in FileAppendTransaction.FreezeWith")
 			}
 
 			transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{

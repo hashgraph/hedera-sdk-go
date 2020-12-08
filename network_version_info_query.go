@@ -1,6 +1,9 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
+)
 
 type NetworkVersionInfoQuery struct {
 	Query
@@ -23,12 +26,12 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 
 func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
+		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error making payment transaction")
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -50,7 +53,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error getting cost")
 	}
 
 	cost := int64(resp.query.GetNetworkGetVersionInfo().Header.Cost)
@@ -73,7 +76,7 @@ func networkVersionInfoQuery_getMethod(_ request, channel *channel) method {
 
 func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
 	if client == nil || client.operator == nil {
-		return NetworkVersionInfo{}, errNoClientProvided
+		return NetworkVersionInfo{}, errors.Wrap(errNoClientProvided, "for execution")
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -91,7 +94,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return NetworkVersionInfo{}, err
+			return NetworkVersionInfo{}, errors.Wrap(err, "error getting cost during execution")
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -103,7 +106,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return NetworkVersionInfo{}, err
+		return NetworkVersionInfo{}, errors.Wrap(err, "error generating payments")
 	}
 
 	resp, err := execute(
@@ -121,7 +124,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	)
 
 	if err != nil {
-		return NetworkVersionInfo{}, err
+		return NetworkVersionInfo{}, errors.Wrap(err, "execution error")
 	}
 
 	return networkVersionInfoFromProtobuf(resp.query.GetNetworkGetVersionInfo()), err

@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 )
 
 // ContractInfoQuery retrieves information about a smart contract instance. This includes the account that it uses, the
@@ -44,7 +45,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error making payment transaction")
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -66,7 +67,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error getting cost")
 	}
 
 	cost := int64(resp.query.GetContractGetInfo().Header.Cost)
@@ -106,7 +107,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		cost = client.maxQueryPayment
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return ContractInfo{}, err
+			return ContractInfo{}, errors.Wrap(err, "error getting cost during execution")
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -118,7 +119,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return ContractInfo{}, err
+		return ContractInfo{}, errors.Wrap(err, "error generating payments")
 	}
 
 	resp, err := execute(
@@ -136,7 +137,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	)
 
 	if err != nil {
-		return ContractInfo{}, err
+		return ContractInfo{}, errors.Wrap(err, "execution error")
 	}
 
 	return contractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)

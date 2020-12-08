@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
+	"github.com/pkg/errors"
 
 	"encoding/binary"
 	"encoding/hex"
@@ -37,7 +38,7 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 		threshold := int(key.ThresholdKey.GetThreshold())
 		keys, err := keyListFromProtobuf(key.ThresholdKey.GetKeys())
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "error converting keylist for your threshold key")
 		}
 		keys.threshold = threshold
 
@@ -46,7 +47,7 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 	case *proto.Key_KeyList:
 		keys, err := keyListFromProtobuf(key.KeyList)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "detected as keylist")
 		}
 
 		return &keys, nil
@@ -71,7 +72,7 @@ type PublicKey struct {
 func GeneratePrivateKey() (PrivateKey, error) {
 	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error generating ed25519 key from rand")
 	}
 
 	return PrivateKey{
@@ -104,7 +105,7 @@ func PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (PrivateKey, e
 
 	_, err := h.Write(seed)
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error sha512 hashing mnemonic seed")
 	}
 
 	digest := h.Sum(nil)
@@ -120,7 +121,7 @@ func PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (PrivateKey, e
 	privateKey, err := PrivateKeyFromBytes(keyBytes)
 
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error converting the mnemonic hash into private key")
 	}
 
 	privateKey.chainCode = chainCode
@@ -137,7 +138,7 @@ func PrivateKeyFromString(s string) (PrivateKey, error) {
 
 	bytes, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix))
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error decoding the key string")
 	}
 
 	return PrivateKeyFromBytes(bytes)
@@ -152,7 +153,7 @@ func PrivateKeyFromKeystore(ks []byte, passphrase string) (PrivateKey, error) {
 func PrivateKeyReadKeystore(source io.Reader, passphrase string) (PrivateKey, error) {
 	keystoreBytes, err := ioutil.ReadAll(source)
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error reading from source")
 	}
 
 	return PrivateKeyFromKeystore(keystoreBytes, passphrase)
@@ -189,7 +190,7 @@ func PrivateKeyFromPem(bytes []byte, passphrase string) (PrivateKey, error) {
 
 	keyI, err := pkcs8.ParsePKCS8PrivateKey(pk.Bytes, []byte(passphrase))
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error parsing pem bytes")
 	}
 
 	return PrivateKeyFromBytes(keyI.(ed25519.PrivateKey))
@@ -201,7 +202,7 @@ func PrivateKeyReadPem(source io.Reader, passphrase string) (PrivateKey, error) 
 
 	pemFileBytes, err := ioutil.ReadAll(source)
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error reading from source")
 	}
 
 	return PrivateKeyFromPem(pemFileBytes, passphrase)
@@ -217,7 +218,7 @@ func PublicKeyFromString(s string) (PublicKey, error) {
 	keyStr := strings.TrimPrefix(strings.ToLower(s), ed25519PubKeyPrefix)
 	bytes, err := hex.DecodeString(keyStr)
 	if err != nil {
-		return PublicKey{}, err
+		return PublicKey{}, errors.Wrap(err, "error decoding the public key string")
 	}
 
 	return PublicKey{bytes}, nil
@@ -287,7 +288,7 @@ func (sk PrivateKey) Keystore(passphrase string) ([]byte, error) {
 func (sk PrivateKey) WriteKeystore(destination io.Writer, passphrase string) error {
 	keystore, err := sk.Keystore(passphrase)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error writing keystore")
 	}
 
 	_, err = destination.Write(keystore)
@@ -319,7 +320,7 @@ func (sk PrivateKey) Derive(index uint32) (PrivateKey, error) {
 	derivedKey, err := PrivateKeyFromBytes(derivedKeyBytes)
 
 	if err != nil {
-		return PrivateKey{}, err
+		return PrivateKey{}, errors.Wrap(err, "error converting bytes to private key in derive")
 	}
 
 	derivedKey.chainCode = chainCode
@@ -353,7 +354,7 @@ func (sk PrivateKey) SignTransaction(transaction Transaction) ([]byte, error) {
 	transaction.requireOneNodeAccountID()
 
 	if len(transaction.transactions) == 0 {
-		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
+		return make([]byte, 0), errors.Wrap(errTransactionRequiresSingleNodeAccountID, "error signing transaction")
 	}
 
 	signature := sk.Sign(transaction.transactions[0].GetBodyBytes())

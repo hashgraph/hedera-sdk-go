@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/pkg/errors"
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
@@ -90,14 +91,16 @@ func (transaction *TopicMessageSubmitTransaction) SignWithOperator(
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
-	if client.operator == nil {
-		return nil, errClientOperatorSigning
+	if client == nil {
+		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+	} else if client.operator == nil {
+		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, err
+			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -137,7 +140,7 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{}, errors.Wrap(err, "ExecuteAll error")
 	}
 
 	return list[0], nil
@@ -150,7 +153,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return []TransactionResponse{}, err
+			return []TransactionResponse{}, errors.Wrap(err, "FreezeWith in ExecuteAll")
 		}
 	}
 
@@ -182,7 +185,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		)
 
 		if err != nil {
-			return []TransactionResponse{}, err
+			return []TransactionResponse{}, errors.Wrap(err, "execution error")
 		}
 
 		list[i] = resp.transaction
@@ -206,7 +209,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
+		return transaction, errors.Wrap(err, "initTransactionID in TopicMessageSubmitTransaction.FreezeWith")
 	}
 
 	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)

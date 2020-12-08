@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/pkg/errors"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -170,14 +171,16 @@ func (transaction *AccountCreateTransaction) SignWithOperator(
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
-	if client.operator == nil {
-		return nil, errClientOperatorSigning
+	if client == nil {
+		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+	} else if client.operator == nil {
+		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, err
+			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -215,10 +218,14 @@ func (transaction *AccountCreateTransaction) SignWith(
 func (transaction *AccountCreateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return TransactionResponse{}, errors.Wrap(errNoClientProvided, "for Execution")
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return TransactionResponse{}, err
+			return TransactionResponse{}, errors.Wrap(err, "AccountCreateTransaction not frozen during execution")
 		}
 	}
 
@@ -246,7 +253,7 @@ func (transaction *AccountCreateTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{}, errors.Wrap(err, "error in AccountCreateTransaction.Execute")
 	}
 
 	return TransactionResponse{
@@ -272,7 +279,7 @@ func (transaction *AccountCreateTransaction) Freeze() (*AccountCreateTransaction
 func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
+		return transaction, errors.Wrap(err, "in AccountCreateTransaction freezeWith")
 	}
 
 	if !transaction.onFreeze(transaction.pbBody) {

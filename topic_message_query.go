@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"math"
 	"sync"
 	"time"
@@ -72,7 +73,6 @@ func (query *TopicMessageQuery) GetLimit() uint64 {
 
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
-
 	handle := newSubscriptionHandle(cancel)
 
 	messages := sync.Map{}
@@ -85,14 +85,14 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 		resubscribe := true
 		channel, err := client.mirrorNetwork.getNextMirrorNode().getChannel()
 		if err != nil {
-			panic(err)
+			panic(errors.Wrap(err, "error getting channel of the next mirror node"))
 		}
 
 		for {
 			if resubscribe {
 				subClient, err = (*channel).SubscribeTopic(ctx, query.pb)
 				if err != nil {
-					panic(err)
+					panic(errors.Wrap(err, "error resubscribing to topic"))
 				}
 			}
 

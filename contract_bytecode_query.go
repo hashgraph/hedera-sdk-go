@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 )
 
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
@@ -38,12 +39,12 @@ func (query *ContractBytecodeQuery) GetContractID() ContractID {
 
 func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
+		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error making payment transaction")
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -65,7 +66,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error getting cost")
 	}
 
 	cost := int64(resp.query.GetContractGetBytecodeResponse().Header.Cost)
@@ -88,7 +89,7 @@ func contractBytecodeQuery_getMethod(_ request, channel *channel) method {
 
 func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	if client == nil || client.operator == nil {
-		return []byte{}, errNoClientProvided
+		return make([]byte, 0), errors.Wrap(errNoClientProvided, "for execution")
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -106,7 +107,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return []byte{}, err
+			return []byte{}, errors.Wrap(err, "error getting cost during execution")
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -118,7 +119,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, errors.Wrap(err, "error generating payments")
 	}
 
 	resp, err := execute(
@@ -136,7 +137,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	)
 
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, errors.Wrap(err, "execution error")
 	}
 
 	return resp.query.GetContractGetBytecodeResponse().Bytecode, nil

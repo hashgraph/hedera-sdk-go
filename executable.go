@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"math"
 	"time"
 
@@ -60,6 +61,9 @@ func execute(
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
 	maxAttempts := 10
+	var attempt int64
+	var errPersistent error
+	var status Status
 	if request.query != nil {
 		maxAttempts = request.query.maxRetry
 	} else {
@@ -76,7 +80,7 @@ func execute(
 
 		channel, err := node.getChannel()
 		if err != nil {
-			return intermediateResponse{}, nil
+			return intermediateResponse{}, errors.Wrap(err, "error opening channel in executable")
 		}
 
 		method := getMethod(request, channel)
@@ -93,6 +97,7 @@ func execute(
 			r, err := method.query(context.TODO(), protoRequest.query)
 			if err != nil {
 				node.increaseDelay()
+				errPersistent = err
 				continue
 			}
 
@@ -101,6 +106,7 @@ func execute(
 			r, err := method.transaction(context.TODO(), protoRequest.transaction)
 			if err != nil {
 				node.increaseDelay()
+				errPersistent = err
 				continue
 			}
 
@@ -109,7 +115,7 @@ func execute(
 
 		node.decreaseDelay()
 
-		status := mapResponseStatus(request, resp)
+		status = mapResponseStatus(request, resp)
 
 		if shouldRetry(status, resp) && attempt <= int64(maxAttempts) {
 			delayForAttempt(attempt)
@@ -127,7 +133,7 @@ func execute(
 		return mapResponse(request, resp, node.accountID, protoRequest)
 	}
 
-	return intermediateResponse{}, errMaxRetryCountHit
+	return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
 func delayForAttempt(attempt int64) {

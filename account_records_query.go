@@ -1,6 +1,9 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
+)
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
 // it, that were above the threshold, during the last 25 hours.
@@ -44,12 +47,12 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 
 func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errNoClientProvided
+		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error creating payment transaction")
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -71,7 +74,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, err
+		return Hbar{}, errors.Wrap(err, "error getting cost")
 	}
 
 	cost := int64(resp.query.GetCryptoGetAccountRecords().Header.Cost)
@@ -94,14 +97,14 @@ func accountRecordsQuery_getMethod(_ request, channel *channel) method {
 
 func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
 	if client == nil || client.operator == nil {
-		return []TransactionRecord{}, errNoClientProvided
+		return []TransactionRecord{}, errors.Wrap(errNoClientProvided, "for execution")
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	var records = []TransactionRecord{}
+	records := make([]TransactionRecord, 0)
 
 	query.queryPayment = NewHbar(2)
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
@@ -126,7 +129,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return []TransactionRecord{}, err
+		return []TransactionRecord{}, errors.Wrap(err, "error generating payment")
 	}
 
 	resp, err := execute(
@@ -144,7 +147,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	)
 
 	if err != nil {
-		return []TransactionRecord{}, err
+		return []TransactionRecord{}, errors.Wrap(err, "execution error")
 	}
 
 	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {
