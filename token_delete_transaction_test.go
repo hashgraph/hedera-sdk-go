@@ -65,3 +65,28 @@ func TestTokenDeleteTransactionNoKeys_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestTokenDeleteTransactionNoTokenID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetFreezeDefault(false).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.Error(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.Error(t, err)
+}

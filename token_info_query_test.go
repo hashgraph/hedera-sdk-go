@@ -117,3 +117,12 @@ func TestTokenInfoQueryNoPayment_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestTokenInfoQueryNoTokenID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewTokenInfoQuery().
+		SetQueryPayment(NewHbar(2)).
+		Execute(client)
+	assert.Error(t, err)
+}

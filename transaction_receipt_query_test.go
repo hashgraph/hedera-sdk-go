@@ -22,10 +22,10 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	tx.SignWithOperator(client)
+	tx, err = tx.SignWithOperator(client)
+	assert.NoError(t, err)
 
 	resp, err := tx.Execute(client)
-
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
@@ -40,7 +40,7 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 	nodeIDs := make([]AccountID, 1)
 	nodeIDs[0] = resp.NodeID
 
-	transcation, err := NewAccountDeleteTransaction().
+	transaction, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs(nodeIDs).
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
@@ -48,7 +48,7 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	resp, err = transcation.
+	resp, err = transaction.
 		Sign(newKey).
 		Execute(client)
 	assert.NoError(t, err)

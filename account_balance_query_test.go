@@ -23,3 +23,11 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 }
+
+func TestAccountBalanceQueryNoAccount_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewAccountBalanceQuery().
+		Execute(client)
+	assert.Error(t, err)
+}

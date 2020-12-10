@@ -35,3 +35,31 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestFileCreateTransactionNoKey_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	client.SetMaxTransactionFee(NewHbar(2))
+
+	resp, err := NewFileCreateTransaction().
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.Error(t, err)
+
+	fileID := *receipt.FileID
+	assert.NotNil(t, fileID)
+
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
+	resp, err = NewFileDeleteTransaction().
+		SetFileID(fileID).
+		SetNodeAccountIDs(nodeIDs).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}

@@ -51,3 +51,11 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 
 	assert.Equal(t, 0, len(recordsQuery))
 }
+
+func TestAccountRecordQueryNoAccountID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewAccountRecordsQuery().
+		Execute(client)
+	assert.Error(t, err)
+}

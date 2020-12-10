@@ -23,3 +23,11 @@ func TestAccountStakersQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.Error(t, err)
 }
+
+func TestAccountStakersNoAccountID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewAccountStakersQuery().
+		Execute(client)
+	assert.Error(t, err)
+}

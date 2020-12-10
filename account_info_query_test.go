@@ -68,3 +68,11 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestAccountInfoQueryNoAccountID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewAccountInfoQuery().
+		Execute(client)
+	assert.Error(t, err)
+}

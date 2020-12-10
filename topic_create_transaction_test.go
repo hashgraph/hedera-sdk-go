@@ -70,7 +70,6 @@ func TestTopicCreateTransactionDifferentKeys_Execute(t *testing.T) {
 		SetAdminKey(pubKeys[0]).
 		SetSubmitKey(pubKeys[1]).
 		SetTopicMemo(topicMemo).
-		SetMaxTransactionFee(NewHbar(5)).
 		FreezeWith(client)
 	assert.NoError(t, err)
 
@@ -81,7 +80,7 @@ func TestTopicCreateTransactionDifferentKeys_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)

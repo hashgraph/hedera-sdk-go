@@ -74,3 +74,109 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestTopicUpdateTransactionNoMemo_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetTopicMemo(oldTopicMemo).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NoError(t, err)
+
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
+	info, err := NewTopicInfoQuery().
+		SetTopicID(topicID).
+		SetNodeAccountIDs(nodeIDs).
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info)
+
+	assert.Equal(t, oldTopicMemo, info.Memo)
+	assert.Equal(t, uint64(0), info.SequenceNumber)
+	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
+
+	resp, err = NewTopicUpdateTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs(nodeIDs).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs(nodeIDs).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}
+
+func TestTopicUpdateTransactionNoTopicID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetTopicMemo(oldTopicMemo).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NoError(t, err)
+
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
+	info, err := NewTopicInfoQuery().
+		SetTopicID(topicID).
+		SetNodeAccountIDs(nodeIDs).
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info)
+
+	assert.Equal(t, oldTopicMemo, info.Memo)
+	assert.Equal(t, uint64(0), info.SequenceNumber)
+	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
+
+	_, err = NewTopicUpdateTransaction().
+		SetNodeAccountIDs(nodeIDs).
+		Execute(client)
+	assert.Error(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs(nodeIDs).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}

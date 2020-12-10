@@ -18,3 +18,14 @@ func TestCryptoTransferTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestCryptoTransferTransactionNothing_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTransferTransaction().
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}

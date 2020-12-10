@@ -47,7 +47,39 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.Error(t, err)
+}
 
-	status := err.(ErrHederaPreCheckStatus).Status
-	assert.Equal(t, StatusInvalidTopicID, status)
+func TestTopicDeleteTransactionNoTopicID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetTopicMemo(topicMemo).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	_, err = NewTopicInfoQuery().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetQueryPayment(NewHbar(22)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTopicDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.Error(t, err)
 }

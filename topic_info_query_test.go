@@ -49,3 +49,12 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 }
+
+func TestTopicInfoQueryNoTopicID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewTopicInfoQuery().
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.Error(t, err)
+}

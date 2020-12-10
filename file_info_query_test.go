@@ -56,3 +56,12 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestFileInfoQueryTransactionNoFileID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewFileInfoQuery().
+		SetQueryPayment(NewHbar(22)).
+		Execute(client)
+	assert.Error(t, err)
+}

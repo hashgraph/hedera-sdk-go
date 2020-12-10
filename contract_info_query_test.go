@@ -86,3 +86,12 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestContractInfoQueryNoContractID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewContractInfoQuery().
+		SetMaxQueryPayment(NewHbar(2)).
+		Execute(client)
+	assert.Error(t, err)
+}

@@ -58,11 +58,10 @@ func TestFileDeleteTransactionNothingSet_Execute(t *testing.T) {
 	nodeIDs[0] = resp.NodeID
 
 	resp, err = NewFileDeleteTransaction().
-		SetFileID(fileID).
 		SetNodeAccountIDs(nodeIDs).
 		Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }

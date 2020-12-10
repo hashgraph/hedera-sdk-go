@@ -70,3 +70,11 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestAccountCreateTransactionNoKey_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewAccountCreateTransaction().
+		Execute(client)
+	assert.Error(t, err)
+}

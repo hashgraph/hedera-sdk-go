@@ -58,3 +58,11 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestFileContentsQueryNoFileID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_, err := NewFileContentsQuery().
+		Execute(client)
+	assert.Error(t, err)
+}
