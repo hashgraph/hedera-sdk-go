@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"math"
 	"math/rand"
@@ -62,7 +63,7 @@ func (node node) getChannel() (*channel, error) {
 
 	conn, err := grpc.Dial(node.address, grpc.WithInsecure())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "error connecting to node at %s", node.address)
 	}
 
 	ch := newChannel(conn)

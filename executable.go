@@ -3,6 +3,7 @@ package hedera
 import (
 	"context"
 	"github.com/pkg/errors"
+
 	"math"
 	"time"
 
@@ -80,7 +81,7 @@ func execute(
 
 		channel, err := node.getChannel()
 		if err != nil {
-			return intermediateResponse{}, errors.Wrap(err, "error opening channel in executable")
+			return intermediateResponse{}, err
 		}
 
 		method := getMethod(request, channel)

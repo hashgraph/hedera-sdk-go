@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"github.com/pkg/errors"
+
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
@@ -44,7 +45,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 	list := proto.TransactionList{}
 	err := protobuf.Unmarshal(data, &list)
 	if err != nil {
-		return Transaction{}, errors.Wrap(err, "unmarshal given bytes in TransactionFromBytes")
+		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to Transaction List")
 	}
 
 	tx := Transaction{
@@ -62,14 +63,14 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 	for _, transaction := range list.TransactionList {
 		var signedTransaction proto.SignedTransaction
 		if err := protobuf.Unmarshal(transaction.SignedTransactionBytes, &signedTransaction); err != nil {
-			return Transaction{}, errors.Wrap(err, "unmarshal SignedTransactionBytes in TransactionFromBytes")
+			return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
 		}
 
 		tx.signedTransactions = append(tx.signedTransactions, &signedTransaction)
 
 		var body proto.TransactionBody
 		if err := protobuf.Unmarshal(signedTransaction.GetBodyBytes(), &body); err != nil {
-			return Transaction{}, errors.Wrap(err, "unmarshal BodyBytes in TransactionFromBytes")
+			return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
 		}
 
 		if first == nil {
@@ -105,7 +106,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 	}
 
 	if first == nil {
-		return nil, errors.Wrap(errNoTransactionInBytes, "in TransactionFromBytes")
+		return nil, errNoTransactionInBytes
 	}
 
 	switch first.Data.(type) {
@@ -193,7 +194,7 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 		for _, sigPair := range transaction.signedTransactions[i].SigMap.SigPair {
 			key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
 			if err != nil {
-				return make(map[AccountID]map[*PublicKey][]byte, 0), errors.Wrapf(err, "PublicKeyFromBytes in GetSignatures")
+				return make(map[AccountID]map[*PublicKey][]byte, 0), err
 			}
 			switch sigPair.Signature.(type) {
 			case *proto.SignaturePair_Contract:
@@ -231,7 +232,7 @@ func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []by
 func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
 	hashes, err := transaction.GetTransactionHashPerNode()
 	if err != nil {
-		return []byte{}, errors.Wrapf(err, "GetTransactionHashPerNode in GetTransactionHash")
+		return []byte{}, err
 	}
 
 	return hashes[transaction.nodeIDs[0]], nil
@@ -241,19 +242,19 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 	transactionHash := make(map[AccountID][]byte)
 
 	if !transaction.isFrozen() {
-		return transactionHash, errors.Wrap(errTransactionIsNotFrozen, "NotFrozen in GetTransactionHashPerNode")
+		return transactionHash, errTransactionIsNotFrozen
 	}
 
 	err := transaction.buildTransactions(len(transaction.signedTransactions))
 	if err != nil {
-		return transactionHash, errors.Wrapf(err, "build in GetTransactionHashPerNode")
+		return transactionHash, err
 	}
 
 	for i, node := range transaction.nodeIDs {
 		hash := sha512.New384()
 		_, err := hash.Write(transaction.transactions[i].SignedTransactionBytes)
 		if err != nil {
-			return transactionHash, errors.Wrapf(err, "failed to hash SignedTransactionBytes in GetTransactionHashPerNode")
+			return transactionHash, err
 		}
 
 		transactionHash[node] = []byte(hex.EncodeToString(hash.Sum(nil)))
@@ -273,7 +274,7 @@ func (transaction *Transaction) initTransactionID(client *Client) error {
 		if client.operator != nil {
 			transaction.SetTransactionID(TransactionIDGenerate(client.operator.accountID))
 		} else {
-			return errors.Wrapf(errNoClientOrTransactionID, "in initTransactionID")
+			return errNoClientOrTransactionID
 		}
 	}
 
@@ -305,7 +306,7 @@ func transaction_freezeWith(
 		if client != nil {
 			transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
 		} else {
-			return errors.Wrapf(errNoClientOrTransactionIDOrNodeId, "in freezeWith")
+			return errNoClientOrTransactionIDOrNodeId
 		}
 	}
 
@@ -377,7 +378,7 @@ func transaction_mapResponse(request request, _ response, nodeID AccountID, prot
 	hash := sha512.New384()
 	_, err := hash.Write(protoRequest.transaction.SignedTransactionBytes)
 	if err != nil {
-		return intermediateResponse{}, errors.Wrapf(err, "failed to hash SignedTransactionBytes in mapResponse")
+		return intermediateResponse{}, err
 	}
 
 	index := request.transaction.nextTransactionIndex
@@ -398,24 +399,31 @@ func (transaction *Transaction) String() string {
 
 func (transaction *Transaction) ToBytes() ([]byte, error) {
 	if !transaction.isFrozen() {
-		return make([]byte, 0), errors.Wrapf(errTransactionIsNotFrozen, "NotFrozen in ToBytes")
+		return make([]byte, 0), errTransactionIsNotFrozen
 	}
 
 	err := transaction.buildTransactions(len(transaction.signedTransactions))
 	if err != nil {
-		return make([]byte, 0), errors.Wrapf(err, "build in toBytes")
+		return make([]byte, 0), err
 	}
 
-	return protobuf.Marshal(&proto.TransactionList{
+	pbTransactionList, lastError := protobuf.Marshal(&proto.TransactionList{
 		TransactionList: transaction.transactions,
 	})
+
+	if lastError != nil {
+		return make([]byte, 0), errors.Wrap(err, "error serializing transaction list")
+	}else{
+		return pbTransactionList, nil
+	}
+
 }
 
 func (transaction *Transaction) buildTransactions(untilIndex int) error {
 	for i := len(transaction.transactions); i < untilIndex; i++ {
 		data, err := protobuf.Marshal(transaction.signedTransactions[i])
 		if err != nil {
-			return errors.Wrapf(err, "failed to build transaction")
+			return errors.Wrap(err, "failed to serialize transactions for building")
 		}
 
 		transaction.transactions = append(transaction.transactions, &proto.Transaction{

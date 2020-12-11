@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/pkg/errors"
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
@@ -46,7 +47,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 }
 
 func (info AccountInfo) toProtobuf() ([]byte, error) {
-	return protobuf.Marshal(&proto.CryptoGetInfoResponse_AccountInfo{
+	pb, err := protobuf.Marshal(&proto.CryptoGetInfoResponse_AccountInfo{
 		AccountID:                      info.AccountID.toProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
 		Deleted:                        info.IsDeleted,
@@ -59,4 +60,10 @@ func (info AccountInfo) toProtobuf() ([]byte, error) {
 		ReceiverSigRequired:            info.ReceiverSigRequired,
 		ExpirationTime:                 timeToProtobuf(info.ExpirationTime),
 	})
+
+	if err != nil {
+		return pb, errors.Wrap(err, "error serializing account info")
+	} else {
+		return pb, nil
+	}
 }

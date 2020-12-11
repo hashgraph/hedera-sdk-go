@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 	"time"
 )
 
@@ -36,7 +36,7 @@ func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
 func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
 	keyList, err := keyListFromProtobuf(hash.Keys)
 	if err != nil {
-		return LiveHash{}, errors.Wrap(err, "error getting keylist for converting from live hash from protobuf")
+		return LiveHash{}, err
 	}
 
 	return LiveHash{

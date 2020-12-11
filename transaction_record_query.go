@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 type TransactionRecordQuery struct {
@@ -26,7 +26,7 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 
 func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
@@ -124,7 +124,7 @@ func (query *TransactionRecordQuery) SetMaxRetry(count int) *TransactionRecordQu
 
 func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
 	if client == nil || client.operator == nil {
-		return TransactionRecord{}, errors.Wrap(errNoClientProvided, "for execution")
+		return TransactionRecord{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -142,7 +142,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return TransactionRecord{}, errors.Wrap(err, "error getting cost during execution")
+			return TransactionRecord{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -160,7 +160,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 			cost,
 		)
 		if err != nil {
-			return TransactionRecord{}, errors.Wrap(err, "error making payment transaction")
+			return TransactionRecord{}, err
 		}
 
 		query.paymentTransactions = append(query.paymentTransactions, transaction)
@@ -181,7 +181,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	)
 
 	if err != nil {
-		return TransactionRecord{}, errors.Wrap(err, "execution error")
+		return TransactionRecord{}, err
 	}
 
 	return TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord), nil

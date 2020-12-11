@@ -3,6 +3,7 @@ package hedera
 import (
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 )
 
 type Query struct {
@@ -169,7 +170,7 @@ func query_makePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 
 	bodyBytes, err := protobuf.Marshal(&body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error serializing query body")
 	}
 
 	signature := operator.signer(bodyBytes)

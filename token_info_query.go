@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 type TokenInfoQuery struct {
@@ -38,12 +38,12 @@ func (query *TokenInfoQuery) GetTokenID() TokenID {
 
 func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error making payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -65,7 +65,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetTokenGetInfo().Header.Cost)
@@ -89,7 +89,7 @@ func tokenInfoQuery_getMethod(_ request, channel *channel) method {
 // Execute executes the TopicInfoQuery using the provided client
 func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	if client == nil || client.operator == nil {
-		return TokenInfo{}, errors.Wrap(errNoClientProvided, "for execution")
+		return TokenInfo{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -107,7 +107,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return TokenInfo{}, errors.Wrap(err, "error getting cost during execution")
+			return TokenInfo{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -119,7 +119,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return TokenInfo{}, errors.Wrap(err, "error generating payments")
+		return TokenInfo{}, err
 	}
 
 	resp, err := execute(
@@ -137,7 +137,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	)
 
 	if err != nil {
-		return TokenInfo{}, errors.Wrap(err, "execution error")
+		return TokenInfo{}, err
 	}
 
 	return tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo), nil

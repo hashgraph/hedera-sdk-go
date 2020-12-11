@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 	"time"
 )
 
@@ -72,15 +72,15 @@ func (transaction *TopicDeleteTransaction) SignWithOperator(
 	// to sign the transaction with the operator
 
 	if client == nil {
-		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+		return nil, errNoClientProvided
 	} else if client.operator == nil {
-		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
+		return nil, errClientOperatorSigning
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
+			return transaction, err
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -121,7 +121,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return TransactionResponse{}, errors.Wrap(err, "FreezeWith in Execute")
+			return TransactionResponse{}, err
 		}
 	}
 
@@ -149,7 +149,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, errors.Wrap(err, "execution error")
+		return TransactionResponse{}, err
 	}
 
 	return TransactionResponse{
@@ -175,7 +175,7 @@ func (transaction *TopicDeleteTransaction) Freeze() (*TopicDeleteTransaction, er
 func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDeleteTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, errors.Wrap(err, "initTransactionID in TopicDeleteTransaction.FreezeWith")
+		return transaction, err
 	}
 
 	if !transaction.onFreeze(transaction.pbBody) {

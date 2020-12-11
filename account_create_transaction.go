@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
+
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -172,15 +172,15 @@ func (transaction *AccountCreateTransaction) SignWithOperator(
 	// to sign the transaction with the operator
 
 	if client == nil {
-		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+		return nil, errNoClientProvided
 	} else if client.operator == nil {
-		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
+		return nil, errClientOperatorSigning
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
+			return transaction, err
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -219,13 +219,13 @@ func (transaction *AccountCreateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
 	if client == nil || client.operator == nil {
-		return TransactionResponse{}, errors.Wrap(errNoClientProvided, "for Execution")
+		return TransactionResponse{}, errNoClientProvided
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return TransactionResponse{}, errors.Wrap(err, "AccountCreateTransaction not frozen during execution")
+			return TransactionResponse{}, err
 		}
 	}
 
@@ -253,7 +253,7 @@ func (transaction *AccountCreateTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, errors.Wrap(err, "error in AccountCreateTransaction.Execute")
+		return TransactionResponse{}, err
 	}
 
 	return TransactionResponse{
@@ -279,7 +279,7 @@ func (transaction *AccountCreateTransaction) Freeze() (*AccountCreateTransaction
 func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, errors.Wrap(err, "in AccountCreateTransaction freezeWith")
+		return transaction, err
 	}
 
 	if !transaction.onFreeze(transaction.pbBody) {

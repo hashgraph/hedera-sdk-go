@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 type NetworkVersionInfoQuery struct {
@@ -26,12 +26,12 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 
 func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error making payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -53,7 +53,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetNetworkGetVersionInfo().Header.Cost)
@@ -76,7 +76,7 @@ func networkVersionInfoQuery_getMethod(_ request, channel *channel) method {
 
 func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
 	if client == nil || client.operator == nil {
-		return NetworkVersionInfo{}, errors.Wrap(errNoClientProvided, "for execution")
+		return NetworkVersionInfo{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -94,7 +94,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return NetworkVersionInfo{}, errors.Wrap(err, "error getting cost during execution")
+			return NetworkVersionInfo{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -106,7 +106,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return NetworkVersionInfo{}, errors.Wrap(err, "error generating payments")
+		return NetworkVersionInfo{}, err
 	}
 
 	resp, err := execute(
@@ -124,7 +124,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	)
 
 	if err != nil {
-		return NetworkVersionInfo{}, errors.Wrap(err, "execution error")
+		return NetworkVersionInfo{}, err
 	}
 
 	return networkVersionInfoFromProtobuf(resp.query.GetNetworkGetVersionInfo()), err

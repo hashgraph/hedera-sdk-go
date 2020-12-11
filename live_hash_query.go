@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 type LiveHashQuery struct {
@@ -44,12 +44,12 @@ func (query *LiveHashQuery) GetGetHash() []byte {
 
 func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error making payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -71,7 +71,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetCryptoGetLiveHash().Header.Cost)
@@ -94,7 +94,7 @@ func liveHashQuery_getMethod(_ request, channel *channel) method {
 
 func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	if client == nil || client.operator == nil {
-		return LiveHash{}, errors.Wrap(errNoClientProvided, "for execution")
+		return LiveHash{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -112,7 +112,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return LiveHash{}, errors.Wrap(err, "error getting cost during execution")
+			return LiveHash{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -124,7 +124,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return LiveHash{}, errors.Wrap(err, "error generating payments")
+		return LiveHash{}, err
 	}
 
 	resp, err := execute(
@@ -142,7 +142,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	)
 
 	if err != nil {
-		return LiveHash{}, errors.Wrap(err, "execution error")
+		return LiveHash{}, err
 	}
 
 	return liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)

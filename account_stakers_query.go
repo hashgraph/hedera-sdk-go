@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 // AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount
@@ -47,12 +47,12 @@ func (query *AccountStakersQuery) GetAccountID() AccountID {
 
 func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error making payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -74,7 +74,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetCryptoGetProxyStakers().Header.Cost)
@@ -97,7 +97,7 @@ func accountStakersQuery_getMethod(_ request, channel *channel) method {
 
 func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	if client == nil || client.operator == nil {
-		return []Transfer{}, errors.Wrap(errNoClientProvided, "for execution")
+		return []Transfer{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -115,7 +115,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return []Transfer{}, errors.Wrap(err, "error getting cost during execution")
+			return []Transfer{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -127,7 +127,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return []Transfer{}, errors.Wrap(err, "error generating payments")
+		return []Transfer{}, err
 	}
 
 	resp, err := execute(
@@ -145,7 +145,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	)
 
 	if err != nil {
-		return []Transfer{}, errors.Wrap(err, "execution error")
+		return []Transfer{}, err
 	}
 
 	var stakers = make([]Transfer, len(resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker))

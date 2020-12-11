@@ -10,7 +10,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/pkg/errors"
+
 	"golang.org/x/crypto/pbkdf2"
 	"io"
 )
@@ -75,20 +75,20 @@ func randomBytes(n uint) ([]byte, error) {
 func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	salt, err := randomBytes(saltLen)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting random bytes for salt")
+		return nil, err
 	}
 
 	key := pbkdf2.Key([]byte(passphrase), salt, c, dkLen, sha256.New)
 
 	iv, err := randomBytes(16)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting random bytes for iv")
+		return nil, err
 	}
 
 	// AES-128-CTR with the first half of the derived key and a random IV
 	block, err := aes.NewCipher(key[0:16])
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating new cipher")
+		return nil, err
 	}
 
 	cipher := cipher2.NewCTR(block, iv)
@@ -100,7 +100,7 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	_, err = h.Write(cipherText)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error hashing the cipher")
+		return nil, err
 	}
 
 	mac := h.Sum(nil)
@@ -133,7 +133,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 	err := json.Unmarshal(keystoreBytes, &keyStore)
 
 	if err != nil {
-		return PrivateKey{}, errors.Wrap(err, "error parsing json keystore bytes")
+		return PrivateKey{}, err
 	}
 
 	if keyStore.Version != 1 {
@@ -158,19 +158,19 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 	salt, err := hex.DecodeString(keyStore.Crypto.KDFParams.Salt)
 
 	if err != nil {
-		return PrivateKey{}, errors.Wrap(err, "error decoding the salt string in keystore")
+		return PrivateKey{}, err
 	}
 
 	iv, err := hex.DecodeString(keyStore.Crypto.CipherParams.IV)
 
 	if err != nil {
-		return PrivateKey{}, errors.Wrap(err, "error decoding the IV string in keystore")
+		return PrivateKey{}, err
 	}
 
 	cipherBytes, err := hex.DecodeString(keyStore.Crypto.CipherText)
 
 	if err != nil {
-		return PrivateKey{}, errors.Wrap(err, "error decoding the cipher string in keystore")
+		return PrivateKey{}, err
 	}
 
 	key := pbkdf2.Key([]byte(passphrase), salt, keyStore.Crypto.KDFParams.Count, dkLen, sha256.New)
@@ -178,7 +178,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 	mac, err := hex.DecodeString(keyStore.Crypto.Mac)
 
 	if err != nil {
-		return PrivateKey{}, errors.Wrap(err, "error decoding the HMAC-SHA384 string in keystore")
+		return PrivateKey{}, err
 	}
 
 	h := hmac.New(sha512.New384, key[16:])
@@ -186,7 +186,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 	_, err = h.Write(cipherBytes)
 
 	if err != nil {
-		return PrivateKey{}, errors.Wrap(err, "error hashing hashing the decoded cipher bytes")
+		return PrivateKey{}, err
 	}
 
 	verifyMac := h.Sum(nil)
@@ -197,7 +197,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 
 	block, err := aes.NewCipher(key[:16])
 	if err != nil {
-		return PrivateKey{}, errors.Wrap(err, "error decoding the HMAC-SHA384 string in keystore")
+		return PrivateKey{}, err
 	}
 
 	decipher := cipher2.NewCTR(block, iv)

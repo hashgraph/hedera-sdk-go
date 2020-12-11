@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 // ContractCallQuery calls a function of the given smart contract instance, giving it ContractFunctionParameters as its
@@ -82,7 +82,7 @@ func (query *ContractCallQuery) GetFunctionParameters() []byte {
 
 func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
@@ -132,7 +132,7 @@ func contractCallQuery_getMethod(_ request, channel *channel) method {
 
 func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
 	if client == nil || client.operator == nil {
-		return ContractFunctionResult{}, errors.Wrap(errNoClientProvided, "for execution")
+		return ContractFunctionResult{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -150,7 +150,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return ContractFunctionResult{}, errors.Wrap(err, "error getting cost during execution")
+			return ContractFunctionResult{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -162,7 +162,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return ContractFunctionResult{}, errors.Wrap(err, "error generating payments")
+		return ContractFunctionResult{}, err
 	}
 
 	resp, err := execute(
@@ -180,7 +180,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	)
 
 	if err != nil {
-		return ContractFunctionResult{}, errors.Wrap(err, "execution error")
+		return ContractFunctionResult{}, err
 	}
 
 	return contractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult), nil

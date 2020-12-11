@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
@@ -47,12 +47,12 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 
 func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error creating payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -74,7 +74,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetCryptoGetAccountRecords().Header.Cost)
@@ -97,7 +97,7 @@ func accountRecordsQuery_getMethod(_ request, channel *channel) method {
 
 func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
 	if client == nil || client.operator == nil {
-		return []TransactionRecord{}, errors.Wrap(errNoClientProvided, "for execution")
+		return []TransactionRecord{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -129,7 +129,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return []TransactionRecord{}, errors.Wrap(err, "error generating payment")
+		return []TransactionRecord{}, err
 	}
 
 	resp, err := execute(
@@ -147,7 +147,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	)
 
 	if err != nil {
-		return []TransactionRecord{}, errors.Wrap(err, "execution error")
+		return []TransactionRecord{}, err
 	}
 
 	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {

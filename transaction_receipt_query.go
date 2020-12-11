@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 type TransactionReceiptQuery struct {
@@ -26,12 +26,12 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 
 func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error making payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -53,7 +53,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetTransactionGetReceipt().Header.Cost)
@@ -127,7 +127,7 @@ func (query *TransactionReceiptQuery) SetMaxRetry(count int) *TransactionReceipt
 
 func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
 	if client == nil || client.operator == nil {
-		return TransactionReceipt{}, errors.Wrap(errNoClientProvided, "for execution")
+		return TransactionReceipt{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -149,7 +149,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	)
 
 	if err != nil {
-		return TransactionReceipt{}, errors.Wrap(err, "execution error")
+		return TransactionReceipt{}, err
 	}
 
 	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().Receipt), nil

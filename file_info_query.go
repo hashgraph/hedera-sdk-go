@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 type FileInfoQuery struct {
@@ -35,12 +35,12 @@ func (query *FileInfoQuery) GetFileID(id FileID) FileID {
 
 func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error making payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -62,7 +62,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetFileGetInfo().Header.Cost)
@@ -85,7 +85,7 @@ func fileInfoQuery_getMethod(_ request, channel *channel) method {
 
 func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	if client == nil || client.operator == nil {
-		return FileInfo{}, errors.Wrap(errNoClientProvided, "for execution")
+		return FileInfo{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -103,7 +103,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return FileInfo{}, errors.Wrap(err, "error getting cost in execution")
+			return FileInfo{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -115,7 +115,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return FileInfo{}, errors.Wrap(err, "error generating payments")
+		return FileInfo{}, err
 	}
 
 	resp, err := execute(
@@ -133,7 +133,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	)
 
 	if err != nil {
-		return FileInfo{}, errors.Wrap(err, "execution error")
+		return FileInfo{}, err
 	}
 
 	return fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)

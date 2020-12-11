@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller
@@ -82,12 +82,12 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 
 func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error making payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -109,7 +109,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetCryptogetAccountBalance().Header.Cost)
@@ -132,7 +132,7 @@ func accountBalanceQuery_getMethod(_ request, channel *channel) method {
 
 func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
 	if client == nil || client.operator == nil {
-		return AccountBalance{}, errors.Wrap(errNoClientProvided, "for execution")
+		return AccountBalance{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -154,7 +154,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	)
 
 	if err != nil {
-		return AccountBalance{}, errors.Wrap(err, "execution error")
+		return AccountBalance{}, err
 	}
 
 	tokens := make(map[TokenID]uint64, len(resp.query.GetCryptogetAccountBalance().TokenBalances))

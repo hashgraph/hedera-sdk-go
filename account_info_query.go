@@ -2,7 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
+
 )
 
 type AccountInfoQuery struct {
@@ -42,12 +42,12 @@ func (query *AccountInfoQuery) SetAccountID(accountID AccountID) *AccountInfoQue
 
 func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
-		return Hbar{}, errors.Wrap(errNoClientProvided, "for getting cost")
+		return Hbar{}, errNoClientProvided
 	}
 
 	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error creating payment transaction")
+		return Hbar{}, err
 	}
 
 	query.pbHeader.Payment = paymentTransaction
@@ -69,7 +69,7 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	)
 
 	if err != nil {
-		return Hbar{}, errors.Wrap(err, "error getting cost")
+		return Hbar{}, err
 	}
 
 	cost := int64(resp.query.GetCryptoGetInfo().Header.Cost)
@@ -117,7 +117,7 @@ func (query *AccountInfoQuery) SetMaxRetry(count int) *AccountInfoQuery {
 
 func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	if client == nil || client.operator == nil {
-		return AccountInfo{}, errors.Wrap(errNoClientProvided, "for execution")
+		return AccountInfo{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
@@ -135,7 +135,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
-			return AccountInfo{}, errors.Wrap(err, "error while getting cost in execute")
+			return AccountInfo{}, err
 		}
 
 		if cost.tinybar > actualCost.tinybar {
@@ -147,7 +147,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 	err := query_generatePayments(&query.Query, client, cost)
 	if err != nil {
-		return AccountInfo{}, errors.Wrap(err, "error generating payments")
+		return AccountInfo{}, err
 	}
 
 	resp, err := execute(
@@ -165,7 +165,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	)
 
 	if err != nil {
-		return AccountInfo{}, errors.Wrap(err, "error during execution")
+		return AccountInfo{}, err
 	}
 
 	return accountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo)

@@ -92,15 +92,15 @@ func (transaction *TopicMessageSubmitTransaction) SignWithOperator(
 	// to sign the transaction with the operator
 
 	if client == nil {
-		return nil, errors.Wrap(errNoClientProvided, "for SignWithOperator")
+		return nil, errNoClientProvided
 	} else if client.operator == nil {
-		return nil, errors.Wrap(errClientOperatorSigning, "for SignWithOperator")
+		return nil, errClientOperatorSigning
 	}
 
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return transaction, errors.Wrap(err, "FreezeWith in SignWithOperator")
+			return transaction, err
 		}
 	}
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
@@ -140,7 +140,7 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
-		return TransactionResponse{}, errors.Wrap(err, "ExecuteAll error")
+		return TransactionResponse{}, err
 	}
 
 	return list[0], nil
@@ -153,7 +153,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
-			return []TransactionResponse{}, errors.Wrap(err, "FreezeWith in ExecuteAll")
+			return []TransactionResponse{}, err
 		}
 	}
 
@@ -185,7 +185,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		)
 
 		if err != nil {
-			return []TransactionResponse{}, errors.Wrap(err, "execution error")
+			return []TransactionResponse{}, err
 		}
 
 		list[i] = resp.transaction
@@ -209,7 +209,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, errors.Wrap(err, "initTransactionID in TopicMessageSubmitTransaction.FreezeWith")
+		return transaction, err
 	}
 
 	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
@@ -254,7 +254,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 
 			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
 			if err != nil {
-				return transaction, err
+				return transaction, errors.Wrap(err, "error serializing transaction body for topic submission")
 			}
 
 			transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
