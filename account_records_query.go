@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
 )
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of

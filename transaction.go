@@ -413,7 +413,7 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 
 	if lastError != nil {
 		return make([]byte, 0), errors.Wrap(err, "error serializing transaction list")
-	}else{
+	} else {
 		return pbTransactionList, nil
 	}
 

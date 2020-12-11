@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
 )
 
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance

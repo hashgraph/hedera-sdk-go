@@ -83,7 +83,7 @@ func TestAccountDeleteTransactionNoTransferAccountID_Execute(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestAccountDeleteTransactionNoAccountID_Execute(t *testing.T) {
@@ -103,15 +103,8 @@ func TestAccountDeleteTransactionNoAccountID_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
-
-	accountID := receipt.AccountID
-	assert.NoError(t, err)
-
-	acc := *accountID
-
-	println(acc.String())
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

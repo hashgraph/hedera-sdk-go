@@ -120,7 +120,7 @@ func TestAccountUpdateTransactionNoSigning_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -146,6 +146,5 @@ func TestAccountUpdateTransactionNoSigning_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }

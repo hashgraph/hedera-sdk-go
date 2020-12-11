@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
 )
 
 // AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount

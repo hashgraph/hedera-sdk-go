@@ -46,7 +46,7 @@ func TestFileCreateTransactionNoKey_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -61,5 +61,5 @@ func TestFileCreateTransactionNoKey_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }

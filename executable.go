@@ -123,7 +123,7 @@ func execute(
 			continue
 		}
 
-		if status != StatusOk {
+		if status != StatusOk && status != StatusSuccess {
 			if request.query != nil {
 				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
 			} else {

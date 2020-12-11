@@ -1,7 +1,6 @@
 package hedera
 
 import (
-
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"

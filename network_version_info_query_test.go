@@ -9,5 +9,5 @@ func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewNetworkVersionQuery().Execute(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }

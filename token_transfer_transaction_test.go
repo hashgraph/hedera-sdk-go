@@ -197,7 +197,7 @@ func TestTokenTransferTransactionNotZeroSum_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

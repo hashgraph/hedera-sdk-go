@@ -80,7 +80,7 @@ func TestTopicCreateTransactionDifferentKeys_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -100,10 +100,14 @@ func TestTopicCreateTransactionDifferentKeys_Execute(t *testing.T) {
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, pubKeys[0].String(), info.AdminKey.String())
 
-	resp, err = NewTopicDeleteTransaction().
+	txDelete, err := NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs(nodeIDs).
 		SetMaxTransactionFee(NewHbar(5)).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = txDelete.Sign(keys[0]).
 		Execute(client)
 	assert.NoError(t, err)
 

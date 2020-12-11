@@ -82,6 +82,7 @@ func TestTokenInfoQueryNoPayment_Execute(t *testing.T) {
 		SetDecimals(3).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		SetFreezeKey(client.GetOperatorPublicKey()).
 		SetKycKey(client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).

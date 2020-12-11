@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
 )
 
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller

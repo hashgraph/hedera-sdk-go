@@ -139,8 +139,6 @@ func TestTokenCreateTransactionNoKeys_Execute(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	println("token ", tokenID.String())
-
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
@@ -148,7 +146,7 @@ func TestTokenCreateTransactionNoKeys_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestTokenCreateTransactionAdminSign_Execute(t *testing.T) {
@@ -203,11 +201,17 @@ func TestTokenCreateTransactionAdminSign_Execute(t *testing.T) {
 	receipt, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
+	assert.NotNil(t, receipt.TokenID)
 	tokenID := *receipt.TokenID
 
-	resp, err = NewTokenDeleteTransaction().
+	tokenDelete, err := NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = tokenDelete.
+		Sign(keys[1]).
 		Execute(client)
 	assert.NoError(t, err)
 

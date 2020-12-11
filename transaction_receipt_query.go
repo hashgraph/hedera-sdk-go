@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
 )
 
 type TransactionReceiptQuery struct {
@@ -72,8 +71,6 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 
 	status = Status(response.query.GetTransactionGetReceipt().Receipt.Status)
 
-	println("status:", status.String())
-
 	switch status {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound:
 		return true
@@ -84,6 +81,11 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 
 func transactionReceiptQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
+	//if status != StatusBusy && status != StatusUnknown && status != StatusOk && status != StatusReceiptNotFound && status != StatusSuccess{
+	//	return Status(response.query.GetTransactionGetReceipt().Header.NodeTransactionPrecheckCode)
+	//} else {
+	//	return status
+	//}
 }
 
 func transactionReceiptQuery_getMethod(_ request, channel *channel) method {

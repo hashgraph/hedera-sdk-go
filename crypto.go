@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/sha512"
 
-
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"

@@ -65,10 +65,14 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.Error(t, err)
 
-	resp, err = NewAccountDeleteTransaction().
+	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs(nodeIDs).
 		SetTransferAccountID(client.GetOperatorAccountID()).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = tx.Sign(newKey).
 		Execute(client)
 	assert.NoError(t, err)
 

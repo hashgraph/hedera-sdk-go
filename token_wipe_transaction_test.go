@@ -189,7 +189,6 @@ func TestTokenWipeTransactionNoAmount_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	///status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES in receipt not sure where or when
 	_, err = NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).
 		SetTokenID(tokenID).
@@ -212,7 +211,7 @@ func TestTokenWipeTransactionNoAmount_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestTokenWipeTransactionNoTokenID_Execute(t *testing.T) {
@@ -316,7 +315,7 @@ func TestTokenWipeTransactionNoTokenID_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestTokenWipeTransactionNoAccountID_Execute(t *testing.T) {
@@ -421,5 +420,5 @@ func TestTokenWipeTransactionNoAccountID_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }

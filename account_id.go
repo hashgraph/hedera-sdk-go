@@ -69,7 +69,6 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 	accountID, err := AccountIDFromString(strings.Replace(string(data), "\"", "", 2))
 
 	if err != nil {
-		println("error was not nil")
 		return err
 	}
 

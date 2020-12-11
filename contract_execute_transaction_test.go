@@ -52,6 +52,7 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
+	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)

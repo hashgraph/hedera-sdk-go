@@ -53,7 +53,7 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileAppendTransaction2_Execute(t *testing.T) {
+func TestFileAppendTransactionNoFileID_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	client.SetMaxTransactionFee(NewHbar(2))
@@ -72,14 +72,14 @@ func TestFileAppendTransaction2_Execute(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	resp, err = NewFileAppendTransaction().
+	_, err = NewFileAppendTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContents([]byte(" world!")).
 		Execute(client)
 	assert.Error(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
