@@ -4,16 +4,17 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"math"
-	"math/rand"
 	"time"
 )
 
 type node struct {
-	accountID AccountID
-	address   string
-	delay     int64
-	lastUsed  *int64
-	channel   *channel
+	accountID  AccountID
+	address    string
+	delay      int64
+	lastUsed   int64
+	delayUntil int64
+	useCount   int64
+	channel    *channel
 }
 
 type nodes struct {
@@ -22,27 +23,28 @@ type nodes struct {
 
 func newNode(accountID AccountID, address string) node {
 	return node{
-		accountID: accountID,
-		address:   address,
-		delay:     250,
-		lastUsed:  nil,
-		channel:   nil,
+		accountID:  accountID,
+		address:    address,
+		delay:      250,
+		lastUsed:   time.Now().UTC().UnixNano(),
+		delayUntil: time.Now().UTC().UnixNano(),
+		useCount:   0,
+		channel:    nil,
 	}
+}
+
+func (node node) InUse() {
+	node.useCount++
+	node.lastUsed = time.Now().UTC().UnixNano()
 }
 
 func (node node) isHealthy() bool {
-	if node.lastUsed != nil {
-		lastUsed := *node.lastUsed
-		return lastUsed+node.delay*1000000 < time.Now().UTC().UnixNano()
-	}
-
-	return true
+	return node.delayUntil <= time.Now().UTC().UnixNano()
 }
 
 func (node node) increaseDelay() {
-	lastUsed := time.Now().UTC().UnixNano()
-	node.lastUsed = &lastUsed
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
+	node.delayUntil = node.delay + time.Now().UTC().UnixNano()
 }
 
 func (node node) decreaseDelay() {
@@ -50,10 +52,9 @@ func (node node) decreaseDelay() {
 }
 
 func (node node) wait() {
-	if node.lastUsed != nil {
-		delay := *node.lastUsed + node.delay*1000000 - time.Now().UTC().UnixNano()
-		time.Sleep(time.Duration(delay) * time.Nanosecond)
-	}
+	delay := node.delayUntil - node.lastUsed
+	time.Sleep(time.Duration(delay) * time.Nanosecond)
+
 }
 
 func (node node) getChannel() (*channel, error) {
@@ -76,31 +77,33 @@ func (node node) close() error {
 	return node.channel.client.Close()
 }
 
-func (s nodes) Len() int {
-	return len(s.nodes)
+func (nodes nodes) Len() int {
+	return len(nodes.nodes)
 }
-func (s nodes) Swap(i, j int) {
-	s.nodes[i], s.nodes[j] = s.nodes[j], s.nodes[i]
+func (nodes nodes) Swap(i, j int) {
+	nodes.nodes[i], nodes.nodes[j] = nodes.nodes[j], nodes.nodes[i]
 }
-func (s nodes) Less(i, j int) bool {
-	if s.nodes[i].isHealthy() && s.nodes[j].isHealthy() {
-		return rand.Int63n(1) == 0
-	} else if s.nodes[i].isHealthy() && !s.nodes[j].isHealthy() {
+
+func (nodes nodes) Less(i, j int) bool {
+	if nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() {
+		if nodes.nodes[i].useCount < nodes.nodes[j].useCount {
+			return true
+		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
+			return false
+		} else {
+			return nodes.nodes[i].lastUsed < nodes.nodes[j].lastUsed
+		}
+	} else if nodes.nodes[i].isHealthy() && !nodes.nodes[j].isHealthy() {
 		return true
-	} else if !s.nodes[i].isHealthy() && s.nodes[j].isHealthy() {
+	} else if !nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() {
 		return false
 	} else {
-		aLastUsed := int64(0)
-		bLastUsed := int64(0)
-
-		if s.nodes[i].lastUsed != nil {
-			aLastUsed = *s.nodes[i].lastUsed
+		if nodes.nodes[i].useCount < nodes.nodes[j].useCount {
+			return true
+		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
+			return false
+		} else {
+			return nodes.nodes[i].lastUsed < nodes.nodes[j].lastUsed
 		}
-
-		if s.nodes[i].lastUsed == nil {
-			bLastUsed = *s.nodes[j].lastUsed
-		}
-
-		return aLastUsed+s.nodes[i].delay < bLastUsed+s.nodes[j].delay
 	}
 }
