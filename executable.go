@@ -3,7 +3,6 @@ package hedera
 import (
 	"context"
 	"github.com/pkg/errors"
-
 	"math"
 	"time"
 
@@ -64,7 +63,7 @@ func execute(
 	maxAttempts := 10
 	var attempt int64
 	var errPersistent error
-	var status Status
+	var stat Status
 	if request.query != nil {
 		maxAttempts = request.query.maxRetry
 	} else {
@@ -75,6 +74,13 @@ func execute(
 		protoRequest := makeRequest(request)
 		nodeAccountID := getNodeAccountID(request)
 		node, ok := client.network.networkNodes[nodeAccountID]
+		//grpcErr, _ := status.FromError(errPersistent)
+		//if grpcErr.Code() == codes.Unavailable {
+		//	println("in trans grpc error")
+		//	fmt.Printf("%+v\n", grpcErr.Message())
+		//	time.Sleep(60 * time.Second)
+		//	errPersistent = nil
+		//}
 		if !ok {
 			return intermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}
@@ -106,9 +112,16 @@ func execute(
 		} else {
 			r, err := method.transaction(context.TODO(), protoRequest.transaction)
 			if err != nil {
-				node.increaseDelay()
 				errPersistent = err
-				continue
+				//grpcErr, _ := status.FromError(err)
+				//if grpcErr.Code() == codes.Unavailable{
+				//	println("in trans grpc error")
+				//	fmt.Printf("%+v\n", grpcErr.Message())
+				//	node.increaseDelay()
+				//	delayForAttempt(attempt)
+				//	continue
+				//}
+				node.increaseDelay()
 			}
 
 			resp.transaction = r
@@ -116,18 +129,18 @@ func execute(
 
 		node.decreaseDelay()
 
-		status = mapResponseStatus(request, resp)
+		stat = mapResponseStatus(request, resp)
 
-		if shouldRetry(status, resp) && attempt <= int64(maxAttempts) {
+		if shouldRetry(stat, resp) && attempt <= int64(maxAttempts) {
 			delayForAttempt(attempt)
 			continue
 		}
 
-		if status != StatusOk && status != StatusSuccess {
+		if stat != StatusOk && stat != StatusSuccess {
 			if request.query != nil {
-				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, status)
+				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, stat)
 			} else {
-				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.GetTransactionID(), status)
+				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.GetTransactionID(), stat)
 			}
 		}
 
