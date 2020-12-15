@@ -81,11 +81,6 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 
 func transactionReceiptQuery_mapResponseStatus(_ request, response response) Status {
 	return Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
-	//if status != StatusBusy && status != StatusUnknown && status != StatusOk && status != StatusReceiptNotFound && status != StatusSuccess{
-	//	return Status(response.query.GetTransactionGetReceipt().Header.NodeTransactionPrecheckCode)
-	//} else {
-	//	return status
-	//}
 }
 
 func transactionReceiptQuery_getMethod(_ request, channel *channel) method {

@@ -86,7 +86,7 @@ func accountIDFromProtobuf(pb *proto.AccountID) AccountID {
 }
 
 func (id AccountID) isZero() bool {
-	return id.Shard != 0 && id.Realm != 0 && id.Account != 0
+	return id.Shard == 0 && id.Realm == 0 && id.Account == 0
 }
 
 func (id AccountID) equals(other AccountID) bool {

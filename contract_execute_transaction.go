@@ -82,6 +82,7 @@ func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 func (transaction *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
 	if params == nil {
+		println("in setfunction")
 		params = NewContractFunctionParameters()
 	}
 
