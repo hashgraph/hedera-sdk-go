@@ -37,30 +37,45 @@ func TestCryptoTransferTransaction1000_Execute(t *testing.T) {
 	response := make([]TransactionResponse, len(tx))
 	receipt := make([]TransactionReceipt, len(tx))
 
+	println("Building transactions")
+
 	for i := 0; i < len(tx); i++ {
 		tx[i], err = NewTransferTransaction().
-			AddHbarTransfer(client.GetOperatorAccountID(), HbarFromTinybar(10)).
-			AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(-10)).
+			AddHbarTransfer(client.GetOperatorAccountID(), HbarFromTinybar(-10)).
+			AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(10)).
 			SetMaxTransactionFee(NewHbar(1)).
 			FreezeWith(client)
-		assert.NoError(t, err)
-
-		tx[i], err = tx[i].SignWithOperator(client)
-		assert.NoError(t, err)
-		response[i], err = tx[i].Execute(client)
-		assert.NoError(t, err)
-		receipt[i], err = response[i].GetReceipt(client)
-		assert.NoError(t, err)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	//for i := 0; i < len(tx); i++ {
-	//	response[i], err = tx[i].Execute(client)
-	//	assert.NoError(t, err)
-	//}
+	println("Signing transactions")
 
-	//for i := 0; i < len(tx); i++ {
-	//	receipt[i], err = response[i].GetReceipt(client)
-	//	assert.NoError(t, err)
-	//}
+	for _, tx := range tx {
+		_, err = tx.SignWithOperator(client)
+		if err != nil {
+			panic(err)
+		}
+	}
 
+	println("Executing transactions")
+
+	for i, tx := range tx {
+		response[i], err = tx.Execute(client)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	println("Fetching receipts")
+
+	for i, response := range response {
+		receipt[i], err = response.GetReceipt(client)
+		if err != nil {
+			panic(err)
+		}
+
+		println(response.TransactionID.String())
+	}
 }
