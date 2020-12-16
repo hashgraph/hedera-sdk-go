@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -105,6 +106,19 @@ func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
 	client.SetMirrorNetwork(mirrorNetwork)
 
 	return &client
+}
+
+func ClientForName(name string) (*Client, error) {
+	switch name {
+	case "testnet":
+		return ClientForTestnet(), nil
+	case "previewnet":
+		return ClientForPreviewnet(), nil
+	case "mainnet":
+		return ClientForMainnet(), nil
+	default:
+		return &Client{}, fmt.Errorf("%q is not recognized as a valid Hedera network", name)
+	}
 }
 
 type configOperator struct {
