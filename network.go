@@ -12,9 +12,9 @@ type network struct {
 
 func newNetwork() network {
 	return network{
-		network:                  make(map[string]AccountID),
-		nodes:                    make([]*node, 0),
-		networkNodes:             make(map[AccountID]*node),
+		network:      make(map[string]AccountID),
+		nodes:        make([]*node, 0),
+		networkNodes: make(map[AccountID]*node),
 	}
 }
 
