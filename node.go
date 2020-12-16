@@ -33,7 +33,7 @@ func newNode(accountID AccountID, address string) node {
 	}
 }
 
-func (node node) InUse() {
+func (node node) inUse() {
 	node.useCount++
 	node.lastUsed = time.Now().UTC().UnixNano()
 }
@@ -44,7 +44,7 @@ func (node node) isHealthy() bool {
 
 func (node node) increaseDelay() {
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
-	node.delayUntil = node.delay + time.Now().UTC().UnixNano()
+	node.delayUntil = (node.delay * 100000) + time.Now().UTC().UnixNano()
 }
 
 func (node node) decreaseDelay() {

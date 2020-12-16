@@ -82,7 +82,7 @@ func execute(
 			return intermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}
 
-		node.InUse()
+		node.inUse()
 
 		channel, err := node.getChannel()
 		if err != nil {
