@@ -3,6 +3,8 @@ package hedera
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/keepalive"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -24,7 +26,13 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 		return node.channel, nil
 	}
 
-	conn, err := grpc.Dial(node.address, grpc.WithInsecure())
+	var kacp = keepalive.ClientParameters{
+		Time:                10 * time.Second,
+		Timeout:             time.Second,
+		PermitWithoutStream: true,
+	}
+
+	conn, err := grpc.Dial(node.address, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
 		return nil, errors.Wrapf(err, "error connecting to mirror at %s", node.address)
 	}

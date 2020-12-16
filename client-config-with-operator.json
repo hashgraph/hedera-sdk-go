@@ -6,7 +6,7 @@
         "3.previewnet.hedera.com:50211" : "0.0.6"
     },
     "operator": {
-        "accountId": "0.0.1113",
-        "privateKey": "302e020100300506032b657004220420eaa013282e70dcabb568740614fc213241216fc5130851f3d1e5447de634e889"
+        "accountId": "0.0.3",
+        "privateKey": "302e020100300506032b657004220420eaa013282e"
     }
 }
