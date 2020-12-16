@@ -3,6 +3,8 @@ package hedera
 import (
 	"context"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"math"
 	"time"
 
@@ -63,24 +65,19 @@ func execute(
 	maxAttempts := 10
 	var attempt int64
 	var errPersistent error
-	var stat Status
+	var responseStatus Status
+
 	if request.query != nil {
 		maxAttempts = request.query.maxRetry
 	} else {
 		maxAttempts = request.transaction.maxRetry
 	}
 
-	for attempt := int64(0); attempt < int64(maxAttempts); attempt++ {
+	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
 		protoRequest := makeRequest(request)
 		nodeAccountID := getNodeAccountID(request)
+
 		node, ok := client.network.networkNodes[nodeAccountID]
-		//grpcErr, _ := status.FromError(errPersistent)
-		//if grpcErr.Code() == codes.Unavailable {
-		//	println("in trans grpc error")
-		//	fmt.Printf("%+v\n", grpcErr.Message())
-		//	time.Sleep(60 * time.Second)
-		//	errPersistent = nil
-		//}
 		if !ok {
 			return intermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}
@@ -101,46 +98,33 @@ func execute(
 		}
 
 		if method.query != nil {
-			r, err := method.query(context.TODO(), protoRequest.query)
-			if err != nil {
+			resp.query, err = method.query(context.TODO(), protoRequest.query)
+		} else {
+			resp.transaction, err = method.transaction(context.TODO(), protoRequest.transaction)
+		}
+
+		if err != nil {
+			errPersistent = err
+			if grpcErr, ok := status.FromError(err); ok && (grpcErr.Code() == codes.Unavailable || grpcErr.Code() == codes.ResourceExhausted) {
 				node.increaseDelay()
-				errPersistent = err
 				continue
 			}
-
-			resp.query = r
-		} else {
-			r, err := method.transaction(context.TODO(), protoRequest.transaction)
-			if err != nil {
-				errPersistent = err
-				//grpcErr, _ := status.FromError(err)
-				//if grpcErr.Code() == codes.Unavailable{
-				//	println("in trans grpc error")
-				//	fmt.Printf("%+v\n", grpcErr.Message())
-				//	node.increaseDelay()
-				//	delayForAttempt(attempt)
-				//	continue
-				//}
-				node.increaseDelay()
-			}
-
-			resp.transaction = r
 		}
 
 		node.decreaseDelay()
 
-		stat = mapResponseStatus(request, resp)
+		responseStatus = mapResponseStatus(request, resp)
 
-		if shouldRetry(stat, resp) && attempt <= int64(maxAttempts) {
+		if shouldRetry(responseStatus, resp) && attempt <= int64(maxAttempts) {
 			delayForAttempt(attempt)
 			continue
 		}
 
-		if stat != StatusOk && stat != StatusSuccess {
+		if responseStatus != StatusOk && responseStatus != StatusSuccess {
 			if request.query != nil {
-				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, stat)
+				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, responseStatus)
 			} else {
-				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.GetTransactionID(), stat)
+				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.GetTransactionID(), responseStatus)
 			}
 		}
 

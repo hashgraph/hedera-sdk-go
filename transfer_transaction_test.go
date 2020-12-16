@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -33,11 +34,9 @@ func TestCryptoTransferTransactionNothing_Execute(t *testing.T) {
 func TestCryptoTransferTransaction1000_Execute(t *testing.T) {
 	client := newTestClient(t)
 	var err error
-	tx := make([]*TransferTransaction, 1000)
+	tx := make([]*TransferTransaction, 500)
 	response := make([]TransactionResponse, len(tx))
 	receipt := make([]TransactionReceipt, len(tx))
-
-	println("Building transactions")
 
 	for i := 0; i < len(tx); i++ {
 		tx[i], err = NewTransferTransaction().
@@ -48,34 +47,22 @@ func TestCryptoTransferTransaction1000_Execute(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-	}
 
-	println("Signing transactions")
+		fmt.Printf("%+v\n", tx[i].GetNodeAccountIDs())
 
-	for _, tx := range tx {
-		_, err = tx.SignWithOperator(client)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	println("Executing transactions")
-
-	for i, tx := range tx {
-		response[i], err = tx.Execute(client)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	println("Fetching receipts")
-
-	for i, response := range response {
-		receipt[i], err = response.GetReceipt(client)
+		_, err = tx[i].SignWithOperator(client)
 		if err != nil {
 			panic(err)
 		}
 
-		println(response.TransactionID.String())
+		response[i], err = tx[i].Execute(client)
+		if err != nil {
+			panic(err)
+		}
+
+		receipt[i], err = response[i].GetReceipt(client)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
