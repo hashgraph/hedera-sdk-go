@@ -18,7 +18,7 @@ type node struct {
 }
 
 type nodes struct {
-	nodes []node
+	nodes []*node
 }
 
 func newNode(accountID AccountID, address string) node {
@@ -33,31 +33,31 @@ func newNode(accountID AccountID, address string) node {
 	}
 }
 
-func (node node) inUse() {
-	node.useCount++
+func (node *node) inUse() {
+	node.useCount += 1
 	node.lastUsed = time.Now().UTC().UnixNano()
 }
 
-func (node node) isHealthy() bool {
+func (node *node) isHealthy() bool {
 	return node.delayUntil <= time.Now().UTC().UnixNano()
 }
 
-func (node node) increaseDelay() {
+func (node *node) increaseDelay() {
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
 	node.delayUntil = (node.delay * 100000) + time.Now().UTC().UnixNano()
 }
 
-func (node node) decreaseDelay() {
+func (node *node) decreaseDelay() {
 	node.delay = int64(math.Max(float64(node.delay)/2, 250))
 }
 
-func (node node) wait() {
+func (node *node) wait() {
 	delay := node.delayUntil - node.lastUsed
 	time.Sleep(time.Duration(delay) * time.Nanosecond)
 
 }
 
-func (node node) getChannel() (*channel, error) {
+func (node *node) getChannel() (*channel, error) {
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -73,7 +73,7 @@ func (node node) getChannel() (*channel, error) {
 	return node.channel, nil
 }
 
-func (node node) close() error {
+func (node *node) close() error {
 	return node.channel.client.Close()
 }
 

@@ -2,26 +2,20 @@ package hedera
 
 import (
 	"sort"
-	"time"
 )
 
 type network struct {
 	network      map[string]AccountID
-	nodes        []node
-	networkNodes map[AccountID]node
-
-	lastSortedNodeAccountIDs int64
+	nodes        []*node
+	networkNodes map[AccountID]*node
 }
 
 func newNetwork() network {
-	networkForReturn := network{
+	return network{
 		network:                  make(map[string]AccountID),
-		nodes:                    make([]node, 0),
-		networkNodes:             make(map[AccountID]node),
-		lastSortedNodeAccountIDs: time.Now().UTC().Unix(),
+		nodes:                    make([]*node, 0),
+		networkNodes:             make(map[AccountID]*node),
 	}
-
-	return networkForReturn
 }
 
 func (network *network) SetNetwork(net map[string]AccountID) error {
@@ -38,11 +32,12 @@ func (network *network) SetNetwork(net map[string]AccountID) error {
 
 	for url, id := range net {
 		if _, ok := network.network[url]; !ok {
-			network.networkNodes[id] = newNode(id, url)
+			node := newNode(id, url)
+			network.networkNodes[id] = &node
 		}
 	}
 
-	network.nodes = make([]node, len(net))
+	network.nodes = make([]*node, len(net))
 	i := 0
 	for _, node := range network.networkNodes {
 		network.nodes[i] = node
@@ -55,14 +50,12 @@ func (network *network) SetNetwork(net map[string]AccountID) error {
 }
 
 func (network *network) getNodeAccountIDsForExecute() []AccountID {
-	if network.lastSortedNodeAccountIDs+1 < time.Now().UTC().Unix() {
-		sort.Sort(nodes{nodes: network.nodes})
-		network.lastSortedNodeAccountIDs = time.Now().UTC().Unix()
-	}
+	sort.Sort(nodes{nodes: network.nodes})
 
-	slice := network.nodes[0:network.getNumberOfNodesForTransaction()]
-	var accountIDs = make([]AccountID, len(slice))
-	for i, id := range slice {
+	length := network.getNumberOfNodesForTransaction()
+	accountIDs := make([]AccountID, length)
+
+	for i, id := range network.nodes[0:length] {
 		accountIDs[i] = id.accountID
 	}
 
@@ -70,7 +63,14 @@ func (network *network) getNodeAccountIDsForExecute() []AccountID {
 }
 
 func (network *network) getNumberOfNodesForTransaction() int {
-	return (len(network.nodes) + 3 - 1) / 3
+	count := 0
+	for _, node := range network.nodes {
+		if node.isHealthy() {
+			count++
+		}
+	}
+
+	return (count + 3 - 1) / 3
 }
 
 func (network *network) Close() error {
