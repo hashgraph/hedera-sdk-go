@@ -50,7 +50,7 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicInfoQueryNoTopicID_Execute(t *testing.T) {
+func Test_TopicInfo_NoTopicID(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewTopicInfoQuery().

@@ -96,7 +96,7 @@ func TestTokenGrantKycTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenGrantKycTransactionNoTokenID_Execute(t *testing.T) {
+func Test_TokenGrantKyc_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -186,7 +186,7 @@ func TestTokenGrantKycTransactionNoTokenID_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenGrantKycTransactionNoAccountID_Execute(t *testing.T) {
+func Test_TokenGrantKyc_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()

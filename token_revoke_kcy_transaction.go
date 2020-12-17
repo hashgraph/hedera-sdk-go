@@ -166,12 +166,18 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{
+			TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+			NodeID:        resp.transaction.NodeID,
+		}, err
 	}
 
+	hash, err := transaction.GetTransactionHash()
+
 	return TransactionResponse{
-		TransactionID: transaction.transactionIDs[0],
+		TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
 		NodeID:        resp.transaction.NodeID,
+		Hash:          hash,
 	}, nil
 }
 

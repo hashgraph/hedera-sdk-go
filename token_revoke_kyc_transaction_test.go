@@ -106,7 +106,7 @@ func TestTokenRevokeKycTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenRevokeKycTransactionNoTokenID_Execute(t *testing.T) {
+func Test_TokenRevokeKyc_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -206,7 +206,7 @@ func TestTokenRevokeKycTransactionNoTokenID_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenRevokeKycTransactionNoAccountID_Execute(t *testing.T) {
+func Test_TokenRevokeKyc_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()

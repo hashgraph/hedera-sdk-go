@@ -29,13 +29,10 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	resp, err = NewLiveHashAddTransaction().
 		SetAccountID(accountID).
 		SetDuration(24 * 30 * time.Hour).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetHash(_hash).
 		SetKeys(newKey.PublicKey()).
 		Execute(client)
@@ -44,14 +41,14 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 
 	resp, err = NewLiveHashDeleteTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetHash(_hash).
 		Execute(client)
 	assert.Error(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)
 	assert.NoError(t, err)

@@ -32,18 +32,15 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 
 	account := *receipt.AccountID
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	_, err = NewTransferTransaction().
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		AddHbarTransfer(account, NewHbar(1)).
 		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(-1)).
 		Execute(client)
 	assert.NoError(t, err)
 
 	recordsQuery, err := NewAccountRecordsQuery().
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(client.GetOperatorAccountID()).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
@@ -52,7 +49,7 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 	assert.Equal(t, 0, len(recordsQuery))
 }
 
-func TestAccountRecordQueryNoAccountID_Execute(t *testing.T) {
+func Test_AccountRecord_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewAccountRecordsQuery().

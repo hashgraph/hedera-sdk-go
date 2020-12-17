@@ -110,7 +110,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenTransferTransactionNotZeroSum_Execute(t *testing.T) {
+func Test_TokenTransfer_NotZeroSum(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -215,7 +215,7 @@ func TestTokenTransferTransactionNotZeroSum_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-//func TestTokenTransferTransactionFrozen_Execute(t *testing.T) {
+//func Test_TokenTransfer_Frozen(t *testing.T) {
 //	client := newTestClient(t)
 //
 //	newKey, err := GeneratePrivateKey()

@@ -38,7 +38,7 @@ func TestTokenDeleteTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenDeleteTransactionNoKeys_Execute(t *testing.T) {
+func Test_TokenDelete_NoKeys(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -66,7 +66,7 @@ func TestTokenDeleteTransactionNoKeys_Execute(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestTokenDeleteTransactionNoTokenID_Execute(t *testing.T) {
+func Test_TokenDelete_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTokenCreateTransaction().

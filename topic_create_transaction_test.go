@@ -24,12 +24,9 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	info, err := NewTopicInfoQuery().
 		SetTopicID(topicID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -41,7 +38,7 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -50,7 +47,7 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicCreateTransactionDifferentKeys_Execute(t *testing.T) {
+func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	client := newTestClient(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
@@ -85,12 +82,9 @@ func TestTopicCreateTransactionDifferentKeys_Execute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	info, err := NewTopicInfoQuery().
 		SetTopicID(topicID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -102,7 +96,7 @@ func TestTopicCreateTransactionDifferentKeys_Execute(t *testing.T) {
 
 	txDelete, err := NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxTransactionFee(NewHbar(5)).
 		FreezeWith(client)
 	assert.NoError(t, err)

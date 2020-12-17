@@ -19,7 +19,7 @@ func TestCryptoTransferTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCryptoTransferTransactionNothing_Execute(t *testing.T) {
+func Test_CryptoTransfer_Nothing(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTransferTransaction().
@@ -30,7 +30,7 @@ func TestCryptoTransferTransactionNothing_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-//func TestCryptoTransferTransaction1000_Execute(t *testing.T) {
+//func Test_CryptoTransfer_1000(t *testing.T) {
 //	client := newTestClient(t)
 //	var err error
 //	tx := make([]*TransferTransaction, 500)

@@ -14,7 +14,7 @@ func TestSerializeFileInfoQuery(t *testing.T) {
 	assert.Equal(t, `fileGetInfo:{header:{}fileID:{fileNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
 }
 
-func TestFileInfoQueryTransaction_Execute(t *testing.T) {
+func Test_FileInfo_Transaction(t *testing.T) {
 	client := newTestClient(t)
 
 	client.SetMaxTransactionFee(NewHbar(2))
@@ -33,12 +33,9 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	info, err := NewFileInfoQuery().
 		SetFileID(*fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -49,7 +46,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -57,7 +54,7 @@ func TestFileInfoQueryTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileInfoQueryTransactionNoFileID_Execute(t *testing.T) {
+func Test_FileInfoQuery_NoFileID(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewFileInfoQuery().

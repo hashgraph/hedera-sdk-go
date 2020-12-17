@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestReceiptQueryTransaction_Execute(t *testing.T) {
+func Test_Receipt_Transaction(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -37,11 +37,8 @@ func TestReceiptQueryTransaction_Execute(t *testing.T) {
 	accountID := *record.Receipt.AccountID
 	assert.NotNil(t, accountID)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	transaction, err := NewAccountDeleteTransaction().
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetMaxTransactionFee(NewHbar(1)).

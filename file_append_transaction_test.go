@@ -53,7 +53,7 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileAppendTransactionNoFileID_Execute(t *testing.T) {
+func Test_FileAppend_NoFileID(t *testing.T) {
 	client := newTestClient(t)
 
 	client.SetMaxTransactionFee(NewHbar(2))

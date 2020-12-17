@@ -38,7 +38,7 @@ func TestTokenCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenCreateTransactionMultipleKeys_Execute(t *testing.T) {
+func Test_TokenCreate_MultipleKeys(t *testing.T) {
 	client := newTestClient(t)
 
 	keys := make([]PrivateKey, 5)
@@ -96,7 +96,7 @@ func TestTokenCreateTransactionMultipleKeys_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenCreateTransactionNoKeys_Execute(t *testing.T) {
+func Test_TokenCreate_NoKeys(t *testing.T) {
 	client := newTestClient(t)
 
 	keys := make([]PrivateKey, 6)
@@ -149,7 +149,7 @@ func TestTokenCreateTransactionNoKeys_Execute(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestTokenCreateTransactionAdminSign_Execute(t *testing.T) {
+func Test_TokenCreate_AdminSign(t *testing.T) {
 	client := newTestClient(t)
 
 	keys := make([]PrivateKey, 6)

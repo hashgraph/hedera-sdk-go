@@ -38,12 +38,9 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	remoteContents, err := NewFileContentsQuery().
 		SetFileID(*fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -51,7 +48,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -59,7 +56,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileContentsQueryNoFileID_Execute(t *testing.T) {
+func Test_FileContents_NoFileID(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewFileContentsQuery().

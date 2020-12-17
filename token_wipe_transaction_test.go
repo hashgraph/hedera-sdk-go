@@ -110,7 +110,7 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenWipeTransactionNoAmount_Execute(t *testing.T) {
+func Test_TokenWipe_NoAmount(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -214,7 +214,7 @@ func TestTokenWipeTransactionNoAmount_Execute(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestTokenWipeTransactionNoTokenID_Execute(t *testing.T) {
+func Test_TokenWipe_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -318,7 +318,7 @@ func TestTokenWipeTransactionNoTokenID_Execute(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestTokenWipeTransactionNoAccountID_Execute(t *testing.T) {
+func Test_TokenWipe_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()

@@ -82,7 +82,6 @@ func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 func (transaction *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
 	if params == nil {
-		println("in setfunction")
 		params = NewContractFunctionParameters()
 	}
 
@@ -200,12 +199,18 @@ func (transaction *ContractExecuteTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{
+			TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+			NodeID:        resp.transaction.NodeID,
+		}, err
 	}
 
+	hash, err := transaction.GetTransactionHash()
+
 	return TransactionResponse{
-		TransactionID: transaction.transactionIDs[0],
+		TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
 		NodeID:        resp.transaction.NodeID,
+		Hash:          hash,
 	}, nil
 }
 

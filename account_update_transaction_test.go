@@ -32,12 +32,9 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	accountID := *receipt.AccountID
 	assert.NoError(t, err)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	tx, err := NewAccountUpdateTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetKey(newKey2.PublicKey()).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
@@ -55,7 +52,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -65,7 +62,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 
@@ -81,7 +78,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountUpdateTransactionNoSigning_Execute(t *testing.T) {
+func Test_AccountUpdate_NoSigning(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -108,12 +105,9 @@ func TestAccountUpdateTransactionNoSigning_Execute(t *testing.T) {
 	accountID := *receipt.AccountID
 	assert.NoError(t, err)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	_, err = NewAccountUpdateTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetKey(newKey2.PublicKey()).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
@@ -124,7 +118,7 @@ func TestAccountUpdateTransactionNoSigning_Execute(t *testing.T) {
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -134,7 +128,7 @@ func TestAccountUpdateTransactionNoSigning_Execute(t *testing.T) {
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 

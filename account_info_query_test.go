@@ -36,12 +36,9 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 	accountID := *receipt.AccountID
 	assert.NoError(t, err)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -53,7 +50,7 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(accountID)).
@@ -69,7 +66,7 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountInfoQueryNoAccountID_Execute(t *testing.T) {
+func Test_AccountInfo_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewAccountInfoQuery().

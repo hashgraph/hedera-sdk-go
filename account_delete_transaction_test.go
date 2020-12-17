@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -28,13 +29,10 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 	accountID := receipt.AccountID
 	assert.NoError(t, err)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(*accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(*accountID)).
 		FreezeWith(client)
@@ -47,7 +45,7 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountDeleteTransactionNoTransferAccountID_Execute(t *testing.T) {
+func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -70,12 +68,9 @@ func TestAccountDeleteTransactionNoTransferAccountID_Execute(t *testing.T) {
 	accountID := receipt.AccountID
 	assert.NoError(t, err)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(*accountID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		FreezeWith(client)
 	assert.NoError(t, err)
 
@@ -86,7 +81,7 @@ func TestAccountDeleteTransactionNoTransferAccountID_Execute(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestAccountDeleteTransactionNoAccountID_Execute(t *testing.T) {
+func Test_AccountDelete_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -102,7 +97,7 @@ func TestAccountDeleteTransactionNoAccountID_Execute(t *testing.T) {
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
-
+	fmt.Printf("%v\n", resp)
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
@@ -114,9 +109,11 @@ func TestAccountDeleteTransactionNoAccountID_Execute(t *testing.T) {
 
 	resp, err = tx.Sign(newKey).Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, err.Error(), fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID))
+
 }
 
-func TestAccountDeleteTransactionNoSinging_Execute(t *testing.T) {
+func Test_AccountDelete_NoSinging(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -141,15 +138,13 @@ func TestAccountDeleteTransactionNoSinging_Execute(t *testing.T) {
 
 	acc := *accountID
 
-	println(acc.String())
-
 	resp, err = NewAccountDeleteTransaction().
-		SetAccountID(*accountID).
+		SetAccountID(acc).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }

@@ -87,7 +87,7 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenAssociateTransactionNoAccountID_Execute(t *testing.T) {
+func Test_TokenAssociate_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -170,7 +170,7 @@ func TestTokenAssociateTransactionNoAccountID_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenAssociateTransactionNoTokenID_Execute(t *testing.T) {
+func Test_TokenAssociate_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()

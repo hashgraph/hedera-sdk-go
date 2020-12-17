@@ -24,10 +24,11 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountBalanceQueryNoAccount_Execute(t *testing.T) {
+func Test_AccountBalance_NoAccount(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewAccountBalanceQuery().
 		Execute(client)
 	assert.Error(t, err)
+	assert.True(t, err.Error() == "exceptional precheck status INVALID_ACCOUNT_ID")
 }

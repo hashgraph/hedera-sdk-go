@@ -49,7 +49,7 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestTopicDeleteTransactionNoTopicID_Execute(t *testing.T) {
+func Test_TopicDelete_NoTopicID(t *testing.T) {
 	client := newTestClient(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"

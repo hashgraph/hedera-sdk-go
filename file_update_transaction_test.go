@@ -26,12 +26,9 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 
 	var newContents = []byte("Good Night, World")
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	resp, err = NewFileUpdateTransaction().
 		SetFileID(fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContents(newContents).
 		Execute(client)
 
@@ -42,7 +39,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 
 	contents, err := NewFileContentsQuery().
 		SetFileID(fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -50,7 +47,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -58,7 +55,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileUpdateTransaction3_Execute(t *testing.T) {
+func Test_FileUpdate_3(t *testing.T) {
 	client := newTestClient(t)
 
 	client.SetMaxTransactionFee(NewHbar(2))
@@ -77,11 +74,8 @@ func TestFileUpdateTransaction3_Execute(t *testing.T) {
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	resp, err = NewFileUpdateTransaction().
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -90,7 +84,7 @@ func TestFileUpdateTransaction3_Execute(t *testing.T) {
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 

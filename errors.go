@@ -112,7 +112,6 @@ func newErrHederaPreCheckStatus(id TransactionID, status Status) ErrHederaPreChe
 
 // Error() implements the Error interface
 func (e ErrHederaPreCheckStatus) Error() string {
-	println(e.TxID.AccountID.isZero())
 	if e.TxID.AccountID.isZero() {
 		return fmt.Sprintf("exceptional precheck status %s", e.Status.String())
 	}

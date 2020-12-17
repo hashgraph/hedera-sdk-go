@@ -48,7 +48,7 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenUpdateTransactionDifferentKeys_Execute(t *testing.T) {
+func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 	client := newTestClient(t)
 
 	keys := make([]PrivateKey, 5)
@@ -122,7 +122,7 @@ func TestTokenUpdateTransactionDifferentKeys_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenUpdateTransactionNoTokenID_Execute(t *testing.T) {
+func Test_TokenUpdate_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTokenCreateTransaction().

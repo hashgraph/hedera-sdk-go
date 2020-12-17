@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -50,11 +51,8 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	nodeIDs := make([]AccountID, 1)
-	nodeIDs[0] = resp.NodeID
-
 	tx, err := NewAccountDeleteTransaction().
-		SetNodeAccountIDs(nodeIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetMaxTransactionFee(NewHbar(1)).
@@ -71,10 +69,11 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountCreateTransactionNoKey_Execute(t *testing.T) {
+func Test_AccountCreate_NoKey(t *testing.T) {
 	client := newTestClient(t)
 
-	_, err := NewAccountCreateTransaction().
+	resp, err := NewAccountCreateTransaction().
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, err.Error(), fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID))
 }

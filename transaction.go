@@ -382,7 +382,7 @@ func transaction_mapResponse(request request, _ response, nodeID AccountID, prot
 	}
 
 	index := request.transaction.nextTransactionIndex
-	request.transaction.nextTransactionIndex++
+	request.transaction.nextTransactionIndex = (index + 1) % len(request.transaction.transactionIDs)
 
 	return intermediateResponse{
 		transaction: TransactionResponse{

@@ -101,7 +101,7 @@ func TestTokenDissociateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenDissociateTransactionNoSigningOne_Execute(t *testing.T) {
+func Test_TokenDissociate_NoSigningOne(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -182,7 +182,7 @@ func TestTokenDissociateTransactionNoSigningOne_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenDissociateTransactionNoTokenID_Execute(t *testing.T) {
+func Test_TokenDissociate_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -262,7 +262,7 @@ func TestTokenDissociateTransactionNoTokenID_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenDissociateTransactionNoAccountID_Execute(t *testing.T) {
+func Test_TokenDissociate_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()

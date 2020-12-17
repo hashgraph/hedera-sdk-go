@@ -107,7 +107,7 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestContractUpdateTransaction2_Execute(t *testing.T) {
+func Test_ContractUpdate_2(t *testing.T) {
 	client := newTestClient(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract

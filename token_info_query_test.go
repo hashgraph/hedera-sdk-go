@@ -73,7 +73,7 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenInfoQueryNoPayment_Execute(t *testing.T) {
+func Test_TokenInfo_NoPayment(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -119,7 +119,7 @@ func TestTokenInfoQueryNoPayment_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenInfoQueryNoTokenID_Execute(t *testing.T) {
+func Test_TokenInfo_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewTokenInfoQuery().

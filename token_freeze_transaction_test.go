@@ -96,7 +96,7 @@ func TestTokenFreezeTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenFreezeTransactionNoAccountID_Execute(t *testing.T) {
+func Test_TokenFreeze_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
 	newKey, err := GeneratePrivateKey()

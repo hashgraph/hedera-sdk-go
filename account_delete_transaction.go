@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
 	"time"
 )
 
@@ -168,12 +167,19 @@ func (transaction *AccountDeleteTransaction) Execute(
 	)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{
+			TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+			NodeID:        resp.transaction.NodeID,
+			Hash:          make([]byte, 0),
+		}, err
 	}
 
+	hash, err := transaction.GetTransactionHash()
+
 	return TransactionResponse{
-		TransactionID: transaction.transactionIDs[0],
+		TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
 		NodeID:        resp.transaction.NodeID,
+		Hash:          hash,
 	}, nil
 }
 
