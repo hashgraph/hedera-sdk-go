@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -32,11 +33,19 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 		SetTokenID(tokenID).
 		SetTokenSymbol("A").
 		SetMaxTransactionFee(NewHbar(1000)).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(tokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+	assert.Equalf(t, "A", info.Symbol, fmt.Sprintf("token failed to update"))
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -97,7 +106,7 @@ func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 	tokenID := *receipt.TokenID
 
 	resp, err = NewTokenUpdateTransaction().
-		SetTokenName("ffffk").
+		SetTokenName("ffffc").
 		SetTokenID(tokenID).
 		SetTokenSymbol("K").
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
@@ -111,6 +120,19 @@ func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 
 	receipt, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(tokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "K", info.Symbol)
+	assert.Equal(t, "ffffc", info.Name)
+	if info.FreezeKey != nil {
+		freezeKey := *info.FreezeKey
+		assert.Equal(t, pubKeys[1].String(), freezeKey.String())
+	}
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -145,13 +167,15 @@ func Test_TokenUpdate_NoTokenID(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	_, err = NewTokenUpdateTransaction().
+	resp2, err := NewTokenUpdateTransaction().
 		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

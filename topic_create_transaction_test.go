@@ -108,3 +108,17 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func Test_TopicCreate_JustSetMemo(t *testing.T) {
+	client := newTestClient(t)
+
+	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
+
+	resp, err := NewTopicCreateTransaction().
+		SetTopicMemo(topicMemo).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}

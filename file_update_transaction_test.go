@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -55,7 +56,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileUpdate_3(t *testing.T) {
+func Test_FileUpdate_NoFileID(t *testing.T) {
 	client := newTestClient(t)
 
 	client.SetMaxTransactionFee(NewHbar(2))
@@ -81,6 +82,7 @@ func Test_FileUpdate_3(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).

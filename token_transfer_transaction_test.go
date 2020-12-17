@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -47,10 +48,8 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	nodeId := resp.NodeID
-
 	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
@@ -65,7 +64,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(client)
@@ -75,7 +74,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -10).
 		AddTokenTransfer(tokenID, accountID, 10).
 		Execute(client)
@@ -84,8 +83,22 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
+	info, err := NewAccountInfoQuery().
+		SetAccountID(client.GetOperatorAccountID()).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	var value uint64
+	for _, relation := range info.TokenRelationships {
+		if tokenID == relation.TokenID {
+			value = relation.Balance
+		}
+	}
+	assert.Equalf(t, uint64(999990), value, fmt.Sprintf("token transfer transaction failed"))
+
 	resp, err = NewTokenWipeTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		SetAccountID(accountID).
 		SetAmount(10).
@@ -180,14 +193,16 @@ func Test_TokenTransfer_NotZeroSum(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	resp, err = NewTransferTransaction().
+	resp2, err := NewTransferTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).
 		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -10).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp2.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	resp, err = NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).

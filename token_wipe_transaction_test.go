@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -47,10 +48,8 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	nodeId := resp.NodeID
-
 	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
@@ -65,7 +64,7 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(client)
@@ -75,25 +74,54 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
-		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -10).
-		AddTokenTransfer(tokenID, accountID, 10).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -100).
+		AddTokenTransfer(tokenID, accountID, 100).
 		Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
+
+	info, err := NewAccountBalanceQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	var value uint64
+	for balanceTokenID, balance := range info.Token {
+		if tokenID == balanceTokenID {
+			value = balance
+		}
+	}
+
+	assert.Equal(t, uint64(100), value)
 
 	resp, err = NewTokenWipeTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		SetAccountID(accountID).
-		SetAmount(10).
+		SetAmount(100).
 		Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
+
+	info, err = NewAccountBalanceQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	for balanceTokenID, balance := range info.Token {
+		if tokenID == balanceTokenID {
+			value = balance
+		}
+	}
+
+	assert.Equal(t, uint64(0), value)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -189,15 +217,17 @@ func Test_TokenWipe_NoAmount(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	_, err = NewTokenWipeTransaction().
+	resp2, err := NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).
 		SetTokenID(tokenID).
 		SetAccountID(accountID).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_WIPING_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
 
-	receipt, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	receipt, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -212,6 +242,7 @@ func Test_TokenWipe_NoAmount(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 }
 
 func Test_TokenWipe_NoTokenID(t *testing.T) {
@@ -256,10 +287,8 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	nodeId := resp.NodeID
-
 	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
@@ -274,7 +303,7 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(client)
@@ -284,7 +313,7 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -10).
 		AddTokenTransfer(tokenID, accountID, 10).
 		Execute(client)
@@ -293,15 +322,19 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	_, err = NewTokenWipeTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+	resp2, err := NewTokenWipeTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetAmount(10).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -316,6 +349,7 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 }
 
 func Test_TokenWipe_NoAccountID(t *testing.T) {
@@ -397,16 +431,17 @@ func Test_TokenWipe_NoAccountID(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	///status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES in receipt not sure where or when
-	_, err = NewTokenWipeTransaction().
+	resp2, err := NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).
 		SetTokenID(tokenID).
 		SetAmount(10).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -421,4 +456,138 @@ func Test_TokenWipe_NoAccountID(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+}
+
+func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(1)
+
+	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetMaxTransactionFee(NewHbar(2)).
+		SetInitialBalance(newBalance).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetFreezeKey(client.GetOperatorPublicKey()).
+		SetWipeKey(client.GetOperatorPublicKey()).
+		SetKycKey(client.GetOperatorPublicKey()).
+		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -100).
+		AddTokenTransfer(tokenID, accountID, 100).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	info, err := NewAccountBalanceQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	var value uint64
+	for balanceTokenID, balance := range info.Token {
+		if tokenID == balanceTokenID {
+			value = balance
+		}
+	}
+
+	assert.Equal(t, uint64(100), value)
+
+	resp, err = NewTokenWipeTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		SetAccountID(accountID).
+		SetAmount(10).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	info, err = NewAccountBalanceQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	for balanceTokenID, balance := range info.Token {
+		if tokenID == balanceTokenID {
+			value = balance
+		}
+	}
+
+	assert.Equal(t, uint64(90), value)
+
+	tx, err := NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetTransferAccountID(client.GetOperatorAccountID()).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = tx.
+		Sign(newKey).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 }

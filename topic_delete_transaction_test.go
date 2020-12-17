@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -47,6 +48,7 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 		SetQueryPayment(NewHbar(22)).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
 }
 
 func Test_TopicDelete_NoTopicID(t *testing.T) {
@@ -82,4 +84,5 @@ func Test_TopicDelete_NoTopicID(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
 }

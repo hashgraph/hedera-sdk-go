@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -56,4 +57,5 @@ func Test_FileCreate_NoKey(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status UNAUTHORIZED"), err.Error())
 }

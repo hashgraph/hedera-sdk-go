@@ -31,6 +31,15 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 		return AccountInfo{}, err
 	}
 
+	tokenRelationship := make([]*TokenRelationship, len(pb.TokenRelationships))
+
+	if pb.TokenRelationships != nil {
+		for i, relationship := range pb.TokenRelationships {
+			singleRelationship := tokenRelationshipFromProtobuf(relationship)
+			tokenRelationship[i] = &singleRelationship
+		}
+	}
+
 	return AccountInfo{
 		AccountID:                      accountIDFromProtobuf(pb.AccountID),
 		ContractAccountID:              pb.ContractAccountID,
@@ -42,11 +51,20 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 		GenerateSendRecordThreshold:    HbarFromTinybar(int64(pb.GenerateSendRecordThreshold)),
 		GenerateReceiveRecordThreshold: HbarFromTinybar(int64(pb.GenerateReceiveRecordThreshold)),
 		ReceiverSigRequired:            pb.ReceiverSigRequired,
+		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeFromProtobuf(pb.ExpirationTime),
 	}, nil
 }
 
 func (info AccountInfo) toProtobuf() ([]byte, error) {
+
+	tokenRelationship := make([]*proto.TokenRelationship, len(info.TokenRelationships))
+
+	for i, relationship := range info.TokenRelationships {
+		singleRelationship := relationship.toProtobuf()
+		tokenRelationship[i] = singleRelationship
+	}
+
 	pb, err := protobuf.Marshal(&proto.CryptoGetInfoResponse_AccountInfo{
 		AccountID:                      info.AccountID.toProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
@@ -58,6 +76,7 @@ func (info AccountInfo) toProtobuf() ([]byte, error) {
 		GenerateSendRecordThreshold:    uint64(info.GenerateSendRecordThreshold.tinybar),
 		GenerateReceiveRecordThreshold: uint64(info.GenerateReceiveRecordThreshold.tinybar),
 		ReceiverSigRequired:            info.ReceiverSigRequired,
+		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeToProtobuf(info.ExpirationTime),
 	})
 

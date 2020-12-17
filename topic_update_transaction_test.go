@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -153,13 +154,17 @@ func Test_TopicUpdate_NoTopicID(t *testing.T) {
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
-	_, err = NewTopicUpdateTransaction().
+	resp2, err := NewTopicUpdateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status FAIL_FEE received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).

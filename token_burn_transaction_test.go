@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -56,6 +57,14 @@ func TestTokenBurnTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
+
+	info, err := NewTokenInfoQuery().
+		SetTokenID(tokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, uint64(999990), info.TotalSupply)
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -126,14 +135,16 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	resp, err = NewTokenBurnTransaction().
+	resp2, err := NewTokenBurnTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_BURN_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp2.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{nodeID}).
@@ -204,14 +215,16 @@ func Test_TokenBurn_NoTokenID(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	resp, err = NewTokenBurnTransaction().
+	resp2, err := NewTokenBurnTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAmount(10).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp2.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{nodeID}).

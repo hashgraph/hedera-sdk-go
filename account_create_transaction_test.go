@@ -75,5 +75,5 @@ func Test_AccountCreate_NoKey(t *testing.T) {
 	resp, err := NewAccountCreateTransaction().
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID))
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID), err.Error())
 }

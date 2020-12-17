@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -134,11 +135,24 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	txDelete.Sign(newKey2)
+	txDelete.Sign(newKey)
 
 	resp, err = txDelete.Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}
+
+func Test_AccountUpdate_AccoundIDNotSet(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewAccountUpdateTransaction().
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID"), err.Error())
 }

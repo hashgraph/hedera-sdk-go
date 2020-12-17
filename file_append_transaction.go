@@ -142,7 +142,11 @@ func (transaction *FileAppendTransaction) Execute(
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
-		return TransactionResponse{}, err
+		return TransactionResponse{
+			TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+			NodeID:        list[0].NodeID,
+			Hash:          make([]byte, 0),
+		}, err
 	}
 
 	return list[0], nil

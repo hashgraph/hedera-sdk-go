@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/hex"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -38,22 +39,19 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	resp, err = NewLiveHashAddTransaction().
+	resp2, err := NewLiveHashAddTransaction().
 		SetAccountID(accountID).
 		SetDuration(24 * 30 * time.Hour).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetHash(_hash).
 		SetKeys(newKey.PublicKey()).
 		Execute(client)
-
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = NewLiveHashDeleteTransaction().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetHash(_hash).
-		Execute(client)
+	_, err = resp2.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	_, err = NewLiveHashQuery().
 		SetAccountID(accountID).
@@ -61,6 +59,19 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 		SetHash(_hash).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+
+	resp2, err = NewLiveHashDeleteTransaction().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetHash(_hash).
+		Execute(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
+
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

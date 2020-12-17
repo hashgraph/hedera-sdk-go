@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -57,4 +58,5 @@ func Test_TopicInfo_NoTopicID(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
 }

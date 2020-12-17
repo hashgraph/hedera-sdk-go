@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -77,6 +78,7 @@ func Test_FileAppend_NoFileID(t *testing.T) {
 		SetContents([]byte(" world!")).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
@@ -89,4 +91,18 @@ func Test_FileAppend_NoFileID(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
+}
+
+func Test_FileAppend_NothingSet(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewFileAppendTransaction().
+		SetContents([]byte(" world!")).
+		Execute(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE received for transaction %s", resp.TransactionID), err.Error())
+
+	_, err = resp.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp.NodeID), err.Error())
 }

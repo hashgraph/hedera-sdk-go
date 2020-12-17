@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -57,6 +58,14 @@ func TestTokenMintTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
+	info, err := NewTokenInfoQuery().
+		SetTokenID(tokenID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, uint64(1000010), info.TotalSupply)
+
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
@@ -101,6 +110,8 @@ func Test_TokenMint_NoAmount(t *testing.T) {
 	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
+	accountID := *receipt.AccountID
+
 	resp, err = NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
@@ -121,11 +132,39 @@ func Test_TokenMint_NoAmount(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	resp, err = NewTokenMintTransaction().
+	resp2, err := NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_MINT_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
+
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+
+	resp, err = NewTokenDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	tx, err := NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetTransferAccountID(client.GetOperatorAccountID()).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = tx.
+		Sign(newKey).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 }
 
 func Test_TokenMint_NoTokenID(t *testing.T) {
@@ -170,14 +209,16 @@ func Test_TokenMint_NoTokenID(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	_, err = NewTokenMintTransaction().
+	resp2, err := NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAmount(10).
 		Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

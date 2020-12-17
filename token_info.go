@@ -21,6 +21,7 @@ type TokenInfo struct {
 	DefaultKycStatus    *bool
 	Deleted             bool
 	AutoRenewPeriod     *time.Duration
+	AutoRenewAccountID  AccountID
 	ExpirationTime      *time.Time
 }
 
@@ -133,6 +134,11 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		expirationTime = time.Unix(pb.GetExpiry().Seconds, int64(pb.GetExpiry().Nanos))
 	}
 
+	var accountID AccountID
+	if pb.AutoRenewAccount != nil {
+		accountID = accountIDFromProtobuf(pb.AutoRenewAccount)
+	}
+
 	return TokenInfo{
 		TokenID:             tokenIDFromProtobuf(pb.TokenId),
 		Name:                pb.Name,
@@ -149,6 +155,7 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		DefaultKycStatus:    kycStatusFromProtobuf(pb.DefaultKycStatus),
 		Deleted:             pb.Deleted,
 		AutoRenewPeriod:     &autoRenewPeriod,
+		AutoRenewAccountID:  accountID,
 		ExpirationTime:      &expirationTime,
 	}
 }
@@ -205,6 +212,7 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		DefaultKycStatus:    *tokenInfo.KycStatusToProtobuf(),
 		Deleted:             tokenInfo.Deleted,
 		AutoRenewPeriod:     autoRenewPeriod,
+		AutoRenewAccount:    tokenInfo.AutoRenewAccountID.toProtobuf(),
 		Expiry:              expirationTime,
 	}
 }

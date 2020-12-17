@@ -76,9 +76,12 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 
 	resp, err = tx.Sign(newKey).Execute(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp.NodeID), err.Error())
+
 }
 
 func Test_AccountDelete_NoAccountID(t *testing.T) {
@@ -97,7 +100,7 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
-	fmt.Printf("%v\n", resp)
+
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
@@ -109,8 +112,7 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 
 	resp, err = tx.Sign(newKey).Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID))
-
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
 }
 
 func Test_AccountDelete_NoSinging(t *testing.T) {
@@ -146,5 +148,6 @@ func Test_AccountDelete_NoSinging(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
 }
