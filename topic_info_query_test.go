@@ -51,6 +51,60 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	keys := make([]PrivateKey, 3)
+	pubKeys := make([]PublicKey, 3)
+
+	for i := range keys {
+		newKey, err := GeneratePrivateKey()
+		if err != nil {
+			panic(err)
+		}
+
+		keys[i] = newKey
+		pubKeys[i] = newKey.PublicKey()
+	}
+
+	thresholdKey := KeyListWithThreshold(2).
+		AddAllPublicKeys(pubKeys)
+
+	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
+
+	txID, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetSubmitKey(thresholdKey).
+		SetTopicMemo(topicMemo).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := txID.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	info, err := NewTopicInfoQuery().
+		SetTopicID(topicID).
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info)
+
+	assert.Equal(t, topicMemo, info.Memo)
+	assert.Equal(t, uint64(0), info.SequenceNumber)
+	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
+	assert.NotEmpty(t, info.SubmitKey.String())
+
+	_, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+}
+
 func Test_TopicInfo_NoTopicID(t *testing.T) {
 	client := newTestClient(t)
 

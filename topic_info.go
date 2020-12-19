@@ -10,14 +10,14 @@ type TopicInfo struct {
 	RunningHash        []byte
 	SequenceNumber     uint64
 	ExpirationTime     time.Time
-	AdminKey           *PublicKey
-	SubmitKey          *PublicKey
+	AdminKey           Key
+	SubmitKey          Key
 	AutoRenewPeriod    time.Duration
 	AutoRenewAccountID *AccountID
 }
 
-func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) TopicInfo {
-
+func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, error) {
+	var err error
 	tempTopicInfo := TopicInfo{
 		Memo:           topicInfo.Memo,
 		RunningHash:    topicInfo.RunningHash,
@@ -29,15 +29,11 @@ func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) TopicInfo {
 	}
 
 	if adminKey := topicInfo.AdminKey; adminKey != nil {
-		tempTopicInfo.AdminKey = &PublicKey{
-			keyData: adminKey.GetEd25519(),
-		}
+		tempTopicInfo.AdminKey, err = keyFromProtobuf(adminKey)
 	}
 
 	if submitKey := topicInfo.SubmitKey; submitKey != nil {
-		tempTopicInfo.SubmitKey = &PublicKey{
-			keyData: submitKey.GetEd25519(),
-		}
+		tempTopicInfo.SubmitKey, err = keyFromProtobuf(submitKey)
 	}
 
 	if ARAccountID := topicInfo.AutoRenewAccount; ARAccountID != nil {
@@ -45,7 +41,7 @@ func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) TopicInfo {
 
 		tempTopicInfo.AutoRenewAccountID = &ID
 	}
-	return tempTopicInfo
+	return tempTopicInfo, err
 }
 
 func (topicInfo *TopicInfo) toProtobuf() *proto.ConsensusTopicInfo {

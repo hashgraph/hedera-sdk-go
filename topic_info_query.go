@@ -139,7 +139,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo), nil
+	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

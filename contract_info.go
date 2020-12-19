@@ -9,7 +9,7 @@ type ContractInfo struct {
 	AccountID         AccountID
 	ContractID        ContractID
 	ContractAccountID string
-	AdminKey          PublicKey
+	AdminKey          Key
 	ExpirationTime    time.Time
 	AutoRenewPeriod   time.Duration
 	Storage           uint64
@@ -17,7 +17,7 @@ type ContractInfo struct {
 	Balance           uint64
 }
 
-func newContractInfo(accountID AccountID, contractID ContractID, contractAccountID string, adminKey PublicKey, expirationTime time.Time,
+func newContractInfo(accountID AccountID, contractID ContractID, contractAccountID string, adminKey Key, expirationTime time.Time,
 	autoRenewPeriod time.Duration, storage uint64, ContractMemo string) ContractInfo {
 	return ContractInfo{
 		AccountID:         accountID,
