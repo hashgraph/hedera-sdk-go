@@ -100,9 +100,9 @@ func Test_FileAppend_NothingSet(t *testing.T) {
 		SetContents([]byte(" world!")).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE received for transaction %s", resp.TransactionID), err.Error())
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp.NodeID), err.Error())
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
 }

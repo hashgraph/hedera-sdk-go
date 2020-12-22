@@ -84,5 +84,7 @@ func newTestClient(t *testing.T) *Client {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
+	client.SetMaxTransactionFee(NewHbar(50))
+
 	return client
 }

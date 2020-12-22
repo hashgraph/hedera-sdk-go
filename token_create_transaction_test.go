@@ -117,7 +117,6 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
@@ -172,7 +171,6 @@ func Test_TokenCreate_AdminSign(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
