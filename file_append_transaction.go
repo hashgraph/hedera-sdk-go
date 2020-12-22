@@ -167,7 +167,12 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 		}
 	}
 
-	transactionID := transaction.transactionIDs[0]
+	var transactionID TransactionID
+	if len(transaction.transactionIDs) > 0 {
+		transactionID = transaction.transactionIDs[0]
+	} else {
+		return []TransactionResponse{}, errors.New("transactionID list is empty")
+	}
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(

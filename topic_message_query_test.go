@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -113,6 +115,196 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	if wait {
-		panic("Message was not received within 30 seconds")
+		err = errors.New("Message was not received within 30 seconds")
 	}
+	assert.NoError(t, err)
+}
+
+func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	wait := true
+	start := time.Now()
+
+	_, err = NewTopicMessageQuery().
+		SetTopicID(topicID).
+		SetStartTime(time.Unix(0, 0)).
+		Subscribe(client, func(message TopicMessage) {
+			if string(message.Contents) == bigContents {
+				wait = false
+			}
+		})
+	assert.NoError(t, err)
+
+	resp, err = NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMessage([]byte(bigContents)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
+
+	for {
+		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+			break
+		}
+
+		time.Sleep(2500)
+	}
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	if wait {
+		err = errors.New("Message was not received within 30 seconds")
+	}
+	assert.Error(t, err)
+}
+
+func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	wait := true
+	start := time.Now()
+
+	_, err = NewTopicMessageQuery().
+		SetTopicID(topicID).
+		SetStartTime(time.Unix(0, 0)).
+		Subscribe(client, func(message TopicMessage) {
+			if string(message.Contents) == bigContents {
+				wait = false
+			}
+		})
+	assert.NoError(t, err)
+
+	resp2, err := NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTopicID(topicID).
+		Execute(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("transactionID list is empty"), err.Error())
+
+	_, err = resp2.GetReceipt(client)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+
+	for {
+		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+			break
+		}
+
+		time.Sleep(2500)
+	}
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	if wait {
+		err = errors.New("Message was not received within 30 seconds")
+	}
+	assert.Error(t, err)
+}
+
+func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	wait := true
+	start := time.Now()
+
+	_, err = NewTopicMessageQuery().
+		SetTopicID(topicID).
+		Subscribe(client, func(message TopicMessage) {
+			if string(message.Contents) == bigContents {
+				wait = false
+			}
+		})
+	assert.NoError(t, err)
+
+	resp, err = NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMessage([]byte(bigContents)).
+		SetTopicID(topicID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	for {
+		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+			break
+		}
+
+		time.Sleep(2500)
+	}
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxTransactionFee(NewHbar(5)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	if wait {
+		err = errors.New("Message was not received within 30 seconds")
+	}
+	assert.Error(t, err)
 }
