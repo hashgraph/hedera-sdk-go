@@ -139,11 +139,19 @@ func (transaction *FileAppendTransaction) SignWith(
 func (transaction *FileAppendTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if transaction.freezeError != nil {
+		return TransactionResponse{}, transaction.freezeError
+	}
+
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
 		return TransactionResponse{
-			TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+			TransactionID: transaction.GetTransactionID(),
 			NodeID:        list[0].NodeID,
 			Hash:          make([]byte, 0),
 		}, err
@@ -169,7 +177,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 
 	var transactionID TransactionID
 	if len(transaction.transactionIDs) > 0 {
-		transactionID = transaction.transactionIDs[0]
+		transactionID = transaction.GetTransactionID()
 	} else {
 		return []TransactionResponse{}, errors.New("transactionID list is empty")
 	}
@@ -243,7 +251,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 		}
 	}
 
-	initialTransactionID := transaction.transactionIDs[0]
+	initialTransactionID := transaction.GetTransactionID()
 	nextTransactionID := initialTransactionID
 
 	transaction.transactionIDs = []TransactionID{}

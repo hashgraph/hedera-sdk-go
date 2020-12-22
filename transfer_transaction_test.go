@@ -31,12 +31,13 @@ func Test_CryptoTransfer_Nothing(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCryptoTransferTransaction_Switched_Execute(t *testing.T) {
+func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewTransferTransaction().
 		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
 		AddHbarTransfer(AccountID{Account: 3}, NewHbar(-10)).
+		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
@@ -44,7 +45,6 @@ func TestCryptoTransferTransaction_Switched_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
-
 }
 
 //func Test_CryptoTransfer_1000(t *testing.T) {

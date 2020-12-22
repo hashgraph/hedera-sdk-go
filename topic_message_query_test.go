@@ -160,7 +160,7 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
 
 	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
 			break
 		}
 
@@ -217,14 +217,14 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("transactionID list is empty"), err.Error())
+	assert.Equal(t, fmt.Sprintf("no transactions to execute"), err.Error())
 
 	_, err = resp2.GetReceipt(client)
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
 			break
 		}
 
@@ -286,7 +286,7 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+		if err != nil|| !wait || uint64(time.Since(start).Seconds()) > 30 {
 			break
 		}
 

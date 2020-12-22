@@ -179,6 +179,14 @@ func (transaction *TopicCreateTransaction) SignWith(
 func (transaction *TopicCreateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if transaction.freezeError != nil {
+		return TransactionResponse{}, transaction.freezeError
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
@@ -186,7 +194,7 @@ func (transaction *TopicCreateTransaction) Execute(
 		}
 	}
 
-	transactionID := transaction.transactionIDs[0]
+	transactionID := transaction.GetTransactionID()
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -211,7 +219,7 @@ func (transaction *TopicCreateTransaction) Execute(
 
 	if err != nil {
 		return TransactionResponse{
-			TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+			TransactionID: transaction.GetTransactionID(),
 			NodeID:        resp.transaction.NodeID,
 		}, err
 	}
@@ -219,7 +227,7 @@ func (transaction *TopicCreateTransaction) Execute(
 	hash, err := transaction.GetTransactionHash()
 
 	return TransactionResponse{
-		TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+		TransactionID: transaction.GetTransactionID(),
 		NodeID:        resp.transaction.NodeID,
 		Hash:          hash,
 	}, nil

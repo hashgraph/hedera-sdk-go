@@ -137,13 +137,25 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 func (transaction *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
+	if client == nil || client.operator == nil {
+		return TransactionResponse{}, errNoClientProvided
+	}
+
+	if transaction.freezeError != nil {
+		return TransactionResponse{}, transaction.freezeError
+	}
+
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
 		return TransactionResponse{}, err
 	}
 
-	return list[0], nil
+	if len(list) > 0 {
+		return list[0], nil
+	} else {
+		return TransactionResponse{}, errNoTransactions
+	}
 }
 
 // ExecuteAll executes the all the Transactions with the provided client
@@ -157,12 +169,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		}
 	}
 
-	var transactionID TransactionID
-	if len(transaction.transactionIDs) > 0 {
-		transactionID = transaction.transactionIDs[0]
-	} else {
-		return []TransactionResponse{}, errors.New("transactionID list is empty")
-	}
+	transactionID := transaction.GetTransactionID()
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -225,12 +232,12 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		}
 	}
 
-	initialTransactionID := transaction.transactionIDs[0]
+	initialTransactionID := transaction.GetTransactionID()
 	nextTransactionID := initialTransactionID
 
-	transaction.transactionIDs = []TransactionID{}
-	transaction.transactions = []*proto.Transaction{}
-	transaction.signedTransactions = []*proto.SignedTransaction{}
+	transaction.transactionIDs = make([]TransactionID, 0)
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.signedTransactions = make([]*proto.SignedTransaction, 0)
 
 	for i := 0; uint64(i) < chunks; i += 1 {
 		start := i * chunkSize

@@ -147,6 +147,10 @@ func (transaction *ContractDeleteTransaction) Execute(
 		return TransactionResponse{}, errNoClientProvided
 	}
 
+	if transaction.freezeError != nil {
+		return TransactionResponse{}, transaction.freezeError
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
@@ -154,7 +158,7 @@ func (transaction *ContractDeleteTransaction) Execute(
 		}
 	}
 
-	transactionID := transaction.transactionIDs[0]
+	transactionID := transaction.GetTransactionID()
 
 	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
 		transaction.SignWith(
@@ -179,7 +183,7 @@ func (transaction *ContractDeleteTransaction) Execute(
 
 	if err != nil {
 		return TransactionResponse{
-			TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+			TransactionID: transaction.GetTransactionID(),
 			NodeID:        resp.transaction.NodeID,
 		}, err
 	}
@@ -187,7 +191,7 @@ func (transaction *ContractDeleteTransaction) Execute(
 	hash, err := transaction.GetTransactionHash()
 
 	return TransactionResponse{
-		TransactionID: transaction.transactionIDs[transaction.nextTransactionIndex],
+		TransactionID: transaction.GetTransactionID(),
 		NodeID:        resp.transaction.NodeID,
 		Hash:          hash,
 	}, nil
