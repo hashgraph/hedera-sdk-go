@@ -41,14 +41,12 @@ func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_Contra
 		AccountID:         accountIDFromProtobuf(contractInfo.AccountID),
 		ContractID:        contractIDFromProtobuf(contractInfo.ContractID),
 		ContractAccountID: contractInfo.ContractAccountID,
-		AdminKey: PublicKey{
-			keyData: adminKey.toProtoKey().GetEd25519(),
-		},
-		ExpirationTime:  timeFromProtobuf(contractInfo.ExpirationTime),
-		AutoRenewPeriod: durationFromProtobuf(contractInfo.AutoRenewPeriod),
-		Storage:         uint64(contractInfo.Storage),
-		ContractMemo:    contractInfo.Memo,
-		Balance:         contractInfo.Balance,
+		AdminKey:          adminKey,
+		ExpirationTime:    timeFromProtobuf(contractInfo.ExpirationTime),
+		AutoRenewPeriod:   durationFromProtobuf(contractInfo.AutoRenewPeriod),
+		Storage:           uint64(contractInfo.Storage),
+		ContractMemo:      contractInfo.Memo,
+		Balance:           contractInfo.Balance,
 	}, nil
 }
 

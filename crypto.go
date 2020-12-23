@@ -51,6 +51,10 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 
 		return &keys, nil
 
+	case *proto.Key_ContractID:
+		keys := contractIDFromProtobuf(key.ContractID)
+		return keys, nil
+
 	default:
 		return nil, newErrBadKeyf("key type not implemented: %v", key)
 	}

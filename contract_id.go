@@ -65,3 +65,7 @@ func contractIDFromProtobuf(pb *proto.ContractID) ContractID {
 		Contract: uint64(pb.ContractNum),
 	}
 }
+
+func (id ContractID) toProtoKey() *proto.Key {
+	return &proto.Key{Key: &proto.Key_ContractID{ContractID: id.toProtobuf()}}
+}

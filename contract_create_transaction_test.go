@@ -99,6 +99,19 @@ func Test_ContractCreate_NoAdminKey(t *testing.T) {
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
 
+	info, err := NewContractInfoQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetContractID(contractID).
+		SetQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, info.ContractID, contractID)
+	assert.NotNil(t, info.AccountID)
+	assert.Equal(t, info.AccountID.String(), contractID.String())
+	assert.NotNil(t, info.AdminKey)
+	assert.Equal(t, info.AdminKey.String(), contractID.String())
+
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
