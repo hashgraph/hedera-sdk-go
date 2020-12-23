@@ -78,10 +78,6 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
 
-	_, err = resp.GetReceipt(client)
-	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp.NodeID), err.Error())
-
 }
 
 func Test_AccountDelete_NoAccountID(t *testing.T) {

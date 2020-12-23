@@ -12,11 +12,11 @@ type TokenInfo struct {
 	Decimals            uint32
 	TotalSupply         uint64
 	Treasury            AccountID
-	AdminKey            *Key
-	KycKey              *Key
-	FreezeKey           *Key
-	WipeKey             *Key
-	SupplyKey           *Key
+	AdminKey            Key
+	KycKey              Key
+	FreezeKey           Key
+	WipeKey             Key
+	SupplyKey           Key
 	DefaultFreezeStatus *bool
 	DefaultKycStatus    *bool
 	Deleted             bool
@@ -146,11 +146,11 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		Decimals:            pb.Decimals,
 		TotalSupply:         pb.TotalSupply,
 		Treasury:            accountIDFromProtobuf(pb.Treasury),
-		AdminKey:            &adminKey,
-		KycKey:              &kycKey,
-		FreezeKey:           &freezeKey,
-		WipeKey:             &wipeKey,
-		SupplyKey:           &supplyKey,
+		AdminKey:            adminKey,
+		KycKey:              kycKey,
+		FreezeKey:           freezeKey,
+		WipeKey:             wipeKey,
+		SupplyKey:           supplyKey,
 		DefaultFreezeStatus: freezeStatusFromProtobuf(pb.DefaultFreezeStatus),
 		DefaultKycStatus:    kycStatusFromProtobuf(pb.DefaultKycStatus),
 		Deleted:             pb.Deleted,
@@ -163,27 +163,27 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 	var adminKey *proto.Key
 	if tokenInfo.AdminKey != nil {
-		adminKey = (*tokenInfo.AdminKey).toProtoKey()
+		adminKey = tokenInfo.AdminKey.toProtoKey()
 	}
 
 	var kycKey *proto.Key
 	if tokenInfo.KycKey != nil {
-		kycKey = (*tokenInfo.KycKey).toProtoKey()
+		kycKey = tokenInfo.KycKey.toProtoKey()
 	}
 
 	var freezeKey *proto.Key
 	if tokenInfo.FreezeKey != nil {
-		freezeKey = (*tokenInfo.FreezeKey).toProtoKey()
+		freezeKey = tokenInfo.FreezeKey.toProtoKey()
 	}
 
 	var wipeKey *proto.Key
 	if tokenInfo.WipeKey != nil {
-		wipeKey = (*tokenInfo.WipeKey).toProtoKey()
+		wipeKey = tokenInfo.WipeKey.toProtoKey()
 	}
 
 	var supplyKey *proto.Key
 	if tokenInfo.SupplyKey != nil {
-		supplyKey = (*tokenInfo.SupplyKey).toProtoKey()
+		supplyKey = tokenInfo.SupplyKey.toProtoKey()
 	}
 
 	var autoRenewPeriod *proto.Duration

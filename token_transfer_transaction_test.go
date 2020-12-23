@@ -200,10 +200,6 @@ func Test_TokenTransfer_NotZeroSum(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp2.GetReceipt(client)
-	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
-
 	resp, err = NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).
 		SetTokenID(tokenID).

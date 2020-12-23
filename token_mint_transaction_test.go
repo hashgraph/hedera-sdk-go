@@ -139,10 +139,6 @@ func Test_TokenMint_NoAmount(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_MINT_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp2.GetReceipt(client)
-	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
-
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
@@ -215,10 +211,6 @@ func Test_TokenMint_NoTokenID(t *testing.T) {
 		Execute(client)
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
-
-	_, err = resp2.GetReceipt(client)
-	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

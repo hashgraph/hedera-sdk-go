@@ -49,10 +49,6 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
 
-	_, err = resp2.GetReceipt(client)
-	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
-
 	_, err = NewLiveHashQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -68,10 +64,6 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 		Execute(client)
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
-
-	_, err = resp2.GetReceipt(client)
-	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
