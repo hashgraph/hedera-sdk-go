@@ -211,10 +211,6 @@ func (transaction *ContractUpdateTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.freezeError != nil {
-		return TransactionResponse{}, transaction.freezeError
-	}
-
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {

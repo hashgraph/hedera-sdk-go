@@ -25,7 +25,7 @@ type Transaction struct {
 	signedTransactions []*proto.SignedTransaction
 	nodeIDs            []AccountID
 
-	freezeError			error
+	freezeError error
 }
 
 func newTransaction() Transaction {
@@ -40,7 +40,7 @@ func newTransaction() Transaction {
 		transactions:         make([]*proto.Transaction, 0),
 		signedTransactions:   make([]*proto.SignedTransaction, 0),
 		nodeIDs:              make([]AccountID, 0),
-		freezeError: nil,
+		freezeError:          nil,
 	}
 }
 
@@ -291,7 +291,6 @@ func (transaction *Transaction) isFrozen() bool {
 
 func (transaction *Transaction) requireNotFrozen() {
 	if transaction.isFrozen() {
-		//panic("Transaction is immutable; it has at least one signature or has been explicitly frozen")
 		transaction.freezeError = errTransactionIsFrozen
 	}
 }

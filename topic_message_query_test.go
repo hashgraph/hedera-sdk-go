@@ -286,7 +286,7 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	for {
-		if err != nil|| !wait || uint64(time.Since(start).Seconds()) > 30 {
+		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
 			break
 		}
 
