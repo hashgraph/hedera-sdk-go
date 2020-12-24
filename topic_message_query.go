@@ -2,7 +2,6 @@ package hedera
 
 import (
 	"context"
-
 	"math"
 	"sync"
 	"time"
@@ -13,13 +12,15 @@ import (
 )
 
 type TopicMessageQuery struct {
-	pb *mirror.ConsensusTopicQuery
+	pb           *mirror.ConsensusTopicQuery
+	errorHandler func(stat status.Status)
 }
 
 func NewTopicMessageQuery() *TopicMessageQuery {
 	pb := mirror.ConsensusTopicQuery{}
 	return &TopicMessageQuery{
-		pb: &pb,
+		pb:           &pb,
+		errorHandler: nil,
 	}
 }
 
@@ -71,6 +72,11 @@ func (query *TopicMessageQuery) GetLimit() uint64 {
 	return query.pb.Limit
 }
 
+func (query *TopicMessageQuery) SetErrorHandler(errorHandler func(stat status.Status)) *TopicMessageQuery {
+	query.errorHandler = errorHandler
+	return query
+}
+
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	handle := newSubscriptionHandle(cancel)
@@ -85,14 +91,22 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 		resubscribe := true
 		channel, err := client.mirrorNetwork.getNextMirrorNode().getChannel()
 		if err != nil {
-			panic(err)
+			cancel()
+			grpcErr, ok := status.FromError(err)
+			if query.errorHandler == nil && ok {
+				query.errorHandler(*grpcErr)
+			}
 		}
 
 		for {
 			if resubscribe {
 				subClient, err = (*channel).SubscribeTopic(ctx, query.pb)
 				if err != nil {
-					panic(err)
+					cancel()
+					grpcErr, ok := status.FromError(err)
+					if query.errorHandler == nil && ok {
+						query.errorHandler(*grpcErr)
+					}
 				}
 			}
 
@@ -112,6 +126,10 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 					break
 				} else {
 					cancel()
+					grpcErr, ok := status.FromError(err)
+					if query.errorHandler == nil && ok {
+						query.errorHandler(*grpcErr)
+					}
 					break
 				}
 			}
