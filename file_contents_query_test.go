@@ -18,7 +18,6 @@ func TestSerializeFileContentsQuery(t *testing.T) {
 func TestFileContentsQuery_Execute(t *testing.T) {
 	client := newTestClient(t)
 
-	client.SetMaxTransactionFee(NewHbar(2))
 
 	var contents = []byte("Hellow world!")
 

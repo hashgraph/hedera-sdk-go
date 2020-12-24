@@ -23,7 +23,6 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 	txID, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(topicMemo).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -46,7 +45,6 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 
 	_, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 }
@@ -76,7 +74,6 @@ func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetSubmitKey(thresholdKey).
 		SetTopicMemo(topicMemo).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -100,7 +97,6 @@ func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 
 	_, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 }

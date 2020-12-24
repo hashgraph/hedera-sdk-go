@@ -21,12 +21,11 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	newBalance := NewHbar(2)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
@@ -53,7 +52,6 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransferAccountID(client.GetOperatorAccountID()).
-		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(client)
 	assert.NoError(t, err)

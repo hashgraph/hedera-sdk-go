@@ -24,6 +24,7 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 		maxChunks:   10,
 		message:     make([]byte, 0),
 	}
+	transaction.SetMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }

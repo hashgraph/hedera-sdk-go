@@ -32,7 +32,6 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 	resp, err = NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
 		SetTokenSymbol("A").
-		SetMaxTransactionFee(NewHbar(1000)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
@@ -71,13 +70,12 @@ func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 		pubKeys[i] = newKey.PublicKey()
 	}
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
@@ -168,7 +166,6 @@ func Test_TokenUpdate_NoTokenID(t *testing.T) {
 	tokenID := *receipt.TokenID
 
 	resp2, err := NewTokenUpdateTransaction().
-		SetMaxTransactionFee(NewHbar(1000)).
 		Execute(client)
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())

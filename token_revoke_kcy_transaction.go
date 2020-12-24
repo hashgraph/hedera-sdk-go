@@ -27,6 +27,7 @@ func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 		pb:          pb,
 		Transaction: newTransaction(),
 	}
+	transaction.SetMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }

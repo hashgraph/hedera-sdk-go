@@ -9,7 +9,6 @@ import (
 func TestFileCreateTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
 
-	client.SetMaxTransactionFee(NewHbar(2))
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents([]byte("Hello, World")).
@@ -37,7 +36,6 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 func Test_FileCreate_NoKey(t *testing.T) {
 	client := newTestClient(t)
 
-	client.SetMaxTransactionFee(NewHbar(2))
 
 	resp, err := NewFileCreateTransaction().
 		Execute(client)

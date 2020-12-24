@@ -29,6 +29,7 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 		maxChunks:   10,
 		contents:    make([]byte, 0),
 	}
+	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }

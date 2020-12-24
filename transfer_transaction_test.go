@@ -12,7 +12,6 @@ func TestCryptoTransferTransaction_Execute(t *testing.T) {
 	resp, err := NewTransferTransaction().
 		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(-1)).
 		AddHbarTransfer(AccountID{Account: 3}, NewHbar(1)).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -58,7 +57,6 @@ func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
 //		tx[i], err = NewTransferTransaction().
 //			AddHbarTransfer(client.GetOperatorAccountID(), HbarFromTinybar(-10)).
 //			AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(10)).
-//			SetMaxTransactionFee(NewHbar(1)).
 //			FreezeWith(client)
 //		if err != nil {
 //			panic(err)

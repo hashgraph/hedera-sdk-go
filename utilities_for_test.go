@@ -44,7 +44,6 @@ func newMockTransaction() (*TransferTransaction, error) {
 	tx, err := NewTransferTransaction().
 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
-		SetMaxTransactionFee(HbarFrom(1, HbarUnits.Hbar)).
 		SetTransactionID(testTransactionID).
 		SetNodeAccountIDs([]AccountID{AccountID{0, 0, 4}}).
 		FreezeWith(client)
@@ -84,7 +83,6 @@ func newTestClient(t *testing.T) *Client {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	client.SetMaxTransactionFee(NewHbar(50))
 
 	return client
 }

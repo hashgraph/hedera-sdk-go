@@ -242,9 +242,9 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	keys := make([]PrivateKey, 3)
 	pubKeys := make([]PublicKey, 3)
@@ -266,7 +266,6 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetKey(newKey).
 		SetKey(thresholdKey).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)

@@ -16,7 +16,6 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -34,7 +33,6 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -47,7 +45,6 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -68,7 +65,6 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -85,7 +81,6 @@ func Test_ContractDelete_NoContractID(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -103,7 +98,6 @@ func Test_ContractDelete_NoContractID(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -119,7 +113,6 @@ func Test_ContractDelete_NoContractID(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 

@@ -11,13 +11,12 @@ func Test_Receipt_Transaction(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		FreezeWith(client)
 	assert.NoError(t, err)
@@ -41,7 +40,6 @@ func Test_Receipt_Transaction(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
-		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 	assert.NoError(t, err)
 

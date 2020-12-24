@@ -15,7 +15,6 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -33,7 +32,6 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -48,7 +46,6 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetGas(10000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
-		SetMaxTransactionFee(NewHbar(30)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -80,7 +77,6 @@ func Test_ContractExecute_NoContractID(t *testing.T) {
 	resp, err := NewContractExecuteTransaction().
 		SetGas(10000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp.TransactionID), err.Error())
@@ -96,7 +92,6 @@ func Test_ContractExecute_NoGas(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -114,7 +109,6 @@ func Test_ContractExecute_NoGas(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -128,7 +122,6 @@ func Test_ContractExecute_NoGas(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -164,7 +157,6 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -182,7 +174,6 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -196,7 +187,6 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 		SetContractID(contractID).
 		SetGas(10000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -232,7 +222,6 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 //	resp, err := NewFileCreateTransaction().
 //		SetKeys(client.GetOperatorPublicKey()).
 //		SetContents(testContractByteCode).
-//		SetMaxTransactionFee(NewHbar(5)).
 //		Execute(client)
 //	assert.NoError(t, err)
 //
@@ -255,7 +244,6 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 //		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 //		SetBytecodeFileID(fileID).
 //		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
-//		SetMaxTransactionFee(NewHbar(20)).
 //		Execute(client)
 //	assert.NoError(t, err)
 //
@@ -271,7 +259,6 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 //		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 //		SetGas(10000).
 //		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
-//		SetMaxTransactionFee(NewHbar(30)).
 //		Execute(client)
 //	assert.NoError(t, err)
 //

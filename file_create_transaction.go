@@ -31,6 +31,7 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	}
 
 	transaction.SetExpirationTime(time.Now().Add(7890000 * time.Second))
+	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }

@@ -9,7 +9,6 @@ import (
 func TestFileAppendTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
 
-	client.SetMaxTransactionFee(NewHbar(2))
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -57,7 +56,6 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 func Test_FileAppend_NoFileID(t *testing.T) {
 	client := newTestClient(t)
 
-	client.SetMaxTransactionFee(NewHbar(2))
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).

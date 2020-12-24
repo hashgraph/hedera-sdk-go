@@ -12,13 +12,12 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
@@ -33,7 +32,6 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 		SetAccountID(*accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(*accountID)).
 		FreezeWith(client)
 	assert.NoError(t, err)
@@ -51,13 +49,12 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
@@ -86,13 +83,12 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)
@@ -117,13 +113,12 @@ func Test_AccountDelete_NoSinging(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 	assert.NoError(t, err)

@@ -27,6 +27,8 @@ func NewContractCallQuery() *ContractCallQuery {
 		ContractCallLocal: &pb,
 	}
 
+	query.SetMaxQueryPayment(NewHbar(2))
+
 	return &ContractCallQuery{
 		Query: query,
 		pb:    &pb,

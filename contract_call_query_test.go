@@ -23,7 +23,6 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(smartContractBytecode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -40,7 +39,6 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -71,7 +69,6 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetGas(10000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -128,7 +125,6 @@ func Test_NewContractCall_NoGas(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(smartContractBytecode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -145,7 +141,6 @@ func Test_NewContractCall_NoGas(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -194,7 +189,6 @@ func Test_NewContractCall_NoFunction(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(smartContractBytecode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -211,7 +205,6 @@ func Test_NewContractCall_NoFunction(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 

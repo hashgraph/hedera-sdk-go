@@ -16,7 +16,6 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -34,7 +33,6 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -47,7 +45,6 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -57,7 +54,6 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -74,7 +70,6 @@ func Test_ContractCreate_NoAdminKey(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -89,7 +84,6 @@ func Test_ContractCreate_NoAdminKey(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetGas(2000).
 		SetBytecodeFileID(fileID).
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -115,7 +109,6 @@ func Test_ContractCreate_NoAdminKey(t *testing.T) {
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -126,7 +119,6 @@ func Test_ContractCreate_NoAdminKey(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -143,7 +135,6 @@ func Test_ContractCreate_NoGas(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -158,7 +149,6 @@ func Test_ContractCreate_NoGas(t *testing.T) {
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetBytecodeFileID(fileID).
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -169,7 +159,6 @@ func Test_ContractCreate_NoGas(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -186,7 +175,6 @@ func Test_ContractCreate_NoBytecodeFileID(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(3)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -201,7 +189,6 @@ func Test_ContractCreate_NoBytecodeFileID(t *testing.T) {
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetGas(2000).
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -212,7 +199,6 @@ func Test_ContractCreate_NoBytecodeFileID(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 

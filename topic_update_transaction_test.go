@@ -14,7 +14,6 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(oldTopicMemo).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -43,7 +42,6 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTopicMemo(newTopicMemo).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -65,7 +63,6 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -81,7 +78,6 @@ func Test_TopicUpdate_NoMemo(t *testing.T) {
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(oldTopicMemo).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -116,7 +112,6 @@ func Test_TopicUpdate_NoMemo(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -132,7 +127,6 @@ func Test_TopicUpdate_NoTopicID(t *testing.T) {
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(oldTopicMemo).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -163,7 +157,6 @@ func Test_TopicUpdate_NoTopicID(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 

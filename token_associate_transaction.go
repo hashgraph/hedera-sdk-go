@@ -35,6 +35,7 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 		pb:          pb,
 		Transaction: newTransaction(),
 	}
+	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }

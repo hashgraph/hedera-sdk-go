@@ -18,6 +18,7 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 		pb:          pb,
 		Transaction: newTransaction(),
 	}
+	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }

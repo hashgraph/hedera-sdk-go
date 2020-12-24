@@ -25,6 +25,8 @@ func NewTransferTransaction() *TransferTransaction {
 		tokenIndexes: make(map[TokenID]int),
 	}
 
+	transaction.SetMaxTransactionFee(NewHbar(1))
+
 	return &transaction
 }
 

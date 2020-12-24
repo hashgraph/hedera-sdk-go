@@ -21,6 +21,8 @@ func NewContractInfoQuery() *ContractInfoQuery {
 		ContractGetInfo: &pb,
 	}
 
+	query.SetMaxQueryPayment(NewHbar(2))
+
 	return &ContractInfoQuery{
 		Query: query,
 		pb:    &pb,

@@ -18,6 +18,8 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 		pb:          pb,
 		Transaction: newTransaction(),
 	}
+	transaction.SetMaxTransactionFee(NewHbar(2))
+
 	return &transaction
 }
 

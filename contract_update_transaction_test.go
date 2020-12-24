@@ -15,7 +15,6 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -33,7 +32,6 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -65,7 +63,6 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractMemo("[e2e::ContractUpdateTransaction]").
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 

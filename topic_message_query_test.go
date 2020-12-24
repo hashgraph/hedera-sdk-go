@@ -62,7 +62,6 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -107,7 +106,6 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -125,7 +123,6 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -170,7 +167,6 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -188,7 +184,6 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -230,7 +225,6 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -248,7 +242,6 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 
 	assert.NoError(t, err)
@@ -292,7 +285,6 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 

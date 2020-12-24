@@ -18,7 +18,6 @@ func TestSerializeFileInfoQuery(t *testing.T) {
 func Test_FileInfo_Transaction(t *testing.T) {
 	client := newTestClient(t)
 
-	client.SetMaxTransactionFee(NewHbar(2))
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).

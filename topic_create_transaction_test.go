@@ -14,7 +14,6 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetSubmitKey(client.GetOperatorPublicKey()).
 		SetTopicMemo(topicMemo).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -39,7 +38,6 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -97,7 +95,6 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	txDelete, err := NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(5)).
 		FreezeWith(client)
 	assert.NoError(t, err)
 

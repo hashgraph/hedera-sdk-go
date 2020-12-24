@@ -15,13 +15,12 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	newKey2, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 
@@ -37,7 +36,6 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetKey(newKey2.PublicKey()).
-		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 
 	assert.NoError(t, err)
@@ -64,7 +62,6 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 
 	assert.NoError(t, err)
@@ -88,13 +85,12 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 	newKey2, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(1)
+	newBalance := NewHbar(2)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		Execute(client)
 
@@ -110,7 +106,6 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetKey(newKey2.PublicKey()).
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -130,7 +125,6 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(client)
 
 	assert.NoError(t, err)
@@ -148,7 +142,6 @@ func Test_AccountUpdate_AccoundIDNotSet(t *testing.T) {
 	client := newTestClient(t)
 
 	resp, err := NewAccountUpdateTransaction().
-		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 

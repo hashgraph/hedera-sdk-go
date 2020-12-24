@@ -23,15 +23,14 @@ func TestContractBytecodeQuery_Execute(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(smartContractBytecode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
+	assert.NotNil(t, receipt.FileID)
 	fileID := *receipt.FileID
-	assert.NotNil(t, fileID)
 
 	contractResponse, err := NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -40,7 +39,6 @@ func TestContractBytecodeQuery_Execute(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -89,7 +87,6 @@ func Test_ContractBytecode_NoContractID(t *testing.T) {
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents(smartContractBytecode).
-		SetMaxTransactionFee(NewHbar(5)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -106,7 +103,6 @@ func Test_ContractBytecode_NoContractID(t *testing.T) {
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
-		SetMaxTransactionFee(NewHbar(20)).
 		Execute(client)
 	assert.NoError(t, err)
 

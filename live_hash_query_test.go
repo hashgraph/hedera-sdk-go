@@ -30,7 +30,6 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(NewHbar(1)).
 		Execute(client)
 
