@@ -127,10 +127,7 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 	resp, err = NewTokenCreateTransaction().
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetFreezeDefault(false).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -138,6 +135,27 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
+
+	info, err := NewTokenInfoQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		Execute(client)
+
+	assert.NoError(t, err)
+	assert.Equal(t, info.Name, "ffff")
+	assert.Equal(t, info.Symbol, "F")
+	assert.Equal(t, info.Decimals, uint32(0))
+	assert.Equal(t, info.TotalSupply, uint64(0))
+	assert.Equal(t, info.Treasury.String(), client.GetOperatorAccountID().String())
+	assert.Nil(t, info.AdminKey)
+	assert.Nil(t, info.FreezeKey)
+	assert.Nil(t, info.KycKey)
+	assert.Nil(t, info.WipeKey)
+	assert.Nil(t, info.SupplyKey)
+	assert.Nil(t, info.DefaultFreezeStatus)
+	assert.Nil(t, info.DefaultKycStatus)
+	assert.NotNil(t, info.AutoRenewPeriod)
+	assert.NotNil(t, info.ExpirationTime)
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
