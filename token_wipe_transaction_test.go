@@ -221,11 +221,15 @@ func Test_TokenWipe_NoAmount(t *testing.T) {
 		SetAccountID(accountID).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_WIPING_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_WIPING_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	receipt, err = resp2.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+	}
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -240,7 +244,9 @@ func Test_TokenWipe_NoAmount(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	}
 }
 
 func Test_TokenWipe_NoTokenID(t *testing.T) {
@@ -325,7 +331,9 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 		SetAmount(10).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -340,7 +348,9 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	}
 }
 
 func Test_TokenWipe_NoAccountID(t *testing.T) {
@@ -427,7 +437,9 @@ func Test_TokenWipe_NoAccountID(t *testing.T) {
 		SetAmount(10).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -442,7 +454,9 @@ func Test_TokenWipe_NoAccountID(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	}
 }
 
 func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
@@ -574,5 +588,7 @@ func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+	}
 }

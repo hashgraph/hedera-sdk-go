@@ -114,7 +114,9 @@ func Test_NewContractCall_NoContractID(t *testing.T) {
 		SetFunction("getMessage", nil).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID"), err.Error())
+	}
 }
 
 func Test_NewContractCall_NoGas(t *testing.T) {
@@ -160,7 +162,9 @@ func Test_NewContractCall_NoGas(t *testing.T) {
 		SetFunction("getMessage", nil).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_GAS"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_GAS"), err.Error())
+	}
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
@@ -224,7 +228,9 @@ func Test_NewContractCall_NoFunction(t *testing.T) {
 		//test getCost
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status CONTRACT_REVERT_EXECUTED"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status CONTRACT_REVERT_EXECUTED"), err.Error())
+	}
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).

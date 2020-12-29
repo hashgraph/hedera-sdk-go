@@ -83,7 +83,9 @@ func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
 		Sign(newKey).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("transaction is immutable; it has at least one signature or has been explicitly frozen"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("transaction is immutable; it has at least one signature or has been explicitly frozen"), err.Error())
+	}
 }
 
 func Test_AccountCreate_NoKey(t *testing.T) {
@@ -92,5 +94,7 @@ func Test_AccountCreate_NoKey(t *testing.T) {
 	resp, err := NewAccountCreateTransaction().
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID), err.Error())
+	}
 }

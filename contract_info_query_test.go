@@ -88,5 +88,7 @@ func Test_ContractInfo_NoContractID(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(2)).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID"), err.Error())
+	}
 }

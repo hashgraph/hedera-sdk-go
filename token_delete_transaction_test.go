@@ -78,7 +78,9 @@ func Test_TokenDelete_NoKeys(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
+	}
 }
 
 func Test_TokenDelete_NoTokenID(t *testing.T) {
@@ -87,6 +89,7 @@ func Test_TokenDelete_NoTokenID(t *testing.T) {
 	resp, err := NewTokenDeleteTransaction().
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp.TransactionID), err.Error())
-
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp.TransactionID), err.Error())
+	}
 }

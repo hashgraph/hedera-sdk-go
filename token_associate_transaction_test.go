@@ -112,8 +112,9 @@ func Test_TokenAssociate_NoAccountID(t *testing.T) {
 	resp, err := NewTokenAssociateTransaction().
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp.TransactionID), err.Error())
-
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp.TransactionID), err.Error())
+	}
 }
 
 func Test_TokenAssociate_NoTokenID(t *testing.T) {

@@ -379,7 +379,9 @@ func Test_TokenDissociate_NoAccountID(t *testing.T) {
 		Sign(newKey).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).

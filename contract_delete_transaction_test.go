@@ -108,7 +108,9 @@ func Test_ContractDelete_NoContractID(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).

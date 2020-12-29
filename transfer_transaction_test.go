@@ -30,6 +30,23 @@ func Test_CryptoTransfer_Nothing(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCryptoTransferTransaction_FlippedAmount_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTransferTransaction().
+		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
+		AddHbarTransfer(AccountID{Account: 3}, NewHbar(-10)).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
+	}
+}
+
 func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
 	client := newTestClient(t)
 
@@ -39,11 +56,10 @@ func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
 		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
 		SetMaxTransactionFee(NewHbar(1)).
 		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS received for transaction %s", resp.TransactionID), err.Error())
+	}
 }
 
 //func Test_CryptoTransfer_1000(t *testing.T) {

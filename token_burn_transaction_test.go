@@ -138,7 +138,9 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 		SetTokenID(tokenID).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_BURN_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_BURN_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{nodeID}).
@@ -213,7 +215,9 @@ func Test_TokenBurn_NoTokenID(t *testing.T) {
 		SetAmount(10).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{nodeID}).

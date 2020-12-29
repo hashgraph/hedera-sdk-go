@@ -37,7 +37,9 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 		SetKeys(newKey.PublicKey()).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	resp2, err = NewLiveHashDeleteTransaction().
 		SetAccountID(accountID).
@@ -45,7 +47,9 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 		SetHash(_hash).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

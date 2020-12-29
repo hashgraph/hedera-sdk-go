@@ -152,7 +152,9 @@ func Test_TopicUpdate_NoTopicID(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status FAIL_FEE received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status FAIL_FEE received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).

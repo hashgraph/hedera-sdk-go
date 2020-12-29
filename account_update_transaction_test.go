@@ -147,5 +147,7 @@ func Test_AccountUpdate_AccoundIDNotSet(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID"), err.Error())
+	}
 }

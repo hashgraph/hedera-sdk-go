@@ -154,7 +154,9 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
+	}
 
 	for {
 		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
@@ -212,7 +214,9 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("no transactions to execute"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("no transactions to execute"), err.Error())
+	}
 
 	for {
 		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {

@@ -31,5 +31,7 @@ func TestAccountStakersNoAccountID_Execute(t *testing.T) {
 	_, err := NewAccountStakersQuery().
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+	}
 }

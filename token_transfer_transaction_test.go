@@ -196,7 +196,9 @@ func Test_TokenTransfer_NotZeroSum(t *testing.T) {
 		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -10).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN received for transaction %s", resp2.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN received for transaction %s", resp2.TransactionID), err.Error())
+	}
 
 	resp, err = NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{nodeId}).

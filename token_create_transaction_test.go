@@ -164,8 +164,9 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status TOKEN_IS_IMMUTABLE"), err.Error())
-
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status TOKEN_IS_IMMUTABLE"), err.Error())
+	}
 }
 
 func Test_TokenCreate_AdminSign(t *testing.T) {

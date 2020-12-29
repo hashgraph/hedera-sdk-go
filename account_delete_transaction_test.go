@@ -73,8 +73,9 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 
 	resp, err = tx.Sign(newKey).Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
-
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
+	}
 }
 
 func Test_AccountDelete_NoAccountID(t *testing.T) {
@@ -104,7 +105,9 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 
 	resp, err = tx.Sign(newKey).Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
+	}
 }
 
 func Test_AccountDelete_NoSinging(t *testing.T) {
@@ -140,5 +143,7 @@ func Test_AccountDelete_NoSinging(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
+	}
 }

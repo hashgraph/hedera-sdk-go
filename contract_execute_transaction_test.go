@@ -79,8 +79,9 @@ func Test_ContractExecute_NoContractID(t *testing.T) {
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp.TransactionID), err.Error())
-
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp.TransactionID), err.Error())
+	}
 }
 
 func Test_ContractExecute_NoGas(t *testing.T) {
@@ -127,7 +128,9 @@ func Test_ContractExecute_NoGas(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_GAS"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_GAS"), err.Error())
+	}
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
@@ -192,7 +195,9 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status CONTRACT_REVERT_EXECUTED"), err.Error())
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status CONTRACT_REVERT_EXECUTED"), err.Error())
+	}
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
