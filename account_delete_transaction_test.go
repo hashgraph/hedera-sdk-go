@@ -36,7 +36,12 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	resp, err = tx.Sign(newKey).Execute(client)
+	tx = tx.Sign(newKey)
+
+	assert.True(t, newKey.PublicKey().VerifyTransaction(tx.Transaction))
+	assert.False(t, client.GetOperatorPublicKey().VerifyTransaction(tx.Transaction))
+
+	resp, err = tx.Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)

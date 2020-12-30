@@ -1,10 +1,10 @@
 package hedera
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
-
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"
@@ -363,4 +363,32 @@ func (sk PrivateKey) SignTransaction(transaction Transaction) ([]byte, error) {
 	transaction.AddSignature(sk.PublicKey(), signature)
 
 	return signature, nil
+}
+
+func (pk PublicKey) Verify(message []byte, signature []byte) bool {
+	return ed25519.Verify(pk.Bytes(), message, signature)
+}
+
+func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
+	if len(transaction.signedTransactions) == 0 {
+		return false
+	}
+
+	for _, transaction := range transaction.signedTransactions {
+		found := false
+		for _, sigPair := range transaction.SigMap.GetSigPair() {
+			if bytes.Equal(sigPair.GetPubKeyPrefix(), pk.Bytes()) {
+				found = true
+				if !pk.Verify(transaction.BodyBytes, sigPair.GetEd25519()) {
+					return false
+				}
+			}
+		}
+
+		if !found {
+			return false
+		}
+	}
+
+	return true
 }
