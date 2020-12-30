@@ -81,7 +81,11 @@ func (node *node) getChannel() (*channel, error) {
 }
 
 func (node *node) close() error {
-	return node.channel.client.Close()
+	if node.channel != nil {
+		return node.channel.client.Close()
+	}
+
+	return nil
 }
 
 func (nodes nodes) Len() int {
