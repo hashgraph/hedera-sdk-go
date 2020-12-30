@@ -37,7 +37,6 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
-	transaction.SetExpirationTime(time.Now().Add(7890000 * time.Second))
 	transaction.SetMaxTransactionFee(NewHbar(30))
 
 	return &transaction
@@ -200,6 +199,7 @@ func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
 func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
+	transaction.pb.AutoRenewPeriod = nil
 	transaction.pb.Expiry = &proto.Timestamp{
 		Seconds: expirationTime.Unix(),
 		Nanos:   int32(expirationTime.UnixNano()),
@@ -378,6 +378,10 @@ func (transaction *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, er
 }
 
 func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
+	if transaction.pb.AutoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID().isZero() {
+		transaction.SetAutoRenewAccount(client.GetOperatorAccountID())
+	}
+
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err

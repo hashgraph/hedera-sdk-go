@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestTokenCreateTransaction_Execute(t *testing.T) {
@@ -154,6 +155,9 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 	assert.Nil(t, info.DefaultFreezeStatus)
 	assert.Nil(t, info.DefaultKycStatus)
 	assert.NotNil(t, info.AutoRenewPeriod)
+	assert.Equal(t, *info.AutoRenewPeriod, 7890000*time.Second)
+	assert.NotNil(t, info.AutoRenewAccountID)
+	assert.Equal(t, info.AutoRenewAccountID.String(), client.GetOperatorAccountID().String())
 	assert.NotNil(t, info.ExpirationTime)
 
 	resp, err = NewTokenDeleteTransaction().
