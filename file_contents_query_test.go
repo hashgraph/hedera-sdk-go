@@ -18,7 +18,6 @@ func TestSerializeFileContentsQuery(t *testing.T) {
 func TestFileContentsQuery_Execute(t *testing.T) {
 	client := newTestClient(t)
 
-
 	var contents = []byte("Hellow world!")
 
 	resp, err := NewFileCreateTransaction().

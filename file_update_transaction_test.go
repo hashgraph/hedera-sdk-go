@@ -9,7 +9,6 @@ import (
 func TestFileUpdateTransaction_Execute(t *testing.T) {
 	client := newTestClient(t)
 
-
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents([]byte("Hello, World")).
@@ -57,7 +56,6 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 
 func Test_FileUpdate_NoFileID(t *testing.T) {
 	client := newTestClient(t)
-
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).

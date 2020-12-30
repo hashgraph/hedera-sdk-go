@@ -55,7 +55,7 @@ func Test_TokenCreate_MultipleKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -112,7 +112,7 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -185,7 +185,7 @@ func Test_TokenCreate_AdminSign(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).

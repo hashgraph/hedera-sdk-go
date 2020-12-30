@@ -13,7 +13,7 @@ func Test_Receipt_Transaction(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).

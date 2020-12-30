@@ -22,7 +22,7 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)
-	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).

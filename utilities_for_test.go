@@ -83,6 +83,5 @@ func newTestClient(t *testing.T) *Client {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-
 	return client
 }

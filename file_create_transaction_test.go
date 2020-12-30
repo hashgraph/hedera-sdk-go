@@ -36,7 +36,6 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 func Test_FileCreate_NoKey(t *testing.T) {
 	client := newTestClient(t)
 
-
 	resp, err := NewFileCreateTransaction().
 		Execute(client)
 	assert.NoError(t, err)

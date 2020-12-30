@@ -72,7 +72,7 @@ func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2 * HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
