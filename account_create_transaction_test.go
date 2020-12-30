@@ -17,7 +17,7 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
-		SetKey(newKey.PublicKey()).
+		SetKey(newKey).
 		SetInitialBalance(newBalance).
 		Execute(client)
 

@@ -101,27 +101,27 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 	var adminKey Key
 	if pb.AdminKey != nil {
-		adminKey = PublicKey{keyData: pb.AdminKey.GetEd25519()}
+		adminKey, _ = keyFromProtobuf(pb.AdminKey)
 	}
 
 	var kycKey Key
 	if pb.KycKey != nil {
-		kycKey = PublicKey{keyData: pb.KycKey.GetEd25519()}
+		kycKey, _ = keyFromProtobuf(pb.KycKey)
 	}
 
 	var freezeKey Key
 	if pb.FreezeKey != nil {
-		freezeKey = PublicKey{keyData: pb.FreezeKey.GetEd25519()}
+		freezeKey, _ = keyFromProtobuf(pb.FreezeKey)
 	}
 
 	var wipeKey Key
 	if pb.WipeKey != nil {
-		wipeKey = PublicKey{keyData: pb.WipeKey.GetEd25519()}
+		wipeKey, _ = keyFromProtobuf(pb.WipeKey)
 	}
 
 	var supplyKey Key
 	if pb.SupplyKey != nil {
-		supplyKey = PublicKey{keyData: pb.SupplyKey.GetEd25519()}
+		supplyKey, _ = keyFromProtobuf(pb.SupplyKey)
 	}
 
 	var autoRenewPeriod time.Duration
