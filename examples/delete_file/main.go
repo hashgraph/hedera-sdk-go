@@ -27,12 +27,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -50,12 +52,14 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating file")
+		return
 	}
 
 	receipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving file creation receipt")
+		return
 	}
 
 	newFileID := *receipt.FileID
@@ -69,12 +73,14 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting file")
+		return
 	}
 
 	deleteTransactionReceipt, err := deleteTransactionID.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving file deletion receipt")
+		return
 	}
 
 	fmt.Printf("file delete transaction status: %v\n", deleteTransactionReceipt.Status)
@@ -85,7 +91,8 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing file info query")
+		return
 	}
 
 	fmt.Printf("file %v was deleted: %v\n", newFileID, fileInfo.IsDeleted)

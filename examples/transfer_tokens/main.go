@@ -26,12 +26,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -39,11 +41,13 @@ func main() {
 
 	key1, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error generating PrivateKey")
+		return
 	}
 	key2, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error generating PrivateKey")
+		return
 	}
 
 	fmt.Printf("privateKey = %v\n", key1.String())
@@ -55,12 +59,14 @@ func main() {
 		SetKey(key1.PublicKey()).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating account")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account creation receipt")
+		return
 	}
 
 	accountID1 := *transactionReceipt.AccountID
@@ -68,15 +74,17 @@ func main() {
 	fmt.Printf("account = %v\n", accountID1.String())
 
 	transactionResponse, err = hedera.NewAccountCreateTransaction().
-		SetKey(key1.PublicKey()).
+		SetKey(key2.PublicKey()).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating second account")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving second account creation receipt")
+		return
 	}
 
 	accountID2 := *transactionReceipt.AccountID
@@ -100,12 +108,14 @@ func main() {
 		SetMaxTransactionFee(hedera.NewHbar(1000)).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating token")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving token creation receipt")
+		return
 	}
 
 	tokenID := *transactionReceipt.TokenID
@@ -118,19 +128,22 @@ func main() {
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing token associate transaction")
+		return
 	}
 
 	transactionResponse, err = transaction.
 		Sign(key1).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error associating token")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving token associate transaction receipt")
+		return
 	}
 
 	fmt.Printf("Associated account %v with token %v\n", accountID1.String(), tokenID.String())
@@ -141,19 +154,22 @@ func main() {
 		SetTokenIDs(tokenID).
 		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing second token associate transaction")
+		return
 	}
 
 	transactionResponse, err = transaction.
 		Sign(key2).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing second token associate transaction")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving second token associate transaction receipt")
+		return
 	}
 
 	fmt.Printf("Associated account %v with token %v\n", accountID2.String(), tokenID.String())
@@ -164,12 +180,14 @@ func main() {
 		SetAccountID(accountID1).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error granting kyc")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving grant kyc transaction receipt")
+		return
 	}
 
 	fmt.Printf("Granted KYC for account %v on token %v\n", accountID1.String(), tokenID.String())
@@ -180,27 +198,39 @@ func main() {
 		SetAccountID(accountID2).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error granting kyc to second account")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving grant kyc transaction receipt")
+		return
 	}
 
 	fmt.Printf("Granted KYC for account %v on token %v\n", accountID2.String(), tokenID.String())
 
-	transactionResponse, err = hedera.NewTransferTransaction().
+	transferTransaction, err := hedera.NewTransferTransaction().
 		AddTokenTransfer(tokenID, client.GetOperatorAccountID(), -10).
 		AddTokenTransfer(tokenID, accountID1, 10).
-		Execute(client)
+		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing transfer from operator to account1")
+		return
+	}
+
+	transferTransaction = transferTransaction.Sign(key1)
+
+	transactionResponse, err = transferTransaction.Execute(client)
+	if err != nil {
+		println(err.Error(), ": error transferring from operator to account1")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving transfer from operator to account1 receipt")
+		return
 	}
 
 	fmt.Printf(
@@ -210,17 +240,27 @@ func main() {
 		tokenID.String(),
 	)
 
-	transactionResponse, err = hedera.NewTransferTransaction().
+	transferTransaction, err = hedera.NewTransferTransaction().
 		AddTokenTransfer(tokenID, accountID1, -10).
 		AddTokenTransfer(tokenID, accountID2, 10).
-		Execute(client)
+		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing transfer from account1 to account2")
+		return
+	}
+
+	transferTransaction = transferTransaction.Sign(key1)
+
+	transactionResponse, err = transferTransaction.Execute(client)
+	if err != nil {
+		println(err.Error(), ": error transferring from account1 to account2")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving transfer from account1 to account2 receipt")
+		return
 	}
 
 	fmt.Printf(
@@ -230,17 +270,27 @@ func main() {
 		tokenID.String(),
 	)
 
-	transactionResponse, err = hedera.NewTransferTransaction().
+	transferTransaction, err = hedera.NewTransferTransaction().
 		AddTokenTransfer(tokenID, accountID2, -10).
 		AddTokenTransfer(tokenID, accountID1, 10).
-		Execute(client)
+		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing transfer from account2 to account1")
+		return
+	}
+
+	transferTransaction = transferTransaction.Sign(key2)
+
+	transactionResponse, err = transferTransaction.Execute(client)
+	if err != nil {
+		println(err.Error(), ": error transferring from account2 to account1")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving transfer from account2 to account1 receipt")
+		return
 	}
 
 	fmt.Printf(
@@ -257,12 +307,14 @@ func main() {
 		SetAmount(10).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error wiping from token")
+		return
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving token wipe transaction receipt")
+		return
 	}
 
 	fmt.Printf("Wiped account %v on token %v\n", accountID1.String(), tokenID.String())
@@ -272,12 +324,14 @@ func main() {
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting token")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving token delete transaction receipt")
+		return
 	}
 
 	fmt.Printf("Deleted token %v\n", tokenID.String())
@@ -288,19 +342,22 @@ func main() {
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing account delete transaction")
+		return
 	}
 
 	transactionResponse, err = accountDeleteTx.
 		Sign(key1).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting account 1")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving transfer transaction receipt")
+		return
 	}
 
 	fmt.Printf("Deleted account %v\n", accountID1.String())
@@ -311,19 +368,22 @@ func main() {
 		SetTransferAccountID(client.GetOperatorAccountID()).
 		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing account delete transaction")
+		return
 	}
 
 	transactionResponse, err = accountDeleteTx.
 		Sign(key2).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting account2")
+		return
 	}
 
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account delete transaction receipt")
+		return
 	}
 
 	fmt.Printf("Deleted account %v\n", accountID2.String())

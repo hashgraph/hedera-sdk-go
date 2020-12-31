@@ -27,12 +27,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -43,12 +45,14 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing account info query")
+		return
 	}
 
 	infoJSON, err := json.MarshalIndent(info, "", "    ")
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error marshaling to json")
+		return
 	}
 
 	fmt.Printf("info for account %v :\n", client.GetOperatorAccountID())

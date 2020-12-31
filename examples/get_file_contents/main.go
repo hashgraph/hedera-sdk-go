@@ -26,12 +26,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -47,10 +49,11 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing file contents query")
+		return
 	}
 
-	fmt.Printf("contents for file %v :\n", fileID)
+	fmt.Printf("contents for file %v :\n", fileID.String())
 	fmt.Print(string(contents))
 	fmt.Println()
 }

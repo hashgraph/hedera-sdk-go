@@ -9,7 +9,8 @@ import (
 func main() {
 	privateKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error generating PrivateKey")
+		return
 	}
 
 	publicKey := privateKey.PublicKey()

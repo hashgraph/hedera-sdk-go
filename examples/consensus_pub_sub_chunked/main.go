@@ -25,15 +25,17 @@ func main() {
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
 
-	if configOperatorID != "" && configOperatorKey != "" {
+	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -41,15 +43,18 @@ func main() {
 
 	transactionResponse, err := hedera.NewTopicCreateTransaction().
 		SetTransactionMemo("go sdk example create_pub_sub_chunked/main.go").
+		SetAdminKey(client.GetOperatorPublicKey()).
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating topic")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving topic creation receipt")
+		return
 	}
 
 	topicID := *transactionReceipt.TopicID
@@ -72,7 +77,8 @@ func main() {
 		})
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error subscribing")
+		return
 	}
 
 	_, err = hedera.NewTopicMessageSubmitTransaction().
@@ -82,7 +88,8 @@ func main() {
 		SetTopicID(topicID).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error submitting")
+		return
 	}
 
 	for {
@@ -95,7 +102,8 @@ func main() {
 
 	receipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving topic submit transaction receipt")
+		return
 	}
 
 	println("status:", receipt.Status.String())
@@ -106,12 +114,14 @@ func main() {
 		SetMaxTransactionFee(hedera.NewHbar(5)).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting topic")
+		return
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving topic delete transaction receipt")
+		return
 	}
 
 	if wait {

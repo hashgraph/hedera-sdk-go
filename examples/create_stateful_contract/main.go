@@ -39,12 +39,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -53,20 +55,23 @@ func main() {
 	defer func() {
 		err = client.Close()
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error closing client")
+			return
 		}
 	}()
 
 	rawSmartContract, err := ioutil.ReadFile("./stateful.json")
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error reading stateful.json")
+		return
 	}
 
 	var smartContract contracts = contracts{}
 
 	err = json.Unmarshal([]byte(rawSmartContract), &smartContract)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error unmarshaling")
+		return
 	}
 
 	smartContractByteCode := smartContract.Contracts["stateful.sol:StatefulContract"].Bin
@@ -76,18 +81,19 @@ func main() {
 
 	// Upload a file containing the byte code
 	byteCodeTransactionResponse, err := hedera.NewFileCreateTransaction().
-		SetMaxTransactionFee(hedera.NewHbar(2)).
 		SetKeys(client.GetOperatorPublicKey()).
 		SetContents([]byte(smartContractByteCode)).
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating file")
+		return
 	}
 
 	byteCodeTransactionReceipt, err := byteCodeTransactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error getting file create transaction receipt")
+		return
 	}
 
 	byteCodeFileID := *byteCodeTransactionReceipt.FileID
@@ -99,7 +105,6 @@ func main() {
 
 	// Instantiate the contract instance
 	contractTransactionID, err := hedera.NewContractCreateTransaction().
-		SetMaxTransactionFee(hedera.NewHbar(15)).
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(2000).
 		// Failing to set parameters when required will result in "CONTRACT_REVERT_EXECUTED" status
@@ -108,17 +113,20 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating contract")
+		return
 	}
 
 	contractRecord, err := contractTransactionID.GetRecord(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving contract creation record")
+		return
 	}
 
 	contractCreateResult, err := contractRecord.GetContractCreateResult()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving contract creation result")
+		return
 	}
 
 	newContractID := *contractRecord.Receipt.ContractID
@@ -136,7 +144,8 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing contract call query")
+		return
 	}
 
 	fmt.Printf("Call gas used: %v\n", callResult.GasUsed)
@@ -150,21 +159,23 @@ func main() {
 		SetContractID(newContractID).
 		SetGas(7000).
 		SetFunction("setMessage", contractFunctionParams).
-		SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing contract")
+		return
 	}
 
 	contractExecuteRecord, err := contractExecuteID.GetRecord(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving contract execution record")
+		return
 	}
 
 	contractExecuteResult, err := contractExecuteRecord.GetContractExecuteResult()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving contract exe")
+		return
 	}
 
 	fmt.Printf("Execute gas used: %v\n", contractExecuteResult.GasUsed)
@@ -176,7 +187,8 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing contract call query")
+		return
 	}
 
 	fmt.Printf("Call gas used: %v\n", secondCallResult.GasUsed)

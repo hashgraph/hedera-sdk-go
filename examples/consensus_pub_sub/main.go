@@ -30,12 +30,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -43,17 +45,19 @@ func main() {
 
 	transactionResponse, err := hedera.NewTopicCreateTransaction().
 		SetTransactionMemo("go sdk example create_pub_sub/main.go").
-		// SetMaxTransactionFee(hedera.HbarFrom(8, hedera.HbarUnits.Hbar)).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating topic")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error getting topic create receipt")
+		return
 	}
 
 	topicID := *transactionReceipt.TopicID
@@ -73,7 +77,8 @@ func main() {
 		})
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error subscribing to the topic")
+		return
 	}
 
 	println(transactionResponse.NodeID.String())
@@ -83,7 +88,8 @@ func main() {
 		SetTopicID(topicID).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error submitting topic")
+		return
 	}
 
 	//println(string(messageQuery.GetMessage()))
@@ -104,12 +110,14 @@ func main() {
 		SetMaxTransactionFee(hedera.NewHbar(5)).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting topic")
+		return
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error getting receipt for topic deletion")
+		return
 	}
 
 	if wait {

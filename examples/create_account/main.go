@@ -27,12 +27,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -40,7 +42,8 @@ func main() {
 
 	newKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error generating PrivateKey}")
+		return
 	}
 
 	fmt.Printf("private = %v\n", newKey)
@@ -52,13 +55,15 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing account create transaction}")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error getting receipt}")
+		return
 	}
 
 	newAccountID := *transactionReceipt.AccountID

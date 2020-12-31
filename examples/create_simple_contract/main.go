@@ -26,7 +26,7 @@ func main() {
 		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 
 		if err != nil {
-			println("not error", err.Error())
+
 			client = hedera.ClientForTestnet()
 		}
 	}
@@ -38,12 +38,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err = hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -52,20 +54,23 @@ func main() {
 	defer func() {
 		err = client.Close()
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error closing client")
+			return
 		}
 	}()
 
 	rawContract, err := ioutil.ReadFile("./hello_world.json")
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error reading hello_world.json")
+		return
 	}
 
 	var contract contract = contract{}
 
 	err = json.Unmarshal([]byte(rawContract), &contract)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error unmarshaling the json file")
+		return
 	}
 
 	contractByteCode := []byte(contract.Object)
@@ -81,12 +86,14 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating file")
+		return
 	}
 
 	byteCodeTransactionRecord, err := byteCodeTransactionID.GetRecord(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error getting file creation record")
+		return
 	}
 
 	fmt.Printf("contract bytecode file upload fee: %v\n", byteCodeTransactionRecord.TransactionFee)
@@ -97,7 +104,6 @@ func main() {
 
 	// Instantiate the contract instance
 	contractTransactionResponse, err := hedera.NewContractCreateTransaction().
-		SetMaxTransactionFee(hedera.NewHbar(15)).
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(2000).
 		SetBytecodeFileID(byteCodeFileID).
@@ -106,17 +112,20 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating contract")
+		return
 	}
 
 	contractRecord, err := contractTransactionResponse.GetRecord(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving contract creation record")
+		return
 	}
 
 	contractCreateResult, err := contractRecord.GetContractCreateResult()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving contract creation result")
+		return
 	}
 
 	newContractID := *contractRecord.Receipt.ContractID
@@ -133,7 +142,8 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing contract call query")
+		return
 	}
 
 	fmt.Printf("Call gas used: %v\n", callResult.GasUsed)
@@ -145,12 +155,14 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting contract")
+		return
 	}
 
 	deleteTransactionReceipt, err := deleteTransactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving contract delete receipt")
+		return
 	}
 
 	fmt.Printf("Status of transaction deletion: %v\n", deleteTransactionReceipt.Status)

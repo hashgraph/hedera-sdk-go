@@ -17,7 +17,6 @@ func main() {
 		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 
 		if err != nil {
-			println("not error", err.Error())
 			client = hedera.ClientForTestnet()
 		}
 	}
@@ -29,12 +28,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err = hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -49,13 +50,15 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating file")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving file create transaction receipt")
+		return
 	}
 
 	fmt.Printf("file = %v\n", *transactionReceipt.FileID)

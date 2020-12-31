@@ -17,24 +17,24 @@ func main() {
 		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 
 		if err != nil {
-			println("not error", err.Error())
 			client = hedera.ClientForTestnet()
 		}
 	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
-	var operatorKey hedera.PrivateKey
 
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
-		operatorKey, err = hedera.PrivateKeyFromString(configOperatorKey)
+		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -49,7 +49,8 @@ func main() {
 	for i := range keys {
 		newKey, err := hedera.GeneratePrivateKey()
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error generating PrivateKey}")
+			return
 		}
 
 		fmt.Printf("Key %v:\n", i)
@@ -62,33 +63,38 @@ func main() {
 
 	// A threshold key with a threshold of 2 and length of 3 requires
 	// at least 2 of the 3 keys to sign anything modifying the account
-	thresholdKey := hedera.KeyListWithThreshold(2).
+	thresholdPublicKeys := hedera.KeyListWithThreshold(2).
 		AddAllPublicKeys(pubKeys)
 
 	//fmt.Printf("threshold key %v\n", thresholdKey)
 
 	transaction, err := hedera.NewAccountCreateTransaction().
-		SetKey(thresholdKey).
+		SetKey(thresholdPublicKeys).
 		SetInitialBalance(hedera.NewHbar(6)).
 		SetTransactionID(hedera.TransactionIDGenerate(client.GetOperatorAccountID())).
 		SetTransactionMemo("sdk example create_account_with_threshold_keys/main.go").
 		FreezeWith(client)
-
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing create account transaction")
+		return
 	}
 
-	transactionResponse, err := transaction.Sign(operatorKey).
-		Execute(client)
+	for i := range keys {
+		transaction = transaction.Sign(keys[i])
+	}
+
+	transactionResponse, err := transaction.Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating account")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account create receipt")
+		return
 	}
 
 	newAccountID := *transactionReceipt.AccountID
@@ -103,7 +109,8 @@ func main() {
 		FreezeWith(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing transfer transaction")
+		return
 	}
 
 	// Manually sign with 2 of the private keys provided in the threshold
@@ -113,26 +120,26 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing create account transaction")
+		return
 	}
 
 	// Must wait for the transaction to go to consensus
 	transactionReceipt, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving transfer receipt")
+		return
 	}
 
 	fmt.Printf("status of transfer transaction: %v\n", transactionReceipt.Status)
-
-	// Operator must be set
-	client.SetOperator(client.GetOperatorAccountID(), operatorKey)
 
 	balance, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(newAccountID).
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing account balance query")
+		return
 	}
 
 	fmt.Printf("account balance after transfer: %v\n", balance.Hbars.String())

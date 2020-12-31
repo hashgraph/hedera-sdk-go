@@ -27,12 +27,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -40,7 +42,8 @@ func main() {
 
 	newKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error generating PrivateKey")
+		return
 	}
 
 	fmt.Println("Creating an account to delete:")
@@ -55,12 +58,14 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating account")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account creation receipt")
+		return
 	}
 
 	newAccountID := *transactionReceipt.AccountID
@@ -78,7 +83,8 @@ func main() {
 		FreezeWith(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing account delete transaction")
+		return
 	}
 
 	// Manually sign the transaction with the private key of the account to be deleted
@@ -88,12 +94,14 @@ func main() {
 	deleteTransactionResponse, err := deleteTransaction.Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting account")
+		return
 	}
 
 	deleteTransactionReceipt, err := deleteTransactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account deletion receipt")
+		return
 	}
 
 	fmt.Printf("account delete transaction status: %v\n", deleteTransactionReceipt.Status)

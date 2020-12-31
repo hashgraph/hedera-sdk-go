@@ -11,12 +11,14 @@ func main() {
 	// Our hypothetical primary service only knows the operator/sender's account ID and the recipient's accountID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error converting string to AccountID")
+		return
 	}
 
 	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		 panic(err)
+		println(err.Error(), ": error converting string to PrivateKey")
+		return
 	}
 
 	recipientAccountID := hedera.AccountID{Account: 3}
@@ -41,17 +43,18 @@ func main() {
 		FreezeWith(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing Transfer Transaction")
+		return
 	}
 
 	// marshal your transaction to bytes
 	txBytes, err := transaction.ToBytes()
-
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error converting transfer transaction to bytes")
+		return
 	}
 
-	fmt.Printf("marshalled the unsigned transaction to bytes \n%v\n", txBytes)
+	fmt.Printf("Marshalled the unsigned transaction to bytes \n%v\n", txBytes)
 
 	//
 	// Send the bytes to the application or service that acts as a signer for your transactions
@@ -59,16 +62,18 @@ func main() {
 	signedTxBytes, err := signingService(txBytes)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error signing transfer transaction")
+		return
 	}
 
-	fmt.Printf("received bytes for signed transaction \n%v\n", signedTxBytes)
+	fmt.Printf("Received bytes for signed transaction: \n%v\n", signedTxBytes)
 
 	// unmarshal your bytes into the signed transaction
 	var signedTx hedera.TransferTransaction
 	tx, err := hedera.TransactionFromBytes(signedTxBytes)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error converting bytes to transfer transaction")
+		return
 	}
 
 	switch t := tx.(type) {
@@ -82,24 +87,26 @@ func main() {
 	response, err := signedTx.Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing the transfer transaction")
+		return
 	}
 
 	// get the receipt of the transaction to check the status
 	receipt, err := response.GetReceipt(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving transfer transaction receipt")
+		return
 	}
 
 	// if Status Success is returned then everything is good
-	fmt.Printf("crypto transfer status: %v\n", receipt.Status)
+	fmt.Printf("Crypto transfer status: %v\n", receipt.Status)
 }
 
 // signingService represents an offline service which knows the private keys needed for signing
 // a transaction and returns the byte representation of the transaction
 func signingService(txBytes []byte) ([]byte, error) {
-	fmt.Println("signing service has received the transaction")
+	fmt.Println("\nSigning service has received the transaction")
 
 	// Your signing service is aware of the operator's private key
 	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
@@ -111,7 +118,7 @@ func signingService(txBytes []byte) ([]byte, error) {
 	var unsignedTx hedera.TransferTransaction
 	tx, err := hedera.TransactionFromBytes(txBytes)
 	if err != nil {
-		panic(err)
+		return txBytes, err
 	}
 
 	switch t := tx.(type) {
@@ -121,7 +128,7 @@ func signingService(txBytes []byte) ([]byte, error) {
 		panic("Did not receive `TransferTransaction` back from signed bytes")
 	}
 
-	fmt.Printf("The Signing service is signing the transaction with key %v\n", operatorPrivateKey)
+	fmt.Printf("The Signing service is signing the transaction with key: %v\n", operatorPrivateKey)
 
 	// sign your unsigned transaction and marshal back to bytes
 	return unsignedTx.

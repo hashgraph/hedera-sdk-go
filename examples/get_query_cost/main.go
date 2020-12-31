@@ -27,12 +27,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -40,7 +42,8 @@ func main() {
 
 	newKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error generating PrivateKey")
+		return
 	}
 
 	transactionResponse, err := hedera.NewAccountCreateTransaction().
@@ -49,18 +52,17 @@ func main() {
 		SetInitialBalance(hedera.NewHbar(1)).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating account")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account creation receipt")
+		return
 	}
 
 	accountID := *transactionReceipt.AccountID
-	if err != nil {
-		panic(err)
-	}
 
 	cost, err := hedera.NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -68,7 +70,8 @@ func main() {
 		SetMaxQueryPayment(hedera.NewHbar(1)).
 		GetCost(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account info query cost")
+		return
 	}
 
 	fmt.Printf("Estimated txCost to be applied is %v\n", cost)
@@ -81,18 +84,21 @@ func main() {
 		SetTransactionID(hedera.TransactionIDGenerate(accountID)).
 		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing account delete transaction")
+		return
 	}
 
 	transactionResponse, err = transaction.
 		Sign(newKey).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error deleting account")
+		return
 	}
 
 	_, err = transactionResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving account deletion receipt")
+		return
 	}
 }

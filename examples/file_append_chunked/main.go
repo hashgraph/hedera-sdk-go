@@ -15,7 +15,7 @@ func main() {
 		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 
 		if err != nil {
-			println("not error", err.Error())
+
 			client = hedera.ClientForTestnet()
 		}
 	}
@@ -27,12 +27,14 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err = hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -44,12 +46,14 @@ func main() {
 		SetMaxTransactionFee(hedera.NewHbar(2)).
 		Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating file")
+		return
 	}
 
 	receipt, err := newFileResponse.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving file creation receipt")
+		return
 	}
 
 	fileID := *receipt.FileID
@@ -61,17 +65,20 @@ func main() {
 		SetMaxTransactionFee(hedera.NewHbar(1000)).
 		FreezeWith(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error freezing file append transaction")
+		return
 	}
 
 	response, err := fileAppend.Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error appending to file")
+		return
 	}
 
 	receipt, err = response.GetReceipt(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving file append transaction receipt")
+		return
 	}
 
 	println(receipt.Status.String())
@@ -82,7 +89,8 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing file info query")
+		return
 	}
 
 	println("File size according to `FileInfoQuery`:", info.Size)

@@ -27,17 +27,18 @@ func main() {
 	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
-
 
 	fileQuery := hedera.NewFileContentsQuery().
 		SetFileID(hedera.FileIDForAddressBook())
@@ -46,7 +47,8 @@ func main() {
 
 	cost, err := fileQuery.GetCost(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error getting file contents query cost")
+		return
 	}
 
 	println("file contents cost: ", cost.String())
@@ -55,17 +57,20 @@ func main() {
 
 	contents, err := fileQuery.Execute(client)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error executing file contents query")
+		return
 	}
 
 	file, err := os.OpenFile("address-book.proto.bin", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error opening address-book.proto.bin")
+		return
 	}
 
 	err = file.Truncate(0)
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error truncating file")
+		return
 	}
 
 	_, err = fmt.Fprintf(file, "%d", contents)

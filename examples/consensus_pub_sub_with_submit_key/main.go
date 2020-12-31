@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hashgraph/hedera-sdk-go"
+	"github.com/hashgraph/hedera-sdk-go/v2"
 	"math/rand"
 	"os"
 	"strconv"
@@ -24,20 +24,18 @@ func main() {
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
-	check, err := hedera.AccountIDFromString("0.0.0")
-	if err != nil {
-		panic(err)
-	}
 
-	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil && client.GetOperatorAccountID() == check {
+	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
 		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to AccountID")
+			return
 		}
 
 		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error converting string to PrivateKey")
+			return
 		}
 
 		client.SetOperator(operatorAccountID, operatorKey)
@@ -45,7 +43,8 @@ func main() {
 
 	submitKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error generating PrivateKey")
+		return
 	}
 
 	println("acc", client.GetOperatorAccountID().String())
@@ -56,20 +55,22 @@ func main() {
 		Execute(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error creating topic")
+		return
 	}
 
 	transactionReceipt, err := transactionResponse.GetReceipt(client)
 
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error retrieving topic create transaction receipt")
+		return
 	}
 
 	topicID := *transactionReceipt.TopicID
 
 	println("Created new topic", topicID.String(), "with ED25519 submitKey of", submitKey.String())
 
-	time.Sleep(5000)
+	time.Sleep(5 * time.Second)
 
 	_, err = hedera.NewTopicMessageQuery().
 		SetTopicID(topicID).
@@ -78,7 +79,8 @@ func main() {
 			println(message.ConsensusTimestamp.String(), " received topic message:", string(message.Contents))
 		})
 	if err != nil {
-		panic(err)
+		println(err.Error(), ": error subscribing")
+		return
 	}
 
 	for i := 0; i < 3; i++ {
@@ -91,20 +93,23 @@ func main() {
 			SetMessage([]byte(message)).
 			FreezeWith(client)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error freezing topic message submit transaction")
+			return
 		}
 
 		submitTx.Sign(submitKey)
 		submitTxResponse, err := submitTx.Execute(client)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error executing topic message submit transaction")
+			return
 		}
 
 		_, err = submitTxResponse.GetReceipt(client)
 		if err != nil {
-			panic(err)
+			println(err.Error(), ": error retrieving topic message submit transaction receipt")
+			return
 		}
 
-		time.Sleep(2500)
+		time.Sleep(2 * time.Second)
 	}
 }
