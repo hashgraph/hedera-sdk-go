@@ -19,7 +19,7 @@ type TransactionID struct {
 // NewTransactionID constructs a new Transaction id struct with the provided AccountID and the valid start time set
 // to the current time - 10 seconds.
 func TransactionIDGenerate(accountID AccountID) TransactionID {
-	allowance := -(time.Duration(rand.Intn(5*int(time.Second))) + (8 * time.Second))
+	allowance := -(time.Duration(rand.Int63n(5*int64(time.Second))) + (8 * time.Second))
 	validStart := time.Now().UTC().Add(allowance)
 
 	return TransactionID{accountID, validStart}
