@@ -129,9 +129,9 @@ type configOperator struct {
 
 // TODO: Implement complete spec: https://gitlab.com/launchbadge/hedera/sdk/python/-/issues/45
 type clientConfig struct {
-	Network       map[string]string `json:"network"`
-	MirrorNetwork string            `json:"mirrorNetwork"`
-	Operator      *configOperator   `json:"operator"`
+	Network       interface{}     `json:"network"`
+	MirrorNetwork interface{}     `json:"mirrorNetwork"`
+	Operator      *configOperator `json:"operator"`
 }
 
 // ClientFromConfig takes in the byte slice representation of a JSON string or
@@ -147,26 +147,61 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 
 	network := make(map[string]AccountID)
 
-	for url, id := range clientConfig.Network {
-		accountID, err := AccountIDFromString(id)
-		if err != nil {
-			return client, err
-		}
+	switch net := clientConfig.Network.(type) {
+	case map[string]interface{}:
+		for url, inter := range net {
+			switch id := inter.(type) {
+			case string:
+				accountID, err := AccountIDFromString(id)
+				if err != nil {
+					return client, err
+				}
 
-		network[url] = accountID
+				network[url] = accountID
+			default:
+				return client, errors.New("network is expected to be map of string to string, or string")
+			}
+		}
+	case string:
+		if len(net) > 0 {
+			switch net {
+			case "mainnet":
+				network = mainnetNodes
+			case "previewnet":
+				network = previewnetNodes
+			case "testnet":
+				network = testnetNodes
+			}
+		}
+	default:
+		return client, errors.New("network is expected to be map of string to string, or string")
 	}
 
-	if len(clientConfig.MirrorNetwork) > 0 {
-		switch mirror := clientConfig.MirrorNetwork; mirror {
-		case "mainnet":
-			client = newClient(network, mainnetMirror)
-		case "previewnet":
-			client = newClient(network, previewnetMirror)
-		case "testnet":
-			client = newClient(network, testnetMirror)
+	switch mirror := clientConfig.MirrorNetwork.(type) {
+	case []interface{}:
+		arr := make([]string, len(mirror))
+		for i, inter := range mirror {
+			switch str := inter.(type) {
+			case string:
+				arr[i] = str
+			default:
+				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
+			}
 		}
-	} else {
-		return client, errors.New("mirror network wasn't provided")
+		client = newClient(network, arr)
+	case string:
+		if len(mirror) > 0 {
+			switch mirror {
+			case "mainnet":
+				client = newClient(network, mainnetMirror)
+			case "previewnet":
+				client = newClient(network, previewnetMirror)
+			case "testnet":
+				client = newClient(network, testnetMirror)
+			}
+		}
+	default:
+		return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 	}
 
 	// if the operator is not provided, finish here

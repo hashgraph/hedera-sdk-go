@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,6 +41,24 @@ const testClientJSONWithOperator string = `{
         "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
     },
     "mirrorNetwork": "testnet"
+}`
+
+const testClientJSONWrongTypeMirror string = `{
+    "network": "testnet",
+    "operator": {
+        "accountId": "0.0.3",
+        "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
+    },
+ 	"mirrorNetwork": 5
+}`
+
+const testClientJSONWrongTypeNetwork string = `{
+    "network": 1,
+    "operator": {
+        "accountId": "0.0.3",
+        "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
+    },
+ 	"mirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
 }`
 
 func TestClientFromConfig(t *testing.T) {
@@ -83,4 +102,16 @@ func TestClientFromConfigWithOperator(t *testing.T) {
 	assert.NotNil(t, client.operator)
 	assert.Equal(t, testOperatorKey.keyData, client.operator.privateKey.keyData)
 	assert.Equal(t, AccountID{Account: 3}, client.operator.accountID)
+}
+
+func TestClientFromConfigWrongType(t *testing.T) {
+	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeMirror))
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("mirrorNetwork is expected to be either string or an array of strings"), err.Error())
+	}
+
+	_, err = ClientFromConfig([]byte(testClientJSONWrongTypeNetwork))
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("network is expected to be map of string to string, or string"), err.Error())
+	}
 }
