@@ -68,6 +68,7 @@ func newTestClient(t *testing.T) *Client {
 		if err != nil {
 			client = ClientForTestnet()
 		}
+
 	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")

@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -129,7 +130,7 @@ type configOperator struct {
 // TODO: Implement complete spec: https://gitlab.com/launchbadge/hedera/sdk/python/-/issues/45
 type clientConfig struct {
 	Network       map[string]string `json:"network"`
-	MirrorNetwork []string          `json:"mirrorNetwork"`
+	MirrorNetwork string            `json:"mirrorNetwork"`
 	Operator      *configOperator   `json:"operator"`
 }
 
@@ -137,6 +138,7 @@ type clientConfig struct {
 // document and returns Client based on the configuration.
 func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 	var clientConfig clientConfig
+	var client *Client
 
 	err := json.Unmarshal(jsonBytes, &clientConfig)
 	if err != nil {
@@ -148,17 +150,23 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 	for url, id := range clientConfig.Network {
 		accountID, err := AccountIDFromString(id)
 		if err != nil {
-			return nil, err
+			return client, err
 		}
 
 		network[url] = accountID
 	}
 
-	var client *Client
-	if clientConfig.MirrorNetwork != nil {
-		client = newClient(network, clientConfig.MirrorNetwork)
+	if len(clientConfig.MirrorNetwork) > 0 {
+		switch mirror := clientConfig.MirrorNetwork; mirror {
+		case "mainnet":
+			client = newClient(network, mainnetMirror)
+		case "previewnet":
+			client = newClient(network, previewnetMirror)
+		case "testnet":
+			client = newClient(network, testnetMirror)
+		}
 	} else {
-		client = newClient(network, testnetMirror)
+		return client, errors.New("mirror network wasn't provided")
 	}
 
 	// if the operator is not provided, finish here
@@ -168,12 +176,12 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 
 	operatorID, err := AccountIDFromString(clientConfig.Operator.AccountID)
 	if err != nil {
-		return nil, err
+		return client, err
 	}
 
 	operatorKey, err := PrivateKeyFromString(clientConfig.Operator.PrivateKey)
 	if err != nil {
-		return nil, err
+		return client, err
 	}
 
 	operator := operator{

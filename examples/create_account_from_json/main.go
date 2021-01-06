@@ -15,7 +15,8 @@ func main() {
 			"\n\"2.testnet.hedera.com:50211\":\"0.0.5\"," +
 			"\n\"3.testnet.hedera.com:50211\":\"0.0.6\"\n}," +
 			"\n\"operator\":{\n\"accountId\":\"0.0.56313\"," +
-			"\n\"privateKey\":\"302e020100300506032b657004220420c581ebedb27097be2e22b4df5a2117fdc1c1e41ac7b43ece2eff5acfa6973739\"\n}\n}\n")
+			"\n\"privateKey\":\"302e020100300506032b657004220420c581ebedb27097be2e22b4df5a2117fdc1c1e41ac7b43ece2eff5acfa6973739\"\n}," +
+			"\"mirrorNetwork\": \"testnet\"\n}\n")
 
 	client, err = hedera.ClientFromConfig(js)
 	if err != nil {

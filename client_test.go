@@ -18,7 +18,8 @@ const testClientJSON string = `{
 		"35.242.233.154:50211": "0.0.10",
 		"35.240.118.96:50211": "0.0.11",
 		"35.204.86.32:50211": "0.0.12"
-    }
+    },
+    "mirrorNetwork": "testnet"
 }`
 
 const testClientJSONWithOperator string = `{
@@ -37,7 +38,8 @@ const testClientJSONWithOperator string = `{
     "operator": {
         "accountId": "0.0.3",
         "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
-    }
+    },
+    "mirrorNetwork": "testnet"
 }`
 
 func TestClientFromConfig(t *testing.T) {
@@ -63,7 +65,8 @@ func TestClientSetNetwork(t *testing.T) {
 	network["35.199.161.108:50211"] = AccountID{0, 0, 6}
 	network["35.203.82.240:50211"] = AccountID{0, 0, 7}
 
-	client.SetNetwork(network)
+	err := client.SetNetwork(network)
+	assert.NoError(t, err)
 	assert.Equal(t, 5, len(client.network.network))
 }
 

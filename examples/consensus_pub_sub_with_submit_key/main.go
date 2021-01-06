@@ -18,6 +18,7 @@ func main() {
 		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 
 		if err != nil {
+			println(err.Error(), ": error setting up client from config file")
 			client = hedera.ClientForTestnet()
 		}
 	}
