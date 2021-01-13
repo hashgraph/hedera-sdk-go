@@ -69,10 +69,10 @@ func TestNew12MnemonicFromGeneratedMnemonic(t *testing.T) {
 	gKey, err := generatedMnemonic.ToPrivateKey(passphrase)
 	assert.NoError(t, err)
 
-	slKey, err := generatedMnemonic.ToPrivateKey(passphrase)
+	slKey, err := mnemonicFromSlice.ToPrivateKey(passphrase)
 	assert.NoError(t, err)
 
-	stKey, err := generatedMnemonic.ToPrivateKey(passphrase)
+	stKey, err := mnemonicFromString.ToPrivateKey(passphrase)
 	assert.NoError(t, err)
 
 	assert.Equal(t, gKey.keyData, slKey.keyData)

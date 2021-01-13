@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestAccountUpdateTransaction_Execute(t *testing.T) {
@@ -35,12 +36,15 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	tx, err := NewAccountUpdateTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetExpirationTime(time.Now().Local().Add(time.Second * 5)).
 		SetKey(newKey2.PublicKey()).
 		FreezeWith(client)
 
 	assert.NoError(t, err)
 
-	tx.Sign(newKey)
+	tx, err = tx.SignWithOperator(client)
+	assert.NoError(t, err)
+
 	tx.Sign(newKey2)
 
 	resp, err = tx.Execute(client)
@@ -74,6 +78,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 
 	assert.NoError(t, err)
+
 }
 
 func Test_AccountUpdate_NoSigning(t *testing.T) {
