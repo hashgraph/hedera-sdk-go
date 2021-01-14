@@ -84,3 +84,75 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestLiveHashQueryCost_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
+	if err != nil {
+
+	}
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(NewHbar(1)).
+		Execute(client)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp2, err := NewLiveHashAddTransaction().
+		SetAccountID(accountID).
+		SetDuration(24 * 30 * time.Hour).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetHash(_hash).
+		SetKeys(newKey.PublicKey()).
+		Execute(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
+	}
+
+	liveHashQ := NewLiveHashQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetHash(_hash)
+
+	cost, err := liveHashQ.GetCost(client)
+	assert.Error(t, err)
+
+	_, err = liveHashQ.SetQueryPayment(cost).Execute(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+	}
+
+	resp2, err = NewLiveHashDeleteTransaction().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetHash(_hash).
+		Execute(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
+	}
+
+	tx, err := NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTransferAccountID(client.GetOperatorAccountID()).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	resp, err = tx.Sign(newKey).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}

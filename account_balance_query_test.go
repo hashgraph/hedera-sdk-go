@@ -24,6 +24,20 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestAccountBalanceQueryCost_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	balance := NewAccountBalanceQuery().
+		SetAccountID(client.GetOperatorAccountID())
+
+	cost, err := balance.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = balance.SetMaxQueryPayment(cost).
+		Execute(client)
+	assert.NoError(t, err)
+}
+
 func Test_AccountBalance_NoAccount(t *testing.T) {
 	client := newTestClient(t)
 

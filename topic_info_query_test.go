@@ -49,6 +49,43 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestTopicInfoQueryCost_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetTopicMemo(topicMemo).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	topicInfo := NewTopicInfoQuery().
+		SetTopicID(topicID)
+
+	cost, err := topicInfo.GetCost(client)
+	assert.NoError(t, err)
+
+	info, err := topicInfo.SetQueryPayment(cost).Execute(client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info)
+
+	assert.Equal(t, topicMemo, info.Memo)
+	assert.Equal(t, uint64(0), info.SequenceNumber)
+	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
+
+	_, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		Execute(client)
+	assert.NoError(t, err)
+}
+
 func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 	client := newTestClient(t)
 

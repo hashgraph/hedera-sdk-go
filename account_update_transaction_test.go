@@ -39,12 +39,9 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 		SetExpirationTime(time.Now().Local().Add(time.Second * 5)).
 		SetKey(newKey2.PublicKey()).
 		FreezeWith(client)
-
 	assert.NoError(t, err)
 
-	tx, err = tx.SignWithOperator(client)
-	assert.NoError(t, err)
-
+	tx.Sign(newKey)
 	tx.Sign(newKey2)
 
 	resp, err = tx.Execute(client)

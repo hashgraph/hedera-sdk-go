@@ -15,3 +15,18 @@ func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
 	}
 }
+
+func TestNetworkVersionInfoQueryCost_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	query := NewNetworkVersionQuery()
+
+	cost, err := query.GetCost(client)
+	assert.Error(t, err)
+
+	_, err = query.SetQueryPayment(cost).Execute(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+	}
+}

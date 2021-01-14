@@ -53,6 +53,47 @@ func Test_FileInfo_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func Test_FileInfoCost_Transaction(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewFileCreateTransaction().
+		SetKeys(client.GetOperatorPublicKey()).
+		SetContents([]byte("Hello, World")).
+		SetTransactionMemo("go sdk e2e tests").
+		Execute(client)
+
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	fileID := receipt.FileID
+	assert.NotNil(t, fileID)
+
+	fileInfo := NewFileInfoQuery().
+		SetFileID(*fileID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID})
+
+	cost, err := fileInfo.GetCost(client)
+	assert.NoError(t, err)
+
+	info, err := fileInfo.SetQueryPayment(cost).Execute(client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, *fileID, info.FileID)
+	assert.Equal(t, info.Size, int64(12))
+	assert.False(t, info.IsDeleted)
+
+	resp, err = NewFileDeleteTransaction().
+		SetFileID(*fileID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}
+
 func Test_FileInfoQuery_NoFileID(t *testing.T) {
 	client := newTestClient(t)
 

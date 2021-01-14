@@ -25,6 +25,19 @@ func TestAccountStakersQuery_Execute(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestAccountStakersQueryCost_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	accountStakers := NewAccountStakersQuery().
+		SetAccountID(client.GetOperatorAccountID())
+
+	cost, err := accountStakers.GetCost(client)
+	assert.Error(t, err)
+
+	_, err = accountStakers.SetQueryPayment(cost).Execute(client)
+	assert.Error(t, err)
+}
+
 func TestAccountStakersNoAccountID_Execute(t *testing.T) {
 	client := newTestClient(t)
 

@@ -49,6 +49,43 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 	assert.Equal(t, 0, len(recordsQuery))
 }
 
+func TestAccountRecordQueryCost_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	account := *receipt.AccountID
+
+	_, err = NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddHbarTransfer(account, NewHbar(1)).
+		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(-1)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	records := NewAccountRecordsQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(client.GetOperatorAccountID())
+
+	cost, err := records.GetCost(client)
+	assert.NoError(t, err)
+
+	recordsQuery, err := records.SetMaxQueryPayment(cost).Execute(client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 0, len(recordsQuery))
+}
+
 func Test_AccountRecord_NoAccountID(t *testing.T) {
 	client := newTestClient(t)
 
