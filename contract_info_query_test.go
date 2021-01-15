@@ -54,6 +54,7 @@ func TestContractInfoQuery_Execute(t *testing.T) {
 
 	info, err := NewContractInfoQuery().
 		SetContractID(contractID).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
@@ -120,6 +121,7 @@ func TestContractInfoQueryCost_Execute(t *testing.T) {
 
 	contractInfo := NewContractInfoQuery().
 		SetContractID(contractID).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := contractInfo.GetCost(client)

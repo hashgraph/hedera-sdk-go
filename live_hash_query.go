@@ -74,11 +74,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	cost := int64(resp.query.GetCryptoGetLiveHash().Header.Cost)
-	if cost < 25 {
-		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
-	}
+	return HbarFromTinybar(cost), nil
 }
 
 func liveHashQuery_mapResponseStatus(_ request, response response) Status {

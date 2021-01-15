@@ -43,6 +43,7 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(2)).
 		SetTokenID(tokenID).
+		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -99,6 +100,7 @@ func TestTokenInfoQueryCost_Execute(t *testing.T) {
 
 	infoQuery := NewTokenInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID)
 
 	cost, err := infoQuery.GetCost(client)

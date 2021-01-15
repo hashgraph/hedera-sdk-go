@@ -53,6 +53,7 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 	_, err = NewLiveHashQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetHash(_hash).
 		Execute(client)
 	assert.Error(t, err)
@@ -120,6 +121,7 @@ func TestLiveHashQueryCost_Execute(t *testing.T) {
 
 	liveHashQ := NewLiveHashQuery().
 		SetAccountID(accountID).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetHash(_hash)
 

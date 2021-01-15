@@ -77,7 +77,7 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 	result, err = NewContractCallQuery().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(5)).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetGas(2000).
 		SetFunction("getMessage", nil).
 		Execute(client)
@@ -143,14 +143,14 @@ func TestNewContractCallQueryCost_Execute(t *testing.T) {
 	callQuery := NewContractCallQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
-		SetQueryPayment(NewHbar(1)).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetGas(2000).
 		SetFunction("getMessage", nil)
 
 	cost, err := callQuery.GetCost(client)
 	assert.NoError(t, err)
 
-	result, err := callQuery.SetMaxQueryPayment(cost).Execute(client)
+	result, err := callQuery.SetQueryPayment(cost).Execute(client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "Hello from Hedera.", result.GetString(0))

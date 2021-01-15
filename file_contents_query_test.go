@@ -39,6 +39,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 
 	remoteContents, err := NewFileContentsQuery().
 		SetFileID(*fileID).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
@@ -79,6 +80,7 @@ func TestFileContentsQueryCost_Execute(t *testing.T) {
 
 	fileContents := NewFileContentsQuery().
 		SetFileID(*fileID).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := fileContents.GetCost(client)

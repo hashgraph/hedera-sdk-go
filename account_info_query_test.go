@@ -88,6 +88,7 @@ func TestAccountInfoQueryCost_Execute(t *testing.T) {
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := accountInfo.GetCost(client)

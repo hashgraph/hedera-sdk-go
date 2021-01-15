@@ -67,6 +67,7 @@ func TestTopicInfoQueryCost_Execute(t *testing.T) {
 	assert.NotNil(t, topicID)
 
 	topicInfo := NewTopicInfoQuery().
+		SetMaxQueryPayment(NewHbar(1)).
 		SetTopicID(topicID)
 
 	cost, err := topicInfo.GetCost(client)

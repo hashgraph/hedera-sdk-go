@@ -29,6 +29,7 @@ func TestAccountStakersQueryCost_Execute(t *testing.T) {
 	client := newTestClient(t)
 
 	accountStakers := NewAccountStakersQuery().
+		SetMaxQueryPayment(NewHbar(1)).
 		SetAccountID(client.GetOperatorAccountID())
 
 	cost, err := accountStakers.GetCost(client)

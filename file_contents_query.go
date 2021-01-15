@@ -69,11 +69,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	cost := int64(resp.query.GetFileGetContents().Header.Cost)
-	if cost < 25 {
-		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
-	}
+	return HbarFromTinybar(cost), nil
 }
 
 func fileContentsQuery_mapResponseStatus(_ request, response response) Status {

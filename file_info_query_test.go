@@ -35,7 +35,7 @@ func Test_FileInfo_Transaction(t *testing.T) {
 	info, err := NewFileInfoQuery().
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(22)).
+		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -72,6 +72,7 @@ func Test_FileInfoCost_Transaction(t *testing.T) {
 
 	fileInfo := NewFileInfoQuery().
 		SetFileID(*fileID).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := fileInfo.GetCost(client)

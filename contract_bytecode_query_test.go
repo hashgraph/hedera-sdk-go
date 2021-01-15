@@ -54,7 +54,7 @@ func TestContractBytecodeQuery_Execute(t *testing.T) {
 	bytecode, err := NewContractBytecodeQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
-		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -117,6 +117,7 @@ func TestContractBytecodeQueryCost_Execute(t *testing.T) {
 
 	bytecodeQuery := NewContractBytecodeQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxQueryPayment(NewHbar(1)).
 		SetContractID(contractID)
 
 	cost, err := bytecodeQuery.GetCost(client)

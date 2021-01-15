@@ -56,11 +56,7 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	cost := int64(resp.query.GetTransactionGetRecord().Header.Cost)
-	if cost < 25 {
-		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
-	}
+	return HbarFromTinybar(cost), nil
 }
 
 func transactionRecordQuery_shouldRetry(status Status, response response) bool {

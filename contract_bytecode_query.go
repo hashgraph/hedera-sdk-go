@@ -69,11 +69,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	cost := int64(resp.query.GetContractGetBytecodeResponse().Header.Cost)
-	if cost < 25 {
-		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
-	}
+	return HbarFromTinybar(cost), nil
 }
 
 func contractBytecodeQuery_mapResponseStatus(_ request, response response) Status {
