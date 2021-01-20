@@ -1,0 +1,399 @@
+# Go V1 to V2
+
+- `TopicUpdateTransaction` missing `[get|set]ExpirationTime()`
+- `AccountUpdateTransaction` missing `SetInitialBalance` and `GetInitialBalance`
+
+v2.0.0
+
+- Remove `Build(*Client)` from all transactions
+- Rename `Ed25519PublicKey` → `PublicKey`
+    - Implement `verify([]byte, []byte) bool`
+        - Verifies a message was signe by the respective private key.
+    - Implement `verifyTransaction(Transaction) bool`
+        - Verifies the transaction was signed by the respective private key.
+- Rename `Ed25519PrivateKey` → `PrivateKey`
+    - Implement `signTransaction(Transaction) []byte`
+        - Signs the `Transaction` and returns the signature.
+- Removed `ThresholdKey`
+    - Use `KeyListWithThreshold(uint) *KeyList`
+- Implement `Key`
+    - Implemented by `PublicKey`
+    - Implemented by `PrivateKey`
+    - Implemented by `KeyList`
+    - Implemented by `ContractID`
+- `KeyList`
+    - Implement `AddAllPublicKeys([]PublicKey) *KeyList`
+- `Mnemonic`
+    - Implement `ToLegacyPrivateKey() (PrivateKey, error)`
+    - Implement `GenerateMnemonic24() (Mnemonic, error)`
+    - Implement `GenerateMnemonic12() (Mnemonic, error)`
+    - Remove `GenerateMnemonic() (Mnemonic, error)`
+        - Use `GenerateMnemonic12()` or `GenerateMnemonic24()` instead.
+- Removed `MirrorClient`
+    - Use `Client` instead, and set the mirror network using `setMirrorNetwork()`
+- Rename `MirrorSubscriptionHandle` → `SubscriptionHandle`
+- Renamed `QueryBuilder` → `Query`
+    - Removed `setPaymentTransaction()`
+    - Implement `GetNodeAccountIDs() []AccountID`
+    - Implement `SetNodeAccountIDs([]AccountID) *Query`
+    - Implement `GetMaxRetryCount() int`
+    - Implement `SetMaxRetry(int) *Query`
+- Combined `TransactionBuilder` and `Transaction`
+    - Implement `TransactionFromBytes([]byte) (interface{}, error)`
+    - Implement `ToBytes() []byte`
+    - Rename `ID()` →`GetTransactionId()`
+    - Implement `GetMaxTransactionFee() Hbar`
+    - Implement `GetTransactionMemo() String`
+    - Implement `GetTransactionHashPerNode() (map[AccountID][]byte, error)`
+    - Implement `GetTransactionValidDuration() time.Duration`
+    - Implement `AddSignature(PublicKey, byte[]) Transaction`
+    - Implement `GetSignatures() (map[AccountID]map[*PublicKey][]byte, error)`
+    - Implement `FreezeWith(Client) (Transaction, error)`
+    - Implement `Freeze() (Transaction, error)`
+    - Removed `UnmarshalBinary([]byte) error`
+    - Removed `MarshalBinary() ([]byte, error)`
+    - Renamed `SetNodeAccountID(AccountID)` → `setNodeAccountIDs(List<AccountID>)`
+    - Implement `GetTransactionHash() ([]byte, error)`
+    - Implement `SetMaxRetry(int) *Transaction`
+    - Implement `GetMaxRetry() int`
+    - Implement `IsFrozen() bool`
+    - Changed `Execute(Client) (TransactionID, error)` → `Execute(Client) (TransactionResponse, error)`
+    - Changed `Sign(Ed25519PrivateKey)` → `Sign(PrivateKey)`
+    - Changed `SignWith(Ed25519PublicKey)` → `SignWith(PublicKey, TransactionSigner)`
+- `AccountBalanceQuery` extends (Query)
+    - Rename `BalanceQuery` → `Query`
+    - Changed `Execute(client *Client) (Hbar, error)` → `Execute(client *Client) (AccountBalance, error)`
+    - Implement `GetAccountID() AccountID`
+    - Implement `GetContractID() ContactID`
+- Implement `AccountBalance`
+    - Implement `Hbars Hbar`
+    - Implement `Token map[TokenID]uint64`
+- `AccountCreateTransaction` extends (Transaction)
+    - Implement `getKey() (Key, error)`
+    - Implement `getInitialBalance() Hbar`
+    - Implement `getReceiverSignatureRequired() boolean`
+    - Implement `getProxyAccountID() AccountID`
+    - Implement `getAutoRenewPeriod() time.Duration`
+    - Removed `setSendRecordThreshold(Hbar)`
+    - Removed `setReceiveRecordThreshold(Hbar)`
+- `AccountDeleteTransaction` extends (Transaction)
+    - Rename `setDeleteAccountID()` → `setAccountID()`
+    - Implement `getAccountID() AccountID`
+    - Implement `getTransferAccountID() AccountID`
+- `AccountID`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) AccountID`
+- `AccountInfo`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) AccountInfo`
+    - Implement `TokenRelationships: []*TokenRelationship`
+- `AccountInfoQuery` extends (Query)
+    - Implement `getAccountID() AccountID`
+    - Rename `Cost(Client)` → `GetCost(Client)`
+- `AccountRecordsQuery` extends (Query)
+    - Implement `getAccountID() AccountID`
+- `AccountStakersQuery` extends (Query)
+    - Implement `getAccountID() AccountID`
+- `AccountUpdateTransaction` extends (Transaction)
+    - Implement `getAccountID() AccountID`
+    - Implement `getKey() (Key, error)`
+    - Implement `getInitialBalance() Hbar`
+    - Implement `getReceiverSignatureRequired() boolean`
+    - Implement `getProxyAccountID() AccountID`
+    - Implement `getAutoRenewPeriod() time.Duration`
+    - Implement `getExpirationTime() time.Time`
+    - Removed `setSendRecordThreshold(Hbar)`
+    - Removed  `setReceiveRecordThreshold(Hbar)`
+- Removed `CryptoTransferTranscation`
+    - Use `TransferTransaction` instead.
+- `TransferTransaction` extends (Transaction)
+    - Implement `addTokenTransfer(TokenID, AccountID, int64) TransferTransaction`
+    - Implement `getTokenTransfers() map[TokenID][]TokenTransfer`
+    - Implement `addHbarTransfer(AccountID, Hbar) TransferTransaction`
+    - Implement `getHbarTransfers() map[AccountID]Hbar`
+- Rename `ContractBytecodeQuery` → `ContractByteCodeQuery` extends (Query)
+    - Implement `getContractID() ContractID`
+- `ContractCallQuery` extends (Query)
+    - Implement `getContractID() ContractID`
+    - Implement `getGas() uint64`
+    - Implement `getFunctionParameters() []byte`
+    - Implement `SetFunctionParameters([]byte) *ContractCallQuery`
+- `ContractCreateTransaction` extends (Transaction)
+    - Implement `getBytecodeFileID() FileID`
+    - Implement `getAdminKey() (Key, error)`
+    - Implement `getGas() uint64`
+    - Implement `getInitialBalance() Hbar`
+    - Implement `getAutoRenewDuration() time.Duration`
+    - Implement `getProxyAccountID() AccountID`
+    - Implement `getContractMemo() String`
+    - Implement `getConstructorParameters() []byte`
+    - Implement `SetConstructorParametersRaw([]byte) *ContractCreateTransaction`
+    - Removed `setInitialBalance()`
+- `ContractDeleteTransaction` extends (Transaction)
+    - Implement `getContractID() ContractID`
+    - Implement `getTransferAccountID() AccountID`
+    - Implement `getTransferContractID() ContractID`
+- `ContractExecuteTransaction` extends (Transaction)
+    - Implement `getContractID() ContractID`
+    - Implement `getGas() uint64`
+    - Implement `getPayableAmount() Hbar`
+    - Implement `byte[] getFunctionParameters()`
+- `ContractID`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) ContractID`
+- `ContractInfo`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) ContractInfo`
+- `ContractInfoQuery` extends (Query)
+    - Implement `getContractID() ContractID`
+- Removed `ContractRecordsQuery`
+- `ContractUpdateTransaction` extends (Transaction)
+    - Implement `getContractID() ContractID`
+    - Implement `getBytecodeFileID() FileID`
+    - Implement `getAdminKey() (Key, error)`
+    - Implement `getAutoRenewDuration() time.Duration`
+    - Implement `getProxyAccountID() AccountID`
+    - Implement `getContractMemo() String`
+    - Implement `getExpirationTime() time.Time`
+- `FileAppendTransaction`
+    - Implement `getFileID() FileID`
+    - Implement `getContents() []byte`
+- `FileContentsQuery`
+    - Implement `getFileID() FileID`
+- `FileCreateTransaction`
+    - Implement `getContents() []byte`
+    - Implement `getKeys() KeyList`
+    - Implement `getExpirationTime() time.Time`
+    - Rename `addKey(PublicKey)` → `setKeys(Key...)`
+- `FileDeleteTransaction`
+    - Implement `getFileID() FileID`
+- `FileID`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) FileID`
+- `FileInfo`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) FileInfo`
+    - Update `Keys []PublicKey` → `Keys KeyList`
+- `FileInfoQuery`
+    - Implement `getFileID() FileID`
+- `FileUpdateTransaction`
+    - Implement `getFileID() FileID`
+    - Implement `getContents() []byte`
+    - Implement `getKeys() KeyList`
+    - Implement `getExpirationTime() time.Time`
+    - Rename `addKey(PublicKey)` → `setKeys(Key...)`
+- Removed `ConsensusTopicMessage`
+- Rename `MirrorConsensusTopicResponse` → `TopicMessage`
+    - Implement `TopicMessageChunk[] Chunks`
+        - This will be non null for a topic message which is constructed from multiple transactions.
+    - Rename `message []byte` → `contents []byte`
+    - Remove `getMessage() []byte`
+    - Remove `ConsensusTopicID TopicID`
+- Rename `MirrorConsensusTopicChunk` → `TopicMessageChunk`
+- Rename `MirrorTopicMessageQuery` → `TopicMessageQuery`
+    - Change `Subscribe(MirrorClient, func(MirrorConsensusTopicResponse), func(error)) (MirrorSubscriptionHandle, error)`→ `Subscribe(*Client, func(TopicMessage)) (SubscriptionHandle, error)`
+- Rename `ConsensusTopicCreateTransaction` → `TopicCreateTransaction`
+    - Implement `getTopicMemo() String`
+    - Implement `getAdminKey() (Key, error)`
+    - Implement `getSubmitKey() (Key, error)`
+    - Implement `getAutoRenewDuration() time.Duration`
+    - Implement `getAutoRenewAccountID() AccountID`
+- Rename `ConsensusTopicDeleteTransaction` → `TopicDeleteTransaction`
+    - Implement `getTopicID() TopicID`
+- Rename `ConsensusMessageSubmitTransaction` → `TopicMessageSubmitTransaction`
+    - Implement `getTopicID() TopicID`
+    - Implement `getMessage() []byte`
+    - Removed `setChunkInfo(TransactionId, int, int)`
+    - Implement `GetMaxChunks() uint64`
+- Rename `ConsensusTopicID` → `TopicID`
+- Rename `ConsensusTopicInfo` → `TopicInfo`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes() TopicInfo`
+    - Change `AdminKey Ed25519PublicKey`  and  `SubmitKey Ed25519PublicKey`→ `AdminKey Key` and `SubmitKey Key`
+- Rename `ConsensusTopicInfoQuery` → `TopicInfoQuery`
+    - Implement `getTopicID() TopicID`
+- Rename `ConsensusTopicUpdateTransaction` → `TopicUpdateTransaction`
+    - Implement `getTopicID() TopicID`
+    - Implement `getTopicMemo() String`
+    - Implement `getAdminKey() (Key, error)`
+    - Implement `getSubmitKey() (Key, error)`
+    - Implement `getAutoRenewDuration() time.Duration`
+    - Implement `getAutoRenewAccountID() AccountID`
+- `TokenAssociateTransaction` extends (Transaction)
+    - Implement `getAccountID() AccountID`
+    - Implement  `setTokenIDs([]TokenID)`
+    - Implement `getTokenIDs() []TokenID`
+- Removed `TokenBalanceQuery`
+    - Use `AccountBalanceQuery` to fetch token balances since `AccountBalance` contains `tokenBalances`.
+- `TokenBurnTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+    - Implement `getAmount() uint64`
+- `TokenCreateTransaction` extends (Transaction)
+    - Rename `setName(String)` →`setTokenName(String)`
+    - Implement `getTokenName() string`
+    - Rename `setSymbol(String)` →`setTokenSymbol(String)`
+    - Implement `getTokenSymbol() string`
+    - Rename `setTreasury(AccountID)` →`setTreasuryAccountID(AccountID)`
+    - Rename `setAutoRenewAccount(AccountID)` →`setAutoRenewAccountID(AccountID)`
+    - Implement `getAutoRenewAccountID() AccountID`
+    - Implement `getTreasuryAccountID() AccountID`
+    - Implement `getAdminKey() (Key, error)`
+    - Implement `getKycKey() (Key, error)`
+    - Implement `getSupplyKey() (Key, error)`
+    - Implement `getWipeKey() (Key, error)`
+    - Implement `getFreezeKey() (Key, error)`
+    - Implement `getFreezeDefault() boolean`
+    - Implement `getExpirationTime() time.Time`
+    - Implement `getAutoRenewAccountID() AccountID`
+    - Implement `getAutoRenewPeriod() time.Duration`
+    - Implement `getDecimals() int`
+- `TokenDeleteTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+- `TokenDisassociateTransaction` extends (Transaction)
+    - Implement `getAccountID() AccountID`
+    - Implement `getTokenIDs() []TokenID`
+    - Implement `setTokenIDs([]TokenID)`
+- `TokenFreezeTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+    - Implement `getAccointId() AccountID`
+- `TokenGrantKycTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+    - Implement `getAccointId() AccountID`
+- `TokenID`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) TokenID`
+- `TokenInfo`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) TokenInfo`
+- `TokenInfoQuery` extends (Query)
+    - Implement `getTokenID() TokenID`
+- `TokenMintTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+    - Implement `getAmount() uint64`
+- `TokenRelationship`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) TokenRelationship`
+- `TokenRevokeKycTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+    - Implement `getAccointId() AccountID`
+- Removed `TokenTransferTransaction`
+    - Use `TransferTransaction` instead.
+- `TokenUnfreezeTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+    - Implement `getAccountId() AccountID`
+- `TokenUpdateTransaction` extends (Transaction)
+    - Rename `setName(String)` →`setTokenName(String)`
+    - Implement `getTokenName() string`
+    - Rename `setSymbol(String)` →`setTokenSymbol(String)`
+    - Implement `getTokenSymbol() string`
+    - Rename `setTreasury(AccountID)` →`setTreasuryAccountID(AccountID)`
+    - Rename `setAutoRenewAccount(AccountID)` →`setAutoRenewAccountID(AccountID)`
+    - Implement `getAutoRenewAccountID() AccountID`
+    - Implement `getTreasuryAccountID() AccountID`
+    - Implement `getAdminKey() (Key, error)`
+    - Implement `getKycKey() (Key, error)`
+    - Implement `getSupplyKey() (Key, error)`
+    - Implement `getWipeKey() (Key, error)`
+    - Implement `getFreezeKey() (Key, error)`
+    - Implement `getFreezeDefault() boolean`
+    - Implement `getExpirationTime() time.Time`
+    - Implement `getAutoRenewAccountID() AccountID`
+    - Implement `getAutoRenewPeriod() time.Duration`
+    - Implement `getDecimals() int`
+- `TokenWipeTransaction` extends (Transaction)
+    - Implement `getTokenID() TokenID`
+    - Implement `getAccountID() AccountID`
+- `FreezeTransaction`
+    - Implement `getStartTime() time.Time`
+    - Implement `getEndTime() time.Time`
+- Removed `HbarRangeException`
+    - If `Hbar` is out of range `Hedera` will error instead.
+- Removed `HederaConstants`
+    - No replacement.
+- Removed `HederaNetworkException`
+- Rename `HederaPrecheckStatusException` → `PrecheckStatusException`
+- Rename `HederaReceiptStatusException` → `ReceiptStatusException`
+- Removed `HederaRecordStatusException`
+    - `ReceiptStatusException` will be thrown instead.
+- Remove `HederaStatusException`
+    - A `PrecheckStatusException` or `ReceiptStatusException` will be thrown instead.
+- Removed `HederaThrowable`
+    - No replacement.
+- Removed `LocalValidationException`
+    - No replacement. Local validation is no longer done.
+- `SystemDeleteTransaction`
+    - Implement `getFileID() FileID`
+    - Implement `getContractID() ContractID`
+    - Implement `getExpirationTime() time.Time`
+- `SystemUndeleteTransaction`
+    - Implement `getFileID() FileID`
+    - Implement `getContractID() ContractID`
+- `TransactionId`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes(byte[]) TransactionId`
+    - Removed `TransactionId(TransactionIDOrBuilder)`
+    - Removed `toProto() TransactionID`
+    - Removed `withValidStart(AccountID, time.Time) TransactionId`
+        - Use `TransactionId(AccountID, time.Time) new` instead.
+    - Removed `TransactionId(AccountID)`
+        - Use `generate(AccountID) TransactionId` instead.
+- Removed `TransactionList`
+- `TransactionReciept`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes() TransactionReceipt`
+    - Expose `ExchangeRate *ExchangeRate`
+    - Expose `AccountID *AccountID`
+    - Expose `FileID *FileID`
+    - Expose `ContractID *ContractID`
+    - Expose `TopicID *TopicID`
+    - Expose `TokenID *TokenID`
+    - Expose `TopicSequenceNumber uint64`
+    - Expose `topicRunningHash []byte`
+    - Implement `TotalSupply uint64`
+    - Implement `TopicRunningHashVersion uint64`
+    - Removed `getAccountID() AccountID`
+        - Use `AccountID AccountID` directly instead.
+    - Removed `getContractID() ContractID`
+        - Use `ContractID ContractID` directly instead.
+    - Removed `getFileID() FileID`
+        - Use `FileID FileID` directly instead.
+    - Removed `getTokenID() TokenID`
+        - Use `TokenID TokenID` directly instead.
+    - Removed `getConsensusTopicID() ConsensusTopicID`
+        - Use `TopicID TopicID` directly instead.
+    - Removed `getConsensusTopicSequenceNumber()`
+        - Use `sequenceNumber uint64` directly instead.
+    - Removed `getConsensusTopicRunningHash() []byte`
+        - Use `topicRunningHash []byte` directly instead.
+    - Removed `toProto() TransactionReceipt`
+- `TransactionReceiptQuery` extends (Query)
+    - Implement `getTransactionId() TransactionID`
+- `TransactionRecord`
+    - Implement `byte[] toBytes()`
+    - Implement `fromBytes() TransactionRecord`
+    - Implement `CallResult *ContractFunctionResult`
+    - Implement `CallResultIsCreate bool`
+    - Removed `getContratcExecuteResult() ContractFunctionResult`
+        - Use `ContractFunctionResult contractFunctionResult` directly instead.
+    - Removed `getContratcCreateResult() ContractFunctionResult`
+        - Use `ContractFunctionResult contractFunctionResult` directly instead.
+    - Removed `toProto() TransactionReceipt`
+- `TransactionRecordQuery` extends (Query)
+    - Implement `getTransactionId() TransactionId`
+- `Hbar`
+    - Implement  `ToString(unit HbarUnit) string`
+- `Client`
+    - Revomed `NewClient(map[string]AccountID) *Client`
+    - Added `setMirrorNetwork([]String) void`
+    - Added `getMirrorNetwork() []String`
+    - Added `ClientForNetwork(map[string]AccountID) *Client`
+    - Added `ping(AccountID) void`
+    - Added `getOperatorPublicKey() PublicKey`
+    - Added `SetNetwork(map[string]AccountID) error`
+    - Added `GetNetwork() map[string]AccountID`
+    - Rename `fromJson([]byte)` → `ClientFromConfig(byte[])`
+    - Rename `fromFile(String)` → `ClientFromConfigFile(String)`
+    - Rename `getOperatorId()` → `getOperatorAccountID()`
+    - Removed `ReplaceNodes(map[string]AccountID) *Client`
+    - Removed `setMaxTransactionFee() Client`
+    - Removed `setMaxQueryPayment() Client`
