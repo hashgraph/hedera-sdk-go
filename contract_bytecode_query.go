@@ -156,7 +156,7 @@ func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *Co
 	return query
 }
 
-func (query *ContractBytecodeQuery) GetNodeAccountId() []AccountID {
+func (query *ContractBytecodeQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 
