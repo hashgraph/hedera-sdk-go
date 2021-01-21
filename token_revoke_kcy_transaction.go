@@ -57,7 +57,7 @@ func (transaction *TokenRevokeKycTransaction) SetAccountID(accountID AccountID) 
 	return transaction
 }
 
-func (transaction *TokenRevokeKycTransaction) getAccountID() AccountID {
+func (transaction *TokenRevokeKycTransaction) GetAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.Account)
 }
 

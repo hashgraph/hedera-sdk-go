@@ -181,7 +181,7 @@ func (query *AccountBalanceQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 	return query
 }
 
-func (query *AccountBalanceQuery) GetNodeAccountIDs() []AccountID{
+func (query *AccountBalanceQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 

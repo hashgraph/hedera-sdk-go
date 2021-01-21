@@ -57,6 +57,10 @@ func (transaction *ContractExecuteTransaction) SetGas(gas uint64) *ContractExecu
 	return transaction
 }
 
+func (transaction *ContractExecuteTransaction) GetGas() uint64 {
+	return uint64(transaction.pb.Gas)
+}
+
 // SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
 func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
@@ -64,8 +68,8 @@ func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *Co
 	return transaction
 }
 
-func (transaction ContractExecuteTransaction) GetPayableAmount() uint64 {
-	return uint64(transaction.pb.Gas)
+func (transaction ContractExecuteTransaction) GetPayableAmount() Hbar {
+	return HbarFromTinybar(transaction.pb.Amount)
 }
 
 //Sets the function parameters
