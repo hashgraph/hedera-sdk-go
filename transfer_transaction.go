@@ -74,16 +74,6 @@ func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amo
 	return transaction
 }
 
-func (transaction *TransferTransaction) AddHbarSender(accountID AccountID, amount Hbar) *TransferTransaction {
-	transaction.requireNotFrozen()
-	return transaction.AddHbarTransfer(accountID, amount.negated())
-}
-
-func (transaction *TransferTransaction) AddHbarRecipient(accountID AccountID, amount Hbar) *TransferTransaction {
-	transaction.requireNotFrozen()
-	return transaction.AddHbarTransfer(accountID, amount)
-}
-
 func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, value int64) *TransferTransaction {
 	transaction.requireNotFrozen()
 

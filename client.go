@@ -324,21 +324,6 @@ func (client *Client) GetOperatorPublicKey() PublicKey {
 	}
 }
 
-// SetMaxTransactionFee sets the maximum fee to be paid for the transactions
-// executed by the Client.
-// Because transaction fees are always maximums the actual fee assessed for
-// a given transaction may be less than this value, but never greater.
-func (client *Client) SetMaxTransactionFee(fee Hbar) *Client {
-	client.maxTransactionFee = fee
-	return client
-}
-
-// SetMaxQueryPayment sets the default maximum payment allowable for queries.
-func (client *Client) SetMaxQueryPayment(payment Hbar) *Client {
-	client.maxQueryPayment = payment
-	return client
-}
-
 // Ping sends an AccountBalanceQuery to the specified node returning nil if no
 // problems occur. Otherwise, an error representing the status of the node will
 // be returned.
