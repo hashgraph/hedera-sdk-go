@@ -42,6 +42,7 @@ func Test_FileInfo_Transaction(t *testing.T) {
 	assert.Equal(t, *fileID, info.FileID)
 	assert.Equal(t, info.Size, int64(12))
 	assert.False(t, info.IsDeleted)
+	assert.NotNil(t, info.Keys)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).

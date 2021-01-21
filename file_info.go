@@ -10,10 +10,10 @@ type FileInfo struct {
 	Size           int64
 	ExpirationTime time.Time
 	IsDeleted      bool
-	Keys           []Key
+	Keys           KeyList
 }
 
-func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys []Key) FileInfo {
+func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys KeyList) FileInfo {
 	return FileInfo{
 		FileID:         fileID,
 		Size:           size,
@@ -24,14 +24,13 @@ func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted 
 }
 
 func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {
-	var keys []Key
+	var keys KeyList
+	var err error
 	if fileInfo.Keys != nil {
-		keyList, err := keyListFromProtobuf(fileInfo.Keys)
+		keys, err = keyListFromProtobuf(fileInfo.Keys)
 		if err != nil {
 			return FileInfo{}, err
 		}
-
-		keys = keyList.keys
 	}
 
 	return FileInfo{
@@ -44,11 +43,6 @@ func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInf
 }
 
 func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {
-	var keys = make([]*proto.Key, 0)
-	for _, key := range fileInfo.Keys {
-		keys = append(keys, key.toProtoKey())
-	}
-
 	return &proto.FileGetInfoResponse_FileInfo{
 		FileID: fileInfo.FileID.toProtobuf(),
 		Size:   fileInfo.Size,
@@ -57,8 +51,6 @@ func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {
 			Nanos:   int32(fileInfo.ExpirationTime.Nanosecond()),
 		},
 		Deleted: fileInfo.IsDeleted,
-		Keys: &proto.KeyList{
-			Keys: keys,
-		},
+		Keys:    fileInfo.Keys.toProtoKeyList(),
 	}
 }
