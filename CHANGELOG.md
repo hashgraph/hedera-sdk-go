@@ -5,7 +5,6 @@
 
 v2.0.0
 
-- Removed `Build(*Client)` from all transactions
 - Renamed `Ed25519PublicKey` → `PublicKey`
     - Added `Verify([]byte, []byte) bool`
         - Verifies a message was signe by the respective private key.
@@ -32,24 +31,25 @@ v2.0.0
 - Removed `MirrorClient`
     - Use `Client` instead, and set the mirror network using `SetMirrorNetwork()`
 - Renamed `MirrorSubscriptionHandle` → `SubscriptionHandle`
-- `QueryBuilder` → `Query`
+- Renamed `QueryBuilder` → `Query`
     - Removed `SetPaymentTransaction()`
     - Added `GetNodeAccountIDs() []AccountID`
     - Added `SetNodeAccountIDs([]AccountID) *Query`
     - Added `GetMaxRetryCount() int`
     - Added `SetMaxRetry(int) *Query`
-- `TransactionBuilder` and `Transaction`
+- Combined `TransactionBuilder` and `Transaction`
+    - Renamed `Build(null)` → `Freeze() (Transaction, error)`
+    - Renamed `Build(Client)` → `FreezeWith(Client) (Transaction, error)`
     - Added `TransactionFromBytes([]byte) (interface{}, error)`
     - Added `ToBytes() []byte`
-    - Renamed `ID()` →`GetTransactionId()`
+    - Renamed `ID()` →`GetTransactionID()`
     - Added `GetMaxTransactionFee() Hbar`
     - Added `GetTransactionMemo() String`
     - Added `GetTransactionHashPerNode() (map[AccountID][]byte, error)`
     - Added `GetTransactionValidDuration() time.Duration`
     - Added `AddSignature(PublicKey, byte[]) Transaction`
     - Added `GetSignatures() (map[AccountID]map[*PublicKey][]byte, error)`
-    - Added `FreezeWith(Client) (Transaction, error)`
-    - Added `Freeze() (Transaction, error)`
+    - Added `GetNodeAccountIDs() []AccountID`
     - Removed `UnmarshalBinary([]byte) error`
     - Removed `MarshalBinary() ([]byte, error)`
     - Renamed `SetNodeAccountID(AccountID)` → `SetNodeAccountIDs([]AccountID)`
@@ -61,8 +61,7 @@ v2.0.0
     - Changed `Sign(Ed25519PrivateKey)` → `Sign(PrivateKey)`
     - Changed `SignWith(Ed25519PublicKey)` → `SignWith(PublicKey, TransactionSigner)`
 - `AccountBalanceQuery` extends (Query)
-    - Renamed `BalanceQuery` → `Query`
-    - Changed `Execute(client *Client) (Hbar, error)` → `Execute(client *Client) (AccountBalance, error)`
+    - Changed `Execute(client *Client) (Hbar, error)` → `Execute(*Client) (AccountBalance, error)`
     - Added `GetAccountID() AccountID`
     - Added `GetContractID() ContactID`
 - Added `AccountBalance`
@@ -77,7 +76,7 @@ v2.0.0
     - Removed `SetSendRecordThreshold(Hbar)`
     - Removed `SetReceiveRecordThreshold(Hbar)`
 - `AccountDeleteTransaction` extends (Transaction)
-    - Renamed `SetDeleteAccountID()` → `setAccountID()`
+    - Renamed `SetDeleteAccountID()` → `SetAccountID()`
     - Added `GetAccountID() AccountID`
     - Added `GetTransferAccountID() AccountID`
 - `AccountID`
@@ -137,7 +136,7 @@ v2.0.0
     - Added `GetContractID() ContractID`
     - Added `GetGas() uint64`
     - Added `GetPayableAmount() Hbar`
-    - Added `byte[] getFunctionParameters()`
+    - Added `GetFunctionParameters() []byte`
 - `ContractID`
     - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) ContractID`
@@ -164,7 +163,7 @@ v2.0.0
     - Added `GetContents() []byte`
     - Added `GetKeys() KeyList`
     - Added `GetExpirationTime() time.Time`
-    - Renamed `AddKey(PublicKey)` → `setKeys(Key...)`
+    - Renamed `AddKey(PublicKey)` → `SetKeys(Key...)`
 - `FileDeleteTransaction`
     - Added `GetFileID() FileID`
 - `FileID`
@@ -181,12 +180,12 @@ v2.0.0
     - Added `GetContents() []byte`
     - Added `GetKeys() KeyList`
     - Added `GetExpirationTime() time.Time`
-    - Renamed `AddKey(PublicKey)` → `setKeys(Key...)`
+    - Renamed `AddKey(PublicKey)` → `SetKeys(Key...)`
 - Removed `ConsensusTopicMessage`
 - Renamed `MirrorConsensusTopicResponse` → `TopicMessage`
     - Added `TopicMessageChunk[] Chunks`
         - This will be non null for a topic message which is constructed from multiple transactions.
-    - Renamed `message []byte` → `contents []byte`
+    - Renamed `Message []byte` → `Contents []byte`
     - Removed `GetMessage() []byte`
     - Removed `ConsensusTopicID TopicID`
 - Renamed `MirrorConsensusTopicChunk` → `TopicMessageChunk`
@@ -203,7 +202,7 @@ v2.0.0
 - Renamed `ConsensusMessageSubmitTransaction` → `TopicMessageSubmitTransaction`
     - Added `GetTopicID() TopicID`
     - Added `GetMessage() []byte`
-    - Removed `SetChunkInfo(TransactionId, int, int)`
+    - Removed `SetChunkInfo(TransactionID, int, int)`
     - Added `GetMaxChunks() uint64`
 - Renamed `ConsensusTopicID` → `TopicID`
 - Renamed `ConsensusTopicInfo` → `TopicInfo`
@@ -328,15 +327,14 @@ v2.0.0
 - `SystemUndeleteTransaction`
     - Added `GetFileID() FileID`
     - Added `GetContractID() ContractID`
-- `TransactionId`
+- `TransactionID`
     - Added `ToBytes() []byte`
-    - Added `FromBytes(byte[]) TransactionId`
-    - Removed `TransactionId(TransactionIDOrBuilder)`
-    - Removed `ToProto() TransactionID`
-    - Removed `WithValidStart(AccountID, time.Time) TransactionId`
-        - Use `TransactionId(AccountID, time.Time) new` instead.
-    - Removed `TransactionId(AccountID)`
-        - Use `Generate(AccountID) TransactionId` instead.
+    - Added `FromBytes(byte[]) TransactionID`
+    - Removed `TransactionID(TransactionIDOrBuilder)`
+    - Removed `WithValidStart(AccountID, time.Time) TransactionID`
+        - Use `TransactionID(AccountID, time.Time) new` instead.
+    - Removed `TransactionID(AccountID)`
+        - Use `Generate(AccountID) TransactionID` instead.
 - Removed `TransactionList`
 - `TransactionReciept`
     - Added `ToBytes() []byte`
@@ -365,9 +363,8 @@ v2.0.0
         - Use `sequenceNumber uint64` directly instead.
     - Removed `GetConsensusTopicRunningHash() []byte`
         - Use `topicRunningHash []byte` directly instead.
-    - Removed `ToProto() TransactionReceipt`
 - `TransactionReceiptQuery` extends (Query)
-    - Added `GetTransactionId() TransactionID`
+    - Added `GetTransactionID() TransactionID`
 - `TransactionRecord`
     - Added `ToBytes() []byte`
     - Added `FromBytes() TransactionRecord`
@@ -377,13 +374,12 @@ v2.0.0
         - Use `ContractFunctionResult contractFunctionResult` directly instead.
     - Removed `GetContratcCreateResult() ContractFunctionResult`
         - Use `ContractFunctionResult contractFunctionResult` directly instead.
-    - Removed `ToProto() TransactionReceipt`
 - `TransactionRecordQuery` extends (Query)
-    - Added `GetTransactionId() TransactionId`
+    - Added `GetTransactionID() TransactionID`
 - `Hbar`
     - Added  `ToString(unit HbarUnit) string`
 - `Client`
-    - Revomed `NewClient(map[string]AccountID) *Client`
+    - Removed `NewClient(map[string]AccountID) *Client`
     - Added `SetMirrorNetwork([]String) void`
     - Added `GetMirrorNetwork() []String`
     - Added `ClientForNetwork(map[string]AccountID) *Client`
@@ -391,7 +387,7 @@ v2.0.0
     - Added `GetOperatorPublicKey() PublicKey`
     - Added `SetNetwork(map[string]AccountID) error`
     - Added `GetNetwork() map[string]AccountID`
-    - Renamed `FromJson([]byte)` → `ClientFromConfig(byte[])`
+    - Renamed `FromJson([]byte)` → `ClientFromConfig([]byte)`
     - Renamed `FromFile(String)` → `ClientFromConfigFile(String)`
     - Renamed `GetOperatorId()` → `getOperatorAccountID()`
     - Removed `ReplaceNodes(map[string]AccountID) *Client`
