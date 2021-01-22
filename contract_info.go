@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
 )
@@ -62,4 +63,28 @@ func (contractInfo *ContractInfo) toProtobuf() *proto.ContractGetInfoResponse_Co
 		Memo:              contractInfo.ContractMemo,
 		Balance:           contractInfo.Balance,
 	}
+}
+
+func (contractInfo ContractInfo) ToBytes() []byte {
+	data, err := protobuf.Marshal(contractInfo.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func ContractInfoFromBytes(data []byte) (ContractInfo, error) {
+	pb := proto.ContractGetInfoResponse_ContractInfo{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return ContractInfo{}, err
+	}
+
+	info, err := contractInfoFromProtobuf(&pb)
+	if err != nil {
+		return ContractInfo{}, err
+	}
+
+	return info, nil
 }

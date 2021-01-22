@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
 )
@@ -215,4 +216,23 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		AutoRenewAccount:    tokenInfo.AutoRenewAccountID.toProtobuf(),
 		Expiry:              expirationTime,
 	}
+}
+
+func (tokenInfo TokenInfo) ToBytes() []byte {
+	data, err := protobuf.Marshal(tokenInfo.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TokenInfoFromBytes(data []byte) (TokenInfo, error) {
+	pb := proto.TokenInfo{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TokenInfo{}, err
+	}
+
+	return tokenInfoFromProtobuf(&pb), nil
 }

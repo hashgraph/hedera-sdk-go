@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	protobuf "github.com/golang/protobuf/proto"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -78,4 +79,23 @@ func fileIDFromProtobuf(pb *proto.FileID) FileID {
 		Realm: uint64(pb.RealmNum),
 		File:  uint64(pb.FileNum),
 	}
+}
+
+func (id FileID) ToBytes() []byte {
+	data, err := protobuf.Marshal(id.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func FileIDFromBytes(data []byte) (FileID, error) {
+	pb := proto.FileID{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return FileID{}, err
+	}
+
+	return fileIDFromProtobuf(&pb), nil
 }

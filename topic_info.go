@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
 )
@@ -58,4 +59,28 @@ func (topicInfo *TopicInfo) toProtobuf() *proto.ConsensusTopicInfo {
 		AutoRenewPeriod:  durationToProtobuf(topicInfo.AutoRenewPeriod),
 		AutoRenewAccount: topicInfo.AutoRenewAccountID.toProtobuf(),
 	}
+}
+
+func (topicInfo TopicInfo) ToBytes() []byte {
+	data, err := protobuf.Marshal(topicInfo.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TopicInfoFromBytes(data []byte) (TopicInfo, error) {
+	pb := proto.ConsensusTopicInfo{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TopicInfo{}, err
+	}
+
+	info, err := topicInfoFromProtobuf(&pb)
+	if err != nil {
+		return TopicInfo{}, err
+	}
+
+	return info, nil
 }

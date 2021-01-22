@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -117,4 +118,23 @@ func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
 		TokenID:                 receipt.TokenID.toProtobuf(),
 		NewTotalSupply:          receipt.TotalSupply,
 	}
+}
+
+func (receipt TransactionReceipt) ToBytes() []byte {
+	data, err := protobuf.Marshal(receipt.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
+	pb := proto.TransactionReceipt{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TransactionReceipt{}, err
+	}
+
+	return transactionReceiptFromProtobuf(&pb), nil
 }

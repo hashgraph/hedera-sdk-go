@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -47,4 +48,28 @@ func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
 			time.Now().Day(), time.Now().Hour(), time.Now().Minute(),
 			int(hash.Duration.Seconds), time.Now().Nanosecond(), time.Now().Location()),
 	}, nil
+}
+
+func (liveHash LiveHash) ToBytes() []byte {
+	data, err := protobuf.Marshal(liveHash.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func LiveHashFromBytes(data []byte) (LiveHash, error) {
+	pb := proto.LiveHash{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return LiveHash{}, err
+	}
+
+	liveHash, err := liveHashFromProtobuf(&pb)
+	if err != nil {
+		return LiveHash{}, err
+	}
+
+	return liveHash, nil
 }

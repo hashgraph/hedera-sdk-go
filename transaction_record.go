@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -58,7 +59,7 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 	return *record.CallResult, nil
 }
 
-func TransactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecord {
+func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecord {
 	var transferList = make([]Transfer, len(pb.TransferList.AccountAmounts))
 
 	for i, element := range pb.TransferList.AccountAmounts {
@@ -141,4 +142,27 @@ func (record TransactionRecord) toProtobuf() (proto.TransactionRecord, error) {
 	}
 
 	return tRecord, err
+}
+
+func (record TransactionRecord) ToBytes() []byte {
+	rec, err := record.toProtobuf()
+	if err != nil {
+		return make([]byte, 0)
+	}
+	data, err := protobuf.Marshal(&rec)
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
+	pb := proto.TransactionRecord{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TransactionRecord{}, err
+	}
+
+	return transactionRecordFromProtobuf(&pb), nil
 }

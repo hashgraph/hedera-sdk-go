@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -68,4 +69,23 @@ func contractIDFromProtobuf(pb *proto.ContractID) ContractID {
 
 func (id ContractID) toProtoKey() *proto.Key {
 	return &proto.Key{Key: &proto.Key_ContractID{ContractID: id.toProtobuf()}}
+}
+
+func (id ContractID) ToBytes() []byte {
+	data, err := protobuf.Marshal(id.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func ContractIDFromBytes(data []byte) (ContractID, error) {
+	pb := proto.ContractID{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return ContractID{}, err
+	}
+
+	return contractIDFromProtobuf(&pb), nil
 }

@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -45,4 +46,23 @@ func topicIDFromProtobuf(pb *proto.TopicID) TopicID {
 		Realm: uint64(pb.RealmNum),
 		Topic: uint64(pb.TopicNum),
 	}
+}
+
+func (id TopicID) ToBytes() []byte {
+	data, err := protobuf.Marshal(id.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TopicIDFromBytes(data []byte) (TopicID, error) {
+	pb := proto.TopicID{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TopicID{}, err
+	}
+
+	return topicIDFromProtobuf(&pb), nil
 }

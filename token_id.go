@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -29,4 +30,23 @@ func (id *TokenID) toProtobuf() *proto.TokenID {
 
 func (id TokenID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
+}
+
+func (id TokenID) ToBytes() []byte {
+	data, err := protobuf.Marshal(id.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TokenIDFromBytes(data []byte) (TokenID, error) {
+	pb := proto.TokenID{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TokenID{}, err
+	}
+
+	return tokenIDFromProtobuf(&pb), nil
 }

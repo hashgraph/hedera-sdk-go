@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
 )
@@ -53,4 +54,28 @@ func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {
 		Deleted: fileInfo.IsDeleted,
 		Keys:    fileInfo.Keys.toProtoKeyList(),
 	}
+}
+
+func (fileInfo FileInfo) ToBytes() []byte {
+	data, err := protobuf.Marshal(fileInfo.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func FileInfoFromBytes(data []byte) (FileInfo, error) {
+	pb := proto.FileGetInfoResponse_FileInfo{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return FileInfo{}, err
+	}
+
+	info, err := fileInfoFromProtobuf(&pb)
+	if err != nil {
+		return FileInfo{}, err
+	}
+
+	return info, nil
 }

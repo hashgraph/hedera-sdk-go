@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
@@ -56,7 +55,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 	}, nil
 }
 
-func (info AccountInfo) toProtobuf() ([]byte, error) {
+func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 
 	tokenRelationship := make([]*proto.TokenRelationship, len(info.TokenRelationships))
 
@@ -65,7 +64,7 @@ func (info AccountInfo) toProtobuf() ([]byte, error) {
 		tokenRelationship[i] = singleRelationship
 	}
 
-	pb, err := protobuf.Marshal(&proto.CryptoGetInfoResponse_AccountInfo{
+	return &proto.CryptoGetInfoResponse_AccountInfo{
 		AccountID:                      info.AccountID.toProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
 		Deleted:                        info.IsDeleted,
@@ -78,11 +77,29 @@ func (info AccountInfo) toProtobuf() ([]byte, error) {
 		ReceiverSigRequired:            info.ReceiverSigRequired,
 		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeToProtobuf(info.ExpirationTime),
-	})
-
-	if err != nil {
-		return pb, errors.Wrap(err, "error serializing account info")
-	} else {
-		return pb, nil
 	}
+}
+
+func (info AccountInfo) ToBytes() []byte {
+	data, err := protobuf.Marshal(info.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
+	pb := proto.CryptoGetInfoResponse_AccountInfo{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return AccountInfo{}, err
+	}
+
+	info, err := accountInfoFromProtobuf(&pb)
+	if err != nil {
+		return AccountInfo{}, err
+	}
+
+	return info, nil
 }

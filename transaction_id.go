@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	protobuf "github.com/golang/protobuf/proto"
 	"math/rand"
 	"time"
 
@@ -75,4 +76,23 @@ func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
 	accountID := accountIDFromProtobuf(pb.AccountID)
 
 	return TransactionID{accountID, validStart}
+}
+
+func (id TransactionID) ToBytes() []byte {
+	data, err := protobuf.Marshal(id.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TransactionIDFromBytes(data []byte) (TransactionID, error) {
+	pb := proto.TransactionID{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TransactionID{}, err
+	}
+
+	return transactionIDFromProtobuf(&pb), nil
 }

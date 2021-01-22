@@ -128,6 +128,7 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
 		Execute(client)
 	assert.NoError(t, err)
 

@@ -1,6 +1,9 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	protobuf "github.com/golang/protobuf/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+)
 
 type TokenRelationship struct {
 	TokenID      TokenID
@@ -48,4 +51,23 @@ func (relationship *TokenRelationship) toProtobuf() *proto.TokenRelationship {
 		KycStatus:    kycStatus,
 		FreezeStatus: freezeStatus,
 	}
+}
+
+func (relationship TokenRelationship) ToBytes() []byte {
+	data, err := protobuf.Marshal(relationship.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
+	pb := proto.TokenRelationship{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return TokenRelationship{}, err
+	}
+
+	return tokenRelationshipFromProtobuf(&pb), nil
 }

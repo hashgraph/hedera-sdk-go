@@ -175,5 +175,5 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	return TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord), nil
+	return transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord), nil
 }

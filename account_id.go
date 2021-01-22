@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+	protobuf "github.com/golang/protobuf/proto"
 	"strings"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -91,4 +92,23 @@ func (id AccountID) isZero() bool {
 
 func (id AccountID) equals(other AccountID) bool {
 	return id.Shard == other.Shard && id.Realm == other.Realm && id.Account == other.Account
+}
+
+func (id AccountID) ToBytes() []byte {
+	data, err := protobuf.Marshal(id.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func AccountIDFromBytes(data []byte) (AccountID, error) {
+	pb := proto.AccountID{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return AccountID{}, err
+	}
+
+	return accountIDFromProtobuf(&pb), nil
 }
