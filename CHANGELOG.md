@@ -32,13 +32,13 @@ v2.0.0
 - Removed `MirrorClient`
     - Use `Client` instead, and set the mirror network using `SetMirrorNetwork()`
 - Renamed `MirrorSubscriptionHandle` → `SubscriptionHandle`
-- Renamed `QueryBuilder` → `Query`
+- `QueryBuilder` → `Query`
     - Removed `SetPaymentTransaction()`
     - Added `GetNodeAccountIDs() []AccountID`
     - Added `SetNodeAccountIDs([]AccountID) *Query`
     - Added `GetMaxRetryCount() int`
     - Added `SetMaxRetry(int) *Query`
-- Combined `TransactionBuilder` and `Transaction`
+- `TransactionBuilder` and `Transaction`
     - Added `TransactionFromBytes([]byte) (interface{}, error)`
     - Added `ToBytes() []byte`
     - Renamed `ID()` →`GetTransactionId()`
@@ -52,7 +52,7 @@ v2.0.0
     - Added `Freeze() (Transaction, error)`
     - Removed `UnmarshalBinary([]byte) error`
     - Removed `MarshalBinary() ([]byte, error)`
-    - Renamed `SetNodeAccountID(AccountID)` → `SetNodeAccountIDs(List<AccountID>)`
+    - Renamed `SetNodeAccountID(AccountID)` → `SetNodeAccountIDs([]AccountID)`
     - Added `GetTransactionHash() ([]byte, error)`
     - Added `SetMaxRetry(int) *Transaction`
     - Added `GetMaxRetry() int`
@@ -81,10 +81,10 @@ v2.0.0
     - Added `GetAccountID() AccountID`
     - Added `GetTransferAccountID() AccountID`
 - `AccountID`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) AccountID`
 - `AccountInfo`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) AccountInfo`
     - Added `TokenRelationships: []*TokenRelationship`
 - `AccountInfoQuery` extends (Query)
@@ -106,7 +106,7 @@ v2.0.0
     - Removed  `SetReceiveRecordThreshold(Hbar)`
 - Removed `CryptoTransferTranscation`
     - Use `TransferTransaction` instead.
-- `TransferTransaction` extends (Transaction)
+- `TransferTransaction` extends [`Transaction`]
     - Added `AddTokenTransfer(TokenID, AccountID, int64) TransferTransaction`
     - Added `GetTokenTransfers() map[TokenID][]TokenTransfer`
     - Added `AddHbarTransfer(AccountID, Hbar) TransferTransaction`
@@ -139,10 +139,10 @@ v2.0.0
     - Added `GetPayableAmount() Hbar`
     - Added `byte[] getFunctionParameters()`
 - `ContractID`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) ContractID`
 - `ContractInfo`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) ContractInfo`
 - `ContractInfoQuery` extends (Query)
     - Added `GetContractID() ContractID`
@@ -168,10 +168,10 @@ v2.0.0
 - `FileDeleteTransaction`
     - Added `GetFileID() FileID`
 - `FileID`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) FileID`
 - `FileInfo`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) FileInfo`
     - Update `Keys []PublicKey` → `Keys KeyList`
 - `FileInfoQuery`
@@ -207,7 +207,7 @@ v2.0.0
     - Added `GetMaxChunks() uint64`
 - Renamed `ConsensusTopicID` → `TopicID`
 - Renamed `ConsensusTopicInfo` → `TopicInfo`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes() TopicInfo`
     - Change `AdminKey Ed25519PublicKey`  and  `SubmitKey Ed25519PublicKey`→ `AdminKey Key` and `SubmitKey Key`
 - Renamed `ConsensusTopicInfoQuery` → `TopicInfoQuery`
@@ -260,10 +260,10 @@ v2.0.0
     - Added `GetTokenID() TokenID`
     - Added `GetAccointId() AccountID`
 - `TokenID`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) TokenID`
 - `TokenInfo`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) TokenInfo`
 - `TokenInfoQuery` extends (Query)
     - Added `GetTokenID() TokenID`
@@ -271,7 +271,7 @@ v2.0.0
     - Added `GetTokenID() TokenID`
     - Added `GetAmount() uint64`
 - `TokenRelationship`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) TokenRelationship`
 - `TokenRevokeKycTransaction` extends (Transaction)
     - Added `GetTokenID() TokenID`
@@ -329,7 +329,7 @@ v2.0.0
     - Added `GetFileID() FileID`
     - Added `GetContractID() ContractID`
 - `TransactionId`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes(byte[]) TransactionId`
     - Removed `TransactionId(TransactionIDOrBuilder)`
     - Removed `ToProto() TransactionID`
@@ -339,7 +339,7 @@ v2.0.0
         - Use `Generate(AccountID) TransactionId` instead.
 - Removed `TransactionList`
 - `TransactionReciept`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes() TransactionReceipt`
     - Expose `ExchangeRate *ExchangeRate`
     - Expose `AccountID *AccountID`
@@ -369,7 +369,7 @@ v2.0.0
 - `TransactionReceiptQuery` extends (Query)
     - Added `GetTransactionId() TransactionID`
 - `TransactionRecord`
-    - Added `byte[] toBytes()`
+    - Added `ToBytes() []byte`
     - Added `FromBytes() TransactionRecord`
     - Added `CallResult *ContractFunctionResult`
     - Added `CallResultIsCreate bool`
