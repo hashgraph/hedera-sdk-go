@@ -280,10 +280,6 @@ func (transaction *TokenWipeTransaction) SetTransactionID(transactionID Transact
 	return transaction
 }
 
-func (transaction *TokenWipeTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeTokenID sets the node TokenID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenWipeTransaction {
 	transaction.requireNotFrozen()

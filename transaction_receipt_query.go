@@ -99,10 +99,6 @@ func (query *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *
 	return query
 }
 
-func (query *TransactionReceiptQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}
-
 func (query *TransactionReceiptQuery) SetQueryPayment(queryPayment Hbar) *TransactionReceiptQuery {
 	query.queryPayment = queryPayment
 	return query

@@ -146,10 +146,6 @@ func (query *NetworkVersionInfoQuery) SetNodeAccountIDs(accountID []AccountID) *
 	return query
 }
 
-func (query *NetworkVersionInfoQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}
-
 func (query *NetworkVersionInfoQuery) SetMaxRetry(count int) *NetworkVersionInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query

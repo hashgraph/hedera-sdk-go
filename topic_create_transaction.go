@@ -306,10 +306,6 @@ func (transaction *TopicCreateTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *TopicCreateTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this TopicCreateTransaction.
 func (transaction *TopicCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicCreateTransaction {
 	transaction.requireNotFrozen()

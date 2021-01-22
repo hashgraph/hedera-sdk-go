@@ -262,10 +262,6 @@ func (transaction *TokenMintTransaction) SetTransactionID(transactionID Transact
 	return transaction
 }
 
-func (transaction *TokenMintTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeTokenID sets the node TokenID for this TokenMintTransaction.
 func (transaction *TokenMintTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenMintTransaction {
 	transaction.requireNotFrozen()

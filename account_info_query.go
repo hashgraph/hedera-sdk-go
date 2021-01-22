@@ -93,10 +93,6 @@ func (query *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *Account
 	return query
 }
 
-func (query *AccountInfoQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}
-
 //SetQueryPayment sets the Hbar payment to pay the node a fee for handling this query
 func (query *AccountInfoQuery) SetQueryPayment(queryPayment Hbar) *AccountInfoQuery {
 	query.queryPayment = queryPayment

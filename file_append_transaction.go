@@ -341,10 +341,6 @@ func (transaction *FileAppendTransaction) SetTransactionID(transactionID Transac
 	return transaction
 }
 
-func (transaction *FileAppendTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileAppendTransaction {
 	transaction.requireNotFrozen()

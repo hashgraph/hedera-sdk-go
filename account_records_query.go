@@ -170,10 +170,6 @@ func (query *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 	return query
 }
 
-func (query *AccountRecordsQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}
-
 func (query *AccountRecordsQuery) SetMaxRetry(count int) *AccountRecordsQuery {
 	query.Query.SetMaxRetry(count)
 	return query

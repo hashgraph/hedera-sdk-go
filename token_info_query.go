@@ -159,10 +159,6 @@ func (query *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfo
 	return query
 }
 
-func (query *TokenInfoQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}
-
 func (query *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query

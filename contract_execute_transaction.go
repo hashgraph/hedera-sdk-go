@@ -295,10 +295,6 @@ func (transaction *ContractExecuteTransaction) SetTransactionID(transactionID Tr
 	return transaction
 }
 
-func (transaction *ContractExecuteTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountIDs sets the node AccountID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()

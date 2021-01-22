@@ -262,10 +262,6 @@ func (transaction *TokenGrantKycTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-func (transaction *TokenGrantKycTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeTokenID sets the node TokenID for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()

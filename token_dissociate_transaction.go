@@ -274,10 +274,6 @@ func (transaction *TokenDissociateTransaction) SetTransactionID(transactionID Tr
 	return transaction
 }
 
-func (transaction *TokenDissociateTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeTokenID sets the node TokenID for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDissociateTransaction {
 	transaction.requireNotFrozen()

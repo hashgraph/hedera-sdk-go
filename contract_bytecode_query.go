@@ -156,10 +156,6 @@ func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *Co
 	return query
 }
 
-func (query *ContractBytecodeQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}
-
 func (query *ContractBytecodeQuery) SetMaxRetry(count int) *ContractBytecodeQuery {
 	query.Query.SetMaxRetry(count)
 	return query

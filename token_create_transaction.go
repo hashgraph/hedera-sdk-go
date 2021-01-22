@@ -439,10 +439,6 @@ func (transaction *TokenCreateTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeTokenID sets the node TokenID for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCreateTransaction {
 	transaction.requireNotFrozen()

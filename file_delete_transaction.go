@@ -241,10 +241,6 @@ func (transaction *FileDeleteTransaction) SetTransactionID(transactionID Transac
 	return transaction
 }
 
-func (transaction *FileDeleteTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
 	transaction.requireNotFrozen()

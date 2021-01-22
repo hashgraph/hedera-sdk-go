@@ -262,10 +262,6 @@ func (transaction *AccountDeleteTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-func (transaction *AccountDeleteTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountIDs sets the node AccountID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()

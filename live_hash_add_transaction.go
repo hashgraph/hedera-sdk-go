@@ -288,10 +288,6 @@ func (transaction *LiveHashAddTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-func (transaction *LiveHashAddTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
 	transaction.requireNotFrozen()

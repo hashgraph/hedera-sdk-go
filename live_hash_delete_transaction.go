@@ -251,10 +251,6 @@ func (transaction *LiveHashDeleteTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-func (transaction *LiveHashDeleteTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashDeleteTransaction {
 	transaction.requireNotFrozen()

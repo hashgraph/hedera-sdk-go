@@ -159,7 +159,3 @@ func (query *LiveHashQuery) SetNodeAccountIDs(accountID []AccountID) *LiveHashQu
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
-
-func (query *LiveHashQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}

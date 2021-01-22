@@ -264,10 +264,6 @@ func (transaction *FreezeTransaction) SetTransactionID(transactionID Transaction
 	return transaction
 }
 
-func (transaction *FreezeTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this FreezeTransaction.
 func (transaction *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *FreezeTransaction {
 	transaction.requireNotFrozen()

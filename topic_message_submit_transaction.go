@@ -333,10 +333,6 @@ func (transaction *TopicMessageSubmitTransaction) SetTransactionID(transactionID
 	return transaction
 }
 
-func (transaction *TopicMessageSubmitTransaction) GetNodeAccountIDs() []AccountID {
-	return transaction.Transaction.GetNodeAccountIDs()
-}
-
 // SetNodeAccountID sets the node AccountID for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicMessageSubmitTransaction {
 	transaction.requireNotFrozen()

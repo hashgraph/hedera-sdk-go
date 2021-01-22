@@ -155,10 +155,6 @@ func (query *FileContentsQuery) SetNodeAccountIDs(accountID []AccountID) *FileCo
 	return query
 }
 
-func (query *FileContentsQuery) GetNodeAccountIDs() []AccountID {
-	return query.Query.GetNodeAccountIDs()
-}
-
 func (query *FileContentsQuery) SetMaxRetry(count int) *FileContentsQuery {
 	query.Query.SetMaxRetry(count)
 	return query
