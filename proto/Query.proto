@@ -52,6 +52,7 @@ import "proto/ConsensusGetTopicInfo.proto";
 
 import "proto/NetworkGetVersionInfo.proto";
 import "proto/TokenGetInfo.proto";
+import "proto/ScheduleGetInfo.proto";
 
 /* A single query, which is sent from the client to a node. This includes all possible queries. Each Query should not have more than 50 levels. */
 message Query {
@@ -80,5 +81,7 @@ message Query {
         NetworkGetVersionInfoQuery networkGetVersionInfo = 51; // Get the versions of the HAPI protobuf and Hedera Services software deployed on the responding node.
 
         TokenGetInfoQuery tokenGetInfo = 52; // Get all information about a token
+
+        ScheduleGetInfoQuery scheduleGetInfo = 53; // Get all information about a scheduled entity
     }
 }

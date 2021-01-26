@@ -111,6 +111,7 @@ func execute(
 				node.increaseDelay()
 				continue
 			}
+			return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
 
 		node.decreaseDelay()

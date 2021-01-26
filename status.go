@@ -161,6 +161,11 @@ const (
 	TokenTransferListSizeLimitExceeded         Status = 198
 	EmptyTokenTransferBody                     Status = 199
 	EmptyTokenTransferAccountAmounts           Status = 200
+	StatusInvalidScheduleID                    Status = 201
+	StatusScheduleIsImmutable                  Status = 202
+	StatusScheduleWasDeleted                   Status = 203
+	StatusInvalidSchedulePayerID               Status = 204
+	StatusInvalidScheduleAccountID             Status = 205
 )
 
 // String() returns a string representation of the status
@@ -482,6 +487,16 @@ func (status Status) String() string {
 		return "EMPTY_TOKEN_TRANSFER_BODY"
 	case EmptyTokenTransferAccountAmounts:
 		return "EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS"
+	case StatusInvalidScheduleID:
+		return "INVALID_SCHEDULE_ID"
+	case StatusScheduleIsImmutable:
+		return "SCHEDULE_IS_IMMUTABLE"
+	case StatusScheduleWasDeleted:
+		return "SCHEDULE_WAS_DELETED"
+	case StatusInvalidSchedulePayerID:
+		return "INVALID_SCHEDULE_PAYER_ID"
+	case StatusInvalidScheduleAccountID:
+		return "INVALID_SCHEDULE_ACCOUNT_ID"
 	}
 
 	panic("unreacahble: Status.String() switch statement is non-exhaustive")

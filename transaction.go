@@ -179,6 +179,12 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		return tokenAssociateTransactionFromProtobuf(tx, first), nil
 	case *proto.TransactionBody_TokenDissociate:
 		return tokenDissociateTransactionFromProtobuf(tx, first), nil
+	case *proto.TransactionBody_ScheduleCreate:
+		return scheduleCreateTransactionFromProtobuf(tx, first), nil
+	case *proto.TransactionBody_ScheduleSign:
+		return scheduleSignTransactionFromProtobuf(tx, first), nil
+	case *proto.TransactionBody_ScheduleDelete:
+		return scheduleDeleteTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
@@ -215,6 +221,41 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 	}
 
 	return returnMap, nil
+}
+
+func (transaction *Transaction) Schedule() *ScheduleCreateTransaction {
+	transaction.requireOneNodeAccountID()
+
+	if transaction.isFrozen() {
+		tx := Transaction{
+			pbBody: &proto.TransactionBody{
+				TransactionValidDuration: durationToProtobuf(120 * time.Second),
+				Data: &proto.TransactionBody_ScheduleCreate{
+					ScheduleCreate: &proto.ScheduleCreateTransactionBody{
+						TransactionBody: transaction.signedTransactions[0].BodyBytes,
+						AdminKey:        nil,
+						PayerAccountID:  nil,
+						SigMap:          transaction.signedTransactions[0].SigMap,
+					},
+				},
+			},
+			nextNodeIndex:        0,
+			nextTransactionIndex: 0,
+			maxRetry:             10,
+			transactionIDs:       make([]TransactionID, 0),
+			transactions:         make([]*proto.Transaction, 0),
+			signedTransactions:   make([]*proto.SignedTransaction, 0),
+			nodeIDs:              transaction.nodeIDs,
+			freezeError:          nil,
+		}
+
+		return &ScheduleCreateTransaction{
+			Transaction: tx,
+			pb:          tx.pbBody.GetScheduleCreate(),
+		}
+	}
+
+	return &ScheduleCreateTransaction{}
 }
 
 func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {

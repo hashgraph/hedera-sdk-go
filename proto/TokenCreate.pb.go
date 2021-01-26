@@ -40,8 +40,8 @@ type TokenCreateTransactionBody struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name             string     `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`                          // The publicly visible name of the token, specified as a string of only ASCII characters
-	Symbol           string     `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`                      // The publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
+	Name             string     `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`                          // The publicly visible name of the token, limited to a UTF-8 encoding of length <tt>tokens.maxSymbolUtf8Bytes</tt>.
+	Symbol           string     `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`                      // The publicly visible token symbol, limited to a UTF-8 encoding of length <tt>tokens.maxTokenNameUtf8Bytes</tt>.
 	Decimals         uint32     `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`                 // The number of decimal places a token is divisible by. This field can never be changed!
 	InitialSupply    uint64     `protobuf:"varint,4,opt,name=initialSupply,proto3" json:"initialSupply,omitempty"`       // Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
 	Treasury         *AccountID `protobuf:"bytes,5,opt,name=treasury,proto3" json:"treasury,omitempty"`                  // The account which will act as a treasury for the token. This account will receive the specified initial supply
