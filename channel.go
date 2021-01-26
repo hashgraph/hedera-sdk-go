@@ -13,6 +13,7 @@ type channel struct {
 	freeze   proto.FreezeServiceClient
 	network  proto.NetworkServiceClient
 	token    proto.TokenServiceClient
+	schedule proto.ScheduleServiceClient
 	client   *grpc.ClientConn
 }
 
@@ -76,4 +77,12 @@ func (channel channel) getToken() proto.TokenServiceClient {
 	}
 
 	return channel.token
+}
+
+func (channel channel) getSchedule() proto.ScheduleServiceClient {
+	if channel.schedule == nil {
+		channel.schedule = proto.NewScheduleServiceClient(channel.client)
+	}
+
+	return channel.schedule
 }
