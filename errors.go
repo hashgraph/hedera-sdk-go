@@ -60,10 +60,10 @@ type ErrMaxQueryPaymentExceeded struct {
 
 // Error() implements the Error interface
 func (e ErrMaxQueryPaymentExceeded) Error() string {
-	return fmt.Sprintf("cost of %s (%d) without explicit payment is greater than the max query payment of %d",
+	return fmt.Sprintf("cost of %s (%s) without explicit payment is greater than the max query payment of %s",
 		e.query,
-		e.QueryCost.tinybar,
-		e.MaxQueryPayment.tinybar)
+		e.QueryCost.String(),
+		e.MaxQueryPayment.String())
 }
 
 // ErrBadKey is returned if a key is provided in an invalid format or structure

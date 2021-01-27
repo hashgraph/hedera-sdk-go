@@ -136,22 +136,29 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	query.queryPayment = NewHbar(2)
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
 		cost = query.queryPayment
 	} else {
-		cost = client.maxQueryPayment
+		if query.maxQueryPayment.tinybar == 0 {
+			cost = client.maxQueryPayment
+		} else {
+			cost = query.maxQueryPayment
+		}
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
 			return ContractFunctionResult{}, err
 		}
 
-		if cost.tinybar > actualCost.tinybar {
-			return ContractFunctionResult{}, ErrMaxQueryPaymentExceeded{}
+		if cost.tinybar < actualCost.tinybar {
+			return ContractFunctionResult{}, ErrMaxQueryPaymentExceeded{
+				QueryCost:       actualCost,
+				MaxQueryPayment: cost,
+				query:           "ContractCallQuery",
+			}
 		}
 
 		cost = actualCost

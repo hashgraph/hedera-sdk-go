@@ -350,7 +350,8 @@ func TestTokenGrantKycTransaction_NoKycSet_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, fmt.Sprintf("exceptional precheck status TOKEN_HAS_NO_KYC_KEY"), err.Error())
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -366,7 +367,7 @@ func TestTokenGrantKycTransaction_NoKycSet_Execute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token grant kyc transaction failed"))
+	assert.Falsef(t, check, fmt.Sprintf("token grant kyc transaction passed"))
 
 	resp, err = NewTokenDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

@@ -72,7 +72,7 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 	info, err = NewContractInfoQuery().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(5)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 

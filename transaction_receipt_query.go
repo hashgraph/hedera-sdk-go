@@ -65,7 +65,7 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 		return true
 	}
 
-	status = Status(response.query.GetTransactionGetReceipt().Receipt.Status)
+	status = Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
 
 	switch status {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound:
