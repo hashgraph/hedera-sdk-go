@@ -26,7 +26,7 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	info, err := NewTopicInfoQuery().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(22)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
@@ -83,7 +83,7 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	info, err := NewTopicInfoQuery().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(22)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 	assert.NotNil(t, info)

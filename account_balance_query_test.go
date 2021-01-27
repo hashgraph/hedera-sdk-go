@@ -38,6 +38,65 @@ func TestAccountBalanceQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestAccountBalanceQueryCost_BigMax_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	balance := NewAccountBalanceQuery().
+		SetMaxQueryPayment(NewHbar(10000)).
+		SetAccountID(client.GetOperatorAccountID())
+
+	cost, err := balance.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = balance.SetQueryPayment(cost).Execute(client)
+	assert.NoError(t, err)
+}
+
+func TestAccountBalanceQueryCost_SmallMax_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	balance := NewAccountBalanceQuery().
+		SetMaxQueryPayment(HbarFromTinybar(1)).
+		SetAccountID(client.GetOperatorAccountID())
+
+	_, err := balance.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = balance.Execute(client)
+	assert.NoError(t, err)
+}
+
+func TestAccountBalanceQueryCost_SetPayment_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	balance := NewAccountBalanceQuery().
+		SetMaxQueryPayment(NewHbar(10000)).
+		SetQueryPayment(NewHbar(0)).
+		SetAccountID(client.GetOperatorAccountID())
+
+	cost, err := balance.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = balance.SetQueryPayment(cost).Execute(client)
+	assert.NoError(t, err)
+}
+
+func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	balance := NewAccountBalanceQuery().
+		SetMaxQueryPayment(NewHbar(10000)).
+		SetQueryPayment(NewHbar(0)).
+		SetAccountID(client.GetOperatorAccountID())
+
+	_, err := balance.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = balance.SetQueryPayment(HbarFromTinybar(1)).Execute(client)
+	assert.NoError(t, err)
+}
+
+
 func Test_AccountBalance_NoAccount(t *testing.T) {
 	client := newTestClient(t)
 

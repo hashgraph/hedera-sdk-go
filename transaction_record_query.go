@@ -64,7 +64,12 @@ func transactionRecordQuery_shouldRetry(status Status, response response) bool {
 	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return true
 	}
-	status = Status(response.query.GetTransactionGetRecord().TransactionRecord.Receipt.Status)
+
+	if status != StatusOk{
+		return false
+	}
+
+	status = Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus())
 
 	switch status {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
@@ -122,22 +127,29 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	query.queryPayment = NewHbar(2)
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
 		cost = query.queryPayment
 	} else {
-		cost = client.maxQueryPayment
+		if query.maxQueryPayment.tinybar == 0 {
+			cost = client.maxQueryPayment
+		} else {
+			cost = query.maxQueryPayment
+		}
 
 		actualCost, err := query.GetCost(client)
 		if err != nil {
 			return TransactionRecord{}, err
 		}
 
-		if cost.tinybar > actualCost.tinybar {
-			return TransactionRecord{}, ErrMaxQueryPaymentExceeded{}
+		if cost.tinybar < actualCost.tinybar {
+			return TransactionRecord{}, ErrMaxQueryPaymentExceeded{
+				QueryCost:       actualCost,
+				MaxQueryPayment: cost,
+				query:           "TransactionRecordQuery",
+			}
 		}
 
 		cost = actualCost

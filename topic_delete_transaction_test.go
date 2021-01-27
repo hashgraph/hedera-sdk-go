@@ -27,7 +27,7 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 	_, err = NewTopicInfoQuery().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(22)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -43,7 +43,7 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 	_, err = NewTopicInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTopicID(topicID).
-		SetQueryPayment(NewHbar(22)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.Error(t, err)
 	if err != nil {
@@ -72,7 +72,7 @@ func Test_TopicDelete_NoTopicID(t *testing.T) {
 	_, err = NewTopicInfoQuery().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(22)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 

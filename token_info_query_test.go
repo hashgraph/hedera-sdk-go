@@ -41,9 +41,9 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 
 	info, err := NewTokenInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(2)).
 		SetTokenID(tokenID).
-		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -119,6 +119,142 @@ func TestTokenInfoQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetFreezeKey(client.GetOperatorPublicKey()).
+		SetWipeKey(client.GetOperatorPublicKey()).
+		SetKycKey(client.GetOperatorPublicKey()).
+		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	infoQuery := NewTokenInfoQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxQueryPayment(NewHbar(1000000)).
+		SetTokenID(tokenID)
+
+	cost, err := infoQuery.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = infoQuery.SetQueryPayment(cost).Execute(client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}
+
+func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetFreezeKey(client.GetOperatorPublicKey()).
+		SetWipeKey(client.GetOperatorPublicKey()).
+		SetKycKey(client.GetOperatorPublicKey()).
+		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	infoQuery := NewTokenInfoQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxQueryPayment(HbarFromTinybar(1)).
+		SetTokenID(tokenID)
+
+	cost, err := infoQuery.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = infoQuery.Execute(client)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
+	}
+
+	resp, err = NewTokenDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}
+
+func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
+	client := newTestClient(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetFreezeKey(client.GetOperatorPublicKey()).
+		SetWipeKey(client.GetOperatorPublicKey()).
+		SetKycKey(client.GetOperatorPublicKey()).
+		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	infoQuery := NewTokenInfoQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetTokenID(tokenID)
+
+	_, err = infoQuery.GetCost(client)
+	assert.NoError(t, err)
+
+	_, err = infoQuery.SetQueryPayment(HbarFromTinybar(1)).Execute(client)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
+	}
+
+	resp, err = NewTokenDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}
+
 func Test_TokenInfo_NoPayment(t *testing.T) {
 	client := newTestClient(t)
 
@@ -142,7 +278,7 @@ func Test_TokenInfo_NoPayment(t *testing.T) {
 
 	info, err := NewTokenInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(2)).
+		SetQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID).
 		Execute(client)
 	assert.NoError(t, err)
@@ -169,7 +305,7 @@ func Test_TokenInfo_NoTokenID(t *testing.T) {
 	client := newTestClient(t)
 
 	_, err := NewTokenInfoQuery().
-		SetQueryPayment(NewHbar(2)).
+		SetQueryPayment(NewHbar(1)).
 		Execute(client)
 	assert.Error(t, err)
 	if err != nil {
