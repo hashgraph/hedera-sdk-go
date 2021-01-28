@@ -14,14 +14,14 @@ func transferFromProtobuf(pb *proto.AccountAmount) Transfer {
 	}
 }
 
-func (transfer Transfer) toProtobuf() proto.TransferList {
+func (transfer Transfer) toProtobuf() *proto.TransferList {
 	var ammounts = make([]*proto.AccountAmount, 0)
 	ammounts = append(ammounts, &proto.AccountAmount{
 		AccountID: transfer.AccountID.toProtobuf(),
 		Amount:    transfer.Amount.AsTinybar(),
 	})
 
-	return proto.TransferList{
+	return &proto.TransferList{
 		AccountAmounts: ammounts,
 	}
 }

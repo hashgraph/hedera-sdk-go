@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
 	"time"
+
+	protobuf "github.com/golang/protobuf/proto"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -92,7 +93,7 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 	return txRecord
 }
 
-func (record TransactionRecord) toProtobuf() (proto.TransactionRecord, error) {
+func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 	var ammounts = make([]*proto.AccountAmount, 0)
 	for _, ammount := range record.Transfers {
 		ammounts = append(ammounts, &proto.AccountAmount{
@@ -123,7 +124,7 @@ func (record TransactionRecord) toProtobuf() (proto.TransactionRecord, error) {
 		var choice, err = record.GetContractCreateResult()
 
 		if err != nil {
-			return proto.TransactionRecord{}, err
+			return nil, err
 		}
 
 		tRecord.Body = &proto.TransactionRecord_ContractCreateResult{
@@ -133,7 +134,7 @@ func (record TransactionRecord) toProtobuf() (proto.TransactionRecord, error) {
 		var choice, err = record.GetContractExecuteResult()
 
 		if err != nil {
-			return proto.TransactionRecord{}, err
+			return nil, err
 		}
 
 		tRecord.Body = &proto.TransactionRecord_ContractCallResult{
@@ -141,7 +142,7 @@ func (record TransactionRecord) toProtobuf() (proto.TransactionRecord, error) {
 		}
 	}
 
-	return tRecord, err
+	return &tRecord, err
 }
 
 func (record TransactionRecord) ToBytes() []byte {
@@ -149,7 +150,7 @@ func (record TransactionRecord) ToBytes() []byte {
 	if err != nil {
 		return make([]byte, 0)
 	}
-	data, err := protobuf.Marshal(&rec)
+	data, err := protobuf.Marshal(rec)
 	if err != nil {
 		return make([]byte, 0)
 	}
