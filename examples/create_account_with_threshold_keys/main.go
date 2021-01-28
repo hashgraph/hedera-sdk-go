@@ -104,8 +104,8 @@ func main() {
 	transferTx, err := hedera.NewTransferTransaction().
 		SetTransactionID(hedera.TransactionIDGenerate(newAccountID)).
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
-		AddHbarSender(newAccountID, hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
-		AddHbarRecipient(client.GetOperatorAccountID(), hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
+		AddHbarTransfer(newAccountID, hedera.HbarFrom(-5, hedera.HbarUnits.Hbar)).
+		AddHbarTransfer(client.GetOperatorAccountID(), hedera.HbarFrom(5, hedera.HbarUnits.Hbar)).
 		FreezeWith(client)
 
 	if err != nil {
