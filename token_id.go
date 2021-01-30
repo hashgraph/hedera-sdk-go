@@ -50,3 +50,18 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 
 	return tokenIDFromProtobuf(&pb), nil
 }
+
+// TokenIDFromString constructs an TokenID from a string formatted as
+// `Shard.Realm.TokenID` (for example "0.0.3")
+func TokenIDFromString(s string) (TokenID, error) {
+	shard, realm, num, err := idFromString(s)
+	if err != nil {
+		return TokenID{}, err
+	}
+
+	return TokenID{
+		Shard: uint64(shard),
+		Realm: uint64(realm),
+		Token: uint64(num),
+	}, nil
+}
