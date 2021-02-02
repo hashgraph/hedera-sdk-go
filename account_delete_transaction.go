@@ -205,6 +205,9 @@ func (transaction *AccountDeleteTransaction) Freeze() (*AccountDeleteTransaction
 }
 
 func (transaction *AccountDeleteTransaction) FreezeWith(client *Client) (*AccountDeleteTransaction, error) {
+	if transaction.IsFrozen() {
+		return transaction, nil
+	}
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
@@ -271,5 +274,14 @@ func (transaction *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountI
 
 func (transaction *AccountDeleteTransaction) SetMaxRetry(count int) *AccountDeleteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}
+
+func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountDeleteTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }

@@ -352,14 +352,14 @@ func (pk PublicKey) toSignaturePairProtobuf(signature []byte) *proto.SignaturePa
 	}
 }
 
-func (sk PrivateKey) SignTransaction(transaction Transaction) ([]byte, error) {
+func (sk PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
 	transaction.requireOneNodeAccountID()
 
-	if len(transaction.transactions) == 0 {
+	if len(transaction.signedTransactions) == 0 {
 		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
 	}
 
-	signature := sk.Sign(transaction.transactions[0].GetBodyBytes())
+	signature := sk.Sign(transaction.signedTransactions[0].GetBodyBytes())
 	transaction.AddSignature(sk.PublicKey(), signature)
 
 	return signature, nil

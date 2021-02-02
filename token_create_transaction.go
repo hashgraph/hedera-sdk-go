@@ -382,6 +382,9 @@ func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCre
 		transaction.SetAutoRenewAccount(client.GetOperatorAccountID())
 	}
 
+	if transaction.IsFrozen() {
+		return transaction, nil
+	}
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
@@ -448,5 +451,14 @@ func (transaction *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID)
 
 func (transaction *TokenCreateTransaction) SetMaxRetry(count int) *TokenCreateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}
+
+func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCreateTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }

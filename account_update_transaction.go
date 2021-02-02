@@ -120,6 +120,7 @@ func (transaction *AccountUpdateTransaction) Sign(
 func (transaction *AccountUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountUpdateTransaction, error) {
+
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
@@ -239,6 +240,9 @@ func (transaction *AccountUpdateTransaction) Freeze() (*AccountUpdateTransaction
 }
 
 func (transaction *AccountUpdateTransaction) FreezeWith(client *Client) (*AccountUpdateTransaction, error) {
+	if transaction.IsFrozen() {
+		return transaction, nil
+	}
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
@@ -305,5 +309,14 @@ func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountI
 
 func (transaction *AccountUpdateTransaction) SetMaxRetry(count int) *AccountUpdateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountUpdateTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }

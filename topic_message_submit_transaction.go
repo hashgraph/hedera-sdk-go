@@ -344,3 +344,12 @@ func (transaction *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicM
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
+
+func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
+	return transaction
+}

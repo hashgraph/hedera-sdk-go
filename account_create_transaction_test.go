@@ -98,3 +98,43 @@ func Test_AccountCreate_NoKey(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID), err.Error())
 	}
 }
+
+func TestAccountCreateTransactionAddSignature(t *testing.T) {
+	client := newTestClient(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	tx, err := NewAccountDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(*receipt.AccountID).
+		SetTransferAccountID(client.GetOperatorAccountID()).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	updateBytes, err := tx.ToBytes()
+	assert.NoError(t, err)
+
+	sig1, err := newKey.SignTransaction(&tx.Transaction)
+	assert.NoError(t, err)
+
+	tx2, err := TransactionFromBytes(updateBytes)
+	assert.NoError(t, err)
+
+	switch newTx := tx2.(type) {
+	case AccountDeleteTransaction:
+		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(client)
+		assert.NoError(t, err)
+	}
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}

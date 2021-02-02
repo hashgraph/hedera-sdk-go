@@ -104,6 +104,15 @@ func transferTransaction_getMethod(request request, channel *channel) method {
 	}
 }
 
+func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signature []byte) *TransferTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
+	return transaction
+}
+
 func (transaction *TransferTransaction) IsFrozen() bool {
 	return transaction.isFrozen()
 }
@@ -237,6 +246,9 @@ func (transaction *TransferTransaction) Freeze() (*TransferTransaction, error) {
 }
 
 func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTransaction, error) {
+	if transaction.IsFrozen() {
+		return transaction, nil
+	}
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err

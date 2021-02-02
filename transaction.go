@@ -187,7 +187,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
 	returnMap := make(map[AccountID]map[*PublicKey][]byte, len(transaction.nodeIDs))
 
-	if len(transaction.transactions) == 0 {
+	if len(transaction.signedTransactions) == 0 {
 		return returnMap, nil
 	}
 
@@ -228,7 +228,16 @@ func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []by
 		return transaction
 	}
 
-	transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
+	transaction.transactions = make([]*proto.Transaction, 0)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 
@@ -274,8 +283,12 @@ func (transaction *Transaction) initFee(client *Client) {
 
 func (transaction *Transaction) initTransactionID(client *Client) error {
 	if len(transaction.transactionIDs) == 0 {
-		if client.operator != nil {
-			transaction.SetTransactionID(TransactionIDGenerate(client.operator.accountID))
+		if client != nil {
+			if client.operator != nil {
+				transaction.SetTransactionID(TransactionIDGenerate(client.operator.accountID))
+			} else {
+				return errNoClientOrTransactionID
+			}
 		} else {
 			return errNoClientOrTransactionID
 		}

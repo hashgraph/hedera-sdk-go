@@ -348,6 +348,9 @@ func (transaction *TokenUpdateTransaction) Freeze() (*TokenUpdateTransaction, er
 }
 
 func (transaction *TokenUpdateTransaction) FreezeWith(client *Client) (*TokenUpdateTransaction, error) {
+	if transaction.IsFrozen() {
+		return transaction, nil
+	}
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
@@ -414,5 +417,14 @@ func (transaction *TokenUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID)
 
 func (transaction *TokenUpdateTransaction) SetMaxRetry(count int) *TokenUpdateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUpdateTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }

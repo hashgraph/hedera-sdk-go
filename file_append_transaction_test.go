@@ -28,7 +28,6 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContents([]byte(" world!")).
 		Execute(client)
-
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)

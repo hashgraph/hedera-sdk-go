@@ -238,6 +238,9 @@ func (transaction *ContractExecuteTransaction) Freeze() (*ContractExecuteTransac
 }
 
 func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*ContractExecuteTransaction, error) {
+	if transaction.IsFrozen() {
+		return transaction, nil
+	}
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
@@ -304,5 +307,14 @@ func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []Accoun
 
 func (transaction *ContractExecuteTransaction) SetMaxRetry(count int) *ContractExecuteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }

@@ -231,6 +231,9 @@ func (transaction *LiveHashAddTransaction) Freeze() (*LiveHashAddTransaction, er
 }
 
 func (transaction *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHashAddTransaction, error) {
+	if transaction.IsFrozen() {
+		return transaction, nil
+	}
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
@@ -297,5 +300,14 @@ func (transaction *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID)
 
 func (transaction *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTransaction {
 	transaction.Transaction.SetMaxRetry(count)
+	return transaction
+}
+
+func (transaction *LiveHashAddTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashAddTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Freeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }

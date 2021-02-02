@@ -269,3 +269,12 @@ func (transaction *TokenUnfreezeTransaction) SetMaxRetry(count int) *TokenUnfree
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
+
+func (transaction *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUnfreezeTransaction {
+	if !transaction.IsFrozen() {
+		transaction.Unfreeze()
+	}
+
+	transaction.Transaction.AddSignature(publicKey, signature)
+	return transaction
+}
