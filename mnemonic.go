@@ -1,8 +1,10 @@
 package hedera
 
 import (
+	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/pbkdf2"
 	"math/big"
@@ -117,17 +119,30 @@ func (m Mnemonic) legacyValidate() (Mnemonic, error) {
 func (m Mnemonic) indices() ([]int, error) {
 	var indices []int
 	var check bool
-	for _, mnemonicString := range strings.Split(m.words, " ") {
-		check = false
-		for i, stringCheck := range legacy {
-			if mnemonicString == stringCheck {
-				check = true
-				indices = append(indices, int(i))
+	temp := strings.Split(m.words, " ")
+	if len(temp) == 22 {
+		for _, mnemonicString := range strings.Split(m.words, " ") {
+			check = false
+			for i, stringCheck := range legacy {
+				if mnemonicString == stringCheck {
+					check = true
+					indices = append(indices, int(i))
+				}
+			}
+			if !check {
+				return make([]int, 0), fmt.Errorf("word is not in the legacy word list")
 			}
 		}
-		if !check {
-			return make([]int, 0), fmt.Errorf("word is not in the legacy word list")
+	} else if len(temp) == 24 {
+		for _, mnemonicString := range strings.Split(m.words, " ") {
+			t, check := bip39.GetWordIndex(mnemonicString)
+			if check != true {
+				return make([]int, 0), bip39.ErrInvalidMnemonic
+			}
+			indices = append(indices, t)
 		}
+	} else {
+		return make([]int, 0), errors.New("not a 22 word or a 24 mnemonic")
 	}
 
 	return indices, nil
@@ -139,19 +154,54 @@ func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
 		return PrivateKey{}, err
 	}
 
-	entropy, _ := m.toLegacyEntropy(indices)
+	var entropy []byte
+	if len(indices) == 22 {
+		entropy, _ = m.toLegacyEntropy(indices)
+	} else if len(indices) == 24 {
+		entropy, err = m.toLegacyEntropy2()
+		if err != nil {
+			return PrivateKey{}, err
+		}
+	} else {
+		return PrivateKey{}, errors.New("Not a legacy key.")
+	}
+
 	password := make([]uint8, len(entropy)+8)
 	for i, number := range entropy {
 		password[i] = number
 	}
-	for i := len(entropy); i < len(password); i++ {
-		password[i] = 0xFF
+
+	if len(indices) == 22 {
+		for i := len(entropy); i < len(password); i++ {
+			password[i] = 0xFF
+		}
+	} else {
+		for i := len(entropy); i < len(password); i++ {
+			password[i] = 0
+		}
 	}
+
 	salt := []byte{0xFF}
 
 	keyData := pbkdf2.Key(password, salt, 2048, 32, sha512.New)
 
 	return PrivateKeyFromBytes(keyData)
+}
+
+func bytesToBits(dat []uint8) []bool {
+	bits := make([]bool, len(dat)*8)
+
+	for i, _ := range bits {
+		bits[i] = false
+	}
+
+	for i := 0; i < len(dat); i++ {
+		for j := 0; j < 8; j++ {
+			bits[(i*8)+j] = (dat[i] & (1 << (7 - j))) != 0
+		}
+	}
+
+	return bits
 }
 
 func (m Mnemonic) toLegacyEntropy(indices []int) ([]byte, uint8) {
@@ -165,6 +215,57 @@ func (m Mnemonic) toLegacyEntropy(indices []int) ([]byte, uint8) {
 	}
 
 	return result, checksum
+}
+
+type a struct {
+	index int
+	b     bool
+}
+
+func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
+	indices := strings.Split(m.words, " ")
+	concatBitsLen := len(indices) * 11
+	concatBits := make([]bool, concatBitsLen)
+
+	for i, _ := range concatBits {
+		concatBits[i] = false
+	}
+
+	for index, word := range indices {
+		nds, check := bip39.GetWordIndex(word)
+		if check != true {
+			return make([]byte, 0), bip39.ErrInvalidMnemonic
+		}
+
+		for i := 0; i < 11; i++ {
+			concatBits[(index*11)+i] = (nds & (1 << (10 - i))) != 0
+		}
+	}
+
+	checksumBitsLen := concatBitsLen / 33
+	entropyBitsLen := concatBitsLen - checksumBitsLen
+
+	entropy := make([]uint8, entropyBitsLen/8)
+
+	for i := 0; i < len(entropy); i++ {
+		for j := 0; j < 8; j++ {
+			if concatBits[(i*8)+j] {
+				entropy[i] |= 1 << (7 - j)
+			}
+		}
+	}
+
+	hash := sha256.New()
+	hash.Write(entropy)
+	hashbits := bytesToBits(hash.Sum(nil))
+
+	for i := 0; i < checksumBitsLen; i++ {
+		if concatBits[entropyBitsLen+i] != hashbits[i] {
+			return make([]uint8, 0), errors.New("Checksum mismatch")
+		}
+	}
+
+	return entropy, nil
 }
 
 func convertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 {
