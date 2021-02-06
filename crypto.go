@@ -259,6 +259,34 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	return digest[0:32], digest[32:]
 }
 
+func deriveLegacyChildKey(parentKey []byte, index int32) []byte {
+	in := make([]byte, 4)
+	k := 0
+	binary.LittleEndian.PutUint32(in, uint32(index))
+	password := make([]uint8, len(parentKey)+8)
+	for i, number := range parentKey {
+		password[i] = number
+	}
+
+	if index >= 0 {
+		for i := len(parentKey); i < len(parentKey)+4; i++ {
+			password[i] = 0
+		}
+	} else {
+		for i := len(parentKey); i < len(parentKey)+4; i++ {
+			password[i] = 0xFF
+		}
+	}
+	for i := len(parentKey)+4; i < len(password); i++ {
+		password[i] = in[k]
+		k++
+	}
+
+	salt := []byte{0xFF}
+
+	return pbkdf2.Key(password, salt, 2048, 32, sha512.New)
+}
+
 // PublicKey returns the PublicKey associated with this PrivateKey.
 func (sk PrivateKey) PublicKey() PublicKey {
 	return PublicKey{
@@ -328,6 +356,12 @@ func (sk PrivateKey) Derive(index uint32) (PrivateKey, error) {
 	derivedKey.chainCode = chainCode
 
 	return derivedKey, nil
+}
+
+func (sk PrivateKey) LegacyDerive(index int32) (PrivateKey, error) {
+	keyData := deriveLegacyChildKey(sk.keyData, index)
+
+	return PrivateKeyFromBytes(keyData)
 }
 
 // Bytes returns the byte slice representation of the PublicKey.

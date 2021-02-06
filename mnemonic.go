@@ -2,11 +2,9 @@ package hedera
 
 import (
 	"crypto/sha256"
-	"crypto/sha512"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/tyler-smith/go-bip39"
-	"golang.org/x/crypto/pbkdf2"
 	"math/big"
 	"strings"
 )
@@ -155,35 +153,19 @@ func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
 	}
 
 	var entropy []byte
+	var keyData []byte
 	if len(indices) == 22 {
 		entropy, _ = m.toLegacyEntropy(indices)
+		keyData = deriveLegacyChildKey(entropy, -1)
 	} else if len(indices) == 24 {
 		entropy, err = m.toLegacyEntropy2()
 		if err != nil {
 			return PrivateKey{}, err
 		}
+		keyData = deriveLegacyChildKey(entropy, 0)
 	} else {
 		return PrivateKey{}, errors.New("Not a legacy key.")
 	}
-
-	password := make([]uint8, len(entropy)+8)
-	for i, number := range entropy {
-		password[i] = number
-	}
-
-	if len(indices) == 22 {
-		for i := len(entropy); i < len(password); i++ {
-			password[i] = 0xFF
-		}
-	} else {
-		for i := len(entropy); i < len(password); i++ {
-			password[i] = 0
-		}
-	}
-
-	salt := []byte{0xFF}
-
-	keyData := pbkdf2.Key(password, salt, 2048, 32, sha512.New)
 
 	return PrivateKeyFromBytes(keyData)
 }
@@ -215,11 +197,6 @@ func (m Mnemonic) toLegacyEntropy(indices []int) ([]byte, uint8) {
 	}
 
 	return result, checksum
-}
-
-type a struct {
-	index int
-	b     bool
 }
 
 func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
