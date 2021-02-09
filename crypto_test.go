@@ -149,7 +149,7 @@ func TestSigning(t *testing.T) {
 }
 
 func TestGeneratedMnemonicToWorkingPrivateKey(t *testing.T) {
-	mnemonic, err := GenerateMnemonic()
+	mnemonic, err := GenerateMnemonic24()
 
 	assert.NoError(t, err)
 
