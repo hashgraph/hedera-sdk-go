@@ -6,7 +6,7 @@ package proto;
  * ‌
  * Hedera Network Services Protobuf
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ option java_package = "com.hederahashgraph.api.proto.java";
 option go_package = "github.com/hashgraph/hedera-sdk-go/proto";
 option java_multiple_files = true;
 
+import "proto/Duration.proto";
+import "proto/Timestamp.proto";
 import "proto/BasicTypes.proto";
 
 /* Set the freezing period in which the platform will stop creating events and accepting transactions. This is used before safely shut down the platform for maintenance. */

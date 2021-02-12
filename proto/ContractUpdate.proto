@@ -6,7 +6,7 @@ package proto;
  * ‌
  * Hedera Network Services Protobuf
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ option java_multiple_files = true;
 import "proto/BasicTypes.proto";
 import "proto/Duration.proto";
 import "proto/Timestamp.proto";
+import "proto/wrappers.proto";
 
 /*
 At consensus, updates the fields of a smart contract to the given values.
@@ -36,9 +37,9 @@ At consensus, updates the fields of a smart contract to the given values.
 If no value is given for a field, that field is left unchanged on the contract. For an immutable smart contract (that is, a contract created without an adminKey), only the expirationTime may be updated; setting any other field in this case will cause the transaction status to resolve to MODIFYING_IMMUTABLE_CONTRACT.
 
 --- Signing Requirements ---
-1. Whether or not a contract has an adminKey, its expirationTime can be extended with only the transaction payer's signature.
-2. Updating any other field of a mutable contract requires the adminKey's signature.
-3. If the update transaction includes a new adminKey, this new key must also sign. */
+1. Whether or not a contract has an admin Key, its expiry can be extended with only the transaction payer's signature.
+2. Updating any other field of a mutable contract requires the admin key's signature.
+3. If the update transaction includes a new admin key, this new key must also sign <b>unless</b> it is exactly an empty <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the contract to become immutable. (Other <tt>Key</tt> structures without a constituent <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.) */
 message ContractUpdateTransactionBody {
     // The id of the contract to be updated
     ContractID contractID = 1;
@@ -53,6 +54,9 @@ message ContractUpdateTransactionBody {
     // The new id of the file asserted to contain the bytecode of the Solidity transaction that created this contract
     FileID fileID = 8;
     // The new contract memo, assumed to be Unicode encoded with UTF-8 (at most 100 bytes)
-    string memo = 9;
+    oneof memoField {
+      string memo = 9 [deprecated = true]; // [Deprecated] If set with a non-zero length, the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
+      StringValue memoWrapper = 10; // If set, the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
+    }
 }
 
