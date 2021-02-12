@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
+	"errors"
 
 	"encoding/binary"
 	"encoding/hex"
@@ -348,4 +349,15 @@ func (pk Ed25519PublicKey) Bytes() []byte {
 
 func (pk Ed25519PublicKey) toProto() *proto.Key {
 	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
+}
+
+func (sk Ed25519PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
+	if transaction.pb.GetBodyBytes() == nil {
+		return make([]byte, 0), errors.New("Missing body bytes.")
+	}
+
+	signature := sk.Sign(transaction.pb.GetBodyBytes())
+	transaction.AddSignature(sk.PublicKey(), signature)
+
+	return signature, nil
 }

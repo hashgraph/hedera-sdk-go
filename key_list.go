@@ -30,3 +30,7 @@ func (kl *KeyList) AddAll(keys []PublicKey) *KeyList {
 func (kl *KeyList) toProto() *proto.Key {
 	return &proto.Key{Key: &proto.Key_KeyList{KeyList: &proto.KeyList{Keys: kl.keys}}}
 }
+
+func (kl *KeyList) toProtoKeyList() *proto.KeyList {
+	return &proto.KeyList{Keys: kl.keys}
+}

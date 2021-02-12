@@ -34,6 +34,40 @@ func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
 	return nil
 }
 
+func (transaction *Transaction) AddSignature(publicKey Ed25519PublicKey, signature []byte) *Transaction {
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if transaction.pb.BodyBytes == nil {
+		return transaction
+	}
+
+	transaction.pb.SigMap.SigPair = append(
+		transaction.pb.SigMap.SigPair,
+		&proto.SignaturePair{
+			PubKeyPrefix: publicKey.Bytes(),
+			Signature:    &proto.SignaturePair_Ed25519{Ed25519: signature},
+		},
+	)
+
+	return transaction
+}
+
+func (transaction *Transaction) keyAlreadySigned(
+	pk Ed25519PublicKey,
+) bool {
+	if transaction.pb.SigMap != nil {
+		for _, pair := range transaction.pb.SigMap.SigPair {
+			if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // Sign uses the provided privateKey to sign the transaction.
 func (transaction Transaction) Sign(privateKey Ed25519PrivateKey) Transaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
@@ -176,6 +210,15 @@ func (transaction Transaction) ID() TransactionID {
 	// Provide an accessor function to prevent the user from mutating the
 	// ID which would result in undefined behavior.
 	return transaction.id
+}
+
+func (transaction Transaction) Schedule() ScheduleCreateTransaction {
+	tx := NewScheduleCreateTransaction()
+	body := transaction.body()
+	tx.TransactionBuilder.SetNodeAccountID(accountIDFromProto(body.NodeAccountID))
+	tx.TransactionBuilder.pb.GetScheduleCreate().TransactionBody = transaction.pb.GetBodyBytes()
+	tx.TransactionBuilder.pb.GetScheduleCreate().SigMap = transaction.pb.GetSigMap()
+	return tx
 }
 
 // The protobuf stores the transaction body as raw bytes so we need to first
