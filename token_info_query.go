@@ -116,10 +116,10 @@ func (builder *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		SupplyKey:         supplyKey,
 		TokenFreezeStatus: freezeStatus,
 		TokenKycStatus:    kycStatus,
-		IsDeleted:         resp.GetTokenGetInfo().TokenInfo.IsDeleted,
+		IsDeleted:         resp.GetTokenGetInfo().TokenInfo.Deleted,
 		AutoRenewAccount:  accountIDFromProto(resp.GetTokenGetInfo().TokenInfo.AutoRenewAccount),
-		AutoRenewPeriod:   resp.GetTokenGetInfo().TokenInfo.AutoRenewPeriod,
-		ExpirationTime:    resp.GetTokenGetInfo().TokenInfo.Expiry,
+		AutoRenewPeriod:   uint64(resp.GetTokenGetInfo().TokenInfo.AutoRenewPeriod.Seconds),
+		ExpirationTime:    uint64(resp.GetTokenGetInfo().TokenInfo.Expiry.Seconds),
 	}, nil
 }
 

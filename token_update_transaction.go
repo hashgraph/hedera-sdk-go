@@ -78,7 +78,9 @@ func (builder TokenUpdateTransaction) SetSupplyKey(supplykey PublicKey) TokenUpd
 
 // The new expiry time of the token. Expiry can be updated even if admin key is not set. If the provided expiry is earlier than the current token expiry, transaction wil resolve to INVALID_EXPIRATION_TIME
 func (builder TokenUpdateTransaction) SetExpirationTime(expirationTime uint64) TokenUpdateTransaction {
-	builder.pb.Expiry = expirationTime
+	builder.pb.Expiry = &proto.Timestamp{
+		Seconds: time.Now().Unix() + int64(expirationTime),
+	}
 	return builder
 }
 
@@ -90,7 +92,9 @@ func (builder TokenUpdateTransaction) SetAutoRenewAccountID(autoRenewAccountID A
 
 // The new interval at which the auto-renew account will be charged to extend the token's expiry.
 func (builder TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64) TokenUpdateTransaction {
-	builder.pb.AutoRenewPeriod = autoRenewPeriod
+	builder.pb.AutoRenewPeriod = &proto.Duration{
+		Seconds: time.Now().Unix() + int64(autoRenewPeriod),
+	}
 	return builder
 }
 

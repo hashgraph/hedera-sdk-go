@@ -16,6 +16,8 @@ type TransactionReceipt struct {
 	tokenID                      *TokenID
 	consensusTopicSequenceNumber uint64
 	consensusTopicRunningHash    []byte
+	newTotalSupply               uint64
+	scheduleID                   *ScheduleID
 }
 
 // GetFileID returns the FileID associated with the receipt's transaction or else panics no FileID exists
@@ -126,6 +128,22 @@ func (receipt TransactionReceipt) TryGetConsensusTopicRunningHash() ([]byte, err
 	return receipt.consensusTopicRunningHash, nil
 }
 
+func (receipt TransactionReceipt) GetNewTotalSupply() uint64 {
+	return receipt.newTotalSupply
+}
+
+func (receipt TransactionReceipt) GetSchedule() ScheduleID {
+	return *receipt.scheduleID
+}
+
+func (receipt TransactionReceipt) TryGetScheduleID() (ScheduleID, error) {
+	if receipt.scheduleID == nil {
+		return ScheduleID{}, fmt.Errorf("no schedule id exists on this receipt")
+	}
+
+	return receipt.GetSchedule(), nil
+}
+
 func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt {
 	return transactionReceiptFromProto(response.GetTransactionGetReceipt().Receipt)
 }
@@ -156,9 +174,15 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 	}
 
 	var tokenID *TokenID
-	if pb.TokenId != nil {
-		tokenIDValue := tokenIDFromProto(pb.TokenId)
+	if pb.TokenID != nil {
+		tokenIDValue := tokenIDFromProto(pb.TokenID)
 		tokenID = &tokenIDValue
+	}
+
+	var scheduleID *ScheduleID
+	if pb.ScheduleID != nil {
+		scheduleIDValue := scheduleIDFromProto(pb.ScheduleID)
+		scheduleID = &scheduleIDValue
 	}
 
 	return TransactionReceipt{
@@ -170,5 +194,7 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 		consensusTopicID:             consensusTopicID,
 		consensusTopicSequenceNumber: pb.TopicSequenceNumber,
 		consensusTopicRunningHash:    pb.TopicRunningHash,
+		newTotalSupply:               pb.NewTotalSupply,
+		scheduleID:                   scheduleID,
 	}
 }

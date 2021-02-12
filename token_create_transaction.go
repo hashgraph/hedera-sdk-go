@@ -92,7 +92,9 @@ func (builder TokenCreateTransaction) SetFreezeDefault(freeze bool) TokenCreateT
 
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
 func (builder TokenCreateTransaction) SetExpirationTime(expirationTime uint64) TokenCreateTransaction {
-	builder.pb.Expiry = expirationTime
+	builder.pb.Expiry = &proto.Timestamp{
+		Seconds: time.Now().Unix() + int64(expirationTime),
+	}
 	return builder
 }
 
@@ -104,7 +106,9 @@ func (builder TokenCreateTransaction) SetAutoRenewAccountID(autoRenewAccountID A
 
 // The interval at which the auto-renew account will be charged to extend the token's expiry
 func (builder TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64) TokenCreateTransaction {
-	builder.pb.AutoRenewPeriod = autoRenewPeriod
+	builder.pb.AutoRenewPeriod = &proto.Duration{
+		Seconds: time.Now().Unix() + int64(autoRenewPeriod),
+	}
 	return builder
 }
 
