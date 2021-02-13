@@ -73,3 +73,49 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 	_, err = txID.GetReceipt(client)
 	assert.NoError(t, err)
 }
+
+func TestAccountCreateTransactionAddSignature(t *testing.T) {
+	client := newTestClient(t)
+
+	newKey, err := GenerateEd25519PrivateKey()
+	assert.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		Execute(client)
+	assert.NoError(t, err)
+
+	println(resp.String())
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	account := receipt.GetAccountID()
+
+	tx, err := NewAccountDeleteTransaction().
+		SetNodeAccountID(AccountID{Account: 3}).
+		SetDeleteAccountID(account).
+		SetTransferAccountID(client.GetOperatorID()).
+		Build(client)
+	assert.NoError(t, err)
+
+	updateBytes, err := tx.MarshalBinary()
+	assert.NoError(t, err)
+
+	sig1, err := newKey.SignTransaction(&tx)
+	assert.NoError(t, err)
+
+	tx2, err := NewAccountDeleteTransaction().Build(client)
+	assert.NoError(t, err)
+
+	println(account.String())
+
+	err = tx2.UnmarshalBinary(updateBytes)
+	assert.NoError(t, err)
+
+	resp, err = tx2.AddSignature(newKey.PublicKey(), sig1).Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+}
