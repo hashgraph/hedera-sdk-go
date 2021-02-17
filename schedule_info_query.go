@@ -33,20 +33,41 @@ func (builder *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) 
 		return ScheduleInfo{}, err
 	}
 
-	keyList, err := publicKeyListFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetSignatories())
-	if err != nil {
-		return ScheduleInfo{}, err
+	var keyList []PublicKey
+	if resp.GetScheduleGetInfo().ScheduleInfo.GetSignatories() != nil {
+		keyList, err = publicKeyListFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetSignatories())
+		if err != nil {
+			return ScheduleInfo{}, err
+		}
 	}
 
-	adminKey, err := publicKeyFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetAdminKey())
-	if err != nil {
-		return ScheduleInfo{}, err
+	var adminKey PublicKey
+	if resp.GetScheduleGetInfo().ScheduleInfo.GetAdminKey() != nil {
+		adminKey, err = publicKeyFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetAdminKey())
+		if err != nil {
+			return ScheduleInfo{}, err
+		}
+	}
+
+	var creatorAccountID AccountID
+	if resp.GetScheduleGetInfo().ScheduleInfo.GetCreatorAccountID() != nil {
+		creatorAccountID = accountIDFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetCreatorAccountID())
+	}
+
+	var payerAccountID AccountID
+	if resp.GetScheduleGetInfo().ScheduleInfo.GetCreatorAccountID() != nil {
+		payerAccountID = accountIDFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetPayerAccountID())
+	}
+
+	var scheduleID ScheduleID
+	if resp.GetScheduleGetInfo().ScheduleInfo.GetScheduleID() != nil {
+		scheduleID = scheduleIDFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetScheduleID())
 	}
 
 	return ScheduleInfo{
-		ScheduleID:       scheduleIDFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetScheduleID()),
-		CreatorAccountID: accountIDFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetCreatorAccountID()),
-		PayerAccountID:   accountIDFromProto(resp.GetScheduleGetInfo().ScheduleInfo.GetPayerAccountID()),
+		ScheduleID:       scheduleID,
+		CreatorAccountID: creatorAccountID,
+		PayerAccountID:   payerAccountID,
 		TransactionBody:  resp.GetScheduleGetInfo().ScheduleInfo.GetTransactionBody(),
 		Signers:          keyList,
 		AdminKey:         adminKey,

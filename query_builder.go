@@ -241,6 +241,10 @@ func methodName(pb *proto.Query) string {
 	case *proto.Query_ContractGetRecords:
 		return "/proto.SmartContractService/getTxRecordByContractID"
 
+	//Schedule
+	case *proto.Query_ScheduleGetInfo:
+		return "/proto.ScheduleService/getScheduleInfo"
+
 	// File
 	case *proto.Query_FileGetContents:
 		return "/proto.FileService/getFileContent"
@@ -291,6 +295,10 @@ func mapResponseHeader(resp *proto.Response) *proto.ResponseHeader {
 
 	case *proto.Response_ContractGetRecordsResponse:
 		return resp.GetContractGetRecordsResponse().Header
+
+	//Schedule
+	case *proto.Response_ScheduleGetInfo:
+		return resp.GetScheduleGetInfo().Header
 
 	// File
 	case *proto.Response_FileGetContents:

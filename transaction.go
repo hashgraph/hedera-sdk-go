@@ -286,6 +286,16 @@ func getMethodName(transactionBody *proto.TransactionBody) (string, error) {
 	case *proto.TransactionBody_SystemUndelete:
 		return "/proto.FileService/systemUndelete", nil
 
+	// Scheduled
+	case *proto.TransactionBody_ScheduleCreate:
+		return "/proto.ScheduleService/createSchedule", nil
+
+	case *proto.TransactionBody_ScheduleDelete:
+		return "/proto.ScheduleService/deleteSchedule", nil
+
+	case *proto.TransactionBody_ScheduleSign:
+		return "/proto.ScheduleService/signSchedule", nil
+
 	// HCS
 	case *proto.TransactionBody_ConsensusCreateTopic:
 		return "/proto.ConsensusService/createTopic", nil

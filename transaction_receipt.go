@@ -132,7 +132,7 @@ func (receipt TransactionReceipt) GetNewTotalSupply() uint64 {
 	return receipt.newTotalSupply
 }
 
-func (receipt TransactionReceipt) GetSchedule() ScheduleID {
+func (receipt TransactionReceipt) GetScheduleID() ScheduleID {
 	return *receipt.scheduleID
 }
 
@@ -141,7 +141,7 @@ func (receipt TransactionReceipt) TryGetScheduleID() (ScheduleID, error) {
 		return ScheduleID{}, fmt.Errorf("no schedule id exists on this receipt")
 	}
 
-	return receipt.GetSchedule(), nil
+	return receipt.GetScheduleID(), nil
 }
 
 func transactionReceiptFromResponse(response *proto.Response) TransactionReceipt {
