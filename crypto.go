@@ -277,7 +277,7 @@ func deriveLegacyChildKey(parentKey []byte, index int32) []byte {
 			password[i] = 0xFF
 		}
 	}
-	for i := len(parentKey)+4; i < len(password); i++ {
+	for i := len(parentKey) + 4; i < len(password); i++ {
 		password[i] = in[k]
 		k++
 	}
