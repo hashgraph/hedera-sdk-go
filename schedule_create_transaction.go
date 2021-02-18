@@ -23,7 +23,7 @@ func NewScheduleCreateTransaction() ScheduleCreateTransaction {
 
 func (builder ScheduleCreateTransaction) SetTransaction(transaction Transaction) ScheduleCreateTransaction {
 	other := transaction.Schedule()
-	builder.SetTransactionBody(other.TransactionBuilder.pb.GetScheduleCreate().TransactionBody)
+	builder.pb.TransactionBody = other.TransactionBuilder.pb.GetScheduleCreate().TransactionBody
 	builder.pb.SigMap = other.TransactionBuilder.pb.GetScheduleCreate().SigMap
 	return builder
 }
@@ -34,32 +34,10 @@ func (builder ScheduleCreateTransaction) SetPayerAccountID(id AccountID) Schedul
 	return builder
 }
 
-func (builder ScheduleCreateTransaction) GetPayerAccountID() AccountID {
-	return accountIDFromProto(builder.pb.PayerAccountID)
-}
-
 func (builder ScheduleCreateTransaction) SetAdminKey(key PublicKey) ScheduleCreateTransaction {
 	builder.pb.AdminKey = key.toProto()
 
 	return builder
-}
-
-func (builder ScheduleCreateTransaction) GetAdminKey() *PublicKey {
-	key, err := publicKeyFromProto(builder.pb.GetAdminKey())
-	if err != nil {
-		return nil
-	}
-	return &key
-}
-
-func (builder ScheduleCreateTransaction) SetTransactionBody(dat []byte) ScheduleCreateTransaction {
-	builder.pb.TransactionBody = dat
-
-	return builder
-}
-
-func (builder ScheduleCreateTransaction) GetTransactionBody() []byte {
-	return builder.pb.TransactionBody
 }
 
 //

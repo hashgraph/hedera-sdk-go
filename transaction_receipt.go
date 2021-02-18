@@ -16,7 +16,7 @@ type TransactionReceipt struct {
 	tokenID                      *TokenID
 	consensusTopicSequenceNumber uint64
 	consensusTopicRunningHash    []byte
-	newTotalSupply               uint64
+	totalSupply                  uint64
 	scheduleID                   *ScheduleID
 }
 
@@ -128,8 +128,8 @@ func (receipt TransactionReceipt) TryGetConsensusTopicRunningHash() ([]byte, err
 	return receipt.consensusTopicRunningHash, nil
 }
 
-func (receipt TransactionReceipt) GetNewTotalSupply() uint64 {
-	return receipt.newTotalSupply
+func (receipt TransactionReceipt) GetTotalSupply() uint64 {
+	return receipt.totalSupply
 }
 
 func (receipt TransactionReceipt) GetScheduleID() ScheduleID {
@@ -194,7 +194,7 @@ func transactionReceiptFromProto(pb *proto.TransactionReceipt) TransactionReceip
 		consensusTopicID:             consensusTopicID,
 		consensusTopicSequenceNumber: pb.TopicSequenceNumber,
 		consensusTopicRunningHash:    pb.TopicRunningHash,
-		newTotalSupply:               pb.NewTotalSupply,
+		totalSupply:                  pb.NewTotalSupply,
 		scheduleID:                   scheduleID,
 	}
 }

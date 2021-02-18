@@ -169,7 +169,7 @@ const (
 	StatusUnresolvableRequiredSigners          Status = 206
 	StatusUnparseableScheduledTransaction      Status = 207
 	StatusUnschedulableTransaction             Status = 208
-	StatusSomeSignaturesWereInvalid                   = 209
+	StatusSomeSignaturesWereInvalid            Status = 209
 	StatusTransactionIDFieldNotAllowed         Status = 210
 )
 

@@ -51,10 +51,6 @@ func (builder ScheduleSignTransaction) SetScheduleID(id ScheduleID) ScheduleSign
 	return builder
 }
 
-func (builder ScheduleSignTransaction) GetScheduleID() ScheduleID {
-	return scheduleIDFromProto(builder.pb.ScheduleID)
-}
-
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type

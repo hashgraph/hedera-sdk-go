@@ -356,8 +356,5 @@ func (sk Ed25519PrivateKey) SignTransaction(transaction *Transaction) ([]byte, e
 		return make([]byte, 0), errors.New("Missing body bytes.")
 	}
 
-	signature := sk.Sign(transaction.pb.GetBodyBytes())
-	transaction.AddSignature(sk.PublicKey(), signature)
-
-	return signature, nil
+	return sk.Sign(transaction.pb.GetBodyBytes()), nil
 }

@@ -85,8 +85,6 @@ func TestAccountCreateTransactionAddSignature(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	println(resp.String())
-
 	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
@@ -108,12 +106,10 @@ func TestAccountCreateTransactionAddSignature(t *testing.T) {
 	tx2, err := NewAccountDeleteTransaction().Build(client)
 	assert.NoError(t, err)
 
-	println(account.String())
-
 	err = tx2.UnmarshalBinary(updateBytes)
 	assert.NoError(t, err)
 
-	resp, err = tx2.AddSignature(newKey.PublicKey(), sig1).Execute(client)
+	resp, err = tx2.addSignature(newKey.PublicKey(), sig1).Execute(client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(client)

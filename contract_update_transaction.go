@@ -83,7 +83,9 @@ func (builder ContractUpdateTransaction) SetExpirationTime(expiration time.Time)
 
 // SetContractMemo sets the memo associated with the contract (max 100 bytes)
 func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUpdateTransaction {
-	builder.pb.MemoField = &proto.ContractUpdateTransactionBody_Memo{memo}
+	builder.pb.MemoField = &proto.ContractUpdateTransactionBody_Memo{
+		Memo: memo,
+	}
 
 	return builder
 }

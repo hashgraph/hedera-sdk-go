@@ -34,7 +34,7 @@ func (transaction *Transaction) UnmarshalBinary(txBytes []byte) error {
 	return nil
 }
 
-func (transaction *Transaction) AddSignature(publicKey Ed25519PublicKey, signature []byte) *Transaction {
+func (transaction *Transaction) addSignature(publicKey Ed25519PublicKey, signature []byte) *Transaction {
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}

@@ -23,10 +23,6 @@ func (builder *ScheduleInfoQuery) SetScheduleID(id ScheduleID) *ScheduleInfoQuer
 	return builder
 }
 
-func (builder *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
-	return scheduleIDFromProto(builder.pb.GetScheduleID())
-}
-
 func (builder *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	resp, err := builder.execute(client)
 	if err != nil {
