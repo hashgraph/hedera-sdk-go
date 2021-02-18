@@ -82,7 +82,7 @@ func (transaction *TokenCreateTransaction) GetDecimals() uint {
 	return uint(transaction.pb.GetDecimals())
 }
 
-// Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
+// The account which will act as a treasury for the token. This account will receive the specified initial supply
 func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury AccountID) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Treasury = treasury.toProtobuf()
@@ -93,7 +93,7 @@ func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetTreasury())
 }
 
-// The account which will act as a treasury for the token. This account will receive the specified initial supply
+// The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
 func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
@@ -109,7 +109,7 @@ func (transaction *TokenCreateTransaction) GetAdminKey() Key {
 	return key
 }
 
-// The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
+// The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
 func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.KycKey = publicKey.toProtoKey()
@@ -125,7 +125,7 @@ func (transaction *TokenCreateTransaction) GetKycKey() Key {
 	return key
 }
 
-// The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
+// The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
 func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FreezeKey = publicKey.toProtoKey()
@@ -141,7 +141,7 @@ func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
 	return key
 }
 
-// The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
+// The key which can wipe the token balance of an account. If empty, wipe is not possible
 func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.WipeKey = publicKey.toProtoKey()
@@ -157,7 +157,8 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return key
 }
 
-// The key which can wipe the token balance of an account. If empty, wipe is not possible
+// The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
+// SetInitialBalance sets the initial number of Hbar to put into the token
 func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SupplyKey = publicKey.toProtoKey()
@@ -173,8 +174,7 @@ func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
 	return key
 }
 
-// The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
-// SetInitialBalance sets the initial number of Hbar to put into the token
+// Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
 func (transaction *TokenCreateTransaction) SetInitialSupply(initialSupply uint64) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.InitialSupply = initialSupply
