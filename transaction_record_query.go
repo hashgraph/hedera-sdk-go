@@ -65,7 +65,7 @@ func transactionRecordQuery_shouldRetry(status Status, response response) bool {
 		return true
 	}
 
-	if status != StatusOk{
+	if status != StatusOk {
 		return false
 	}
 

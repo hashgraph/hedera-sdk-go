@@ -260,7 +260,6 @@ func TestContractBytecodeQueryCost_SmallMax_Execute(t *testing.T) {
 	cost, err := bytecodeQuery.GetCost(client)
 	assert.NoError(t, err)
 
-
 	_, err = bytecodeQuery.Execute(client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("cost of ContractBytecodeQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())

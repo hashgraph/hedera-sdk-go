@@ -96,7 +96,6 @@ func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-
 func Test_AccountBalance_NoAccount(t *testing.T) {
 	client := newTestClient(t)
 
