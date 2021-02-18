@@ -53,7 +53,7 @@ func (hbar Hbar) String() string {
 }
 
 func (hbar Hbar) ToString(unit HbarUnit) string {
-	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(unit.numberOfTinybar()))
+	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit.numberOfTinybar()), unit.String())
 }
 
 func (hbar Hbar) negated() Hbar {
