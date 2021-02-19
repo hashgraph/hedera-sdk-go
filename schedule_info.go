@@ -9,7 +9,7 @@ type ScheduleInfo struct {
 	CreatorAccountID AccountID
 	PayerAccountID   AccountID
 	TransactionBody  []byte
-	Signers          *KeyList
+	Signatories      *KeyList
 	AdminKey         Key
 }
 
@@ -20,8 +20,8 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 	}
 
 	var signers KeyList
-	if pb.Signers != nil {
-		signers, _ = keyListFromProtobuf(pb.Signers)
+	if pb.Signatories != nil {
+		signers, _ = keyListFromProtobuf(pb.Signatories)
 	}
 
 	return ScheduleInfo{
@@ -29,7 +29,7 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		CreatorAccountID: accountIDFromProtobuf(pb.CreatorAccountID),
 		PayerAccountID:   accountIDFromProtobuf(pb.PayerAccountID),
 		TransactionBody:  pb.TransactionBody,
-		Signers:          &signers,
+		Signatories:      &signers,
 		AdminKey:         adminKey,
 	}
 }
@@ -41,8 +41,8 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 	}
 
 	var signers *proto.KeyList
-	if scheduleInfo.Signers != nil {
-		signers = scheduleInfo.Signers.toProtoKeyList()
+	if scheduleInfo.Signatories != nil {
+		signers = scheduleInfo.Signatories.toProtoKeyList()
 	}
 
 	return &proto.ScheduleInfo{
@@ -50,7 +50,7 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 		CreatorAccountID: scheduleInfo.CreatorAccountID.toProtobuf(),
 		PayerAccountID:   scheduleInfo.PayerAccountID.toProtobuf(),
 		TransactionBody:  scheduleInfo.TransactionBody,
-		Signers:          signers,
+		Signatories:      signers,
 		AdminKey:         adminKey,
 	}
 }

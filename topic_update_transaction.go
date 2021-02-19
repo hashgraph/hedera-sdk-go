@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -75,7 +76,7 @@ func (transaction *TopicUpdateTransaction) GetSubmitKey() (Key, error) {
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
 func (transaction *TopicUpdateTransaction) SetTopicMemo(memo string) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Memo = &proto.StringValue{Value: memo}
+	transaction.pb.Memo = &wrappers.StringValue{Value: memo}
 	return transaction
 }
 
