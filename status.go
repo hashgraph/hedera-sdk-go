@@ -165,9 +165,14 @@ const (
 	StatusEmptyTokenTransferAccountAmounts     Status = 200
 	StatusInvalidScheduleID                    Status = 201
 	StatusScheduleIsImmutable                  Status = 202
-	StatusScheduleWasDeleted                   Status = 203
-	StatusInvalidSchedulePayerID               Status = 204
-	StatusInvalidScheduleAccountID             Status = 205
+	StatusInvalidSchedulePayerID               Status = 203
+	StatusInvalidScheduleAccountID             Status = 204
+	StatusNoNewValidSignatures                 Status = 205
+	StatusUnresolvableRequiredSigners          Status = 206
+	StatusUnparseableScheduledTransaction      Status = 207
+	StatusUnschedulableTransaction             Status = 208
+	StatusSomeSignaturesWereInvalid            Status = 209
+	StatusTransactionIDFieldNotAllowed         Status = 210
 )
 
 // String() returns a string representation of the status
@@ -493,12 +498,22 @@ func (status Status) String() string {
 		return "INVALID_SCHEDULE_ID"
 	case StatusScheduleIsImmutable:
 		return "SCHEDULE_IS_IMMUTABLE"
-	case StatusScheduleWasDeleted:
-		return "SCHEDULE_WAS_DELETED"
 	case StatusInvalidSchedulePayerID:
 		return "INVALID_SCHEDULE_PAYER_ID"
 	case StatusInvalidScheduleAccountID:
 		return "INVALID_SCHEDULE_ACCOUNT_ID"
+	case StatusNoNewValidSignatures:
+		return "NO_NEW_VALID_SIGNATURES"
+	case StatusUnresolvableRequiredSigners:
+		return "UNRESOLVABLE_REQUIRED_SIGNERS"
+	case StatusUnparseableScheduledTransaction:
+		return "UNPARSEABLE_SCHEDULED_TRANSACTION"
+	case StatusUnschedulableTransaction:
+		return "UNSCHEDULABLE_TRANSACTION"
+	case StatusSomeSignaturesWereInvalid:
+		return "SOME_SIGNATURES_WERE_INVALID"
+	case StatusTransactionIDFieldNotAllowed:
+		return "TRANSACTION_ID_FIELD_NOT_ALLOWED"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
