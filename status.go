@@ -1,5 +1,7 @@
 package hedera
 
+import "fmt"
+
 type Status uint32
 
 const (
@@ -17,13 +19,13 @@ const (
 	StatusDuplicateTransaction                 Status = 11
 	StatusBusy                                 Status = 12
 	StatusNotSupported                         Status = 13
-	StatusInvalidFileID                        Status = 14
-	StatusInvalidAccountID                     Status = 15
-	StatusInvalidContractID                    Status = 16
-	StatusInvalidTransactionID                 Status = 17
+	StatusInvalidFileId                        Status = 14
+	StatusInvalidAccountId                     Status = 15
+	StatusInvalidContractId                    Status = 16
+	StatusInvalidTransactionId                 Status = 17
 	StatusReceiptNotFound                      Status = 18
 	StatusRecordNotFound                       Status = 19
-	StatusInvalidSolidityID                    Status = 20
+	StatusInvalidSolidityId                    Status = 20
 	StatusUnknown                              Status = 21
 	StatusSuccess                              Status = 22
 	StatusFailInvalid                          Status = 23
@@ -63,7 +65,7 @@ const (
 	StatusEmptyQueryBody                       Status = 57
 	StatusEmptyLiveHashQuery                   Status = 58
 	StatusLiveHashNotFound                     Status = 59
-	StatusAccountIDDoesNotExist                Status = 60
+	StatusAccountIdDoesNotExist                Status = 60
 	StatusLiveHashAlreadyExists                Status = 61
 	StatusInvalidFileWacl                      Status = 62
 	StatusSerializationFailed                  Status = 63
@@ -74,13 +76,13 @@ const (
 	StatusKeyPrefixMismatch                    Status = 68
 	StatusPlatformTransactionNotCreated        Status = 69
 	StatusInvalidRenewalPeriod                 Status = 70
-	StatusInvalidPayerAccountID                Status = 71
+	StatusInvalidPayerAccountId                Status = 71
 	StatusAccountDeleted                       Status = 72
 	StatusFileDeleted                          Status = 73
 	StatusAccountRepeatedInAccountAmounts      Status = 74
 	StatusSettingNegativeAccountBalance        Status = 75
 	StatusObtainerRequired                     Status = 76
-	StatusObtainerSameContractID               Status = 77
+	StatusObtainerSameContractId               Status = 77
 	StatusObtainerDoesNotExist                 Status = 78
 	StatusModifyingImmutableContract           Status = 79
 	StatusFileSystemException                  Status = 80
@@ -115,7 +117,7 @@ const (
 	StatusExpirationReductionNotAllowed        Status = 110
 	StatusMaxGasLimitExceeded                  Status = 111
 	StatusMaxFileSizeExceeded                  Status = 112
-	StatusInvalidTopicID                       Status = 150
+	StatusInvalidTopicId                       Status = 150
 	StatusInvalidAdminKey                      Status = 155
 	StatusInvalidSubmitKey                     Status = 156
 	StatusUnauthorized                         Status = 157
@@ -124,10 +126,10 @@ const (
 	StatusAutorenewAccountNotAllowed           Status = 160
 	StatusTopicExpired                         Status = 162
 	StatusInvalidChunkNumber                   Status = 163
-	StatusInvalidChunkTransactionID            Status = 164
+	StatusInvalidChunkTransactionId            Status = 164
 	StatusAccountFrozenForToken                Status = 165
 	StatusTokensPerAccountLimitExceeded        Status = 166
-	StatusInvalidTokenID                       Status = 167
+	StatusInvalidTokenId                       Status = 167
 	StatusInvalidTokenDecimals                 Status = 168
 	StatusInvalidTokenInitialSupply            Status = 169
 	StatusInvalidTreasuryAccountForToken       Status = 170
@@ -157,15 +159,15 @@ const (
 	StatusTokenAlreadyAssociatedToAccount      Status = 194
 	StatusTransactionRequiresZeroTokenBalances Status = 195
 	StatusAccountIsTreasury                    Status = 196
-	TokenIdRepeatedInTokenList                 Status = 197
-	TokenTransferListSizeLimitExceeded         Status = 198
-	EmptyTokenTransferBody                     Status = 199
-	EmptyTokenTransferAccountAmounts           Status = 200
-	StatusInvalidScheduleID                    Status = 201
+	StatusTokenIdRepeatedInTokenList           Status = 197
+	StatusTokenTransferListSizeLimitExceeded   Status = 198
+	StatusEmptyTokenTransferBody               Status = 199
+	StatusEmptyTokenTransferAccountAmounts     Status = 200
+	StatusInvalidScheduleId                    Status = 201
 	StatusScheduleIsImmutable                  Status = 202
 	StatusScheduleWasDeleted                   Status = 203
-	StatusInvalidSchedulePayerID               Status = 204
-	StatusInvalidScheduleAccountID             Status = 205
+	StatusInvalidSchedulePayerId               Status = 204
+	StatusInvalidScheduleAccountId             Status = 205
 )
 
 // String() returns a string representation of the status
@@ -199,19 +201,19 @@ func (status Status) String() string {
 		return "BUSY"
 	case StatusNotSupported:
 		return "NOT_SUPPORTED"
-	case StatusInvalidFileID:
+	case StatusInvalidFileId:
 		return "INVALID_FILE_ID"
-	case StatusInvalidAccountID:
+	case StatusInvalidAccountId:
 		return "INVALID_ACCOUNT_ID"
-	case StatusInvalidContractID:
+	case StatusInvalidContractId:
 		return "INVALID_CONTRACT_ID"
-	case StatusInvalidTransactionID:
+	case StatusInvalidTransactionId:
 		return "INVALID_TRANSACTION_ID"
 	case StatusReceiptNotFound:
 		return "RECEIPT_NOT_FOUND"
 	case StatusRecordNotFound:
 		return "RECORD_NOT_FOUND"
-	case StatusInvalidSolidityID:
+	case StatusInvalidSolidityId:
 		return "INVALID_SOLIDITY_ID"
 	case StatusUnknown:
 		return "UNKNOWN"
@@ -291,7 +293,7 @@ func (status Status) String() string {
 		return "EMPTY_LIVE_HASH_QUERY"
 	case StatusLiveHashNotFound:
 		return "LIVE_HASH_NOT_FOUND"
-	case StatusAccountIDDoesNotExist:
+	case StatusAccountIdDoesNotExist:
 		return "ACCOUNT_ID_DOES_NOT_EXIST"
 	case StatusLiveHashAlreadyExists:
 		return "LIVE_HASH_ALREADY_EXISTS"
@@ -313,7 +315,7 @@ func (status Status) String() string {
 		return "PLATFORM_TRANSACTION_NOT_CREATED"
 	case StatusInvalidRenewalPeriod:
 		return "INVALID_RENEWAL_PERIOD"
-	case StatusInvalidPayerAccountID:
+	case StatusInvalidPayerAccountId:
 		return "INVALID_PAYER_ACCOUNT_ID"
 	case StatusAccountDeleted:
 		return "ACCOUNT_DELETED"
@@ -325,7 +327,7 @@ func (status Status) String() string {
 		return "SETTING_NEGATIVE_ACCOUNT_BALANCE"
 	case StatusObtainerRequired:
 		return "OBTAINER_REQUIRED"
-	case StatusObtainerSameContractID:
+	case StatusObtainerSameContractId:
 		return "OBTAINER_SAME_CONTRACT_ID"
 	case StatusObtainerDoesNotExist:
 		return "OBTAINER_DOES_NOT_EXIST"
@@ -395,7 +397,7 @@ func (status Status) String() string {
 		return "MAX_GAS_LIMIT_EXCEEDED"
 	case StatusMaxFileSizeExceeded:
 		return "MAX_FILE_SIZE_EXCEEDED"
-	case StatusInvalidTopicID:
+	case StatusInvalidTopicId:
 		return "INVALID_TOPIC_ID"
 	case StatusInvalidAdminKey:
 		return "INVALID_ADMIN_KEY"
@@ -413,13 +415,13 @@ func (status Status) String() string {
 		return "TOPIC_EXPIRED"
 	case StatusInvalidChunkNumber:
 		return "INVALID_CHUNK_NUMBER"
-	case StatusInvalidChunkTransactionID:
+	case StatusInvalidChunkTransactionId:
 		return "INVALID_CHUNK_TRANSACTION_ID"
 	case StatusAccountFrozenForToken:
 		return "ACCOUNT_FROZEN_FOR_TOKEN"
 	case StatusTokensPerAccountLimitExceeded:
 		return "TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED"
-	case StatusInvalidTokenID:
+	case StatusInvalidTokenId:
 		return "INVALID_TOKEN_ID"
 	case StatusInvalidTokenDecimals:
 		return "INVALID_TOKEN_DECIMALS"
@@ -479,25 +481,25 @@ func (status Status) String() string {
 		return "TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"
 	case StatusAccountIsTreasury:
 		return "ACCOUNT_IS_TREASURY"
-	case TokenIdRepeatedInTokenList:
+	case StatusTokenIdRepeatedInTokenList:
 		return "TOKEN_ID_REPEATED_IN_TOKEN_LIST"
-	case TokenTransferListSizeLimitExceeded:
+	case StatusTokenTransferListSizeLimitExceeded:
 		return "TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED"
-	case EmptyTokenTransferBody:
+	case StatusEmptyTokenTransferBody:
 		return "EMPTY_TOKEN_TRANSFER_BODY"
-	case EmptyTokenTransferAccountAmounts:
+	case StatusEmptyTokenTransferAccountAmounts:
 		return "EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS"
-	case StatusInvalidScheduleID:
+	case StatusInvalidScheduleId:
 		return "INVALID_SCHEDULE_ID"
 	case StatusScheduleIsImmutable:
 		return "SCHEDULE_IS_IMMUTABLE"
 	case StatusScheduleWasDeleted:
 		return "SCHEDULE_WAS_DELETED"
-	case StatusInvalidSchedulePayerID:
+	case StatusInvalidSchedulePayerId:
 		return "INVALID_SCHEDULE_PAYER_ID"
-	case StatusInvalidScheduleAccountID:
+	case StatusInvalidScheduleAccountId:
 		return "INVALID_SCHEDULE_ACCOUNT_ID"
 	}
 
-	panic("unreacahble: Status.String() switch statement is non-exhaustive")
+    panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status))
 }
