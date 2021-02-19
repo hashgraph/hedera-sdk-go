@@ -57,6 +57,17 @@ func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
 	return &key
 }
 
+func (transaction *ScheduleCreateTransaction) SetMemo(memo string) *ScheduleCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Memo = memo
+
+	return transaction
+}
+
+func (transaction *ScheduleCreateTransaction) GetMemo() string {
+	return transaction.pb.GetMemo()
+}
+
 func (transaction *ScheduleCreateTransaction) SetTransaction(tx Transaction) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
 	other := tx.Schedule()
