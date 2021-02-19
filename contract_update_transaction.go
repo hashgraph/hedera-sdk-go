@@ -121,12 +121,19 @@ func (transaction *ContractUpdateTransaction) GetExpirationTime() time.Time {
 // SetContractMemo sets the memo associated with the contract (max 100 bytes)
 func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Memo = memo
+	transaction.pb.GetMemoWrapper().Value = memo
 	return transaction
 }
 
 func (transaction *ContractUpdateTransaction) GetContractMemo() string {
-	return transaction.pb.GetMemo()
+	switch transaction.pb.GetMemoField().(type) {
+	case *proto.ContractUpdateTransactionBody_Memo:
+		return transaction.pb.GetMemo()
+	case *proto.ContractUpdateTransactionBody_MemoWrapper:
+		return transaction.pb.GetMemoWrapper().Value
+	default:
+		return ""
+	}
 }
 
 //
