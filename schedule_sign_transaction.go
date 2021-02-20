@@ -31,7 +31,13 @@ func (builder ScheduleSignTransaction) AddScheduleSignature(key Ed25519PublicKey
 		sig.Ed25519 = signature
 	}
 
-	sigMap := builder.TransactionBuilder.pb.GetScheduleCreate().GetSigMap()
+	sigMap := builder.TransactionBuilder.pb.GetScheduleSign().GetSigMap()
+
+	if sigMap == nil {
+		sigMap = &proto.SignatureMap{
+			SigPair: make([]*proto.SignaturePair, 0),
+		}
+	}
 
 	if sigMap.SigPair != nil {
 		sigMap.SigPair = append(sigMap.SigPair, &sigPair)
@@ -40,7 +46,7 @@ func (builder ScheduleSignTransaction) AddScheduleSignature(key Ed25519PublicKey
 		sigMap.SigPair = append(sigMap.SigPair, &sigPair)
 	}
 
-	builder.TransactionBuilder.pb.GetScheduleCreate().SigMap = sigMap
+	builder.TransactionBuilder.pb.GetScheduleSign().SigMap = sigMap
 
 	return builder
 }
