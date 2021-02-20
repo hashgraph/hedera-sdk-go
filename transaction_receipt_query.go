@@ -42,7 +42,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		transactionReceiptQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
@@ -63,6 +63,10 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 	switch status {
 	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return true
+	case StatusOk:
+		break
+	default:
+		return false
 	}
 
 	status = Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
@@ -76,6 +80,17 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 }
 
 func transactionReceiptQuery_mapResponseStatus(_ request, response response) Status {
+	status := Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
+
+	switch status {
+	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
+		return status
+	case StatusOk:
+		break
+	default:
+		return status
+	}
+
 	return Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
 }
 
@@ -141,5 +156,5 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		return TransactionReceipt{}, err
 	}
 
-	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().Receipt), nil
+	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
 }
