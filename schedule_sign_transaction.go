@@ -45,19 +45,8 @@ func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 func (transaction *ScheduleSignTransaction) AddScheduleSignature(publicKey PublicKey, signature []byte) *ScheduleSignTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if transaction.pb.SigMap != nil{
-		if transaction.pb.SigMap.SigPair != nil {
-			transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-		} else {
-			transaction.pb.SigMap.SigPair = make([]*proto.SignaturePair, 0)
-			transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-		}
-	} else {
-		transaction.pb.SigMap = &proto.SignatureMap{
-			SigPair: make([]*proto.SignaturePair, 0),
-		}
-		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-	}
+	sigPairs := transaction.pb.GetSigMap().GetSigPair()
+	sigPairs = append(sigPairs, publicKey.toSignaturePairProtobuf(signature))
 
 	return transaction
 }

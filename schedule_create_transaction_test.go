@@ -122,11 +122,14 @@ func TestScheduleCreateTransaction_Signature_Execute(t *testing.T) {
 
 	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
+	accountTransactionID := TransactionIDGenerate(client.GetOperatorAccountID())
+
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetTransactionID(accountTransactionID).
 		FreezeWith(client)
 	assert.NoError(t, err)
 
@@ -172,18 +175,5 @@ func TestScheduleCreateTransaction_Signature_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	tx4, err := NewScheduleDeleteTransaction().
-		SetScheduleID(scheduleID).
-		FreezeWith(client)
-	assert.NoError(t, err)
-
-	resp, err = tx4.
-		Sign(newKey).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
