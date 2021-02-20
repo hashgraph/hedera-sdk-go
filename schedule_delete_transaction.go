@@ -23,7 +23,6 @@ func NewScheduleDeleteTransaction() ScheduleDeleteTransaction {
 
 func (builder ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) ScheduleDeleteTransaction {
 	builder.pb.ScheduleID = scheduleID.toProto()
-	println(scheduleID.String())
 	return builder
 }
 
