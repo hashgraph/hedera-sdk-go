@@ -25,7 +25,10 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 
 	scheduleTx := tx.Schedule()
 
-	frozen, err := scheduleTx.SetNodeAccountIDs([]AccountID{{Account: 3}}).SetAdminKey(newKey.PublicKey()).FreezeWith(client)
+	frozen, err := scheduleTx.
+		SetPayerAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(newKey.PublicKey()).
+		FreezeWith(client)
 	assert.NoError(t, err)
 
 	frozen = frozen.Sign(newKey)
@@ -36,15 +39,11 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 	receipt, err := txID.GetReceipt(client)
 	assert.NoError(t, err)
 
-	//println(receipt.)
-
 	_, err = NewScheduleInfoQuery().
 		SetScheduleID(*receipt.ScheduleID).
-		SetMaxQueryPayment(NewHbar(2)).
+		SetQueryPayment(NewHbar(2)).
 		Execute(client)
 	assert.NoError(t, err)
-
-	//println(info.)
 
 	tx2, err := NewScheduleDeleteTransaction().
 		SetScheduleID(*receipt.ScheduleID).
@@ -78,7 +77,11 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	scheduleTx, err := NewScheduleCreateTransaction().SetAdminKey(newKey.PublicKey()).SetTransaction(tx.Transaction).FreezeWith(client)
+	scheduleTx, err := NewScheduleCreateTransaction().
+		SetTransaction(&tx.Transaction).
+		SetAdminKey(newKey.PublicKey()).
+		SetPayerAccountID(client.GetOperatorAccountID()).
+		FreezeWith(client)
 	assert.NoError(t, err)
 
 	scheduleTx = scheduleTx.Sign(newKey)
@@ -89,15 +92,10 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 	receipt, err := txID.GetReceipt(client)
 	assert.NoError(t, err)
 
-	//println(receipt.)
-
 	_, err = NewScheduleInfoQuery().
 		SetScheduleID(*receipt.ScheduleID).
-		SetMaxQueryPayment(NewHbar(2)).
 		Execute(client)
 	assert.NoError(t, err)
-
-	//println(info.)
 
 	tx2, err := NewScheduleDeleteTransaction().
 		SetScheduleID(*receipt.ScheduleID).
