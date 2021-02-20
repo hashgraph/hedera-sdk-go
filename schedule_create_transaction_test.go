@@ -73,7 +73,7 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
-		SetNodeAccountID(AccountID{0,0,3}).
+		SetNodeAccountID(AccountID{0, 0, 3}).
 		Build(client)
 	assert.NoError(t, err)
 
@@ -164,18 +164,5 @@ func TestScheduleCreateTransaction_Signature_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	tx4, err := NewScheduleDeleteTransaction().
-		SetScheduleID(scheduleID).
-		Build(client)
-	assert.NoError(t, err)
-
-	resp, err = tx4.
-		Sign(newKey).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
