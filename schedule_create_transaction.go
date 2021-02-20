@@ -68,11 +68,13 @@ func (transaction *ScheduleCreateTransaction) GetMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *ScheduleCreateTransaction) SetTransaction(tx Transaction) *ScheduleCreateTransaction {
+func (transaction *ScheduleCreateTransaction) SetTransaction(tx *Transaction) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
 	other := tx.Schedule()
 	transaction.pbBody = other.pbBody
+	transaction.pb = other.pbBody.GetScheduleCreate()
 	transaction.nodeIDs = other.nodeIDs
+
 	return transaction
 }
 

@@ -64,7 +64,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetFileGetInfo().Header.Cost)
+	cost := int64(resp.query.GetScheduleGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	} else {
@@ -91,7 +91,6 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	query.queryPayment = NewHbar(2)
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -105,8 +104,12 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 			return ScheduleInfo{}, err
 		}
 
-		if cost.tinybar > actualCost.tinybar {
-			return ScheduleInfo{}, ErrMaxQueryPaymentExceeded{}
+		if cost.tinybar < actualCost.tinybar {
+			return ScheduleInfo{}, ErrMaxQueryPaymentExceeded{
+				QueryCost:       actualCost,
+				MaxQueryPayment: cost,
+				query:           "ScheduleInfoQuery",
+			}
 		}
 
 		cost = actualCost
