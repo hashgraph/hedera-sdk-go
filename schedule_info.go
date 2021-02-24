@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -53,4 +54,17 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 		Signatories:      signers,
 		AdminKey:         adminKey,
 	}
+}
+
+func (scheduleInfo *ScheduleInfo) getTransaction() (interface{}, error) {
+	signedBytes, err := protobuf.Marshal(&proto.SignedTransaction{
+		BodyBytes: scheduleInfo.TransactionBody,
+	})
+	list := proto.TransactionList{TransactionList: []*proto.Transaction{{SignedTransactionBytes: signedBytes}}}
+	listBytes, err := protobuf.Marshal(&list)
+	if err != nil {
+		return Transaction{}, err
+	}
+	tx, err := TransactionFromBytes(listBytes)
+	return tx, err
 }
