@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
@@ -58,4 +59,23 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 		Signatories:      signers,
 		AdminKey:         adminKey,
 	}
+}
+
+func (scheduleInfo *ScheduleInfo) getTransaction() (*Transaction, error) {
+	tx := Transaction{}
+
+	var txBody proto.TransactionBody
+	err := protobuf.Unmarshal(scheduleInfo.TransactionBody, &txBody)
+	if err != nil {
+		return &tx, err
+	}
+
+	tx.id = transactionIDFromProto(txBody.TransactionID)
+	tx.pb = &proto.Transaction{
+		SignedTransactionBytes: nil,
+		BodyBytes:              scheduleInfo.TransactionBody,
+		SigMap:                 nil,
+	}
+
+	return &tx, err
 }

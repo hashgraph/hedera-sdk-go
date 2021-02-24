@@ -39,11 +39,16 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 	receipt, err := txID.GetReceipt(client)
 	assert.NoError(t, err)
 
-	_, err = NewScheduleInfoQuery().
+	info, err := NewScheduleInfoQuery().
 		SetScheduleID(receipt.GetScheduleID()).
 		SetMaxQueryPayment(NewHbar(2)).
 		Execute(client)
 	assert.NoError(t, err)
+
+	infoTx, err := info.getTransaction()
+	assert.NoError(t, err)
+
+	assert.NotNil(t, infoTx)
 
 	tx2, err := NewScheduleDeleteTransaction().
 		SetScheduleID(receipt.GetScheduleID()).
