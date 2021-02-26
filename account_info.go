@@ -39,11 +39,16 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 		}
 	}
 
+	var proxyAccountID AccountID
+	if pb.ProxyAccountID != nil {
+		proxyAccountID = accountIDFromProtobuf(pb.ProxyAccountID)
+	}
+
 	return AccountInfo{
 		AccountID:                      accountIDFromProtobuf(pb.AccountID),
 		ContractAccountID:              pb.ContractAccountID,
 		IsDeleted:                      pb.Deleted,
-		ProxyAccountID:                 accountIDFromProtobuf(pb.ProxyAccountID),
+		ProxyAccountID:                 proxyAccountID,
 		ProxyReceived:                  HbarFromTinybar(pb.ProxyReceived),
 		Key:                            pubKey,
 		Balance:                        HbarFromTinybar(int64(pb.Balance)),
