@@ -62,6 +62,30 @@ func (transaction *ScheduleSignTransaction) AddScheduleSignature(publicKey Publi
 	return transaction
 }
 
+func (transaction *ScheduleSignTransaction) GetScheduleSignatures() (map[*PublicKey][]byte, error) {
+	signMap := make(map[*PublicKey][]byte, len(transaction.pb.GetSigMap().GetSigPair()))
+
+	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair(){
+		key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
+		if err != nil {
+			return make(map[*PublicKey][]byte, 0), err
+		}
+		switch sigPair.Signature.(type) {
+		case *proto.SignaturePair_Contract:
+			signMap[&key] = sigPair.GetContract()
+		case *proto.SignaturePair_Ed25519:
+			signMap[&key] = sigPair.GetEd25519()
+		case *proto.SignaturePair_RSA_3072:
+			signMap[&key] = sigPair.GetRSA_3072()
+		case *proto.SignaturePair_ECDSA_384:
+			signMap[&key] = sigPair.GetECDSA_384()
+		}
+	}
+
+	return signMap, nil
+}
+
+
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type
