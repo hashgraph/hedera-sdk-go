@@ -59,7 +59,7 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 func (scheduleInfo *ScheduleInfo) GetTransaction() (interface{}, error) {
 	signedBytes, err := protobuf.Marshal(&proto.SignedTransaction{
 		BodyBytes: scheduleInfo.TransactionBody,
-		SigMap: &proto.SignatureMap{SigPair: make([]*proto.SignaturePair, 0 )},
+		SigMap:    &proto.SignatureMap{SigPair: make([]*proto.SignaturePair, 0)},
 	})
 	list := proto.TransactionList{TransactionList: []*proto.Transaction{{SignedTransactionBytes: signedBytes}}}
 	listBytes, err := protobuf.Marshal(&list)

@@ -65,7 +65,7 @@ func (transaction *ScheduleSignTransaction) AddScheduleSignature(publicKey Publi
 func (transaction *ScheduleSignTransaction) GetScheduleSignatures() (map[*PublicKey][]byte, error) {
 	signMap := make(map[*PublicKey][]byte, len(transaction.pb.GetSigMap().GetSigPair()))
 
-	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair(){
+	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair() {
 		key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
 		if err != nil {
 			return make(map[*PublicKey][]byte, 0), err
@@ -84,7 +84,6 @@ func (transaction *ScheduleSignTransaction) GetScheduleSignatures() (map[*Public
 
 	return signMap, nil
 }
-
 
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file

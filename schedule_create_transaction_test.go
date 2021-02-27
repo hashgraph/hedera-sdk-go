@@ -48,7 +48,7 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 
 	infoTx, err := info.getTransaction()
 	assert.NoError(t, err)
-	
+
 	assert.NotNil(t, infoTx)
 
 	tx2, err := NewScheduleDeleteTransaction().

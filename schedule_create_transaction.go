@@ -81,7 +81,7 @@ func (transaction *ScheduleCreateTransaction) SetTransaction(tx *Transaction) *S
 func (transaction *ScheduleCreateTransaction) GetScheduleSignatures() (map[*PublicKey][]byte, error) {
 	signMap := make(map[*PublicKey][]byte, len(transaction.pb.GetSigMap().GetSigPair()))
 
-	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair(){
+	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair() {
 		key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
 		if err != nil {
 			return make(map[*PublicKey][]byte, 0), err
