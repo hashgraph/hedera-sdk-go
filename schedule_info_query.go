@@ -65,7 +65,7 @@ func (builder *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) 
 		CreatorAccountID: creatorAccountID,
 		PayerAccountID:   payerAccountID,
 		TransactionBody:  resp.GetScheduleGetInfo().ScheduleInfo.GetTransactionBody(),
-		Signers:          keyList,
+		Signatories:      keyList,
 		AdminKey:         adminKey,
 	}, nil
 }

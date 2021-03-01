@@ -113,7 +113,7 @@ func mirrorConsensusTopicResponseFromChunkedProto(message []*mirror.ConsensusTop
 	}
 }
 
-func (b *MirrorConsensusTopicQuery) Subscribe(client MirrorClient, onNext func(MirrorConsensusTopicResponse), onError func(error) ) (MirrorSubscriptionHandle, error) {
+func (b *MirrorConsensusTopicQuery) Subscribe(client MirrorClient, onNext func(MirrorConsensusTopicResponse), onError func(error)) (MirrorSubscriptionHandle, error) {
 	if b.pb.TopicID == nil {
 		return MirrorSubscriptionHandle{}, newErrLocalValidationf("topic ID was not provided")
 	}
