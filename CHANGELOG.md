@@ -1,19 +1,25 @@
 ## Unreleased
 
-### General Changes
- * Updated `TransactionId` to support new being `scheduled` and being constructed
-   from `nonce`.
-
 ### Added
- * `ScheduleCreateTransaction` - Create a new scheduled transaction
- * `ScheduleSignTransaction` - Sign an existing scheduled transaction on the network
- * `ScheduleDeleteTransaction` - Delete a scheduled transaction
- * `ScheduleInfoQuery` - Query the info including `bodyBytes` of a scheduled transaction
- * `ScheduleId`
+
+ * Support for scheduled transactions.
+   * `ScheduleCreateTransaction` - Create a new scheduled transaction
+   * `ScheduleSignTransaction` - Sign an existing scheduled transaction on the network
+   * `ScheduleDeleteTransaction` - Delete a scheduled transaction
+   * `ScheduleInfoQuery` - Query the info including `bodyBytes` of a scheduled transaction
+   * `ScheduleId`
+ * Support for scheduled and nonce in `TransactionId`
+   * `TransactionIdWithNonce()` - Supports creating transaction ID with random bytes.
+   * `TransactionId.[Set|Get]Scheduled()` - Supports scheduled transaction IDs.
+ * `TransactionIdWithValidStart()`
+
+### Deprecate
+
+ * `NewTransactionId()` - Use `TransactionIdWithValidStart()` instead.
 
 ## v2.0.0
 
-### General Changes
+### Changes
 
  * All requests support getter methods as well as setters.
  * All requests support multiple node account IDs being set.
