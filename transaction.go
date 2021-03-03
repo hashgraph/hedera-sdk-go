@@ -86,7 +86,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		found := false
 
 		for _, id := range tx.transactionIDs {
-			if id == transactionID {
+			if id.AccountID == transactionID.AccountID && id.ValidStart == transactionID.ValidStart {
 				found = true
 				break
 			}

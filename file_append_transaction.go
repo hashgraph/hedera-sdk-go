@@ -183,7 +183,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 		return []TransactionResponse{}, errors.New("transactionID list is empty")
 	}
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
@@ -294,7 +294,9 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 			})
 		}
 
-		nextTransactionID.ValidStart = nextTransactionID.ValidStart.Add(1 * time.Nanosecond)
+		validStart := *nextTransactionID.ValidStart
+
+		*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
 	}
 
 	return transaction, nil

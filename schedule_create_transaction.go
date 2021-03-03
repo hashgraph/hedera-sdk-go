@@ -192,7 +192,7 @@ func (transaction *ScheduleCreateTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
@@ -223,9 +223,10 @@ func (transaction *ScheduleCreateTransaction) Execute(
 	hash, err := transaction.GetTransactionHash()
 
 	return TransactionResponse{
-		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
-		Hash:          hash,
+		TransactionID:          transaction.GetTransactionID(),
+		NodeID:                 resp.transaction.NodeID,
+		Hash:                   hash,
+		ScheduledTransactionId: transaction.GetTransactionID(),
 	}, nil
 }
 
@@ -251,6 +252,8 @@ func (transaction *ScheduleCreateTransaction) FreezeWith(client *Client) (*Sched
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+
+	transaction.transactionIDs[0] = transaction.transactionIDs[0].SetScheduled(true)
 
 	if !transaction.onFreeze(transaction.pbBody) {
 		return transaction, nil

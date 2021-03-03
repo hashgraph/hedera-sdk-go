@@ -1,9 +1,10 @@
 package hedera
 
 type TransactionResponse struct {
-	TransactionID TransactionID
-	NodeID        AccountID
-	Hash          []byte
+	TransactionID          TransactionID
+	ScheduledTransactionId TransactionID
+	NodeID                 AccountID
+	Hash                   []byte
 }
 
 func (response TransactionResponse) GetReceipt(client *Client) (TransactionReceipt, error) {

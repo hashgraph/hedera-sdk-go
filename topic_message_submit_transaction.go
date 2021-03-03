@@ -172,7 +172,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
@@ -276,7 +276,9 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			})
 		}
 
-		nextTransactionID.ValidStart = nextTransactionID.ValidStart.Add(1 * time.Nanosecond)
+		validStart := *nextTransactionID.ValidStart
+
+		*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
 	}
 
 	return transaction, nil
