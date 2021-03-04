@@ -46,7 +46,7 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	infoTx, err := info.getTransaction()
+	infoTx, err := info.GetTransaction()
 	assert.NoError(t, err)
 
 	assert.NotNil(t, infoTx)
