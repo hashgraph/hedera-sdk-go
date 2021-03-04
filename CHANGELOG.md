@@ -13,6 +13,10 @@
    * `TransactionId.[Set|Get]Scheduled()` - Supports scheduled transaction IDs.
  * `TransactionIdWithValidStart()`
 
+### Fixed
+
+ * Updated protobufs [#120](https://github.com/hashgraph/hedera-sdk-go/issues/120)
+
 ### Deprecate
 
  * `NewTransactionId()` - Use `TransactionIdWithValidStart()` instead.
