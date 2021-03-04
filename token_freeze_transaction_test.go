@@ -88,15 +88,6 @@ func TestTokenFreezeTransaction_Execute(t *testing.T) {
 	}
 	assert.Truef(t, check, fmt.Sprintf("token freeze transaction failed to freeze"))
 
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).

@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -23,17 +22,6 @@ func TestTokenCreateTransaction_Execute(t *testing.T) {
 		SetKycKey(client.GetOperatorPublicKey()).
 		SetSupplyKey(client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
-	assert.NoError(t, err)
-
-	receipt, err := resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	tokenID := *receipt.TokenID
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -65,7 +53,7 @@ func Test_TokenCreate_MultipleKeys(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
@@ -80,17 +68,6 @@ func Test_TokenCreate_MultipleKeys(t *testing.T) {
 		SetKycKey(pubKeys[3]).
 		SetSupplyKey(pubKeys[4]).
 		SetFreezeDefault(false).
-		Execute(client)
-	assert.NoError(t, err)
-
-	receipt, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	tokenID := *receipt.TokenID
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -160,18 +137,6 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 	assert.NotNil(t, info.AutoRenewAccountID)
 	assert.Equal(t, info.AutoRenewAccountID.String(), client.GetOperatorAccountID().String())
 	assert.NotNil(t, info.ExpirationTime)
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status TOKEN_IS_IMMUTABLE"), err.Error())
-	}
 }
 
 func Test_TokenCreate_AdminSign(t *testing.T) {
@@ -226,19 +191,4 @@ func Test_TokenCreate_AdminSign(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotNil(t, receipt.TokenID)
-	tokenID := *receipt.TokenID
-
-	tokenDelete, err := NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		FreezeWith(client)
-	assert.NoError(t, err)
-
-	resp, err = tokenDelete.
-		Sign(keys[1]).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 }

@@ -87,5 +87,21 @@ func newTestClient(t *testing.T) *Client {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(NewHbar(20)).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	client.SetOperator(*receipt.AccountID, newKey)
+
+	return client
+
 	return client
 }

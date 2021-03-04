@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -121,19 +122,30 @@ func (transaction *ContractUpdateTransaction) GetExpirationTime() time.Time {
 // SetContractMemo sets the memo associated with the contract (max 100 bytes)
 func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.GetMemoWrapper().Value = memo
+	if transaction.pb.GetMemoWrapper() != nil {
+		transaction.pb.GetMemoWrapper().Value = memo
+	} else {
+		transaction.pb.MemoField = &proto.ContractUpdateTransactionBody_MemoWrapper{
+			MemoWrapper: &wrappers.StringValue{Value: memo},
+		}
+	}
+
 	return transaction
 }
 
 func (transaction *ContractUpdateTransaction) GetContractMemo() string {
-	switch transaction.pb.GetMemoField().(type) {
-	case *proto.ContractUpdateTransactionBody_Memo:
-		return transaction.pb.GetMemo()
-	case *proto.ContractUpdateTransactionBody_MemoWrapper:
-		return transaction.pb.GetMemoWrapper().Value
-	default:
-		return ""
+	if transaction.pb.GetMemoField() != nil {
+		switch transaction.pb.GetMemoField().(type) {
+		case *proto.ContractUpdateTransactionBody_Memo:
+			return transaction.pb.GetMemo()
+		case *proto.ContractUpdateTransactionBody_MemoWrapper:
+			return transaction.pb.GetMemoWrapper().Value
+		default:
+			return ""
+		}
 	}
+
+	return ""
 }
 
 //

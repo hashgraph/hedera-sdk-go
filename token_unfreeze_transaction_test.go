@@ -114,15 +114,6 @@ func TestTokenUnfreezeTransaction_Execute(t *testing.T) {
 	}
 	assert.Truef(t, check, fmt.Sprintf("token unfreeze transaction failed"))
 
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
@@ -213,15 +204,6 @@ func Test_TokenUnfreeze_NoTokenID(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
 	}
 
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
@@ -311,15 +293,6 @@ func Test_TokenUnfreeze_NoAccountID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp2.TransactionID), err.Error())
 	}
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

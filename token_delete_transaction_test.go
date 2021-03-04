@@ -24,17 +24,6 @@ func TestTokenDeleteTransaction_Execute(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	tokenID := *receipt.TokenID
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
@@ -65,22 +54,8 @@ func Test_TokenDelete_NoKeys(t *testing.T) {
 		Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	tokenID := *receipt.TokenID
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
 	_, err = resp.GetReceipt(client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
-	}
+	assert.NoError(t, err)
 }
 
 func Test_TokenDelete_NoTokenID(t *testing.T) {

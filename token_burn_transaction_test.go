@@ -65,15 +65,6 @@ func TestTokenBurnTransaction_Execute(t *testing.T) {
 
 	assert.Equal(t, uint64(999990), info.TotalSupply)
 
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
@@ -142,15 +133,6 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_BURN_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
 	}
 
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{nodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
@@ -208,8 +190,6 @@ func Test_TokenBurn_NoTokenID(t *testing.T) {
 	receipt, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	tokenID := *receipt.TokenID
-
 	resp2, err := NewTokenBurnTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAmount(10).
@@ -218,15 +198,6 @@ func Test_TokenBurn_NoTokenID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
 	}
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{nodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

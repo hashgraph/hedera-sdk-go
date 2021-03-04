@@ -80,30 +80,6 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	tx, err := NewAccountDeleteTransaction().
-		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		FreezeWith(client)
-	assert.NoError(t, err)
-
-	resp, err = tx.
-		Sign(newKey).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 }
 
 func Test_TokenAssociate_NoAccountID(t *testing.T) {
@@ -188,15 +164,6 @@ func Test_TokenAssociate_NoTokenID(t *testing.T) {
 		}
 	}
 	assert.Falsef(t, check, fmt.Sprintf("token associate transaction somehow worked"))
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{nodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

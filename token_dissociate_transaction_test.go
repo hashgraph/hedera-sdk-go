@@ -105,15 +105,6 @@ func TestTokenDissociateTransaction_Execute(t *testing.T) {
 	}
 	assert.Falsef(t, check, fmt.Sprintf("token dissociate transaction didnt work"))
 
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
@@ -184,15 +175,6 @@ func Test_TokenDissociate_NoSigningOne(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
 		Execute(client)
 	assert.NoError(t, err)
 
@@ -294,15 +276,6 @@ func Test_TokenDissociate_NoTokenID(t *testing.T) {
 	}
 	assert.Truef(t, check, fmt.Sprintf("token dissociate transaction somehow worked"))
 
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
-
 	_, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(client.GetOperatorAccountID()).
@@ -396,15 +369,6 @@ func Test_TokenDissociate_NoAccountID(t *testing.T) {
 		}
 	}
 	assert.Truef(t, check, fmt.Sprintf("token dissociate transaction somehow worked"))
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 
 	_, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).

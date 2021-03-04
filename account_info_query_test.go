@@ -200,7 +200,7 @@ func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
 	_, err = accountInfo.GetCost(client)
 	assert.NoError(t, err)
 
-	info, err := accountInfo.SetQueryPayment(NewHbar(1000)).Execute(client)
+	info, err := accountInfo.SetQueryPayment(NewHbar(1)).Execute(client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
