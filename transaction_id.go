@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"encoding/hex"
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
 	"math/rand"
@@ -67,13 +68,37 @@ func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 // String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos` format
 func (id TransactionID) String() string {
 	var pb *proto.Timestamp
-	if id.ValidStart != nil {
-		pb = timeToProtobuf(*id.ValidStart)
-	} else {
-		return fmt.Sprintf("%v@%v.%v", id.AccountID, 0, 0)
-	}
+	if id.AccountID != nil{
+		if id.ValidStart != nil{
+			pb = timeToProtobuf(*id.ValidStart)
+			if id.Nonce != nil {
+				return fmt.Sprintf("%v@%v.%v, nonce: %s, scheduled: %t", id.AccountID, pb.Seconds, pb.Nanos, hex.EncodeToString(id.Nonce), id.scheduled)
+			}
 
-	return fmt.Sprintf("%v@%v.%v", id.AccountID, pb.Seconds, pb.Nanos)
+			return fmt.Sprintf("%v@%v.%v, scheduled: %t", id.AccountID, pb.Seconds, pb.Nanos, id.scheduled)
+		} else {
+			if id.Nonce != nil {
+				return fmt.Sprintf("%v@%v.%v, nonce: %s, scheduled: %t", id.AccountID, 0, 0, hex.EncodeToString(id.Nonce), id.scheduled)
+			}
+
+			return fmt.Sprintf("%v@%v.%v, scheduled: %t", id.AccountID, 0, 0, id.scheduled)
+		}
+	} else {
+		if id.ValidStart != nil{
+			pb = timeToProtobuf(*id.ValidStart)
+			if id.Nonce != nil {
+				return fmt.Sprintf("%s@%v.%v, nonce: %s, scheduled: %t", "0.0.0", pb.Seconds, pb.Nanos, hex.EncodeToString(id.Nonce), id.scheduled)
+			}
+
+			return fmt.Sprintf("%s@%v.%v, scheduled: %t", "0.0.0", pb.Seconds, pb.Nanos, id.scheduled)
+		} else {
+			if id.Nonce != nil {
+				return fmt.Sprintf("%s@%v.%v, nonce: %s, scheduled: %t", "0.0.0", 0, 0, hex.EncodeToString(id.Nonce), id.scheduled)
+			}
+
+			return fmt.Sprintf("%s@%v.%v, scheduled: %t", "0.0.0", 0, 0, id.scheduled)
+		}
+	}
 }
 
 func (id TransactionID) toProtobuf() *proto.TransactionID {
