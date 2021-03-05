@@ -64,15 +64,6 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 	assert.Equal(t, info.SupplyKey.String(), client.GetOperatorPublicKey().String())
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_Execute(t *testing.T) {
@@ -108,15 +99,6 @@ func TestTokenInfoQueryCost_Execute(t *testing.T) {
 
 	_, err = infoQuery.SetQueryPayment(cost).Execute(client)
 	assert.NoError(t, err)
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
@@ -151,15 +133,6 @@ func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = infoQuery.SetQueryPayment(cost).Execute(client)
-	assert.NoError(t, err)
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
 
@@ -198,15 +171,6 @@ func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
 	}
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
@@ -244,15 +208,6 @@ func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
 	}
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 }
 
 func Test_TokenInfo_NoPayment(t *testing.T) {
@@ -290,15 +245,6 @@ func Test_TokenInfo_NoPayment(t *testing.T) {
 	assert.Equal(t, info.Treasury, client.GetOperatorAccountID())
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
-
-	resp, err = NewTokenDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		Execute(client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
 }
 
 func Test_TokenInfo_NoTokenID(t *testing.T) {

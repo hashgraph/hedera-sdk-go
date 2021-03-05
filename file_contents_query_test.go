@@ -174,12 +174,12 @@ func TestFileContentsQueryCost_SmallMax_Execute(t *testing.T) {
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	_, err = fileContents.GetCost(client)
+	cost, err := fileContents.GetCost(client)
 	assert.NoError(t, err)
 
 	_, err = fileContents.Execute(client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of FileContentsQuery (8 tħ) without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
+		assert.Equal(t, fmt.Sprintf("cost of FileContentsQuery (" + cost.String() + ") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().
