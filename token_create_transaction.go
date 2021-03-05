@@ -67,6 +67,13 @@ func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenC
 	return transaction
 }
 
+// The publicly visible token memo. It is max 100 bytes.
+func (transaction *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Memo = memo
+	return transaction
+}
+
 func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
 	return transaction.pb.GetSymbol()
 }
