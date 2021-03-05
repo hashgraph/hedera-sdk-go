@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -85,6 +86,21 @@ func (transaction *FileUpdateTransaction) SetContents(contents []byte) *FileUpda
 
 func (transaction *FileUpdateTransaction) GetContents() []byte {
 	return transaction.pb.Contents
+}
+
+func (transaction *FileUpdateTransaction) SetFileMemo(memo string) *FileUpdateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Memo = &wrappers.StringValue{Value: memo}
+
+	return transaction
+}
+
+func (transaction *FileUpdateTransaction) GeFileMemo() string {
+	if transaction.pb.Memo != nil {
+		return transaction.pb.Memo.GetValue()
+	}
+
+	return ""
 }
 
 //

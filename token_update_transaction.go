@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -202,6 +203,21 @@ func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime time
 
 func (transaction *TokenUpdateTransaction) GetExpirationTime() time.Time {
 	return time.Unix(transaction.pb.GetExpiry().Seconds, int64(transaction.pb.GetExpiry().Nanos))
+}
+
+func (transaction *TokenUpdateTransaction) SetTokenMemo(memo string) *TokenUpdateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Memo = &wrappers.StringValue{Value: memo}
+
+	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
+	if transaction.pb.Memo != nil {
+		return transaction.pb.Memo.GetValue()
+	}
+
+	return ""
 }
 
 //

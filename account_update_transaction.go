@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -93,6 +94,21 @@ func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime ti
 //Sets the new expiration time to extend to (ignored if equal to or before the current one).
 func (transaction *AccountUpdateTransaction) GetExpirationTime() time.Time {
 	return timeFromProtobuf(transaction.pb.ExpirationTime)
+}
+
+func (transaction *AccountUpdateTransaction) SetAccountMemo(memo string) *AccountUpdateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Memo = &wrappers.StringValue{Value: memo}
+
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
+	if transaction.pb.Memo != nil {
+		return transaction.pb.Memo.GetValue()
+	}
+
+	return ""
 }
 
 //

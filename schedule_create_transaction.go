@@ -57,14 +57,14 @@ func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
 	return &key
 }
 
-func (transaction *ScheduleCreateTransaction) SetMemo(memo string) *ScheduleCreateTransaction {
+func (transaction *ScheduleCreateTransaction) SetScheduleMemo(memo string) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Memo = memo
 
 	return transaction
 }
 
-func (transaction *ScheduleCreateTransaction) GetMemo() string {
+func (transaction *ScheduleCreateTransaction) GetScheduleMemo() string {
 	return transaction.pb.GetMemo()
 }
 
