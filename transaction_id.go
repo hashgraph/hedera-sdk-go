@@ -4,7 +4,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 	"math/rand"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -68,37 +71,69 @@ func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 // String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos` format
 func (id TransactionID) String() string {
 	var pb *proto.Timestamp
-	if id.AccountID != nil{
-		if id.ValidStart != nil{
-			pb = timeToProtobuf(*id.ValidStart)
-			if id.Nonce != nil {
-				return fmt.Sprintf("%v@%v.%v, nonce: %s, scheduled: %t", id.AccountID, pb.Seconds, pb.Nanos, hex.EncodeToString(id.Nonce), id.scheduled)
-			}
-
-			return fmt.Sprintf("%v@%v.%v, scheduled: %t", id.AccountID, pb.Seconds, pb.Nanos, id.scheduled)
-		} else {
-			if id.Nonce != nil {
-				return fmt.Sprintf("%v@%v.%v, nonce: %s, scheduled: %t", id.AccountID, 0, 0, hex.EncodeToString(id.Nonce), id.scheduled)
-			}
-
-			return fmt.Sprintf("%v@%v.%v, scheduled: %t", id.AccountID, 0, 0, id.scheduled)
-		}
-	} else {
-		if id.ValidStart != nil{
-			pb = timeToProtobuf(*id.ValidStart)
-			if id.Nonce != nil {
-				return fmt.Sprintf("%s@%v.%v, nonce: %s, scheduled: %t", "0.0.0", pb.Seconds, pb.Nanos, hex.EncodeToString(id.Nonce), id.scheduled)
-			}
-
-			return fmt.Sprintf("%s@%v.%v, scheduled: %t", "0.0.0", pb.Seconds, pb.Nanos, id.scheduled)
-		} else {
-			if id.Nonce != nil {
-				return fmt.Sprintf("%s@%v.%v, nonce: %s, scheduled: %t", "0.0.0", 0, 0, hex.EncodeToString(id.Nonce), id.scheduled)
-			}
-
-			return fmt.Sprintf("%s@%v.%v, scheduled: %t", "0.0.0", 0, 0, id.scheduled)
-		}
+	var returnString string
+	if id.AccountID != nil && id.ValidStart != nil{
+		pb = timeToProtobuf(*id.ValidStart)
+		returnString = id.AccountID.String() + "@" + strconv.FormatInt(pb.Seconds, 10) + "." + fmt.Sprint(pb.Nanos)
+	} else if id.Nonce != nil {
+		returnString =  hex.EncodeToString(id.Nonce)
 	}
+
+	if id.scheduled {
+		returnString = returnString + "?scheduled"
+	}
+
+	return returnString
+}
+
+func TransactionIdFromString(data string) (TransactionID, error) {
+	parts := strings.SplitN(data,"?" , 2)
+
+	var accountId *AccountID
+	var validStart *time.Time
+	var nonce []byte = nil
+	scheduled := len(parts) == 2 && strings.Compare(parts[1], "scheduled") == 0
+
+	nonce, err := hex.DecodeString(parts[0])
+	if err != nil{
+		parts = strings.SplitN(parts[0],"@" , 2)
+
+		if len(parts) != 2 {
+			return TransactionID{}, errors.New("expecting [{account}@{seconds}.{nanos}|{nonce}][?scheduled]")
+		}
+
+		temp, err := AccountIDFromString(parts[0])
+		accountId = &temp
+		if err != nil {
+			return TransactionID{}, err
+		}
+
+		validStartParts := strings.SplitN(parts[1],"." , 2)
+
+		if len(validStartParts) != 2 {
+			return TransactionID{}, errors.New("expecting {account}@{seconds}.{nanos}")
+		}
+
+		sec, err  := strconv.ParseInt(validStartParts[0], 10, 64)
+		if err != nil {
+			return TransactionID{}, err
+		}
+
+		nano, err := strconv.ParseInt(validStartParts[1], 10, 64)
+		if err != nil {
+			return TransactionID{}, err
+		}
+
+		temp2 := time.Unix(sec, nano)
+		validStart = &temp2
+	}
+
+	return TransactionID{
+		AccountID:  accountId,
+		ValidStart: validStart,
+		Nonce:      nonce,
+		scheduled:  scheduled,
+	}, nil
 }
 
 func (id TransactionID) toProtobuf() *proto.TransactionID {
