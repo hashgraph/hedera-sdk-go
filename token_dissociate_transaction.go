@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -71,6 +72,32 @@ func (transaction *TokenDissociateTransaction) AddTokenID(tokenID TokenID) *Toke
 
 	transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
 	return transaction
+}
+
+func (transaction *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_TokenDissociate{
+			TokenDissociate: &proto.TokenDissociateTransactionBody{
+				Account: transaction.pb.GetAccount(),
+				Tokens:  transaction.pb.GetTokens(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

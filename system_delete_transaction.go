@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -60,6 +61,39 @@ func (transaction *SystemDeleteTransaction) SetFileID(fileID FileID) *SystemDele
 
 func (transaction *SystemDeleteTransaction) GetFileID() FileID {
 	return fileIDFromProtobuf(transaction.pb.GetFileID())
+}
+
+func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_SystemDelete{
+			SystemDelete: &proto.SystemDeleteTransactionBody{
+				Id:             nil,
+				ExpirationTime: transaction.pb.GetExpirationTime(),
+			},
+		},
+	}
+
+	switch transaction.pb.GetId().(type) {
+	case *proto.SystemDeleteTransactionBody_ContractID:
+		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: transaction.pb.GetContractID()}
+	case *proto.SystemDeleteTransactionBody_FileID:
+		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: transaction.pb.GetFileID()}
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

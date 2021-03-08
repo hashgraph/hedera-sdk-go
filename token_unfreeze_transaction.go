@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -60,6 +61,32 @@ func (transaction *TokenUnfreezeTransaction) SetAccountID(accountID AccountID) *
 
 func (transaction *TokenUnfreezeTransaction) GetAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetAccount())
+}
+
+func (transaction *TokenUnfreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_TokenUnfreeze{
+			TokenUnfreeze: &proto.TokenUnfreezeAccountTransactionBody{
+				Token:   transaction.pb.GetToken(),
+				Account: transaction.pb.GetAccount(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

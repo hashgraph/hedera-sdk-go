@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
@@ -109,6 +110,40 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 	}
 
 	return ""
+}
+
+func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: &proto.CryptoUpdateTransactionBody{
+				AccountIDToUpdate:           transaction.pb.GetAccountIDToUpdate(),
+				Key:                         transaction.pb.GetKey(),
+				ProxyAccountID:              transaction.pb.GetProxyAccountID(),
+				ProxyFraction:               transaction.pb.GetProxyFraction(),
+				SendRecordThresholdField:    transaction.pb.GetSendRecordThresholdField(),
+				ReceiveRecordThresholdField: transaction.pb.GetReceiveRecordThresholdField(),
+				AutoRenewPeriod:             transaction.pb.GetAutoRenewPeriod(),
+				ExpirationTime:              transaction.pb.GetExpirationTime(),
+				ReceiverSigRequiredField:    transaction.pb.GetReceiverSigRequiredField(),
+				Memo:                        transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

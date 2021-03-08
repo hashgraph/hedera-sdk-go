@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
@@ -101,6 +102,35 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 	}
 
 	return ""
+}
+
+func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_FileUpdate{
+			FileUpdate: &proto.FileUpdateTransactionBody{
+				FileID:         transaction.pb.GetFileID(),
+				ExpirationTime: transaction.pb.GetExpirationTime(),
+				Keys:           transaction.pb.GetKeys(),
+				Contents:       transaction.pb.GetContents(),
+				Memo:           transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

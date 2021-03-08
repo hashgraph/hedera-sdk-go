@@ -65,6 +65,40 @@ func (transaction *FileAppendTransaction) GetContents() []byte {
 	return transaction.contents
 }
 
+func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	chunks := uint64((len(transaction.contents) + (chunkSize - 1)) / chunkSize)
+	if chunks > 1 {
+		return &ScheduleCreateTransaction{}, ErrMaxChunksExceeded{
+			Chunks:    chunks,
+			MaxChunks: 1,
+		}
+	}
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_FileAppend{
+			FileAppend: &proto.FileAppendTransactionBody{
+				FileID:   transaction.pb.GetFileID(),
+				Contents: transaction.contents,
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
 // We override the embedded fluent setter methods to return the outer type

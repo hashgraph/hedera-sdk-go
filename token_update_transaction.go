@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
@@ -218,6 +219,43 @@ func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
 	}
 
 	return ""
+}
+
+func (transaction *TokenUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_TokenUpdate{
+			TokenUpdate: &proto.TokenUpdateTransactionBody{
+				Token:            transaction.pb.GetToken(),
+				Symbol:           transaction.pb.GetSymbol(),
+				Name:             transaction.pb.GetName(),
+				Treasury:         transaction.pb.GetTreasury(),
+				AdminKey:         transaction.pb.GetAdminKey(),
+				KycKey:           transaction.pb.GetKycKey(),
+				FreezeKey:        transaction.pb.GetFreezeKey(),
+				WipeKey:          transaction.pb.GetWipeKey(),
+				SupplyKey:        transaction.pb.GetSupplyKey(),
+				AutoRenewAccount: transaction.pb.GetAutoRenewAccount(),
+				AutoRenewPeriod:  transaction.pb.GetAutoRenewPeriod(),
+				Expiry:           transaction.pb.GetExpiry(),
+				Memo:             transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

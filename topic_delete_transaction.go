@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -42,6 +43,31 @@ func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTr
 
 func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 	return topicIDFromProtobuf(transaction.pb.GetTopicID())
+}
+
+func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ConsensusDeleteTopic{
+			ConsensusDeleteTopic: &proto.ConsensusDeleteTopicTransactionBody{
+				TopicID: transaction.pb.TopicID,
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

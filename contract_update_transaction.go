@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
@@ -146,6 +147,37 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	}
 
 	return ""
+}
+
+func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ContractUpdateInstance{
+			ContractUpdateInstance: &proto.ContractUpdateTransactionBody{
+				ContractID:      transaction.pb.GetContractID(),
+				ExpirationTime:  transaction.pb.GetExpirationTime(),
+				AdminKey:        transaction.pb.GetAdminKey(),
+				ProxyAccountID:  transaction.pb.GetProxyAccountID(),
+				AutoRenewPeriod: transaction.pb.GetAutoRenewPeriod(),
+				FileID:          transaction.pb.GetFileID(),
+				MemoField:       transaction.pb.GetMemoField(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

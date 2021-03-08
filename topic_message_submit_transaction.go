@@ -135,6 +135,42 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	return transaction
 }
 
+func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
+
+	if chunks > 1 {
+		return &ScheduleCreateTransaction{}, ErrMaxChunksExceeded{
+			Chunks:    chunks,
+			MaxChunks: 1,
+		}
+	}
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: &proto.ConsensusSubmitMessageTransactionBody{
+				TopicID:   transaction.pb.GetTopicID(),
+				Message:   transaction.message,
+				ChunkInfo: &proto.ConsensusMessageChunkInfo{},
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
 func (transaction *TopicMessageSubmitTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {

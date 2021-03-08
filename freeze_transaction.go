@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -61,6 +62,36 @@ func (transaction *FreezeTransaction) GetEndTime() time.Time {
 		0, time.Now().Nanosecond(), time.Now().Location(),
 	)
 	return t1
+}
+
+func (transaction *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_Freeze{
+			Freeze: &proto.FreezeTransactionBody{
+				StartHour:  transaction.pb.GetStartHour(),
+				StartMin:   transaction.pb.GetStartMin(),
+				EndHour:    transaction.pb.GetEndHour(),
+				EndMin:     transaction.pb.GetEndMin(),
+				UpdateFile: transaction.pb.GetUpdateFile(),
+				FileHash:   transaction.pb.GetFileHash(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

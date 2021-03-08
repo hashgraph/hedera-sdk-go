@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -162,6 +163,45 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	}
 
 	return key
+}
+
+func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_TokenCreation{
+			TokenCreation: &proto.TokenCreateTransactionBody{
+				Name:             transaction.pb.GetName(),
+				Symbol:           transaction.pb.GetSymbol(),
+				Decimals:         transaction.pb.GetDecimals(),
+				InitialSupply:    transaction.pb.GetInitialSupply(),
+				Treasury:         transaction.pb.GetTreasury(),
+				AdminKey:         transaction.pb.GetAdminKey(),
+				KycKey:           transaction.pb.GetKycKey(),
+				FreezeKey:        transaction.pb.GetFreezeKey(),
+				WipeKey:          transaction.pb.GetWipeKey(),
+				SupplyKey:        transaction.pb.GetSupplyKey(),
+				FreezeDefault:    transaction.pb.GetFreezeDefault(),
+				Expiry:           transaction.pb.GetExpiry(),
+				AutoRenewAccount: transaction.pb.GetAutoRenewAccount(),
+				AutoRenewPeriod:  transaction.pb.GetAutoRenewPeriod(),
+				Memo:             transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations

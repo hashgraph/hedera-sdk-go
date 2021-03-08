@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -141,6 +142,41 @@ func (transaction *AccountCreateTransaction) SetReceiverSignatureRequired(requir
 
 func (transaction *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
 	return transaction.pb.GetReceiverSigRequired()
+}
+
+func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: &proto.CryptoCreateTransactionBody{
+				Key:                    transaction.pb.GetKey(),
+				InitialBalance:         transaction.pb.GetInitialBalance(),
+				ProxyAccountID:         transaction.pb.GetProxyAccountID(),
+				SendRecordThreshold:    transaction.pb.GetSendRecordThreshold(),
+				ReceiveRecordThreshold: transaction.pb.GetReceiveRecordThreshold(),
+				ReceiverSigRequired:    transaction.pb.GetReceiverSigRequired(),
+				AutoRenewPeriod:        transaction.pb.GetAutoRenewPeriod(),
+				ShardID:                transaction.pb.GetShardID(),
+				RealmID:                transaction.pb.GetRealmID(),
+				NewRealmAdminKey:       transaction.pb.GetNewRealmAdminKey(),
+				Memo:                   transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

@@ -223,47 +223,6 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 	return returnMap, nil
 }
 
-func (transaction *Transaction) Schedule() *ScheduleCreateTransaction {
-	transaction.requireOneNodeAccountID()
-
-	if !transaction.isFrozen() {
-		panic("transaction must be frozen")
-	}
-
-	transaction.buildTransactions(1)
-
-	tx := Transaction{
-		pbBody: &proto.TransactionBody{
-			TransactionID:            transaction.pbBody.GetTransactionID(),
-			NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
-			TransactionFee:           transaction.pbBody.GetTransactionFee(),
-			TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
-			Memo:                     transaction.pbBody.GetMemo(),
-			Data: &proto.TransactionBody_ScheduleCreate{
-				ScheduleCreate: &proto.ScheduleCreateTransactionBody{
-					TransactionBody: transaction.signedTransactions[0].BodyBytes,
-					AdminKey:        nil,
-					PayerAccountID:  nil,
-					SigMap:          transaction.signedTransactions[0].SigMap,
-				},
-			},
-		},
-		nextNodeIndex:        0,
-		nextTransactionIndex: 0,
-		maxRetry:             10,
-		transactionIDs:       make([]TransactionID, 0),
-		transactions:         make([]*proto.Transaction, 0),
-		signedTransactions:   make([]*proto.SignedTransaction, 0),
-		nodeIDs:              transaction.nodeIDs,
-		freezeError:          nil,
-	}
-
-	return &ScheduleCreateTransaction{
-		Transaction: tx,
-		pb:          tx.pbBody.GetScheduleCreate(),
-	}
-}
-
 func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
 	transaction.requireOneNodeAccountID()
 

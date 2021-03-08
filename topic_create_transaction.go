@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -103,6 +104,35 @@ func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(accountID Accou
 
 func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
+}
+
+func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ConsensusCreateTopic{
+			ConsensusCreateTopic: &proto.ConsensusCreateTopicTransactionBody{
+				Memo:             transaction.pb.GetMemo(),
+				AdminKey:         transaction.pb.GetAdminKey(),
+				SubmitKey:        transaction.pb.GetSubmitKey(),
+				AutoRenewPeriod:  transaction.pb.GetAutoRenewPeriod(),
+				AutoRenewAccount: transaction.pb.GetAutoRenewAccount(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

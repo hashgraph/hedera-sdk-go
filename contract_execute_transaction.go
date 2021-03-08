@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -92,6 +93,34 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 
 	transaction.pb.FunctionParameters = params.build(&name)
 	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ContractCall{
+			ContractCall: &proto.ContractCallTransactionBody{
+				ContractID:         transaction.pb.GetContractID(),
+				Gas:                transaction.pb.GetGas(),
+				Amount:             transaction.pb.GetAmount(),
+				FunctionParameters: transaction.pb.GetFunctionParameters(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

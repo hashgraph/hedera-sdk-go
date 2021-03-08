@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
 
@@ -143,6 +144,37 @@ func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdat
 	transaction.pb.AutoRenewAccount = &proto.AccountID{}
 
 	return transaction
+}
+
+func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ConsensusUpdateTopic{
+			ConsensusUpdateTopic: &proto.ConsensusUpdateTopicTransactionBody{
+				TopicID:          transaction.pb.GetTopicID(),
+				Memo:             transaction.pb.GetMemo(),
+				ExpirationTime:   transaction.pb.GetExpirationTime(),
+				AdminKey:         transaction.pb.GetAdminKey(),
+				SubmitKey:        transaction.pb.GetSubmitKey(),
+				AutoRenewPeriod:  transaction.pb.GetAutoRenewPeriod(),
+				AutoRenewAccount: transaction.pb.GetAutoRenewAccount(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

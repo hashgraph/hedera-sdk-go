@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -139,6 +140,41 @@ func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *Cont
 
 func (transaction *ContractCreateTransaction) GetContractMemo() string {
 	return transaction.pb.GetMemo()
+}
+
+func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ContractCreateInstance{
+			ContractCreateInstance: &proto.ContractCreateTransactionBody{
+				FileID:                transaction.pb.GetFileID(),
+				AdminKey:              transaction.pb.GetAdminKey(),
+				Gas:                   transaction.pb.GetGas(),
+				InitialBalance:        transaction.pb.GetInitialBalance(),
+				ProxyAccountID:        transaction.pb.GetProxyAccountID(),
+				AutoRenewPeriod:       transaction.pb.GetAutoRenewPeriod(),
+				ConstructorParameters: transaction.pb.GetConstructorParameters(),
+				ShardID:               transaction.pb.GetShardID(),
+				RealmID:               transaction.pb.GetRealmID(),
+				NewRealmAdminKey:      transaction.pb.GetNewRealmAdminKey(),
+				Memo:                  transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

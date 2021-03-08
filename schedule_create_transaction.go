@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"bytes"
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -49,6 +51,13 @@ func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCrea
 	return transaction
 }
 
+func (transaction *ScheduleCreateTransaction) setTransactionBodyBytes(data []byte) *ScheduleCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.TransactionBody = data
+
+	return transaction
+}
+
 func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
 	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
 	if err != nil {
@@ -57,28 +66,31 @@ func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
 	return &key
 }
 
-func (transaction *ScheduleCreateTransaction) SetScheduleMemo(memo string) *ScheduleCreateTransaction {
+func (transaction *ScheduleCreateTransaction) SetMemo(memo string) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Memo = memo
 
 	return transaction
 }
 
-func (transaction *ScheduleCreateTransaction) GetScheduleMemo() string {
+func (transaction *ScheduleCreateTransaction) GetMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *ScheduleCreateTransaction) SetTransaction(tx *Transaction) *ScheduleCreateTransaction {
+func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx *Transaction) (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
-	other := tx.Schedule()
-	transaction.pbBody = other.pbBody
-	transaction.pb = other.pbBody.GetScheduleCreate()
-	transaction.nodeIDs = other.nodeIDs
+	tx.requireNotFrozen()
+	var err error
+	transaction.pb.TransactionBody, err = protobuf.Marshal(tx.pbBody)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+	transaction.pb.SigMap = &proto.SignatureMap{SigPair: make([]*proto.SignaturePair, 0)}
 
-	return transaction
+	return transaction, nil
 }
 
-func (transaction *ScheduleCreateTransaction) GetScheduleSignatures() (map[*PublicKey][]byte, error) {
+func (transaction *ScheduleCreateTransaction) GetScheduledSignatures() (map[*PublicKey][]byte, error) {
 	signMap := make(map[*PublicKey][]byte, len(transaction.pb.GetSigMap().GetSigPair()))
 
 	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair() {
@@ -99,6 +111,84 @@ func (transaction *ScheduleCreateTransaction) GetScheduleSignatures() (map[*Publ
 	}
 
 	return signMap, nil
+}
+
+func (transaction *ScheduleCreateTransaction) SignScheduled(key PrivateKey) *ScheduleCreateTransaction {
+	return transaction.SignScheduledWith(key.PublicKey(), key.Sign)
+}
+
+func (transaction *ScheduleCreateTransaction) SignScheduledWithOperator(client *Client) (*ScheduleCreateTransaction, error) {
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	return transaction.SignScheduledWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+func (transaction *ScheduleCreateTransaction) SignScheduledWith(publicKey PublicKey, signer TransactionSigner) *ScheduleCreateTransaction {
+	transaction.requireNotFrozen()
+
+	if transaction.scheduledKeyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	signature := signer(transaction.pbBody.GetScheduleCreate().GetTransactionBody())
+
+	if transaction.pb.SigMap == nil {
+		transaction.pb.SigMap = &proto.SignatureMap{}
+	}
+
+	if len(transaction.pb.SigMap.SigPair) > 0 {
+		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
+	} else {
+		transaction.pb.SigMap.SigPair = make([]*proto.SignaturePair, 0)
+		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
+	}
+
+	return transaction
+}
+
+func (transaction *ScheduleCreateTransaction) scheduledKeyAlreadySigned(pk PublicKey) bool {
+	if len(transaction.pb.SigMap.SigPair) > 0 {
+		for _, pair := range transaction.pb.SigMap.SigPair {
+			if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (transaction *ScheduleCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_ScheduleCreate{
+			ScheduleCreate: &proto.ScheduleCreateTransactionBody{
+				TransactionBody: transaction.pb.GetTransactionBody(),
+				AdminKey:        transaction.pb.GetAdminKey(),
+				PayerAccountID:  transaction.pb.GetPayerAccountID(),
+				SigMap:          transaction.pb.GetSigMap(),
+				Memo:            transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

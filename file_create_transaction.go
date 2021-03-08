@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -105,6 +106,37 @@ func (transaction *FileCreateTransaction) SetContents(contents []byte) *FileCrea
 
 func (transaction *FileCreateTransaction) GetContents() []byte {
 	return transaction.pb.GetContents()
+}
+
+func (transaction *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+	transaction.requireNotFrozen()
+
+	body := &proto.TransactionBody{
+		TransactionID:            transaction.pbBody.GetTransactionID(),
+		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
+		TransactionFee:           transaction.pbBody.GetTransactionFee(),
+		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
+		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
+		Memo:                     transaction.pbBody.GetMemo(),
+		Data: &proto.TransactionBody_FileCreate{
+			FileCreate: &proto.FileCreateTransactionBody{
+				ExpirationTime:   transaction.pb.GetExpirationTime(),
+				Keys:             transaction.pb.GetKeys(),
+				Contents:         transaction.pb.GetContents(),
+				ShardID:          transaction.pb.GetShardID(),
+				RealmID:          transaction.pb.GetRealmID(),
+				NewRealmAdminKey: transaction.pb.GetNewRealmAdminKey(),
+				Memo:             transaction.pb.GetMemo(),
+			},
+		},
+	}
+
+	txBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //
