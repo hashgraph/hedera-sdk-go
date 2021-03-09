@@ -13,8 +13,8 @@ var accountIDForTransactionID = AccountID{Account: 3}
 var validStartForTransacionID = time.Unix(124124, 151515)
 
 var testTransactionID TransactionID = TransactionID{
-    AccountID: &accountIDForTransactionID,
-    ValidStart: &validStartForTransacionID, 
+	AccountID:  &accountIDForTransactionID,
+	ValidStart: &validStartForTransacionID,
 }
 
 func newMockClient() (*Client, error) {
@@ -100,8 +100,6 @@ func newTestClient(t *testing.T) *Client {
 	assert.NoError(t, err)
 
 	client.SetOperator(*receipt.AccountID, newKey)
-
-	return client
 
 	return client
 }

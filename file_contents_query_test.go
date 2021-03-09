@@ -179,7 +179,7 @@ func TestFileContentsQueryCost_SmallMax_Execute(t *testing.T) {
 
 	_, err = fileContents.Execute(client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of FileContentsQuery (" + cost.String() + ") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
+		assert.Equal(t, fmt.Sprintf("cost of FileContentsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().

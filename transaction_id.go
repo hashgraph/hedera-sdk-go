@@ -72,11 +72,11 @@ func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 func (id TransactionID) String() string {
 	var pb *proto.Timestamp
 	var returnString string
-	if id.AccountID != nil && id.ValidStart != nil{
+	if id.AccountID != nil && id.ValidStart != nil {
 		pb = timeToProtobuf(*id.ValidStart)
 		returnString = id.AccountID.String() + "@" + strconv.FormatInt(pb.Seconds, 10) + "." + fmt.Sprint(pb.Nanos)
 	} else if id.Nonce != nil {
-		returnString =  hex.EncodeToString(id.Nonce)
+		returnString = hex.EncodeToString(id.Nonce)
 	}
 
 	if id.scheduled {
@@ -87,7 +87,7 @@ func (id TransactionID) String() string {
 }
 
 func TransactionIdFromString(data string) (TransactionID, error) {
-	parts := strings.SplitN(data,"?" , 2)
+	parts := strings.SplitN(data, "?", 2)
 
 	var accountId *AccountID
 	var validStart *time.Time
@@ -95,8 +95,8 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 	scheduled := len(parts) == 2 && strings.Compare(parts[1], "scheduled") == 0
 
 	nonce, err := hex.DecodeString(parts[0])
-	if err != nil{
-		parts = strings.SplitN(parts[0],"@" , 2)
+	if err != nil {
+		parts = strings.SplitN(parts[0], "@", 2)
 
 		if len(parts) != 2 {
 			return TransactionID{}, errors.New("expecting [{account}@{seconds}.{nanos}|{nonce}][?scheduled]")
@@ -108,13 +108,13 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 			return TransactionID{}, err
 		}
 
-		validStartParts := strings.SplitN(parts[1],"." , 2)
+		validStartParts := strings.SplitN(parts[1], ".", 2)
 
 		if len(validStartParts) != 2 {
 			return TransactionID{}, errors.New("expecting {account}@{seconds}.{nanos}")
 		}
 
-		sec, err  := strconv.ParseInt(validStartParts[0], 10, 64)
+		sec, err := strconv.ParseInt(validStartParts[0], 10, 64)
 		if err != nil {
 			return TransactionID{}, err
 		}

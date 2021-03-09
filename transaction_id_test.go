@@ -6,7 +6,7 @@ import (
 )
 
 func TestTransactionID_Execute(t *testing.T) {
-	txID := TransactionIDGenerate(AccountID{0,0,3})
+	txID := TransactionIDGenerate(AccountID{0, 0, 3})
 
 	txID = txID.SetScheduled(true)
 
@@ -16,7 +16,7 @@ func TestTransactionID_Execute(t *testing.T) {
 
 	txID2 = txID2.SetScheduled(true)
 
-	txID2.AccountID = &AccountID{0,0,3}
+	txID2.AccountID = &AccountID{0, 0, 3}
 
 	println(txID2.String())
 
@@ -33,5 +33,3 @@ func TestTransactionIDFromString_Execute(t *testing.T) {
 
 	println(txID2.String())
 }
-
-
