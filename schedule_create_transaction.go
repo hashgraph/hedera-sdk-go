@@ -291,6 +291,17 @@ func (transaction *ScheduleCreateTransaction) Execute(
 		)
 	}
 
+	var body proto.TransactionBody
+	ok := protobuf.Unmarshal(transaction.pbBody.GetScheduleCreate().TransactionBody, &body)
+	if ok != nil{
+		return TransactionResponse{}, ok
+	}
+
+	println("length", len(transaction.signedTransactions))
+	println("node length", len(transaction.nodeIDs))
+	println("bod", transaction.pbBody.GetScheduleCreate().String())
+	println("body", body.String())
+
 	resp, err := execute(
 		client,
 		request{
