@@ -16,7 +16,7 @@ func TestSerializeStakersQuery(t *testing.T) {
 }
 
 func TestAccountStakersQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewAccountStakersQuery().
 		SetAccountID(client.GetOperatorAccountID()).
@@ -27,7 +27,7 @@ func TestAccountStakersQuery_Execute(t *testing.T) {
 }
 
 func TestAccountStakersQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(1)).
@@ -41,7 +41,7 @@ func TestAccountStakersQueryCost_Execute(t *testing.T) {
 }
 
 func TestAccountStakersQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(100000)).
@@ -55,7 +55,7 @@ func TestAccountStakersQueryCost_BigMax_Execute(t *testing.T) {
 }
 
 func TestAccountStakersQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(HbarFromTinybar(25)).
@@ -69,7 +69,7 @@ func TestAccountStakersQueryCost_SmallMax_Execute(t *testing.T) {
 }
 
 func TestAccountStakersQueryCost_InsufficientFee_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(1)).
@@ -85,7 +85,7 @@ func TestAccountStakersQueryCost_InsufficientFee_Execute(t *testing.T) {
 }
 
 func TestAccountStakersNoAccountID_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewAccountStakersQuery().
 		Execute(client)

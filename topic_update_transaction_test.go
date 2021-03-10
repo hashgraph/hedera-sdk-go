@@ -7,7 +7,7 @@ import (
 )
 
 func TestTopicUpdateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
@@ -71,7 +71,7 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 }
 
 func Test_TopicUpdate_NoMemo(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
@@ -120,7 +120,7 @@ func Test_TopicUpdate_NoMemo(t *testing.T) {
 }
 
 func Test_TopicUpdate_NoTopicID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 

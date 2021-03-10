@@ -7,7 +7,7 @@ import (
 )
 
 func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewNetworkVersionQuery().
 		SetMaxQueryPayment(NewHbar(1)).
@@ -19,7 +19,7 @@ func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
 }
 
 func TestNetworkVersionInfoQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	query := NewNetworkVersionQuery()
 

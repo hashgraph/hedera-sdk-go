@@ -7,7 +7,7 @@ import (
 )
 
 func TestCryptoTransferTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTransferTransaction().
 		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(-1)).
@@ -20,7 +20,7 @@ func TestCryptoTransferTransaction_Execute(t *testing.T) {
 }
 
 func Test_CryptoTransfer_Nothing(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTransferTransaction().
 		Execute(client)
@@ -31,7 +31,7 @@ func Test_CryptoTransfer_Nothing(t *testing.T) {
 }
 
 func TestCryptoTransferTransaction_FlippedAmount_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTransferTransaction().
 		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
@@ -48,7 +48,7 @@ func TestCryptoTransferTransaction_FlippedAmount_Execute(t *testing.T) {
 }
 
 func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTransferTransaction().
 		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
@@ -63,7 +63,7 @@ func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
 }
 
 //func Test_CryptoTransfer_1000(t *testing.T) {
-//	client := newTestClient(t)
+//	client := newTestClient(t, false)
 //	var err error
 //	tx := make([]*TransferTransaction, 500)
 //	response := make([]TransactionResponse, len(tx))

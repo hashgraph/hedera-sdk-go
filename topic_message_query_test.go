@@ -58,7 +58,7 @@ Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam cons
 `
 
 func TestTopicMessageQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -119,7 +119,7 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 }
 
 func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -182,7 +182,7 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 }
 
 func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -242,7 +242,7 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 }
 
 func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).

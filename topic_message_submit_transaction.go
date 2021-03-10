@@ -147,7 +147,16 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 		}
 	}
 
-	body := &proto.TransactionBody{
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
+func (transaction *TopicMessageSubmitTransaction) constructProtobuf() *proto.TransactionBody {
+	return &proto.TransactionBody{
 		TransactionID:            transaction.pbBody.GetTransactionID(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
@@ -162,13 +171,6 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 			},
 		},
 	}
-
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 func (transaction *TopicMessageSubmitTransaction) Execute(

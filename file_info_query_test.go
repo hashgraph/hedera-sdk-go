@@ -16,7 +16,7 @@ func TestSerializeFileInfoQuery(t *testing.T) {
 }
 
 func Test_FileInfo_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -56,7 +56,7 @@ func Test_FileInfo_Transaction(t *testing.T) {
 }
 
 func Test_FileInfoCost_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -98,7 +98,7 @@ func Test_FileInfoCost_Transaction(t *testing.T) {
 }
 
 func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -140,7 +140,7 @@ func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
 }
 
 func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -180,7 +180,7 @@ func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
 }
 
 func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -220,7 +220,7 @@ func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
 }
 
 func Test_FileInfoQuery_NoFileID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewFileInfoQuery().
 		SetQueryPayment(NewHbar(1)).

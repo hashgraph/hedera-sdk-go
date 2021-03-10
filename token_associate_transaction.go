@@ -95,7 +95,16 @@ func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	body := &proto.TransactionBody{
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
+func (transaction *TokenAssociateTransaction) constructProtobuf() *proto.TransactionBody {
+	return &proto.TransactionBody{
 		TransactionID:            transaction.pbBody.GetTransactionID(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
@@ -109,13 +118,6 @@ func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransac
 			},
 		},
 	}
-
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

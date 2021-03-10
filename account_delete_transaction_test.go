@@ -7,7 +7,7 @@ import (
 )
 
 func TestAccountDeleteTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -49,7 +49,7 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 }
 
 func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -84,7 +84,7 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 }
 
 func Test_AccountDelete_NoAccountID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -116,7 +116,7 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 }
 
 func Test_AccountDelete_NoSinging(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

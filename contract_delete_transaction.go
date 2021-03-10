@@ -73,7 +73,16 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	body := &proto.TransactionBody{
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
+func (transaction *ContractDeleteTransaction) constructProtobuf() *proto.TransactionBody{
+	return &proto.TransactionBody{
 		TransactionID:            transaction.pbBody.GetTransactionID(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
@@ -87,13 +96,6 @@ func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransac
 			},
 		},
 	}
-
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

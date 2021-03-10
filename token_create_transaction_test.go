@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenCreateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -30,7 +30,7 @@ func TestTokenCreateTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenCreate_MultipleKeys(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	keys := make([]PrivateKey, 5)
 	pubKeys := make([]PublicKey, 5)
@@ -76,7 +76,7 @@ func Test_TokenCreate_MultipleKeys(t *testing.T) {
 }
 
 func Test_TokenCreate_NoKeys(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	keys := make([]PrivateKey, 6)
 	pubKeys := make([]PublicKey, 6)
@@ -140,7 +140,7 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 }
 
 func Test_TokenCreate_AdminSign(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	keys := make([]PrivateKey, 6)
 	pubKeys := make([]PublicKey, 6)

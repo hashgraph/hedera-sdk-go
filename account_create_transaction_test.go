@@ -7,7 +7,7 @@ import (
 )
 
 func TestAccountCreateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -46,7 +46,7 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 }
 
 func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -89,7 +89,7 @@ func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
 }
 
 func Test_AccountCreate_NoKey(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewAccountCreateTransaction().
 		Execute(client)
@@ -100,7 +100,7 @@ func Test_AccountCreate_NoKey(t *testing.T) {
 }
 
 func TestAccountCreateTransactionAddSignature(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

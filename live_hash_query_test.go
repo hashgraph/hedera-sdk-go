@@ -18,7 +18,7 @@ func TestSerializeLiveHashQuery(t *testing.T) {
 }
 
 func TestLiveHashQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 	if err != nil {
@@ -87,7 +87,7 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 }
 
 func TestLiveHashQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 	if err != nil {

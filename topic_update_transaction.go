@@ -149,7 +149,16 @@ func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdat
 func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	body := &proto.TransactionBody{
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
+func (transaction *TopicUpdateTransaction) constructProtobuf() *proto.TransactionBody {
+	return &proto.TransactionBody{
 		TransactionID:            transaction.pbBody.GetTransactionID(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
@@ -168,13 +177,6 @@ func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransactio
 			},
 		},
 	}
-
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

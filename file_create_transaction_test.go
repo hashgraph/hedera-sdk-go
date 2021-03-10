@@ -7,7 +7,7 @@ import (
 )
 
 func TestFileCreateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -34,7 +34,7 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 }
 
 func Test_FileCreate_NoKey(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		Execute(client)

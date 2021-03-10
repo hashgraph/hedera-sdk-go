@@ -87,7 +87,16 @@ func (transaction *TokenWipeTransaction) GetAmount() uint64 {
 func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	body := &proto.TransactionBody{
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
+func (transaction *TokenWipeTransaction) constructProtobuf() *proto.TransactionBody {
+	return &proto.TransactionBody{
 		TransactionID:            transaction.pbBody.GetTransactionID(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
@@ -102,13 +111,6 @@ func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction,
 			},
 		},
 	}
-
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

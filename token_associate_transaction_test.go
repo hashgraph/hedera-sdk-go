@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenAssociateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -83,7 +83,7 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenAssociate_NoAccountID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenAssociateTransaction().
 		Execute(client)
@@ -94,7 +94,7 @@ func Test_TokenAssociate_NoAccountID(t *testing.T) {
 }
 
 func Test_TokenAssociate_NoTokenID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

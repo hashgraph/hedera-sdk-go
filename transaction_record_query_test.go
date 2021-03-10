@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Record_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -60,7 +60,7 @@ func Test_Record_Transaction(t *testing.T) {
 }
 
 func Test_Record_ReceiptPaymentZero_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -114,7 +114,7 @@ func Test_Record_ReceiptPaymentZero_Transaction(t *testing.T) {
 }
 
 func Test_Record_Record_Insufficient_Transaction(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

@@ -59,7 +59,7 @@ func newMockTransaction() (*TransferTransaction, error) {
 	return tx, nil
 }
 
-func newTestClient(t *testing.T) *Client {
+func newTestClient(t *testing.T, token bool) *Client {
 	var client *Client
 	var err error
 
@@ -87,19 +87,21 @@ func newTestClient(t *testing.T) *Client {
 		client.SetOperator(operatorAccountID, operatorKey)
 	}
 
-	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	if token {
+		newKey, err := GeneratePrivateKey()
+		assert.NoError(t, err)
 
-	resp, err := NewAccountCreateTransaction().
-		SetKey(newKey.PublicKey()).
-		SetInitialBalance(NewHbar(100)).
-		Execute(client)
-	assert.NoError(t, err)
+		resp, err := NewAccountCreateTransaction().
+			SetKey(newKey.PublicKey()).
+			SetInitialBalance(NewHbar(20)).
+			Execute(client)
+		assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
-	assert.NoError(t, err)
+		receipt, err := resp.GetReceipt(client)
+		assert.NoError(t, err)
 
-	client.SetOperator(*receipt.AccountID, newKey)
+		client.SetOperator(*receipt.AccountID, newKey)
+	}
 
 	return client
 }

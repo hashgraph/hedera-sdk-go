@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenBurnTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -82,7 +82,7 @@ func TestTokenBurnTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenBurn_NoAmount(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -150,7 +150,7 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 }
 
 func Test_TokenBurn_NoTokenID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

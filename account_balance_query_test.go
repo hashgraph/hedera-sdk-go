@@ -16,7 +16,7 @@ func TestSerializeAccountBalanceQuery(t *testing.T) {
 }
 
 func TestAccountBalanceQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewAccountBalanceQuery().
 		SetAccountID(client.GetOperatorAccountID()).
@@ -25,7 +25,7 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 }
 
 func TestAccountBalanceQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	balance := NewAccountBalanceQuery().
 		SetAccountID(client.GetOperatorAccountID())
@@ -39,7 +39,7 @@ func TestAccountBalanceQueryCost_Execute(t *testing.T) {
 }
 
 func TestAccountBalanceQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -53,7 +53,7 @@ func TestAccountBalanceQueryCost_BigMax_Execute(t *testing.T) {
 }
 
 func TestAccountBalanceQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(HbarFromTinybar(1)).
@@ -67,7 +67,7 @@ func TestAccountBalanceQueryCost_SmallMax_Execute(t *testing.T) {
 }
 
 func TestAccountBalanceQueryCost_SetPayment_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -82,7 +82,7 @@ func TestAccountBalanceQueryCost_SetPayment_Execute(t *testing.T) {
 }
 
 func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	balance := NewAccountBalanceQuery().
 		SetMaxQueryPayment(NewHbar(10000)).
@@ -97,7 +97,7 @@ func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
 }
 
 func Test_AccountBalance_NoAccount(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewAccountBalanceQuery().
 		Execute(client)

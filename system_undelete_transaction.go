@@ -54,6 +54,15 @@ func (transaction *SystemUndeleteTransaction) GetFileID() FileID {
 func (transaction *SystemUndeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
+func (transaction *SystemUndeleteTransaction) constructProtobuf() *proto.TransactionBody {
 	body := &proto.TransactionBody{
 		TransactionID:            transaction.pbBody.GetTransactionID(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
@@ -73,12 +82,7 @@ func (transaction *SystemUndeleteTransaction) Schedule() (*ScheduleCreateTransac
 		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: transaction.pb.GetFileID()}
 	}
 
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+	return body
 }
 
 //

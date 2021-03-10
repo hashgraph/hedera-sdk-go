@@ -147,8 +147,20 @@ func (transaction *AccountCreateTransaction) GetReceiverSignatureRequired() bool
 func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	body := &proto.TransactionBody{
-		TransactionID:            transaction.pbBody.GetTransactionID(),
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	tx := NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes)
+	tx.pb.SigMap = nil
+
+	return tx, nil
+}
+
+func (transaction *AccountCreateTransaction) constructProtobuf() *proto.TransactionBody{
+	return &proto.TransactionBody{
+		TransactionID:            transaction.GetTransactionID().toProtobuf(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
 		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
@@ -170,13 +182,6 @@ func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransact
 			},
 		},
 	}
-
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
 //

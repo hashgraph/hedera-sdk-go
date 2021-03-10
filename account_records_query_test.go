@@ -16,7 +16,7 @@ func TestSerializeAccountRecordsQuery(t *testing.T) {
 }
 
 func TestAccountRecordQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -51,7 +51,7 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 }
 
 func TestAccountRecordQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -88,7 +88,7 @@ func TestAccountRecordQueryCost_Execute(t *testing.T) {
 }
 
 func TestAccountRecordQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -126,7 +126,7 @@ func TestAccountRecordQueryCost_BigMax_Execute(t *testing.T) {
 }
 
 func TestAccountRecordQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -166,7 +166,7 @@ func TestAccountRecordQueryCost_SmallMax_Execute(t *testing.T) {
 }
 
 func TestAccountRecordQueryCost_InsufficientFee_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -205,7 +205,7 @@ func TestAccountRecordQueryCost_InsufficientFee_Execute(t *testing.T) {
 }
 
 func Test_AccountRecord_NoAccountID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewAccountRecordsQuery().
 		Execute(client)

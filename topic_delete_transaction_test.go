@@ -7,7 +7,7 @@ import (
 )
 
 func TestTopicDeleteTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 
@@ -52,7 +52,7 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 }
 
 func Test_TopicDelete_NoTopicID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 

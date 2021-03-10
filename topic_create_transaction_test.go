@@ -6,7 +6,7 @@ import (
 )
 
 func TestTopicCreateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
@@ -46,7 +46,7 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 }
 
 func Test_TopicCreate_DifferentKeys(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
@@ -107,7 +107,7 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 }
 
 func Test_TopicCreate_JustSetMemo(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 

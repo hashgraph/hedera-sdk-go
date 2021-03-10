@@ -17,7 +17,7 @@ func TestSerializeTokenInfoQuery(t *testing.T) {
 }
 
 func TestTokenInfoQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -67,7 +67,7 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 }
 
 func TestTokenInfoQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -102,7 +102,7 @@ func TestTokenInfoQueryCost_Execute(t *testing.T) {
 }
 
 func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -137,7 +137,7 @@ func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
 }
 
 func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -174,7 +174,7 @@ func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
 }
 
 func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -211,7 +211,7 @@ func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
 }
 
 func Test_TokenInfo_NoPayment(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -248,7 +248,7 @@ func Test_TokenInfo_NoPayment(t *testing.T) {
 }
 
 func Test_TokenInfo_NoTokenID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewTokenInfoQuery().
 		SetQueryPayment(NewHbar(1)).

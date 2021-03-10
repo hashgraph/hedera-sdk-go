@@ -16,7 +16,7 @@ func TestSerializeTopicInfoQuery(t *testing.T) {
 }
 
 func TestTopicInfoQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
@@ -50,7 +50,7 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 }
 
 func TestTopicInfoQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
@@ -83,7 +83,7 @@ func TestTopicInfoQueryCost_Execute(t *testing.T) {
 }
 
 func TestTopicInfoQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
@@ -116,7 +116,7 @@ func TestTopicInfoQueryCost_BigMax_Execute(t *testing.T) {
 }
 
 func TestTopicInfoQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
@@ -152,7 +152,7 @@ func TestTopicInfoQueryCost_SmallMax_Execute(t *testing.T) {
 }
 
 func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
@@ -187,7 +187,7 @@ func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 }
 
 func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	keys := make([]PrivateKey, 3)
 	pubKeys := make([]PublicKey, 3)
@@ -239,7 +239,7 @@ func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 }
 
 func Test_TopicInfo_NoTopicID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewTopicInfoQuery().
 		SetMaxQueryPayment(NewHbar(1)).

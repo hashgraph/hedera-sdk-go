@@ -237,7 +237,7 @@ func TestPrivateKey_FromPemWithPassphrase(t *testing.T) {
 }
 
 func TestSetKeyUsesAnyKey(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

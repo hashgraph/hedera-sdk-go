@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenGrantKycTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -104,7 +104,7 @@ func TestTokenGrantKycTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenGrantKyc_NoTokenID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -184,7 +184,7 @@ func Test_TokenGrantKyc_NoTokenID(t *testing.T) {
 }
 
 func Test_TokenGrantKyc_NoAccountID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -264,7 +264,7 @@ func Test_TokenGrantKyc_NoAccountID(t *testing.T) {
 }
 
 func TestTokenGrantKycTransaction_NoKycSet_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

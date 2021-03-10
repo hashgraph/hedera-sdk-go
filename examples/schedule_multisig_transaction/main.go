@@ -70,7 +70,6 @@ func main() {
 
 	createResponse, err := hedera.NewAccountCreateTransaction().
 		SetKey(keyList).
-		SetNodeAccountIDs([]hedera.AccountID{{Account:3}}).
 		SetInitialBalance(hedera.NewHbar(10)).
 		Execute(client)
 	if err != nil {
@@ -108,8 +107,16 @@ func main() {
 		Sign(keys[0]).
 		Sign(keys[1])
 
-	scheduled := transferTx.Schedule()
-	signatures1, err := scheduled.GetScheduleSignatures()
+	scheduled, err := transferTx.Schedule()
+	if err != nil {
+		println(err.Error(), ": error scheduling Transfer Transaction")
+		return
+	}
+	signatures1, err := scheduled.GetScheduledSignatures()
+	if err != nil {
+		println(err.Error(), ": error getting scheduled signatures")
+		return
+	}
 
 	if len(signatures1) != 2 {
 		println("Scheduled transaction has incorrect number of signatures: ", len(signatures1))

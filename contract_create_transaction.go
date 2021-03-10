@@ -145,7 +145,16 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	body := &proto.TransactionBody{
+	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+}
+
+func (transaction *ContractCreateTransaction) constructProtobuf() *proto.TransactionBody{
+	return &proto.TransactionBody{
 		TransactionID:            transaction.pbBody.GetTransactionID(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
@@ -168,14 +177,8 @@ func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransac
 			},
 		},
 	}
-
-	txBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
+
 
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file

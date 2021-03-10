@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenDeleteTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -29,7 +29,7 @@ func TestTokenDeleteTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenDelete_NoKeys(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -59,7 +59,7 @@ func Test_TokenDelete_NoKeys(t *testing.T) {
 }
 
 func Test_TokenDelete_NoTokenID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewTokenDeleteTransaction().
 		Execute(client)

@@ -37,7 +37,7 @@ func TestTransactionSerializationDeserialization(t *testing.T) {
 }
 
 func TestTransactionAddSignature(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

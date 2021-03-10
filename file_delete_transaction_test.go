@@ -7,7 +7,7 @@ import (
 )
 
 func TestFileDeleteTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).
@@ -34,7 +34,7 @@ func TestFileDeleteTransaction_Execute(t *testing.T) {
 }
 
 func Test_FileDelete_NothingSet(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(client.GetOperatorPublicKey()).

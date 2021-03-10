@@ -16,7 +16,7 @@ func TestSerializeFileContentsQuery(t *testing.T) {
 }
 
 func TestFileContentsQuery_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	var contents = []byte("Hellow world!")
 
@@ -58,7 +58,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 }
 
 func TestFileContentsQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	var contents = []byte("Hellow world!")
 
@@ -103,7 +103,7 @@ func TestFileContentsQueryCost_Execute(t *testing.T) {
 }
 
 func TestFileContentsQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	var contents = []byte("Hellow world!")
 
@@ -148,7 +148,7 @@ func TestFileContentsQueryCost_BigMax_Execute(t *testing.T) {
 }
 
 func TestFileContentsQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	var contents = []byte("Hellow world!")
 
@@ -193,7 +193,7 @@ func TestFileContentsQueryCost_SmallMax_Execute(t *testing.T) {
 }
 
 func TestFileContentsQueryCost_InsufficientFee_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	var contents = []byte("Hellow world!")
 
@@ -238,7 +238,7 @@ func TestFileContentsQueryCost_InsufficientFee_Execute(t *testing.T) {
 }
 
 func Test_FileContents_NoFileID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	_, err := NewFileContentsQuery().
 		Execute(client)

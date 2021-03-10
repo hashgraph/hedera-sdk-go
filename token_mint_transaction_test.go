@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenMintTransaction_Execute(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -81,7 +81,7 @@ func TestTokenMintTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenMint_NoAmount(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -146,7 +146,7 @@ func Test_TokenMint_NoAmount(t *testing.T) {
 }
 
 func Test_TokenMint_NoTokenID(t *testing.T) {
-	client := newTestClient(t)
+	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
