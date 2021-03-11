@@ -91,27 +91,21 @@ func main() {
 
 	fmt.Printf("account = %v\n", newAccountID)
 
-	transferTx, err := hedera.NewTransferTransaction().
+	transferTx := hedera.NewTransferTransaction().
 		SetTransactionID(transactionID).
-		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
 		AddHbarTransfer(newAccountID, hedera.HbarFrom(-1, hedera.HbarUnits.Hbar)).
-		AddHbarTransfer(client.GetOperatorAccountID(), hedera.HbarFrom(1, hedera.HbarUnits.Hbar)).
-		FreezeWith(client)
-	if err != nil {
-		println(err.Error(), ": error freezing transfer transaction")
-		return
-	}
-
-	// Manually sign with 2 of the private keys provided in the threshold
-	transferTx = transferTx.
-		Sign(keys[0]).
-		Sign(keys[1])
+		AddHbarTransfer(client.GetOperatorAccountID(), hedera.HbarFrom(1, hedera.HbarUnits.Hbar))
 
 	scheduled, err := transferTx.Schedule()
 	if err != nil {
 		println(err.Error(), ": error scheduling Transfer Transaction")
 		return
 	}
+
+	// Manually sign with 2 of the private keys provided in the threshold
+	scheduled.SignScheduled(keys[0])
+	scheduled.SignScheduled(keys[1])
+
 	signatures1, err := scheduled.GetScheduledSignatures()
 	if err != nil {
 		println(err.Error(), ": error getting scheduled signatures")
@@ -215,7 +209,7 @@ func main() {
 		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error retrieving info query after sign transaction")
+		println("Singing Success")
 		return
 	}
 }
