@@ -18,6 +18,7 @@ type TransactionReceipt struct {
 	TopicRunningHashVersion uint64
 	TotalSupply             uint64
 	ScheduleID              *ScheduleID
+	ScheduledTransactionID  *TransactionID
 }
 
 func newTransactionReceipt(
@@ -25,7 +26,8 @@ func newTransactionReceipt(
 	topicID TopicID, fileID FileID,
 	contractID ContractID, accountID AccountID,
 	topicSequenceNumber uint64, topicRunningHash []byte,
-	topicRunningHashVersion uint64, totalSupply uint64, scheduleId ScheduleID) TransactionReceipt {
+	topicRunningHashVersion uint64, totalSupply uint64, scheduleId ScheduleID,
+	scheduledTransactionID TransactionID, tokenID TokenID) TransactionReceipt {
 
 	receipt := TransactionReceipt{
 		Status:                  status,
@@ -34,11 +36,13 @@ func newTransactionReceipt(
 		FileID:                  &fileID,
 		ContractID:              &contractID,
 		AccountID:               &accountID,
+		TokenID:                 &tokenID,
 		TopicSequenceNumber:     topicSequenceNumber,
 		TopicRunningHash:        topicRunningHash,
 		TopicRunningHashVersion: topicRunningHashVersion,
 		TotalSupply:             totalSupply,
 		ScheduleID:              &scheduleId,
+		ScheduledTransactionID:  &scheduledTransactionID,
 	}
 
 	return receipt
@@ -94,6 +98,12 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 		scheduleID = &scheduleIDValue
 	}
 
+	var scheduledTransactionID *TransactionID
+	if protoReceipt.ScheduledTransactionID != nil {
+		scheduledTransactionIDValue := transactionIDFromProtobuf(protoReceipt.ScheduledTransactionID)
+		scheduledTransactionID = &scheduledTransactionIDValue
+	}
+
 	return TransactionReceipt{
 		Status:                  Status(protoReceipt.Status),
 		ExchangeRate:            rate,
@@ -107,6 +117,7 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 		TokenID:                 tokenID,
 		TotalSupply:             protoReceipt.NewTotalSupply,
 		ScheduleID:              scheduleID,
+		ScheduledTransactionID:  scheduledTransactionID,
 	}
 }
 
@@ -127,6 +138,7 @@ func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
 		TokenID:                 receipt.TokenID.toProtobuf(),
 		NewTotalSupply:          receipt.TotalSupply,
 		ScheduleID:              receipt.ScheduleID.toProtobuf(),
+		ScheduledTransactionID:  receipt.ScheduledTransactionID.toProtobuf(),
 	}
 }
 

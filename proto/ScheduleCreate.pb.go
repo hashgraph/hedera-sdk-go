@@ -31,7 +31,7 @@ const (
 //In that sense, ScheduleCreate transaction referring to an already created Scheduled Transaction and providing the rest of the required signature(s) will cause the underlying encoded transaction to be executed!
 //Note: Even though only the first ScheduleCreate Transaction will create new Scheduled Entity and the rest of them will have their signatures from the sigMap witnessed, the ScheduleID property in the TransactionReceipt will be set on all of them.
 //INVALID_ACCOUNT_ID is returned if the specified payerAccountID does not exist.
-//UNRESOLVABLE_REQUIRED_SIGNERS is returned if the transactionBody defines required Signatories that cannot be resolved (f.e signature from non-existing account is requested)
+//UNRESOLVABLE_REQUIRED_SIGNERS is returned if the transactionBody defines required Signers that cannot be resolved (f.e signature from non-existing account is requested)
 //UNPARSEABLE_SCHEDULED_TRANSACTION is returned if the transactionBody cannot be parsed into normal Transaction
 //UNSCHEDULABLE_TRANSACTION is returned if the transactionBody is representing a transaction that is not allowed to be scheduled (f.e scheduling a ScheduleCreate transaction)
 //SOME_SIGNATURES_WERE_INVALID is returned if one of the signatures provided does not represent a valid signature for any required signer
