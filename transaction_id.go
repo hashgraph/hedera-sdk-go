@@ -147,10 +147,17 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 		accountID = id.AccountID.toProtobuf()
 	}
 
+	var byt []byte
+	if id.Nonce != nil{
+		byt = id.Nonce
+	} else {
+		byt = []byte{}
+	}
+
 	return &proto.TransactionID{
 		TransactionValidStart: validStart,
 		AccountID:             accountID,
-		Nonce:                 id.Nonce,
+		Nonce:                 byt,
 		Scheduled:             id.scheduled,
 	}
 }

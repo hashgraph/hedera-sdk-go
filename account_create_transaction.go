@@ -153,14 +153,13 @@ func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransact
 	}
 
 	tx := NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes)
-	tx.pb.SigMap = nil
 
 	return tx, nil
 }
 
-func (transaction *AccountCreateTransaction) constructProtobuf() *proto.TransactionBody{
+func (transaction *AccountCreateTransaction) constructProtobuf() *proto.TransactionBody {
 	return &proto.TransactionBody{
-		TransactionID:            transaction.GetTransactionID().toProtobuf(),
+		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
 		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),

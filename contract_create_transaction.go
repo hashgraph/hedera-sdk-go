@@ -153,9 +153,9 @@ func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
-func (transaction *ContractCreateTransaction) constructProtobuf() *proto.TransactionBody{
+func (transaction *ContractCreateTransaction) constructProtobuf() *proto.TransactionBody {
 	return &proto.TransactionBody{
-		TransactionID:            transaction.pbBody.GetTransactionID(),
+		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
 		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
@@ -178,7 +178,6 @@ func (transaction *ContractCreateTransaction) constructProtobuf() *proto.Transac
 		},
 	}
 }
-
 
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file

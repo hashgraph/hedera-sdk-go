@@ -3,6 +3,7 @@ package hedera
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestScheduleCreateTransaction_Execute(t *testing.T) {
@@ -21,7 +22,6 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 		SetTransactionID(transactionID).
 		SetKey(newKey.PublicKey()).
 		SetMaxTransactionFee(NewHbar(2)).
-		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetInitialBalance(newBalance)
 
 	assert.NoError(t, err)
@@ -29,27 +29,13 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 	scheduleTx, err := tx.Schedule()
 	assert.NoError(t, err)
 
-	frozen, err := scheduleTx.
+	resp, err := scheduleTx.
 		SetPayerAccountID(client.GetOperatorAccountID()).
-		SetNodeAccountIDs(tx.GetNodeAccountIDs()).
 		SetAdminKey(client.GetOperatorPublicKey()).
-		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		SetMaxTransactionFee(NewHbar(10)).
-		SignScheduled(newKey).
-		FreezeWith(client)
+		Execute(client)
 	assert.NoError(t, err)
 
-	frozen = frozen.Sign(newKey)
-
-	txID, err := frozen.Execute(client)
-	assert.NoError(t, err)
-
-	println("initial tx id", transactionID.String())
-	println("node", txID.ScheduledTransactionId.ValidStart.String())
-	println("node", txID.TransactionID.String())
-	println("node", txID.NodeID.String())
-
-	receipt, err := txID.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	info, err := NewScheduleInfoQuery().
@@ -68,12 +54,12 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	txID, err = tx2.
+	resp, err = tx2.
 		Sign(newKey).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = txID.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
 
@@ -87,8 +73,11 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 
 	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
+	transactionID := TransactionIDGenerate(client.GetOperatorAccountID())
+
 	tx := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetTransactionID(transactionID).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance)
 
@@ -98,10 +87,10 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 		SetScheduledTransaction(tx)
 	assert.NoError(t, err)
 
-	txID, err := scheduleTx.Execute(client)
+	resp, err := scheduleTx.Execute(client)
 	assert.NoError(t, err)
 
-	receipt, err := txID.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	assert.NoError(t, err)
 
 	_, err = NewScheduleInfoQuery().
@@ -114,77 +103,92 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 		FreezeWith(client)
 	assert.NoError(t, err)
 
-	txID, err = tx2.
+	resp, err = tx2.
 		Sign(newKey).
 		Execute(client)
 	assert.NoError(t, err)
 
-	_, err = txID.GetReceipt(client)
+	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 }
-//
-//func TestScheduleCreateTransaction_Signature_Execute(t *testing.T) {
-//	client := newTestClient(t, false)
-//
-//	newKey, err := GeneratePrivateKey()
-//	assert.NoError(t, err)
-//
-//	newBalance := NewHbar(1)
-//
-//	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
-//
-//	accountTransactionID := TransactionIDGenerate(client.GetOperatorAccountID())
-//
-//	tx, err := NewAccountCreateTransaction().
-//		SetKey(newKey.PublicKey()).
-//		SetMaxTransactionFee(NewHbar(2)).
-//		SetInitialBalance(newBalance).
-//		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-//		SetTransactionID(accountTransactionID).
-//		FreezeWith(client)
-//	assert.NoError(t, err)
-//
-//	txBytes, err := tx.ToBytes()
-//	assert.NoError(t, err)
-//
-//	signature1, err := newKey.SignTransaction(&tx.Transaction)
-//
-//	tx2, err := TransactionFromBytes(txBytes)
-//	assert.NoError(t, err)
-//
-//	var tx3 *ScheduleCreateTransaction
-//
-//	switch newTx := tx2.(type) {
-//	case AccountCreateTransaction:
-//		tx3 = newTx.Schedule()
-//	}
-//
-//	assert.NotNil(t, tx3)
-//
-//	tx3, err = tx3.
-//		SetAdminKey(newKey.PublicKey()).
-//		SetPayerAccountID(client.GetOperatorAccountID()).
-//		SetTransactionValidDuration(30 * time.Second).
-//		FreezeWith(client)
-//	assert.NoError(t, err)
-//
-//	tx3 = tx3.Sign(newKey)
-//
-//	resp, err := tx3.Execute(client)
-//	assert.NoError(t, err)
-//
-//	receipt, err := resp.GetReceipt(client)
-//	assert.NoError(t, err)
-//
-//	scheduleID := *receipt.ScheduleID
-//
-//	resp, err = NewScheduleSignTransaction().
-//		SetScheduleID(scheduleID).
-//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-//		AddScheduleSignature(newKey.PublicKey(), signature1).
-//		Execute(client)
-//	assert.NoError(t, err)
-//
-//	receipt, err = resp.GetReceipt(client)
-//	assert.NoError(t, err)
-//}
+
+
+func TestScheduleCreateTransaction_Signature_Execute(t *testing.T) {
+	client := newTestClient(t, false)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(1)
+
+	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	accountTransactionID := TransactionIDGenerate(client.GetOperatorAccountID())
+
+	tx, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetMaxTransactionFee(NewHbar(2)).
+		SetInitialBalance(newBalance).
+		SetTransactionID(accountTransactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	txBytes, err := tx.ToBytes()
+	assert.NoError(t, err)
+
+	signature1, err := newKey.SignTransaction(&tx.Transaction)
+
+	tx2, err := TransactionFromBytes(txBytes)
+	assert.NoError(t, err)
+
+	var tx3 *ScheduleCreateTransaction
+
+	switch newTx := tx2.(type) {
+	case AccountCreateTransaction:
+		tx3, err = newTx.Schedule()
+		assert.NoError(t, err)
+	}
+
+	assert.NotNil(t, tx3)
+
+	tx3, err = tx3.
+		SetAdminKey(newKey.PublicKey()).
+		SetPayerAccountID(client.GetOperatorAccountID()).
+		SetTransactionValidDuration(30 * time.Second).
+		FreezeWith(client)
+	assert.NoError(t, err)
+
+	tx3 = tx3.Sign(newKey)
+
+	resp, err := tx3.Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	scheduleID := *receipt.ScheduleID
+
+	resp, err = NewScheduleSignTransaction().
+		SetScheduleID(scheduleID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddScheduleSignature(newKey.PublicKey(), signature1).
+		Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	//tx4, err := NewScheduleDeleteTransaction().
+	//	SetScheduleID(scheduleID).
+	//	FreezeWith(client)
+	//assert.NoError(t, err)
+	//
+	//resp, err = tx4.
+	//	Sign(newKey).
+	//	Execute(client)
+	//assert.NoError(t, err)
+	//
+	//_, err = resp.GetReceipt(client)
+	//assert.NoError(t, err)
+}

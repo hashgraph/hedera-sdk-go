@@ -85,7 +85,7 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 		return &ScheduleCreateTransaction{}, err
 	}
 
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+	return transaction.setTransactionBodyBytes(txBytes), nil
 }
 
 func (transaction *ScheduleCreateTransaction) GetScheduledSignatures() (map[*PublicKey][]byte, error) {
@@ -132,7 +132,7 @@ func (transaction *ScheduleCreateTransaction) SignScheduledWith(publicKey Public
 		return transaction
 	}
 
-	signature := signer(transaction.pbBody.GetScheduleCreate().GetTransactionBody())
+	signature := signer(transaction.pb.TransactionBody)
 
 	if transaction.pb.SigMap == nil {
 		transaction.pb.SigMap = &proto.SignatureMap{}
@@ -149,7 +149,7 @@ func (transaction *ScheduleCreateTransaction) SignScheduledWith(publicKey Public
 }
 
 func (transaction *ScheduleCreateTransaction) scheduledKeyAlreadySigned(pk PublicKey) bool {
-	if transaction.pb.SigMap != nil{
+	if transaction.pb.SigMap != nil {
 		if len(transaction.pb.SigMap.SigPair) > 0 {
 			for _, pair := range transaction.pb.SigMap.SigPair {
 				if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
@@ -173,9 +173,9 @@ func (transaction *ScheduleCreateTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
-func (transaction *ScheduleCreateTransaction) constructProtobuf() *proto.TransactionBody{
+func (transaction *ScheduleCreateTransaction) constructProtobuf() *proto.TransactionBody {
 	return &proto.TransactionBody{
-		TransactionID:            transaction.pbBody.GetTransactionID(),
+		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
 		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
@@ -291,17 +291,6 @@ func (transaction *ScheduleCreateTransaction) Execute(
 		)
 	}
 
-	var body proto.TransactionBody
-	ok := protobuf.Unmarshal(transaction.pbBody.GetScheduleCreate().TransactionBody, &body)
-	if ok != nil{
-		return TransactionResponse{}, ok
-	}
-
-	println("length", len(transaction.signedTransactions))
-	println("node length", len(transaction.nodeIDs))
-	println("bod", transaction.pbBody.GetScheduleCreate().String())
-	println("body", body.String())
-
 	resp, err := execute(
 		client,
 		request{
@@ -356,7 +345,7 @@ func (transaction *ScheduleCreateTransaction) FreezeWith(client *Client) (*Sched
 		return transaction, err
 	}
 
-	transaction.transactionIDs[0] = transaction.transactionIDs[0].SetScheduled(true)
+	//transaction.transactionIDs[0] = transaction.transactionIDs[0].SetScheduled(true)
 
 	if !transaction.onFreeze(transaction.pbBody) {
 		return transaction, nil

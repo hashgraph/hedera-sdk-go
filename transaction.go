@@ -84,9 +84,15 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		if first == nil {
 			first = &body
 		}
+		var transactionID TransactionID
+		var nodeAccountID AccountID
+		if body.GetTransactionID() != nil{
+			transactionID = transactionIDFromProtobuf(body.GetTransactionID())
+		}
 
-		transactionID := transactionIDFromProtobuf(body.GetTransactionID())
-		nodeAccountID := accountIDFromProtobuf(body.GetNodeAccountID())
+		if body.GetNodeAccountID() != nil {
+			nodeAccountID = accountIDFromProtobuf(body.GetNodeAccountID())
+		}
 
 		found := false
 

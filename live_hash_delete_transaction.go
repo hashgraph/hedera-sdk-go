@@ -62,9 +62,9 @@ func (transaction *LiveHashDeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
-func (transaction *LiveHashDeleteTransaction) constructProtobuf() *proto.TransactionBody{
+func (transaction *LiveHashDeleteTransaction) constructProtobuf() *proto.TransactionBody {
 	return &proto.TransactionBody{
-		TransactionID:            transaction.pbBody.GetTransactionID(),
+		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
 		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),

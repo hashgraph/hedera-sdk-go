@@ -119,9 +119,9 @@ func (transaction *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
 }
 
-func (transaction *FileCreateTransaction) constructProtobuf() *proto.TransactionBody{
+func (transaction *FileCreateTransaction) constructProtobuf() *proto.TransactionBody {
 	return &proto.TransactionBody{
-		TransactionID:            transaction.pbBody.GetTransactionID(),
+		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
 		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
 		TransactionFee:           transaction.pbBody.GetTransactionFee(),
 		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
