@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -73,23 +72,14 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
 }
 
-func (transaction *ContractDeleteTransaction) constructProtobuf() *proto.TransactionBody {
-	return &proto.TransactionBody{
-		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
-		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
-		TransactionFee:           transaction.pbBody.GetTransactionFee(),
-		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
-		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
-		Memo:                     transaction.pbBody.GetMemo(),
-		Data: &proto.TransactionBody_ContractDeleteInstance{
+func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: transaction.pbBody.GetTransactionFee(),
+		Memo:           transaction.pbBody.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ContractDeleteInstance{
 			ContractDeleteInstance: &proto.ContractDeleteTransactionBody{
 				ContractID: transaction.pb.GetContractID(),
 				Obtainers:  transaction.pb.GetObtainers(),

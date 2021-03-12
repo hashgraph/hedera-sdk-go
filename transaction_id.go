@@ -18,7 +18,6 @@ import (
 type TransactionID struct {
 	AccountID  *AccountID
 	ValidStart *time.Time
-	Nonce      []byte
 	scheduled  bool
 }
 
@@ -28,17 +27,17 @@ func TransactionIDGenerate(accountID AccountID) TransactionID {
 	allowance := -(time.Duration(rand.Int63n(5*int64(time.Second))) + (8 * time.Second))
 	validStart := time.Now().UTC().Add(allowance)
 
-	return TransactionID{&accountID, &validStart, nil, false}
+	return TransactionID{&accountID, &validStart, false}
 }
 
 func TransactionIDWithNonce(nonce []byte) TransactionID {
-	return TransactionID{nil, nil, nonce, false}
+	return TransactionID{nil, nil, false}
 }
 
 // NewTransactionIDWithValidStart constructs a new Transaction id struct with the provided AccountID and the valid start
 // time set to a provided time.
 func NewTransactionIDWithValidStart(accountID AccountID, validStart time.Time) TransactionID {
-	return TransactionID{&accountID, &validStart, nil, false}
+	return TransactionID{&accountID, &validStart, false}
 }
 
 // GetReceipt queries the network for a receipt corresponding to the TransactionID's transaction. If the status of the
@@ -131,7 +130,6 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 	return TransactionID{
 		AccountID:  accountId,
 		ValidStart: validStart,
-		Nonce:      nonce,
 		scheduled:  scheduled,
 	}, nil
 }
@@ -157,7 +155,6 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 	return &proto.TransactionID{
 		TransactionValidStart: validStart,
 		AccountID:             accountID,
-		Nonce:                 byt,
 		Scheduled:             id.scheduled,
 	}
 }
@@ -173,7 +170,7 @@ func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
 		accountID = accountIDFromProtobuf(pb.AccountID)
 	}
 
-	return TransactionID{&accountID, &validStart, pb.Nonce, pb.Scheduled}
+	return TransactionID{&accountID, &validStart, pb.Scheduled}
 }
 
 func (id TransactionID) ToBytes() []byte {

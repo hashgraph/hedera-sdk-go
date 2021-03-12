@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -142,26 +141,17 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+func (transaction *ContractCreateTransaction) Schedule() *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
 
-	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf())
 }
 
-func (transaction *ContractCreateTransaction) constructProtobuf() *proto.TransactionBody {
-	return &proto.TransactionBody{
-		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
-		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
-		TransactionFee:           transaction.pbBody.GetTransactionFee(),
-		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
-		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
-		Memo:                     transaction.pbBody.GetMemo(),
-		Data: &proto.TransactionBody_ContractCreateInstance{
+func (transaction *ContractCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: transaction.pbBody.GetTransactionFee(),
+		Memo:           transaction.pbBody.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ContractCreateInstance{
 			ContractCreateInstance: &proto.ContractCreateTransactionBody{
 				FileID:                transaction.pb.GetFileID(),
 				AdminKey:              transaction.pb.GetAdminKey(),
@@ -178,7 +168,6 @@ func (transaction *ContractCreateTransaction) constructProtobuf() *proto.Transac
 		},
 	}
 }
-
 
 //
 // The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file

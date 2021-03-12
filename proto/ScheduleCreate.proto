@@ -54,20 +54,16 @@ unknown fields, even if they agree on all known fields.)
 
 A <tt>ScheduleCreate</tt> transaction that attempts to re-create an identical schedule already in state will receive a receipt with status 
 <tt>IDENTICAL_SCHEDULE_ALREADY_CREATED</tt>; the receipt will include the <tt>ScheduleID</tt> of the extant schedule, which may be 
-used in a subsequent <tt>ScheduleSign</tt> transaction.
+used in a subsequent <tt>ScheduleSign</tt> transaction. (The receipt will also include the <tt>TransactionID</tt> to use in querying 
+for the receipt or record of the scheduled transaction.)
 
-Other notable response codes include,
-<ul>
-  <li> <tt>INVALID_ACCOUNT_ID</tt> if the schedule's designated payer account does not exist or was deleted.
-  <li> <tt>UNSCHEDULABLE_TRANSACTION</tt> if the scheduled transaction is not in the scheduling whitelist.
-  <li> <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt> if the scheduled transaction refers to entities that do not exist or have been deleted.
-  <li> <tt>INVALID_SIGNATURE</tt> if the <tt>ScheduleCreate</tt> signature map included invalid signatures. (No schedule is created in this case.)
-</ul>
+Other notable response codes include, <tt>INVALID_ACCOUNT_ID</tt>, <tt>UNSCHEDULABLE_TRANSACTION</tt>, <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt>, 
+<tt>INVALID_SIGNATURE</tt>. For more information please see the section of this documentation on the <tt>ResponseCode</tt> enum. 
 */
 
 message ScheduleCreateTransactionBody {
   SchedulableTransactionBody scheduledTransactionBody = 1; // The scheduled transaction
   string memo = 2; // An optional memo with a UTF-8 encoding of no more than 100 bytes which does not contain the zero byte
   Key adminKey = 3; // An optional Hedera key which can be used to sign a ScheduleDelete and remove the schedule
-  AccountID payerAccountID = 4; // An optional id of the account to be charged the service fee for the scheduled transaction at the consensus time that it executes (i    f ever); defaults to the ScheduleCreate payer if not given
+  AccountID payerAccountID = 4; // An optional id of the account to be charged the service fee for the scheduled transaction at the consensus time that it executes (if ever); defaults to the ScheduleCreate payer if not given
 }

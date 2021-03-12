@@ -1,8 +1,6 @@
 package hedera
 
 import (
-	"bytes"
-	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -51,9 +49,9 @@ func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCrea
 	return transaction
 }
 
-func (transaction *ScheduleCreateTransaction) setTransactionBodyBytes(data []byte) *ScheduleCreateTransaction {
+func (transaction *ScheduleCreateTransaction) setSchedulableTransactionBody(txBody *proto.SchedulableTransactionBody) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.TransactionBody = data
+	transaction.pb.ScheduledTransactionBody = txBody
 
 	return transaction
 }
@@ -80,116 +78,88 @@ func (transaction *ScheduleCreateTransaction) GetMemo() string {
 func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransaction) (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	txBytes, err := protobuf.Marshal(tx.constructProtobuf())
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return transaction.setTransactionBodyBytes(txBytes), nil
+	return transaction.setSchedulableTransactionBody(tx.constructScheduleProtobuf()), nil
 }
 
-func (transaction *ScheduleCreateTransaction) GetScheduledSignatures() (map[*PublicKey][]byte, error) {
-	signMap := make(map[*PublicKey][]byte, len(transaction.pb.GetSigMap().GetSigPair()))
+//func (transaction *ScheduleCreateTransaction) GetScheduledSignatures() (map[*PublicKey][]byte, error) {
+//	signMap := make(map[*PublicKey][]byte, len(transaction.pb.GetSigMap().GetSigPair()))
+//
+//	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair() {
+//		key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
+//		if err != nil {
+//			return make(map[*PublicKey][]byte, 0), err
+//		}
+//		switch sigPair.Signature.(type) {
+//		case *proto.SignaturePair_Contract:
+//			signMap[&key] = sigPair.GetContract()
+//		case *proto.SignaturePair_Ed25519:
+//			signMap[&key] = sigPair.GetEd25519()
+//		case *proto.SignaturePair_RSA_3072:
+//			signMap[&key] = sigPair.GetRSA_3072()
+//		case *proto.SignaturePair_ECDSA_384:
+//			signMap[&key] = sigPair.GetECDSA_384()
+//		}
+//	}
+//
+//	return signMap, nil
+//}
+//
+//func (transaction *ScheduleCreateTransaction) SignScheduled(key PrivateKey) *ScheduleCreateTransaction {
+//	return transaction.SignScheduledWith(key.PublicKey(), key.Sign)
+//}
+//
+//func (transaction *ScheduleCreateTransaction) SignScheduledWithOperator(client *Client) (*ScheduleCreateTransaction, error) {
+//	if client == nil {
+//		return nil, errNoClientProvided
+//	} else if client.operator == nil {
+//		return nil, errClientOperatorSigning
+//	}
+//
+//	return transaction.SignScheduledWith(client.operator.publicKey, client.operator.signer), nil
+//}
+//
+//func (transaction *ScheduleCreateTransaction) SignScheduledWith(publicKey PublicKey, signer TransactionSigner) *ScheduleCreateTransaction {
+//	transaction.requireNotFrozen()
+//
+//	if transaction.scheduledKeyAlreadySigned(publicKey) {
+//		return transaction
+//	}
+//
+//	signature := signer(transaction.pb.TransactionBody)
+//
+//	if transaction.pb.SigMap == nil {
+//		transaction.pb.SigMap = &proto.SignatureMap{}
+//	}
+//
+//	if len(transaction.pb.SigMap.SigPair) > 0 {
+//		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
+//	} else {
+//		transaction.pb.SigMap.SigPair = []*proto.SignaturePair{}
+//		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
+//	}
+//
+//	return transaction
+//}
+//
+//func (transaction *ScheduleCreateTransaction) scheduledKeyAlreadySigned(pk PublicKey) bool {
+//	if transaction.pb.SigMap != nil {
+//		if len(transaction.pb.SigMap.SigPair) > 0 {
+//			for _, pair := range transaction.pb.SigMap.SigPair {
+//				if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
+//					return true
+//				}
+//			}
+//		}
+//	}
+//
+//	return false
+//}
 
-	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair() {
-		key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
-		if err != nil {
-			return make(map[*PublicKey][]byte, 0), err
-		}
-		switch sigPair.Signature.(type) {
-		case *proto.SignaturePair_Contract:
-			signMap[&key] = sigPair.GetContract()
-		case *proto.SignaturePair_Ed25519:
-			signMap[&key] = sigPair.GetEd25519()
-		case *proto.SignaturePair_RSA_3072:
-			signMap[&key] = sigPair.GetRSA_3072()
-		case *proto.SignaturePair_ECDSA_384:
-			signMap[&key] = sigPair.GetECDSA_384()
-		}
-	}
-
-	return signMap, nil
-}
-
-func (transaction *ScheduleCreateTransaction) SignScheduled(key PrivateKey) *ScheduleCreateTransaction {
-	return transaction.SignScheduledWith(key.PublicKey(), key.Sign)
-}
-
-func (transaction *ScheduleCreateTransaction) SignScheduledWithOperator(client *Client) (*ScheduleCreateTransaction, error) {
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	return transaction.SignScheduledWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-func (transaction *ScheduleCreateTransaction) SignScheduledWith(publicKey PublicKey, signer TransactionSigner) *ScheduleCreateTransaction {
-	transaction.requireNotFrozen()
-
-	if transaction.scheduledKeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	signature := signer(transaction.pb.TransactionBody)
-
-	if transaction.pb.SigMap == nil {
-		transaction.pb.SigMap = &proto.SignatureMap{}
-	}
-
-	if len(transaction.pb.SigMap.SigPair) > 0 {
-		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-	} else {
-		transaction.pb.SigMap.SigPair = []*proto.SignaturePair{}
-		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-	}
-
-	return transaction
-}
-
-func (transaction *ScheduleCreateTransaction) scheduledKeyAlreadySigned(pk PublicKey) bool {
-	if transaction.pb.SigMap != nil {
-		if len(transaction.pb.SigMap.SigPair) > 0 {
-			for _, pair := range transaction.pb.SigMap.SigPair {
-				if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
-					return true
-				}
-			}
-		}
-	}
-
-	return false
-}
-
-func (transaction *ScheduleCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
-
-	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
-}
-
-func (transaction *ScheduleCreateTransaction) constructProtobuf() *proto.TransactionBody {
-	return &proto.TransactionBody{
-		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
-		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
-		TransactionFee:           transaction.pbBody.GetTransactionFee(),
-		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
-		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
-		Memo:                     transaction.pbBody.GetMemo(),
-		Data: &proto.TransactionBody_ScheduleCreate{
-			ScheduleCreate: &proto.ScheduleCreateTransactionBody{
-				TransactionBody: transaction.pb.GetTransactionBody(),
-				AdminKey:        transaction.pb.GetAdminKey(),
-				PayerAccountID:  transaction.pb.GetPayerAccountID(),
-				SigMap:          transaction.pb.GetSigMap(),
-				Memo:            transaction.pb.GetMemo(),
-			},
-		},
+func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: transaction.pbBody.GetTransactionFee(),
+		Memo:           transaction.pbBody.GetMemo(),
+		Data:           nil,
 	}
 }
 
@@ -290,17 +260,6 @@ func (transaction *ScheduleCreateTransaction) Execute(
 			client.operator.signer,
 		)
 	}
-
-	var body proto.TransactionBody
-	ok := protobuf.Unmarshal(transaction.pbBody.GetScheduleCreate().TransactionBody, &body)
-	if ok != nil{
-		return TransactionResponse{}, ok
-	}
-
-	println("length", len(transaction.signedTransactions))
-	println("node length", len(transaction.nodeIDs))
-	println("bod", transaction.pbBody.GetScheduleCreate().String())
-	println("body", body.String())
 
 	resp, err := execute(
 		client,

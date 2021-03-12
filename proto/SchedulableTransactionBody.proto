@@ -45,8 +45,6 @@ import "proto/FileCreate.proto";
 import "proto/FileDelete.proto";
 import "proto/FileUpdate.proto";
 
-import "proto/Duration.proto";
-import "proto/BasicTypes.proto";
 import "proto/ContractDelete.proto";
 
 import "proto/ConsensusCreateTopic.proto";
@@ -113,6 +111,6 @@ message SchedulableTransactionBody {
     TokenAssociateTransactionBody tokenAssociate = 32; // Associate tokens to an account
     TokenDissociateTransactionBody tokenDissociate = 33; // Dissociate tokens from an account
 
-    ScheduleDeleteTransactionBody scheduleDelete = 43; // Deletes a schedule from the network's action queue
+    ScheduleDeleteTransactionBody scheduleDelete = 34; // Marks a schedule in the network's action queue as deleted, preventing it from executing
   }
 }

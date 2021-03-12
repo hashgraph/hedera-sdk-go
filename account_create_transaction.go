@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -147,25 +146,16 @@ func (transaction *AccountCreateTransaction) GetReceiverSignatureRequired() bool
 func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	tx := NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes)
+	tx := NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf())
 
 	return tx, nil
 }
 
-func (transaction *AccountCreateTransaction) constructProtobuf() *proto.TransactionBody {
-	return &proto.TransactionBody{
-		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
-		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
-		TransactionFee:           transaction.pbBody.GetTransactionFee(),
-		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
-		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
-		Memo:                     transaction.pbBody.GetMemo(),
-		Data: &proto.TransactionBody_CryptoCreateAccount{
+func (transaction *AccountCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: transaction.pbBody.GetTransactionFee(),
+		Memo:           transaction.pbBody.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_CryptoCreateAccount{
 			CryptoCreateAccount: &proto.CryptoCreateTransactionBody{
 				Key:                    transaction.pb.GetKey(),
 				InitialBalance:         transaction.pb.GetInitialBalance(),

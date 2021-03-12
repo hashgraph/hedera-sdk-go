@@ -169,10 +169,14 @@ const (
 	StatusInvalidScheduleAccountID             Status = 204
 	StatusNoNewValidSignatures                 Status = 205
 	StatusUnresolvableRequiredSigners          Status = 206
-	StatusUnparseableScheduledTransaction      Status = 207
-	StatusUnschedulableTransaction             Status = 208
-	StatusSomeSignaturesWereInvalid            Status = 209
-	StatusTransactionIDFieldNotAllowed         Status = 210
+	StatusScheduledTransactionNotInWhitelist   Status = 207
+	StatusSomeSignaturesWereInvalid            Status = 208
+	StatusTransactionIDFieldNotAllowed         Status = 209
+	StatusIdenticalScheduleAlreadyCreated      Status = 210
+	StatusInvalidZeroByteInString              Status = 211
+	StatusScheduleAlreadyDeleted               Status = 212
+	StatusScheduleAlreadyExecuted              Status = 213
+	StatusMessageSizeTooLarge                  Status = 214
 )
 
 // String() returns a string representation of the status
@@ -506,14 +510,22 @@ func (status Status) String() string {
 		return "NO_NEW_VALID_SIGNATURES"
 	case StatusUnresolvableRequiredSigners:
 		return "UNRESOLVABLE_REQUIRED_SIGNERS"
-	case StatusUnparseableScheduledTransaction:
-		return "UNPARSEABLE_SCHEDULED_TRANSACTION"
-	case StatusUnschedulableTransaction:
-		return "UNSCHEDULABLE_TRANSACTION"
+	case StatusScheduledTransactionNotInWhitelist:
+		return "SCHEDULED_TRANSACTION_NOT_IN_WHITELIST"
 	case StatusSomeSignaturesWereInvalid:
 		return "SOME_SIGNATURES_WERE_INVALID"
 	case StatusTransactionIDFieldNotAllowed:
 		return "TRANSACTION_ID_FIELD_NOT_ALLOWED"
+	case StatusIdenticalScheduleAlreadyCreated:
+		return "IDENTICAL_SCHEDULE_ALREADY_CREATED"
+	case StatusInvalidZeroByteInString:
+		return "INVALID_ZERO_BYTE_IN_STRING"
+	case StatusScheduleAlreadyDeleted:
+		return "SCHEDULE_ALREADY_DELETED"
+	case StatusScheduleAlreadyExecuted:
+		return "SCHEDULE_ALREADY_EXECUTED"
+	case StatusMessageSizeTooLarge:
+		return "MESSAGE_SIZE_TOO_LARGE"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

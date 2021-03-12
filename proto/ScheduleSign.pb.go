@@ -21,23 +21,16 @@ const (
 )
 
 //
-//Adds signing keys to a scheduled transaction. If the new keys satisfy the scheduled transaction's signing
-//requirements, and it was scheduled with <tt>executeImmediatelyOnValidSignatures=true</tt>, it will become
-//eligible for execution. In Hedera Services 0.13.0, this will in fact cause its execution immediately
-//after the triggering <tt>ScheduleSign</tt>; but future releases may change this sequencing.
+//Adds zero or more signing keys to a schedule. If the resulting set of signing keys satisfy the scheduled
+//transaction's signing requirements, it will be executed immediately after the triggering <tt>ScheduleSign</tt>.
 //
 //Upon <tt>SUCCESS</tt>, the receipt includes the <tt>scheduledTransactionID</tt> to use to query for the
 //record of the scheduled transaction's execution (if it occurs).
 //
-//Other notable response codes include,
-//<ul>
-//<li> <tt>INVALID_SCHEDULE_ID</tt> if there is no schedule with the given <tt>ScheduleID</tt>.
-//<li> <tt>SCHEDULE_WAS_DELETD</tt> if the schedule was already deleted.
-//<li> <tt>INVALID_ACCOUNT_ID</tt> if the schedule's designated payer account has been deleted.
-//<li> <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt> if the scheduled transaction is no longer valid; for example, if was meant to transfer ℏ to a now-deleted account.
-//<li> <tt>SOME_SIGNATURES_WERE_INVALID</tt> if the <tt>ScheduleSign</tt> signature map included invalid signatures. (No keys will be added to the scheduled transaction.)
-//<li> <tt>NO_NEW_VALID_SIGNATURES</tt> if the <tt>ScheduleSign</tt> signature map had only valid signatures, but none of them were for keys applicable to the scheduled transaction.
-//</ul>
+//Other notable response codes include <tt>INVALID_SCHEDULE_ID</tt>, <tt>SCHEDULE_WAS_DELETD</tt>,
+//<tt>INVALID_ACCOUNT_ID</tt>, <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt>, <tt>SOME_SIGNATURES_WERE_INVALID</tt>,
+//and <tt>NO_NEW_VALID_SIGNATURES</tt>. For more information please see the section of this
+//documentation on the <tt>ResponseCode</tt> enum.
 type ScheduleSignTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

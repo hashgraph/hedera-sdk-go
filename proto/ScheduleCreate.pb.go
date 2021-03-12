@@ -28,7 +28,7 @@ type ScheduleCreateTransactionBody struct {
 	ScheduledTransactionBody *SchedulableTransactionBody `protobuf:"bytes,1,opt,name=scheduledTransactionBody,proto3" json:"scheduledTransactionBody,omitempty"` // The scheduled transaction
 	Memo                     string                      `protobuf:"bytes,2,opt,name=memo,proto3" json:"memo,omitempty"`                                         // An optional memo with a UTF-8 encoding of no more than 100 bytes which does not contain the zero byte
 	AdminKey                 *Key                        `protobuf:"bytes,3,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                                 // An optional Hedera key which can be used to sign a ScheduleDelete and remove the schedule
-	PayerAccountID           *AccountID                  `protobuf:"bytes,4,opt,name=payerAccountID,proto3" json:"payerAccountID,omitempty"`                     // An optional id of the account to be charged the service fee for the scheduled transaction at the consensus time that it executes (i    f ever); defaults to the ScheduleCreate payer if not given
+	PayerAccountID           *AccountID                  `protobuf:"bytes,4,opt,name=payerAccountID,proto3" json:"payerAccountID,omitempty"`                     // An optional id of the account to be charged the service fee for the scheduled transaction at the consensus time that it executes (if ever); defaults to the ScheduleCreate payer if not given
 }
 
 func (x *ScheduleCreateTransactionBody) Reset() {

@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -51,31 +50,11 @@ func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetAccountOfLiveHash())
 }
 
-func (transaction *LiveHashDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
-
-	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
-	if err != nil {
-		return &ScheduleCreateTransaction{}, err
-	}
-
-	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
-}
-
-func (transaction *LiveHashDeleteTransaction) constructProtobuf() *proto.TransactionBody {
-	return &proto.TransactionBody{
-		TransactionID:            transaction.GetTransactionID().SetScheduled(true).toProtobuf(),
-		NodeAccountID:            transaction.pbBody.GetNodeAccountID(),
-		TransactionFee:           transaction.pbBody.GetTransactionFee(),
-		TransactionValidDuration: transaction.pbBody.GetTransactionValidDuration(),
-		GenerateRecord:           transaction.pbBody.GetGenerateRecord(),
-		Memo:                     transaction.pbBody.GetMemo(),
-		Data: &proto.TransactionBody_CryptoDeleteLiveHash{
-			CryptoDeleteLiveHash: &proto.CryptoDeleteLiveHashTransactionBody{
-				AccountOfLiveHash: transaction.pb.GetAccountOfLiveHash(),
-				LiveHashToDelete:  transaction.pb.GetLiveHashToDelete(),
-			},
-		},
+func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: transaction.pbBody.GetTransactionFee(),
+		Memo:           transaction.pbBody.GetMemo(),
+		Data:           nil,
 	}
 }
 
