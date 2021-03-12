@@ -21,9 +21,15 @@ const (
 )
 
 //
-//Deletes a Scheduled Transaction from the ledger.
-//The operation must be signed by the specified Admin Key of the Scheduled Transaction. If admin key is not set, Transaction will result in SCHEDULE_IS_IMMUTABLE.
-//Once deleted, sign and delete transactions will resolve to INVALID_SCHEDULE_ID.
+//Marks a schedule in the network's action queue as deleted. Must be signed by the admin key of the target schedule.
+//A deleted schedule cannot receive any additional signing keys, nor will it be executed.
+//
+//Other notable response codes include,
+//<ul>
+//<li> <tt>INVALID_SCHEDULE_ID</tt> if there is no schedule with the given <tt>ScheduleID</tt>.
+//<li> <tt>SCHEDULE_WAS_DELETED</tt> if the schedule was already deleted.
+//<li> <tt>SCHEDULE_IS_IMMUTABLE</tt> if the schedule exists but had no <tt>adminKey</tt>.
+//</ul>
 type ScheduleDeleteTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
