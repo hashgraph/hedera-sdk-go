@@ -271,7 +271,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 			end = len(transaction.contents)
 		}
 
-		transaction.transactionIDs = append(transaction.transactionIDs, nextTransactionID)
+		transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
 
 		transaction.pb.Contents = transaction.contents[start:end]
 

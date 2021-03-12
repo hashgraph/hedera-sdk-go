@@ -92,7 +92,7 @@ func newTestClient(t *testing.T) *Client {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(NewHbar(20)).
+		SetInitialBalance(NewHbar(100)).
 		Execute(client)
 	assert.NoError(t, err)
 

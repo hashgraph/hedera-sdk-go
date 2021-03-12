@@ -140,7 +140,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				onNext(topicMessageOfSingle(resp))
 			} else {
 				messagesMutex.Lock()
-				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID)
+				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
 				messageI, _ := messages.LoadOrStore(txID, make([]*mirror.ConsensusTopicResponse, 0, resp.ChunkInfo.Total))
 
 				message := messageI.([]*mirror.ConsensusTopicResponse)

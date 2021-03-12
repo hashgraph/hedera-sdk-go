@@ -171,8 +171,12 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	}
 
 	transactionID := transaction.GetTransactionID()
+	accountID := AccountID{}
+	if transactionID.AccountID != nil {
+		accountID = *transactionID.AccountID
+	}
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(accountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
@@ -234,7 +238,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	}
 
 	initialTransactionID := transaction.GetTransactionID()
-	nextTransactionID := initialTransactionID
+	nextTransactionID := transactionIDFromProtobuf(initialTransactionID.toProtobuf())
 
 	transaction.transactionIDs = make([]TransactionID, 0)
 	transaction.transactions = make([]*proto.Transaction, 0)
@@ -248,7 +252,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			end = len(transaction.message)
 		}
 
-		transaction.transactionIDs = append(transaction.transactionIDs, nextTransactionID)
+		transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
 
 		transaction.pb.Message = transaction.message[start:end]
 		transaction.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
