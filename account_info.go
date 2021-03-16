@@ -22,6 +22,7 @@ type AccountInfo struct {
 	ExpirationTime                 time.Time
 	AutoRenewPeriod                time.Duration
 	TokenRelationships             []*TokenRelationship
+	AccountMemo                    string
 }
 
 func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
@@ -57,6 +58,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 		ReceiverSigRequired:            pb.ReceiverSigRequired,
 		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeFromProtobuf(pb.ExpirationTime),
+		AccountMemo:                    pb.Memo,
 	}, nil
 }
 
@@ -82,6 +84,7 @@ func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 		ReceiverSigRequired:            info.ReceiverSigRequired,
 		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeToProtobuf(info.ExpirationTime),
+		Memo:                           info.AccountMemo,
 	}
 }
 

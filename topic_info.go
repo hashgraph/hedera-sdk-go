@@ -7,7 +7,7 @@ import (
 )
 
 type TopicInfo struct {
-	Memo               string
+	TopicMemo          string
 	RunningHash        []byte
 	SequenceNumber     uint64
 	ExpirationTime     time.Time
@@ -20,7 +20,7 @@ type TopicInfo struct {
 func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, error) {
 	var err error
 	tempTopicInfo := TopicInfo{
-		Memo:           topicInfo.Memo,
+		TopicMemo:      topicInfo.Memo,
 		RunningHash:    topicInfo.RunningHash,
 		SequenceNumber: topicInfo.SequenceNumber,
 		ExpirationTime: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(),
@@ -47,7 +47,7 @@ func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, erro
 
 func (topicInfo *TopicInfo) toProtobuf() *proto.ConsensusTopicInfo {
 	return &proto.ConsensusTopicInfo{
-		Memo:           topicInfo.Memo,
+		Memo:           topicInfo.TopicMemo,
 		RunningHash:    topicInfo.RunningHash,
 		SequenceNumber: topicInfo.SequenceNumber,
 		ExpirationTime: &proto.Timestamp{

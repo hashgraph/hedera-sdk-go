@@ -12,15 +12,17 @@ type FileInfo struct {
 	ExpirationTime time.Time
 	IsDeleted      bool
 	Keys           KeyList
+	FileMemo       string
 }
 
-func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys KeyList) FileInfo {
+func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys KeyList, fileMemo string) FileInfo {
 	return FileInfo{
 		FileID:         fileID,
 		Size:           size,
 		ExpirationTime: expirationTime,
 		IsDeleted:      isDeleted,
 		Keys:           keys,
+		FileMemo:       fileMemo,
 	}
 }
 
@@ -40,6 +42,7 @@ func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInf
 		ExpirationTime: timeFromProtobuf(fileInfo.ExpirationTime),
 		IsDeleted:      fileInfo.Deleted,
 		Keys:           keys,
+		FileMemo:       fileInfo.Memo,
 	}, nil
 }
 
@@ -53,6 +56,7 @@ func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {
 		},
 		Deleted: fileInfo.IsDeleted,
 		Keys:    fileInfo.Keys.toProtoKeyList(),
+		Memo:    fileInfo.FileMemo,
 	}
 }
 

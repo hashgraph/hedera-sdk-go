@@ -24,7 +24,7 @@ type TokenInfo struct {
 	AutoRenewPeriod     *time.Duration
 	AutoRenewAccountID  AccountID
 	ExpirationTime      *time.Time
-	Memo                string
+	TokenMemo           string
 }
 
 func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
@@ -159,7 +159,7 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		AutoRenewPeriod:     &autoRenewPeriod,
 		AutoRenewAccountID:  accountID,
 		ExpirationTime:      &expirationTime,
-		Memo:                pb.Memo,
+		TokenMemo:           pb.Memo,
 	}
 }
 
@@ -217,7 +217,7 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		AutoRenewPeriod:     autoRenewPeriod,
 		AutoRenewAccount:    tokenInfo.AutoRenewAccountID.toProtobuf(),
 		Expiry:              expirationTime,
-		Memo:                tokenInfo.Symbol,
+		Memo:                tokenInfo.TokenMemo,
 	}
 }
 
