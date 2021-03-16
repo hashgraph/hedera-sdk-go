@@ -86,7 +86,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		}
 		var transactionID TransactionID
 		var nodeAccountID AccountID
-		if body.GetTransactionID() != nil{
+		if body.GetTransactionID() != nil {
 			transactionID = transactionIDFromProtobuf(body.GetTransactionID())
 		}
 

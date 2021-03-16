@@ -148,7 +148,7 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 	}
 
 	var byt []byte
-	if id.Nonce != nil{
+	if id.Nonce != nil {
 		byt = id.Nonce
 	} else {
 		byt = []byte{}

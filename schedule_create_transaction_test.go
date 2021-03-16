@@ -112,7 +112,6 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-
 func TestScheduleCreateTransaction_Signature_Execute(t *testing.T) {
 	client := newTestClient(t, false)
 
