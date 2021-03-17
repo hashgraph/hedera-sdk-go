@@ -14,16 +14,21 @@ type TopicID struct {
 }
 
 // TopicIDFromString constructs a TopicID from a string formatted as `Shard.Realm.Topic` (for example "0.0.3")
-func TopicIDFromString(s string) (TopicID, error) {
-	shard, realm, num, err := idFromString(s)
+func TopicIDFromString(data string) (TopicID, error) {
+	checksum, err := checksumParseAddress("", data)
+	if err != nil {
+		return TopicID{}, err
+	}
+
+	err = checksumVerify(checksum.status)
 	if err != nil {
 		return TopicID{}, err
 	}
 
 	return TopicID{
-		Shard: uint64(shard),
-		Realm: uint64(realm),
-		Topic: uint64(num),
+		Shard: uint64(checksum.num1),
+		Realm: uint64(checksum.num2),
+		Topic: uint64(checksum.num3),
 	}, nil
 }
 

@@ -14,16 +14,21 @@ type ContractID struct {
 }
 
 // ContractIDFromString constructs a ContractID from a string formatted as `Shard.Realm.Contract` (for example "0.0.3")
-func ContractIDFromString(s string) (ContractID, error) {
-	shard, realm, num, err := idFromString(s)
+func ContractIDFromString(data string) (ContractID, error) {
+	checksum, err := checksumParseAddress("", data)
+	if err != nil {
+		return ContractID{}, err
+	}
+
+	err = checksumVerify(checksum.status)
 	if err != nil {
 		return ContractID{}, err
 	}
 
 	return ContractID{
-		Shard:    uint64(shard),
-		Realm:    uint64(realm),
-		Contract: uint64(num),
+		Shard:    uint64(checksum.num1),
+		Realm:    uint64(checksum.num2),
+		Contract: uint64(checksum.num3),
 	}, nil
 }
 

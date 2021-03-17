@@ -17,16 +17,21 @@ type AccountID struct {
 
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
-func AccountIDFromString(s string) (AccountID, error) {
-	shard, realm, num, err := idFromString(s)
+func AccountIDFromString(data string) (AccountID, error) {
+	checksum, err := checksumParseAddress("", data)
+	if err != nil {
+		return AccountID{}, err
+	}
+
+	err = checksumVerify(checksum.status)
 	if err != nil {
 		return AccountID{}, err
 	}
 
 	return AccountID{
-		Shard:   uint64(shard),
-		Realm:   uint64(realm),
-		Account: uint64(num),
+		Shard:   uint64(checksum.num1),
+		Realm:   uint64(checksum.num2),
+		Account: uint64(checksum.num3),
 	}, nil
 }
 
