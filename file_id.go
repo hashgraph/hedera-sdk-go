@@ -31,16 +31,21 @@ func FileIDForExchangeRate() FileID {
 
 // FileIDFromString returns a FileID parsed from the given string.
 // A malformatted string will cause this to return an error instead.
-func FileIDFromString(s string) (FileID, error) {
-	shard, realm, num, err := idFromString(s)
+func FileIDFromString(data string) (FileID, error) {
+	checksum, err := checksumParseAddress("", data)
+	if err != nil {
+		return FileID{}, err
+	}
+
+	err = checksumVerify(checksum.status)
 	if err != nil {
 		return FileID{}, err
 	}
 
 	return FileID{
-		Shard: uint64(shard),
-		Realm: uint64(realm),
-		File:  uint64(num),
+		Shard: uint64(checksum.num1),
+		Realm: uint64(checksum.num2),
+		File:  uint64(checksum.num3),
 	}, nil
 }
 

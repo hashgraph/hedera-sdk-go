@@ -16,16 +16,21 @@ type ScheduleID struct {
 
 // ScheduleIDFromString constructs an ScheduleID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
-func ScheduleIDFromString(s string) (ScheduleID, error) {
-	shard, realm, num, err := idFromString(s)
+func ScheduleIDFromString(data string) (ScheduleID, error) {
+	checksum, err := checksumParseAddress("", data)
+	if err != nil {
+		return ScheduleID{}, err
+	}
+
+	err = checksumVerify(checksum.status)
 	if err != nil {
 		return ScheduleID{}, err
 	}
 
 	return ScheduleID{
-		Shard:    uint64(shard),
-		Realm:    uint64(realm),
-		Schedule: uint64(num),
+		Shard:    uint64(checksum.num1),
+		Realm:    uint64(checksum.num2),
+		Schedule: uint64(checksum.num3),
 	}, nil
 }
 

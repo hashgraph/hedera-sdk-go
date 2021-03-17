@@ -59,15 +59,20 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 
 // TokenIDFromString constructs an TokenID from a string formatted as
 // `Shard.Realm.TokenID` (for example "0.0.3")
-func TokenIDFromString(s string) (TokenID, error) {
-	shard, realm, num, err := idFromString(s)
+func TokenIDFromString(data string) (TokenID, error) {
+	checksum, err := checksumParseAddress("", data)
+	if err != nil {
+		return TokenID{}, err
+	}
+
+	err = checksumVerify(checksum.status)
 	if err != nil {
 		return TokenID{}, err
 	}
 
 	return TokenID{
-		Shard: uint64(shard),
-		Realm: uint64(realm),
-		Token: uint64(num),
+		Shard: uint64(checksum.num1),
+		Realm: uint64(checksum.num2),
+		Token: uint64(checksum.num3),
 	}, nil
 }
