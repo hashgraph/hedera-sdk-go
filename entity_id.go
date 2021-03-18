@@ -47,7 +47,7 @@ func checksumParseAddress(ledgerID string, address string) (parseAddressResult, 
 	matchArray := match.FindStringSubmatch(address)
 
 	a := make([]int64, len(matchArray))
-	for i := 1; i < len(matchArray) - 1; i++ {
+	for i := 1; i < len(matchArray)-1; i++ {
 		a[i], err = strconv.ParseInt(matchArray[i], 10, 64)
 		if err != nil {
 			return parseAddressResult{status: 0}, err
@@ -95,8 +95,8 @@ func checkChecksum(ledgerID string, address string) string {
 	id := ledgerID + "000000000000"
 	h := make([]int64, 0)
 
-	for i := 0; i < len(id); i+=2{
-		processed, _ := strconv.ParseInt(id[i:i+2], 16 , 64)
+	for i := 0; i < len(id); i += 2 {
+		processed, _ := strconv.ParseInt(id[i:i+2], 16, 64)
 		h = append(h, processed)
 	}
 
@@ -110,22 +110,22 @@ func checkChecksum(ledgerID string, address string) string {
 	}
 
 	for i := 0; i < len(digits); i++ {
-		s = (w * s + digits[i]) % m
-		if i % 2 == 0 {
+		s = (w*s + digits[i]) % m
+		if i%2 == 0 {
 			s0 = (s0 + digits[i]) % 11
 		} else {
 			s1 = (s1 + digits[i]) % 11
 		}
 	}
 
-	for i := 0; i < len(h); i++{
-		sh = (w * sh + int(h[i])) % m2
+	for i := 0; i < len(h); i++ {
+		sh = (w*sh + int(h[i])) % m2
 	}
 
-	checksum = ((((n % 5) * 11 + s0) * 11 + s1) * m + s + sh) % m2
+	checksum = ((((n%5)*11+s0)*11+s1)*m + s + sh) % m2
 
 	for i := 0; i < 5; i++ {
-		answer = string(asciiA + rune(checksum % 26)) + answer
+		answer = string(asciiA+rune(checksum%26)) + answer
 		checksum /= 26
 	}
 
