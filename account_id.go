@@ -53,7 +53,11 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 // String returns the string representation of an AccountID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id AccountID) String() string {
-	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
+	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	if err != nil {
+		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, checksum.correctChecksum)
 }
 
 // ToSolidityAddress returns the string representation of the AccountID as a

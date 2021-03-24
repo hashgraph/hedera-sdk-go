@@ -63,7 +63,11 @@ func FileIDFromSolidityAddress(s string) (FileID, error) {
 }
 
 func (id FileID) String() string {
-	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File)
+	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+	if err != nil {
+		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File)
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.File, checksum.correctChecksum)
 }
 
 func (id FileID) ToSolidityAddress() string {

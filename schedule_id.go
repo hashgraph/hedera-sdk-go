@@ -37,7 +37,11 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 // String returns the string representation of an ScheduleID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id ScheduleID) String() string {
-	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule)
+	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+	if err != nil {
+		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule)
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, checksum.correctChecksum)
 }
 
 func (id ScheduleID) toProtobuf() *proto.ScheduleID {

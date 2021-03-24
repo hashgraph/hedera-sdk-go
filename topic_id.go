@@ -34,7 +34,11 @@ func TopicIDFromString(data string) (TopicID, error) {
 
 // String returns the string representation of a TopicID in `Shard.Realm.Topic` (for example "0.0.3")
 func (id TopicID) String() string {
-	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic)
+	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
+	if err != nil {
+		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic)
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, checksum.correctChecksum)
 }
 
 func (id TopicID) toProtobuf() *proto.TopicID {
