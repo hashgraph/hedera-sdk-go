@@ -32,7 +32,11 @@ func (id *TokenID) toProtobuf() *proto.TokenID {
 }
 
 func (id TokenID) String() string {
-	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
+	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+	if err != nil {
+		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Token, checksum.correctChecksum)
 }
 
 func (id TokenID) ToBytes() []byte {

@@ -48,7 +48,11 @@ func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 
 // String returns the string representation of a ContractID formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func (id ContractID) String() string {
-	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
+	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	if err != nil {
+		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, checksum.correctChecksum)
 }
 
 // ToSolidityAddress returns the string representation of the ContractID as a solidity address.
