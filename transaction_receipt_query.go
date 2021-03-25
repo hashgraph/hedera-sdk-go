@@ -60,6 +60,10 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func transactionReceiptQuery_shouldRetry(status Status, response response) bool {
+	if status == StatusPlatformTransactionNotCreated {
+		return true
+	}
+
 	switch status {
 	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return true
@@ -153,6 +157,10 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	)
 
 	if err != nil {
+		switch precheckErr := err.(type) {
+		case ErrHederaPreCheckStatus:
+			return TransactionReceipt{}, newErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
+		}
 		return TransactionReceipt{}, err
 	}
 

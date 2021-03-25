@@ -60,19 +60,23 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func transactionRecordQuery_shouldRetry(status Status, response response) bool {
-	switch status {
-	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
+	if status == StatusPlatformTransactionNotCreated {
 		return true
 	}
 
-	if status != StatusOk {
+	switch status {
+	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
+		return true
+	case StatusOk:
+		break
+	default:
 		return false
 	}
 
 	status = Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus())
 
 	switch status {
-	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
+	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound:
 		return true
 	default:
 		return false
@@ -184,6 +188,10 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	)
 
 	if err != nil {
+		switch precheckErr := err.(type) {
+		case ErrHederaPreCheckStatus:
+			return TransactionRecord{}, newErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
+		}
 		return TransactionRecord{}, err
 	}
 
