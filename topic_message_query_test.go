@@ -118,6 +118,99 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
+	client := newTestClient(t, false)
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorPublicKey()).
+		Execute(client)
+
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	wait := true
+	wait2 := true
+	start := time.Now()
+
+	_, err = NewTopicMessageQuery().
+		SetTopicID(topicID).
+		SetStartTime(time.Unix(0, 0)).
+		Subscribe(client, func(message TopicMessage) {
+			if string(message.Contents) == bigContents {
+				//println(message.SequenceNumber)
+				wait = false
+			}
+		})
+	assert.NoError(t, err)
+
+	resp, err = NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetMessage([]byte(bigContents)).
+		SetMaxChunks(4).
+		SetTopicID(topicID).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	_, err = NewTopicMessageQuery().
+		SetTopicID(topicID).
+		SetStartTime(time.Unix(0, 0)).
+		Subscribe(client, func(message TopicMessage) {
+			if string(message.Contents) == bigContents {
+				//println(message.SequenceNumber)
+				wait2 = false
+			}
+		})
+	assert.NoError(t, err)
+
+	for i := 0; i<40; i++ {
+		resp, err = NewTopicMessageSubmitTransaction().
+			SetNodeAccountIDs([]AccountID{resp.NodeID}).
+			SetMessage([]byte(bigContents)).
+			SetMaxChunks(4).
+			SetTopicID(topicID).
+			Execute(client)
+		assert.NoError(t, err)
+	}
+
+	for {
+		if !wait || uint64(time.Since(start).Seconds()) > 60 {
+			break
+		}
+
+		time.Sleep(2500)
+	}
+
+	for {
+		if !wait2 || uint64(time.Since(start).Seconds()) > 60 {
+			break
+		}
+
+		time.Sleep(2500)
+	}
+
+	resp, err = NewTopicDeleteTransaction().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	if wait {
+		err = errors.New("Message was not received within 30 seconds")
+	}
+	assert.NoError(t, err)
+}
+
 func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	client := newTestClient(t, false)
 
