@@ -170,7 +170,7 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 		})
 	assert.NoError(t, err)
 
-	for i := 0; i<40; i++ {
+	for i := 0; i < 40; i++ {
 		resp, err = NewTopicMessageSubmitTransaction().
 			SetNodeAccountIDs([]AccountID{resp.NodeID}).
 			SetMessage([]byte(bigContents)).
