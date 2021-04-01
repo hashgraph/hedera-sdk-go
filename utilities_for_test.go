@@ -64,6 +64,7 @@ func newTestClient(t *testing.T, token bool) *Client {
 	var err error
 
 	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		println("here")
 		client = ClientForPreviewnet()
 	} else {
 		client, err = ClientFromConfigFile(os.Getenv("CONFIG_FILE"))

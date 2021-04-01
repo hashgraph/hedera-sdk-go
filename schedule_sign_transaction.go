@@ -42,60 +42,6 @@ func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 	return scheduleIDFromProtobuf(transaction.pb.ScheduleID)
 }
 
-//func (transaction *ScheduleSignTransaction) AddScheduleSignature(publicKey PublicKey, signature []byte) *ScheduleSignTransaction {
-//	transaction.requireOneNodeAccountID()
-//
-//	if transaction.pb.SigMap != nil {
-//		if transaction.pb.SigMap.SigPair != nil {
-//			transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-//		} else {
-//			transaction.pb.SigMap.SigPair = make([]*proto.SignaturePair, 0)
-//			transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-//		}
-//	} else {
-//		transaction.pb.SigMap = &proto.SignatureMap{
-//			SigPair: make([]*proto.SignaturePair, 0),
-//		}
-//		transaction.pb.SigMap.SigPair = append(transaction.pb.SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-//	}
-//
-//	return transaction
-//}
-//
-//func (transaction *ScheduleSignTransaction) GetScheduleSignatures() (map[*PublicKey][]byte, error) {
-//	signMap := make(map[*PublicKey][]byte, len(transaction.pb.GetSigMap().GetSigPair()))
-//
-//	for _, sigPair := range transaction.pb.GetSigMap().GetSigPair() {
-//		key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
-//		if err != nil {
-//			return make(map[*PublicKey][]byte, 0), err
-//		}
-//		switch sigPair.Signature.(type) {
-//		case *proto.SignaturePair_Contract:
-//			signMap[&key] = sigPair.GetContract()
-//		case *proto.SignaturePair_Ed25519:
-//			signMap[&key] = sigPair.GetEd25519()
-//		case *proto.SignaturePair_RSA_3072:
-//			signMap[&key] = sigPair.GetRSA_3072()
-//		case *proto.SignaturePair_ECDSA_384:
-//			signMap[&key] = sigPair.GetECDSA_384()
-//		}
-//	}
-//
-//	return signMap, nil
-//}
-//
-//func (transaction *ScheduleSignTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-//	transaction.requireNotFrozen()
-//
-//	txBytes, err := protobuf.Marshal(transaction.constructProtobuf())
-//	if err != nil {
-//		return &ScheduleCreateTransaction{}, err
-//	}
-//
-//	return NewScheduleCreateTransaction().setTransactionBodyBytes(txBytes), nil
-//}
-
 func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),

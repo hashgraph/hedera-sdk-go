@@ -48,8 +48,6 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, infoTx)
 
-	println(info.Executed.String())
-
 	tx2, err := NewScheduleDeleteTransaction().
 		SetScheduleID(*receipt.ScheduleID).
 		FreezeWith(client)
@@ -62,7 +60,7 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	if err != nil{
+	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status SCHEDULE_ALREADY_EXECUTED"), err.Error())
 	}
 }
@@ -114,7 +112,7 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	if err != nil{
+	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status SCHEDULE_ALREADY_EXECUTED"), err.Error())
 	}
 }
@@ -247,7 +245,8 @@ func TestScheduleCreateTransaction_Delete_Execute(t *testing.T) {
 	transfer, err := info.GetTransaction()
 	assert.NoError(t, err)
 	assert.NotNil(t, transfer)
-	assert.True(t, info.Executed.IsZero())
+	assert.Nil(t, info.Executed)
+	assert.Nil(t, info.Deleted)
 
 	tx2, err := NewScheduleDeleteTransaction().
 		SetScheduleID(scheduleID).
@@ -313,7 +312,7 @@ func TestScheduleCreateTransaction_CheckValidGetTransaction_Execute(t *testing.T
 
 	assert.NotNil(t, infoTx)
 
-	switch createTx := infoTx.(type){
+	switch createTx := infoTx.(type) {
 	case AccountCreateTransaction:
 		assert.Equal(t, createTx.pbBody.GetCryptoCreateAccount().InitialBalance, uint64(NewHbar(1).tinybar))
 	}
@@ -330,7 +329,7 @@ func TestScheduleCreateTransaction_CheckValidGetTransaction_Execute(t *testing.T
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	if err != nil{
+	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status SCHEDULE_ALREADY_EXECUTED"), err.Error())
 	}
 }

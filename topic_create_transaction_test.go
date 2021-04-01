@@ -31,7 +31,7 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
-	assert.Equal(t, topicMemo, info.Memo)
+	assert.Equal(t, topicMemo, info.TopicMemo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
@@ -88,7 +88,7 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
-	assert.Equal(t, topicMemo, info.Memo)
+	assert.Equal(t, topicMemo, info.TopicMemo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, pubKeys[0].String(), info.AdminKey.String())
 

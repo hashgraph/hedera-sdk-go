@@ -32,7 +32,7 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
-	assert.Equal(t, oldTopicMemo, info.Memo)
+	assert.Equal(t, oldTopicMemo, info.TopicMemo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
@@ -56,7 +56,7 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
-	assert.Equal(t, newTopicMemo, info.Memo)
+	assert.Equal(t, newTopicMemo, info.TopicMemo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
@@ -96,7 +96,7 @@ func Test_TopicUpdate_NoMemo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
-	assert.Equal(t, oldTopicMemo, info.Memo)
+	assert.Equal(t, oldTopicMemo, info.TopicMemo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
@@ -144,7 +144,7 @@ func Test_TopicUpdate_NoTopicID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
-	assert.Equal(t, oldTopicMemo, info.Memo)
+	assert.Equal(t, oldTopicMemo, info.TopicMemo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
 	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
 

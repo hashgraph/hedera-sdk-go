@@ -120,7 +120,6 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 	temp2 := time.Unix(sec, nano)
 	validStart = &temp2
 
-
 	return TransactionID{
 		AccountID:  accountId,
 		ValidStart: validStart,

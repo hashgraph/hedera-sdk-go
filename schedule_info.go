@@ -9,8 +9,8 @@ type ScheduleInfo struct {
 	ScheduleID               ScheduleID
 	CreatorAccountID         AccountID
 	PayerAccountID           AccountID
-	Executed                 time.Time
-	Deleted                  time.Time
+	Executed                 *time.Time
+	Deleted                  *time.Time
 	ExpirationTime           time.Time
 	ScheduledTransactionBody *SchedulableTransactionBody
 	Signers                  *KeyList
@@ -35,13 +35,15 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		scheduledTransactionID = transactionIDFromProtobuf(pb.ScheduledTransactionID)
 	}
 
-	var executed time.Time
-	var deleted time.Time
+	var executed *time.Time
+	var deleted *time.Time
 	switch t := pb.Data.(type) {
 	case *proto.ScheduleInfo_ExecutionTime:
-		executed = timeFromProtobuf(t.ExecutionTime)
+		time := timeFromProtobuf(t.ExecutionTime)
+		executed = &time
 	case *proto.ScheduleInfo_DeletionTime:
-		deleted = timeFromProtobuf(t.DeletionTime)
+		time := timeFromProtobuf(t.DeletionTime)
+		deleted = &time
 	}
 
 	return ScheduleInfo{
@@ -82,13 +84,13 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 		ScheduledTransactionID:   scheduleInfo.ScheduledTransactionID.toProtobuf(),
 	}
 
-	if scheduleInfo.Executed.IsZero() {
+	if scheduleInfo.Executed != nil {
 		info.Data = &proto.ScheduleInfo_DeletionTime{
-			DeletionTime: timeToProtobuf(scheduleInfo.Deleted),
+			DeletionTime: timeToProtobuf(*scheduleInfo.Deleted),
 		}
-	} else {
+	} else if scheduleInfo.Deleted != nil {
 		info.Data = &proto.ScheduleInfo_ExecutionTime{
-			ExecutionTime: timeToProtobuf(scheduleInfo.Executed),
+			ExecutionTime: timeToProtobuf(*scheduleInfo.Executed),
 		}
 	}
 
