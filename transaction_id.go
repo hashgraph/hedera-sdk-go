@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"encoding/hex"
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -74,8 +73,6 @@ func (id TransactionID) String() string {
 	if id.AccountID != nil && id.ValidStart != nil {
 		pb = timeToProtobuf(*id.ValidStart)
 		returnString = id.AccountID.String() + "@" + strconv.FormatInt(pb.Seconds, 10) + "." + fmt.Sprint(pb.Nanos)
-	} else if id.Nonce != nil {
-		returnString = hex.EncodeToString(id.Nonce)
 	}
 
 	if id.scheduled {
@@ -90,42 +87,39 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 
 	var accountId *AccountID
 	var validStart *time.Time
-	var nonce []byte = nil
 	scheduled := len(parts) == 2 && strings.Compare(parts[1], "scheduled") == 0
 
-	nonce, err := hex.DecodeString(parts[0])
-	if err != nil {
-		parts = strings.SplitN(parts[0], "@", 2)
+	parts = strings.SplitN(parts[0], "@", 2)
 
-		if len(parts) != 2 {
-			return TransactionID{}, errors.New("expecting [{account}@{seconds}.{nanos}|{nonce}][?scheduled]")
-		}
-
-		temp, err := AccountIDFromString(parts[0])
-		accountId = &temp
-		if err != nil {
-			return TransactionID{}, err
-		}
-
-		validStartParts := strings.SplitN(parts[1], ".", 2)
-
-		if len(validStartParts) != 2 {
-			return TransactionID{}, errors.New("expecting {account}@{seconds}.{nanos}")
-		}
-
-		sec, err := strconv.ParseInt(validStartParts[0], 10, 64)
-		if err != nil {
-			return TransactionID{}, err
-		}
-
-		nano, err := strconv.ParseInt(validStartParts[1], 10, 64)
-		if err != nil {
-			return TransactionID{}, err
-		}
-
-		temp2 := time.Unix(sec, nano)
-		validStart = &temp2
+	if len(parts) != 2 {
+		return TransactionID{}, errors.New("expecting [{account}@{seconds}.{nanos}|{nonce}][?scheduled]")
 	}
+
+	temp, err := AccountIDFromString(parts[0])
+	accountId = &temp
+	if err != nil {
+		return TransactionID{}, err
+	}
+
+	validStartParts := strings.SplitN(parts[1], ".", 2)
+
+	if len(validStartParts) != 2 {
+		return TransactionID{}, errors.New("expecting {account}@{seconds}.{nanos}")
+	}
+
+	sec, err := strconv.ParseInt(validStartParts[0], 10, 64)
+	if err != nil {
+		return TransactionID{}, err
+	}
+
+	nano, err := strconv.ParseInt(validStartParts[1], 10, 64)
+	if err != nil {
+		return TransactionID{}, err
+	}
+
+	temp2 := time.Unix(sec, nano)
+	validStart = &temp2
+
 
 	return TransactionID{
 		AccountID:  accountId,
@@ -143,13 +137,6 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 	var accountID *proto.AccountID
 	if id.AccountID != nil {
 		accountID = id.AccountID.toProtobuf()
-	}
-
-	var byt []byte
-	if id.Nonce != nil {
-		byt = id.Nonce
-	} else {
-		byt = []byte{}
 	}
 
 	return &proto.TransactionID{

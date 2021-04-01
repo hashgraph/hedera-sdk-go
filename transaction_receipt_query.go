@@ -82,8 +82,6 @@ func transactionReceiptQuery_shouldRetry(status Status, response response) bool 
 func transactionReceiptQuery_mapResponseStatus(_ request, response response) Status {
 	status := Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
 
-	println(status.String())
-
 	switch status {
 	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
 		return status

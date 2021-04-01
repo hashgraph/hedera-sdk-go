@@ -95,6 +95,83 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 	return info
 }
 
-func (scheduleInfo *ScheduleInfo) GetTransaction() interface{} {
-	return scheduleInfo.ScheduledTransactionBody.Transaction
+func (scheduleInfo *ScheduleInfo) GetTransaction() (interface{}, error) {
+	pbBody := scheduleInfo.ScheduledTransactionBody.Transaction.pbBody
+	tx := *scheduleInfo.ScheduledTransactionBody.Transaction
+	switch pbBody.Data.(type) {
+	case *proto.TransactionBody_ContractCall:
+		return contractExecuteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ContractCreateInstance:
+		return contractCreateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ContractUpdateInstance:
+		return contractUpdateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ContractDeleteInstance:
+		return contractDeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_CryptoAddLiveHash:
+		return liveHashAddTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_CryptoCreateAccount:
+		return accountCreateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_CryptoDelete:
+		return accountDeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_CryptoDeleteLiveHash:
+		return liveHashDeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_CryptoTransfer:
+		return transferTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_CryptoUpdateAccount:
+		return accountUpdateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_FileAppend:
+		return fileAppendTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_FileCreate:
+		return fileCreateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_FileDelete:
+		return fileDeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_FileUpdate:
+		return fileUpdateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_SystemDelete:
+		return systemDeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_SystemUndelete:
+		return systemUndeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_Freeze:
+		return freezeTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ConsensusCreateTopic:
+		return topicCreateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ConsensusUpdateTopic:
+		return topicUpdateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ConsensusDeleteTopic:
+		return topicDeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ConsensusSubmitMessage:
+		return topicMessageSubmitTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenCreation:
+		return tokenCreateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenFreeze:
+		return tokenFreezeTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenUnfreeze:
+		return tokenUnfreezeTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenGrantKyc:
+		return tokenGrantKycTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenRevokeKyc:
+		return tokenRevokeKycTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenDeletion:
+		return tokenDeleteTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenUpdate:
+		return tokenUpdateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenMint:
+		return tokenMintTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenBurn:
+		return tokenBurnTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenWipe:
+		return tokenWipeTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenAssociate:
+		return tokenAssociateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_TokenDissociate:
+		return tokenDissociateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ScheduleCreate:
+		return scheduleCreateTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ScheduleSign:
+		return scheduleSignTransactionFromProtobuf(tx, pbBody), nil
+	case *proto.TransactionBody_ScheduleDelete:
+		return scheduleDeleteTransactionFromProtobuf(tx, pbBody), nil
+	default:
+		return Transaction{}, errFailedToDeserializeBytes
+	}
 }

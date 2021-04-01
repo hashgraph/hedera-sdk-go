@@ -102,21 +102,6 @@ func main() {
 		return
 	}
 
-	// Manually sign with 2 of the private keys provided in the threshold
-	scheduled.SignScheduled(keys[0])
-	scheduled.SignScheduled(keys[1])
-
-	signatures1, err := scheduled.GetScheduledSignatures()
-	if err != nil {
-		println(err.Error(), ": error getting scheduled signatures")
-		return
-	}
-
-	if len(signatures1) != 2 {
-		println("Scheduled transaction has incorrect number of signatures: ", len(signatures1))
-		return
-	}
-
 	scheduleResponse, err := scheduled.Execute(client)
 	if err != nil {
 		println(err.Error(), ": error executing schedule create")
@@ -140,8 +125,6 @@ func main() {
 		return
 	}
 
-	println("schedule info signatories = ", info.Signatories.String())
-
 	transfer, err := info.GetTransaction()
 	if err != nil {
 		println(err.Error(), ": error getting transaction from schedule info")
@@ -149,16 +132,9 @@ func main() {
 	}
 
 	var transfers map[hedera.AccountID]hedera.Hbar
-	var key3Signature []byte
 	switch tx := transfer.(type){
 	case hedera.TransferTransaction:
 		transfers = tx.GetHbarTransfers()
-		//println(tx.Transaction.)
-		key3Signature, err = keys[2].SignTransaction(&tx.Transaction)
-		if err != nil {
-			println(err.Error(), ": error signing transfer transaction")
-			return
-		}
 	}
 
 	if len(transfers) != 2{
@@ -176,21 +152,18 @@ func main() {
 
 	println("sending schedule sign transaction")
 
-	signTransaction := hedera.NewScheduleSignTransaction().
+	signTransaction, err := hedera.NewScheduleSignTransaction().
 		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
 		SetScheduleID(scheduleID).
-		AddScheduleSignature(keys[2].PublicKey(), key3Signature)
-
-	signatures2, err := signTransaction.GetScheduleSignatures()
+		FreezeWith(client)
 	if err != nil {
-		println(err.Error(), ": error getting schedule sign transaction signatures")
+		println(err.Error(), ": error freezing sign transaction")
 		return
 	}
 
-	if len(signatures2) != 1 {
-		println("Scheduled sign transaction has incorrect number of signatures: ", len(signatures2))
-		return
-	}
+	signTransaction.Sign(keys[0])
+	signTransaction.Sign(keys[1])
+	signTransaction.Sign(keys[2])
 
 	resp, err := signTransaction.Execute(client)
 	if err != nil {
@@ -204,12 +177,18 @@ func main() {
 		return
 	}
 
-	_, err = hedera.
+	info, err = hedera.
 		NewScheduleInfoQuery().
+		SetScheduleID(scheduleID).
 		SetNodeAccountIDs([]hedera.AccountID{createResponse.NodeID}).
 		Execute(client)
 	if err != nil {
-		println("Singing Success")
+		println(err.Error(), ": error retrieving schedule info after signing")
+		return
+	}
+	if !info.Executed.IsZero() {
+		println("Singing success, signed at: ", info.Executed.String())
+		println("Signatories: ", info.Signers.String())
 		return
 	}
 }
