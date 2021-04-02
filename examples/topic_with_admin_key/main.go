@@ -141,5 +141,5 @@ func main() {
 		return
 	}
 
-	println(topicInfo.Memo)
+	println(topicInfo.TopicMemo)
 }
