@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenUpdateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -48,7 +48,7 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenUpdate_DifferentKeys(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	keys := make([]PrivateKey, 5)
 	pubKeys := make([]PublicKey, 5)
@@ -125,7 +125,7 @@ func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 }
 
 func Test_TokenUpdate_NoTokenID(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	resp, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").

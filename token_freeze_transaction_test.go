@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenFreezeTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -104,7 +104,7 @@ func TestTokenFreezeTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenFreeze_NoAccountID(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)

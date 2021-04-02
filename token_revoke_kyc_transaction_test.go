@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenRevokeKycTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -130,7 +130,7 @@ func TestTokenRevokeKycTransaction_Execute(t *testing.T) {
 }
 
 func Test_TokenRevokeKyc_NoTokenID(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -220,7 +220,7 @@ func Test_TokenRevokeKyc_NoTokenID(t *testing.T) {
 }
 
 func Test_TokenRevokeKyc_NoAccountID(t *testing.T) {
-	client := newTestClient(t, false)
+	client := newTestClient(t, true)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
