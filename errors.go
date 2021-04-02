@@ -134,7 +134,7 @@ func newErrHederaReceiptStatus(id TransactionID, status Status) ErrHederaReceipt
 
 // Error() implements the Error interface
 func (e ErrHederaReceiptStatus) Error() string {
-	return fmt.Sprintf("exceptional status %s received for transaction %v", e.Status.String(), e.TxID)
+	return fmt.Sprintf("exceptional precheck status %s", e.Status.String())
 }
 
 // ErrHederaRecordStatus is returned by TransactionID.GetRecord if the status of the record is exceptional.
@@ -149,7 +149,7 @@ func newErrHederaRecordStatus(id TransactionID, status Status) ErrHederaRecordSt
 
 // Error() implements the Error interface
 func (e ErrHederaRecordStatus) Error() string {
-	return fmt.Sprintf("exceptional status %s received for transaction %v", e.Status.String(), e.TxID)
+	return fmt.Sprintf("exceptional precheck status %s", e.Status.String())
 }
 
 // ErrLocalValidation is returned by TransactionBuilder.Build(*Client) and QueryBuilder.Execute(*Client)

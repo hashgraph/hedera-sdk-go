@@ -1,5 +1,17 @@
 ## Unreleased
 
+### Fixed
+
+ * Updated scheduled transaction to use new HAPI porotubfs
+
+### Removed
+   * `ScheduleCreateTransaction.AddScheduledSignature()`
+   * `ScheduleCreateTransaction.GetScheduledSignatures()`
+   * `ScheduleSignTransaction.addScheduledSignature()`
+   * `ScheduleSignTransaction.GetScheduledSignatures()`
+
+## v2.x
+
 ### Added
 
  * Support for scheduled transactions.

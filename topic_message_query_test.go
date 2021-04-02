@@ -96,7 +96,7 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 30 {
+		if !wait || uint64(time.Since(start).Seconds()) > 60 {
 			break
 		}
 

@@ -74,7 +74,7 @@ func TestClientSetNetwork(t *testing.T) {
 	client := ClientForPreviewnet()
 
 	assert.NotNil(t, client)
-	assert.Equal(t, 4, len(client.network.network))
+	assert.Equal(t, 5, len(client.network.network))
 	assert.Nil(t, client.operator)
 
 	network := make(map[string]AccountID)
