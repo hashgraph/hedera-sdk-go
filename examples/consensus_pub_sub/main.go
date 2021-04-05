@@ -64,16 +64,13 @@ func main() {
 
 	fmt.Printf("topicID: %v\n", topicID)
 
-	wait := true
 	start := time.Now()
 
 	_, err = hedera.NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
 		Subscribe(client, func(message hedera.TopicMessage) {
-			if string(message.Contents) == content {
-				wait = false
-			}
+            print("Received message ", message.SequenceNumber, "\r")
 		})
 
 	if err != nil {
@@ -81,28 +78,26 @@ func main() {
 		return
 	}
 
-	println(transactionResponse.NodeID.String())
-
-	_, err = hedera.NewTopicMessageSubmitTransaction().
-		SetMessage([]byte(content)).
-		SetTopicID(topicID).
-		Execute(client)
-	if err != nil {
-		println(err.Error(), ": error submitting topic")
-		return
-	}
-
-	//println(string(messageQuery.GetMessage()))
-
-	//messageQuery.Execute(client)
 
 	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 30 {
-			break
-		}
+        _, err = hedera.NewTopicMessageSubmitTransaction().
+            SetMessage([]byte(content)).
+            SetTopicID(topicID).
+            Execute(client)
 
-		time.Sleep(2500)
+        if err != nil {
+            println(err.Error(), ": error submitting topic")
+            return
+        }
+
+        if uint64(time.Since(start).Seconds()) > 60 * 10 {
+            break;
+        }
+
+		time.Sleep(2000)
 	}
+
+    println()
 
 	transactionResponse, err = hedera.NewTopicDeleteTransaction().
 		SetTopicID(topicID).
@@ -118,9 +113,5 @@ func main() {
 	if err != nil {
 		println(err.Error(), ": error getting receipt for topic deletion")
 		return
-	}
-
-	if wait {
-		panic("Message was not received within 30 seconds")
 	}
 }
