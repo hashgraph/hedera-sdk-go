@@ -1,3 +1,12 @@
+## v2.1.5-beta.3
+
+### Fixed
+
+ * `Transaction[Receipt|Record]Query` should not error for status `IDENTICAL_SCHEDULE_ALREADY_CREATED`
+   because the other fields on the receipt are present with that status.
+ * `ErrHederaReceiptStatus` should print `exception receipt status ...` instead of
+   `exception precheck status ...`
+
 ## v2.1.5-beta.2
 
 ### Fixed
