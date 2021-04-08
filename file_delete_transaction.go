@@ -167,7 +167,7 @@ func (transaction *FileDeleteTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		fileDeleteTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

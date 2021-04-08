@@ -234,7 +234,7 @@ func (transaction *FileUpdateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		fileUpdateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

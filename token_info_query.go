@@ -54,12 +54,12 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		tokenInfoQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		tokenInfoQuery_getMethod,
-		tokenInfoQuery_mapResponseStatus,
+		tokenInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -75,8 +75,14 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
-func tokenInfoQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode)
+func tokenInfoQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+}
+
+func tokenInfoQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func tokenInfoQuery_getMethod(_ request, channel *channel) method {
@@ -133,12 +139,12 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		tokenInfoQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		tokenInfoQuery_getMethod,
-		tokenInfoQuery_mapResponseStatus,
+		tokenInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 

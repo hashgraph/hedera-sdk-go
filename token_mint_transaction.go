@@ -189,7 +189,7 @@ func (transaction *TokenMintTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenMintTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

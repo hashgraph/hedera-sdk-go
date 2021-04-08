@@ -65,6 +65,6 @@ func Test_TokenDelete_NoTokenID(t *testing.T) {
 		Execute(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp.TransactionID), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp.TransactionID), err.Error())
 	}
 }

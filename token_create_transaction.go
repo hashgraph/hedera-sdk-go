@@ -382,7 +382,7 @@ func (transaction *TokenCreateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenCreateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

@@ -204,7 +204,7 @@ func (transaction *LiveHashAddTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		liveHashAddTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

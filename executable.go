@@ -14,6 +14,14 @@ import (
 
 const maxAttempts = 10
 
+type executionState uint32
+
+const (
+	executionStateRetry    executionState = 0
+	executionStateFinished executionState = 1
+	executionStateError    executionState = 2
+)
+
 type method struct {
 	query func(
 		context.Context,
@@ -54,18 +62,17 @@ type request struct {
 func execute(
 	client *Client,
 	request request,
-	shouldRetry func(Status, response) bool,
+	shouldRetry func(request, response) executionState,
 	makeRequest func(request) protoRequest,
 	advanceRequest func(request),
 	getNodeAccountID func(request) AccountID,
 	getMethod func(request, *channel) method,
-	mapResponseStatus func(request, response) Status,
+	mapStatusError func(request, response) error,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
 	maxAttempts := 10
 	var attempt int64
 	var errPersistent error
-	var responseStatus Status
 
 	if request.query != nil {
 		maxAttempts = request.query.maxRetry
@@ -116,22 +123,22 @@ func execute(
 
 		node.decreaseDelay()
 
-		responseStatus = mapResponseStatus(request, resp)
+		retry := shouldRetry(request, resp)
 
-		if shouldRetry(responseStatus, resp) && attempt <= int64(maxAttempts) {
-			delayForAttempt(attempt)
-			continue
-		}
-
-		if responseStatus != StatusOk && responseStatus != StatusSuccess {
-			if request.query != nil {
-				return intermediateResponse{}, newErrHederaPreCheckStatus(TransactionID{}, responseStatus)
+		switch retry {
+		case executionStateRetry:
+			if attempt <= int64(maxAttempts) {
+				delayForAttempt(attempt)
+				continue
 			} else {
-				return intermediateResponse{}, newErrHederaPreCheckStatus(request.transaction.GetTransactionID(), responseStatus)
+				errPersistent = mapStatusError(request, resp)
+				break
 			}
+		case executionStateError:
+			return intermediateResponse{}, mapStatusError(request, resp)
+		case executionStateFinished:
+			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
-
-		return mapResponse(request, resp, node.accountID, protoRequest)
 	}
 
 	return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)

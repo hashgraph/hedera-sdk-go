@@ -278,7 +278,7 @@ func (transaction *ContractCreateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		contractCreateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

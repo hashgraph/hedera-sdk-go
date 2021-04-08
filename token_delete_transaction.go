@@ -172,7 +172,7 @@ func (transaction *TokenDeleteTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenDeleteTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

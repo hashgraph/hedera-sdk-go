@@ -171,7 +171,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		topicDeleteTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

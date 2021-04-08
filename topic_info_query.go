@@ -54,12 +54,12 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		topicInfoQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		topicInfoQuery_getMethod,
-		topicInfoQuery_mapResponseStatus,
+		topicInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -75,8 +75,14 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
-func topicInfoQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode)
+func topicInfoQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
+}
+
+func topicInfoQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func topicInfoQuery_getMethod(_ request, channel *channel) method {
@@ -133,12 +139,12 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		topicInfoQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		topicInfoQuery_getMethod,
-		topicInfoQuery_mapResponseStatus,
+		topicInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 

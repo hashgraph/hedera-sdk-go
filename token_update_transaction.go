@@ -359,7 +359,7 @@ func (transaction *TokenUpdateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenUpdateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

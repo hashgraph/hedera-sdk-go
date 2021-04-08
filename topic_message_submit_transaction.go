@@ -226,7 +226,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 			transaction_advanceRequest,
 			transaction_getNodeAccountID,
 			topicMessageSubmitTransaction_getMethod,
-			transaction_mapResponseStatus,
+			transaction_mapStatusError,
 			transaction_mapResponse,
 		)
 

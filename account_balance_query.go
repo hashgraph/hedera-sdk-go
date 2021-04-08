@@ -98,12 +98,12 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		accountBalanceQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		accountBalanceQuery_getMethod,
-		accountBalanceQuery_mapResponseStatus,
+		accountBalanceQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -115,8 +115,14 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func accountBalanceQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode)
+func accountBalanceQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
+}
+
+func accountBalanceQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func accountBalanceQuery_getMethod(_ request, channel *channel) method {
@@ -139,12 +145,12 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		accountBalanceQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		accountBalanceQuery_getMethod,
-		accountBalanceQuery_mapResponseStatus,
+		accountBalanceQuery_mapStatusError,
 		query_mapResponse,
 	)
 

@@ -281,7 +281,7 @@ func (transaction *ContractUpdateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		contractUpdateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

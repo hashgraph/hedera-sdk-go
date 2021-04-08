@@ -158,7 +158,7 @@ func (transaction *ScheduleSignTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		scheduleSignTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

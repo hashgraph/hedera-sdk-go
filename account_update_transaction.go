@@ -248,7 +248,7 @@ func (transaction *AccountUpdateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		accountUpdateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

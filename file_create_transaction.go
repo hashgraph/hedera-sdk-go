@@ -239,7 +239,7 @@ func (transaction *FileCreateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		fileCreateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

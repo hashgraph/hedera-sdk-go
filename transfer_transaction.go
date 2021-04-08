@@ -230,7 +230,7 @@ func (transaction *TransferTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		transferTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

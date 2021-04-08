@@ -1,3 +1,12 @@
+## v2.1.5-beta.2
+
+### Fixed
+
+ * Executiong should retry on status `PLATFORM_TRANSACTION_NOT_CREATED`
+ * Error handling throughout the SDK
+   * A precheck error shoudl be returned when the exceptional status is in the header
+   * A receipt error should be returned when the exceptional status is in the receipt
+
 ## v2.1.5-beta.1
 
 ### Fixed

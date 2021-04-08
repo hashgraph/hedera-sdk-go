@@ -102,6 +102,8 @@ func newTestClient(t *testing.T, token bool) *Client {
 		assert.NoError(t, err)
 
 		client.SetOperator(*receipt.AccountID, newKey)
+
+		time.Sleep(2000)
 	}
 
 	return client

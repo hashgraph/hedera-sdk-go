@@ -210,7 +210,7 @@ func (transaction *SystemDeleteTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		systemDeleteTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

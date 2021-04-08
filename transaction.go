@@ -377,8 +377,15 @@ func (transaction *Transaction) keyAlreadySigned(
 	return false
 }
 
-func transaction_shouldRetry(status Status, _ response) bool {
-	return status == StatusBusy
+func transaction_shouldRetry(_ request, response response) executionState {
+	switch Status(response.transaction.NodeTransactionPrecheckCode) {
+	case StatusPlatformTransactionNotCreated, StatusBusy:
+		return executionStateRetry
+	case StatusOk:
+		return executionStateFinished
+	}
+
+	return executionStateError
 }
 
 func transaction_makeRequest(request request) protoRequest {
@@ -400,11 +407,14 @@ func transaction_getNodeAccountID(request request) AccountID {
 	return request.transaction.nodeIDs[request.transaction.nextNodeIndex]
 }
 
-func transaction_mapResponseStatus(
-	_ request,
+func transaction_mapStatusError(
+	request request,
 	response response,
-) Status {
-	return Status(response.transaction.NodeTransactionPrecheckCode)
+) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.transaction.NodeTransactionPrecheckCode),
+		TxID:   request.transaction.GetTransactionID(),
+	}
 }
 
 func transaction_mapResponse(request request, _ response, nodeID AccountID, protoRequest protoRequest) (intermediateResponse, error) {

@@ -51,12 +51,12 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		fileInfoQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		fileInfoQuery_getMethod,
-		fileInfoQuery_mapResponseStatus,
+		fileInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -72,8 +72,14 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
-func fileInfoQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode)
+func fileInfoQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
+}
+
+func fileInfoQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func fileInfoQuery_getMethod(_ request, channel *channel) method {
@@ -129,12 +135,12 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		fileInfoQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		fileInfoQuery_getMethod,
-		fileInfoQuery_mapResponseStatus,
+		fileInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 

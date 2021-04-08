@@ -333,3 +333,45 @@ func TestScheduleCreateTransaction_CheckValidGetTransaction_Execute(t *testing.T
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status SCHEDULE_ALREADY_EXECUTED"), err.Error())
 	}
 }
+
+func TestScheduleCreateTransaction_Duplicate_Execute(t *testing.T) {
+	client := newTestClient(t, false)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(1)
+
+	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	transactionID := TransactionIDGenerate(client.GetOperatorAccountID())
+
+	tx := NewAccountCreateTransaction().
+		SetTransactionID(transactionID).
+		SetKey(newKey.PublicKey()).
+		SetMaxTransactionFee(NewHbar(2)).
+		SetInitialBalance(newBalance)
+
+	assert.NoError(t, err)
+
+	scheduleTx, err := tx.Schedule()
+	assert.NoError(t, err)
+
+	scheduleTx = scheduleTx.
+		SetPayerAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey())
+
+	resp, err := scheduleTx.Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
+
+	_, err = scheduleTx.Execute(client)
+	assert.Error(t, err)
+
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional precheck status DUPLICATE_TRANSACTION received for transaction %s", resp.TransactionID), err.Error())
+
+	}
+}

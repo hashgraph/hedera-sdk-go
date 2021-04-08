@@ -197,7 +197,7 @@ func (transaction *ScheduleCreateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		scheduleCreateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

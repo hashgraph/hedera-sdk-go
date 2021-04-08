@@ -236,7 +236,7 @@ func (transaction *TopicCreateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		topicCreateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

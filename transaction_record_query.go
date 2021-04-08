@@ -42,12 +42,12 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		transactionRecordQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		transactionRecordQuery_getMethod,
-		transactionRecordQuery_mapResponseStatus,
+		transactionRecordQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -59,32 +59,39 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func transactionRecordQuery_shouldRetry(status Status, response response) bool {
-	if status == StatusPlatformTransactionNotCreated {
-		return true
-	}
-
-	switch status {
-	case StatusBusy, StatusUnknown, StatusReceiptNotFound:
-		return true
+func transactionRecordQuery_shouldRetry(request request, response response) executionState {
+	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
+	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
+		return executionStateRetry
 	case StatusOk:
 		break
 	default:
-		return false
+		return executionStateError
 	}
 
-	status = Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus())
-
-	switch status {
-	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound:
-		return true
+	switch Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()) {
+	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
+		return executionStateRetry
+	case StatusSuccess:
+		return executionStateFinished
 	default:
-		return false
+		return executionStateError
 	}
 }
 
-func transactionRecordQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetTransactionGetRecord().Header.NodeTransactionPrecheckCode)
+func transactionRecordQuery_mapStatusError(_ request, response response) error {
+	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
+	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
+		break
+	default:
+		return ErrHederaPreCheckStatus{
+			Status: Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()),
+		}
+	}
+
+	return ErrHederaReceiptStatus{
+		Status: Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
+	}
 }
 
 func transactionRecordQuery_getMethod(_ request, channel *channel) method {
@@ -183,7 +190,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		transactionRecordQuery_getMethod,
-		transactionRecordQuery_mapResponseStatus,
+		transactionRecordQuery_mapStatusError,
 		query_mapResponse,
 	)
 

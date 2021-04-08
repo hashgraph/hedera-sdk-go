@@ -42,12 +42,12 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		networkVersionInfoQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		networkVersionInfoQuery_getMethod,
-		networkVersionInfoQuery_mapResponseStatus,
+		networkVersionInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -63,8 +63,14 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
-func networkVersionInfoQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode)
+func networkVersionInfoQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+}
+
+func networkVersionInfoQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func networkVersionInfoQuery_getMethod(_ request, channel *channel) method {
@@ -120,12 +126,12 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		networkVersionInfoQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		networkVersionInfoQuery_getMethod,
-		networkVersionInfoQuery_mapResponseStatus,
+		networkVersionInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 

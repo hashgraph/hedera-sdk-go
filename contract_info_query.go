@@ -58,12 +58,12 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		contractInfoQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		contractInfoQuery_getMethod,
-		contractInfoQuery_mapResponseStatus,
+		contractInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -79,8 +79,14 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
-func contractInfoQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode)
+func contractInfoQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
+}
+
+func contractInfoQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func contractInfoQuery_getMethod(_ request, channel *channel) method {
@@ -136,12 +142,12 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		contractInfoQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		contractInfoQuery_getMethod,
-		contractInfoQuery_mapResponseStatus,
+		contractInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 

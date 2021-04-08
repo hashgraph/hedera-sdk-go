@@ -197,7 +197,7 @@ func (transaction *ContractDeleteTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		contractDeleteTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

@@ -55,12 +55,12 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		fileContentsQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		fileContentsQuery_getMethod,
-		fileContentsQuery_mapResponseStatus,
+		fileContentsQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -72,8 +72,14 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func fileContentsQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode)
+func fileContentsQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode))
+}
+
+func fileContentsQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func fileContentsQuery_getMethod(_ request, channel *channel) method {
@@ -129,12 +135,12 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		fileContentsQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		fileContentsQuery_getMethod,
-		fileContentsQuery_mapResponseStatus,
+		fileContentsQuery_mapStatusError,
 		query_mapResponse,
 	)
 

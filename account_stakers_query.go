@@ -63,12 +63,12 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		accountStakersQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		accountStakersQuery_getMethod,
-		accountStakersQuery_mapResponseStatus,
+		accountStakersQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -80,8 +80,14 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func accountStakersQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode)
+func accountStakersQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
+}
+
+func accountStakersQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func accountStakersQuery_getMethod(_ request, channel *channel) method {
@@ -137,12 +143,12 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		accountStakersQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		accountStakersQuery_getMethod,
-		accountStakersQuery_mapResponseStatus,
+		accountStakersQuery_mapStatusError,
 		query_mapResponse,
 	)
 

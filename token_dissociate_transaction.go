@@ -201,7 +201,7 @@ func (transaction *TokenDissociateTransaction) Execute(
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenDissociateTransaction_getMethod,
-		transaction_mapResponseStatus,
+		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
 

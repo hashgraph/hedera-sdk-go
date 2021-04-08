@@ -23,8 +23,14 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 	}
 }
 
-func accountInfoQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode)
+func accountInfoQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
+}
+
+func accountInfoQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func accountInfoQuery_getMethod(_ request, channel *channel) method {
@@ -58,12 +64,12 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		accountInfoQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		accountInfoQuery_getMethod,
-		accountInfoQuery_mapResponseStatus,
+		accountInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -157,12 +163,12 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		accountInfoQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		accountInfoQuery_getMethod,
-		accountInfoQuery_mapResponseStatus,
+		accountInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 

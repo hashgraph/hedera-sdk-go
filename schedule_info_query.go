@@ -51,12 +51,12 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		scheduleInfoQuery_shouldRetry,
 		costQuery_makeRequest,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		scheduleInfoQuery_getMethod,
-		scheduleInfoQuery_mapResponseStatus,
+		scheduleInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 
@@ -72,8 +72,14 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 }
 
-func scheduleInfoQuery_mapResponseStatus(_ request, response response) Status {
-	return Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode)
+func scheduleInfoQuery_shouldRetry(_ request, response response) executionState {
+	return query_shouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
+}
+
+func scheduleInfoQuery_mapStatusError(_ request, response response) error {
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
+	}
 }
 
 func scheduleInfoQuery_getMethod(_ request, channel *channel) method {
@@ -125,12 +131,12 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		query_shouldRetry,
+		scheduleInfoQuery_shouldRetry,
 		query_makeRequest,
 		query_advanceRequest,
 		query_getNodeAccountID,
 		scheduleInfoQuery_getMethod,
-		scheduleInfoQuery_mapResponseStatus,
+		scheduleInfoQuery_mapStatusError,
 		query_mapResponse,
 	)
 

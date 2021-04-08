@@ -231,7 +231,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 			transaction_advanceRequest,
 			transaction_getNodeAccountID,
 			fileAppendTransaction_getMethod,
-			transaction_mapResponseStatus,
+			transaction_mapStatusError,
 			transaction_mapResponse,
 		)
 

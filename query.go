@@ -87,8 +87,15 @@ func (query *Query) getIsPaymentRequired() bool {
 	return true
 }
 
-func query_shouldRetry(status Status, _ response) bool {
-	return status == StatusBusy
+func query_shouldRetry(status Status) executionState {
+	switch status {
+	case StatusPlatformTransactionNotCreated, StatusBusy:
+		return executionStateRetry
+	case StatusOk:
+		return executionStateFinished
+	}
+
+	return executionStateError
 }
 
 func query_makeRequest(request request) protoRequest {
