@@ -30,24 +30,24 @@ func Test_Receipt_Transaction(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.NoError(t, err)
 
-	record, err := resp.GetRecord(client)
+	_, err = resp.GetRecord(client)
 	assert.NoError(t, err)
 
-	accountID := *record.Receipt.AccountID
-	assert.NotNil(t, accountID)
+	// accountID := *record.Receipt.AccountID
+	// assert.NotNil(t, accountID)
 
-	transaction, err := NewAccountDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
-	assert.NoError(t, err)
+	// transaction, err := NewAccountDeleteTransaction().
+	// 	SetNodeAccountIDs([]AccountID{resp.NodeID}).
+	// 	SetAccountID(accountID).
+	// 	SetTransferAccountID(client.GetOperatorAccountID()).
+	// 	FreezeWith(client)
+	// assert.NoError(t, err)
 
-	resp, err = transaction.
-		Sign(newKey).
-		Execute(client)
-	assert.NoError(t, err)
+	// resp, err = transaction.
+	// 	Sign(newKey).
+	// 	Execute(client)
+	// assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
-	assert.NoError(t, err)
+	// _, err = resp.GetReceipt(client)
+	// assert.NoError(t, err)
 }

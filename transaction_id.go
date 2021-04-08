@@ -29,10 +29,6 @@ func TransactionIDGenerate(accountID AccountID) TransactionID {
 	return TransactionID{&accountID, &validStart, false}
 }
 
-func TransactionIDWithNonce(nonce []byte) TransactionID {
-	return TransactionID{nil, nil, false}
-}
-
 // NewTransactionIDWithValidStart constructs a new Transaction id struct with the provided AccountID and the valid start
 // time set to a provided time.
 func NewTransactionIDWithValidStart(accountID AccountID, validStart time.Time) TransactionID {

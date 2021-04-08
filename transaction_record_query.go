@@ -56,7 +56,11 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	cost := int64(resp.query.GetTransactionGetRecord().Header.Cost)
-	return HbarFromTinybar(cost), nil
+	if cost < 25 {
+		return HbarFromTinybar(25), nil
+	} else {
+		return HbarFromTinybar(cost), nil
+	}
 }
 
 func transactionRecordQuery_shouldRetry(request request, response response) executionState {
@@ -64,7 +68,11 @@ func transactionRecordQuery_shouldRetry(request request, response response) exec
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
-		break
+		if request.query.pb.GetTransactionGetRecord().GetHeader().ResponseType == proto.ResponseType_COST_ANSWER {
+			return executionStateFinished
+		} else {
+			break
+		}
 	default:
 		return executionStateError
 	}
