@@ -6,6 +6,10 @@
  * Error handling throughout the SDK
    * A precheck error shoudl be returned when the exceptional status is in the header
    * A receipt error should be returned when the exceptional status is in the receipt
+ * `TransactionRecordQuery` should retry on node precheck code `OK` only if we're not
+   getting cost of query.
+ * `Transaction[Receipt|Record]Query` should retry on both `RECEIPT_NOT_FOUND` and
+   `RECORD_NOT_FOUND` status codes when node precheck code is `OK`
 
 ## v2.1.5-beta.1
 
