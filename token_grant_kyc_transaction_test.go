@@ -324,7 +324,7 @@ func TestTokenGrantKycTransaction_NoKycSet_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional precheck status TOKEN_HAS_NO_KYC_KEY"), err.Error())
+	assert.Equal(t, fmt.Sprintf("exceptional receipt status TOKEN_HAS_NO_KYC_KEY"), err.Error())
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).

@@ -115,7 +115,7 @@ func Test_ContractCreate_NoAdminKey(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status MODIFYING_IMMUTABLE_CONTRACT"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status MODIFYING_IMMUTABLE_CONTRACT"), err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().
@@ -157,7 +157,7 @@ func Test_ContractCreate_NoGas(t *testing.T) {
 	receipt, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_GAS"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status INSUFFICIENT_GAS"), err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().
@@ -199,7 +199,7 @@ func Test_ContractCreate_NoBytecodeFileID(t *testing.T) {
 	receipt, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().

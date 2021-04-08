@@ -74,7 +74,7 @@ func Test_FileAppend_NoFileID(t *testing.T) {
 		Execute(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
 	}
 
 	_, err = resp.GetReceipt(client)
@@ -93,17 +93,11 @@ func Test_FileAppend_NoFileID(t *testing.T) {
 func Test_FileAppend_NothingSet(t *testing.T) {
 	client := newTestClient(t, false)
 
-	resp, err := NewFileAppendTransaction().
+	_, err := NewFileAppendTransaction().
 		SetContents([]byte(" world!")).
 		Execute(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
-	}
-
-	_, err = resp.GetReceipt(client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
 	}
 }

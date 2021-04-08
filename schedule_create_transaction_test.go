@@ -61,7 +61,7 @@ func TestScheduleCreateTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status SCHEDULE_ALREADY_EXECUTED"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status SCHEDULE_ALREADY_EXECUTED"), err.Error())
 	}
 }
 
@@ -113,7 +113,7 @@ func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status SCHEDULE_ALREADY_EXECUTED"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status SCHEDULE_ALREADY_EXECUTED"), err.Error())
 	}
 }
 
@@ -330,7 +330,7 @@ func TestScheduleCreateTransaction_CheckValidGetTransaction_Execute(t *testing.T
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status SCHEDULE_ALREADY_EXECUTED"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status SCHEDULE_ALREADY_EXECUTED"), err.Error())
 	}
 }
 
@@ -359,7 +359,8 @@ func TestScheduleCreateTransaction_Duplicate_Execute(t *testing.T) {
 
 	scheduleTx = scheduleTx.
 		SetPayerAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey())
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetTransactionID(TransactionIDGenerate(client.GetOperatorAccountID()))
 
 	resp, err := scheduleTx.Execute(client)
 	assert.NoError(t, err)
@@ -370,8 +371,17 @@ func TestScheduleCreateTransaction_Duplicate_Execute(t *testing.T) {
 	_, err = scheduleTx.Execute(client)
 	assert.Error(t, err)
 
-	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status DUPLICATE_TRANSACTION received for transaction %s", resp.TransactionID), err.Error())
+	scheduleTx, err = tx.Schedule()
+	assert.NoError(t, err)
 
-	}
+	scheduleTx = scheduleTx.
+		SetPayerAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetTransactionID(TransactionIDGenerate(client.GetOperatorAccountID()))
+
+	resp, err = scheduleTx.Execute(client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	assert.NoError(t, err)
 }

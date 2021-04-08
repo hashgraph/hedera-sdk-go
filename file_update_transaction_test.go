@@ -79,7 +79,7 @@ func Test_FileUpdate_NoFileID(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().

@@ -245,7 +245,7 @@ func Test_TokenWipe_NoAmount(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 }
 
@@ -349,7 +349,7 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 }
 
@@ -455,7 +455,7 @@ func Test_TokenWipe_NoAccountID(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 }
 
@@ -589,6 +589,6 @@ func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 }

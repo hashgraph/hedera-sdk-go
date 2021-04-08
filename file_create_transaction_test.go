@@ -55,6 +55,6 @@ func Test_FileCreate_NoKey(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status UNAUTHORIZED"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status UNAUTHORIZED"), err.Error())
 	}
 }

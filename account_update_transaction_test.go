@@ -140,7 +140,7 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountUpdate_AccoundIDNotSet(t *testing.T) {
+func Test_AccountUpdate_AccountIDNotSet(t *testing.T) {
 	client := newTestClient(t, false)
 
 	resp, err := NewAccountUpdateTransaction().
@@ -150,7 +150,7 @@ func Test_AccountUpdate_AccoundIDNotSet(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_ACCOUNT_ID"), err.Error())
 	}
 }
 

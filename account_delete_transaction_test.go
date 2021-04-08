@@ -115,7 +115,7 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 	}
 }
 
-func Test_AccountDelete_NoSinging(t *testing.T) {
+func Test_AccountDelete_NoSigning(t *testing.T) {
 	client := newTestClient(t, false)
 
 	newKey, err := GeneratePrivateKey()
@@ -149,6 +149,6 @@ func Test_AccountDelete_NoSinging(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_SIGNATURE"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_SIGNATURE"), err.Error())
 	}
 }
