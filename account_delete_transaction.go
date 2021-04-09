@@ -63,10 +63,15 @@ func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccoun
 func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -76,7 +81,7 @@ func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() *proto.
 				DeleteAccountID:   transaction.pb.GetDeleteAccountID(),
 			},
 		},
-	}
+	}, nil
 }
 
 //

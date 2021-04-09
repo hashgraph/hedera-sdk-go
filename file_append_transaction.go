@@ -76,10 +76,15 @@ func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction
 		}
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileAppendTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *FileAppendTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -89,7 +94,7 @@ func (transaction *FileAppendTransaction) constructScheduleProtobuf() *proto.Sch
 				Contents: transaction.contents,
 			},
 		},
-	}
+	}, nil
 }
 
 //

@@ -65,10 +65,15 @@ func (transaction *TokenUnfreezeTransaction) GetAccountID() AccountID {
 func (transaction *TokenUnfreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenUnfreezeTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *TokenUnfreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -78,7 +83,7 @@ func (transaction *TokenUnfreezeTransaction) constructScheduleProtobuf() *proto.
 				Account: transaction.pb.GetAccount(),
 			},
 		},
-	}
+	}, nil
 }
 
 //

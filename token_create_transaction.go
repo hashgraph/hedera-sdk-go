@@ -167,10 +167,15 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -193,7 +198,7 @@ func (transaction *TokenCreateTransaction) constructScheduleProtobuf() *proto.Sc
 				Memo:             transaction.pb.GetMemo(),
 			},
 		},
-	}
+	}, nil
 }
 
 // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations

@@ -64,10 +64,15 @@ func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
 func (transaction *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -77,7 +82,7 @@ func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() *proto.
 				Account: transaction.pb.GetAccount(),
 			},
 		},
-	}
+	}, nil
 }
 
 //

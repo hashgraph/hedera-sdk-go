@@ -47,10 +47,15 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -59,7 +64,7 @@ func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() *proto.Sc
 				TopicID: transaction.pb.TopicID,
 			},
 		},
-	}
+	}, nil
 }
 
 //

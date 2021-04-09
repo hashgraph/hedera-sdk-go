@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"errors"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -50,12 +51,8 @@ func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetAccountOfLiveHash())
 }
 
-func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
-	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
-		Data:           nil,
-	}
+func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
 //

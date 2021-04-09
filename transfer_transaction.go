@@ -101,10 +101,15 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 func (transaction *TransferTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TransferTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -114,7 +119,7 @@ func (transaction *TransferTransaction) constructScheduleProtobuf() *proto.Sched
 				TokenTransfers: transaction.pb.GetTokenTransfers(),
 			},
 		},
-	}
+	}, nil
 }
 
 func transferTransaction_getMethod(request request, channel *channel) method {

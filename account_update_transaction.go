@@ -114,10 +114,15 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -135,7 +140,7 @@ func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() *proto.
 				Memo:                        transaction.pb.GetMemo(),
 			},
 		},
-	}
+	}, nil
 }
 
 //

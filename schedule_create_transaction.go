@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"errors"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -78,15 +79,17 @@ func (transaction *ScheduleCreateTransaction) GetScheduleMemo() string {
 func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransaction) (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return transaction.setSchedulableTransactionBody(tx.constructScheduleProtobuf()), nil
+	scheduled, err := tx.constructScheduleProtobuf()
+	if err != nil {
+		return transaction, err
+	}
+
+	transaction.pb.ScheduledTransactionBody = scheduled
+	return transaction, nil
 }
 
-func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
-	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
-		Data:           nil,
-	}
+func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return nil, errors.New("cannot schedule `ScheduleCreateTransaction`")
 }
 
 //

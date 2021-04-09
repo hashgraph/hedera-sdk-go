@@ -106,10 +106,15 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileUpdateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *FileUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -122,7 +127,7 @@ func (transaction *FileUpdateTransaction) constructScheduleProtobuf() *proto.Sch
 				Memo:           transaction.pb.GetMemo(),
 			},
 		},
-	}
+	}, nil
 }
 
 //

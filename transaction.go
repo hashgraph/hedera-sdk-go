@@ -15,7 +15,7 @@ import (
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.
 
 type ITransaction interface {
-	constructScheduleProtobuf() *proto.SchedulableTransactionBody
+	constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error)
 }
 
 type Transaction struct {

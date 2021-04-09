@@ -141,13 +141,18 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *ContractCreateTransaction) Schedule() *ScheduleCreateTransaction {
+func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf())
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *ContractCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -166,7 +171,7 @@ func (transaction *ContractCreateTransaction) constructScheduleProtobuf() *proto
 				Memo:                  transaction.pb.GetMemo(),
 			},
 		},
-	}
+	}, nil
 }
 
 //

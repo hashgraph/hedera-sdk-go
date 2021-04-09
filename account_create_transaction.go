@@ -146,12 +146,15 @@ func (transaction *AccountCreateTransaction) GetReceiverSignatureRequired() bool
 func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	tx := NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf())
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
 
-	return tx, nil
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -170,7 +173,7 @@ func (transaction *AccountCreateTransaction) constructScheduleProtobuf() *proto.
 				Memo:                   transaction.pb.GetMemo(),
 			},
 		},
-	}
+	}, nil
 }
 
 //

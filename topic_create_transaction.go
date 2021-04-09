@@ -108,10 +108,15 @@ func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(transaction.constructScheduleProtobuf()), nil
+	scheduled, err := transaction.constructScheduleProtobuf()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicCreateTransaction) constructScheduleProtobuf() *proto.SchedulableTransactionBody {
+func (transaction *TopicCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -124,7 +129,7 @@ func (transaction *TopicCreateTransaction) constructScheduleProtobuf() *proto.Sc
 				AutoRenewAccount: transaction.pb.GetAutoRenewAccount(),
 			},
 		},
-	}
+	}, nil
 }
 
 //
