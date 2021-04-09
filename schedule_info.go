@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -9,14 +10,14 @@ type ScheduleInfo struct {
 	ScheduleID               ScheduleID
 	CreatorAccountID         AccountID
 	PayerAccountID           AccountID
-	Executed                 *time.Time
-	Deleted                  *time.Time
+	ExecutedAt               *time.Time
+	DeletedAt                *time.Time
 	ExpirationTime           time.Time
-	ScheduledTransactionBody *SchedulableTransactionBody
 	Signers                  *KeyList
 	AdminKey                 Key
 	Memo                     string
 	ScheduledTransactionID   *TransactionID
+	scheduledTransactionBody *proto.SchedulableTransactionBody
 }
 
 func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
@@ -50,14 +51,14 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		ScheduleID:               scheduleIDFromProtobuf(pb.ScheduleID),
 		CreatorAccountID:         accountIDFromProtobuf(pb.CreatorAccountID),
 		PayerAccountID:           accountIDFromProtobuf(pb.PayerAccountID),
-		Executed:                 executed,
-		Deleted:                  deleted,
+		ExecutedAt:               executed,
+		DeletedAt:                deleted,
 		ExpirationTime:           timeFromProtobuf(pb.ExpirationTime),
-		ScheduledTransactionBody: schedulableTransactionBodyFromProtobuf(pb.ScheduledTransactionBody),
 		Signers:                  &signers,
 		AdminKey:                 adminKey,
 		Memo:                     pb.Memo,
 		ScheduledTransactionID:   &scheduledTransactionID,
+		scheduledTransactionBody: pb.ScheduledTransactionBody,
 	}
 }
 
@@ -75,7 +76,7 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 	info := &proto.ScheduleInfo{
 		ScheduleID:               scheduleInfo.ScheduleID.toProtobuf(),
 		ExpirationTime:           timeToProtobuf(scheduleInfo.ExpirationTime),
-		ScheduledTransactionBody: scheduleInfo.ScheduledTransactionBody.toProtobuf(),
+		ScheduledTransactionBody: scheduleInfo.scheduledTransactionBody,
 		Memo:                     scheduleInfo.Memo,
 		AdminKey:                 adminKey,
 		Signers:                  signers,
@@ -84,96 +85,255 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 		ScheduledTransactionID:   scheduleInfo.ScheduledTransactionID.toProtobuf(),
 	}
 
-	if scheduleInfo.Executed != nil {
+	if scheduleInfo.ExecutedAt != nil {
 		info.Data = &proto.ScheduleInfo_DeletionTime{
-			DeletionTime: timeToProtobuf(*scheduleInfo.Deleted),
+			DeletionTime: timeToProtobuf(*scheduleInfo.DeletedAt),
 		}
-	} else if scheduleInfo.Deleted != nil {
+	} else if scheduleInfo.DeletedAt != nil {
 		info.Data = &proto.ScheduleInfo_ExecutionTime{
-			ExecutionTime: timeToProtobuf(*scheduleInfo.Executed),
+			ExecutionTime: timeToProtobuf(*scheduleInfo.ExecutedAt),
 		}
 	}
 
 	return info
 }
 
-func (scheduleInfo *ScheduleInfo) GetTransaction() (interface{}, error) {
-	pbBody := scheduleInfo.ScheduledTransactionBody.Transaction.pbBody
-	tx := *scheduleInfo.ScheduledTransactionBody.Transaction
-	switch pbBody.Data.(type) {
-	case *proto.TransactionBody_ContractCall:
-		return contractExecuteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ContractCreateInstance:
-		return contractCreateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ContractUpdateInstance:
-		return contractUpdateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ContractDeleteInstance:
-		return contractDeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_CryptoAddLiveHash:
-		return liveHashAddTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_CryptoCreateAccount:
-		return accountCreateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_CryptoDelete:
-		return accountDeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_CryptoDeleteLiveHash:
-		return liveHashDeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_CryptoTransfer:
-		return transferTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_CryptoUpdateAccount:
-		return accountUpdateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_FileAppend:
-		return fileAppendTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_FileCreate:
-		return fileCreateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_FileDelete:
-		return fileDeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_FileUpdate:
-		return fileUpdateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_SystemDelete:
-		return systemDeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_SystemUndelete:
-		return systemUndeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_Freeze:
-		return freezeTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ConsensusCreateTopic:
-		return topicCreateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ConsensusUpdateTopic:
-		return topicUpdateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ConsensusDeleteTopic:
-		return topicDeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ConsensusSubmitMessage:
-		return topicMessageSubmitTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenCreation:
-		return tokenCreateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenFreeze:
-		return tokenFreezeTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenUnfreeze:
-		return tokenUnfreezeTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenGrantKyc:
-		return tokenGrantKycTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenRevokeKyc:
-		return tokenRevokeKycTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenDeletion:
-		return tokenDeleteTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenUpdate:
-		return tokenUpdateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenMint:
-		return tokenMintTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenBurn:
-		return tokenBurnTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenWipe:
-		return tokenWipeTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenAssociate:
-		return tokenAssociateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_TokenDissociate:
-		return tokenDissociateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ScheduleCreate:
-		return scheduleCreateTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ScheduleSign:
-		return scheduleSignTransactionFromProtobuf(tx, pbBody), nil
-	case *proto.TransactionBody_ScheduleDelete:
-		return scheduleDeleteTransactionFromProtobuf(tx, pbBody), nil
+func (scheduleInfo *ScheduleInfo) GetTransaction() (ITransaction, error) {
+	pb := scheduleInfo.scheduledTransactionBody
+
+	pbBody := &proto.TransactionBody{
+		TransactionFee: pb.TransactionFee,
+		Memo:           pb.Memo,
+	}
+
+	tx := Transaction{pbBody: pbBody}
+
+	switch pb.Data.(type) {
+	case *proto.SchedulableTransactionBody_ContractCall:
+		pbBody.Data = &proto.TransactionBody_ContractCall{
+			ContractCall: pb.GetContractCall(),
+		}
+
+		tx2 := contractExecuteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ContractCreateInstance:
+		pbBody.Data = &proto.TransactionBody_ContractCreateInstance{
+			ContractCreateInstance: pb.GetContractCreateInstance(),
+		}
+
+		tx2 := contractCreateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ContractUpdateInstance:
+		pbBody.Data = &proto.TransactionBody_ContractUpdateInstance{
+			ContractUpdateInstance: pb.GetContractUpdateInstance(),
+		}
+
+		tx2 := contractUpdateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ContractDeleteInstance:
+		pbBody.Data = &proto.TransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: pb.GetContractDeleteInstance(),
+		}
+
+		tx2 := contractDeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_CryptoCreateAccount:
+		pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: pb.GetCryptoCreateAccount(),
+		}
+
+		tx2 := accountCreateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_CryptoDelete:
+		pbBody.Data = &proto.TransactionBody_CryptoDelete{
+			CryptoDelete: pb.GetCryptoDelete(),
+		}
+
+		tx2 := accountDeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_CryptoTransfer:
+		pbBody.Data = &proto.TransactionBody_CryptoTransfer{
+			CryptoTransfer: pb.GetCryptoTransfer(),
+		}
+
+		tx2 := transferTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_CryptoUpdateAccount:
+		pbBody.Data = &proto.TransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: pb.GetCryptoUpdateAccount(),
+		}
+
+		tx2 := accountUpdateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_FileAppend:
+		pbBody.Data = &proto.TransactionBody_FileAppend{
+			FileAppend: pb.GetFileAppend(),
+		}
+
+		tx2 := fileAppendTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_FileCreate:
+		pbBody.Data = &proto.TransactionBody_FileCreate{
+			FileCreate: pb.GetFileCreate(),
+		}
+
+		tx2 := fileCreateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_FileDelete:
+		pbBody.Data = &proto.TransactionBody_FileDelete{
+			FileDelete: pb.GetFileDelete(),
+		}
+
+		tx2 := fileDeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_FileUpdate:
+		pbBody.Data = &proto.TransactionBody_FileUpdate{
+			FileUpdate: pb.GetFileUpdate(),
+		}
+
+		tx2 := fileUpdateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_SystemDelete:
+		pbBody.Data = &proto.TransactionBody_SystemDelete{
+			SystemDelete: pb.GetSystemDelete(),
+		}
+
+		tx2 := systemDeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_SystemUndelete:
+		pbBody.Data = &proto.TransactionBody_SystemUndelete{
+			SystemUndelete: pb.GetSystemUndelete(),
+		}
+
+		tx2 := systemUndeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_Freeze:
+		pbBody.Data = &proto.TransactionBody_Freeze{
+			Freeze: pb.GetFreeze(),
+		}
+
+		tx2 := freezeTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ConsensusCreateTopic:
+		pbBody.Data = &proto.TransactionBody_ConsensusCreateTopic{
+			ConsensusCreateTopic: pb.GetConsensusCreateTopic(),
+		}
+
+		tx2 := topicCreateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ConsensusUpdateTopic:
+		pbBody.Data = &proto.TransactionBody_ConsensusUpdateTopic{
+			ConsensusUpdateTopic: pb.GetConsensusUpdateTopic(),
+		}
+
+		tx2 := topicUpdateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ConsensusDeleteTopic:
+		pbBody.Data = &proto.TransactionBody_ConsensusDeleteTopic{
+			ConsensusDeleteTopic: pb.GetConsensusDeleteTopic(),
+		}
+
+		tx2 := topicDeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ConsensusSubmitMessage:
+		pbBody.Data = &proto.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: pb.GetConsensusSubmitMessage(),
+		}
+
+		tx2 := topicMessageSubmitTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenCreation:
+		pbBody.Data = &proto.TransactionBody_TokenCreation{
+			TokenCreation: pb.GetTokenCreation(),
+		}
+
+		tx2 := tokenCreateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenFreeze:
+		pbBody.Data = &proto.TransactionBody_TokenFreeze{
+			TokenFreeze: pb.GetTokenFreeze(),
+		}
+
+		tx2 := tokenFreezeTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenUnfreeze:
+		pbBody.Data = &proto.TransactionBody_TokenUnfreeze{
+			TokenUnfreeze: pb.GetTokenUnfreeze(),
+		}
+
+		tx2 := tokenUnfreezeTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenGrantKyc:
+		pbBody.Data = &proto.TransactionBody_TokenGrantKyc{
+			TokenGrantKyc: pb.GetTokenGrantKyc(),
+		}
+
+		tx2 := tokenGrantKycTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenRevokeKyc:
+		pbBody.Data = &proto.TransactionBody_TokenRevokeKyc{
+			TokenRevokeKyc: pb.GetTokenRevokeKyc(),
+		}
+
+		tx2 := tokenRevokeKycTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenDeletion:
+		pbBody.Data = &proto.TransactionBody_TokenDeletion{
+			TokenDeletion: pb.GetTokenDeletion(),
+		}
+
+		tx2 := tokenDeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenUpdate:
+		pbBody.Data = &proto.TransactionBody_TokenUpdate{
+			TokenUpdate: pb.GetTokenUpdate(),
+		}
+
+		tx2 := tokenUpdateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenMint:
+		pbBody.Data = &proto.TransactionBody_TokenMint{
+			TokenMint: pb.GetTokenMint(),
+		}
+
+		tx2 := tokenMintTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenBurn:
+		pbBody.Data = &proto.TransactionBody_TokenBurn{
+			TokenBurn: pb.GetTokenBurn(),
+		}
+
+		tx2 := tokenBurnTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenWipe:
+		pbBody.Data = &proto.TransactionBody_TokenWipe{
+			TokenWipe: pb.GetTokenWipe(),
+		}
+
+		tx2 := tokenWipeTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenAssociate:
+		pbBody.Data = &proto.TransactionBody_TokenAssociate{
+			TokenAssociate: pb.GetTokenAssociate(),
+		}
+
+		tx2 := tokenAssociateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_TokenDissociate:
+		pbBody.Data = &proto.TransactionBody_TokenDissociate{
+			TokenDissociate: pb.GetTokenDissociate(),
+		}
+
+		tx2 := tokenDissociateTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
+	case *proto.SchedulableTransactionBody_ScheduleDelete:
+		pbBody.Data = &proto.TransactionBody_ScheduleDelete{
+			ScheduleDelete: pb.GetScheduleDelete(),
+		}
+
+		tx2 := scheduleDeleteTransactionFromProtobuf(tx, pbBody)
+		return &tx2, nil
 	default:
-		return Transaction{}, errFailedToDeserializeBytes
+		return nil, errors.New("(BUG) non-exhaustive switch statement")
 	}
 }

@@ -186,8 +186,8 @@ func main() {
 		println(err.Error(), ": error retrieving schedule info after signing")
 		return
 	}
-	if !info.Executed.IsZero() {
-		println("Singing success, signed at: ", info.Executed.String())
+	if !info.ExecutedAt.IsZero() {
+		println("Singing success, signed at: ", info.ExecutedAt.String())
 		println("Signatories: ", info.Signers.String())
 		return
 	}

@@ -194,7 +194,7 @@ func TestScheduleCreateTransaction_MultiSig_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{createResponse.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
-	assert.False(t, info2.Executed.IsZero())
+	assert.False(t, info2.ExecutedAt.IsZero())
 }
 
 func TestScheduleCreateTransaction_Delete_Execute(t *testing.T) {
@@ -245,8 +245,8 @@ func TestScheduleCreateTransaction_Delete_Execute(t *testing.T) {
 	transfer, err := info.GetTransaction()
 	assert.NoError(t, err)
 	assert.NotNil(t, transfer)
-	assert.Nil(t, info.Executed)
-	assert.Nil(t, info.Deleted)
+	assert.Nil(t, info.ExecutedAt)
+	assert.Nil(t, info.DeletedAt)
 
 	tx2, err := NewScheduleDeleteTransaction().
 		SetScheduleID(scheduleID).
@@ -266,7 +266,7 @@ func TestScheduleCreateTransaction_Delete_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{createResponse.NodeID}).
 		Execute(client)
 	assert.NoError(t, err)
-	assert.False(t, info2.Deleted.IsZero())
+	assert.False(t, info2.DeletedAt.IsZero())
 }
 
 func TestScheduleCreateTransaction_CheckValidGetTransaction_Execute(t *testing.T) {
@@ -313,7 +313,7 @@ func TestScheduleCreateTransaction_CheckValidGetTransaction_Execute(t *testing.T
 	assert.NotNil(t, infoTx)
 
 	switch createTx := infoTx.(type) {
-	case AccountCreateTransaction:
+	case *AccountCreateTransaction:
 		assert.Equal(t, createTx.pbBody.GetCryptoCreateAccount().InitialBalance, uint64(NewHbar(1).tinybar))
 	}
 

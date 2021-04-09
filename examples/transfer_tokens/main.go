@@ -334,7 +334,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Deleted token %v\n", tokenID.String())
+	fmt.Printf("DeletedAt token %v\n", tokenID.String())
 
 	accountDeleteTx, err := hedera.NewAccountDeleteTransaction().
 		SetAccountID(accountID1).
@@ -360,7 +360,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Deleted account %v\n", accountID1.String())
+	fmt.Printf("DeletedAt account %v\n", accountID1.String())
 
 	accountDeleteTx, err = hedera.NewAccountDeleteTransaction().
 		SetAccountID(accountID2).
@@ -386,5 +386,5 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Deleted account %v\n", accountID2.String())
+	fmt.Printf("DeletedAt account %v\n", accountID2.String())
 }
