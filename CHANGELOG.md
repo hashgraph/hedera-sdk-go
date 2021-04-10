@@ -1,8 +1,13 @@
-## Unreleased
+## v2.1.5-beta.4
+
+### Fixed
+
+ * `Transaction.Schedule()` should error when scheduling un-scheduable tranasctions
 
 ### Removed
 
  * `nonce` from `TransactionID`
+ * `ScheduleTransactionBody` - should not be part of the public API
 
 ## v2.1.5-beta.3
 
