@@ -1,3 +1,9 @@
+## Unreleased
+
+### Removed
+
+ * `nonce` from `TransactionID`
+
 ## v2.1.5-beta.3
 
 ### Fixed
