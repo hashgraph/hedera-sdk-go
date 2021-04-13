@@ -133,7 +133,7 @@ func main() {
 
 	var transfers map[hedera.AccountID]hedera.Hbar
 	switch tx := transfer.(type){
-	case hedera.TransferTransaction:
+	case *hedera.TransferTransaction:
 		transfers = tx.GetHbarTransfers()
 	}
 
