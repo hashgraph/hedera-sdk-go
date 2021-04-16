@@ -237,6 +237,10 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
 	transaction.requireOneNodeAccountID()
 
+	if !transaction.isFrozen(){
+		transaction.freeze()
+	}
+
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -361,6 +365,25 @@ func transaction_freezeWith(
 	}
 
 	return nil
+}
+
+func (transaction *Transaction) freeze() {
+	for _, nodeAccountID := range transaction.nodeIDs {
+		transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
+		bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+		if err != nil {
+			// This should be unreachable
+			// From the documentation this appears to only be possible if there are missing proto types
+			panic(err)
+		}
+
+		transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+			BodyBytes: bodyBytes,
+			SigMap: &proto.SignatureMap{
+				SigPair: make([]*proto.SignaturePair, 0),
+			},
+		})
+	}
 }
 
 func (transaction *Transaction) keyAlreadySigned(
