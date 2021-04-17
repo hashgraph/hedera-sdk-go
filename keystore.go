@@ -1,13 +1,13 @@
 package hedera
 
 import (
-	"bytes"
 	"crypto/aes"
 	cipher2 "crypto/cipher"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/sha512"
+	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
 
@@ -191,7 +191,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 
 	verifyMac := h.Sum(nil)
 
-	if !bytes.Equal(mac, verifyMac) {
+	if subtle.ConstantTimeCompare(mac, verifyMac) == 0 {
 		return PrivateKey{}, newErrBadKeyf("hmac mismatch; passphrase is incorrect")
 	}
 
