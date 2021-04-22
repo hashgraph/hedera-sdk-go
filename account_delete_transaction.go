@@ -27,6 +27,13 @@ func NewAccountDeleteTransaction() AccountDeleteTransaction {
 	return builder
 }
 
+func accountDeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) AccountDeleteTransaction {
+	return AccountDeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetCryptoDelete(),
+	}
+}
+
 // SetDeleteAccountID sets the account ID which should be deleted.
 func (builder AccountDeleteTransaction) SetDeleteAccountID(id AccountID) AccountDeleteTransaction {
 	builder.pb.DeleteAccountID = id.toProto()
@@ -37,6 +44,28 @@ func (builder AccountDeleteTransaction) SetDeleteAccountID(id AccountID) Account
 func (builder AccountDeleteTransaction) SetTransferAccountID(id AccountID) AccountDeleteTransaction {
 	builder.pb.TransferAccountID = id.toProto()
 	return builder
+}
+
+func (builder *AccountDeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *AccountDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_CryptoDelete{
+			CryptoDelete: &proto.CryptoDeleteTransactionBody{
+				TransferAccountID: builder.pb.GetTransferAccountID(),
+				DeleteAccountID:   builder.pb.GetDeleteAccountID(),
+			},
+		},
+	}, nil
 }
 
 //

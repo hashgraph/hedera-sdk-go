@@ -31,6 +31,13 @@ func NewContractExecuteTransaction() ContractExecuteTransaction {
 	return builder
 }
 
+func contractExecuteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ContractExecuteTransaction {
+	return ContractExecuteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetContractCall(),
+	}
+}
+
 // SetContractID sets the contract instance to call.
 func (builder ContractExecuteTransaction) SetContractID(id ContractID) ContractExecuteTransaction {
 	builder.pb.ContractID = id.toProto()
@@ -57,6 +64,30 @@ func (builder ContractExecuteTransaction) SetFunction(name string, params *Contr
 
 	builder.pb.FunctionParameters = params.build(&name)
 	return builder
+}
+
+func (builder ContractExecuteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ContractExecuteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ContractCall{
+			ContractCall: &proto.ContractCallTransactionBody{
+				ContractID:         builder.pb.GetContractID(),
+				Gas:                builder.pb.GetGas(),
+				Amount:             builder.pb.GetAmount(),
+				FunctionParameters: builder.pb.GetFunctionParameters(),
+			},
+		},
+	}, nil
 }
 
 //

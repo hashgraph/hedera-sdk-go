@@ -22,6 +22,13 @@ func NewFileUpdateTransaction() FileUpdateTransaction {
 	return builder
 }
 
+func fileUpdateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) FileUpdateTransaction {
+	return FileUpdateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetFileUpdate(),
+	}
+}
+
 func (builder FileUpdateTransaction) SetFileID(id FileID) FileUpdateTransaction {
 	builder.pb.FileID = id.toProto()
 	return builder
@@ -49,6 +56,31 @@ func (builder FileUpdateTransaction) SetContents(contents []byte) FileUpdateTran
 
 func (builder FileUpdateTransaction) Build(client *Client) (Transaction, error) {
 	return builder.TransactionBuilder.Build(client)
+}
+
+func (builder FileUpdateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *FileUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_FileUpdate{
+			FileUpdate: &proto.FileUpdateTransactionBody{
+				FileID:         builder.pb.GetFileID(),
+				ExpirationTime: builder.pb.GetExpirationTime(),
+				Keys:           builder.pb.GetKeys(),
+				Contents:       builder.pb.GetContents(),
+				Memo:           builder.pb.GetMemo(),
+			},
+		},
+	}, nil
 }
 
 //

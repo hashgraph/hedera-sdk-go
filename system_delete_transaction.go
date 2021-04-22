@@ -22,6 +22,13 @@ func NewSystemDeleteTransaction() SystemDeleteTransaction {
 	return builder
 }
 
+func systemDeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) SystemDeleteTransaction {
+	return SystemDeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetSystemDelete(),
+	}
+}
+
 func (builder SystemDeleteTransaction) SetExpirationTime(expiration time.Time) SystemDeleteTransaction {
 	builder.pb.ExpirationTime = &proto.TimestampSeconds{
 		Seconds: expiration.Unix(),
@@ -37,6 +44,37 @@ func (builder SystemDeleteTransaction) SetContractID(ID ContractID) SystemDelete
 func (builder SystemDeleteTransaction) SetFileID(ID FileID) SystemDeleteTransaction {
 	builder.pb.Id = &proto.SystemDeleteTransactionBody_FileID{FileID: ID.toProto()}
 	return builder
+}
+
+func (builder SystemDeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	body := &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_SystemDelete{
+			SystemDelete: &proto.SystemDeleteTransactionBody{
+				Id:             nil,
+				ExpirationTime: builder.pb.GetExpirationTime(),
+			},
+		},
+	}
+
+	switch builder.pb.GetId().(type) {
+	case *proto.SystemDeleteTransactionBody_ContractID:
+		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: builder.pb.GetContractID()}
+	case *proto.SystemDeleteTransactionBody_FileID:
+		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: builder.pb.GetFileID()}
+	}
+
+	return body, nil
 }
 
 //

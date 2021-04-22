@@ -25,6 +25,13 @@ func NewConsensusTopicCreateTransaction() ConsensusTopicCreateTransaction {
 	return builder.SetAutoRenewPeriod(7890000 * time.Second)
 }
 
+func consensusTopicCreateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ConsensusTopicCreateTransaction {
+	return ConsensusTopicCreateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetConsensusCreateTopic(),
+	}
+}
+
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
 // expirationTime.
 func (builder ConsensusTopicCreateTransaction) SetAdminKey(publicKey PublicKey) ConsensusTopicCreateTransaction {
@@ -61,6 +68,31 @@ func (builder ConsensusTopicCreateTransaction) SetAutoRenewPeriod(period time.Du
 func (builder ConsensusTopicCreateTransaction) SetAutoRenewAccountID(id AccountID) ConsensusTopicCreateTransaction {
 	builder.pb.AutoRenewAccount = id.toProto()
 	return builder
+}
+
+func (builder *ConsensusTopicCreateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ConsensusTopicCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ConsensusCreateTopic{
+			ConsensusCreateTopic: &proto.ConsensusCreateTopicTransactionBody{
+				Memo:             builder.pb.GetMemo(),
+				AdminKey:         builder.pb.GetAdminKey(),
+				SubmitKey:        builder.pb.GetSubmitKey(),
+				AutoRenewPeriod:  builder.pb.GetAutoRenewPeriod(),
+				AutoRenewAccount: builder.pb.GetAutoRenewAccount(),
+			},
+		},
+	}, nil
 }
 
 //

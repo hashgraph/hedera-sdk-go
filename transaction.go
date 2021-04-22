@@ -12,6 +12,10 @@ import (
 )
 
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.
+type ITransaction interface {
+	constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error)
+}
+
 type Transaction struct {
 	pb *proto.Transaction
 	id TransactionID
@@ -210,15 +214,6 @@ func (transaction Transaction) ID() TransactionID {
 	// Provide an accessor function to prevent the user from mutating the
 	// ID which would result in undefined behavior.
 	return transaction.id
-}
-
-func (transaction Transaction) Schedule() ScheduleCreateTransaction {
-	tx := NewScheduleCreateTransaction()
-	body := transaction.body()
-	tx.TransactionBuilder.SetNodeAccountID(accountIDFromProto(body.NodeAccountID))
-	tx.TransactionBuilder.pb.GetScheduleCreate().TransactionBody = transaction.pb.GetBodyBytes()
-	tx.TransactionBuilder.pb.GetScheduleCreate().SigMap = transaction.pb.GetSigMap()
-	return tx
 }
 
 // The protobuf stores the transaction body as raw bytes so we need to first

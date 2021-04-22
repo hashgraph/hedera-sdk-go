@@ -25,6 +25,13 @@ func NewConsensusTopicUpdateTransaction() ConsensusTopicUpdateTransaction {
 	return builder
 }
 
+func consensusTopicUpdateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ConsensusTopicUpdateTransaction {
+	return ConsensusTopicUpdateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetConsensusUpdateTopic(),
+	}
+}
+
 // SetTopicID sets the topic to be updated.
 func (builder ConsensusTopicUpdateTransaction) SetTopicID(id ConsensusTopicID) ConsensusTopicUpdateTransaction {
 	builder.pb.TopicID = id.toProto()
@@ -97,6 +104,33 @@ func (builder ConsensusTopicUpdateTransaction) ClearAutoRenewAccountID() Consens
 	builder.pb.AutoRenewAccount = &proto.AccountID{}
 
 	return builder
+}
+
+func (builder *ConsensusTopicUpdateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ConsensusTopicUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ConsensusUpdateTopic{
+			ConsensusUpdateTopic: &proto.ConsensusUpdateTopicTransactionBody{
+				TopicID:          builder.pb.GetTopicID(),
+				Memo:             builder.pb.GetMemo(),
+				ExpirationTime:   builder.pb.GetExpirationTime(),
+				AdminKey:         builder.pb.GetAdminKey(),
+				SubmitKey:        builder.pb.GetSubmitKey(),
+				AutoRenewPeriod:  builder.pb.GetAutoRenewPeriod(),
+				AutoRenewAccount: builder.pb.GetAutoRenewAccount(),
+			},
+		},
+	}, nil
 }
 
 //

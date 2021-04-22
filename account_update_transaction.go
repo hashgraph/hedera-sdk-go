@@ -26,6 +26,13 @@ func NewAccountUpdateTransaction() AccountUpdateTransaction {
 	return builder
 }
 
+func accountUpdateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) AccountUpdateTransaction {
+	return AccountUpdateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetCryptoUpdateAccount(),
+	}
+}
+
 // SetAccountID sets the account ID which is being updated in this transaction
 func (builder AccountUpdateTransaction) SetAccountID(id AccountID) AccountUpdateTransaction {
 	builder.pb.AccountIDToUpdate = id.toProto()
@@ -94,6 +101,36 @@ func (builder AccountUpdateTransaction) SetReceiveRecordThreshold(threshold Hbar
 		ReceiveRecordThreshold: uint64(threshold.AsTinybar()),
 	}
 	return builder
+}
+
+func (builder AccountUpdateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *AccountUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: &proto.CryptoUpdateTransactionBody{
+				AccountIDToUpdate:           builder.pb.GetAccountIDToUpdate(),
+				Key:                         builder.pb.GetKey(),
+				ProxyAccountID:              builder.pb.GetProxyAccountID(),
+				ProxyFraction:               builder.pb.GetProxyFraction(),
+				SendRecordThresholdField:    builder.pb.GetSendRecordThresholdField(),
+				ReceiveRecordThresholdField: builder.pb.GetReceiveRecordThresholdField(),
+				AutoRenewPeriod:             builder.pb.GetAutoRenewPeriod(),
+				ExpirationTime:              builder.pb.GetExpirationTime(),
+				ReceiverSigRequiredField:    builder.pb.GetReceiverSigRequiredField(),
+				Memo:                        builder.pb.GetMemo(),
+			},
+		},
+	}, nil
 }
 
 //

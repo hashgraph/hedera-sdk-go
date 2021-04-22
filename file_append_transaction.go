@@ -27,6 +27,13 @@ func NewFileAppendTransaction() FileAppendTransaction {
 	return builder
 }
 
+func fileAppendTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) FileAppendTransaction {
+	return FileAppendTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetFileAppend(),
+	}
+}
+
 // SetFileID sets the FileID of the file to which the bytes are appended to.
 func (builder FileAppendTransaction) SetFileID(id FileID) FileAppendTransaction {
 	builder.pb.FileID = id.toProto()
@@ -37,6 +44,28 @@ func (builder FileAppendTransaction) SetFileID(id FileID) FileAppendTransaction 
 func (builder FileAppendTransaction) SetContents(contents []byte) FileAppendTransaction {
 	builder.pb.Contents = contents
 	return builder
+}
+
+func (builder FileAppendTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *FileAppendTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_FileAppend{
+			FileAppend: &proto.FileAppendTransactionBody{
+				FileID:   builder.pb.GetFileID(),
+				Contents: builder.pb.GetContents(),
+			},
+		},
+	}, nil
 }
 
 //

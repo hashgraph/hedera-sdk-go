@@ -22,6 +22,13 @@ func NewTokenWipeTransaction() TokenWipeTransaction {
 	return builder
 }
 
+func tokenWipeTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenWipeTransaction {
+	return TokenWipeTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenWipe(),
+	}
+}
+
 // The amount of tokens to wipe from the specified account. Amount must be a positive non-zero number in the lowest denomination possible, not bigger than the token balance of the account (0; balance]
 func (builder TokenWipeTransaction) SetAmount(amount uint64) TokenWipeTransaction {
 	builder.pb.Amount = amount
@@ -38,6 +45,29 @@ func (builder TokenWipeTransaction) SetTokenID(id TokenID) TokenWipeTransaction 
 func (builder TokenWipeTransaction) SetAccountID(id AccountID) TokenWipeTransaction {
 	builder.pb.Account = id.toProto()
 	return builder
+}
+
+func (builder TokenWipeTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenWipeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenWipe{
+			TokenWipe: &proto.TokenWipeAccountTransactionBody{
+				Token:   builder.pb.GetToken(),
+				Account: builder.pb.GetAccount(),
+				Amount:  builder.pb.GetAmount(),
+			},
+		},
+	}, nil
 }
 
 //

@@ -24,6 +24,13 @@ func NewContractDeleteTransaction() ContractDeleteTransaction {
 	return builder
 }
 
+func contractDeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ContractDeleteTransaction {
+	return ContractDeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetContractDeleteInstance(),
+	}
+}
+
 // SetContractID sets the Contract ID of the Contract to be deleted by the Contract Delete Transaction
 func (builder ContractDeleteTransaction) SetContractID(id ContractID) ContractDeleteTransaction {
 	builder.pb.ContractID = id.toProto()
@@ -45,6 +52,28 @@ func (builder ContractDeleteTransaction) SetTransferContractID(id ContractID) Co
 	}
 
 	return builder
+}
+
+func (builder ContractDeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ContractDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: &proto.ContractDeleteTransactionBody{
+				ContractID: builder.pb.GetContractID(),
+				Obtainers:  builder.pb.GetObtainers(),
+			},
+		},
+	}, nil
 }
 
 //

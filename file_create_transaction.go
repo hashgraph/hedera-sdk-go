@@ -35,6 +35,13 @@ func NewFileCreateTransaction() FileCreateTransaction {
 	return builder
 }
 
+func fileCreateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) FileCreateTransaction {
+	return FileCreateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetFileCreate(),
+	}
+}
+
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
 // create or modify a file, but only one of them needs to sign in order to delete the file. Each of those "keys" may
 // itself be threshold key containing other keys (including other threshold keys). In other words, the behavior is an
@@ -65,6 +72,33 @@ func (builder FileCreateTransaction) SetExpirationTime(expiration time.Time) Fil
 func (builder FileCreateTransaction) SetContents(contents []byte) FileCreateTransaction {
 	builder.pb.Contents = contents
 	return builder
+}
+
+func (builder FileCreateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *FileCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_FileCreate{
+			FileCreate: &proto.FileCreateTransactionBody{
+				ExpirationTime:   builder.pb.GetExpirationTime(),
+				Keys:             builder.pb.GetKeys(),
+				Contents:         builder.pb.GetContents(),
+				ShardID:          builder.pb.GetShardID(),
+				RealmID:          builder.pb.GetRealmID(),
+				NewRealmAdminKey: builder.pb.GetNewRealmAdminKey(),
+				Memo:             builder.pb.GetMemo(),
+			},
+		},
+	}, nil
 }
 
 //

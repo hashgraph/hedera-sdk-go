@@ -22,6 +22,13 @@ func NewFreezeTransaction() FreezeTransaction {
 	return builder
 }
 
+func freezeTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) FreezeTransaction {
+	return FreezeTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetFreeze(),
+	}
+}
+
 func (builder FreezeTransaction) SetStartTime(hour uint8, minute uint8) FreezeTransaction {
 	builder.pb.StartHour = int32(hour)
 	builder.pb.StartMin = int32(minute)
@@ -32,6 +39,32 @@ func (builder FreezeTransaction) SetEndTime(hour uint8, minute uint8) FreezeTran
 	builder.pb.EndHour = int32(hour)
 	builder.pb.EndMin = int32(minute)
 	return builder
+}
+
+func (builder FreezeTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *FreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_Freeze{
+			Freeze: &proto.FreezeTransactionBody{
+				StartHour:  builder.pb.GetStartHour(),
+				StartMin:   builder.pb.GetStartMin(),
+				EndHour:    builder.pb.GetEndHour(),
+				EndMin:     builder.pb.GetEndMin(),
+				UpdateFile: builder.pb.GetUpdateFile(),
+				FileHash:   builder.pb.GetFileHash(),
+			},
+		},
+	}, nil
 }
 
 //

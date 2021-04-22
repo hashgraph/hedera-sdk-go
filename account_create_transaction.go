@@ -39,6 +39,13 @@ func NewAccountCreateTransaction() AccountCreateTransaction {
 	return builder
 }
 
+func accountCreateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) AccountCreateTransaction {
+	return AccountCreateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetCryptoCreateAccount(),
+	}
+}
+
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (builder AccountCreateTransaction) SetKey(publicKey PublicKey) AccountCreateTransaction {
@@ -98,6 +105,37 @@ func (builder AccountCreateTransaction) SetProxyAccountID(id AccountID) AccountC
 func (builder AccountCreateTransaction) SetReceiverSignatureRequired(required bool) AccountCreateTransaction {
 	builder.pb.ReceiverSigRequired = required
 	return builder
+}
+
+func (builder AccountCreateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *AccountCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: &proto.CryptoCreateTransactionBody{
+				Key:                    builder.pb.GetKey(),
+				InitialBalance:         builder.pb.GetInitialBalance(),
+				ProxyAccountID:         builder.pb.GetProxyAccountID(),
+				SendRecordThreshold:    builder.pb.GetSendRecordThreshold(),
+				ReceiveRecordThreshold: builder.pb.GetReceiveRecordThreshold(),
+				ReceiverSigRequired:    builder.pb.GetReceiverSigRequired(),
+				AutoRenewPeriod:        builder.pb.GetAutoRenewPeriod(),
+				ShardID:                builder.pb.GetShardID(),
+				RealmID:                builder.pb.GetRealmID(),
+				NewRealmAdminKey:       builder.pb.GetNewRealmAdminKey(),
+				Memo:                   builder.pb.GetMemo(),
+			},
+		},
+	}, nil
 }
 
 //

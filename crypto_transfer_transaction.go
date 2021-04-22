@@ -37,6 +37,13 @@ func NewCryptoTransferTransaction() CryptoTransferTransaction {
 	return builder
 }
 
+func cryptoTransferTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) CryptoTransferTransaction {
+	return CryptoTransferTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetCryptoTransfer(),
+	}
+}
+
 // AddSender adds an account and the amount of hbar (as a positive value) to be sent from the sender. If any sender
 // account fails to have a sufficient balance to do the withdrawal, then the entire transaction fails, and none of those
 // transfers occur, though the transaction fee is still charged.
@@ -61,6 +68,19 @@ func (builder CryptoTransferTransaction) AddTransfer(id AccountID, amount Hbar) 
 	})
 
 	return builder
+}
+
+func (builder *CryptoTransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_CryptoTransfer{
+			CryptoTransfer: &proto.CryptoTransferTransactionBody{
+				Transfers:      builder.pb.GetTransfers(),
+				TokenTransfers: builder.pb.GetTokenTransfers(),
+			},
+		},
+	}, nil
 }
 
 //

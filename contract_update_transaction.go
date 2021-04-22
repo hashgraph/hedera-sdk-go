@@ -37,6 +37,13 @@ func NewContractUpdateTransaction() ContractUpdateTransaction {
 	return builder
 }
 
+func contractUpdateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ContractUpdateTransaction {
+	return ContractUpdateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetContractUpdateInstance(),
+	}
+}
+
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
 func (builder ContractUpdateTransaction) SetContractID(id ContractID) ContractUpdateTransaction {
 	builder.pb.ContractID = id.toProto()
@@ -88,6 +95,33 @@ func (builder ContractUpdateTransaction) SetContractMemo(memo string) ContractUp
 	}
 
 	return builder
+}
+
+func (builder ContractUpdateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ContractUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ContractUpdateInstance{
+			ContractUpdateInstance: &proto.ContractUpdateTransactionBody{
+				ContractID:      builder.pb.GetContractID(),
+				ExpirationTime:  builder.pb.GetExpirationTime(),
+				AdminKey:        builder.pb.GetAdminKey(),
+				ProxyAccountID:  builder.pb.GetProxyAccountID(),
+				AutoRenewPeriod: builder.pb.GetAutoRenewPeriod(),
+				FileID:          builder.pb.GetFileID(),
+				MemoField:       builder.pb.GetMemoField(),
+			},
+		},
+	}, nil
 }
 
 //

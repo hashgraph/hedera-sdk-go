@@ -25,10 +25,38 @@ func NewConsensusTopicDeleteTransaction() ConsensusTopicDeleteTransaction {
 	return builder
 }
 
+func consensusTopicDeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ConsensusTopicDeleteTransaction {
+	return ConsensusTopicDeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetConsensusDeleteTopic(),
+	}
+}
+
 // SetTopicID sets the topic identifier.
 func (builder ConsensusTopicDeleteTransaction) SetTopicID(id ConsensusTopicID) ConsensusTopicDeleteTransaction {
 	builder.pb.TopicID = id.toProto()
 	return builder
+}
+
+func (builder ConsensusTopicDeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ConsensusTopicDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ConsensusDeleteTopic{
+			ConsensusDeleteTopic: &proto.ConsensusDeleteTopicTransactionBody{
+				TopicID: builder.pb.TopicID,
+			},
+		},
+	}, nil
 }
 
 //

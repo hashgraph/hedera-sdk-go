@@ -32,6 +32,13 @@ func NewTransferTransaction() TransferTransaction {
 	return builder
 }
 
+func transferTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TransferTransaction {
+	return TransferTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:          pb.GetCryptoTransfer(),
+	}
+}
+
 // AddTransfer adds the accountID to the internal accounts list and the amounts to the internal amounts list. Each
 // negative amount is withdrawn from the corresponding account (a sender), and each positive one is added to the
 // corresponding account (a receiver). The amounts list must sum to zero and there can be a maximum of 10 transfers.
@@ -66,6 +73,28 @@ func (builder TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID A
 	})
 
 	return builder
+}
+
+func (builder *TransferTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_CryptoTransfer{
+			CryptoTransfer: &proto.CryptoTransferTransactionBody{
+				Transfers:      builder.pb.GetTransfers(),
+				TokenTransfers: builder.pb.GetTokenTransfers(),
+			},
+		},
+	}, nil
 }
 
 //

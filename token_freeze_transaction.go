@@ -22,6 +22,13 @@ func NewTokenFreezeTransaction() TokenFreezeTransaction {
 	return builder
 }
 
+func tokenFreezeTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenFreezeTransaction {
+	return TokenFreezeTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenFreeze(),
+	}
+}
+
 // The token for which this account will be frozen. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (builder TokenFreezeTransaction) SetTokenID(id TokenID) TokenFreezeTransaction {
 	builder.pb.Token = id.toProto()
@@ -32,6 +39,28 @@ func (builder TokenFreezeTransaction) SetTokenID(id TokenID) TokenFreezeTransact
 func (builder TokenFreezeTransaction) SetAccountID(id AccountID) TokenFreezeTransaction {
 	builder.pb.Account = id.toProto()
 	return builder
+}
+
+func (builder TokenFreezeTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenFreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenFreeze{
+			TokenFreeze: &proto.TokenFreezeAccountTransactionBody{
+				Token:   builder.pb.GetToken(),
+				Account: builder.pb.GetAccount(),
+			},
+		},
+	}, nil
 }
 
 //

@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"errors"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
 )
@@ -21,56 +22,14 @@ func NewScheduleSignTransaction() ScheduleSignTransaction {
 	return builder
 }
 
-func (builder ScheduleSignTransaction) AddScheduleSignature(key Ed25519PublicKey, signature []byte) ScheduleSignTransaction {
-	sigPair := proto.SignaturePair{
-		PubKeyPrefix: key.keyData,
-		Signature:    &proto.SignaturePair_Ed25519{Ed25519: signature},
-	}
-
-	if builder.pb.SigMap != nil {
-		if builder.pb.SigMap.SigPair != nil {
-			builder.pb.SigMap.SigPair = append(builder.pb.SigMap.SigPair, &sigPair)
-		} else {
-			builder.pb.SigMap.SigPair = make([]*proto.SignaturePair, 0)
-			builder.pb.SigMap.SigPair = append(builder.pb.SigMap.SigPair, &sigPair)
-		}
-	} else {
-		builder.pb.SigMap = &proto.SignatureMap{
-			SigPair: make([]*proto.SignaturePair, 0),
-		}
-		builder.pb.SigMap.SigPair = append(builder.pb.SigMap.SigPair, &sigPair)
-	}
-
-	return builder
-}
-
 func (builder ScheduleSignTransaction) SetScheduleID(id ScheduleID) ScheduleSignTransaction {
 	builder.pb.ScheduleID = id.toProto()
 
 	return builder
 }
 
-func (builder *ScheduleSignTransaction) GetScheduleSignatures() (map[*Ed25519PublicKey][]byte, error) {
-	signMap := make(map[*Ed25519PublicKey][]byte, len(builder.pb.GetSigMap().GetSigPair()))
-
-	for _, sigPair := range builder.pb.GetSigMap().GetSigPair() {
-		key, err := Ed25519PublicKeyFromBytes(sigPair.PubKeyPrefix)
-		if err != nil {
-			return make(map[*Ed25519PublicKey][]byte, 0), err
-		}
-		switch sigPair.Signature.(type) {
-		case *proto.SignaturePair_Contract:
-			signMap[&key] = sigPair.GetContract()
-		case *proto.SignaturePair_Ed25519:
-			signMap[&key] = sigPair.GetEd25519()
-		case *proto.SignaturePair_RSA_3072:
-			signMap[&key] = sigPair.GetRSA_3072()
-		case *proto.SignaturePair_ECDSA_384:
-			signMap[&key] = sigPair.GetECDSA_384()
-		}
-	}
-
-	return signMap, nil
+func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
 //

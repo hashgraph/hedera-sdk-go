@@ -22,6 +22,13 @@ func NewTokenRevokeKycTransaction() TokenRevokeKycTransaction {
 	return builder
 }
 
+func tokenRevokeKycTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenRevokeKycTransaction {
+	return TokenRevokeKycTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenRevokeKyc(),
+	}
+}
+
 // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (builder TokenRevokeKycTransaction) SetTokenID(id TokenID) TokenRevokeKycTransaction {
 	builder.pb.Token = id.toProto()
@@ -32,6 +39,28 @@ func (builder TokenRevokeKycTransaction) SetTokenID(id TokenID) TokenRevokeKycTr
 func (builder TokenRevokeKycTransaction) SetAccountID(id AccountID) TokenRevokeKycTransaction {
 	builder.pb.Account = id.toProto()
 	return builder
+}
+
+func (builder TokenRevokeKycTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenRevokeKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenRevokeKyc{
+			TokenRevokeKyc: &proto.TokenRevokeKycTransactionBody{
+				Token:   builder.pb.GetToken(),
+				Account: builder.pb.GetAccount(),
+			},
+		},
+	}, nil
 }
 
 //

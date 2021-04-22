@@ -22,6 +22,13 @@ func NewTokenGrantKycTransaction() TokenGrantKycTransaction {
 	return builder
 }
 
+func tokenGrantKycTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenGrantKycTransaction {
+	return TokenGrantKycTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenGrantKyc(),
+	}
+}
+
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (builder TokenGrantKycTransaction) SetTokenID(id TokenID) TokenGrantKycTransaction {
 	builder.pb.Token = id.toProto()
@@ -32,6 +39,28 @@ func (builder TokenGrantKycTransaction) SetTokenID(id TokenID) TokenGrantKycTran
 func (builder TokenGrantKycTransaction) SetAccountID(id AccountID) TokenGrantKycTransaction {
 	builder.pb.Account = id.toProto()
 	return builder
+}
+
+func (builder TokenGrantKycTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenGrantKyc{
+			TokenGrantKyc: &proto.TokenGrantKycTransactionBody{
+				Token:   builder.pb.GetToken(),
+				Account: builder.pb.GetAccount(),
+			},
+		},
+	}, nil
 }
 
 //

@@ -22,6 +22,13 @@ func NewTokenUpdateTransaction() TokenUpdateTransaction {
 	return builder
 }
 
+func tokenUpdateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenUpdateTransaction {
+	return TokenUpdateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenUpdate(),
+	}
+}
+
 // The Token to be updated
 func (builder TokenUpdateTransaction) SetTokenID(id TokenID) TokenUpdateTransaction {
 	builder.pb.Token = id.toProto()
@@ -96,6 +103,39 @@ func (builder TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64)
 		Seconds: time.Now().Unix() + int64(autoRenewPeriod),
 	}
 	return builder
+}
+
+func (builder TokenUpdateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenUpdate{
+			TokenUpdate: &proto.TokenUpdateTransactionBody{
+				Token:            builder.pb.GetToken(),
+				Symbol:           builder.pb.GetSymbol(),
+				Name:             builder.pb.GetName(),
+				Treasury:         builder.pb.GetTreasury(),
+				AdminKey:         builder.pb.GetAdminKey(),
+				KycKey:           builder.pb.GetKycKey(),
+				FreezeKey:        builder.pb.GetFreezeKey(),
+				WipeKey:          builder.pb.GetWipeKey(),
+				SupplyKey:        builder.pb.GetSupplyKey(),
+				AutoRenewAccount: builder.pb.GetAutoRenewAccount(),
+				AutoRenewPeriod:  builder.pb.GetAutoRenewPeriod(),
+				Expiry:           builder.pb.GetExpiry(),
+				Memo:             builder.pb.GetMemo(),
+			},
+		},
+	}, nil
 }
 
 //

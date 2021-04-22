@@ -24,6 +24,13 @@ func NewTokenCreateTransaction() TokenCreateTransaction {
 	return builder
 }
 
+func tokenCreateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenCreateTransaction {
+	return TokenCreateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenCreation(),
+	}
+}
+
 // The publicly visible name of the token, specified as a string of only ASCII characters
 func (builder TokenCreateTransaction) SetName(name string) TokenCreateTransaction {
 	builder.pb.Name = name
@@ -110,6 +117,41 @@ func (builder TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod uint64)
 		Seconds: time.Now().Unix() + int64(autoRenewPeriod),
 	}
 	return builder
+}
+
+func (builder TokenCreateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenCreation{
+			TokenCreation: &proto.TokenCreateTransactionBody{
+				Name:             builder.pb.GetName(),
+				Symbol:           builder.pb.GetSymbol(),
+				Decimals:         builder.pb.GetDecimals(),
+				InitialSupply:    builder.pb.GetInitialSupply(),
+				Treasury:         builder.pb.GetTreasury(),
+				AdminKey:         builder.pb.GetAdminKey(),
+				KycKey:           builder.pb.GetKycKey(),
+				FreezeKey:        builder.pb.GetFreezeKey(),
+				WipeKey:          builder.pb.GetWipeKey(),
+				SupplyKey:        builder.pb.GetSupplyKey(),
+				FreezeDefault:    builder.pb.GetFreezeDefault(),
+				Expiry:           builder.pb.GetExpiry(),
+				AutoRenewAccount: builder.pb.GetAutoRenewAccount(),
+				AutoRenewPeriod:  builder.pb.GetAutoRenewPeriod(),
+				Memo:             builder.pb.GetMemo(),
+			},
+		},
+	}, nil
 }
 
 //

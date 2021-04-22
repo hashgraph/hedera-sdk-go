@@ -24,6 +24,13 @@ func NewTokenAssociateTransaction() TokenAssociateTransaction {
 	return builder
 }
 
+func tokenAssociateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenAssociateTransaction {
+	return TokenAssociateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenAssociate(),
+	}
+}
+
 // The account to be associated with the provided tokens
 func (builder TokenAssociateTransaction) SetAccountID(id AccountID) TokenAssociateTransaction {
 	builder.pb.Account = id.toProto()
@@ -34,6 +41,28 @@ func (builder TokenAssociateTransaction) SetAccountID(id AccountID) TokenAssocia
 func (builder TokenAssociateTransaction) AddTokenID(id TokenID) TokenAssociateTransaction {
 	builder.pb.Tokens = append(builder.pb.Tokens, id.toProto())
 	return builder
+}
+
+func (builder TokenAssociateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenAssociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenAssociate{
+			TokenAssociate: &proto.TokenAssociateTransactionBody{
+				Account: builder.pb.GetAccount(),
+				Tokens:  builder.pb.GetTokens(),
+			},
+		},
+	}, nil
 }
 
 //

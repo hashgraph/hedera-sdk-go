@@ -22,6 +22,13 @@ func NewTokenMintTransaction() TokenMintTransaction {
 	return builder
 }
 
+func tokenMintTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenMintTransaction {
+	return TokenMintTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenMint(),
+	}
+}
+
 // The amount to mint to the Treasury Account. Amount must be a positive non-zero number represented in the lowest denomination of the token. The new supply must be lower than 2^63.
 func (builder TokenMintTransaction) SetAmount(amount uint64) TokenMintTransaction {
 	builder.pb.Amount = amount
@@ -32,6 +39,28 @@ func (builder TokenMintTransaction) SetAmount(amount uint64) TokenMintTransactio
 func (builder TokenMintTransaction) SetTokenID(id TokenID) TokenMintTransaction {
 	builder.pb.Token = id.toProto()
 	return builder
+}
+
+func (builder TokenMintTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenMintTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenMint{
+			TokenMint: &proto.TokenMintTransactionBody{
+				Token:  builder.pb.GetToken(),
+				Amount: builder.pb.GetAmount(),
+			},
+		},
+	}, nil
 }
 
 //

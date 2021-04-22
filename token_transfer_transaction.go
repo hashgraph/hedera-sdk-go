@@ -32,6 +32,13 @@ func NewTokenTransferTransaction() TokenTransferTransaction {
 	return builder
 }
 
+func tokenTransferFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenTransferTransaction {
+	return TokenTransferTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetCryptoTransfer(),
+	}
+}
+
 func (builder TokenTransferTransaction) AddSender(tokenID TokenID, accountID AccountID, amount uint64) TokenTransferTransaction {
 	return builder.AddTransfers(tokenID, accountID, -int64(amount))
 }
@@ -60,6 +67,28 @@ func (builder TokenTransferTransaction) AddTransfers(tokenID TokenID, accountID 
 	})
 
 	return builder
+}
+
+func (builder TokenTransferTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenTransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_CryptoTransfer{
+			CryptoTransfer: &proto.CryptoTransferTransactionBody{
+				Transfers:      builder.pb.GetTransfers(),
+				TokenTransfers: builder.pb.GetTokenTransfers(),
+			},
+		},
+	}, nil
 }
 
 //

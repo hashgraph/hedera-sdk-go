@@ -9,6 +9,7 @@ var mockPrivateKey string = "302e020100300506032b6570042204203b054fade7a2b0869c6
 var testTransactionID TransactionID = TransactionID{
 	AccountID{Account: 3},
 	time.Unix(124124, 151515),
+	false,
 }
 
 func newMockClient() (*Client, error) {

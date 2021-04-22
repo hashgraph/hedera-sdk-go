@@ -21,9 +21,37 @@ func NewScheduleDeleteTransaction() ScheduleDeleteTransaction {
 	return builder
 }
 
+func scheduleDeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ScheduleDeleteTransaction {
+	return ScheduleDeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetScheduleDelete(),
+	}
+}
+
 func (builder ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) ScheduleDeleteTransaction {
 	builder.pb.ScheduleID = scheduleID.toProto()
 	return builder
+}
+
+func (builder ScheduleDeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder ScheduleDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ScheduleDelete{
+			ScheduleDelete: &proto.ScheduleDeleteTransactionBody{
+				ScheduleID: builder.pb.GetScheduleID(),
+			},
+		},
+	}, nil
 }
 
 //

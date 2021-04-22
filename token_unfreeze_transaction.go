@@ -22,6 +22,13 @@ func NewTokenUnfreezeTransaction() TokenUnfreezeTransaction {
 	return builder
 }
 
+func tokenUnfreezeTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenUnfreezeTransaction {
+	return TokenUnfreezeTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenUnfreeze(),
+	}
+}
+
 // The token for which this account will be unfrozen. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (builder TokenUnfreezeTransaction) SetTokenID(id TokenID) TokenUnfreezeTransaction {
 	builder.pb.Token = id.toProto()
@@ -32,6 +39,28 @@ func (builder TokenUnfreezeTransaction) SetTokenID(id TokenID) TokenUnfreezeTran
 func (builder TokenUnfreezeTransaction) SetAccountID(id AccountID) TokenUnfreezeTransaction {
 	builder.pb.Account = id.toProto()
 	return builder
+}
+
+func (builder TokenUnfreezeTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenUnfreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenUnfreeze{
+			TokenUnfreeze: &proto.TokenUnfreezeAccountTransactionBody{
+				Token:   builder.pb.GetToken(),
+				Account: builder.pb.GetAccount(),
+			},
+		},
+	}, nil
 }
 
 //

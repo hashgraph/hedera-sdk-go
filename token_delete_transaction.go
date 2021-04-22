@@ -22,10 +22,38 @@ func NewTokenDeleteTransaction() TokenDeleteTransaction {
 	return builder
 }
 
+func tokenDeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenDeleteTransaction {
+	return TokenDeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenDeletion(),
+	}
+}
+
 // The token to be deleted. If invalid token is specified, transaction will result in INVALID_TOKEN_ID
 func (builder TokenDeleteTransaction) SetTokenID(id TokenID) TokenDeleteTransaction {
 	builder.pb.Token = id.toProto()
 	return builder
+}
+
+func (builder TokenDeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenDeletion{
+			TokenDeletion: &proto.TokenDeleteTransactionBody{
+				Token: builder.pb.GetToken(),
+			},
+		},
+	}, nil
 }
 
 //

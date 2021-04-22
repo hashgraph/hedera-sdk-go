@@ -22,6 +22,13 @@ func NewFileDeleteTransaction() FileDeleteTransaction {
 	return builder
 }
 
+func fileDeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) FileDeleteTransaction {
+	return FileDeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetFileDelete(),
+	}
+}
+
 func (builder FileDeleteTransaction) SetFileID(id FileID) FileDeleteTransaction {
 	builder.pb.FileID = id.toProto()
 	return builder
@@ -29,6 +36,27 @@ func (builder FileDeleteTransaction) SetFileID(id FileID) FileDeleteTransaction 
 
 func (builder FileDeleteTransaction) Build(client *Client) (Transaction, error) {
 	return builder.TransactionBuilder.Build(client)
+}
+
+func (builder FileDeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *FileDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_FileDelete{
+			FileDelete: &proto.FileDeleteTransactionBody{
+				FileID: builder.pb.GetFileID(),
+			},
+		},
+	}, nil
 }
 
 //

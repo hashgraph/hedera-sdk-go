@@ -24,6 +24,13 @@ func NewTokenDissociateTransaction() TokenDissociateTransaction {
 	return builder
 }
 
+func tokenDissociateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenDissociateTransaction {
+	return TokenDissociateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenDissociate(),
+	}
+}
+
 // The account to be dissociated with the provided tokens
 func (builder TokenDissociateTransaction) SetAccountID(id AccountID) TokenDissociateTransaction {
 	builder.pb.Account = id.toProto()
@@ -34,6 +41,28 @@ func (builder TokenDissociateTransaction) SetAccountID(id AccountID) TokenDissoc
 func (builder TokenDissociateTransaction) AddTokenID(id TokenID) TokenDissociateTransaction {
 	builder.pb.Tokens = append(builder.pb.Tokens, id.toProto())
 	return builder
+}
+
+func (builder TokenDissociateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenDissociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenDissociate{
+			TokenDissociate: &proto.TokenDissociateTransactionBody{
+				Account: builder.pb.GetAccount(),
+				Tokens:  builder.pb.GetTokens(),
+			},
+		},
+	}, nil
 }
 
 //

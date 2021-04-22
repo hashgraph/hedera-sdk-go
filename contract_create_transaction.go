@@ -54,6 +54,13 @@ func NewContractCreateTransaction() ContractCreateTransaction {
 	return builder.SetAutoRenewPeriod(131500 * time.Minute)
 }
 
+func contractCreateTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ContractCreateTransaction {
+	return ContractCreateTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetContractCreateInstance(),
+	}
+}
+
 // SetBytecodeFileID sets the ID of the file containing the smart contract byte code. A copy will be made and held by
 // the contract instance, and have the same expiration time as the instance.
 func (builder ContractCreateTransaction) SetBytecodeFileID(id FileID) ContractCreateTransaction {
@@ -119,6 +126,37 @@ func (builder ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time
 func (builder ContractCreateTransaction) SetConstructorParams(params *ContractFunctionParams) ContractCreateTransaction {
 	builder.pb.ConstructorParameters = params.build(nil)
 	return builder
+}
+
+func (builder ContractCreateTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ContractCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ContractCreateInstance{
+			ContractCreateInstance: &proto.ContractCreateTransactionBody{
+				FileID:                builder.pb.GetFileID(),
+				AdminKey:              builder.pb.GetAdminKey(),
+				Gas:                   builder.pb.GetGas(),
+				InitialBalance:        builder.pb.GetInitialBalance(),
+				ProxyAccountID:        builder.pb.GetProxyAccountID(),
+				AutoRenewPeriod:       builder.pb.GetAutoRenewPeriod(),
+				ConstructorParameters: builder.pb.GetConstructorParameters(),
+				ShardID:               builder.pb.GetShardID(),
+				RealmID:               builder.pb.GetRealmID(),
+				NewRealmAdminKey:      builder.pb.GetNewRealmAdminKey(),
+				Memo:                  builder.pb.GetMemo(),
+			},
+		},
+	}, nil
 }
 
 //

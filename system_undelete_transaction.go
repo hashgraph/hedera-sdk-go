@@ -22,6 +22,13 @@ func NewSystemUndeleteTransaction() SystemUndeleteTransaction {
 	return builder
 }
 
+func systemUndeleteTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) SystemUndeleteTransaction {
+	return SystemUndeleteTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetSystemUndelete(),
+	}
+}
+
 func (builder SystemUndeleteTransaction) SetContractID(ID ContractID) SystemUndeleteTransaction {
 	builder.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: ID.toProto()}
 	return builder
@@ -30,6 +37,34 @@ func (builder SystemUndeleteTransaction) SetContractID(ID ContractID) SystemUnde
 func (builder SystemUndeleteTransaction) SetFileID(ID FileID) SystemUndeleteTransaction {
 	builder.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: ID.toProto()}
 	return builder
+}
+
+func (builder SystemUndeleteTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *SystemUndeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	body := &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_SystemUndelete{
+			SystemUndelete: &proto.SystemUndeleteTransactionBody{},
+		},
+	}
+
+	switch builder.pb.GetId().(type) {
+	case *proto.SystemUndeleteTransactionBody_ContractID:
+		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: builder.pb.GetContractID()}
+	case *proto.SystemUndeleteTransactionBody_FileID:
+		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: builder.pb.GetFileID()}
+	}
+
+	return body, nil
 }
 
 //

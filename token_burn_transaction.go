@@ -22,6 +22,13 @@ func NewTokenBurnTransaction() TokenBurnTransaction {
 	return builder
 }
 
+func tokenBurnTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TokenBurnTransaction {
+	return TokenBurnTransaction{
+		TransactionBuilder: transactionBuilder,
+		pb:                 pb.GetTokenBurn(),
+	}
+}
+
 // The amount to burn to the Treasury Account. Amount must be a positive non-zero number represented in the lowest denomination of the token. The new supply must be lower than 2^63.
 func (builder TokenBurnTransaction) SetAmount(amount uint64) TokenBurnTransaction {
 	builder.pb.Amount = amount
@@ -32,6 +39,28 @@ func (builder TokenBurnTransaction) SetAmount(amount uint64) TokenBurnTransactio
 func (builder TokenBurnTransaction) SetTokenID(id TokenID) TokenBurnTransaction {
 	builder.pb.Token = id.toProto()
 	return builder
+}
+
+func (builder TokenBurnTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *TokenBurnTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_TokenBurn{
+			TokenBurn: &proto.TokenBurnTransactionBody{
+				Token:  builder.pb.GetToken(),
+				Amount: builder.pb.GetAmount(),
+			},
+		},
+	}, nil
 }
 
 //

@@ -35,6 +35,22 @@ func NewConsensusMessageSubmitTransaction() ConsensusMessageSubmitTransaction {
 	return builder
 }
 
+func topicMessageSubmitTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) ConsensusMessageSubmitTransaction {
+	tx := ConsensusMessageSubmitTransaction{
+		TransactionBuilder:   transactionBuilder,
+		pb:                   pb.GetConsensusSubmitMessage(),
+		maxChunks:            10,
+		message:              pb.GetConsensusSubmitMessage().GetMessage(),
+		topicID:              consensusTopicIDFromProto(pb.GetConsensusSubmitMessage().GetTopicID()),
+		initialTransactionID: transactionIDFromProto(pb.GetConsensusSubmitMessage().GetChunkInfo().InitialTransactionID),
+		total:                pb.GetConsensusSubmitMessage().GetChunkInfo().GetTotal(),
+		number:               pb.GetConsensusSubmitMessage().GetChunkInfo().GetNumber(),
+		chunkInfoSet:         true,
+	}
+
+	return tx
+}
+
 // SetTopicID sets the topic to submit the message to.
 func (builder ConsensusMessageSubmitTransaction) SetTopicID(id ConsensusTopicID) ConsensusMessageSubmitTransaction {
 	builder.topicID = id
@@ -60,6 +76,29 @@ func (builder ConsensusMessageSubmitTransaction) SetChunkInfo(transactionID Tran
 	builder.number = number
 	builder.chunkInfoSet = true
 	return builder
+}
+
+func (builder ConsensusMessageSubmitTransaction) Schedule() (ScheduleCreateTransaction, error) {
+	scheduled, err := builder.constructScheduleProtobuf()
+	if err != nil {
+		return ScheduleCreateTransaction{}, err
+	}
+
+	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+}
+
+func (builder *ConsensusMessageSubmitTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: builder.TransactionBuilder.pb.GetTransactionFee(),
+		Memo:           builder.TransactionBuilder.pb.GetMemo(),
+		Data: &proto.SchedulableTransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: &proto.ConsensusSubmitMessageTransactionBody{
+				TopicID:   builder.pb.GetTopicID(),
+				Message:   builder.message,
+				ChunkInfo: builder.pb.GetChunkInfo(),
+			},
+		},
+	}, nil
 }
 
 func (builder ConsensusMessageSubmitTransaction) Execute(client *Client) (TransactionID, error) {

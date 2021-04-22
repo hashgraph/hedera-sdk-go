@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"errors"
 	"github.com/hashgraph/hedera-sdk-go/proto"
 	"time"
 )
@@ -21,11 +22,14 @@ func NewScheduleCreateTransaction() ScheduleCreateTransaction {
 	return builder
 }
 
-func (builder ScheduleCreateTransaction) SetTransaction(transaction Transaction) ScheduleCreateTransaction {
-	other := transaction.Schedule()
-	builder.pb.TransactionBody = other.TransactionBuilder.pb.GetScheduleCreate().TransactionBody
-	builder.pb.SigMap = other.TransactionBuilder.pb.GetScheduleCreate().SigMap
-	return builder
+func (builder ScheduleCreateTransaction) SetScheduledTransaction(tx ITransaction) (ScheduleCreateTransaction, error) {
+	scheduled, err := tx.constructScheduleProtobuf()
+	if err != nil {
+		return builder, err
+	}
+
+	builder.pb.ScheduledTransactionBody = scheduled
+	return builder, nil
 }
 
 func (builder ScheduleCreateTransaction) SetPayerAccountID(id AccountID) ScheduleCreateTransaction {
@@ -40,27 +44,20 @@ func (builder ScheduleCreateTransaction) SetAdminKey(key PublicKey) ScheduleCrea
 	return builder
 }
 
-func (builder *ScheduleCreateTransaction) GetScheduleSignatures() (map[*Ed25519PublicKey][]byte, error) {
-	signMap := make(map[*Ed25519PublicKey][]byte, len(builder.pb.GetSigMap().GetSigPair()))
+func (builder ScheduleCreateTransaction) SetScheduleMemo(memo string) ScheduleCreateTransaction {
+	builder.pb.Memo = memo
 
-	for _, sigPair := range builder.pb.GetSigMap().GetSigPair() {
-		key, err := Ed25519PublicKeyFromBytes(sigPair.PubKeyPrefix)
-		if err != nil {
-			return make(map[*Ed25519PublicKey][]byte, 0), err
-		}
-		switch sigPair.Signature.(type) {
-		case *proto.SignaturePair_Contract:
-			signMap[&key] = sigPair.GetContract()
-		case *proto.SignaturePair_Ed25519:
-			signMap[&key] = sigPair.GetEd25519()
-		case *proto.SignaturePair_RSA_3072:
-			signMap[&key] = sigPair.GetRSA_3072()
-		case *proto.SignaturePair_ECDSA_384:
-			signMap[&key] = sigPair.GetECDSA_384()
-		}
-	}
+	return builder
+}
 
-	return signMap, nil
+func (builder ScheduleCreateTransaction) setSchedulableTransactionBody(txBody *proto.SchedulableTransactionBody) ScheduleCreateTransaction {
+	builder.pb.ScheduledTransactionBody = txBody
+
+	return builder
+}
+
+func (builder *ScheduleCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	return nil, errors.New("cannot schedule `ScheduleCreateTransaction`")
 }
 
 //
