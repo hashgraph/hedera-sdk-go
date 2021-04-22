@@ -556,15 +556,15 @@ type TransactionBody_TokenDissociate struct {
 }
 
 type TransactionBody_ScheduleCreate struct {
-	ScheduleCreate *ScheduleCreateTransactionBody `protobuf:"bytes,42,opt,name=scheduleCreate,proto3,oneof"` // Creates a scheduled transaction instance
+	ScheduleCreate *ScheduleCreateTransactionBody `protobuf:"bytes,42,opt,name=scheduleCreate,proto3,oneof"` // Creates a schedule in the network's action queue
 }
 
 type TransactionBody_ScheduleDelete struct {
-	ScheduleDelete *ScheduleDeleteTransactionBody `protobuf:"bytes,43,opt,name=scheduleDelete,proto3,oneof"` // Deletes a scheduled transaction instance
+	ScheduleDelete *ScheduleDeleteTransactionBody `protobuf:"bytes,43,opt,name=scheduleDelete,proto3,oneof"` // Deletes a schedule from the network's action queue
 }
 
 type TransactionBody_ScheduleSign struct {
-	ScheduleSign *ScheduleSignTransactionBody `protobuf:"bytes,44,opt,name=scheduleSign,proto3,oneof"` // Signs a scheduled transaction instance
+	ScheduleSign *ScheduleSignTransactionBody `protobuf:"bytes,44,opt,name=scheduleSign,proto3,oneof"` // Adds one or more Ed25519 keys to the affirmed signers of a scheduled transaction
 }
 
 func (*TransactionBody_ContractCall) isTransactionBody_Data() {}
