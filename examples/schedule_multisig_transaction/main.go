@@ -125,7 +125,7 @@ func main() {
 		return
 	}
 
-	transfer, err := info.GetTransaction()
+	transfer, err := info.GetScheduledTransaction()
 	if err != nil {
 		println(err.Error(), ": error getting transaction from schedule info")
 		return
