@@ -26,7 +26,7 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	transaction := FileAppendTransaction{
 		pb:          pb,
 		Transaction: newTransaction(),
-		maxChunks:   10,
+		maxChunks:   20,
 		contents:    make([]byte, 0),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
@@ -38,7 +38,7 @@ func fileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	return FileAppendTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileAppend(),
-		maxChunks:   10,
+		maxChunks:   20,
 		contents:    make([]byte, 0),
 	}
 }

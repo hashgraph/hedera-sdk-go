@@ -8,7 +8,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
-const chunkSize = 4096
+const chunkSize = 1024
 
 type TopicMessageSubmitTransaction struct {
 	Transaction
@@ -21,7 +21,7 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	transaction := TopicMessageSubmitTransaction{
 		pb:          &proto.ConsensusSubmitMessageTransactionBody{},
 		Transaction: newTransaction(),
-		maxChunks:   10,
+		maxChunks:   20,
 		message:     make([]byte, 0),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -33,7 +33,7 @@ func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *prot
 	tx := TopicMessageSubmitTransaction{
 		Transaction: transaction,
 		pb:          pb.GetConsensusSubmitMessage(),
-		maxChunks:   10,
+		maxChunks:   20,
 		message:     make([]byte, 0),
 	}
 

@@ -151,7 +151,7 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
-		SetMaxChunks(4).
+		SetMaxChunks(15).
 		SetTopicID(topicID).
 		Execute(client)
 	assert.NoError(t, err)
@@ -174,7 +174,7 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 		resp, err = NewTopicMessageSubmitTransaction().
 			SetNodeAccountIDs([]AccountID{resp.NodeID}).
 			SetMessage([]byte(bigContents)).
-			SetMaxChunks(4).
+			SetMaxChunks(15).
 			SetTopicID(topicID).
 			Execute(client)
 		assert.NoError(t, err)

@@ -237,7 +237,7 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen(){
+	if !transaction.isFrozen() {
 		transaction.freeze()
 	}
 
