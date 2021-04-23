@@ -98,7 +98,7 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 	return info
 }
 
-func (scheduleInfo *ScheduleInfo) GetTransaction() (ITransaction, error) {
+func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error) {
 	pb := scheduleInfo.scheduledTransactionBody
 
 	pbBody := &proto.TransactionBody{

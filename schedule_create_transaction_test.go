@@ -44,7 +44,7 @@ package hedera
 // 		Execute(client)
 // 	assert.NoError(t, err)
 
-// 	infoTx, err := info.GetTransaction()
+// 	infoTx, err := info.GetScheduledTransaction()
 // 	assert.NoError(t, err)
 // 	assert.NotNil(t, infoTx)
 
@@ -169,7 +169,7 @@ package hedera
 // 		Execute(client)
 // 	assert.NoError(t, err)
 
-// 	transfer, err := info.GetTransaction()
+// 	transfer, err := info.GetScheduledTransaction()
 // 	assert.NoError(t, err)
 // 	assert.NotNil(t, transfer)
 
@@ -242,7 +242,7 @@ package hedera
 // 		Execute(client)
 // 	assert.NoError(t, err)
 
-// 	transfer, err := info.GetTransaction()
+// 	transfer, err := info.GetScheduledTransaction()
 // 	assert.NoError(t, err)
 // 	assert.NotNil(t, transfer)
 // 	assert.Nil(t, info.ExecutedAt)
@@ -307,7 +307,7 @@ package hedera
 // 		Execute(client)
 // 	assert.NoError(t, err)
 
-// 	infoTx, err := info.GetTransaction()
+// 	infoTx, err := info.GetScheduledTransaction()
 // 	assert.NoError(t, err)
 
 // 	assert.NotNil(t, infoTx)
