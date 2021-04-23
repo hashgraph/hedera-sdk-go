@@ -1,3 +1,13 @@
+
+## v2.1.5-beta.5
+
+
+### Fixed
+
+ * Non-Constant Time Comparison of HMACs [NCC-E001154-006]
+ * Decreased `CHUNK_SIZE` 4096->1024 and increased default max chunks 10->20
+ * Renamed `ScheduleInfo.GetTransaction()` -> `ScheduleInfo.getScheduledTransaction()`
+
 ## v2.1.5-beta.4
 
 ### Fixed
