@@ -160,7 +160,7 @@ func (transaction *TokenGrantKycTransaction) SignWith(
 func (transaction *TokenGrantKycTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

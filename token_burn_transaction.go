@@ -161,7 +161,7 @@ func (transaction *TokenBurnTransaction) SignWith(
 func (transaction *TokenBurnTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

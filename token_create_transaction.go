@@ -353,7 +353,7 @@ func (transaction *TokenCreateTransaction) SignWith(
 func (transaction *TokenCreateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

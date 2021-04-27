@@ -130,7 +130,7 @@ func (transaction *LiveHashDeleteTransaction) SignWith(
 func (transaction *LiveHashDeleteTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

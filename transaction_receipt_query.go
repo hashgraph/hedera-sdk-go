@@ -130,7 +130,7 @@ func (query *TransactionReceiptQuery) SetMaxRetry(count int) *TransactionReceipt
 }
 
 func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionReceipt{}, errNoClientProvided
 	}
 

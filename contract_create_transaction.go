@@ -249,7 +249,7 @@ func (transaction *ContractCreateTransaction) SignWith(
 func (transaction *ContractCreateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

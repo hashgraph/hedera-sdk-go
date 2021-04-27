@@ -190,7 +190,7 @@ func (transaction *TokenAssociateTransaction) SignWith(
 func (transaction *TokenAssociateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

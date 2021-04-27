@@ -138,7 +138,7 @@ func (transaction *FileDeleteTransaction) SignWith(
 func (transaction *FileDeleteTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

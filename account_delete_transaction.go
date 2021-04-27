@@ -159,7 +159,7 @@ func (transaction *AccountDeleteTransaction) SignWith(
 func (transaction *AccountDeleteTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return TransactionResponse{}, errNoClientProvided
 	}
 

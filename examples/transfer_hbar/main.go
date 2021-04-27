@@ -44,8 +44,8 @@ func main() {
 	fmt.Printf("Transferring 1 hbar from %v to 0.0.3\n", client.GetOperatorAccountID())
 
 	transactionResponse, err := hedera.NewTransferTransaction().
-		AddHbarTransfer(client.GetOperatorAccountID(), hedera.NewHbar(-1)).
-		AddHbarTransfer(hedera.AccountID{Account: 3}, hedera.NewHbar(1)).
+		AddHbarTransfer(client.GetOperatorAccountID(), hedera.NewHbar(-1000000)).
+		AddHbarTransfer(hedera.AccountID{Account: 1153}, hedera.NewHbar(1000000)).
 		SetTransactionMemo("go sdk example send_hbar/main.go").
 		Execute(client)
 
