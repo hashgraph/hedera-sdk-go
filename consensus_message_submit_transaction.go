@@ -7,7 +7,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/proto"
 )
 
-const chunkSize = 4096
+const chunkSize = 1024
 
 // A ConsensusMessageSubmitTransaction is used for submitting a message to HCS.
 type ConsensusMessageSubmitTransaction struct {
@@ -30,7 +30,7 @@ func NewConsensusMessageSubmitTransaction() ConsensusMessageSubmitTransaction {
 	inner := newTransactionBuilder()
 	inner.pb.Data = &proto.TransactionBody_ConsensusSubmitMessage{ConsensusSubmitMessage: pb}
 
-	builder := ConsensusMessageSubmitTransaction{inner, pb, 10, nil, ConsensusTopicID{}, TransactionID{}, 0, 0, false}
+	builder := ConsensusMessageSubmitTransaction{inner, pb, 20, nil, ConsensusTopicID{}, TransactionID{}, 0, 0, false}
 
 	return builder
 }
@@ -39,7 +39,7 @@ func topicMessageSubmitTransactionFromProtobuf(transactionBuilder TransactionBui
 	tx := ConsensusMessageSubmitTransaction{
 		TransactionBuilder:   transactionBuilder,
 		pb:                   pb.GetConsensusSubmitMessage(),
-		maxChunks:            10,
+		maxChunks:            20,
 		message:              pb.GetConsensusSubmitMessage().GetMessage(),
 		topicID:              consensusTopicIDFromProto(pb.GetConsensusSubmitMessage().GetTopicID()),
 		initialTransactionID: transactionIDFromProto(pb.GetConsensusSubmitMessage().GetChunkInfo().InitialTransactionID),
