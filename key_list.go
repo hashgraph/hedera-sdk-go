@@ -27,14 +27,6 @@ func (kl *KeyList) AddAll(keys []PublicKey) *KeyList {
 	return kl
 }
 
-func (kl *KeyList) AddAllPublicKeys(keys []PublicKey) *KeyList {
-	for _, key := range keys {
-		kl.Add(key)
-	}
-
-	return kl
-}
-
 func (kl *KeyList) toProto() *proto.Key {
 	return &proto.Key{Key: &proto.Key_KeyList{KeyList: &proto.KeyList{Keys: kl.keys}}}
 }
