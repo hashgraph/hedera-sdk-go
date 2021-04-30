@@ -48,11 +48,16 @@ func (builder *ConsensusTopicInfoQuery) Execute(client *Client) (ConsensusTopicI
 
 	ti := resp.GetConsensusGetTopicInfo().TopicInfo
 
+	expiration := time.Time{}
+	if ti.ExpirationTime != nil {
+		expiration = timeFromProto(ti.ExpirationTime)
+	}
+
 	consensusTopicInfo := ConsensusTopicInfo{
 		Memo:            ti.GetMemo(),
 		RunningHash:     ti.RunningHash,
 		SequenceNumber:  ti.SequenceNumber,
-		ExpirationTime:  timeFromProto(ti.ExpirationTime),
+		ExpirationTime:  expiration,
 		AutoRenewPeriod: durationFromProto(ti.AutoRenewPeriod),
 	}
 

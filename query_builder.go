@@ -410,6 +410,10 @@ func execute(node *node, paymentID *TransactionID, pb *proto.Query, deadline tim
 			}
 		}
 
+		if status.isExceptional(true) {
+			return resp, newErrHederaPreCheckStatus(*paymentID, status)
+		}
+
 		if receiptStatus != nil {
 			switch *receiptStatus {
 			case proto.ResponseCodeEnum_OK,

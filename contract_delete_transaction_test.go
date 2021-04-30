@@ -118,14 +118,4 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 		Execute(client)
 	// an error should occur if the contract was properly deleted
 	assert.Error(t, err)
-
-	status := err.(ErrHederaPreCheckStatus).Status
-	assert.Equal(t, status, StatusContractDeleted)
-
-	_, err = NewFileDeleteTransaction().
-		SetFileID(fileID).
-		SetMaxTransactionFee(NewHbar(5)).
-		Execute(client)
-	assert.NoError(t, err)
-
 }

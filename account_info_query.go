@@ -61,11 +61,16 @@ func (builder *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
+	proxy := AccountID{}
+	if resp.GetCryptoGetInfo().AccountInfo.ProxyAccountID != nil {
+		proxy = accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.ProxyAccountID)
+	}
+
 	return AccountInfo{
 		AccountID:                      accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.AccountID),
 		ContractAccountID:              resp.GetCryptoGetInfo().AccountInfo.ContractAccountID,
 		Deleted:                        resp.GetCryptoGetInfo().AccountInfo.Deleted,
-		ProxyAccountID:                 accountIDFromProto(resp.GetCryptoGetInfo().AccountInfo.ProxyAccountID),
+		ProxyAccountID:                 proxy,
 		ProxyReceived:                  HbarFromTinybar(resp.GetCryptoGetInfo().AccountInfo.ProxyReceived),
 		Key:                            pubKey,
 		Balance:                        HbarFromTinybar(int64(resp.GetCryptoGetInfo().AccountInfo.Balance)),

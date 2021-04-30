@@ -35,7 +35,7 @@ func NewTransferTransaction() TransferTransaction {
 func transferTransactionFromProtobuf(transactionBuilder TransactionBuilder, pb *proto.TransactionBody) TransferTransaction {
 	return TransferTransaction{
 		TransactionBuilder: transactionBuilder,
-		pb:          pb.GetCryptoTransfer(),
+		pb:                 pb.GetCryptoTransfer(),
 	}
 }
 
