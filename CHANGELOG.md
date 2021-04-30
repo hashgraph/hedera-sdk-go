@@ -2,7 +2,7 @@
 
 ###
 
- * Scheduled transaction support: `ScheduleCreateTransaction`, `ScheduleSignTransaction`, and `ScheduleSignTransaction`
+ * Scheduled transaction support: `ScheduleCreateTransaction`, `ScheduleDeleteTransaction`, and `ScheduleSignTransaction`
  * Non-Constant Time Comparison of HMACs [NCC-E001154-006]
  * Decreased `CHUNK_SIZE` 4096->1024 and increased default max chunks 10->20
 
