@@ -5,96 +5,126 @@ import (
 	"testing"
 )
 
-// func TestScheduleCreateTransaction_Execute(t *testing.T) {
-// 	client := newTestClient(t)
+func TestScheduleCreateTransaction_Execute(t *testing.T) {
+	client := newTestClient(t)
 
-// 	newKey, err := GenerateEd25519PrivateKey()
-// 	assert.NoError(t, err)
+	newKey, err := GenerateEd25519PrivateKey()
+	assert.NoError(t, err)
 
-// 	newBalance := NewHbar(1)
+	txID, err := NewConsensusTopicCreateTransaction().
+		SetAdminKey(client.GetOperatorKey()).
+		SetSubmitKey(newKey.PublicKey()).
+		SetTopicMemo("go-sdk::TestConsensusMessageSubmitTransaction_Execute").
+		SetAutoRenewAccountID(client.GetOperatorID()).
+		SetMaxTransactionFee(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
 
-// 	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	receipt, err := txID.GetReceipt(client)
+	assert.NoError(t, err)
 
-// 	scheduleTx, err := NewAccountCreateTransaction().
-// 		SetKey(newKey.PublicKey()).
-// 		SetMaxTransactionFee(NewHbar(2)).
-// 		SetInitialBalance(newBalance).
-// 		Schedule()
-// 	assert.NoError(t, err)
+	topicID := receipt.GetConsensusTopicID()
+	assert.NotNil(t, topicID)
 
-// 	frozen, err := scheduleTx.
-// 		SetPayerAccountID(client.GetOperatorID()).
-// 		SetAdminKey(newKey.PublicKey()).
-// 		Build(client)
-// 	assert.NoError(t, err)
+	info, err := NewConsensusTopicInfoQuery().
+		SetTopicID(topicID).
+		SetMaxQueryPayment(NewHbar(1)).
+		Execute(client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info)
 
-// 	frozen = frozen.Sign(newKey)
+	assert.Equal(t, uint64(0), info.SequenceNumber)
 
-// 	txID, err := frozen.Execute(client)
-// 	assert.NoError(t, err)
+	scheduled, err := NewConsensusMessageSubmitTransaction().
+		SetTopicID(topicID).
+		SetMessage([]byte("go-sdk::TestConsensusMessageSubmitTransaction_Execute::MessageSubmit")).
+		SetMaxTransactionFee(NewHbar(1)).
+		Schedule()
+	assert.NoError(t, err)
 
-// 	receipt, err := txID.GetReceipt(client)
-// 	assert.NoError(t, err)
+	txID, err = scheduled.
+		SetAdminKey(client.GetOperatorKey()).
+		SetPayerAccountID(client.GetOperatorID()).
+		Execute(client)
+	assert.NoError(t, err)
 
-// 	info, err := NewScheduleInfoQuery().
-// 		SetScheduleID(receipt.GetScheduleID()).
-// 		SetMaxQueryPayment(NewHbar(2)).
-// 		Execute(client)
-// 	assert.NoError(t, err)
+	scheduledReceipt, err := txID.GetReceipt(client)
+	assert.NoError(t, err)
 
-// 	infoTx, err := info.GetScheduledTransaction()
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, infoTx)
+	scheduledId := scheduledReceipt.GetScheduleID()
 
-// 	assert.False(t, info.ExecutedAt.IsZero())
-// }
+	scheduleSign, err := NewScheduleSignTransaction().
+		SetScheduleID(scheduledId).
+		Build(client)
+	assert.NoError(t, err)
 
-// func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
-// 	client := newTestClient(t)
+	scheduleSign = scheduleSign.Sign(newKey)
 
-// 	newKey, err := GenerateEd25519PrivateKey()
-// 	assert.NoError(t, err)
+	txID, err = scheduleSign.Execute(client)
+	assert.NoError(t, err)
 
-// 	newBalance := NewHbar(1)
+	_, err = txID.GetReceipt(client)
+	assert.NoError(t, err)
 
-// 	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	infoScheduled, err := NewScheduleInfoQuery().
+		SetScheduleID(scheduledId).
+		SetMaxQueryPayment(NewHbar(2)).
+		Execute(client)
+	assert.NoError(t, err)
 
-// 	tx := NewAccountCreateTransaction().
-// 		SetKey(newKey.PublicKey()).
-// 		SetMaxTransactionFee(NewHbar(2)).
-// 		SetInitialBalance(newBalance).
-// 		SetNodeAccountID(AccountID{0, 0, 3})
+	infoTx, err := infoScheduled.GetScheduledTransaction()
+	assert.NoError(t, err)
+	assert.NotNil(t, infoTx)
 
-// 	scheduleTx, err := NewScheduleCreateTransaction().
-// 		SetScheduledTransaction(&tx)
-// 	assert.NoError(t, err)
+	assert.False(t, infoScheduled.ExecutedAt.IsZero())
+}
 
-// 	txS, err := scheduleTx.
-// 		SetAdminKey(newKey.PublicKey()).
-// 		SetPayerAccountID(client.GetOperatorID()).
-// 		Build(client)
-// 	assert.NoError(t, err)
+func TestScheduleCreateTransaction_SetTransaction_Execute(t *testing.T) {
+	client := newTestClient(t)
 
-// 	txS = txS.Sign(newKey)
+	newKey, err := GenerateEd25519PrivateKey()
+	assert.NoError(t, err)
 
-// 	txID, err := txS.Execute(client)
-// 	assert.NoError(t, err)
+	newBalance := NewHbar(1)
 
-// 	receipt, err := txID.GetReceipt(client)
-// 	assert.NoError(t, err)
+	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
 
-// 	info, err := NewScheduleInfoQuery().
-// 		SetScheduleID(receipt.GetScheduleID()).
-// 		Execute(client)
-// 	assert.NoError(t, err)
+	tx := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetMaxTransactionFee(NewHbar(2)).
+		SetInitialBalance(newBalance).
+		SetNodeAccountID(AccountID{0, 0, 3})
 
-// 	infoTx, err := info.GetScheduledTransaction()
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, infoTx)
+	scheduleTx, err := NewScheduleCreateTransaction().
+		SetScheduledTransaction(&tx)
+	assert.NoError(t, err)
 
-// 	assert.False(t, info.ExecutedAt.IsZero())
+	txS, err := scheduleTx.
+		SetAdminKey(newKey.PublicKey()).
+		SetPayerAccountID(client.GetOperatorID()).
+		Build(client)
+	assert.NoError(t, err)
 
-// }
+	txS = txS.Sign(newKey)
+
+	txID, err := txS.Execute(client)
+	assert.NoError(t, err)
+
+	receipt, err := txID.GetReceipt(client)
+	assert.NoError(t, err)
+
+	info, err := NewScheduleInfoQuery().
+		SetScheduleID(receipt.GetScheduleID()).
+		Execute(client)
+	assert.NoError(t, err)
+
+	infoTx, err := info.GetScheduledTransaction()
+	assert.NoError(t, err)
+	assert.NotNil(t, infoTx)
+
+	assert.False(t, info.ExecutedAt.IsZero())
+
+}
 
 func TestScheduleCreateTransaction_MultiSig_Execute(t *testing.T) {
 	client := newTestClient(t)
