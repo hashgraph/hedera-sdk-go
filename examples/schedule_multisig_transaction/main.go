@@ -63,7 +63,7 @@ func main() {
 	// A threshold key with a threshold of 2 and length of 3 requires
 	// at least 2 of the 3 keys to sign anything modifying the account
 	keyList := hedera.NewKeyList().
-		AddAllPublicKeys(pubKeys)
+		AddAll(pubKeys)
 
 	//fmt.Printf("threshold key %v\n", thresholdKey)
 
