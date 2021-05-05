@@ -84,7 +84,7 @@ func main() {
 	_, err = hedera.NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		SetMessage([]byte(bigContents)).
-		SetMaxChunks(4).
+		SetMaxChunks(15).
 		SetTopicID(topicID).
 		Execute(client)
 	if err != nil {
