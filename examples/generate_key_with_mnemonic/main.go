@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	mnemonic, err := hedera.GenerateMnemonic()
+	mnemonic, err := hedera.GenerateMnemonic24()
 	if err != nil {
 		panic(err)
 	}

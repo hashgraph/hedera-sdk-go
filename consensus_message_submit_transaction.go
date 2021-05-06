@@ -93,9 +93,13 @@ func (builder *ConsensusMessageSubmitTransaction) constructScheduleProtobuf() (*
 		Memo:           builder.TransactionBuilder.pb.GetMemo(),
 		Data: &proto.SchedulableTransactionBody_ConsensusSubmitMessage{
 			ConsensusSubmitMessage: &proto.ConsensusSubmitMessageTransactionBody{
-				TopicID:   builder.pb.GetTopicID(),
+				TopicID:   builder.topicID.toProto(),
 				Message:   builder.message,
-				ChunkInfo: builder.pb.GetChunkInfo(),
+				ChunkInfo: &proto.ConsensusMessageChunkInfo{
+					InitialTransactionID: builder.initialTransactionID.toProto(),
+					Total:                builder.total,
+					Number:               builder.number,
+				},
 			},
 		},
 	}, nil
