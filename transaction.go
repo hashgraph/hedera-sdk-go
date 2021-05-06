@@ -3,7 +3,6 @@ package hedera
 import (
 	"bytes"
 	"crypto/sha512"
-	"encoding/hex"
 	"github.com/pkg/errors"
 
 	"time"
@@ -288,12 +287,14 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 
 	for i, node := range transaction.nodeIDs {
 		hash := sha512.New384()
-		_, err := hash.Write(transaction.transactions[i].SignedTransactionBytes)
+		_, err := hash.Write(transaction.transactions[i].GetSignedTransactionBytes())
 		if err != nil {
 			return transactionHash, err
 		}
 
-		transactionHash[node] = []byte(hex.EncodeToString(hash.Sum(nil)))
+		finalHash := hash.Sum(nil)
+
+		transactionHash[node] = finalHash
 	}
 
 	return transactionHash, nil

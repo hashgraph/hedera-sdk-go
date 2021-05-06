@@ -9,7 +9,7 @@ import (
 )
 
 func TestLiveHashAddTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 	if err != nil {
@@ -21,10 +21,11 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -35,7 +36,7 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetHash(_hash).
 		SetKeys(newKey.PublicKey()).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
@@ -45,7 +46,7 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetHash(_hash).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED received for transaction %s", resp2.TransactionID), err.Error())
@@ -54,14 +55,14 @@ func TestLiveHashAddTransaction_Execute(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }

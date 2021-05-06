@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenAssociateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -18,11 +18,12 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -32,18 +33,18 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(client)
+	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	assert.NotNil(t, receipt.TokenID)
@@ -53,21 +54,21 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	check := false
@@ -78,15 +79,16 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 	}
 	assert.Truef(t, check, fmt.Sprintf("token associate transaction didnt work"))
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_TokenAssociate_NoAccountID(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenAssociateTransaction().
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp.TransactionID), err.Error())
@@ -94,7 +96,7 @@ func Test_TokenAssociate_NoAccountID(t *testing.T) {
 }
 
 func Test_TokenAssociate_NoTokenID(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -105,11 +107,12 @@ func Test_TokenAssociate_NoTokenID(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -119,20 +122,20 @@ func Test_TokenAssociate_NoTokenID(t *testing.T) {
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	nodeID := resp.NodeID
 
-	receipt, err = resp.GetReceipt(client)
+	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -140,21 +143,21 @@ func Test_TokenAssociate_NoTokenID(t *testing.T) {
 	transaction, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	check := false
@@ -168,15 +171,15 @@ func Test_TokenAssociate_NoTokenID(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{nodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }

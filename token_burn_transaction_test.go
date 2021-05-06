@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenBurnTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -18,11 +18,12 @@ func TestTokenBurnTransaction_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -32,17 +33,17 @@ func TestTokenBurnTransaction_Execute(t *testing.T) {
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(client)
+	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -51,38 +52,38 @@ func TestTokenBurnTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAmount(10).
 		SetTokenID(tokenID).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, uint64(999990), info.TotalSupply)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_TokenBurn_NoAmount(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -93,11 +94,12 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -107,19 +109,19 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	nodeID := resp.NodeID
 
-	receipt, err = resp.GetReceipt(client)
+	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -127,7 +129,7 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 	resp2, err := NewTokenBurnTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_BURN_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
@@ -135,22 +137,22 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{nodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_TokenBurn_NoTokenID(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -161,11 +163,12 @@ func Test_TokenBurn_NoTokenID(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -175,25 +178,25 @@ func Test_TokenBurn_NoTokenID(t *testing.T) {
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	nodeID := resp.NodeID
 
-	receipt, err = resp.GetReceipt(client)
+	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	resp2, err := NewTokenBurnTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAmount(10).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
@@ -201,16 +204,16 @@ func Test_TokenBurn_NoTokenID(t *testing.T) {
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{nodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }

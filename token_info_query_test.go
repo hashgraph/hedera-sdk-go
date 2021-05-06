@@ -17,24 +17,25 @@ func TestSerializeTokenInfoQuery(t *testing.T) {
 }
 
 func TestTokenInfoQuery_Execute(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -44,47 +45,48 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(2)).
 		SetTokenID(tokenID).
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, info.TokenID, tokenID)
 	assert.Equal(t, info.Name, "ffff")
 	assert.Equal(t, info.Symbol, "F")
 	assert.Equal(t, info.Decimals, uint32(3))
-	assert.Equal(t, info.Treasury, client.GetOperatorAccountID())
+	assert.Equal(t, info.Treasury, env.Client.GetOperatorAccountID())
 	assert.NotNil(t, info.AdminKey)
 	assert.NotNil(t, info.KycKey)
 	assert.NotNil(t, info.FreezeKey)
 	assert.NotNil(t, info.WipeKey)
 	assert.NotNil(t, info.SupplyKey)
-	assert.Equal(t, info.AdminKey.String(), client.GetOperatorPublicKey().String())
-	assert.Equal(t, info.KycKey.String(), client.GetOperatorPublicKey().String())
-	assert.Equal(t, info.FreezeKey.String(), client.GetOperatorPublicKey().String())
-	assert.Equal(t, info.WipeKey.String(), client.GetOperatorPublicKey().String())
-	assert.Equal(t, info.SupplyKey.String(), client.GetOperatorPublicKey().String())
+	assert.Equal(t, info.AdminKey.String(), env.Client.GetOperatorPublicKey().String())
+	assert.Equal(t, info.KycKey.String(), env.Client.GetOperatorPublicKey().String())
+	assert.Equal(t, info.FreezeKey.String(), env.Client.GetOperatorPublicKey().String())
+	assert.Equal(t, info.WipeKey.String(), env.Client.GetOperatorPublicKey().String())
+	assert.Equal(t, info.SupplyKey.String(), env.Client.GetOperatorPublicKey().String())
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
 }
 
 func TestTokenInfoQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -94,32 +96,33 @@ func TestTokenInfoQueryCost_Execute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID)
 
-	cost, err := infoQuery.GetCost(client)
+	cost, err := infoQuery.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = infoQuery.SetQueryPayment(cost).Execute(client)
+	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -129,32 +132,33 @@ func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1000000)).
 		SetTokenID(tokenID)
 
-	cost, err := infoQuery.GetCost(client)
+	cost, err := infoQuery.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = infoQuery.SetQueryPayment(cost).Execute(client)
+	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -164,34 +168,35 @@ func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetTokenID(tokenID)
 
-	cost, err := infoQuery.GetCost(client)
+	cost, err := infoQuery.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = infoQuery.Execute(client)
+	_, err = infoQuery.Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
 	}
 }
 
 func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetWipeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
-		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -201,32 +206,33 @@ func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID)
 
-	_, err = infoQuery.GetCost(client)
+	_, err = infoQuery.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = infoQuery.SetQueryPayment(HbarFromTinybar(1)).Execute(client)
+	_, err = infoQuery.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
 	}
 }
 
 func Test_TokenInfo_NoPayment(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
 		SetInitialSupply(1000000).
-		SetTreasuryAccountID(client.GetOperatorAccountID()).
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetFreezeKey(client.GetOperatorPublicKey()).
-		SetKycKey(client.GetOperatorPublicKey()).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -235,24 +241,25 @@ func Test_TokenInfo_NoPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, info.TokenID, tokenID)
 	assert.Equal(t, info.Name, "ffff")
 	assert.Equal(t, info.Symbol, "F")
 	assert.Equal(t, info.Decimals, uint32(3))
-	assert.Equal(t, info.Treasury, client.GetOperatorAccountID())
+	assert.Equal(t, info.Treasury, env.Client.GetOperatorAccountID())
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
 }
 
 func Test_TokenInfo_NoTokenID(t *testing.T) {
-	client := newTestClient(t, true)
+	env := NewIntegrationTestEnv(t)
 
 	_, err := NewTokenInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID"), err.Error())

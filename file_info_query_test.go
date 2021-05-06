@@ -16,17 +16,18 @@ func TestSerializeFileInfoQuery(t *testing.T) {
 }
 
 func Test_FileInfo_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorPublicKey()).
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	fileID := receipt.FileID
@@ -37,7 +38,7 @@ func Test_FileInfo_Transaction(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, *fileID, info.FileID)
@@ -48,25 +49,26 @@ func Test_FileInfo_Transaction(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_FileInfoCost_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorPublicKey()).
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	fileID := receipt.FileID
@@ -77,10 +79,10 @@ func Test_FileInfoCost_Transaction(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	cost, err := fileInfo.GetCost(client)
+	cost, err := fileInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	info, err := fileInfo.SetQueryPayment(cost).Execute(client)
+	info, err := fileInfo.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, *fileID, info.FileID)
@@ -90,25 +92,26 @@ func Test_FileInfoCost_Transaction(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorPublicKey()).
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	fileID := receipt.FileID
@@ -119,10 +122,10 @@ func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(10000)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	_, err = fileInfo.GetCost(client)
+	_, err = fileInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	info, err := fileInfo.Execute(client)
+	info, err := fileInfo.Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, *fileID, info.FileID)
@@ -132,25 +135,26 @@ func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorPublicKey()).
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	fileID := receipt.FileID
@@ -161,10 +165,10 @@ func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	cost, err := fileInfo.GetCost(client)
+	cost, err := fileInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = fileInfo.Execute(client)
+	_, err = fileInfo.Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("cost of FileInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
 	}
@@ -172,25 +176,26 @@ func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorPublicKey()).
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	fileID := receipt.FileID
@@ -201,10 +206,10 @@ func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	_, err = fileInfo.GetCost(client)
+	_, err = fileInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = fileInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(client)
+	_, err = fileInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
 	}
@@ -212,19 +217,20 @@ func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_FileInfoQuery_NoFileID(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	_, err := NewFileInfoQuery().
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())

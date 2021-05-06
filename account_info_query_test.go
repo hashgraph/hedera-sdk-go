@@ -16,7 +16,7 @@ func TestSerializeAccountInfoQuery(t *testing.T) {
 }
 
 func TestAccountInfoQuery_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -26,11 +26,12 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -41,7 +42,7 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
@@ -52,22 +53,22 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestAccountInfoQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -78,10 +79,11 @@ func TestAccountInfoQueryCost_Execute(t *testing.T) {
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -92,10 +94,10 @@ func TestAccountInfoQueryCost_Execute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	cost, err := accountInfo.GetCost(client)
+	cost, err := accountInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	info, err := accountInfo.SetQueryPayment(cost).Execute(client)
+	info, err := accountInfo.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
@@ -106,22 +108,22 @@ func TestAccountInfoQueryCost_Execute(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -131,11 +133,12 @@ func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -146,10 +149,10 @@ func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	_, err = accountInfo.GetCost(client)
+	_, err = accountInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = accountInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(client)
+	_, err = accountInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
 	}
@@ -157,22 +160,22 @@ func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -182,11 +185,12 @@ func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -197,10 +201,10 @@ func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1000000)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	_, err = accountInfo.GetCost(client)
+	_, err = accountInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	info, err := accountInfo.SetQueryPayment(NewHbar(1)).Execute(client)
+	info, err := accountInfo.SetQueryPayment(NewHbar(1)).Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
@@ -211,22 +215,22 @@ func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -236,11 +240,12 @@ func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -251,10 +256,10 @@ func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	cost, err := accountInfo.GetCost(client)
+	cost, err := accountInfo.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = accountInfo.Execute(client)
+	_, err = accountInfo.Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("cost of AccountInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
 	}
@@ -262,25 +267,26 @@ func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_AccountInfo_NoAccountID(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountInfoQuery().
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID"), err.Error())

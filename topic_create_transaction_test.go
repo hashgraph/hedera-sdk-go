@@ -6,18 +6,19 @@ import (
 )
 
 func TestTopicCreateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
-		SetSubmitKey(client.GetOperatorPublicKey()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetSubmitKey(env.Client.GetOperatorPublicKey()).
 		SetTopicMemo(topicMemo).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -27,26 +28,26 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
 	assert.Equal(t, topicMemo, info.TopicMemo)
 	assert.Equal(t, uint64(0), info.SequenceNumber)
-	assert.Equal(t, client.GetOperatorPublicKey().String(), info.AdminKey.String())
+	assert.Equal(t, env.Client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_TopicCreate_DifferentKeys(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
@@ -62,19 +63,20 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	}
 
 	tx, err := NewTopicCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAdminKey(pubKeys[0]).
 		SetSubmitKey(pubKeys[1]).
 		SetTopicMemo(topicMemo).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	tx, err = tx.SignWithOperator(client)
+	tx, err = tx.SignWithOperator(env.Client)
 	assert.NoError(t, err)
 	tx.Sign(keys[0])
-	resp, err := tx.Execute(client)
+	resp, err := tx.Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -84,7 +86,7 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 
@@ -95,27 +97,28 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	txDelete, err := NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = txDelete.Sign(keys[0]).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_TopicCreate_JustSetMemo(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
 	resp, err := NewTopicCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }

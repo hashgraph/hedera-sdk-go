@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccountUpdateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -22,12 +22,13 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -38,48 +39,48 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetExpirationTime(time.Now().Local().Add(time.Second * 5)).
 		SetKey(newKey2.PublicKey()).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	tx.Sign(newKey)
 	tx.Sign(newKey2)
 
-	resp, err = tx.Execute(client)
+	resp, err = tx.Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, newKey2.PublicKey().String(), info.Key.String())
 
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 
 	assert.NoError(t, err)
 
 	txDelete.Sign(newKey2)
 
-	resp, err = txDelete.Execute(client)
+	resp, err = txDelete.Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 
 	assert.NoError(t, err)
 
 }
 
 func Test_AccountUpdate_NoSigning(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -93,12 +94,13 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -108,46 +110,47 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetKey(newKey2.PublicKey()).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, newKey.PublicKey().String(), info.Key.String())
 
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 
 	assert.NoError(t, err)
 
 	txDelete.Sign(newKey)
 
-	resp, err = txDelete.Execute(client)
+	resp, err = txDelete.Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_AccountUpdate_AccountIDNotSet(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewAccountUpdateTransaction().
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_ACCOUNT_ID"), err.Error())
@@ -155,7 +158,7 @@ func Test_AccountUpdate_AccountIDNotSet(t *testing.T) {
 }
 
 func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -169,12 +172,13 @@ func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -186,7 +190,7 @@ func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
 		SetExpirationTime(time.Now().Local().Add(time.Second * 5)).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		SetKey(newKey2.PublicKey()).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	updateBytes, err := tx.ToBytes()
@@ -202,36 +206,36 @@ func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
 
 	switch newTx := tx2.(type) {
 	case AccountUpdateTransaction:
-		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).AddSignature(newKey2.PublicKey(), sig2).Execute(client)
+		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).AddSignature(newKey2.PublicKey(), sig2).Execute(env.Client)
 		assert.NoError(t, err)
 	}
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, newKey2.PublicKey().String(), info.Key.String())
 
 	txDelete, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 
 	assert.NoError(t, err)
 
 	txDelete.Sign(newKey2)
 
-	resp, err = txDelete.Execute(client)
+	resp, err = txDelete.Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 
 	assert.NoError(t, err)
 

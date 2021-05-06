@@ -39,24 +39,25 @@ func TestTransactionSerializationDeserialization(t *testing.T) {
 }
 
 func TestTransactionAddSignature(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(*receipt.AccountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	updateBytes, err := tx.ToBytes()
@@ -70,12 +71,40 @@ func TestTransactionAddSignature(t *testing.T) {
 
 	switch newTx := tx2.(type) {
 	case AccountDeleteTransaction:
-		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(client)
+		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		assert.NoError(t, err)
 	}
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+}
+
+func TestTransactionGetHash(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	tx, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	tx, err = tx.SignWithOperator(env.Client)
+	assert.NoError(t, err)
+
+	hash, err := tx.GetTransactionHash()
+	assert.NoError(t, err)
+
+	resp, err := tx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	record, err := resp.GetRecord(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, hash, record.TransactionHash)
+
 }
 
 func TestTransactionFromBytes(t *testing.T) {
@@ -194,7 +223,7 @@ func TestTransactionFromBytes(t *testing.T) {
 	transaction, err := TransactionFromBytes(bytes)
 	assert.NoError(t, err)
 
-	client := ClientForTestnet()
+	env := NewIntegrationTestEnv(t)
 
 	switch tx := transaction.(type) {
 	case TransferTransaction:
@@ -212,10 +241,10 @@ func TestTransactionFromBytes(t *testing.T) {
 		assert.Equal(t, len(tx.GetNodeAccountIDs()), 1)
 		assert.True(t, tx.GetNodeAccountIDs()[0].equals(AccountID{0, 0, 3}))
 
-		resp, err := tx.Execute(client)
+		resp, err := tx.Execute(env.Client)
 		assert.NoError(t, err)
 
-		_, err = resp.GetReceipt(client)
+		_, err = resp.GetReceipt(env.Client)
 		assert.NoError(t, err)
 		break
 	default:

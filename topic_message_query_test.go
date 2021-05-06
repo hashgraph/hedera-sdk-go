@@ -58,15 +58,16 @@ Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam cons
 `
 
 func TestTopicMessageQuery_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
-		Execute(client)
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -78,7 +79,7 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
-		Subscribe(client, func(message TopicMessage) {
+		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
 				wait = false
 			}
@@ -89,10 +90,10 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
 		SetTopicID(topicID).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	for {
@@ -106,10 +107,10 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	if wait {
@@ -119,15 +120,16 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 }
 
 func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
-		Execute(client)
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -140,7 +142,7 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
-		Subscribe(client, func(message TopicMessage) {
+		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
 				//println(message.SequenceNumber)
 				wait = false
@@ -153,16 +155,16 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 		SetMessage([]byte(bigContents)).
 		SetMaxChunks(15).
 		SetTopicID(topicID).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
-		Subscribe(client, func(message TopicMessage) {
+		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
 				//println(message.SequenceNumber)
 				wait2 = false
@@ -176,7 +178,7 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 			SetMessage([]byte(bigContents)).
 			SetMaxChunks(15).
 			SetTopicID(topicID).
-			Execute(client)
+			Execute(env.Client)
 		assert.NoError(t, err)
 	}
 
@@ -199,10 +201,10 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	if wait {
@@ -212,15 +214,16 @@ func TestTopicMessageQuery_RapidMessage_Execute(t *testing.T) {
 }
 
 func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
-		Execute(client)
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -232,7 +235,7 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
-		Subscribe(client, func(message TopicMessage) {
+		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
 				wait = false
 			}
@@ -242,10 +245,10 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_TOPIC_ID"), err.Error())
@@ -262,10 +265,10 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	if wait {
@@ -275,15 +278,16 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 }
 
 func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
-		Execute(client)
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -295,7 +299,7 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
-		Subscribe(client, func(message TopicMessage) {
+		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
 				wait = false
 			}
@@ -305,7 +309,7 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 	_, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTopicID(topicID).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("no transactions to execute"), err.Error())
@@ -322,10 +326,10 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	if wait {
@@ -335,15 +339,16 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 }
 
 func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
-		Execute(client)
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -354,7 +359,7 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
-		Subscribe(client, func(message TopicMessage) {
+		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
 				wait = false
 			}
@@ -365,10 +370,10 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
 		SetTopicID(topicID).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	for {
@@ -382,10 +387,10 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	if wait {
