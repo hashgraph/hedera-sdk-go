@@ -188,7 +188,7 @@ func main() {
 	}
 	if !info.ExecutedAt.IsZero() {
 		println("Singing success, signed at: ", info.ExecutedAt.String())
-		println("Signatories: ", info.Signers.String())
+		println("Signatories: ", info.Signatories.String())
 		return
 	}
 }

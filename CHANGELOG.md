@@ -1,3 +1,13 @@
+## Unreleased
+
+### Fixed
+
+ * Renamed `ScheduleInfo.Signers` -> `ScheduleInfo.Signatories`
+
+### Added
+
+ * Exposed `Hbar.Negated()`
+
 ## v2.1.5
 
 ###
