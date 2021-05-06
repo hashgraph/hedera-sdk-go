@@ -56,7 +56,7 @@ func (hbar Hbar) ToString(unit HbarUnit) string {
 	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit.numberOfTinybar()), unit.String())
 }
 
-func (hbar Hbar) negated() Hbar {
+func (hbar Hbar) Negated() Hbar {
 	return Hbar{
 		tinybar: -hbar.tinybar,
 	}

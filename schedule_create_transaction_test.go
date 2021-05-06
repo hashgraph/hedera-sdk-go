@@ -1,11 +1,10 @@
 package hedera
 
-//import (
-//	"fmt"
-//	"github.com/stretchr/testify/assert"
-//	"testing"
-//)
-//
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
 //func TestScheduleCreateTransaction_Execute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
@@ -391,3 +390,62 @@ package hedera
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.NoError(t, err)
 //}
+
+func TestScheduleCreateTransaction_Transfer_Execute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	key, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	response, err := NewAccountCreateTransaction().
+		SetKey(key).
+		SetInitialBalance(NewHbar(2)).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := response.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	tx := NewTransferTransaction().
+		AddHbarTransfer(accountID, NewHbar(1).Negated()).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(1))
+
+	scheduleTx, err := tx.Schedule()
+	assert.NoError(t, err)
+
+	scheduleTx = scheduleTx.
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetPayerAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
+
+	response, err = scheduleTx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = response.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	scheduleID := *receipt.ScheduleID
+
+	scheduleSignTx, err := NewScheduleSignTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetScheduleID(scheduleID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	scheduleSignTx.Sign(key)
+
+	response, err = scheduleSignTx.Execute(env.Client)
+
+	_, err = response.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	info, err := NewScheduleInfoQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetScheduleID(scheduleID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+	assert.NotNil(t, info.ExecutedAt)
+}

@@ -13,7 +13,7 @@ type ScheduleInfo struct {
 	ExecutedAt               *time.Time
 	DeletedAt                *time.Time
 	ExpirationTime           time.Time
-	Signers                  *KeyList
+	Signatories              *KeyList
 	AdminKey                 Key
 	Memo                     string
 	ScheduledTransactionID   *TransactionID
@@ -26,9 +26,9 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		adminKey, _ = keyFromProtobuf(pb.AdminKey)
 	}
 
-	var signers KeyList
+	var signatories KeyList
 	if pb.Signers != nil {
-		signers, _ = keyListFromProtobuf(pb.Signers)
+		signatories, _ = keyListFromProtobuf(pb.Signers)
 	}
 
 	var scheduledTransactionID TransactionID
@@ -54,7 +54,7 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		ExecutedAt:               executed,
 		DeletedAt:                deleted,
 		ExpirationTime:           timeFromProtobuf(pb.ExpirationTime),
-		Signers:                  &signers,
+		Signatories:              &signatories,
 		AdminKey:                 adminKey,
 		Memo:                     pb.Memo,
 		ScheduledTransactionID:   &scheduledTransactionID,
@@ -68,9 +68,9 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 		adminKey = scheduleInfo.AdminKey.toProtoKey()
 	}
 
-	var signers *proto.KeyList
-	if scheduleInfo.Signers != nil {
-		signers = scheduleInfo.Signers.toProtoKeyList()
+	var signatories *proto.KeyList
+	if scheduleInfo.Signatories != nil {
+		signatories = scheduleInfo.Signatories.toProtoKeyList()
 	}
 
 	info := &proto.ScheduleInfo{
@@ -79,7 +79,7 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 		ScheduledTransactionBody: scheduleInfo.scheduledTransactionBody,
 		Memo:                     scheduleInfo.Memo,
 		AdminKey:                 adminKey,
-		Signers:                  signers,
+		Signers:                  signatories,
 		CreatorAccountID:         scheduleInfo.CreatorAccountID.toProtobuf(),
 		PayerAccountID:           scheduleInfo.PayerAccountID.toProtobuf(),
 		ScheduledTransactionID:   scheduleInfo.ScheduledTransactionID.toProtobuf(),
