@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Record_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -18,26 +18,27 @@ func Test_Record_Transaction(t *testing.T) {
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	tx, err = tx.SignWithOperator(client)
+	tx, err = tx.SignWithOperator(env.Client)
 	assert.NoError(t, err)
 
-	resp, err := tx.Execute(client)
+	resp, err := tx.Execute(env.Client)
 	assert.NoError(t, err)
 
 	_, err = NewTransactionReceiptQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	record, err := NewTransactionRecordQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *record.Receipt.AccountID
@@ -46,21 +47,21 @@ func Test_Record_Transaction(t *testing.T) {
 	transaction, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_Record_ReceiptPaymentZero_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -71,27 +72,28 @@ func Test_Record_ReceiptPaymentZero_Transaction(t *testing.T) {
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	tx, err = tx.SignWithOperator(client)
+	tx, err = tx.SignWithOperator(env.Client)
 	assert.NoError(t, err)
 
-	resp, err := tx.Execute(client)
+	resp, err := tx.Execute(env.Client)
 	assert.NoError(t, err)
 
 	_, err = NewTransactionReceiptQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(HbarFromTinybar(0)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	record, err := NewTransactionRecordQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *record.Receipt.AccountID
@@ -100,21 +102,21 @@ func Test_Record_ReceiptPaymentZero_Transaction(t *testing.T) {
 	transaction, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_Record_Record_Insufficient_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -125,20 +127,21 @@ func Test_Record_Record_Insufficient_Transaction(t *testing.T) {
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	tx, err = tx.SignWithOperator(client)
+	tx, err = tx.SignWithOperator(env.Client)
 	assert.NoError(t, err)
 
-	resp, err := tx.Execute(client)
+	resp, err := tx.Execute(env.Client)
 	assert.NoError(t, err)
 
 	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	_, err = NewTransactionRecordQuery().
@@ -146,7 +149,7 @@ func Test_Record_Record_Insufficient_Transaction(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(HbarFromTinybar(99999)).
 		SetQueryPayment(HbarFromTinybar(1)).
-		Execute(client)
+		Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INSUFFICIENT_TX_FEE"), err.Error())
 	}
@@ -157,15 +160,15 @@ func Test_Record_Record_Insufficient_Transaction(t *testing.T) {
 	transaction, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(*accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }

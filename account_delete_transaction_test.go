@@ -7,7 +7,7 @@ import (
 )
 
 func TestAccountDeleteTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -18,11 +18,12 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := receipt.AccountID
@@ -30,26 +31,26 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(*accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransactionID(TransactionIDGenerate(*accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	tx = tx.Sign(newKey)
 
 	assert.True(t, newKey.PublicKey().VerifyTransaction(tx.Transaction))
-	assert.False(t, client.GetOperatorPublicKey().VerifyTransaction(tx.Transaction))
+	assert.False(t, env.Client.GetOperatorPublicKey().VerifyTransaction(tx.Transaction))
 
-	resp, err = tx.Execute(client)
+	resp, err = tx.Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -60,11 +61,12 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := receipt.AccountID
@@ -73,10 +75,10 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(*accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	resp, err = tx.Sign(newKey).Execute(client)
+	resp, err = tx.Sign(newKey).Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
@@ -84,7 +86,7 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 }
 
 func Test_AccountDelete_NoAccountID(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -95,20 +97,21 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	resp, err = tx.Sign(newKey).Execute(client)
+	resp, err = tx.Sign(newKey).Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_ID_DOES_NOT_EXIST received for transaction %s", resp.TransactionID), err.Error())
@@ -116,7 +119,7 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 }
 
 func Test_AccountDelete_NoSigning(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -127,11 +130,12 @@ func Test_AccountDelete_NoSigning(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := receipt.AccountID
@@ -142,11 +146,11 @@ func Test_AccountDelete_NoSigning(t *testing.T) {
 	resp, err = NewAccountDeleteTransaction().
 		SetAccountID(acc).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		Execute(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_SIGNATURE"), err.Error())

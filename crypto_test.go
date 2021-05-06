@@ -237,7 +237,7 @@ func TestPrivateKey_FromPemWithPassphrase(t *testing.T) {
 }
 
 func TestSetKeyUsesAnyKey(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -263,11 +263,12 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 		AddAllPublicKeys(pubKeys)
 
 	_, err = NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetKey(newKey.PublicKey()).
 		SetKey(newKey).
 		SetKey(thresholdKey).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 }

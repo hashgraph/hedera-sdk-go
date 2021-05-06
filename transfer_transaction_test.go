@@ -7,40 +7,43 @@ import (
 )
 
 func TestCryptoTransferTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTransferTransaction().
-		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(-1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(-1)).
 		AddHbarTransfer(AccountID{Account: 3}, NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_CryptoTransfer_Nothing(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTransferTransaction().
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestCryptoTransferTransaction_FlippedAmount_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTransferTransaction().
-		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(10)).
 		AddHbarTransfer(AccountID{Account: 3}, NewHbar(-10)).
 		SetMaxTransactionFee(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_SIGNATURE"), err.Error())
@@ -48,14 +51,15 @@ func TestCryptoTransferTransaction_FlippedAmount_Execute(t *testing.T) {
 }
 
 func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTransferTransaction().
-		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(10)).
 		AddHbarTransfer(AccountID{Account: 3}, NewHbar(-10)).
-		AddHbarTransfer(client.GetOperatorAccountID(), NewHbar(10)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(10)).
 		SetMaxTransactionFee(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS received for transaction %s", resp.TransactionID), err.Error())
@@ -63,7 +67,7 @@ func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
 }
 
 //func Test_CryptoTransfer_1000(t *testing.T) {
-//	client := newTestClient(t, false)
+//	env := NewIntegrationTestEnv(t)
 //	var err error
 //	tx := make([]*TransferTransaction, 500)
 //	response := make([]TransactionResponse, len(tx))
@@ -71,24 +75,24 @@ func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
 //
 //	for i := 0; i < len(tx); i++ {
 //		tx[i], err = NewTransferTransaction().
-//			AddHbarTransfer(client.GetOperatorAccountID(), HbarFromTinybar(-10)).
+//			AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFromTinybar(-10)).
 //			AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(10)).
-//			FreezeWith(client)
+//			FreezeWith(env.Client)
 //		if err != nil {
 //			panic(err)
 //		}
 //
-//		_, err = tx[i].SignWithOperator(client)
+//		_, err = tx[i].SignWithOperator(env.Client)
 //		if err != nil {
 //			panic(err)
 //		}
 //
-//		response[i], err = tx[i].Execute(client)
+//		response[i], err = tx[i].Execute(env.Client)
 //		if err != nil {
 //			panic(err)
 //		}
 //
-//		receipt[i], err = response[i].GetReceipt(client)
+//		receipt[i], err = response[i].GetReceipt(env.Client)
 //		if err != nil {
 //			panic(err)
 //		}

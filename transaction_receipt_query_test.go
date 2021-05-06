@@ -6,7 +6,7 @@ import (
 )
 
 func Test_Receipt_Transaction(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -17,20 +17,21 @@ func Test_Receipt_Transaction(t *testing.T) {
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	tx, err = tx.SignWithOperator(client)
+	tx, err = tx.SignWithOperator(env.Client)
 	assert.NoError(t, err)
 
-	resp, err := tx.Execute(client)
+	resp, err := tx.Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetRecord(client)
+	_, err = resp.GetRecord(env.Client)
 	assert.NoError(t, err)
 
 	// accountID := *record.Receipt.AccountID
@@ -39,15 +40,15 @@ func Test_Receipt_Transaction(t *testing.T) {
 	// transaction, err := NewAccountDeleteTransaction().
 	// 	SetNodeAccountIDs([]AccountID{resp.NodeID}).
 	// 	SetAccountID(accountID).
-	// 	SetTransferAccountID(client.GetOperatorAccountID()).
-	// 	FreezeWith(client)
+	// 	SetTransferAccountID(env.Client.GetOperatorAccountID()).
+	// 	FreezeWith(env.Client)
 	// assert.NoError(t, err)
 
 	// resp, err = transaction.
 	// 	Sign(newKey).
-	// 	Execute(client)
+	// 	Execute(env.Client)
 	// assert.NoError(t, err)
 
-	// _, err = resp.GetReceipt(client)
+	// _, err = resp.GetReceipt(env.Client)
 	// assert.NoError(t, err)
 }

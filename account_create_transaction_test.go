@@ -7,7 +7,7 @@ import (
 )
 
 func TestAccountCreateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -18,35 +18,36 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
 	tx, err := NewAccountDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -57,31 +58,32 @@ func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetMaxTransactionFee(NewHbar(2)).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
 	tx, err := NewAccountDeleteTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(accountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	tx = tx.SetAccountID(accountID)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("transaction is immutable; it has at least one signature or has been explicitly frozen"), err.Error())
@@ -89,10 +91,11 @@ func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
 }
 
 func Test_AccountCreate_NoKey(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewAccountCreateTransaction().
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID), err.Error())
@@ -100,24 +103,25 @@ func Test_AccountCreate_NoKey(t *testing.T) {
 }
 
 func TestAccountCreateTransactionAddSignature(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(*receipt.AccountID).
-		SetTransferAccountID(client.GetOperatorAccountID()).
-		FreezeWith(client)
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
 	updateBytes, err := tx.ToBytes()
@@ -131,10 +135,10 @@ func TestAccountCreateTransactionAddSignature(t *testing.T) {
 
 	switch newTx := tx2.(type) {
 	case AccountDeleteTransaction:
-		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(client)
+		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		assert.NoError(t, err)
 	}
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }

@@ -6,22 +6,23 @@ import (
 )
 
 func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	_, err := NewNetworkVersionQuery().
 		SetMaxQueryPayment(NewHbar(1)).
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.NoError(t, err)
 }
 
 func TestNetworkVersionInfoQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
-	query := NewNetworkVersionQuery()
+	query := NewNetworkVersionQuery().SetNodeAccountIDs(env.NodeAccountIDs)
 
-	cost, err := query.GetCost(client)
+	cost, err := query.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	_, err = query.SetQueryPayment(cost).Execute(client)
+	_, err = query.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
 }

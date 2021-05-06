@@ -7,18 +7,19 @@ import (
 )
 
 func TestTopicDeleteTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -28,23 +29,23 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	_, err = NewTopicInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTopicID(topicID).
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
@@ -52,18 +53,19 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 }
 
 func Test_TopicDelete_NoTopicID(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
 
 	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(client.GetOperatorPublicKey()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -73,15 +75,15 @@ func Test_TopicDelete_NoTopicID(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = NewTopicDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_TOPIC_ID"), err.Error())

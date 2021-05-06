@@ -7,17 +7,18 @@ import (
 )
 
 func TestFileUpdateTransaction_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorPublicKey()).
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -29,17 +30,17 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContents(newContents).
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	contents, err := NewFileContentsQuery().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
 	assert.Equal(t, newContents, contents)
@@ -47,25 +48,26 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
 
 func Test_FileUpdate_NoFileID(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
-		SetKeys(client.GetOperatorPublicKey()).
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
-		Execute(client)
+		Execute(env.Client)
 
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -73,10 +75,10 @@ func Test_FileUpdate_NoFileID(t *testing.T) {
 
 	resp, err = NewFileUpdateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
@@ -85,9 +87,9 @@ func Test_FileUpdate_NoFileID(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(client)
+		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }

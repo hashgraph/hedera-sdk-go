@@ -16,79 +16,85 @@ func TestSerializeStakersQuery(t *testing.T) {
 }
 
 func TestAccountStakersQuery_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountStakersQuery().
-		SetAccountID(client.GetOperatorAccountID()).
+		SetAccountID(env.Client.GetOperatorAccountID()).
 		SetMaxQueryPayment(NewHbar(1)).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetQueryPayment(HbarFromTinybar(25)).
-		Execute(client)
+		Execute(env.Client)
 	assert.Error(t, err)
 }
 
 func TestAccountStakersQueryCost_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(1)).
-		SetAccountID(client.GetOperatorAccountID())
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(env.Client.GetOperatorAccountID())
 
-	cost, err := accountStakers.GetCost(client)
+	cost, err := accountStakers.GetCost(env.Client)
 	assert.Error(t, err)
 
-	_, err = accountStakers.SetQueryPayment(cost).Execute(client)
+	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
 }
 
 func TestAccountStakersQueryCost_BigMax_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(100000)).
-		SetAccountID(client.GetOperatorAccountID())
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(env.Client.GetOperatorAccountID())
 
-	cost, err := accountStakers.GetCost(client)
+	cost, err := accountStakers.GetCost(env.Client)
 	assert.Error(t, err)
 
-	_, err = accountStakers.SetQueryPayment(cost).Execute(client)
+	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
 }
 
 func TestAccountStakersQueryCost_SmallMax_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(HbarFromTinybar(25)).
-		SetAccountID(client.GetOperatorAccountID())
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(env.Client.GetOperatorAccountID())
 
-	cost, err := accountStakers.GetCost(client)
+	cost, err := accountStakers.GetCost(env.Client)
 	assert.Error(t, err)
 
-	_, err = accountStakers.SetQueryPayment(cost).Execute(client)
+	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
 }
 
 func TestAccountStakersQueryCost_InsufficientFee_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
 		SetMaxQueryPayment(NewHbar(1)).
-		SetAccountID(client.GetOperatorAccountID())
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(env.Client.GetOperatorAccountID())
 
-	_, err := accountStakers.GetCost(client)
+	_, err := accountStakers.GetCost(env.Client)
 	assert.Error(t, err)
 
-	_, err = accountStakers.SetQueryPayment(HbarFromTinybar(1)).Execute(client)
+	_, err = accountStakers.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
 	}
 }
 
 func TestAccountStakersNoAccountID_Execute(t *testing.T) {
-	client := newTestClient(t, false)
+	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountStakersQuery().
-		Execute(client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
