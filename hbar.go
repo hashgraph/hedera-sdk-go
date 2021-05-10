@@ -39,8 +39,8 @@ func (hbar Hbar) AsTinybar() int64 {
 	return hbar.tinybar
 }
 
-func (hbar Hbar) As(unit HbarUnit) int64 {
-	return hbar.tinybar * unit.numberOfTinybar()
+func (hbar Hbar) As(unit HbarUnit) float64 {
+	return float64(hbar.tinybar) / float64(unit.numberOfTinybar())
 }
 
 func (hbar Hbar) String() string {
