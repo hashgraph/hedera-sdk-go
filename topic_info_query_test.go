@@ -34,7 +34,7 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 	assert.NotNil(t, topicID)
 
 	info, err := NewTopicInfoQuery().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(env.Client)
@@ -46,7 +46,7 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 	assert.Equal(t, env.Client.GetOperatorPublicKey().String(), info.AdminKey.String())
 
 	_, err = NewTopicDeleteTransaction().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -81,7 +81,7 @@ func TestTopicInfoQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = NewTopicDeleteTransaction().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -116,7 +116,7 @@ func TestTopicInfoQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = NewTopicDeleteTransaction().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -141,7 +141,7 @@ func TestTopicInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NotNil(t, topicID)
 
 	topicInfo := NewTopicInfoQuery().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetMaxQueryPayment(HbarFromTinybar(1)).
 		SetTopicID(topicID)
 
@@ -155,7 +155,7 @@ func TestTopicInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	}
 
 	_, err = NewTopicDeleteTransaction().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -180,7 +180,7 @@ func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 	assert.NotNil(t, topicID)
 
 	topicInfo := NewTopicInfoQuery().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetTopicID(topicID)
 
@@ -193,7 +193,7 @@ func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 	}
 
 	_, err = NewTopicDeleteTransaction().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -235,7 +235,7 @@ func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 	assert.NotNil(t, topicID)
 
 	info, err := NewTopicInfoQuery().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(env.Client)
@@ -248,7 +248,7 @@ func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 	assert.NotEmpty(t, info.SubmitKey.String())
 
 	_, err = NewTopicDeleteTransaction().
-        SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)

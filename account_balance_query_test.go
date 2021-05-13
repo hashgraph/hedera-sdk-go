@@ -19,7 +19,7 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountBalanceQuery().
-		SetAccountID(env.Client.GetOperatorAccountID()).
+		SetAccountID(env.OperatorID).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 	assert.NoError(t, err)
