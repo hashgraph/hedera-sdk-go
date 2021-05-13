@@ -7,13 +7,15 @@ import (
 )
 
 type ScheduleInfo struct {
-	ScheduleID               ScheduleID
-	CreatorAccountID         AccountID
-	PayerAccountID           AccountID
-	ExecutedAt               *time.Time
-	DeletedAt                *time.Time
-	ExpirationTime           time.Time
+	ScheduleID       		 ScheduleID
+	CreatorAccountID 		 AccountID
+	PayerAccountID  		 AccountID
+	ExecutedAt       		 *time.Time
+	DeletedAt        		 *time.Time
+	ExpirationTime   		 time.Time
 	Signatories              *KeyList
+	// Deprecated: Use ScheduleInfo.Signatories instead
+	Signers                  *KeyList
 	AdminKey                 Key
 	Memo                     string
 	ScheduledTransactionID   *TransactionID
@@ -55,6 +57,7 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		DeletedAt:                deleted,
 		ExpirationTime:           timeFromProtobuf(pb.ExpirationTime),
 		Signatories:              &signatories,
+		Signers:                  &signatories,
 		AdminKey:                 adminKey,
 		Memo:                     pb.Memo,
 		ScheduledTransactionID:   &scheduledTransactionID,
@@ -71,6 +74,8 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 	var signatories *proto.KeyList
 	if scheduleInfo.Signatories != nil {
 		signatories = scheduleInfo.Signatories.toProtoKeyList()
+	} else if scheduleInfo.Signers != nil {
+		signatories = scheduleInfo.Signers.toProtoKeyList()
 	}
 
 	info := &proto.ScheduleInfo{
