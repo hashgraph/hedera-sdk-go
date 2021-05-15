@@ -18,6 +18,9 @@ var defaultMaxQueryPayment Hbar = NewHbar(1)
 
 // Client is the Hedera protocol wrapper for the SDK used by all
 // transaction and query types.
+//
+// Deprecated: Version 1 of the SDK is now deprecated. Please upgrade to version 2 and use
+// https://github.com/hashgraph/hedera-sdk-go/blob/master/MIGRATING_V1.md for assistance.
 type Client struct {
 	maxTransactionFee Hbar
 	maxQueryPayment   Hbar
@@ -75,6 +78,9 @@ var previewnetNodes = map[string]AccountID{
 // Hedera mainnet.
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
+//
+// Deprecated: Version 1 of the SDK is now deprecated. Please upgrade to version 2 and use
+// https://github.com/hashgraph/hedera-sdk-go/blob/master/MIGRATING_V1.md for assistance.
 func ClientForMainnet() *Client {
 	return NewClient(mainnetNodes)
 }
@@ -83,6 +89,9 @@ func ClientForMainnet() *Client {
 // Hedera testnet.
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
+//
+// Deprecated: Version 1 of the SDK is now deprecated. Please upgrade to version 2 and use
+// https://github.com/hashgraph/hedera-sdk-go/blob/master/MIGRATING_V1.md for assistance.
 func ClientForTestnet() *Client {
 	return NewClient(testnetNodes)
 }
@@ -91,12 +100,18 @@ func ClientForTestnet() *Client {
 // Hedera previewnet.
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
+//
+// Deprecated: Version 1 of the SDK is now deprecated. Please upgrade to version 2 and use
+// https://github.com/hashgraph/hedera-sdk-go/blob/master/MIGRATING_V1.md for assistance.
 func ClientForPreviewnet() *Client {
 	return NewClient(previewnetNodes)
 }
 
 // NewClient takes in a map of node addresses to their respective IDS (network)
 // and returns a Client instance which can be used to
+//
+// Deprecated: Version 1 of the SDK is now deprecated. Please upgrade to version 2 and use
+// https://github.com/hashgraph/hedera-sdk-go/blob/master/MIGRATING_V1.md for assistance.
 func NewClient(network map[string]AccountID) *Client {
 	client := &Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
@@ -122,6 +137,9 @@ type clientConfig struct {
 
 // ClientFromJSON takes in the byte slice representation of a JSON string or
 // document and returns Client based on the configuration.
+//
+// Deprecated: Version 1 of the SDK is now deprecated. Please upgrade to version 2 and use
+// https://github.com/hashgraph/hedera-sdk-go/blob/master/MIGRATING_V1.md for assistance.
 func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 	var clientConfig clientConfig
 
@@ -172,6 +190,9 @@ func ClientFromJSON(jsonBytes []byte) (*Client, error) {
 
 // ClientFromFile takes a filename string representing the path to a JSON encoded
 // Client file and returns a Client based on the configuration.
+//
+// Deprecated: Version 1 of the SDK is now deprecated. Please upgrade to version 2 and use
+// https://github.com/hashgraph/hedera-sdk-go/blob/master/MIGRATING_V1.md for assistance.
 func ClientFromFile(filename string) (*Client, error) {
 	file, err := os.Open(filename)
 	if err != nil {
