@@ -7,13 +7,13 @@ import (
 )
 
 type ScheduleInfo struct {
-	ScheduleID       		 ScheduleID
-	CreatorAccountID 		 AccountID
-	PayerAccountID  		 AccountID
-	ExecutedAt       		 *time.Time
-	DeletedAt        		 *time.Time
-	ExpirationTime   		 time.Time
-	Signatories              *KeyList
+	ScheduleID       ScheduleID
+	CreatorAccountID AccountID
+	PayerAccountID   AccountID
+	ExecutedAt       *time.Time
+	DeletedAt        *time.Time
+	ExpirationTime   time.Time
+	Signatories      *KeyList
 	// Deprecated: Use ScheduleInfo.Signatories instead
 	Signers                  *KeyList
 	AdminKey                 Key
