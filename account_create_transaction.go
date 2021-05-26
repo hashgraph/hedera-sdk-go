@@ -129,6 +129,16 @@ func (transaction *AccountCreateTransaction) GetProxyAccountID() AccountID {
 	return accountIDFromProtobuf(transaction.pb.GetProxyAccountID())
 }
 
+func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Memo = memo
+	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetAccountMemo() string {
+	return transaction.pb.GetMemo()
+}
+
 // SetReceiverSignatureRequired sets the receiverSigRequired flag. If the receiverSigRequired flag is set to true, then
 // all cryptocurrency transfers must be signed by this account's key, both for transfers in and out. If it is false,
 // then only transfers out have to be signed by it. This transaction must be signed by the

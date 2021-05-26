@@ -58,7 +58,12 @@ func (transaction *TokenBurnTransaction) SetAmount(amount uint64) *TokenBurnTran
 	return transaction
 }
 
+// Deprecated: Use TokenBurnTransaction.GetAmount() instead.
 func (transaction *TokenBurnTransaction) GetAmmount() uint64 {
+	return transaction.pb.GetAmount()
+}
+
+func (transaction *TokenBurnTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 

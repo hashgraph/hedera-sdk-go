@@ -15,10 +15,10 @@ func TestGenerate24WordMnemonic(t *testing.T) {
 }
 
 func TestGenerate12WordMnemonic(t *testing.T) {
-	mnemonic, err := GenerateMnemonic24()
+	mnemonic, err := GenerateMnemonic12()
 	assert.NoError(t, err)
 
-	assert.Equal(t, 24, len(mnemonic.Words()))
+	assert.Equal(t, 12, len(mnemonic.Words()))
 }
 
 func TestMnemonicFromString(t *testing.T) {

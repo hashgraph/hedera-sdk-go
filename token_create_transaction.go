@@ -74,6 +74,10 @@ func (transaction *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreat
 	return transaction
 }
 
+func (transaction *TokenCreateTransaction) GetTokenMemo() string {
+	return transaction.pb.GetMemo()
+}
+
 func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
 	return transaction.pb.GetSymbol()
 }
@@ -253,7 +257,11 @@ func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time
 }
 
 func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
-	return time.Unix(transaction.pb.GetExpiry().Seconds, int64(transaction.pb.GetExpiry().Nanos))
+	if transaction.pb.GetExpiry() != nil {
+		return time.Unix(transaction.pb.GetExpiry().Seconds, int64(transaction.pb.GetExpiry().Nanos))
+	}
+
+	return time.Time{}
 }
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
@@ -275,7 +283,11 @@ func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod ti
 }
 
 func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	return time.Duration(transaction.pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
+	if transaction.pb.GetAutoRenewPeriod() != nil {
+		return time.Duration(transaction.pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
+	}
+
+	return time.Duration(0)
 }
 
 //

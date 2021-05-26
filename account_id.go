@@ -73,17 +73,20 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	id = &accountID
+	*id = accountID
 
 	return nil
 }
 
 func accountIDFromProtobuf(pb *proto.AccountID) AccountID {
-	return AccountID{
-		Shard:   uint64(pb.ShardNum),
-		Realm:   uint64(pb.RealmNum),
-		Account: uint64(pb.AccountNum),
+	if pb != nil {
+		return AccountID{
+			Shard:   uint64(pb.ShardNum),
+			Realm:   uint64(pb.RealmNum),
+			Account: uint64(pb.AccountNum),
+		}
 	}
+	return AccountID{}
 }
 
 func (id AccountID) isZero() bool {
