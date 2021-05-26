@@ -5,10 +5,8 @@ env:
     HEDERA_NETWORK: "previewnet"
 
 on:
-  pull_request:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
 
