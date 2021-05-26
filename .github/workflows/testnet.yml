@@ -1,7 +1,7 @@
-name: Go
+name: CI against testnet
 env:
-    OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
-    OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
+    OPERATOR_KEY: ${{ secrets.TESTNET_OPERATOR_KEY }}
+    OPERATOR_ID: ${{ secrets.TESTNET_OPERATOR_ID }}
 
 on:
   pull_request:
