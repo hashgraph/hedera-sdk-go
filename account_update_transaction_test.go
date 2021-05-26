@@ -37,7 +37,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	tx, err := NewAccountUpdateTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetExpirationTime(time.Now().Local().Add(time.Second * 5)).
+		SetExpirationTime(time.Now().Add(time.Hour * 24 * 120)).
 		SetKey(newKey2.PublicKey()).
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
@@ -187,7 +187,7 @@ func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
 	tx, err := NewAccountUpdateTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetExpirationTime(time.Now().Local().Add(time.Second * 5)).
+		SetExpirationTime(time.Now().Add(time.Hour * 24 * 120)).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		SetKey(newKey2.PublicKey()).
 		FreezeWith(env.Client)
