@@ -23,6 +23,9 @@ type ScheduleInfo struct {
 }
 
 func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
+	if pb == nil {
+		return ScheduleInfo{}
+	}
 	var adminKey Key
 	if pb.AdminKey != nil {
 		adminKey, _ = keyFromProtobuf(pb.AdminKey)

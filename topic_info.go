@@ -18,6 +18,9 @@ type TopicInfo struct {
 }
 
 func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, error) {
+	if topicInfo == nil {
+		return TopicInfo{}, errParameterNull
+	}
 	var err error
 	tempTopicInfo := TopicInfo{
 		TopicMemo:      topicInfo.Memo,
@@ -71,6 +74,9 @@ func (topicInfo TopicInfo) ToBytes() []byte {
 }
 
 func TopicInfoFromBytes(data []byte) (TopicInfo, error) {
+	if data == nil {
+		return TopicInfo{}, errByteArrayNull
+	}
 	pb := proto.ConsensusTopicInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

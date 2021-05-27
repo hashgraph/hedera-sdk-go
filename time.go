@@ -12,6 +12,9 @@ func durationToProtobuf(duration time.Duration) *proto.Duration {
 }
 
 func durationFromProtobuf(pb *proto.Duration) time.Duration {
+	if pb == nil {
+		return time.Duration(0)
+	}
 	return time.Until(time.Unix(pb.Seconds, 0))
 }
 
@@ -23,5 +26,8 @@ func timeToProtobuf(t time.Time) *proto.Timestamp {
 }
 
 func timeFromProtobuf(pb *proto.Timestamp) time.Time {
+	if pb == nil {
+		return time.Time{}
+	}
 	return time.Unix(pb.Seconds, int64(pb.Nanos))
 }

@@ -33,6 +33,9 @@ func newContractInfo(accountID AccountID, contractID ContractID, contractAccount
 }
 
 func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
+	if contractInfo == nil {
+		return ContractInfo{}, errParameterNull
+	}
 	adminKey, err := keyFromProtobuf(contractInfo.GetAdminKey())
 	if err != nil {
 		return ContractInfo{}, err
@@ -75,6 +78,9 @@ func (contractInfo ContractInfo) ToBytes() []byte {
 }
 
 func ContractInfoFromBytes(data []byte) (ContractInfo, error) {
+	if data == nil {
+		return ContractInfo{}, errByteArrayNull
+	}
 	pb := proto.ContractGetInfoResponse_ContractInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

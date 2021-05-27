@@ -142,6 +142,9 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 }
 
 func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
+	if pb == nil {
+		return TransactionID{}
+	}
 	var validStart time.Time
 	if pb.TransactionValidStart != nil {
 		validStart = timeFromProtobuf(pb.TransactionValidStart)
@@ -165,6 +168,9 @@ func (id TransactionID) ToBytes() []byte {
 }
 
 func TransactionIDFromBytes(data []byte) (TransactionID, error) {
+	if data == nil {
+		return TransactionID{}, errByteArrayNull
+	}
 	pb := proto.TransactionID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

@@ -57,6 +57,9 @@ func (id *ScheduleID) UnmarshalJSON(data []byte) error {
 }
 
 func scheduleIDFromProtobuf(pb *proto.ScheduleID) ScheduleID {
+	if pb == nil {
+		return ScheduleID{}
+	}
 	return ScheduleID{
 		Shard:    uint64(pb.ShardNum),
 		Realm:    uint64(pb.RealmNum),

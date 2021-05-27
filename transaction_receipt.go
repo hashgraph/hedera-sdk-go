@@ -50,6 +50,9 @@ func newTransactionReceipt(
 }
 
 func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) TransactionReceipt {
+	if protoReceipt == nil {
+		return TransactionReceipt{}
+	}
 	var accountID *AccountID
 	if protoReceipt.AccountID != nil {
 		accountIDValue := accountIDFromProtobuf(protoReceipt.AccountID)
@@ -152,6 +155,9 @@ func (receipt TransactionReceipt) ToBytes() []byte {
 }
 
 func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
+	if data == nil {
+		return TransactionReceipt{}, errByteArrayNull
+	}
 	pb := proto.TransactionReceipt{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

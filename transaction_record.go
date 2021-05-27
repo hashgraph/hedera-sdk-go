@@ -61,6 +61,9 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 }
 
 func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecord {
+	if pb == nil {
+		return TransactionRecord{}
+	}
 	var transferList = make([]Transfer, len(pb.TransferList.AccountAmounts))
 
 	for i, element := range pb.TransferList.AccountAmounts {
@@ -159,6 +162,9 @@ func (record TransactionRecord) ToBytes() []byte {
 }
 
 func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
+	if data == nil {
+		return TransactionRecord{}, errByteArrayNull
+	}
 	pb := proto.TransactionRecord{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

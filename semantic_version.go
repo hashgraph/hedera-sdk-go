@@ -17,6 +17,9 @@ func newSemanticVersion(major uint32, minor uint32, patch uint32) SemanticVersio
 }
 
 func semanticVersionFromProtobuf(version *proto.SemanticVersion) SemanticVersion {
+	if version == nil {
+		return SemanticVersion{}
+	}
 	return SemanticVersion{
 		Major: uint32(version.GetMajor()),
 		Minor: uint32(version.GetMinor()),

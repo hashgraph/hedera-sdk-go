@@ -74,6 +74,9 @@ func (id FileID) toProtobuf() *proto.FileID {
 }
 
 func fileIDFromProtobuf(pb *proto.FileID) FileID {
+	if pb == nil {
+		return FileID{}
+	}
 	return FileID{
 		Shard: uint64(pb.ShardNum),
 		Realm: uint64(pb.RealmNum),
@@ -91,6 +94,9 @@ func (id FileID) ToBytes() []byte {
 }
 
 func FileIDFromBytes(data []byte) (FileID, error) {
+	if data == nil {
+		return FileID{}, errByteArrayNull
+	}
 	pb := proto.FileID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

@@ -26,6 +26,10 @@ type AccountInfo struct {
 }
 
 func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
+	if pb == nil {
+		return AccountInfo{}, errParameterNull
+	}
+
 	pubKey, err := keyFromProtobuf(pb.Key)
 	if err != nil {
 		return AccountInfo{}, err
@@ -98,6 +102,9 @@ func (info AccountInfo) ToBytes() []byte {
 }
 
 func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
+	if data == nil {
+		return AccountInfo{}, errByteArrayNull
+	}
 	pb := proto.CryptoGetInfoResponse_AccountInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
