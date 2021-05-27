@@ -11,6 +11,9 @@ type ContractLogInfo struct {
 }
 
 func contractLogInfoFromProtobuf(pb *proto.ContractLoginfo) ContractLogInfo {
+	if pb == nil {
+		return ContractLogInfo{}
+	}
 	return ContractLogInfo{
 		ContractID: contractIDFromProtobuf(pb.ContractID),
 		Bloom:      pb.Bloom,

@@ -101,6 +101,10 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 }
 
 func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
+	if pb == nil {
+		return TokenInfo{}
+	}
+
 	var adminKey Key
 	if pb.AdminKey != nil {
 		adminKey, _ = keyFromProtobuf(pb.AdminKey)
@@ -231,6 +235,9 @@ func (tokenInfo TokenInfo) ToBytes() []byte {
 }
 
 func TokenInfoFromBytes(data []byte) (TokenInfo, error) {
+	if data == nil {
+		return TokenInfo{}, errByteArrayNull
+	}
 	pb := proto.TokenInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

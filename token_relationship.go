@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"errors"
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -14,6 +15,9 @@ type TokenRelationship struct {
 }
 
 func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationship {
+	if pb == nil {
+		return TokenRelationship{}
+	}
 	return TokenRelationship{
 		TokenID:      tokenIDFromProtobuf(pb.GetTokenId()),
 		Symbol:       pb.Symbol,
@@ -63,6 +67,9 @@ func (relationship TokenRelationship) ToBytes() []byte {
 }
 
 func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
+	if data == nil {
+		return TokenRelationship{}, errors.New("byte array can't be null")
+	}
 	pb := proto.TokenRelationship{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

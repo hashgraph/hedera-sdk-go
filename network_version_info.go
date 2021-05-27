@@ -15,6 +15,9 @@ func newNetworkVersionInfo(hapi SemanticVersion, hedera SemanticVersion) Network
 }
 
 func networkVersionInfoFromProtobuf(version *proto.NetworkGetVersionInfoResponse) NetworkVersionInfo {
+	if version == nil {
+		return NetworkVersionInfo{}
+	}
 	return NetworkVersionInfo{
 		ProtobufVersion: semanticVersionFromProtobuf(version.HapiProtoVersion),
 		ServicesVersion: semanticVersionFromProtobuf(version.HederaServicesVersion),

@@ -27,6 +27,9 @@ func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted 
 }
 
 func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {
+	if fileInfo == nil {
+		return FileInfo{}, errParameterNull
+	}
 	var keys KeyList
 	var err error
 	if fileInfo.Keys != nil {
@@ -70,6 +73,9 @@ func (fileInfo FileInfo) ToBytes() []byte {
 }
 
 func FileInfoFromBytes(data []byte) (FileInfo, error) {
+	if data == nil {
+		return FileInfo{}, errByteArrayNull
+	}
 	pb := proto.FileGetInfoResponse_FileInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

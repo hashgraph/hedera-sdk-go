@@ -60,6 +60,9 @@ func (id ContractID) toProtobuf() *proto.ContractID {
 }
 
 func contractIDFromProtobuf(pb *proto.ContractID) ContractID {
+	if pb == nil {
+		return ContractID{}
+	}
 	return ContractID{
 		Shard:    uint64(pb.ShardNum),
 		Realm:    uint64(pb.RealmNum),
