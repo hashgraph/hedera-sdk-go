@@ -25,6 +25,8 @@ var errNoTransactionInBytes = errors.New("no transaction was found in bytes")
 var errTransactionRequiresSingleNodeAccountID = errors.New("`PrivateKey.SignTransaction()` requires `Transaction` to have a single node `AccountID` set")
 var errMaxRetryCountHit = errors.New("max retry count has been hit")
 var errNoTransactions = errors.New("no transactions to execute")
+var errByteArrayNull = errors.New("byte array can't be null")
+var errParameterNull = errors.New("the parameter can't be null")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID

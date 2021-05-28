@@ -1,13 +1,12 @@
-name: Go
+name: CI against previewnet
 env:
-    OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
-    OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
+    OPERATOR_KEY: ${{ secrets.PREVIEWNET_OPERATOR_KEY }}
+    OPERATOR_ID: ${{ secrets.PREVIEWNET_OPERATOR_ID }}
+    HEDERA_NETWORK: "previewnet"
 
 on:
-  pull_request:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
 

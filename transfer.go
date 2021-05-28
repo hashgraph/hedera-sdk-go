@@ -8,6 +8,9 @@ type Transfer struct {
 }
 
 func transferFromProtobuf(pb *proto.AccountAmount) Transfer {
+	if pb == nil {
+		return Transfer{}
+	}
 	return Transfer{
 		AccountID: accountIDFromProtobuf(pb.AccountID),
 		Amount:    HbarFromTinybar(pb.Amount),

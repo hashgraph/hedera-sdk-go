@@ -29,6 +29,9 @@ type Key interface {
 }
 
 func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
+	if pbKey == nil {
+		return PublicKey{}, errParameterNull
+	}
 	switch key := pbKey.GetKey().(type) {
 	case *proto.Key_Ed25519:
 		return PublicKeyFromBytes(key.Ed25519)
@@ -228,6 +231,9 @@ func PublicKeyFromString(s string) (PublicKey, error) {
 
 // PublicKeyFromBytes constructs a known PublicKey from its text-encoded representation.
 func PublicKeyFromBytes(bytes []byte) (PublicKey, error) {
+	if bytes == nil {
+		return PublicKey{}, errByteArrayNull
+	}
 	if len(bytes) != ed25519.PublicKeySize {
 		return PublicKey{}, newErrBadKeyf("invalid public key length: %v bytes", len(bytes))
 	}

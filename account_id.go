@@ -79,14 +79,14 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 }
 
 func accountIDFromProtobuf(pb *proto.AccountID) AccountID {
-	if pb != nil {
-		return AccountID{
-			Shard:   uint64(pb.ShardNum),
-			Realm:   uint64(pb.RealmNum),
-			Account: uint64(pb.AccountNum),
-		}
+	if pb == nil {
+		return AccountID{}
 	}
-	return AccountID{}
+	return AccountID{
+		Shard:   uint64(pb.ShardNum),
+		Realm:   uint64(pb.RealmNum),
+		Account: uint64(pb.AccountNum),
+	}
 }
 
 func (id AccountID) isZero() bool {
@@ -107,6 +107,9 @@ func (id AccountID) ToBytes() []byte {
 }
 
 func AccountIDFromBytes(data []byte) (AccountID, error) {
+	if data == nil {
+		return AccountID{}, errByteArrayNull
+	}
 	pb := proto.AccountID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

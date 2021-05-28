@@ -18,6 +18,9 @@ func NewTokenTransfer(accountID AccountID, amount int64) TokenTransfer {
 }
 
 func tokenTransferFromProtobuf(pb *proto.AccountAmount) TokenTransfer {
+	if pb == nil {
+		return TokenTransfer{}
+	}
 	return TokenTransfer{
 		AccountID: accountIDFromProtobuf(pb.AccountID),
 		Amount:    pb.Amount,
@@ -41,6 +44,9 @@ func (transfer TokenTransfer) ToBytes() []byte {
 }
 
 func TokenTransferFromBytes(data []byte) (TokenTransfer, error) {
+	if data == nil {
+		return TokenTransfer{}, errByteArrayNull
+	}
 	pb := proto.AccountAmount{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

@@ -13,6 +13,9 @@ type TokenID struct {
 }
 
 func tokenIDFromProtobuf(tokenID *proto.TokenID) TokenID {
+	if tokenID == nil {
+		return TokenID{}
+	}
 	return TokenID{
 		Shard: uint64(tokenID.ShardNum),
 		Realm: uint64(tokenID.RealmNum),
@@ -42,6 +45,9 @@ func (id TokenID) ToBytes() []byte {
 }
 
 func TokenIDFromBytes(data []byte) (TokenID, error) {
+	if data == nil {
+		return TokenID{}, errByteArrayNull
+	}
 	pb := proto.TokenID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

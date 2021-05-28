@@ -41,6 +41,9 @@ func (id TopicID) toProtobuf() *proto.TopicID {
 }
 
 func topicIDFromProtobuf(pb *proto.TopicID) TopicID {
+	if pb == nil {
+		return TopicID{}
+	}
 	return TopicID{
 		Shard: uint64(pb.ShardNum),
 		Realm: uint64(pb.RealmNum),
@@ -58,6 +61,9 @@ func (id TopicID) ToBytes() []byte {
 }
 
 func TopicIDFromBytes(data []byte) (TopicID, error) {
+	if data == nil {
+		return TopicID{}, errByteArrayNull
+	}
 	pb := proto.TopicID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {

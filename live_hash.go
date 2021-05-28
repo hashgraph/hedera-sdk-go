@@ -35,6 +35,9 @@ func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
 }
 
 func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
+	if hash == nil {
+		return LiveHash{}, errParameterNull
+	}
 	keyList, err := keyListFromProtobuf(hash.Keys)
 	if err != nil {
 		return LiveHash{}, err
@@ -60,6 +63,9 @@ func (liveHash LiveHash) ToBytes() []byte {
 }
 
 func LiveHashFromBytes(data []byte) (LiveHash, error) {
+	if data == nil {
+		return LiveHash{}, errByteArrayNull
+	}
 	pb := proto.LiveHash{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
