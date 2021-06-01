@@ -73,7 +73,7 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	id = &accountID
+	*id = accountID
 
 	return nil
 }
