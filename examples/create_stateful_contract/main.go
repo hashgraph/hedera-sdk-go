@@ -139,10 +139,10 @@ func main() {
 	callResult, err := hedera.NewContractCallQuery().
 		SetContractID(newContractID).
 		SetGas(1000).
+		SetQueryPayment(hedera.NewHbar(1)).
 		// nil -> no parameters
 		SetFunction("getMessage", nil).
 		Execute(client)
-
 	if err != nil {
 		println(err.Error(), ": error executing contract call query")
 		return
@@ -183,6 +183,7 @@ func main() {
 	secondCallResult, err := hedera.NewContractCallQuery().
 		SetContractID(newContractID).
 		SetGas(1000).
+		SetQueryPayment(hedera.NewHbar(1)).
 		SetFunction("getMessage", nil).
 		Execute(client)
 
