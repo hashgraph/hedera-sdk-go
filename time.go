@@ -15,7 +15,7 @@ func durationFromProtobuf(pb *proto.Duration) time.Duration {
 	if pb == nil {
 		return time.Duration(0)
 	}
-	return time.Until(time.Unix(pb.Seconds, 0))
+	return time.Duration(pb.Seconds * int64(time.Second))
 }
 
 func timeToProtobuf(t time.Time) *proto.Timestamp {
