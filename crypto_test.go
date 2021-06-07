@@ -56,7 +56,7 @@ func TestPrivateKeyGenerate(t *testing.T) {
 	key, err := GeneratePrivateKey()
 
 	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(key.String(), Ed25519PrivateKeyPrefix))
+	assert.True(t, strings.HasPrefix(key.String(), PrivateKeyDerPrefix))
 }
 
 func TestPrivateKeyExternalSerialization(t *testing.T) {

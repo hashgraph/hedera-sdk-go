@@ -20,8 +20,8 @@ import (
 	"github.com/youmark/pkcs8"
 )
 
-const Ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
-const Ed25519PubKeyPrefix = "302a300506032b6570032100"
+const PrivateKeyDerPrefix = "302e020100300506032b657004220420"
+const PublicKeyDerPrefix = "302a300506032b6570032100"
 
 type Key interface {
 	toProtoKey() *proto.Key
@@ -141,7 +141,7 @@ func PrivateKeyFromString(s string) (PrivateKey, error) {
 		return PrivateKey{}, newErrBadKeyf("invalid private key string with length %v", len(s))
 	}
 
-	bytes, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(s), Ed25519PrivateKeyPrefix))
+	bytes, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(s), PrivateKeyDerPrefix))
 	if err != nil {
 		return PrivateKey{}, err
 	}
@@ -220,7 +220,7 @@ func PublicKeyFromString(s string) (PublicKey, error) {
 		return PublicKey{}, newErrBadKeyf("invalid public key '%v' string with length %v", s, sLen)
 	}
 
-	keyStr := strings.TrimPrefix(strings.ToLower(s), Ed25519PubKeyPrefix)
+	keyStr := strings.TrimPrefix(strings.ToLower(s), PublicKeyDerPrefix)
 	bytes, err := hex.DecodeString(keyStr)
 	if err != nil {
 		return PublicKey{}, err
@@ -302,12 +302,12 @@ func (sk PrivateKey) PublicKey() PublicKey {
 
 // String returns the text-encoded representation of the PrivateKey.
 func (sk PrivateKey) String() string {
-	return fmt.Sprint(Ed25519PrivateKeyPrefix, hex.EncodeToString(sk.keyData[:32]))
+	return fmt.Sprint(PrivateKeyDerPrefix, hex.EncodeToString(sk.keyData[:32]))
 }
 
 // String returns the text-encoded representation of the PublicKey.
 func (pk PublicKey) String() string {
-	return fmt.Sprint(Ed25519PubKeyPrefix, hex.EncodeToString(pk.keyData))
+	return fmt.Sprint(PublicKeyDerPrefix, hex.EncodeToString(pk.keyData))
 }
 
 // Bytes returns the byte slice representation of the PrivateKey.
