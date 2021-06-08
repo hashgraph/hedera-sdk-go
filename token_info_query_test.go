@@ -1,7 +1,7 @@
 package hedera
 
 import (
-    "encoding/base64"
+	"encoding/base64"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
@@ -271,17 +271,16 @@ func Test_TokenInfo_FromBytes_BadBytes(t *testing.T) {
 	bytes, err := base64.StdEncoding.DecodeString("tfhyY++/Q4BycortAgD4cmMKACB/")
 	assert.NoError(t, err)
 
-    _, err = TokenInfoFromBytes(bytes)
-    assert.NoError(t, err)
+	_, err = TokenInfoFromBytes(bytes)
+	assert.NoError(t, err)
 }
 
 func Test_TokenInfo_FromBytes_Nil(t *testing.T) {
-    _, err := TokenRelationshipFromBytes(nil)
-    assert.Error(t, err)
+	_, err := TokenRelationshipFromBytes(nil)
+	assert.Error(t, err)
 }
 
 func Test_TokenInfo_FromBytes_EmptyBytes(t *testing.T) {
-    _, err := TokenInfoFromBytes([]byte{})
-    assert.NoError(t, err)
+	_, err := TokenInfoFromBytes([]byte{})
+	assert.NoError(t, err)
 }
-
