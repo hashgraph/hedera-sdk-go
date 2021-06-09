@@ -126,8 +126,9 @@ func (e ErrHederaPreCheckStatus) Error() string {
 
 // ErrHederaReceiptStatus is returned by TransactionID.GetReceipt if the status of the receipt is exceptional.
 type ErrHederaReceiptStatus struct {
-	TxID   TransactionID
-	Status Status
+	TxID    TransactionID
+	Status  Status
+	Receipt TransactionReceipt
 }
 
 func newErrHederaReceiptStatus(id TransactionID, status Status) ErrHederaReceiptStatus {
