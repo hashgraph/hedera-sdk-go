@@ -54,18 +54,18 @@ func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenT
 	return tokenTransferMap
 }
 
-func (transaction *TransferTransaction) GetHbarTransfers() map[AccountID]Hbar {
-	hbarTransferMap := make(map[AccountID]Hbar, len(transaction.pb.Transfers.AccountAmounts))
+func (transaction *TransferTransaction) GetHbarTransfers() []Hbar {
+	hbarTransfers := make([]Hbar, 0)
 
 	if len(transaction.pb.Transfers.AccountAmounts) == 0 {
-		return hbarTransferMap
+		return hbarTransfers
 	}
 
 	for _, hbarTransfer := range transaction.pb.Transfers.AccountAmounts {
-		hbarTransferMap[accountIDFromProtobuf(hbarTransfer.AccountID)] = HbarFromTinybar(hbarTransfer.Amount)
+		hbarTransfers = append(hbarTransfers, HbarFromTinybar(hbarTransfer.Amount))
 	}
 
-	return hbarTransferMap
+	return hbarTransfers
 }
 
 func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amount Hbar) *TransferTransaction {
