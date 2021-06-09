@@ -248,10 +248,7 @@ func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
 func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = nil
-	transaction.pb.Expiry = &proto.Timestamp{
-		Seconds: expirationTime.Unix(),
-		Nanos:   int32(expirationTime.UnixNano()),
-	}
+	transaction.pb.Expiry = timeToProtobuf(expirationTime)
 
 	return transaction
 }
@@ -278,7 +275,7 @@ func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
 // The interval at which the auto-renew account will be charged to extend the token's expiry
 func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = &proto.Duration{Seconds: int64(autoRenewPeriod.Seconds())}
+	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
 
