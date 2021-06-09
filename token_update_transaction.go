@@ -184,7 +184,7 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewAccount() AccountID {
 // The new interval at which the auto-renew account will be charged to extend the token's expiry.
 func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = &proto.Duration{Seconds: int64(autoRenewPeriod.Seconds())}
+	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
 
@@ -201,10 +201,7 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 // INVALID_EXPIRATION_TIME
 func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime time.Time) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Expiry = &proto.Timestamp{
-		Seconds: expirationTime.Unix(),
-		Nanos:   int32(expirationTime.UnixNano()),
-	}
+	transaction.pb.Expiry = timeToProtobuf(expirationTime)
 	return transaction
 }
 
