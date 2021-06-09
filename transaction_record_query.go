@@ -80,7 +80,7 @@ func transactionRecordQuery_shouldRetry(request request, response response) exec
 	switch Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()) {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
-	case StatusSuccess, StatusIdenticalScheduleAlreadyCreated:
+	case StatusSuccess:
 		return executionStateFinished
 	default:
 		return executionStateError

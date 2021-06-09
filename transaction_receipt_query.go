@@ -72,14 +72,14 @@ func transactionReceiptQuery_shouldRetry(request request, response response) exe
 	switch Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()) {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
-	case StatusSuccess, StatusIdenticalScheduleAlreadyCreated:
+	case StatusSuccess:
 		return executionStateFinished
 	default:
 		return executionStateError
 	}
 }
 
-func transactionReceiptQuery_mapStatusError(_ request, response response) error {
+func transactionReceiptQuery_mapStatusError(request request, response response) error {
 	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
@@ -90,7 +90,9 @@ func transactionReceiptQuery_mapStatusError(_ request, response response) error 
 	}
 
 	return ErrHederaReceiptStatus{
-		Status: Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
+		Status:  Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
+		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetReceipt().TransactionID),
+		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
 	}
 }
 
