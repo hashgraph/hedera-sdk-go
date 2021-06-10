@@ -1,8 +1,16 @@
 ## Unreleased
 
+ * Support for `MaxBackoff`, `MaxAttempts`, `RetryHandler`, and `CompletionHandler` in `TopicMessageQuery`
+ * Default logging behavior to `TopicMessageQuery` if an error handler or completion handler was not set
+
 ### Fixed
 
  * Renamed `ScheduleInfo.Signers` -> `ScheduleInfo.Signatories`
+ * `TopicMessageQuery` retry handling; this should retry on more gRPC errors
+ * `TopicMessageQuery` max retry timeout; before this would could wait up to 4m with no feedback
+ * `durationFromProtobuf()` incorrectly calculation duration
+ * `*Token.GetAutoRenewPeriod()` and `*Token.GetExpirationTime()` nil dereference
+ * `Hbar.As()` using multiplication instead of division, and should return a `float64`
 
 ### Added
 
@@ -17,7 +25,6 @@
  * Decreased `CHUNK_SIZE` 4096->1024 and increased default max chunks 10->20
 
 ## v2.1.5-beta.5
-
 
 ### Fixed
 
