@@ -50,22 +50,6 @@ func TestCryptoTransferTransaction_FlippedAmount_Execute(t *testing.T) {
 	}
 }
 
-func TestCryptoTransferTransaction_RepeatingAmount_Execute(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
-
-	resp, err := NewTransferTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(10)).
-		AddHbarTransfer(AccountID{Account: 3}, NewHbar(-10)).
-		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(10)).
-		SetMaxTransactionFee(NewHbar(1)).
-		Execute(env.Client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS received for transaction %s", resp.TransactionID), err.Error())
-	}
-}
-
 //func Test_CryptoTransfer_1000(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //	var err error
