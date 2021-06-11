@@ -21,8 +21,10 @@ type AccountInfo struct {
 	ReceiverSigRequired            bool
 	ExpirationTime                 time.Time
 	AutoRenewPeriod                time.Duration
+	LiveHashes                     []*LiveHash
 	TokenRelationships             []*TokenRelationship
 	AccountMemo                    string
+	OwnedNfts                      int64
 }
 
 func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networkName *NetworkName) (AccountInfo, error) {
@@ -41,6 +43,18 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networ
 		for i, relationship := range pb.TokenRelationships {
 			singleRelationship := tokenRelationshipFromProtobuf(relationship, networkName)
 			tokenRelationship[i] = &singleRelationship
+		}
+	}
+
+	liveHashes := make([]*LiveHash, len(pb.LiveHashes))
+
+	if pb.LiveHashes != nil {
+		for i, liveHash := range pb.LiveHashes {
+			singleRelationship, err := liveHashFromProtobuf(liveHash)
+			if err != nil {
+				return AccountInfo{}, err
+			}
+			liveHashes[i] = &singleRelationship
 		}
 	}
 
@@ -63,6 +77,9 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networ
 		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeFromProtobuf(pb.ExpirationTime),
 		AccountMemo:                    pb.Memo,
+		AutoRenewPeriod:                durationFromProtobuf(pb.AutoRenewPeriod),
+		LiveHashes:                     liveHashes,
+		OwnedNfts:                      pb.OwnedNfts,
 	}, nil
 }
 
@@ -73,6 +90,13 @@ func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 	for i, relationship := range info.TokenRelationships {
 		singleRelationship := relationship.toProtobuf()
 		tokenRelationship[i] = singleRelationship
+	}
+
+	liveHashes := make([]*proto.LiveHash, len(info.LiveHashes))
+
+	for i, liveHash := range info.LiveHashes {
+		singleRelationship := liveHash.toProtobuf()
+		liveHashes[i] = singleRelationship
 	}
 
 	return &proto.CryptoGetInfoResponse_AccountInfo{
@@ -86,9 +110,12 @@ func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 		GenerateSendRecordThreshold:    uint64(info.GenerateSendRecordThreshold.tinybar),
 		GenerateReceiveRecordThreshold: uint64(info.GenerateReceiveRecordThreshold.tinybar),
 		ReceiverSigRequired:            info.ReceiverSigRequired,
-		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeToProtobuf(info.ExpirationTime),
+		AutoRenewPeriod:                durationToProtobuf(info.AutoRenewPeriod),
+		LiveHashes:                     liveHashes,
+		TokenRelationships:             tokenRelationship,
 		Memo:                           info.AccountMemo,
+		OwnedNfts:                      info.OwnedNfts,
 	}
 }
 

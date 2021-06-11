@@ -23,125 +23,121 @@ import (
 // Creating immutable token: Token can be created as immutable if the adminKey is omitted. In this
 // case, the name, symbol, treasury, management keys, expiry and renew properties cannot be
 // updated. If a token is created as immutable, anyone is able to extend the expiry time by paying the fee.
-type TokenCreateTransaction struct {
+type NftCreateTransaction struct {
 	Transaction
-	pb                 *proto.TokenCreateTransactionBody
-	treasuryAccountID  AccountID
-	autoRenewAccountID AccountID
+	pb *proto.TokenCreateTransactionBody
 }
 
-func NewTokenCreateTransaction() *TokenCreateTransaction {
+func NewNftCreateTransaction() *NftCreateTransaction {
 	pb := &proto.TokenCreateTransactionBody{}
 
-	transaction := TokenCreateTransaction{
+	transaction := NftCreateTransaction{
 		pb:          pb,
 		Transaction: newTransaction(),
 	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
 	transaction.SetMaxTransactionFee(NewHbar(30))
-	transaction.pb.TokenType = proto.TokenType_FUNGIBLE_COMMON
+	transaction.pb.TokenType = proto.TokenType_NON_FUNGIBLE_UNIQUE
 
 	return &transaction
 }
 
-func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
+func nftCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
 	return TokenCreateTransaction{
-		Transaction:        transaction,
-		pb:                 pb.GetTokenCreation(),
-		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenCreation().GetTreasury(), nil),
-		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount(), nil),
+		Transaction: transaction,
+		pb:          pb.GetTokenCreation(),
 	}
 }
 
 // The publicly visible name of the token, specified as a string of only ASCII characters
-func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetTokenName(name string) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Name = name
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetTokenName() string {
+func (transaction *NftCreateTransaction) GetTokenName() string {
 	return transaction.pb.GetName()
 }
 
 // The publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
-func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetTokenSymbol(symbol string) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Symbol = symbol
 	return transaction
 }
 
 // The publicly visible token memo. It is max 100 bytes.
-func (transaction *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetTokenMemo(memo string) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Memo = memo
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetTokenMemo() string {
+func (transaction *NftCreateTransaction) GetTokenMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
+func (transaction *NftCreateTransaction) GetTokenSymbol() string {
 	return transaction.pb.GetSymbol()
 }
 
 // The number of decimal places a token is divisible by. This field can never be changed!
-func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetDecimals(decimals uint) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Decimals = uint32(decimals)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetDecimals() uint {
+func (transaction *NftCreateTransaction) GetDecimals() uint {
 	return uint(transaction.pb.GetDecimals())
 }
 
-func (transaction *TokenCreateTransaction) GetTokenType() TokenType {
+func (transaction *NftCreateTransaction) GetTokenType() TokenType {
 	return TokenType(transaction.pb.TokenType)
 }
 
-func (transaction *TokenCreateTransaction) SetSupplyType(t TokenSupplyType) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetSupplyType(t TokenSupplyType) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SupplyType = proto.TokenSupplyType(t)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetSupplyType() TokenSupplyType {
+func (transaction *NftCreateTransaction) GetSupplyType() TokenSupplyType {
 	return TokenSupplyType(transaction.pb.SupplyType)
 }
 
-func (transaction *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetMaxSupply(maxSupply int64) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.MaxSupply = maxSupply
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetMaxSupply() int64 {
+func (transaction *NftCreateTransaction) GetMaxSupply() int64 {
 	return transaction.pb.MaxSupply
 }
 
 // The account which will act as a treasury for the token. This account will receive the specified initial supply
-func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury AccountID) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetTreasuryAccountID(treasury AccountID) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.Treasury = treasury.toProtobuf()
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetTreasury(), nil)
+func (transaction *NftCreateTransaction) GetTreasuryAccountID() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetTreasury())
 }
 
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
-func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetAdminKey(publicKey Key) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AdminKey = publicKey.toProtoKey()
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetAdminKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
+func (transaction *NftCreateTransaction) GetAdminKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -150,14 +146,14 @@ func (transaction *TokenCreateTransaction) GetAdminKey() Key {
 }
 
 // The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
-func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetKycKey(publicKey Key) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.KycKey = publicKey.toProtoKey()
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetKycKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetKycKey(), nil)
+func (transaction *NftCreateTransaction) GetKycKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetKycKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -166,14 +162,14 @@ func (transaction *TokenCreateTransaction) GetKycKey() Key {
 }
 
 // The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
-func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetFreezeKey(publicKey Key) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FreezeKey = publicKey.toProtoKey()
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey(), nil)
+func (transaction *NftCreateTransaction) GetFreezeKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -182,14 +178,14 @@ func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
 }
 
 // The key which can wipe the token balance of an account. If empty, wipe is not possible
-func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetWipeKey(publicKey Key) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.WipeKey = publicKey.toProtoKey()
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetWipeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetWipeKey(), nil)
+func (transaction *NftCreateTransaction) GetWipeKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetWipeKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -197,33 +193,7 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return key
 }
 
-func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
-	var err error
-	err = transaction.treasuryAccountID.Validate(client)
-	if err != nil {
-		return err
-	}
-	err = transaction.autoRenewAccountID.Validate(client)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (transaction *TokenCreateTransaction) build() *TokenCreateTransaction {
-	if !transaction.treasuryAccountID.isZero() {
-		transaction.pb.Treasury = transaction.treasuryAccountID.toProtobuf()
-	}
-
-	if !transaction.autoRenewAccountID.isZero() {
-		transaction.pb.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
-	}
-
-	return transaction
-}
-
-func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+func (transaction *NftCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
 	scheduled, err := transaction.constructScheduleProtobuf()
@@ -234,8 +204,7 @@ func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+func (transaction *NftCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -266,14 +235,14 @@ func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.S
 
 // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
 // SetInitialBalance sets the initial number of Hbar to put into the token
-func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetSupplyKey(publicKey Key) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.SupplyKey = publicKey.toProtoKey()
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey(), nil)
+func (transaction *NftCreateTransaction) GetSupplyKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -282,29 +251,29 @@ func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
 }
 
 // Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
-func (transaction *TokenCreateTransaction) SetInitialSupply(initialSupply uint64) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetInitialSupply(initialSupply uint64) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.InitialSupply = initialSupply
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetInitialSupply() uint64 {
+func (transaction *NftCreateTransaction) GetInitialSupply() uint64 {
 	return transaction.pb.GetInitialSupply()
 }
 
 // The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
-func (transaction *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetFreezeDefault(freezeDefault bool) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.FreezeDefault = freezeDefault
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
+func (transaction *NftCreateTransaction) GetFreezeDefault() bool {
 	return transaction.pb.GetFreezeDefault()
 }
 
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
-func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetExpirationTime(expirationTime time.Time) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = nil
 	transaction.pb.Expiry = timeToProtobuf(expirationTime)
@@ -312,7 +281,7 @@ func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
+func (transaction *NftCreateTransaction) GetExpirationTime() time.Time {
 	if transaction.pb.GetExpiry() != nil {
 		return time.Unix(transaction.pb.GetExpiry().Seconds, int64(transaction.pb.GetExpiry().Nanos))
 	}
@@ -321,24 +290,24 @@ func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
 }
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
-func (transaction *TokenCreateTransaction) SetAutoRenewAccount(id AccountID) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetAutoRenewAccount(autoRenewAccount AccountID) *NftCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.autoRenewAccountID = id
+	transaction.pb.AutoRenewAccount = autoRenewAccount.toProtobuf()
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
-	return transaction.autoRenewAccountID
+func (transaction *NftCreateTransaction) GetAutoRenewAccount() AccountID {
+	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
 }
 
 // The interval at which the auto-renew account will be charged to extend the token's expiry
-func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
+func (transaction *NftCreateTransaction) GetAutoRenewPeriod() time.Duration {
 	if transaction.pb.GetAutoRenewPeriod() != nil {
 		return time.Duration(transaction.pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
 	}
@@ -351,26 +320,26 @@ func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
 // We override the embedded fluent setter methods to return the outer type
 //
 
-func tokenCreateTransaction_getMethod(request request, channel *channel) method {
+func nftCreateTransaction_getMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().CreateToken,
 	}
 }
 
-func (transaction *TokenCreateTransaction) IsFrozen() bool {
+func (transaction *NftCreateTransaction) IsFrozen() bool {
 	return transaction.isFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *TokenCreateTransaction) Sign(
+func (transaction *NftCreateTransaction) Sign(
 	privateKey PrivateKey,
-) *TokenCreateTransaction {
+) *NftCreateTransaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
-func (transaction *TokenCreateTransaction) SignWithOperator(
+func (transaction *NftCreateTransaction) SignWithOperator(
 	client *Client,
-) (*TokenCreateTransaction, error) {
+) (*NftCreateTransaction, error) {
 	// If the transaction is not signed by the operator, we need
 	// to sign the transaction with the operator
 
@@ -391,23 +360,34 @@ func (transaction *TokenCreateTransaction) SignWithOperator(
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
-func (transaction *TokenCreateTransaction) SignWith(
+func (transaction *NftCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
-) *TokenCreateTransaction {
+) *NftCreateTransaction {
 	if !transaction.IsFrozen() {
 		_, _ = transaction.Freeze()
+	} else {
+		transaction.transactions = make([]*proto.Transaction, 0)
 	}
 
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
+
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
 	}
 
 	return transaction
 }
 
 // Execute executes the Transaction with the provided client
-func (transaction *TokenCreateTransaction) Execute(
+func (transaction *NftCreateTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
 	if client == nil {
@@ -443,7 +423,7 @@ func (transaction *TokenCreateTransaction) Execute(
 		transaction_makeRequest,
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
-		tokenCreateTransaction_getMethod,
+		nftCreateTransaction_getMethod,
 		transaction_mapStatusError,
 		transaction_mapResponse,
 	)
@@ -464,7 +444,7 @@ func (transaction *TokenCreateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenCreateTransaction) onFreeze(
+func (transaction *NftCreateTransaction) onFreeze(
 	pbBody *proto.TransactionBody,
 ) bool {
 	pbBody.Data = &proto.TransactionBody_TokenCreation{
@@ -474,11 +454,11 @@ func (transaction *TokenCreateTransaction) onFreeze(
 	return true
 }
 
-func (transaction *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, error) {
+func (transaction *NftCreateTransaction) Freeze() (*NftCreateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
 
-func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
+func (transaction *NftCreateTransaction) FreezeWith(client *Client) (*NftCreateTransaction, error) {
 	if transaction.pb.AutoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID().isZero() {
 		transaction.SetAutoRenewAccount(client.GetOperatorAccountID())
 	}
@@ -487,12 +467,6 @@ func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCre
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
-	if err != nil {
-		return &TokenCreateTransaction{}, err
-	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
@@ -504,45 +478,45 @@ func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCre
 	return transaction, transaction_freezeWith(&transaction.Transaction, client)
 }
 
-func (transaction *TokenCreateTransaction) GetMaxTransactionFee() Hbar {
+func (transaction *NftCreateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetMaxTransactionFee(fee Hbar) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetMaxTransactionFee(fee Hbar) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetTransactionMemo() string {
+func (transaction *NftCreateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
 
 // SetTransactionMemo sets the memo for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetTransactionMemo(memo string) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetTransactionMemo(memo string) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetTransactionValidDuration() time.Duration {
+func (transaction *NftCreateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
 
 // SetTransactionValidDuration sets the valid duration for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetTransactionValidDuration(duration time.Duration) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) GetTransactionID() TransactionID {
+func (transaction *NftCreateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
 
 // SetTransactionID sets the TransactionID for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetTransactionID(transactionID TransactionID) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetTransactionID(transactionID TransactionID) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
@@ -550,18 +524,18 @@ func (transaction *TokenCreateTransaction) SetTransactionID(transactionID Transa
 }
 
 // SetNodeTokenID sets the node TokenID for this TokenCreateTransaction.
-func (transaction *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *NftCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) SetMaxRetry(count int) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) SetMaxRetry(count int) *NftCreateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
-func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCreateTransaction {
+func (transaction *NftCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *NftCreateTransaction {
 	if !transaction.IsFrozen() {
 		transaction.Freeze()
 	}

@@ -25,6 +25,9 @@ type TokenInfo struct {
 	AutoRenewAccountID  AccountID
 	ExpirationTime      *time.Time
 	TokenMemo           string
+	TokenType           TokenType
+	SupplyType          TokenSupplyType
+	MaxSupply           int64
 }
 
 func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
@@ -164,6 +167,9 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenI
 		AutoRenewAccountID:  accountID,
 		ExpirationTime:      &expirationTime,
 		TokenMemo:           pb.Memo,
+		TokenType:           TokenType(pb.TokenType),
+		SupplyType:          TokenSupplyType(pb.SupplyType),
+		MaxSupply:           pb.MaxSupply,
 	}
 }
 
@@ -218,10 +224,13 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		DefaultFreezeStatus: *tokenInfo.FreezeStatusToProtobuf(),
 		DefaultKycStatus:    *tokenInfo.KycStatusToProtobuf(),
 		Deleted:             tokenInfo.Deleted,
-		AutoRenewPeriod:     autoRenewPeriod,
 		AutoRenewAccount:    tokenInfo.AutoRenewAccountID.toProtobuf(),
+		AutoRenewPeriod:     autoRenewPeriod,
 		Expiry:              expirationTime,
 		Memo:                tokenInfo.TokenMemo,
+		TokenType:           proto.TokenType(tokenInfo.TokenType),
+		SupplyType:          proto.TokenSupplyType(tokenInfo.SupplyType),
+		MaxSupply:           tokenInfo.MaxSupply,
 	}
 }
 
