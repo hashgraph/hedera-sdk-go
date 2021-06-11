@@ -1,4 +1,4 @@
-## Unreleased
+## v2.1.6
 
  * Support for `MaxBackoff`, `MaxAttempts`, `RetryHandler`, and `CompletionHandler` in `TopicMessageQuery`
  * Default logging behavior to `TopicMessageQuery` if an error handler or completion handler was not set
