@@ -52,9 +52,13 @@ import "proto/ConsensusGetTopicInfo.proto";
 
 import "proto/NetworkGetVersionInfo.proto";
 
+import "proto/TokenGetAccountNftInfo.proto";
 import "proto/TokenGetInfo.proto";
+import "proto/TokenGetNftInfo.proto";
+import "proto/TokenGetNftInfos.proto";
 
 import "proto/ScheduleGetInfo.proto";
+
 
 /* A single response, which is returned from the node to the client, after the client sent the node a query. This includes all responses. */
 message Response {
@@ -87,5 +91,9 @@ message Response {
         TokenGetInfoResponse tokenGetInfo = 152; // Get all information about a token
 
         ScheduleGetInfoResponse scheduleGetInfo = 153; // Get all information about a schedule entity
+
+        TokenGetAccountNftInfoResponse tokenGetAccountNftInfo = 154; // A list of the NFTs associated with the account
+        TokenGetNftInfoResponse tokenGetNftInfo = 155; // All information about an NFT
+        TokenGetNftInfosResponse tokenGetNftInfos = 156; // A list of the NFTs for the token
     }
 }

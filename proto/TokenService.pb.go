@@ -34,7 +34,7 @@ var file_proto_TokenService_proto_rawDesc = []byte{
 	0x6f, 0x2f, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x17, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x2f, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x32, 0xe4, 0x06, 0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x53, 0x65,
+	0x72, 0x6f, 0x74, 0x6f, 0x32, 0xfd, 0x07, 0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x53, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x3d, 0x0a, 0x0b, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54,
 	0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x72, 0x61,
 	0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
@@ -88,12 +88,22 @@ var file_proto_TokenService_proto_rawDesc = []byte{
 	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2d, 0x0a, 0x0c,
 	0x67, 0x65, 0x74, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x0c, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x1a, 0x0f, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x49, 0x0a, 0x1a, 0x63,
-	0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72,
-	0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x5a, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75,
-	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f,
-	0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32,
-	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x32, 0x0a, 0x11, 0x67,
+	0x65, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x4e, 0x66, 0x74, 0x49, 0x6e, 0x66, 0x6f,
+	0x12, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x1a, 0x0f,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x30, 0x0a, 0x0f, 0x67, 0x65, 0x74, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x4e, 0x66, 0x74, 0x49, 0x6e,
+	0x66, 0x6f, 0x12, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
+	0x1a, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x31, 0x0a, 0x10, 0x67, 0x65, 0x74, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x4e, 0x66, 0x74,
+	0x49, 0x6e, 0x66, 0x6f, 0x73, 0x12, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x1a, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x42, 0x49, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65,
+	0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x5a, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68,
+	0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d,
+	0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_proto_TokenService_proto_goTypes = []interface{}{
@@ -116,21 +126,27 @@ var file_proto_TokenService_proto_depIdxs = []int32{
 	0,  // 10: proto.TokenService.associateTokens:input_type -> proto.Transaction
 	0,  // 11: proto.TokenService.dissociateTokens:input_type -> proto.Transaction
 	1,  // 12: proto.TokenService.getTokenInfo:input_type -> proto.Query
-	2,  // 13: proto.TokenService.createToken:output_type -> proto.TransactionResponse
-	2,  // 14: proto.TokenService.updateToken:output_type -> proto.TransactionResponse
-	2,  // 15: proto.TokenService.mintToken:output_type -> proto.TransactionResponse
-	2,  // 16: proto.TokenService.burnToken:output_type -> proto.TransactionResponse
-	2,  // 17: proto.TokenService.deleteToken:output_type -> proto.TransactionResponse
-	2,  // 18: proto.TokenService.wipeTokenAccount:output_type -> proto.TransactionResponse
-	2,  // 19: proto.TokenService.freezeTokenAccount:output_type -> proto.TransactionResponse
-	2,  // 20: proto.TokenService.unfreezeTokenAccount:output_type -> proto.TransactionResponse
-	2,  // 21: proto.TokenService.grantKycToTokenAccount:output_type -> proto.TransactionResponse
-	2,  // 22: proto.TokenService.revokeKycFromTokenAccount:output_type -> proto.TransactionResponse
-	2,  // 23: proto.TokenService.associateTokens:output_type -> proto.TransactionResponse
-	2,  // 24: proto.TokenService.dissociateTokens:output_type -> proto.TransactionResponse
-	3,  // 25: proto.TokenService.getTokenInfo:output_type -> proto.Response
-	13, // [13:26] is the sub-list for method output_type
-	0,  // [0:13] is the sub-list for method input_type
+	1,  // 13: proto.TokenService.getAccountNftInfo:input_type -> proto.Query
+	1,  // 14: proto.TokenService.getTokenNftInfo:input_type -> proto.Query
+	1,  // 15: proto.TokenService.getTokenNftInfos:input_type -> proto.Query
+	2,  // 16: proto.TokenService.createToken:output_type -> proto.TransactionResponse
+	2,  // 17: proto.TokenService.updateToken:output_type -> proto.TransactionResponse
+	2,  // 18: proto.TokenService.mintToken:output_type -> proto.TransactionResponse
+	2,  // 19: proto.TokenService.burnToken:output_type -> proto.TransactionResponse
+	2,  // 20: proto.TokenService.deleteToken:output_type -> proto.TransactionResponse
+	2,  // 21: proto.TokenService.wipeTokenAccount:output_type -> proto.TransactionResponse
+	2,  // 22: proto.TokenService.freezeTokenAccount:output_type -> proto.TransactionResponse
+	2,  // 23: proto.TokenService.unfreezeTokenAccount:output_type -> proto.TransactionResponse
+	2,  // 24: proto.TokenService.grantKycToTokenAccount:output_type -> proto.TransactionResponse
+	2,  // 25: proto.TokenService.revokeKycFromTokenAccount:output_type -> proto.TransactionResponse
+	2,  // 26: proto.TokenService.associateTokens:output_type -> proto.TransactionResponse
+	2,  // 27: proto.TokenService.dissociateTokens:output_type -> proto.TransactionResponse
+	3,  // 28: proto.TokenService.getTokenInfo:output_type -> proto.Response
+	3,  // 29: proto.TokenService.getAccountNftInfo:output_type -> proto.Response
+	3,  // 30: proto.TokenService.getTokenNftInfo:output_type -> proto.Response
+	3,  // 31: proto.TokenService.getTokenNftInfos:output_type -> proto.Response
+	16, // [16:32] is the sub-list for method output_type
+	0,  // [0:16] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -202,6 +218,12 @@ type TokenServiceClient interface {
 	DissociateTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Retrieves the metadata of a token
 	GetTokenInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	// Gets info on NFTs N through M on the list of NFTs associated with a given account
+	GetAccountNftInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	// Retrieves the metadata of an NFT by TokenID and serial number
+	GetTokenNftInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	// Gets info on NFTs N through M on the list of NFTs associated with a given Token of type NON_FUNGIBLE
+	GetTokenNftInfos(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 }
 
 type tokenServiceClient struct {
@@ -329,6 +351,33 @@ func (c *tokenServiceClient) GetTokenInfo(ctx context.Context, in *Query, opts .
 	return out, nil
 }
 
+func (c *tokenServiceClient) GetAccountNftInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/proto.TokenService/getAccountNftInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tokenServiceClient) GetTokenNftInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/proto.TokenService/getTokenNftInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tokenServiceClient) GetTokenNftInfos(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/proto.TokenService/getTokenNftInfos", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TokenServiceServer is the server API for TokenService service.
 type TokenServiceServer interface {
 	// Creates a new Token by submitting the transaction
@@ -357,6 +406,12 @@ type TokenServiceServer interface {
 	DissociateTokens(context.Context, *Transaction) (*TransactionResponse, error)
 	// Retrieves the metadata of a token
 	GetTokenInfo(context.Context, *Query) (*Response, error)
+	// Gets info on NFTs N through M on the list of NFTs associated with a given account
+	GetAccountNftInfo(context.Context, *Query) (*Response, error)
+	// Retrieves the metadata of an NFT by TokenID and serial number
+	GetTokenNftInfo(context.Context, *Query) (*Response, error)
+	// Gets info on NFTs N through M on the list of NFTs associated with a given Token of type NON_FUNGIBLE
+	GetTokenNftInfos(context.Context, *Query) (*Response, error)
 }
 
 // UnimplementedTokenServiceServer can be embedded to have forward compatible implementations.
@@ -401,6 +456,15 @@ func (*UnimplementedTokenServiceServer) DissociateTokens(context.Context, *Trans
 }
 func (*UnimplementedTokenServiceServer) GetTokenInfo(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTokenInfo not implemented")
+}
+func (*UnimplementedTokenServiceServer) GetAccountNftInfo(context.Context, *Query) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAccountNftInfo not implemented")
+}
+func (*UnimplementedTokenServiceServer) GetTokenNftInfo(context.Context, *Query) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTokenNftInfo not implemented")
+}
+func (*UnimplementedTokenServiceServer) GetTokenNftInfos(context.Context, *Query) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTokenNftInfos not implemented")
 }
 
 func RegisterTokenServiceServer(s *grpc.Server, srv TokenServiceServer) {
@@ -641,6 +705,60 @@ func _TokenService_GetTokenInfo_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TokenService_GetAccountNftInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TokenServiceServer).GetAccountNftInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.TokenService/GetAccountNftInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TokenServiceServer).GetAccountNftInfo(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TokenService_GetTokenNftInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TokenServiceServer).GetTokenNftInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.TokenService/GetTokenNftInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TokenServiceServer).GetTokenNftInfo(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TokenService_GetTokenNftInfos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TokenServiceServer).GetTokenNftInfos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.TokenService/GetTokenNftInfos",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TokenServiceServer).GetTokenNftInfos(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _TokenService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.TokenService",
 	HandlerType: (*TokenServiceServer)(nil),
@@ -696,6 +814,18 @@ var _TokenService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getTokenInfo",
 			Handler:    _TokenService_GetTokenInfo_Handler,
+		},
+		{
+			MethodName: "getAccountNftInfo",
+			Handler:    _TokenService_GetAccountNftInfo_Handler,
+		},
+		{
+			MethodName: "getTokenNftInfo",
+			Handler:    _TokenService_GetTokenNftInfo_Handler,
+		},
+		{
+			MethodName: "getTokenNftInfos",
+			Handler:    _TokenService_GetTokenNftInfos_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

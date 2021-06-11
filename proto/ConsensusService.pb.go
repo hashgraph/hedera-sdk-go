@@ -145,7 +145,7 @@ type ConsensusServiceClient interface {
 	// Request is [ConsensusDeleteTopicTransactionBody](#proto.ConsensusDeleteTopicTransactionBody)
 	DeleteTopic(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 	// Retrieve the latest state of a topic. This method is unrestricted and allowed on any topic by any payer account.
-	// DeletedAt accounts will not be returned.
+	// Deleted accounts will not be returned.
 	// Request is [ConsensusGetTopicInfoQuery](#proto.ConsensusGetTopicInfoQuery)
 	// Response is [ConsensusGetTopicInfoResponse](#proto.ConsensusGetTopicInfoResponse)
 	GetTopicInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
@@ -233,7 +233,7 @@ type ConsensusServiceServer interface {
 	// Request is [ConsensusDeleteTopicTransactionBody](#proto.ConsensusDeleteTopicTransactionBody)
 	DeleteTopic(context.Context, *Transaction) (*TransactionResponse, error)
 	// Retrieve the latest state of a topic. This method is unrestricted and allowed on any topic by any payer account.
-	// DeletedAt accounts will not be returned.
+	// Deleted accounts will not be returned.
 	// Request is [ConsensusGetTopicInfoQuery](#proto.ConsensusGetTopicInfoQuery)
 	// Response is [ConsensusGetTopicInfoResponse](#proto.ConsensusGetTopicInfoResponse)
 	GetTopicInfo(context.Context, *Query) (*Response, error)
