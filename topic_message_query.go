@@ -2,8 +2,8 @@ package hedera
 
 import (
 	"context"
+	"io"
 	"math"
-	"sync"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
@@ -16,19 +16,17 @@ type TopicMessageQuery struct {
 	errorHandler      func(stat status.Status)
 	completionHandler func()
 	retryHandler      func(err error) bool
-	counter           uint64
 	attempt           uint64
 	maxAttempts       uint64
-	limit             *uint64
 }
 
 func NewTopicMessageQuery() *TopicMessageQuery {
 	return &TopicMessageQuery{
 		pb:                &mirror.ConsensusTopicQuery{},
 		maxAttempts:       maxAttempts,
-		errorHandler:      nil,
+		errorHandler:      defaultErrorHandler,
 		retryHandler:      defaultRetryHandler,
-		completionHandler: nil,
+		completionHandler: defaultCompletionHandler,
 	}
 }
 
@@ -72,16 +70,12 @@ func (query *TopicMessageQuery) GetEndTime() time.Time {
 }
 
 func (query *TopicMessageQuery) SetLimit(limit uint64) *TopicMessageQuery {
-	query.limit = &limit
+	query.pb.Limit = limit
 	return query
 }
 
 func (query *TopicMessageQuery) GetLimit() uint64 {
-	if query.limit != nil {
-		return *query.limit
-	} else {
-		return 0
-	}
+	return query.pb.Limit
 }
 
 func (query *TopicMessageQuery) SetErrorHandler(errorHandler func(stat status.Status)) *TopicMessageQuery {
@@ -102,8 +96,7 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	handle := SubscriptionHandle{}
 
-	messages := sync.Map{}
-	messagesMutex := sync.Mutex{}
+	messages := make(map[string][]*mirror.ConsensusTopicResponse, 0)
 
 	channel, err := client.mirrorNetwork.getNextMirrorNode().getChannel()
 	if err != nil {
@@ -115,75 +108,79 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 		var err error
 
 		for {
-			if query.attempt <= query.maxAttempts && subClient == nil {
-				if query.limit != nil {
-					query.pb.Limit = *query.limit - query.counter
-				}
+			if err != nil {
+				if grpcErr, ok := status.FromError(err); ok {
+					if query.attempt < query.maxAttempts && query.retryHandler(err) {
+						subClient = nil
 
+						delay := math.Min(250.0*math.Pow(2.0, float64(query.attempt)), 8000)
+						time.Sleep(time.Duration(delay) * time.Millisecond)
+						query.attempt += 1
+					} else {
+						query.errorHandler(*grpcErr)
+						break
+					}
+				} else if err == io.EOF {
+					query.completionHandler()
+					break
+				} else {
+					panic(err)
+				}
+			}
+
+			if subClient == nil {
 				ctx, cancel := context.WithCancel(context.TODO())
 				handle.onUnsubscribe = cancel
 
 				subClient, err = (*channel).SubscribeTopic(ctx, query.pb)
 
 				if err != nil {
-					handle.Unsubscribe()
-					callErrorHandlerWithGrpcStatus(err, query.errorHandler)
-					subClient = nil
+					continue
 				}
 			}
 
-			resp, err := subClient.Recv()
+			var resp *mirror.ConsensusTopicResponse
+			resp, err = subClient.Recv()
 
 			if err != nil {
-				if query.attempt <= query.maxAttempts && query.retryHandler(err) {
-					handle.Unsubscribe()
-					subClient = nil
+				continue
+			}
 
-					delay := 250.0 * math.Pow(2.0, float64(query.attempt))
-					time.Sleep(time.Duration(delay) * time.Millisecond)
-					query.attempt += 1
-					continue
-				}
-
-				handle.Unsubscribe()
-				callErrorHandlerWithGrpcStatus(err, query.errorHandler)
-				break
+			query.pb.ConsensusStartTime = resp.ConsensusTimestamp
+			if query.pb.Limit > 0 {
+				query.pb.Limit -= 1
 			}
 
 			if resp.ChunkInfo == nil || (resp.ChunkInfo != nil && resp.ChunkInfo.Total == 1) {
-				query.counter += 1
-
 				onNext(topicMessageOfSingle(resp))
 			} else {
-				messagesMutex.Lock()
 				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
-				messageI, _ := messages.LoadOrStore(txID, make([]*mirror.ConsensusTopicResponse, 0, resp.ChunkInfo.Total))
-
-				message := messageI.([]*mirror.ConsensusTopicResponse)
-				message = append(message, resp)
-
-				messages.Store(txID, message)
-
-				if int32(len(message)) == resp.ChunkInfo.Total {
-					query.counter += 1
-
-					messages.Delete(txID)
-					messagesMutex.Unlock()
-					onNext(topicMessageOfMany(message))
-				} else {
-					messagesMutex.Unlock()
+				message, ok := messages[txID]
+				if !ok {
+					message = make([]*mirror.ConsensusTopicResponse, 0)
 				}
 
-			}
+				message = append(message, resp)
+				messages[txID] = message
 
-			if query.limit != nil && query.counter == *query.limit {
-				query.completionHandler()
-				break
+				if int32(len(message)) == resp.ChunkInfo.Total {
+					delete(messages, txID)
+
+					onNext(topicMessageOfMany(message))
+				}
 			}
 		}
 	}()
 
 	return handle, nil
+}
+
+func defaultErrorHandler(stat status.Status) {
+	println("Failed to subscribe to topic with status", stat.Code().String())
+}
+
+func defaultCompletionHandler() {
+	println("Subscription to topic finished")
 }
 
 func defaultRetryHandler(err error) bool {
