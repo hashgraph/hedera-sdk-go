@@ -1,3 +1,14 @@
+## v2.1.7
+
+### Fixed
+
+ * `TopicMessageQuery.MaxBackoff` was not being used at all
+ * `TopicMessageQuery.Limit` was being incorrectly update with full `TopicMessages` rather than per chunk
+ * `TopicMessageQuery.StartTime` was not being updated each time a message was received
+ * `TopicMessageQuery.CompletionHandler` was be called at incorrect times
+ * Removed the use of locks and `sync.Map` within `TopicMessageQuery` as it is unncessary
+ * Added default logging to `ErrorHandler` and `CompletionHandler`
+
 ## v2.1.6
 
  * Support for `MaxBackoff`, `MaxAttempts`, `RetryHandler`, and `CompletionHandler` in `TopicMessageQuery`
