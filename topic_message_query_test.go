@@ -73,16 +73,18 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	wait := true
+	finished := false
 	start := time.Now()
 
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
+		SetLimit(14).
+		SetCompletionHandler(func() {
+			finished = true
+		}).
 		Subscribe(env.Client, func(message TopicMessage) {
-			if string(message.Contents) == bigContents {
-				wait = false
-			}
+			// Do nothing
 		})
 	assert.NoError(t, err)
 
@@ -97,7 +99,7 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	for {
-		if !wait || uint64(time.Since(start).Seconds()) > 60 {
+		if finished || uint64(time.Since(start).Seconds()) > 60 {
 			break
 		}
 
@@ -113,7 +115,7 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	if wait {
+	if !finished {
 		err = errors.New("Message was not received within 30 seconds")
 	}
 	assert.NoError(t, err)
