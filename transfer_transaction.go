@@ -8,9 +8,9 @@ import (
 
 type TransferTransaction struct {
 	Transaction
-	pb            *proto.CryptoTransferTransactionBody
-	tokenIndexes  map[TokenID]int
-	hbarTransfers map[AccountID]Hbar
+	pb             *proto.CryptoTransferTransactionBody
+	tokenTransfers map[TokenID]map[AccountID]int64
+	hbarTransfers  map[AccountID]Hbar
 }
 
 func NewTransferTransaction() *TransferTransaction {
@@ -21,10 +21,10 @@ func NewTransferTransaction() *TransferTransaction {
 	}
 
 	transaction := TransferTransaction{
-		pb:            pb,
-		Transaction:   newTransaction(),
-		tokenIndexes:  make(map[TokenID]int),
-		hbarTransfers: make(map[AccountID]Hbar),
+		pb:             pb,
+		Transaction:    newTransaction(),
+		tokenTransfers: make(map[TokenID]map[AccountID]int64),
+		hbarTransfers:  make(map[AccountID]Hbar),
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(1))
@@ -33,27 +33,69 @@ func NewTransferTransaction() *TransferTransaction {
 }
 
 func transferTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TransferTransaction {
+	hbarTransfers := make(map[AccountID]Hbar)
+	tokenTransfers := make(map[TokenID]map[AccountID]int64)
+
+	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
+		accountID := accountIDFromProtobuf(aa.AccountID)
+		amount := HbarFromTinybar(aa.Amount)
+
+		if value, ok := hbarTransfers[accountID]; ok {
+			hbarTransfers[accountID] = HbarFromTinybar(amount.AsTinybar() + value.AsTinybar())
+		} else {
+			hbarTransfers[accountID] = amount
+		}
+	}
+
+	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
+		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token)
+
+		var currentTokenTransfers map[AccountID]int64
+
+		if value, ok := tokenTransfers[tokenID]; ok {
+			currentTokenTransfers = value
+		} else {
+			currentTokenTransfers = make(map[AccountID]int64)
+		}
+
+		for _, aa := range tokenTransfersList.GetTransfers() {
+			accountID := accountIDFromProtobuf(aa.AccountID)
+
+			if value, ok := currentTokenTransfers[accountID]; ok {
+				currentTokenTransfers[accountID] = aa.Amount + value
+			} else {
+				currentTokenTransfers[accountID] = aa.Amount
+			}
+		}
+
+		tokenTransfers[tokenID] = currentTokenTransfers
+	}
+
 	return TransferTransaction{
-		Transaction: transaction,
-		pb:          pb.GetCryptoTransfer(),
+		Transaction:    transaction,
+		pb:             pb.GetCryptoTransfer(),
+		hbarTransfers:  hbarTransfers,
+		tokenTransfers: tokenTransfers,
 	}
 }
 
 func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenTransfer {
-	tokenTransferMap := make(map[TokenID][]TokenTransfer, len(transaction.pb.TokenTransfers))
+	transfers := make(map[TokenID][]TokenTransfer)
 
-	if len(transaction.pb.TokenTransfers) == 0 {
-		return tokenTransferMap
-	}
+	for tokenID, tokenTransfers := range transaction.tokenTransfers {
+		tokenTransfersList := make([]TokenTransfer, 1)
 
-	for _, tokenTransfer := range transaction.pb.TokenTransfers {
-		for _, accountAmount := range tokenTransfer.Transfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token)
-			tokenTransferMap[token] = append(tokenTransferMap[token], tokenTransferFromProtobuf(accountAmount))
+		for accountID, amount := range tokenTransfers {
+			tokenTransfersList = append(tokenTransfersList, TokenTransfer{
+				AccountID: accountID,
+				Amount:    amount,
+			})
 		}
+
+		transfers[tokenID] = tokenTransfersList
 	}
 
-	return tokenTransferMap
+	return transfers
 }
 
 func (transaction *TransferTransaction) GetHbarTransfers() map[AccountID]Hbar {
@@ -75,23 +117,23 @@ func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amo
 func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, value int64) *TransferTransaction {
 	transaction.requireNotFrozen()
 
-	accountAmount := proto.AccountAmount{
-		AccountID: accountID.toProtobuf(),
-		Amount:    value,
+	var tokenTransfers map[AccountID]int64
+	var amount int64
+
+	if value, ok := transaction.tokenTransfers[tokenID]; ok {
+		tokenTransfers = value
+	} else {
+		tokenTransfers = make(map[AccountID]int64)
 	}
 
-	if index, ok := transaction.tokenIndexes[tokenID]; ok {
-		transaction.pb.TokenTransfers[index].Transfers = append(
-			transaction.pb.TokenTransfers[index].Transfers,
-			&accountAmount,
-		)
+	if transfer, ok := tokenTransfers[accountID]; ok {
+		amount = transfer + value
 	} else {
-		transaction.tokenIndexes[tokenID] = len(transaction.pb.TokenTransfers)
-		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
-			Token:     tokenID.toProtobuf(),
-			Transfers: []*proto.AccountAmount{&accountAmount},
-		})
+		amount = value
 	}
+
+	tokenTransfers[accountID] = amount
+	transaction.tokenTransfers[tokenID] = tokenTransfers
 
 	return transaction
 }
@@ -109,6 +151,7 @@ func (transaction *TransferTransaction) Schedule() (*ScheduleCreateTransaction, 
 
 func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	transaction.setHbarTransfersOnProtobuf()
+	transaction.setTokenTransfersOnProtobuf()
 
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
@@ -275,6 +318,26 @@ func (transaction *TransferTransaction) setHbarTransfersOnProtobuf() {
 	}
 }
 
+func (transaction *TransferTransaction) setTokenTransfersOnProtobuf() {
+	transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
+
+	for tokenID, tokenTransfers := range transaction.tokenTransfers {
+		transfers := make([]*proto.AccountAmount, 0)
+
+		for accountID, amount := range tokenTransfers {
+			transfers = append(transfers, &proto.AccountAmount{
+				AccountID: accountID.toProtobuf(),
+				Amount:    amount,
+			})
+		}
+
+		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
+			Token:     tokenID.toProtobuf(),
+			Transfers: transfers,
+		})
+	}
+}
+
 func (transaction *TransferTransaction) Freeze() (*TransferTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -285,6 +348,7 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 	}
 
 	transaction.setHbarTransfersOnProtobuf()
+	transaction.setTokenTransfersOnProtobuf()
 
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
