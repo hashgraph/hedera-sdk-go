@@ -150,8 +150,8 @@ func (transaction *TransferTransaction) Schedule() (*ScheduleCreateTransaction, 
 }
 
 func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.setHbarTransfersOnProtobuf()
-	transaction.setTokenTransfersOnProtobuf()
+	transaction.buildHbarTransfers()
+	transaction.buildTokenTransfers()
 
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
@@ -308,7 +308,7 @@ func (transaction *TransferTransaction) onFreeze(
 	return true
 }
 
-func (transaction *TransferTransaction) setHbarTransfersOnProtobuf() {
+func (transaction *TransferTransaction) buildHbarTransfers() {
 	transaction.pb.Transfers.AccountAmounts = make([]*proto.AccountAmount, 0)
 	for accountID, amount := range transaction.hbarTransfers {
 		transaction.pb.Transfers.AccountAmounts = append(transaction.pb.Transfers.AccountAmounts, &proto.AccountAmount{
@@ -318,7 +318,7 @@ func (transaction *TransferTransaction) setHbarTransfersOnProtobuf() {
 	}
 }
 
-func (transaction *TransferTransaction) setTokenTransfersOnProtobuf() {
+func (transaction *TransferTransaction) buildTokenTransfers() {
 	transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
 
 	for tokenID, tokenTransfers := range transaction.tokenTransfers {
@@ -347,8 +347,8 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 		return transaction, nil
 	}
 
-	transaction.setHbarTransfersOnProtobuf()
-	transaction.setTokenTransfersOnProtobuf()
+	transaction.buildHbarTransfers()
+	transaction.buildTokenTransfers()
 
 	transaction.initFee(client)
 	if err := transaction.initTransactionID(client); err != nil {
