@@ -3,6 +3,7 @@ package hedera
 import (
 	"bytes"
 	"crypto/sha512"
+
 	"github.com/pkg/errors"
 
 	"time"
@@ -28,6 +29,9 @@ type Transaction struct {
 	transactions       []*proto.Transaction
 	signedTransactions []*proto.SignedTransaction
 	nodeIDs            []AccountID
+
+	publicKeys         []PublicKey
+	transactionSigners []TransactionSigner
 
 	freezeError error
 }
@@ -62,18 +66,31 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		transactionIDs:       make([]TransactionID, 0),
 		transactions:         list.TransactionList,
 		signedTransactions:   make([]*proto.SignedTransaction, 0),
-		nodeIDs:              make([]AccountID, 0),
+		publicKeys:           make([]PublicKey, 0),
+		transactionSigners:   make([]TransactionSigner, 0),
 	}
 
 	var first *proto.TransactionBody = nil
 
-	for _, transaction := range list.TransactionList {
+	for i, transaction := range list.TransactionList {
 		var signedTransaction proto.SignedTransaction
 		if err := protobuf.Unmarshal(transaction.SignedTransactionBytes, &signedTransaction); err != nil {
 			return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
 		}
 
 		tx.signedTransactions = append(tx.signedTransactions, &signedTransaction)
+
+		if i == 0 {
+			for _, sigPair := range signedTransaction.GetSigMap().GetSigPair() {
+				key, err := PublicKeyFromBytes(sigPair.GetPubKeyPrefix())
+				if err != nil {
+					return Transaction{}, err
+				}
+
+				tx.publicKeys = append(tx.publicKeys, key)
+				tx.transactionSigners = append(tx.transactionSigners, nil)
+			}
+		}
 
 		var body proto.TransactionBody
 		if err := protobuf.Unmarshal(signedTransaction.GetBodyBytes(), &body); err != nil {
@@ -252,6 +269,8 @@ func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []by
 	}
 
 	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
@@ -280,7 +299,7 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 		return transactionHash, errTransactionIsNotFrozen
 	}
 
-	err := transaction.buildTransactions(len(transaction.signedTransactions))
+	err := transaction.buildAllTransactions()
 	if err != nil {
 		return transactionHash, err
 	}
@@ -371,6 +390,14 @@ func transaction_freezeWith(
 	return nil
 }
 
+func (transaction *Transaction) signWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) {
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, signer)
+}
 func (transaction *Transaction) freeze() {
 	for _, nodeAccountID := range transaction.nodeIDs {
 		transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
@@ -393,11 +420,9 @@ func (transaction *Transaction) freeze() {
 func (transaction *Transaction) keyAlreadySigned(
 	pk PublicKey,
 ) bool {
-	if len(transaction.signedTransactions) > 0 {
-		for _, pair := range transaction.signedTransactions[0].SigMap.SigPair {
-			if bytes.HasPrefix(pk.keyData, pair.PubKeyPrefix) {
-				return true
-			}
+	for _, key := range transaction.publicKeys {
+		if key.String() == pk.String() {
+			return true
 		}
 	}
 
@@ -417,7 +442,7 @@ func transaction_shouldRetry(_ request, response response) executionState {
 
 func transaction_makeRequest(request request) protoRequest {
 	index := len(request.transaction.nodeIDs)*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
-	_ = request.transaction.buildTransactions(index + 1)
+	_ = request.transaction.buildTransaction(index)
 
 	return protoRequest{
 		transaction: request.transaction.transactions[index],
@@ -472,7 +497,7 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 		return make([]byte, 0), errTransactionIsNotFrozen
 	}
 
-	err := transaction.buildTransactions(len(transaction.signedTransactions))
+	err := transaction.buildAllTransactions()
 	if err != nil {
 		return make([]byte, 0), err
 	}
@@ -489,17 +514,61 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 
 }
 
-func (transaction *Transaction) buildTransactions(untilIndex int) error {
-	for i := len(transaction.transactions); i < untilIndex; i++ {
-		data, err := protobuf.Marshal(transaction.signedTransactions[i])
-		if err != nil {
-			return errors.Wrap(err, "failed to serialize transactions for building")
+func (transaction *Transaction) signTransaction(index int) {
+	if len(transaction.signedTransactions[index].SigMap.SigPair) != 0 {
+		for i, key := range transaction.publicKeys {
+			if transaction.transactionSigners[i] != nil && bytes.Compare(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.keyData) == 0 {
+				return
+			}
+		}
+	}
+
+	bodyBytes := transaction.signedTransactions[index].GetBodyBytes()
+
+	for i := 0; i < len(transaction.publicKeys); i++ {
+		publicKey := transaction.publicKeys[i]
+		signer := transaction.transactionSigners[i]
+
+		if signer == nil {
+			continue
 		}
 
-		transaction.transactions = append(transaction.transactions, &proto.Transaction{
-			SignedTransactionBytes: data,
-		})
+		transaction.signedTransactions[index].SigMap.SigPair = append(transaction.signedTransactions[index].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signer(bodyBytes)))
 	}
+}
+
+func (transaction *Transaction) buildAllTransactions() error {
+	for i := 0; i < len(transaction.signedTransactions); i++ {
+		err := transaction.buildTransaction(i)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (transaction *Transaction) buildTransaction(index int) error {
+	if len(transaction.transactions) < index {
+		for i := len(transaction.transactions); i < index; i++ {
+			transaction.transactions = append(transaction.transactions, nil)
+		}
+	} else if len(transaction.transactions) > index &&
+		transaction.transactions[index] != nil &&
+		transaction.transactions[index].SignedTransactionBytes != nil {
+		return nil
+	}
+
+	transaction.signTransaction(index)
+
+	data, err := protobuf.Marshal(transaction.signedTransactions[index])
+	if err != nil {
+		return errors.Wrap(err, "failed to serialize transactions for building")
+	}
+
+	transaction.transactions = append(transaction.transactions, &proto.Transaction{
+		SignedTransactionBytes: data,
+	})
 
 	return nil
 }

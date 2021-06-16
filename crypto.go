@@ -414,6 +414,8 @@ func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
 		return false
 	}
 
+	_ = transaction.buildAllTransactions()
+
 	for _, transaction := range transaction.signedTransactions {
 		found := false
 		for _, sigPair := range transaction.SigMap.GetSigPair() {
