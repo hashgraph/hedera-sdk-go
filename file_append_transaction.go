@@ -168,21 +168,10 @@ func (transaction *FileAppendTransaction) SignWith(
 ) *FileAppendTransaction {
 	if !transaction.IsFrozen() {
 		_, _ = transaction.Freeze()
-	} else {
-		transaction.transactions = make([]*proto.Transaction, 0)
 	}
 
-	if transaction.keyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
-
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
-		)
+	if !transaction.keyAlreadySigned(publicKey) {
+		transaction.signWith(publicKey, signer)
 	}
 
 	return transaction
