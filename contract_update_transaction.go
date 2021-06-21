@@ -22,7 +22,10 @@ import (
 // bytecode will be immutable.
 type ContractUpdateTransaction struct {
 	Transaction
-	pb *proto.ContractUpdateTransactionBody
+	pb             *proto.ContractUpdateTransactionBody
+	contractID     ContractID
+	proxyAccountID AccountID
+	bytecodeFileID FileID
 }
 
 // NewContractUpdateTransaction creates a ContractUpdateTransaction transaction which can be
@@ -47,25 +50,25 @@ func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
-func (transaction *ContractUpdateTransaction) SetContractID(contractID ContractID) *ContractUpdateTransaction {
-	transaction.pb.ContractID = contractID.toProtobuf()
+func (transaction *ContractUpdateTransaction) SetContractID(id ContractID) *ContractUpdateTransaction {
+	transaction.contractID = id
 	return transaction
 }
 
 func (transaction *ContractUpdateTransaction) GetContractID() ContractID {
-	return contractIDFromProtobuf(transaction.pb.GetContractID())
+	return transaction.contractID
 }
 
 // SetBytecodeFileID sets the file ID of file containing the smart contract byte code. A copy will be made and held by
 // the contract instance, and have the same expiration time as the instance.
-func (transaction *ContractUpdateTransaction) SetBytecodeFileID(fileID FileID) *ContractUpdateTransaction {
+func (transaction *ContractUpdateTransaction) SetBytecodeFileID(id FileID) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.FileID = fileID.toProtobuf()
+	transaction.bytecodeFileID = id
 	return transaction
 }
 
 func (transaction *ContractUpdateTransaction) GetBytecodeFileID() FileID {
-	return fileIDFromProtobuf(transaction.pb.GetFileID())
+	return transaction.bytecodeFileID
 }
 
 // SetAdminKey sets the key which can be used to arbitrarily modify the state of the instance by signing a
@@ -85,14 +88,14 @@ func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
 // is an invalID account, or is an account that isn't a node, then this contract is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was never set.
-func (transaction *ContractUpdateTransaction) SetProxyAccountID(accountID AccountID) *ContractUpdateTransaction {
+func (transaction *ContractUpdateTransaction) SetProxyAccountID(id AccountID) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ProxyAccountID = accountID.toProtobuf()
+	transaction.proxyAccountID = id
 	return transaction
 }
 
 func (transaction *ContractUpdateTransaction) GetProxyAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetProxyAccountID())
+	return transaction.proxyAccountID
 }
 
 // SetAutoRenewPeriod sets the duration for which the contract instance will automatically charge its account to
@@ -148,6 +151,34 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	return ""
 }
 
+func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
+	err = FileIDValidateNetworkOnIDs(transaction.bytecodeFileID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *ContractUpdateTransaction) build() *ContractUpdateTransaction {
+	if !transaction.contractID.isZero() {
+		transaction.pb.ContractID = transaction.contractID.toProtobuf()
+	}
+
+	if !transaction.proxyAccountID.isZero() {
+		transaction.pb.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	}
+
+	if !transaction.bytecodeFileID.isZero() {
+		transaction.pb.FileID = transaction.bytecodeFileID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -160,6 +191,7 @@ func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ContractUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -325,6 +357,12 @@ func (transaction *ContractUpdateTransaction) FreezeWith(client *Client) (*Contr
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &ContractUpdateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

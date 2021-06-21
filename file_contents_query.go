@@ -7,7 +7,8 @@ import (
 // FileContentsQuery retrieves the contents of a file.
 type FileContentsQuery struct {
 	Query
-	pb *proto.FileGetContentsQuery
+	pb     *proto.FileGetContentsQuery
+	fileID FileID
 }
 
 // NewFileContentsQuery creates a FileContentsQuery query which can be used to construct and execute a
@@ -28,12 +29,30 @@ func NewFileContentsQuery() *FileContentsQuery {
 
 // SetFileID sets the FileID of the file whose contents are requested.
 func (query *FileContentsQuery) SetFileID(id FileID) *FileContentsQuery {
-	query.pb.FileID = id.toProtobuf()
+	query.fileID = id
 	return query
 }
 
 func (query *FileContentsQuery) GetFileID(id FileID) FileID {
-	return fileIDFromProtobuf(query.pb.GetFileID())
+	return query.fileID
+}
+
+func (query *FileContentsQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = FileIDValidateNetworkOnIDs(query.fileID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *FileContentsQuery) build() *FileContentsQuery {
+	if !query.fileID.isZero() {
+		query.pb.FileID = query.fileID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
@@ -49,6 +68,13 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -97,6 +123,13 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return []byte{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -125,7 +158,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return []byte{}, err
 	}

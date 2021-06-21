@@ -16,7 +16,8 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
 	Transaction
-	pb *proto.CryptoCreateTransactionBody
+	pb             *proto.CryptoCreateTransactionBody
+	proxyAccountID AccountID
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
@@ -121,12 +122,12 @@ func (transaction *AccountCreateTransaction) getReceiveRecordThreshold() Hbar {
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
 func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ProxyAccountID = id.toProtobuf()
+	transaction.proxyAccountID = id
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) GetProxyAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetProxyAccountID())
+	return transaction.proxyAccountID
 }
 
 func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *AccountCreateTransaction {
@@ -137,6 +138,18 @@ func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *Accoun
 
 func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 	return transaction.pb.GetMemo()
+}
+
+func (transaction *AccountCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+	return AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
+}
+
+func (transaction *AccountCreateTransaction) build() *AccountCreateTransaction {
+	if !transaction.proxyAccountID.isZero() {
+		transaction.pb.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 // SetReceiverSignatureRequired sets the receiverSigRequired flag. If the receiverSigRequired flag is set to true, then
@@ -165,6 +178,7 @@ func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransact
 }
 
 func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -337,6 +351,11 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &AccountCreateTransaction{}, err
+	}
+	transaction.build()
 
 	if !transaction.onFreeze(transaction.pbBody) {
 		return transaction, nil

@@ -9,7 +9,8 @@ import (
 // A ConsensusTopicDeleteTransaction is for deleting a topic on HCS.
 type TopicDeleteTransaction struct {
 	Transaction
-	pb *proto.ConsensusDeleteTopicTransactionBody
+	pb      *proto.ConsensusDeleteTopicTransactionBody
+	topicID TopicID
 }
 
 // NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction transaction which can be used to construct
@@ -44,6 +45,24 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 	return topicIDFromProtobuf(transaction.pb.GetTopicID())
 }
 
+func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TopicIDValidateNetworkOnIDs(transaction.topicID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TopicDeleteTransaction) build() *TopicDeleteTransaction {
+	if !transaction.topicID.isZero() {
+		transaction.pb.TopicID = transaction.topicID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -56,6 +75,7 @@ func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -215,6 +235,12 @@ func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDel
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TopicDeleteTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

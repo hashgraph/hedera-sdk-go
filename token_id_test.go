@@ -14,5 +14,5 @@ func TestTokenIDFromString(t *testing.T) {
 
 	gotTokID, err := TokenIDFromString(tokID.String())
 	assert.NoError(t, err)
-	assert.Equal(t, tokID, gotTokID)
+	assert.Equal(t, tokID.Token, gotTokID.Token)
 }

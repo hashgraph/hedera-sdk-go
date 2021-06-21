@@ -8,7 +8,8 @@ import (
 
 type ScheduleDeleteTransaction struct {
 	Transaction
-	pb *proto.ScheduleDeleteTransactionBody
+	pb         *proto.ScheduleDeleteTransactionBody
+	scheduleID ScheduleID
 }
 
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
@@ -30,14 +31,32 @@ func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	}
 }
 
-func (transaction *ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleDeleteTransaction {
+func (transaction *ScheduleDeleteTransaction) SetScheduleID(id ScheduleID) *ScheduleDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ScheduleID = scheduleID.toProtobuf()
+	transaction.scheduleID = id
 	return transaction
 }
 
 func (transaction *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
-	return scheduleIDFromProtobuf(transaction.pb.GetScheduleID())
+	return transaction.scheduleID
+}
+
+func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ScheduleIDValidateNetworkOnIDs(transaction.scheduleID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *ScheduleDeleteTransaction) build() *ScheduleDeleteTransaction {
+	if !transaction.scheduleID.isZero() {
+		transaction.pb.ScheduleID = transaction.scheduleID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -52,6 +71,7 @@ func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ScheduleDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -211,6 +231,12 @@ func (transaction *ScheduleDeleteTransaction) FreezeWith(client *Client) (*Sched
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &ScheduleDeleteTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

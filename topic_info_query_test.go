@@ -3,17 +3,8 @@ package hedera
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
-
-func TestSerializeTopicInfoQuery(t *testing.T) {
-	query := NewTopicInfoQuery().
-		SetTopicID(TopicID{Topic: 3}).
-		Query
-
-	assert.Equal(t, `consensusGetTopicInfo:{header:{}topicID:{topicNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
-}
 
 func TestTopicInfoQuery_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)

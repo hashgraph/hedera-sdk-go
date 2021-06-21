@@ -7,7 +7,8 @@ import (
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
 type ContractBytecodeQuery struct {
 	Query
-	pb *proto.ContractGetBytecodeQuery
+	pb         *proto.ContractGetBytecodeQuery
+	contractID ContractID
 }
 
 // NewContractBytecodeQuery creates a ContractBytecodeQuery query which can be used to construct and execute a
@@ -28,12 +29,30 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 
 // SetContractID sets the contract for which the bytecode is requested
 func (query *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
-	query.pb.ContractID = id.toProtobuf()
+	query.contractID = id
 	return query
 }
 
 func (query *ContractBytecodeQuery) GetContractID() ContractID {
-	return contractIDFromProtobuf(query.pb.ContractID)
+	return query.contractID
+}
+
+func (query *ContractBytecodeQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *ContractBytecodeQuery) build() *ContractBytecodeQuery {
+	if !query.contractID.isZero() {
+		query.pb.ContractID = query.contractID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
@@ -49,6 +68,13 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -97,6 +123,13 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return []byte{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -125,7 +158,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return []byte{}, err
 	}

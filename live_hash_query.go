@@ -6,7 +6,8 @@ import (
 
 type LiveHashQuery struct {
 	Query
-	pb *proto.CryptoGetLiveHashQuery
+	pb        *proto.CryptoGetLiveHashQuery
+	accountID AccountID
 }
 
 func NewLiveHashQuery() *LiveHashQuery {
@@ -41,6 +42,24 @@ func (query *LiveHashQuery) GetGetHash() []byte {
 	return query.pb.Hash
 }
 
+func (query *LiveHashQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *LiveHashQuery) build() *LiveHashQuery {
+	if !query.accountID.isZero() {
+		query.pb.AccountID = query.accountID.toProtobuf()
+	}
+
+	return query
+}
+
 func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -54,6 +73,13 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -102,6 +128,13 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return LiveHash{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -130,7 +163,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return LiveHash{}, err
 	}

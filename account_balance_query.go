@@ -8,7 +8,9 @@ import (
 // and faster reply than AccountInfoQuery, which returns the balance plus additional information.
 type AccountBalanceQuery struct {
 	Query
-	pb *proto.CryptoGetAccountBalanceQuery
+	pb         *proto.CryptoGetAccountBalanceQuery
+	accountID  AccountID
+	contractID ContractID
 }
 
 // NewAccountBalanceQuery creates an AccountBalanceQuery query which can be used to construct and execute
@@ -34,24 +36,13 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
 func (query *AccountBalanceQuery) SetAccountID(id AccountID) *AccountBalanceQuery {
-	query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
-		AccountID: id.toProtobuf(),
-	}
+	query.accountID = id
 
 	return query
 }
 
 func (query *AccountBalanceQuery) GetAccountID() AccountID {
-	if query.pb.BalanceSource != nil {
-		return AccountID{}
-	} else {
-		switch id := query.pb.BalanceSource.(type) {
-		case *proto.CryptoGetAccountBalanceQuery_AccountID:
-			return accountIDFromProtobuf(id.AccountID)
-		default:
-			return AccountID{}
-		}
-	}
+	return query.accountID
 }
 
 // SetContractID sets the ContractID for which you wish to query the balance.
@@ -59,24 +50,40 @@ func (query *AccountBalanceQuery) GetAccountID() AccountID {
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
 func (query *AccountBalanceQuery) SetContractID(id ContractID) *AccountBalanceQuery {
-	query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
-		ContractID: id.toProtobuf(),
-	}
+	query.contractID = id
 
 	return query
 }
 
 func (query *AccountBalanceQuery) GetContractID() ContractID {
-	if query.pb.BalanceSource != nil {
-		return ContractID{}
-	} else {
-		switch id := query.pb.BalanceSource.(type) {
-		case *proto.CryptoGetAccountBalanceQuery_ContractID:
-			return contractIDFromProtobuf(id.ContractID)
-		default:
-			return ContractID{}
+	return query.contractID
+}
+
+func (query *AccountBalanceQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *AccountBalanceQuery) build() *AccountBalanceQuery {
+	if !query.accountID.isZero() {
+		query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
+			AccountID: query.accountID.toProtobuf(),
 		}
 	}
+
+	if !query.contractID.isZero() {
+		query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
+			ContractID: query.contractID.toProtobuf(),
+		}
+	}
+
+	return query
 }
 
 func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
@@ -92,6 +99,13 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -139,6 +153,13 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
+
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return AccountBalance{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,

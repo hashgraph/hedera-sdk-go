@@ -108,7 +108,7 @@ func TestTransactionGetHash(t *testing.T) {
 }
 
 func TestTransactionFromBytes(t *testing.T) {
-	id := TransactionIDGenerate(AccountID{0, 0, 542348})
+	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil, nil})
 
 	TransactionBody := proto.TransactionBody{
 		TransactionID: &proto.TransactionID{
@@ -227,19 +227,19 @@ func TestTransactionFromBytes(t *testing.T) {
 
 	switch tx := transaction.(type) {
 	case TransferTransaction:
-		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348}].AsTinybar(), int64(-10))
-		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439}].AsTinybar(), int64(10))
+		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348, nil, nil}].AsTinybar(), int64(-10))
+		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil, nil}].AsTinybar(), int64(10))
 
 		signatures, err := tx.GetSignatures()
 		assert.NoError(t, err)
-		assert.Contains(t, signatures[AccountID{0, 0, 3}], &publicKey1)
-		assert.Contains(t, signatures[AccountID{0, 0, 3}], &publicKey2)
-		assert.Contains(t, signatures[AccountID{0, 0, 3}], &publicKey3)
-		assert.Contains(t, signatures[AccountID{0, 0, 3}], &publicKey4)
-		assert.Contains(t, signatures[AccountID{0, 0, 3}], &publicKey5)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey1)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey2)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey3)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey4)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey5)
 
 		assert.Equal(t, len(tx.GetNodeAccountIDs()), 1)
-		assert.True(t, tx.GetNodeAccountIDs()[0].equals(AccountID{0, 0, 3}))
+		assert.True(t, tx.GetNodeAccountIDs()[0].equals(AccountID{0, 0, 3, nil, nil}))
 
 		resp, err := tx.Execute(env.Client)
 		assert.NoError(t, err)

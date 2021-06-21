@@ -10,7 +10,9 @@ import (
 // *TopicUpdateTransaction updates all fields on a Topic that are set in the transaction.
 type TopicUpdateTransaction struct {
 	Transaction
-	pb *proto.ConsensusUpdateTopicTransactionBody
+	pb                 *proto.ConsensusUpdateTopicTransactionBody
+	topicID            TopicID
+	autoRenewAccountID AccountID
 }
 
 // NewTopicUpdateTransaction creates a *TopicUpdateTransaction transaction which can be
@@ -37,14 +39,14 @@ func topicUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 }
 
 // SetTopicID sets the topic to be updated.
-func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpdateTransaction {
+func (transaction *TopicUpdateTransaction) SetTopicID(id TopicID) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.TopicID = topicID.toProtobuf()
+	transaction.topicID = id
 	return transaction
 }
 
 func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
-	return topicIDFromProtobuf(transaction.pb.GetTopicID())
+	return transaction.topicID
 }
 
 // SetAdminKey sets the key required to update/delete the topic. If unset, the key will not be changed.
@@ -113,14 +115,14 @@ func (transaction *TopicUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 // topic. The topic lifetime will be extended up to a maximum of the autoRenewPeriod or however long the topic can be
 // extended using all funds on the account (whichever is the smaller duration/amount). If specified as the default value
 // (0.0.0), the autoRenewAccount will be removed.
-func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(accountID AccountID) *TopicUpdateTransaction {
+func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(id AccountID) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewAccount = accountID.toProtobuf()
+	transaction.autoRenewAccountID = id
 	return transaction
 }
 
 func (transaction *TopicUpdateTransaction) GetAutoRenewAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
+	return transaction.autoRenewAccountID
 }
 
 // ClearTopicMemo explicitly clears any memo on the topic by sending an empty string as the memo
@@ -145,6 +147,29 @@ func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdat
 	return transaction
 }
 
+func (transaction *TopicUpdateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TopicIDValidateNetworkOnIDs(transaction.topicID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TopicUpdateTransaction) build() *TopicUpdateTransaction {
+	if !transaction.topicID.isZero() {
+		transaction.pb.TopicID = transaction.topicID.toProtobuf()
+	}
+
+	if !transaction.autoRenewAccountID.isZero() {
+		transaction.pb.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -157,6 +182,7 @@ func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TopicUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -322,6 +348,12 @@ func (transaction *TopicUpdateTransaction) FreezeWith(client *Client) (*TopicUpd
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TopicUpdateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

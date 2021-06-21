@@ -8,16 +8,34 @@ import (
 
 // TopicID is a unique identifier for a topic (used by the  service)
 type TopicID struct {
-	Shard uint64
-	Realm uint64
-	Topic uint64
+	Shard    uint64
+	Realm    uint64
+	Topic    uint64
+	Checksum *string
+	Network  *NetworkName
 }
 
 // TopicIDFromString constructs a TopicID from a string formatted as `Shard.Realm.Topic` (for example "0.0.3")
 func TopicIDFromString(data string) (TopicID, error) {
-	checksum, err := checksumParseAddress("", data)
-	if err != nil {
-		return TopicID{}, err
+	var checksum parseAddressResult
+	var err error
+
+	var networkNames = []NetworkName{
+		Mainnet,
+		Testnet,
+		Previewnet,
+	}
+
+	var network NetworkName
+	for _, name := range networkNames {
+		checksum, err = checksumParseAddress(name.Network(), data)
+		if err != nil {
+			return TopicID{}, err
+		}
+		if checksum.status != 1 {
+			network = name
+			break
+		}
 	}
 
 	err = checksumVerify(checksum.status)
@@ -25,11 +43,27 @@ func TopicIDFromString(data string) (TopicID, error) {
 		return TopicID{}, err
 	}
 
+	tempChecksum := checksum.correctChecksum
+
 	return TopicID{
-		Shard: uint64(checksum.num1),
-		Realm: uint64(checksum.num2),
-		Topic: uint64(checksum.num3),
+		Shard:    uint64(checksum.num1),
+		Realm:    uint64(checksum.num2),
+		Topic:    uint64(checksum.num3),
+		Checksum: &tempChecksum,
+		Network:  &network,
 	}, nil
+}
+
+func TopicIDValidateNetworkOnIDs(id TopicID, other AccountID) error {
+	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+		return errNetworkMismatch
+	}
+
+	return nil
+}
+
+func (id TopicID) isZero() bool {
+	return id.Shard == 0 && id.Realm == 0 && id.Topic == 0
 }
 
 // String returns the string representation of a TopicID in `Shard.Realm.Topic` (for example "0.0.3")

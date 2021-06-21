@@ -6,7 +6,8 @@ import (
 
 type TokenInfoQuery struct {
 	Query
-	pb *proto.TokenGetInfoQuery
+	pb      *proto.TokenGetInfoQuery
+	tokenID TokenID
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
@@ -27,12 +28,30 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
 func (query *TokenInfoQuery) SetTokenID(id TokenID) *TokenInfoQuery {
-	query.pb.Token = id.toProtobuf()
+	query.tokenID = id
 	return query
 }
 
 func (query *TokenInfoQuery) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(query.pb.Token)
+	return query.tokenID
+}
+
+func (query *TokenInfoQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(query.tokenID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *TokenInfoQuery) build() *TokenInfoQuery {
+	if !query.tokenID.isZero() {
+		query.pb.Token = query.tokenID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -48,6 +67,13 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -101,6 +127,13 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return TokenInfo{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -129,7 +162,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return TokenInfo{}, err
 	}

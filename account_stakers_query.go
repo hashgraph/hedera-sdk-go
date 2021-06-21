@@ -8,7 +8,8 @@ import (
 // currently staked will be given. This is not yet implemented, but will be in a future version of the API.
 type AccountStakersQuery struct {
 	Query
-	pb *proto.CryptoGetStakersQuery
+	pb        *proto.CryptoGetStakersQuery
+	accountID AccountID
 }
 
 // NewAccountStakersQuery creates an AccountStakersQuery query which can be used to construct and execute
@@ -32,16 +33,30 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 
 // SetAccountID sets the Account ID for which the stakers should be retrieved
 func (query *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQuery {
-	query.pb.AccountID = id.toProtobuf()
+	query.accountID = id
 	return query
 }
 
 func (query *AccountStakersQuery) GetAccountID() AccountID {
-	if query.pb.AccountID != nil {
-		return AccountID{}
-	} else {
-		return accountIDFromProtobuf(query.pb.AccountID)
+	return query.accountID
+}
+
+func (query *AccountStakersQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	if err != nil {
+		return err
 	}
+
+	return nil
+}
+
+func (query *AccountStakersQuery) build() *AccountStakersQuery {
+	if !query.accountID.isZero() {
+		query.pb.AccountID = query.accountID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
@@ -57,6 +72,13 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -105,6 +127,13 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return []Transfer{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -133,7 +162,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return []Transfer{}, err
 	}

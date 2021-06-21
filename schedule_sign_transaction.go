@@ -9,7 +9,8 @@ import (
 
 type ScheduleSignTransaction struct {
 	Transaction
-	pb *proto.ScheduleSignTransactionBody
+	pb         *proto.ScheduleSignTransactionBody
+	scheduleID ScheduleID
 }
 
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
@@ -34,13 +35,31 @@ func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 
 func (transaction *ScheduleSignTransaction) SetScheduleID(id ScheduleID) *ScheduleSignTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ScheduleID = id.toProtobuf()
+	transaction.scheduleID = id
 
 	return transaction
 }
 
 func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
-	return scheduleIDFromProtobuf(transaction.pb.ScheduleID)
+	return transaction.scheduleID
+}
+
+func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ScheduleIDValidateNetworkOnIDs(transaction.scheduleID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *ScheduleSignTransaction) build() *ScheduleSignTransaction {
+	if !transaction.scheduleID.isZero() {
+		transaction.pb.ScheduleID = transaction.scheduleID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -194,6 +213,12 @@ func (transaction *ScheduleSignTransaction) FreezeWith(client *Client) (*Schedul
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &ScheduleSignTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

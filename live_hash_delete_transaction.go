@@ -9,7 +9,8 @@ import (
 
 type LiveHashDeleteTransaction struct {
 	Transaction
-	pb *proto.CryptoDeleteLiveHashTransactionBody
+	pb        *proto.CryptoDeleteLiveHashTransactionBody
+	accountID AccountID
 }
 
 func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
@@ -41,14 +42,32 @@ func (transaction *LiveHashDeleteTransaction) GetHash() []byte {
 	return transaction.pb.GetLiveHashToDelete()
 }
 
-func (transaction *LiveHashDeleteTransaction) SetAccountID(accountID AccountID) *LiveHashDeleteTransaction {
+func (transaction *LiveHashDeleteTransaction) SetAccountID(id AccountID) *LiveHashDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AccountOfLiveHash = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAccountOfLiveHash())
+	return transaction.accountID
+}
+
+func (transaction *LiveHashDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *LiveHashDeleteTransaction) build() *LiveHashDeleteTransaction {
+	if !transaction.accountID.isZero() {
+		transaction.pb.AccountOfLiveHash = transaction.accountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -203,6 +222,12 @@ func (transaction *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveH
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &LiveHashDeleteTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

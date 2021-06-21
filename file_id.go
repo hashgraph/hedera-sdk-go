@@ -3,15 +3,16 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // A FileID is the ID for a file on the network.
 type FileID struct {
-	Shard uint64
-	Realm uint64
-	File  uint64
+	Shard    uint64
+	Realm    uint64
+	File     uint64
+	Checksum *string
+	Network  *NetworkName
 }
 
 // FileIDForAddressBook returns the public node address book for the current network.
@@ -32,9 +33,25 @@ func FileIDForExchangeRate() FileID {
 // FileIDFromString returns a FileID parsed from the given string.
 // A malformatted string will cause this to return an error instead.
 func FileIDFromString(data string) (FileID, error) {
-	checksum, err := checksumParseAddress("", data)
-	if err != nil {
-		return FileID{}, err
+	var checksum parseAddressResult
+	var err error
+
+	var networkNames = []NetworkName{
+		Mainnet,
+		Testnet,
+		Previewnet,
+	}
+
+	var network NetworkName
+	for _, name := range networkNames {
+		checksum, err = checksumParseAddress(name.Network(), data)
+		if err != nil {
+			return FileID{}, err
+		}
+		if checksum.status != 1 {
+			network = name
+			break
+		}
 	}
 
 	err = checksumVerify(checksum.status)
@@ -42,11 +59,22 @@ func FileIDFromString(data string) (FileID, error) {
 		return FileID{}, err
 	}
 
+	tempChecksum := checksum.correctChecksum
 	return FileID{
-		Shard: uint64(checksum.num1),
-		Realm: uint64(checksum.num2),
-		File:  uint64(checksum.num3),
+		Shard:    uint64(checksum.num1),
+		Realm:    uint64(checksum.num2),
+		File:     uint64(checksum.num3),
+		Checksum: &tempChecksum,
+		Network:  &network,
 	}, nil
+}
+
+func FileIDValidateNetworkOnIDs(id FileID, other AccountID) error {
+	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+		return errNetworkMismatch
+	}
+
+	return nil
 }
 
 func FileIDFromSolidityAddress(s string) (FileID, error) {
@@ -60,6 +88,10 @@ func FileIDFromSolidityAddress(s string) (FileID, error) {
 		Realm: realm,
 		File:  file,
 	}, nil
+}
+
+func (id FileID) isZero() bool {
+	return id.Shard == 0 && id.Realm == 0 && id.File == 0
 }
 
 func (id FileID) String() string {

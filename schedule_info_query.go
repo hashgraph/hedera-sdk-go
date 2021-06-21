@@ -6,7 +6,8 @@ import (
 
 type ScheduleInfoQuery struct {
 	Query
-	pb *proto.ScheduleGetInfoQuery
+	pb         *proto.ScheduleGetInfoQuery
+	scheduleID ScheduleID
 }
 
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
@@ -24,12 +25,30 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 }
 
 func (query *ScheduleInfoQuery) SetScheduleID(id ScheduleID) *ScheduleInfoQuery {
-	query.pb.ScheduleID = id.toProtobuf()
+	query.scheduleID = id
 	return query
 }
 
 func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
-	return scheduleIDFromProtobuf(query.pb.GetScheduleID())
+	return query.scheduleID
+}
+
+func (query *ScheduleInfoQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ScheduleIDValidateNetworkOnIDs(query.scheduleID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *ScheduleInfoQuery) build() *ScheduleInfoQuery {
+	if !query.scheduleID.isZero() {
+		query.pb.ScheduleID = query.scheduleID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -45,6 +64,13 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -97,6 +123,13 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return ScheduleInfo{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -121,7 +154,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}

@@ -25,7 +25,9 @@ import (
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
 	Transaction
-	pb *proto.TokenWipeAccountTransactionBody
+	pb        *proto.TokenWipeAccountTransactionBody
+	tokenID   TokenID
+	accountID AccountID
 }
 
 func NewTokenWipeTransaction() *TokenWipeTransaction {
@@ -49,25 +51,25 @@ func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 
 // The token for which the account will be wiped. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
-func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeTransaction {
+func (transaction *TokenWipeTransaction) SetTokenID(id TokenID) *TokenWipeTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Token = tokenID.toProtobuf()
+	transaction.tokenID = id
 	return transaction
 }
 
 func (transaction *TokenWipeTransaction) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(transaction.pb.GetToken())
+	return transaction.tokenID
 }
 
 // The account to be wiped
-func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *TokenWipeTransaction {
+func (transaction *TokenWipeTransaction) SetAccountID(id AccountID) *TokenWipeTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Account = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *TokenWipeTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAccount())
+	return transaction.accountID
 }
 
 // The amount of tokens to wipe from the specified account. Amount must be a positive non-zero
@@ -83,6 +85,29 @@ func (transaction *TokenWipeTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
+func (transaction *TokenWipeTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenWipeTransaction) build() *TokenWipeTransaction {
+	if !transaction.tokenID.isZero() {
+		transaction.pb.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if !transaction.accountID.isZero() {
+		transaction.pb.Account = transaction.accountID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -95,6 +120,7 @@ func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction,
 }
 
 func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -252,6 +278,12 @@ func (transaction *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeT
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenWipeTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

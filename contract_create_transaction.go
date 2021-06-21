@@ -8,7 +8,9 @@ import (
 
 type ContractCreateTransaction struct {
 	Transaction
-	pb *proto.ContractCreateTransactionBody
+	pb             *proto.ContractCreateTransactionBody
+	byteCodeFileID FileID
+	proxyAccountID AccountID
 }
 
 func NewContractCreateTransaction() *ContractCreateTransaction {
@@ -34,12 +36,12 @@ func contractCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 
 func (transaction *ContractCreateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.FileID = bytecodeFileID.toProtobuf()
+	transaction.byteCodeFileID = bytecodeFileID
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
-	return fileIDFromProtobuf(transaction.pb.FileID)
+	return transaction.byteCodeFileID
 }
 
 /**
@@ -102,14 +104,14 @@ func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration
 // is an invalID account, or is an account that isn't a node, then this account is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
-func (transaction *ContractCreateTransaction) SetProxyAccountID(ID AccountID) *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) SetProxyAccountID(id AccountID) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ProxyAccountID = ID.toProtobuf()
+	transaction.proxyAccountID = id
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.ProxyAccountID)
+	return transaction.proxyAccountID
 }
 
 //Sets the constructor parameters
@@ -141,6 +143,29 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 	return transaction.pb.GetMemo()
 }
 
+func (transaction *ContractCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = FileIDValidateNetworkOnIDs(transaction.byteCodeFileID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *ContractCreateTransaction) build() *ContractCreateTransaction {
+	if !transaction.byteCodeFileID.isZero() {
+		transaction.pb.FileID = transaction.byteCodeFileID.toProtobuf()
+	}
+
+	if !transaction.proxyAccountID.isZero() {
+		transaction.pb.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -153,6 +178,7 @@ func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ContractCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -322,6 +348,12 @@ func (transaction *ContractCreateTransaction) FreezeWith(client *Client) (*Contr
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &ContractCreateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

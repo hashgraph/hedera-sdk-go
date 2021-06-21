@@ -3,17 +3,8 @@ package hedera
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
-
-func TestSerializeAccountInfoQuery(t *testing.T) {
-	query := NewAccountInfoQuery().
-		SetAccountID(AccountID{Account: 3}).
-		Query
-
-	assert.Equal(t, `cryptoGetInfo:{header:{}accountID:{accountNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
-}
 
 func TestAccountInfoQuery_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)

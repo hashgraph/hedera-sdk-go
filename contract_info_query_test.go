@@ -3,17 +3,8 @@ package hedera
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
-
-func TestSerializeContractInfoQuery(t *testing.T) {
-	query := NewContractInfoQuery().
-		SetContractID(ContractID{Contract: 3}).
-		Query
-
-	assert.Equal(t, `contractGetInfo:{header:{}contractID:{contractNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
-}
 
 func TestContractInfoQuery_Execute(t *testing.T) {
 	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract

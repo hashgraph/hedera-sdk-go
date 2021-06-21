@@ -87,8 +87,9 @@ func checkChecksum(ledgerID string, address string) string {
 	sh := 0
 	checksum := 0
 	n := len(address)
-	m := 26 * 26 * 26
-	m2 := 26 * 26 * 26 * 26 * 26
+	p3 := 26 * 26 * 26
+	p5 := 26 * 26 * 26 * 26 * 26
+	m := 1000003
 	asciiA := []rune("a")[0]
 	w := 31
 
@@ -98,6 +99,11 @@ func checkChecksum(ledgerID string, address string) string {
 	for i := 0; i < len(id); i += 2 {
 		processed, _ := strconv.ParseInt(id[i:i+2], 16, 64)
 		h = append(h, processed)
+		if i+3 == len(id) {
+			processed, _ = strconv.ParseInt(id[i:len(id)-1], 16, 64)
+			h = append(h, processed)
+			break
+		}
 	}
 
 	for _, j := range address {
@@ -110,7 +116,7 @@ func checkChecksum(ledgerID string, address string) string {
 	}
 
 	for i := 0; i < len(digits); i++ {
-		s = (w*s + digits[i]) % m
+		s = (w*s + digits[i]) % p3
 		if i%2 == 0 {
 			s0 = (s0 + digits[i]) % 11
 		} else {
@@ -119,10 +125,11 @@ func checkChecksum(ledgerID string, address string) string {
 	}
 
 	for i := 0; i < len(h); i++ {
-		sh = (w*sh + int(h[i])) % m2
+		sh = (w*sh + int(h[i])) % p5
 	}
 
-	checksum = ((((n%5)*11+s0)*11+s1)*m + s + sh) % m2
+	checksum = ((((n%5)*11+s0)*11+s1)*p3 + s + sh) % p5
+	checksum = (checksum * m) % p5
 
 	for i := 0; i < 5; i++ {
 		answer = string(asciiA+rune(checksum%26)) + answer

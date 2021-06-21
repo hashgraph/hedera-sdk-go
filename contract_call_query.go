@@ -14,7 +14,8 @@ import (
 // purely local to a single  node.
 type ContractCallQuery struct {
 	Query
-	pb *proto.ContractCallLocalQuery
+	pb         *proto.ContractCallLocalQuery
+	contractID ContractID
 }
 
 // NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
@@ -81,6 +82,24 @@ func (query *ContractCallQuery) GetFunctionParameters() []byte {
 	return query.pb.FunctionParameters
 }
 
+func (query *ContractCallQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *ContractCallQuery) build() *ContractCallQuery {
+	if !query.contractID.isZero() {
+		query.pb.ContractID = query.contractID.toProtobuf()
+	}
+
+	return query
+}
+
 func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -94,6 +113,12 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -142,6 +167,12 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return ContractFunctionResult{}, err
+	}
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -170,7 +201,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}

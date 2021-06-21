@@ -114,7 +114,7 @@ func newMockTransaction() (*TransferTransaction, error) {
 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
 		SetTransactionID(testTransactionID).
-		SetNodeAccountIDs([]AccountID{AccountID{0, 0, 4}}).
+		SetNodeAccountIDs([]AccountID{AccountID{0, 0, 4, nil, nil}}).
 		FreezeWith(client)
 	if err != nil {
 		return &TransferTransaction{}, err

@@ -15,7 +15,9 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountDeleteTransaction struct {
 	Transaction
-	pb *proto.CryptoDeleteTransactionBody
+	pb                *proto.CryptoDeleteTransactionBody
+	transferAccountID AccountID
+	deleteAccountID   AccountID
 }
 
 func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
@@ -41,23 +43,46 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 // SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
 func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.DeleteAccountID = accountID.toProtobuf()
+	transaction.deleteAccountID = accountID
 	return transaction
 }
 
 func (transaction *AccountDeleteTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetDeleteAccountID())
+	return transaction.deleteAccountID
 }
 
 // SetTransferAccountID sets the AccountID which will receive all remaining hbars.
 func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.TransferAccountID = transferAccountID.toProtobuf()
+	transaction.transferAccountID = transferAccountID
 	return transaction
 }
 
 func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccountID AccountID) AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetTransferAccountID())
+	return transaction.transferAccountID
+}
+
+func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.deleteAccountID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.transferAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *AccountDeleteTransaction) build() *AccountDeleteTransaction {
+	if !transaction.transferAccountID.isZero() {
+		transaction.pb.TransferAccountID = transaction.transferAccountID.toProtobuf()
+	}
+
+	if !transaction.deleteAccountID.isZero() {
+		transaction.pb.DeleteAccountID = transaction.deleteAccountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -72,6 +97,7 @@ func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransact
 }
 
 func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -236,6 +262,11 @@ func (transaction *AccountDeleteTransaction) FreezeWith(client *Client) (*Accoun
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &AccountDeleteTransaction{}, err
+	}
+	transaction.build()
 
 	if !transaction.onFreeze(transaction.pbBody) {
 		return transaction, nil

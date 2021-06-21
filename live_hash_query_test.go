@@ -4,18 +4,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 	"time"
 )
-
-func TestSerializeLiveHashQuery(t *testing.T) {
-	query := NewLiveHashQuery().
-		SetAccountID(AccountID{Account: 3}).
-		Query
-
-	assert.Equal(t, `cryptoGetLiveHash:{header:{}accountID:{accountNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
-}
 
 func TestLiveHashQuery_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
