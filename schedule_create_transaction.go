@@ -9,7 +9,8 @@ import (
 
 type ScheduleCreateTransaction struct {
 	Transaction
-	pb *proto.ScheduleCreateTransactionBody
+	pb             *proto.ScheduleCreateTransactionBody
+	payerAccountID AccountID
 }
 
 func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
@@ -34,13 +35,13 @@ func scheduleCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 
 func (transaction *ScheduleCreateTransaction) SetPayerAccountID(id AccountID) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.PayerAccountID = id.toProtobuf()
+	transaction.payerAccountID = id
 
 	return transaction
 }
 
 func (transaction *ScheduleCreateTransaction) GetPayerAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.PayerAccountID)
+	return transaction.payerAccountID
 }
 
 func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCreateTransaction {
@@ -86,6 +87,24 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 
 	transaction.pb.ScheduledTransactionBody = scheduled
 	return transaction, nil
+}
+
+func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.payerAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *ScheduleCreateTransaction) build() *ScheduleCreateTransaction {
+	if !transaction.payerAccountID.isZero() {
+		transaction.pb.PayerAccountID = transaction.payerAccountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -240,6 +259,12 @@ func (transaction *ScheduleCreateTransaction) FreezeWith(client *Client) (*Sched
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &ScheduleCreateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

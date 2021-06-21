@@ -6,7 +6,8 @@ import (
 
 type AccountInfoQuery struct {
 	Query
-	pb *proto.CryptoGetInfoQuery
+	pb        *proto.CryptoGetInfoQuery
+	accountID AccountID
 }
 
 func NewAccountInfoQuery() *AccountInfoQuery {
@@ -21,6 +22,34 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 		Query: query,
 		pb:    &pb,
 	}
+}
+
+// SetAccountID sets the AccountID for this AccountInfoQuery.
+func (query *AccountInfoQuery) SetAccountID(id AccountID) *AccountInfoQuery {
+	query.accountID = id
+	return query
+}
+
+func (query *AccountInfoQuery) GetAccountID() AccountID {
+	return query.accountID
+}
+
+func (query *AccountInfoQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *AccountInfoQuery) build() *AccountInfoQuery {
+	if !query.accountID.isZero() {
+		query.pb.AccountID = query.accountID.toProtobuf()
+	}
+
+	return query
 }
 
 func accountInfoQuery_shouldRetry(_ request, response response) executionState {
@@ -39,12 +68,6 @@ func accountInfoQuery_getMethod(_ request, channel *channel) method {
 	}
 }
 
-// SetAccountID sets the AccountID for this AccountInfoQuery.
-func (query *AccountInfoQuery) SetAccountID(accountID AccountID) *AccountInfoQuery {
-	query.pb.AccountID = accountID.toProtobuf()
-	return query
-}
-
 func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -58,6 +81,13 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -82,14 +112,6 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return HbarFromTinybar(25), nil
 	} else {
 		return HbarFromTinybar(cost), nil
-	}
-}
-
-func (query *AccountInfoQuery) GetAccountID() AccountID {
-	if query.pb.AccountID != nil {
-		return AccountID{}
-	} else {
-		return accountIDFromProtobuf(query.pb.AccountID)
 	}
 }
 
@@ -125,6 +147,13 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return AccountInfo{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -153,7 +182,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return AccountInfo{}, err
 	}

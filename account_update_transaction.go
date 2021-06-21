@@ -9,7 +9,9 @@ import (
 
 type AccountUpdateTransaction struct {
 	Transaction
-	pb *proto.CryptoUpdateTransactionBody
+	pb             *proto.CryptoUpdateTransactionBody
+	accountID      AccountID
+	proxyAccountID AccountID
 }
 
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
@@ -43,14 +45,14 @@ func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
 }
 
 //Sets the account ID which is being updated in this transaction.
-func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetAccountID(id AccountID) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AccountIDToUpdate = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAccountIDToUpdate())
+	return transaction.accountID
 }
 
 func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
@@ -66,12 +68,12 @@ func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired() bool
 //Sets the ID of the account to which this account is proxy staked.
 func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ProxyAccountID = proxyAccountID.toProtobuf()
+	transaction.proxyAccountID = proxyAccountID
 	return transaction
 }
 
 func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetProxyAccountID())
+	return transaction.proxyAccountID
 }
 
 //Sets the duration in which it will automatically extend the expiration period.
@@ -111,6 +113,29 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 	return ""
 }
 
+func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *AccountUpdateTransaction) build() *AccountUpdateTransaction {
+	if !transaction.accountID.isZero() {
+		transaction.pb.AccountIDToUpdate = transaction.accountID.toProtobuf()
+	}
+
+	if !transaction.proxyAccountID.isZero() {
+		transaction.pb.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -123,6 +148,7 @@ func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransact
 }
 
 func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -295,6 +321,11 @@ func (transaction *AccountUpdateTransaction) FreezeWith(client *Client) (*Accoun
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &AccountUpdateTransaction{}, err
+	}
+	transaction.build()
 
 	if !transaction.onFreeze(transaction.pbBody) {
 		return transaction, nil

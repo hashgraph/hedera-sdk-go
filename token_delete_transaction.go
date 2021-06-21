@@ -12,7 +12,8 @@ import (
 // other field in that case will cause the transaction status to resolve to TOKEN_IS_IMMUTABlE.
 type TokenDeleteTransaction struct {
 	Transaction
-	pb *proto.TokenDeleteTransactionBody
+	pb      *proto.TokenDeleteTransactionBody
+	tokenID TokenID
 }
 
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
@@ -45,6 +46,24 @@ func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
 	return tokenIDFromProtobuf(transaction.pb.GetToken())
 }
 
+func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenDeleteTransaction) build() *TokenDeleteTransaction {
+	if !transaction.tokenID.isZero() {
+		transaction.pb.Token = transaction.tokenID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -57,6 +76,7 @@ func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TokenDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -216,6 +236,11 @@ func (transaction *TokenDeleteTransaction) FreezeWith(client *Client) (*TokenDel
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenDeleteTransaction{}, err
+	}
+	transaction.build()
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

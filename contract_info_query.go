@@ -8,7 +8,8 @@ import (
 // file containing its bytecode, and the time when it will expire.
 type ContractInfoQuery struct {
 	Query
-	pb *proto.ContractGetInfoQuery
+	pb         *proto.ContractGetInfoQuery
+	contractID ContractID
 }
 
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
@@ -31,12 +32,30 @@ func NewContractInfoQuery() *ContractInfoQuery {
 
 // SetContractID sets the contract for which information is requested
 func (query *ContractInfoQuery) SetContractID(id ContractID) *ContractInfoQuery {
-	query.pb.ContractID = id.toProtobuf()
+	query.contractID = id
 	return query
 }
 
 func (query *ContractInfoQuery) GetContractID() ContractID {
-	return contractIDFromProtobuf(query.pb.ContractID)
+	return query.contractID
+}
+
+func (query *ContractInfoQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *ContractInfoQuery) build() *ContractInfoQuery {
+	if !query.contractID.isZero() {
+		query.pb.ContractID = query.contractID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -52,6 +71,13 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -104,6 +130,13 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return ContractInfo{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -132,7 +165,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return ContractInfo{}, err
 	}

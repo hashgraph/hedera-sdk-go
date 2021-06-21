@@ -17,7 +17,9 @@ import (
 // Once executed the Account is marked as KYC Revoked
 type TokenRevokeKycTransaction struct {
 	Transaction
-	pb *proto.TokenRevokeKycTransactionBody
+	pb        *proto.TokenRevokeKycTransactionBody
+	tokenID   TokenID
+	accountID AccountID
 }
 
 func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
@@ -40,25 +42,48 @@ func tokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
-func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *TokenRevokeKycTransaction {
+func (transaction *TokenRevokeKycTransaction) SetTokenID(id TokenID) *TokenRevokeKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Token = tokenID.toProtobuf()
+	transaction.tokenID = id
 	return transaction
 }
 
 func (transaction *TokenRevokeKycTransaction) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(transaction.pb.GetToken())
+	return transaction.tokenID
 }
 
 // The account to be KYC Revoked
-func (transaction *TokenRevokeKycTransaction) SetAccountID(accountID AccountID) *TokenRevokeKycTransaction {
+func (transaction *TokenRevokeKycTransaction) SetAccountID(id AccountID) *TokenRevokeKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Account = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *TokenRevokeKycTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.Account)
+	return transaction.accountID
+}
+
+func (transaction *TokenRevokeKycTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenRevokeKycTransaction) build() *TokenRevokeKycTransaction {
+	if !transaction.tokenID.isZero() {
+		transaction.pb.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if !transaction.accountID.isZero() {
+		transaction.pb.Account = transaction.accountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *TokenRevokeKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -73,6 +98,7 @@ func (transaction *TokenRevokeKycTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *TokenRevokeKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -233,6 +259,12 @@ func (transaction *TokenRevokeKycTransaction) FreezeWith(client *Client) (*Token
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenRevokeKycTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

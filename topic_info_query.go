@@ -6,7 +6,8 @@ import (
 
 type TopicInfoQuery struct {
 	Query
-	pb *proto.ConsensusGetTopicInfoQuery
+	pb      *proto.ConsensusGetTopicInfoQuery
+	topicID TopicID
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
@@ -27,12 +28,30 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
 func (query *TopicInfoQuery) SetTopicID(id TopicID) *TopicInfoQuery {
-	query.pb.TopicID = id.toProtobuf()
+	query.topicID = id
 	return query
 }
 
 func (query *TopicInfoQuery) GetTopicID() TopicID {
-	return topicIDFromProtobuf(query.pb.TopicID)
+	return query.topicID
+}
+
+func (query *TopicInfoQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TopicIDValidateNetworkOnIDs(query.topicID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *TopicInfoQuery) build() *TopicInfoQuery {
+	if !query.topicID.isZero() {
+		query.pb.TopicID = query.topicID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -48,6 +67,13 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -101,6 +127,13 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return TopicInfo{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -129,7 +162,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return TopicInfo{}, err
 	}

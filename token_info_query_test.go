@@ -4,18 +4,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
-
-func TestSerializeTokenInfoQuery(t *testing.T) {
-	query := NewTokenInfoQuery().
-		SetQueryPayment(NewHbar(2)).
-		SetTokenID(TokenID{Token: 3}).
-		Query
-
-	assert.Equal(t, `tokenGetInfo:{header:{}token:{tokenNum:3}}`, strings.ReplaceAll(strings.ReplaceAll(query.pb.String(), " ", ""), "\n", ""))
-}
 
 func TestTokenInfoQuery_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)

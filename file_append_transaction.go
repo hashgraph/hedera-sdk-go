@@ -16,6 +16,7 @@ type FileAppendTransaction struct {
 	pb        *proto.FileAppendTransactionBody
 	maxChunks uint64
 	contents  []byte
+	fileID    FileID
 }
 
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
@@ -44,14 +45,14 @@ func fileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 }
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
-func (transaction *FileAppendTransaction) SetFileID(ID FileID) *FileAppendTransaction {
+func (transaction *FileAppendTransaction) SetFileID(id FileID) *FileAppendTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.FileID = ID.toProtobuf()
+	transaction.fileID = id
 	return transaction
 }
 
 func (transaction *FileAppendTransaction) GetFileID() FileID {
-	return fileIDFromProtobuf(transaction.pb.GetFileID())
+	return transaction.fileID
 }
 
 // SetContents sets the bytes to append to the contents of the file.
@@ -63,6 +64,24 @@ func (transaction *FileAppendTransaction) SetContents(contents []byte) *FileAppe
 
 func (transaction *FileAppendTransaction) GetContents() []byte {
 	return transaction.contents
+}
+
+func (transaction *FileAppendTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *FileAppendTransaction) build() *FileAppendTransaction {
+	if !transaction.fileID.isZero() {
+		transaction.pb.FileID = transaction.fileID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -85,6 +104,7 @@ func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction
 }
 
 func (transaction *FileAppendTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -276,6 +296,12 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 	}
 
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &FileAppendTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

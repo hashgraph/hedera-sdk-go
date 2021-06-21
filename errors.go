@@ -27,6 +27,7 @@ var errMaxRetryCountHit = errors.New("max retry count has been hit")
 var errNoTransactions = errors.New("no transactions to execute")
 var errByteArrayNull = errors.New("byte array can't be null")
 var errParameterNull = errors.New("the parameter can't be null")
+var errNetworkMismatch = errors.New("network mismatch; some IDs have different networks set")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID

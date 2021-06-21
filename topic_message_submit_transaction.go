@@ -15,6 +15,7 @@ type TopicMessageSubmitTransaction struct {
 	pb        *proto.ConsensusSubmitMessageTransactionBody
 	maxChunks uint64
 	message   []byte
+	topicID   TopicID
 }
 
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
@@ -40,14 +41,14 @@ func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *prot
 	return tx
 }
 
-func (transaction *TopicMessageSubmitTransaction) SetTopicID(ID TopicID) *TopicMessageSubmitTransaction {
+func (transaction *TopicMessageSubmitTransaction) SetTopicID(id TopicID) *TopicMessageSubmitTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.TopicID = ID.toProtobuf()
+	transaction.topicID = id
 	return transaction
 }
 
 func (transaction *TopicMessageSubmitTransaction) GetTopicID() TopicID {
-	return topicIDFromProtobuf(transaction.pb.GetTopicID())
+	return transaction.topicID
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetMessage(message []byte) *TopicMessageSubmitTransaction {
@@ -135,6 +136,24 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	return transaction
 }
 
+func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TopicIDValidateNetworkOnIDs(transaction.topicID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TopicMessageSubmitTransaction) build() *TopicMessageSubmitTransaction {
+	if !transaction.topicID.isZero() {
+		transaction.pb.TopicID = transaction.topicID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -156,6 +175,7 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 }
 
 func (transaction *TopicMessageSubmitTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -259,6 +279,12 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	}
 
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TopicMessageSubmitTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

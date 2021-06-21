@@ -7,9 +7,11 @@ import (
 )
 
 type TokenID struct {
-	Shard uint64
-	Realm uint64
-	Token uint64
+	Shard    uint64
+	Realm    uint64
+	Token    uint64
+	Checksum *string
+	Network  *NetworkName
 }
 
 func tokenIDFromProtobuf(tokenID *proto.TokenID) TokenID {
@@ -64,9 +66,25 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 // TokenIDFromString constructs an TokenID from a string formatted as
 // `Shard.Realm.TokenID` (for example "0.0.3")
 func TokenIDFromString(data string) (TokenID, error) {
-	checksum, err := checksumParseAddress("", data)
-	if err != nil {
-		return TokenID{}, err
+	var checksum parseAddressResult
+	var err error
+
+	var networkNames = []NetworkName{
+		Mainnet,
+		Testnet,
+		Previewnet,
+	}
+
+	var network NetworkName
+	for _, name := range networkNames {
+		checksum, err = checksumParseAddress(name.Network(), data)
+		if err != nil {
+			return TokenID{}, err
+		}
+		if checksum.status != 1 {
+			network = name
+			break
+		}
 	}
 
 	err = checksumVerify(checksum.status)
@@ -74,9 +92,25 @@ func TokenIDFromString(data string) (TokenID, error) {
 		return TokenID{}, err
 	}
 
+	tempChecksum := checksum.correctChecksum
+
 	return TokenID{
-		Shard: uint64(checksum.num1),
-		Realm: uint64(checksum.num2),
-		Token: uint64(checksum.num3),
+		Shard:    uint64(checksum.num1),
+		Realm:    uint64(checksum.num2),
+		Token:    uint64(checksum.num3),
+		Checksum: &tempChecksum,
+		Network:  &network,
 	}, nil
+}
+
+func TokenIDValidateNetworkOnIDs(id TokenID, other AccountID) error {
+	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+		return errNetworkMismatch
+	}
+
+	return nil
+}
+
+func (id TokenID) isZero() bool {
+	return id.Shard == 0 && id.Realm == 0 && id.Token == 0
 }

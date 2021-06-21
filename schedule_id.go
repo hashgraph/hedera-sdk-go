@@ -12,14 +12,32 @@ type ScheduleID struct {
 	Shard    uint64
 	Realm    uint64
 	Schedule uint64
+	Checksum *string
+	Network  *NetworkName
 }
 
 // ScheduleIDFromString constructs an ScheduleID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func ScheduleIDFromString(data string) (ScheduleID, error) {
-	checksum, err := checksumParseAddress("", data)
-	if err != nil {
-		return ScheduleID{}, err
+	var checksum parseAddressResult
+	var err error
+
+	var networkNames = []NetworkName{
+		Mainnet,
+		Testnet,
+		Previewnet,
+	}
+
+	var network NetworkName
+	for _, name := range networkNames {
+		checksum, err = checksumParseAddress(name.Network(), data)
+		if err != nil {
+			return ScheduleID{}, err
+		}
+		if checksum.status != 1 {
+			network = name
+			break
+		}
 	}
 
 	err = checksumVerify(checksum.status)
@@ -27,11 +45,23 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 		return ScheduleID{}, err
 	}
 
+	tempChecksum := checksum.correctChecksum
+
 	return ScheduleID{
 		Shard:    uint64(checksum.num1),
 		Realm:    uint64(checksum.num2),
 		Schedule: uint64(checksum.num3),
+		Checksum: &tempChecksum,
+		Network:  &network,
 	}, nil
+}
+
+func ScheduleIDValidateNetworkOnIDs(id ScheduleID, other AccountID) error {
+	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+		return errNetworkMismatch
+	}
+
+	return nil
 }
 
 // String returns the string representation of an ScheduleID in

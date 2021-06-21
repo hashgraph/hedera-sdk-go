@@ -8,7 +8,9 @@ import (
 
 type SystemDeleteTransaction struct {
 	Transaction
-	pb *proto.SystemDeleteTransactionBody
+	pb         *proto.SystemDeleteTransactionBody
+	contractID ContractID
+	fileID     FileID
 }
 
 func NewSystemDeleteTransaction() *SystemDeleteTransaction {
@@ -42,24 +44,51 @@ func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
 	return transaction.pb.GetExpirationTime().Seconds
 }
 
-func (transaction *SystemDeleteTransaction) SetContractID(contractID ContractID) *SystemDeleteTransaction {
+func (transaction *SystemDeleteTransaction) SetContractID(id ContractID) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Id = &proto.SystemDeleteTransactionBody_ContractID{ContractID: contractID.toProtobuf()}
+	transaction.contractID = id
 	return transaction
 }
 
 func (transaction *SystemDeleteTransaction) GetContract() ContractID {
-	return contractIDFromProtobuf(transaction.pb.GetContractID())
+	return transaction.contractID
 }
 
-func (transaction *SystemDeleteTransaction) SetFileID(fileID FileID) *SystemDeleteTransaction {
+func (transaction *SystemDeleteTransaction) SetFileID(id FileID) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Id = &proto.SystemDeleteTransactionBody_FileID{FileID: fileID.toProtobuf()}
+	transaction.fileID = id
 	return transaction
 }
 
 func (transaction *SystemDeleteTransaction) GetFileID() FileID {
-	return fileIDFromProtobuf(transaction.pb.GetFileID())
+	return transaction.fileID
+}
+
+func (transaction *SystemDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
+	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *SystemDeleteTransaction) build() *SystemDeleteTransaction {
+	if !transaction.contractID.isZero() {
+		transaction.pb.Id = &proto.SystemDeleteTransactionBody_ContractID{
+			ContractID: transaction.contractID.toProtobuf(),
+		}
+	}
+
+	if !transaction.fileID.isZero() {
+		transaction.pb.Id = &proto.SystemDeleteTransactionBody_FileID{
+			FileID: transaction.fileID.toProtobuf(),
+		}
+	}
+
+	return transaction
 }
 
 func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -74,6 +103,7 @@ func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransacti
 }
 
 func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	body := &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -254,6 +284,12 @@ func (transaction *SystemDeleteTransaction) FreezeWith(client *Client) (*SystemD
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &SystemDeleteTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

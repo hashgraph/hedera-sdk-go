@@ -9,7 +9,8 @@ import (
 
 type LiveHashAddTransaction struct {
 	Transaction
-	pb *proto.CryptoAddLiveHashTransactionBody
+	pb        *proto.CryptoAddLiveHashTransactionBody
+	accountID AccountID
 }
 
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
@@ -78,14 +79,32 @@ func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
 	return durationFromProtobuf(transaction.pb.GetLiveHash().GetDuration())
 }
 
-func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
+func (transaction *LiveHashAddTransaction) SetAccountID(id AccountID) *LiveHashAddTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.LiveHash.AccountId = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.LiveHash.GetAccountId())
+	return transaction.accountID
+}
+
+func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *LiveHashAddTransaction) build() *LiveHashAddTransaction {
+	if !transaction.accountID.isZero() {
+		transaction.pb.LiveHash.AccountId = transaction.accountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *LiveHashAddTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -240,6 +259,12 @@ func (transaction *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHash
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &LiveHashAddTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

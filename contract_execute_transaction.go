@@ -15,7 +15,8 @@ import (
 // For a cheaper but more limited method to call functions, see ContractCallQuery.
 type ContractExecuteTransaction struct {
 	Transaction
-	pb *proto.ContractCallTransactionBody
+	pb         *proto.ContractCallTransactionBody
+	contractID ContractID
 }
 
 // NewContractExecuteTransaction creates a ContractExecuteTransaction transaction which can be
@@ -40,9 +41,9 @@ func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.T
 }
 
 // SetContractID sets the contract instance to call.
-func (transaction *ContractExecuteTransaction) SetContractID(ID ContractID) *ContractExecuteTransaction {
+func (transaction *ContractExecuteTransaction) SetContractID(id ContractID) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ContractID = ID.toProtobuf()
+	transaction.contractID = id
 	return transaction
 }
 
@@ -94,6 +95,24 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 	return transaction
 }
 
+func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *ContractExecuteTransaction) build() *ContractExecuteTransaction {
+	if !transaction.contractID.isZero() {
+		transaction.pb.ContractID = transaction.contractID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -106,6 +125,7 @@ func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransa
 }
 
 func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -268,6 +288,12 @@ func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*Cont
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &ContractExecuteTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

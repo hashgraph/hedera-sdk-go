@@ -9,7 +9,8 @@ import (
 // A TopicCreateTransaction is for creating a new Topic on HCS.
 type TopicCreateTransaction struct {
 	Transaction
-	pb *proto.ConsensusCreateTopicTransactionBody
+	pb                 *proto.ConsensusCreateTopicTransactionBody
+	autoRenewAccountID AccountID
 }
 
 // NewTopicCreateTransaction creates a TopicCreateTransaction transaction which can be
@@ -95,14 +96,32 @@ func (transaction *TopicCreateTransaction) GetAutoRenewPeriod() time.Duration {
 // extended using all funds on the account (whichever is the smaller duration/amount).
 //
 //If specified, there must be an adminKey and the autoRenewAccount must sign this transaction.
-func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(accountID AccountID) *TopicCreateTransaction {
+func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(id AccountID) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewAccount = accountID.toProtobuf()
+	transaction.autoRenewAccountID = id
 	return transaction
 }
 
 func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
+	return transaction.autoRenewAccountID
+}
+
+func (transaction *TopicCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TopicCreateTransaction) build() *TopicCreateTransaction {
+	if !transaction.autoRenewAccountID.isZero() {
+		transaction.pb.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -117,6 +136,7 @@ func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TopicCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -280,6 +300,12 @@ func (transaction *TopicCreateTransaction) FreezeWith(client *Client) (*TopicCre
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TopicCreateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

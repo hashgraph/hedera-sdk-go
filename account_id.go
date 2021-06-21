@@ -3,24 +3,42 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"strings"
-
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
+	"strings"
 )
 
 // AccountID is the ID for a Hedera account
 type AccountID struct {
-	Shard   uint64
-	Realm   uint64
-	Account uint64
+	Shard    uint64
+	Realm    uint64
+	Account  uint64
+	Checksum *string
+	Network  *NetworkName
 }
 
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
-	checksum, err := checksumParseAddress("", data)
-	if err != nil {
-		return AccountID{}, err
+	var checksum parseAddressResult
+	var err error
+
+	var networkNames = []NetworkName{
+		Mainnet,
+		Testnet,
+		Previewnet,
+	}
+
+	var network NetworkName
+	for _, name := range networkNames {
+		checksum, err = checksumParseAddress(name.Network(), data)
+		if err != nil {
+			return AccountID{}, err
+		}
+		if checksum.status != 1 {
+			network = name
+			break
+		}
 	}
 
 	err = checksumVerify(checksum.status)
@@ -28,10 +46,14 @@ func AccountIDFromString(data string) (AccountID, error) {
 		return AccountID{}, err
 	}
 
+	tempChecksum := checksum.correctChecksum
+
 	return AccountID{
-		Shard:   uint64(checksum.num1),
-		Realm:   uint64(checksum.num2),
-		Account: uint64(checksum.num3),
+		Shard:    uint64(checksum.num1),
+		Realm:    uint64(checksum.num2),
+		Account:  uint64(checksum.num3),
+		Checksum: &tempChecksum,
+		Network:  &network,
 	}, nil
 }
 
@@ -44,10 +66,49 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 	}
 
 	return AccountID{
-		Shard:   shard,
-		Realm:   realm,
-		Account: account,
+		Shard:    shard,
+		Realm:    realm,
+		Account:  account,
+		Checksum: nil,
+		Network:  nil,
 	}, nil
+}
+
+func (id *AccountID) GetNetworkFromChecksum() error {
+	if id.Checksum == nil {
+		return errors.New("Checksum is missing.")
+	}
+	var checksum parseAddressResult
+	var err error
+
+	var networkNames = []NetworkName{
+		Mainnet,
+		Testnet,
+		Previewnet,
+	}
+
+	var network NetworkName
+	for _, name := range networkNames {
+		checksum, err = checksumParseAddress(name.Network(), fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, *id.Checksum))
+		if err != nil {
+			return err
+		}
+		if checksum.status != 1 {
+			network = name
+			break
+		}
+	}
+
+	id.Network = &network
+	return nil
+}
+
+func AccountIDValidateNetworkOnIDs(id AccountID, other AccountID) error {
+	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+		return errNetworkMismatch
+	}
+
+	return nil
 }
 
 // String returns the string representation of an AccountID in
@@ -92,9 +153,11 @@ func accountIDFromProtobuf(pb *proto.AccountID) AccountID {
 		return AccountID{}
 	}
 	return AccountID{
-		Shard:   uint64(pb.ShardNum),
-		Realm:   uint64(pb.RealmNum),
-		Account: uint64(pb.AccountNum),
+		Shard:    uint64(pb.ShardNum),
+		Realm:    uint64(pb.RealmNum),
+		Account:  uint64(pb.AccountNum),
+		Checksum: nil,
+		Network:  nil,
 	}
 }
 

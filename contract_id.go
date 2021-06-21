@@ -11,13 +11,31 @@ type ContractID struct {
 	Shard    uint64
 	Realm    uint64
 	Contract uint64
+	Checksum *string
+	Network  *NetworkName
 }
 
 // ContractIDFromString constructs a ContractID from a string formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func ContractIDFromString(data string) (ContractID, error) {
-	checksum, err := checksumParseAddress("", data)
-	if err != nil {
-		return ContractID{}, err
+	var checksum parseAddressResult
+	var err error
+
+	var networkNames = []NetworkName{
+		Mainnet,
+		Testnet,
+		Previewnet,
+	}
+
+	var network NetworkName
+	for _, name := range networkNames {
+		checksum, err = checksumParseAddress(name.Network(), data)
+		if err != nil {
+			return ContractID{}, err
+		}
+		if checksum.status != 1 {
+			network = name
+			break
+		}
 	}
 
 	err = checksumVerify(checksum.status)
@@ -25,11 +43,23 @@ func ContractIDFromString(data string) (ContractID, error) {
 		return ContractID{}, err
 	}
 
+	tempChecksum := checksum.correctChecksum
+
 	return ContractID{
 		Shard:    uint64(checksum.num1),
 		Realm:    uint64(checksum.num2),
 		Contract: uint64(checksum.num3),
+		Checksum: &tempChecksum,
+		Network:  &network,
 	}, nil
+}
+
+func ContractIDValidateNetworkOnIDs(id ContractID, other AccountID) error {
+	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+		return errNetworkMismatch
+	}
+
+	return nil
 }
 
 // ContractIDFromSolidityAddress constructs a ContractID from a string representation of a solidity address
@@ -77,6 +107,10 @@ func contractIDFromProtobuf(pb *proto.ContractID) ContractID {
 		Realm:    uint64(pb.RealmNum),
 		Contract: uint64(pb.ContractNum),
 	}
+}
+
+func (id ContractID) isZero() bool {
+	return id.Shard == 0 && id.Realm == 0 && id.Contract == 0
 }
 
 func (id ContractID) toProtoKey() *proto.Key {

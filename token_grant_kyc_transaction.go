@@ -17,7 +17,9 @@ import (
 // Once executed the Account is marked as KYC Granted.
 type TokenGrantKycTransaction struct {
 	Transaction
-	pb *proto.TokenGrantKycTransactionBody
+	pb        *proto.TokenGrantKycTransactionBody
+	tokenID   TokenID
+	accountID AccountID
 }
 
 func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
@@ -40,25 +42,48 @@ func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 }
 
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
-func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenGrantKycTransaction {
+func (transaction *TokenGrantKycTransaction) SetTokenID(id TokenID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Token = tokenID.toProtobuf()
+	transaction.tokenID = id
 	return transaction
 }
 
 func (transaction *TokenGrantKycTransaction) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(transaction.pb.GetToken())
+	return transaction.tokenID
 }
 
 // The account to be KYCed
-func (transaction *TokenGrantKycTransaction) SetAccountID(accountID AccountID) *TokenGrantKycTransaction {
+func (transaction *TokenGrantKycTransaction) SetAccountID(id AccountID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Account = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAccount())
+	return transaction.accountID
+}
+
+func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenGrantKycTransaction) build() *TokenGrantKycTransaction {
+	if !transaction.tokenID.isZero() {
+		transaction.pb.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if !transaction.accountID.isZero() {
+		transaction.pb.Account = transaction.accountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -73,6 +98,7 @@ func (transaction *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransact
 }
 
 func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -233,6 +259,12 @@ func (transaction *TokenGrantKycTransaction) FreezeWith(client *Client) (*TokenG
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenGrantKycTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

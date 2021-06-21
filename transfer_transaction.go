@@ -138,6 +138,24 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 	return transaction
 }
 
+func (transaction *TransferTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	for tokenID, accountMap := range transaction.tokenTransfers {
+		err = TokenIDValidateNetworkOnIDs(tokenID, id)
+		for accountID, _ := range accountMap {
+			err = AccountIDValidateNetworkOnIDs(accountID, id)
+		}
+	}
+	for accountID, _ := range transaction.hbarTransfers {
+		err = AccountIDValidateNetworkOnIDs(accountID, id)
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (transaction *TransferTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -347,6 +365,10 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 		return transaction, nil
 	}
 
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TransferTransaction{}, err
+	}
 	transaction.buildHbarTransfers()
 	transaction.buildTokenTransfers()
 

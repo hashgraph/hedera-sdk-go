@@ -18,7 +18,9 @@ import (
 // unless unfrozen. The operation is idempotent.
 type TokenFreezeTransaction struct {
 	Transaction
-	pb *proto.TokenFreezeAccountTransactionBody
+	pb        *proto.TokenFreezeAccountTransactionBody
+	tokenID   TokenID
+	accountID AccountID
 }
 
 func NewTokenFreezeTransaction() *TokenFreezeTransaction {
@@ -42,25 +44,48 @@ func tokenFreezeTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 
 // The token for which this account will be frozen. If token does not exist, transaction results
 // in INVALID_TOKEN_ID
-func (transaction *TokenFreezeTransaction) SetTokenID(tokenID TokenID) *TokenFreezeTransaction {
+func (transaction *TokenFreezeTransaction) SetTokenID(id TokenID) *TokenFreezeTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Token = tokenID.toProtobuf()
+	transaction.tokenID = id
 	return transaction
 }
 
 func (transaction *TokenFreezeTransaction) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(transaction.pb.GetToken())
+	return transaction.tokenID
 }
 
 // The account to be frozen
-func (transaction *TokenFreezeTransaction) SetAccountID(accountID AccountID) *TokenFreezeTransaction {
+func (transaction *TokenFreezeTransaction) SetAccountID(id AccountID) *TokenFreezeTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Account = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *TokenFreezeTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAccount())
+	return transaction.accountID
+}
+
+func (transaction *TokenFreezeTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenFreezeTransaction) build() *TokenFreezeTransaction {
+	if !transaction.tokenID.isZero() {
+		transaction.pb.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if !transaction.accountID.isZero() {
+		transaction.pb.Account = transaction.accountID.toProtobuf()
+	}
+
+	return transaction
 }
 
 func (transaction *TokenFreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -75,6 +100,7 @@ func (transaction *TokenFreezeTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TokenFreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -235,6 +261,12 @@ func (transaction *TokenFreezeTransaction) FreezeWith(client *Client) (*TokenFre
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenFreezeTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

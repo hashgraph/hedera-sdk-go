@@ -78,11 +78,11 @@ func TestClientSetNetwork(t *testing.T) {
 	assert.Nil(t, client.operator)
 
 	network := make(map[string]AccountID)
-	network["35.237.200.180:50211"] = AccountID{0, 0, 3}
-	network["35.186.191.247:50211"] = AccountID{0, 0, 4}
-	network["35.192.2.25:50211"] = AccountID{0, 0, 5}
-	network["35.199.161.108:50211"] = AccountID{0, 0, 6}
-	network["35.203.82.240:50211"] = AccountID{0, 0, 7}
+	network["35.237.200.180:50211"] = AccountID{0, 0, 3, nil, nil}
+	network["35.186.191.247:50211"] = AccountID{0, 0, 4, nil, nil}
+	network["35.192.2.25:50211"] = AccountID{0, 0, 5, nil, nil}
+	network["35.199.161.108:50211"] = AccountID{0, 0, 6, nil, nil}
+	network["35.203.82.240:50211"] = AccountID{0, 0, 7, nil, nil}
 
 	err := client.SetNetwork(network)
 	assert.NoError(t, err)
@@ -101,7 +101,7 @@ func TestClientFromConfigWithOperator(t *testing.T) {
 	assert.Equal(t, 10, len(client.network.network))
 	assert.NotNil(t, client.operator)
 	assert.Equal(t, testOperatorKey.keyData, client.operator.privateKey.keyData)
-	assert.Equal(t, AccountID{Account: 3}, client.operator.accountID)
+	assert.Equal(t, AccountID{Account: 3}.Account, client.operator.accountID.Account)
 }
 
 func TestClientFromConfigWrongType(t *testing.T) {

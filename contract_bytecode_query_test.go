@@ -3,17 +3,8 @@ package hedera
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
-
-func TestSerializeContractBytecodeQuery(t *testing.T) {
-	query := NewContractBytecodeQuery().
-		SetContractID(ContractID{Contract: 3}).
-		Query
-
-	assert.Equal(t, `contractGetBytecode:{header:{}contractID:{contractNum:3}}`, strings.ReplaceAll(query.pb.String(), " ", ""))
-}
 
 func TestContractBytecodeQuery_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)

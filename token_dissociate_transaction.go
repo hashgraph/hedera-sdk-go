@@ -8,7 +8,9 @@ import (
 
 type TokenDissociateTransaction struct {
 	Transaction
-	pb *proto.TokenDissociateTransactionBody
+	pb        *proto.TokenDissociateTransactionBody
+	accountID AccountID
+	tokens    []TokenID
 }
 
 func NewTokenDissociateTransaction() *TokenDissociateTransaction {
@@ -31,45 +33,76 @@ func tokenDissociateTransactionFromProtobuf(transaction Transaction, pb *proto.T
 }
 
 // The account to be dissociated with the provided tokens
-func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
+func (transaction *TokenDissociateTransaction) SetAccountID(id AccountID) *TokenDissociateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Account = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *TokenDissociateTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.Account)
+	return transaction.accountID
 }
 
 // The tokens to be dissociated with the provided account
-func (transaction *TokenDissociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *TokenDissociateTransaction {
+func (transaction *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *TokenDissociateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Tokens = make([]*proto.TokenID, len(tokenIDs))
+	transaction.tokens = make([]TokenID, len(ids))
 
-	for i, tokenID := range tokenIDs {
-		transaction.pb.Tokens[i] = tokenID.toProtobuf()
+	for i, tokenID := range ids {
+		transaction.tokens[i] = tokenID
 	}
+
+	return transaction
+}
+
+func (transaction *TokenDissociateTransaction) AddTokenID(id TokenID) *TokenDissociateTransaction {
+	transaction.requireNotFrozen()
+	if transaction.tokens == nil {
+		transaction.tokens = make([]TokenID, 0)
+	}
+
+	transaction.tokens = append(transaction.tokens, id)
 
 	return transaction
 }
 
 func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
-	tokenIDs := make([]TokenID, len(transaction.pb.Tokens))
+	tokenIDs := make([]TokenID, len(transaction.tokens))
 
-	for i, tokenID := range transaction.pb.Tokens {
-		tokenIDs[i] = tokenIDFromProtobuf(tokenID)
+	for i, tokenID := range transaction.tokens {
+		tokenIDs[i] = tokenID
 	}
 
 	return tokenIDs
 }
 
-func (transaction *TokenDissociateTransaction) AddTokenID(tokenID TokenID) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
-	if transaction.pb.Tokens == nil {
-		transaction.pb.Tokens = make([]*proto.TokenID, 0)
+func (transaction *TokenDissociateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	for _, tokenID := range transaction.tokens {
+		err = TokenIDValidateNetworkOnIDs(tokenID, id)
+	}
+	if err != nil {
+		return err
 	}
 
-	transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
+	return nil
+}
+
+func (transaction *TokenDissociateTransaction) build() *TokenDissociateTransaction {
+	if !transaction.accountID.isZero() {
+		transaction.pb.Account = transaction.accountID.toProtobuf()
+	}
+
+	if len(transaction.tokens) > 0 {
+		for _, tokenID := range transaction.tokens {
+			if transaction.pb.Tokens == nil {
+				transaction.pb.Tokens = make([]*proto.TokenID, 0)
+			}
+			transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
+		}
+	}
+
 	return transaction
 }
 
@@ -85,6 +118,7 @@ func (transaction *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransa
 }
 
 func (transaction *TokenDissociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -245,6 +279,12 @@ func (transaction *TokenDissociateTransaction) FreezeWith(client *Client) (*Toke
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenDissociateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

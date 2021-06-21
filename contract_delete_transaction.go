@@ -8,7 +8,10 @@ import (
 
 type ContractDeleteTransaction struct {
 	Transaction
-	pb *proto.ContractDeleteTransactionBody
+	pb                *proto.ContractDeleteTransactionBody
+	contractID        ContractID
+	transferContactID ContractID
+	transferAccountID AccountID
 }
 
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
@@ -31,42 +34,70 @@ func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 //Sets the contract ID which should be deleted.
-func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
+func (transaction *ContractDeleteTransaction) SetContractID(id ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ContractID = contractID.toProtobuf()
+	transaction.contractID = id
 	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
-	return contractIDFromProtobuf(transaction.pb.GetContractID())
+	return transaction.contractID
 }
 
 //Sets the contract ID which will receive all remaining hbars.
-func (transaction *ContractDeleteTransaction) SetTransferContractID(contractID ContractID) *ContractDeleteTransaction {
+func (transaction *ContractDeleteTransaction) SetTransferContractID(id ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
-		TransferContractID: contractID.toProtobuf(),
-	}
+	transaction.transferContactID = id
 
 	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID {
-	return contractIDFromProtobuf(transaction.pb.GetTransferContractID())
+	return transaction.transferContactID
 }
 
 //Sets the account ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
-		TransferAccountID: accountID.toProtobuf(),
-	}
+	transaction.transferAccountID = accountID
 
 	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetTransferAccountID())
+	return transaction.transferAccountID
+}
+
+func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
+	err = ContractIDValidateNetworkOnIDs(transaction.transferContactID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.transferAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *ContractDeleteTransaction) build() *ContractDeleteTransaction {
+	if !transaction.contractID.isZero() {
+		transaction.pb.ContractID = transaction.contractID.toProtobuf()
+	}
+
+	if !transaction.transferContactID.isZero() {
+		transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+			TransferContractID: transaction.transferContactID.toProtobuf(),
+		}
+	}
+
+	if !transaction.transferAccountID.isZero() {
+		transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+			TransferAccountID: transaction.transferAccountID.toProtobuf(),
+		}
+	}
+
+	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -81,6 +112,7 @@ func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -241,6 +273,12 @@ func (transaction *ContractDeleteTransaction) FreezeWith(client *Client) (*Contr
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &ContractDeleteTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

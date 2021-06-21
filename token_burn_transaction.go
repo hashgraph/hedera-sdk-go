@@ -15,7 +15,8 @@ import (
 // to burn 100.55 tokens, one must provide amount of 10055.
 type TokenBurnTransaction struct {
 	Transaction
-	pb *proto.TokenBurnTransactionBody
+	pb      *proto.TokenBurnTransactionBody
+	tokenID TokenID
 }
 
 func NewTokenBurnTransaction() *TokenBurnTransaction {
@@ -39,14 +40,14 @@ func tokenBurnTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 
 // The token for which to burn tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
-func (transaction *TokenBurnTransaction) SetTokenID(tokenID TokenID) *TokenBurnTransaction {
+func (transaction *TokenBurnTransaction) SetTokenID(id TokenID) *TokenBurnTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Token = tokenID.toProtobuf()
+	transaction.tokenID = id
 	return transaction
 }
 
 func (transaction *TokenBurnTransaction) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(transaction.pb.GetToken())
+	return transaction.tokenID
 }
 
 // The amount to burn from the Treasury Account. Amount must be a positive non-zero number, not
@@ -67,6 +68,24 @@ func (transaction *TokenBurnTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
+func (transaction *TokenBurnTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenBurnTransaction) build() *TokenBurnTransaction {
+	if !transaction.tokenID.isZero() {
+		transaction.pb.Token = transaction.tokenID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TokenBurnTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -79,6 +98,7 @@ func (transaction *TokenBurnTransaction) Schedule() (*ScheduleCreateTransaction,
 }
 
 func (transaction *TokenBurnTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -243,6 +263,12 @@ func (transaction *TokenBurnTransaction) FreezeWith(client *Client) (*TokenBurnT
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenBurnTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

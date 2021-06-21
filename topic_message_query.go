@@ -18,6 +18,7 @@ type TopicMessageQuery struct {
 	retryHandler      func(err error) bool
 	attempt           uint64
 	maxAttempts       uint64
+	topicID           TopicID
 }
 
 func NewTopicMessageQuery() *TopicMessageQuery {
@@ -30,17 +31,13 @@ func NewTopicMessageQuery() *TopicMessageQuery {
 	}
 }
 
-func (query *TopicMessageQuery) SetTopicID(topicID TopicID) *TopicMessageQuery {
-	query.pb.TopicID = topicID.toProtobuf()
+func (query *TopicMessageQuery) SetTopicID(id TopicID) *TopicMessageQuery {
+	query.topicID = id
 	return query
 }
 
 func (query *TopicMessageQuery) GetTopicID() TopicID {
-	if query.pb.TopicID != nil {
-		return topicIDFromProtobuf(query.pb.TopicID)
-	} else {
-		return TopicID{}
-	}
+	return query.topicID
 }
 
 func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQuery {
@@ -93,8 +90,33 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 	return query
 }
 
+func (query *TopicMessageQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TopicIDValidateNetworkOnIDs(query.topicID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *TopicMessageQuery) build() *TopicMessageQuery {
+	if !query.topicID.isZero() {
+		query.pb.TopicID = query.topicID.toProtobuf()
+	}
+
+	return query
+}
+
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	handle := SubscriptionHandle{}
+
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return SubscriptionHandle{}, err
+	}
+
+	query.build()
 
 	messages := make(map[string][]*mirror.ConsensusTopicResponse, 0)
 

@@ -9,7 +9,8 @@ import (
 
 type FileUpdateTransaction struct {
 	Transaction
-	pb *proto.FileUpdateTransactionBody
+	pb     *proto.FileUpdateTransactionBody
+	fileID FileID
 }
 
 func NewFileUpdateTransaction() *FileUpdateTransaction {
@@ -31,14 +32,14 @@ func fileUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	}
 }
 
-func (transaction *FileUpdateTransaction) SetFileID(ID FileID) *FileUpdateTransaction {
+func (transaction *FileUpdateTransaction) SetFileID(id FileID) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.FileID = ID.toProtobuf()
+	transaction.fileID = id
 	return transaction
 }
 
 func (transaction *FileUpdateTransaction) GetFileID() FileID {
-	return fileIDFromProtobuf(transaction.pb.GetFileID())
+	return transaction.fileID
 }
 
 func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
@@ -103,6 +104,24 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 	return ""
 }
 
+func (transaction *FileUpdateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *FileUpdateTransaction) build() *FileUpdateTransaction {
+	if !transaction.fileID.isZero() {
+		transaction.pb.FileID = transaction.fileID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -115,6 +134,7 @@ func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction
 }
 
 func (transaction *FileUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -278,6 +298,12 @@ func (transaction *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdat
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &FileUpdateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

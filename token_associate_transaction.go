@@ -25,7 +25,9 @@ import (
 // ready to interact with the tokens.
 type TokenAssociateTransaction struct {
 	Transaction
-	pb *proto.TokenAssociateTransactionBody
+	pb        *proto.TokenAssociateTransactionBody
+	accountID AccountID
+	tokens    []TokenID
 }
 
 func NewTokenAssociateTransaction() *TokenAssociateTransaction {
@@ -48,47 +50,77 @@ func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // The account to be associated with the provided tokens
-func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) *TokenAssociateTransaction {
+func (transaction *TokenAssociateTransaction) SetAccountID(id AccountID) *TokenAssociateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Account = accountID.toProtobuf()
+	transaction.accountID = id
 	return transaction
 }
 
 func (transaction *TokenAssociateTransaction) GetAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAccount())
+	return transaction.accountID
 }
 
 // The tokens to be associated with the provided account
-func (transaction *TokenAssociateTransaction) SetTokenIDs(tokenIDs ...TokenID) *TokenAssociateTransaction {
+func (transaction *TokenAssociateTransaction) SetTokenIDs(ids ...TokenID) *TokenAssociateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Tokens = make([]*proto.TokenID, len(tokenIDs))
+	transaction.tokens = make([]TokenID, len(ids))
 
-	for i, tokenID := range tokenIDs {
-		transaction.pb.Tokens[i] = tokenID.toProtobuf()
+	for i, tokenID := range ids {
+		transaction.tokens[i] = tokenID
 	}
 
 	return transaction
 }
 
-func (transaction *TokenAssociateTransaction) AddTokenID(tokenID TokenID) *TokenAssociateTransaction {
+func (transaction *TokenAssociateTransaction) AddTokenID(id TokenID) *TokenAssociateTransaction {
 	transaction.requireNotFrozen()
-	if transaction.pb.Tokens == nil {
-		transaction.pb.Tokens = make([]*proto.TokenID, 0)
+	if transaction.tokens == nil {
+		transaction.tokens = make([]TokenID, 0)
 	}
 
-	transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
+	transaction.tokens = append(transaction.tokens, id)
 
 	return transaction
 }
 
 func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
-	tokenIDs := make([]TokenID, len(transaction.pb.GetTokens()))
+	tokenIDs := make([]TokenID, len(transaction.tokens))
 
-	for i, tokenID := range transaction.pb.GetTokens() {
-		tokenIDs[i] = tokenIDFromProtobuf(tokenID)
+	for i, tokenID := range transaction.tokens {
+		tokenIDs[i] = tokenID
 	}
 
 	return tokenIDs
+}
+
+func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	for _, tokenID := range transaction.tokens {
+		err = TokenIDValidateNetworkOnIDs(tokenID, id)
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenAssociateTransaction) build() *TokenAssociateTransaction {
+	if !transaction.accountID.isZero() {
+		transaction.pb.Account = transaction.accountID.toProtobuf()
+	}
+
+	if len(transaction.tokens) > 0 {
+		for _, tokenID := range transaction.tokens {
+			if transaction.pb.Tokens == nil {
+				transaction.pb.Tokens = make([]*proto.TokenID, 0)
+			}
+			transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
+		}
+	}
+
+	return transaction
 }
 
 func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -103,6 +135,7 @@ func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *TokenAssociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -263,6 +296,12 @@ func (transaction *TokenAssociateTransaction) FreezeWith(client *Client) (*Token
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenAssociateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

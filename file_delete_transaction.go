@@ -8,7 +8,8 @@ import (
 
 type FileDeleteTransaction struct {
 	Transaction
-	pb *proto.FileDeleteTransactionBody
+	pb     *proto.FileDeleteTransactionBody
+	fileID FileID
 }
 
 func NewFileDeleteTransaction() *FileDeleteTransaction {
@@ -40,6 +41,24 @@ func (transaction *FileDeleteTransaction) GetFileID() FileID {
 	return fileIDFromProtobuf(transaction.pb.GetFileID())
 }
 
+func (transaction *FileDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *FileDeleteTransaction) build() *FileDeleteTransaction {
+	if !transaction.fileID.isZero() {
+		transaction.pb.FileID = transaction.fileID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -52,6 +71,7 @@ func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction
 }
 
 func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -212,6 +232,12 @@ func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDelet
 	}
 
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &FileDeleteTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

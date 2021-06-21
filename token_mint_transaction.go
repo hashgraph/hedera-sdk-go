@@ -15,7 +15,8 @@ import (
 // to mint 100.55 tokens, one must provide amount of 10055.
 type TokenMintTransaction struct {
 	Transaction
-	pb *proto.TokenMintTransactionBody
+	pb      *proto.TokenMintTransactionBody
+	tokenID TokenID
 }
 
 func NewTokenMintTransaction() *TokenMintTransaction {
@@ -39,14 +40,14 @@ func tokenMintTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 
 // The token for which to mint tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
-func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintTransaction {
+func (transaction *TokenMintTransaction) SetTokenID(id TokenID) *TokenMintTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Token = tokenID.toProtobuf()
+	transaction.tokenID = id
 	return transaction
 }
 
 func (transaction *TokenMintTransaction) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(transaction.pb.Token)
+	return transaction.tokenID
 }
 
 // The amount to mint from the Treasury Account. Amount must be a positive non-zero number, not
@@ -62,6 +63,24 @@ func (transaction *TokenMintTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
+func (transaction *TokenMintTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenMintTransaction) build() *TokenMintTransaction {
+	if !transaction.tokenID.isZero() {
+		transaction.pb.Token = transaction.tokenID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TokenMintTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -74,6 +93,7 @@ func (transaction *TokenMintTransaction) Schedule() (*ScheduleCreateTransaction,
 }
 
 func (transaction *TokenMintTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -233,6 +253,11 @@ func (transaction *TokenMintTransaction) FreezeWith(client *Client) (*TokenMintT
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenMintTransaction{}, err
+	}
+	transaction.build()
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}

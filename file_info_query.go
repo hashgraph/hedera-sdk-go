@@ -6,7 +6,8 @@ import (
 
 type FileInfoQuery struct {
 	Query
-	pb *proto.FileGetInfoQuery
+	pb     *proto.FileGetInfoQuery
+	fileID FileID
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
@@ -24,12 +25,30 @@ func NewFileInfoQuery() *FileInfoQuery {
 }
 
 func (query *FileInfoQuery) SetFileID(id FileID) *FileInfoQuery {
-	query.pb.FileID = id.toProtobuf()
+	query.fileID = id
 	return query
 }
 
 func (query *FileInfoQuery) GetFileID(id FileID) FileID {
-	return fileIDFromProtobuf(query.pb.GetFileID())
+	return query.fileID
+}
+
+func (query *FileInfoQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = FileIDValidateNetworkOnIDs(query.fileID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *FileInfoQuery) build() *FileInfoQuery {
+	if !query.fileID.isZero() {
+		query.pb.FileID = query.fileID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -45,6 +64,13 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -97,6 +123,13 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return FileInfo{}, err
+	}
+
+	query.build()
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -125,7 +158,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return FileInfo{}, err
 	}

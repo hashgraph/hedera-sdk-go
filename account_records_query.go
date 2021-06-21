@@ -8,7 +8,8 @@ import (
 // it, that were above the threshold, during the last 25 hours.
 type AccountRecordsQuery struct {
 	Query
-	pb *proto.CryptoGetAccountRecordsQuery
+	pb        *proto.CryptoGetAccountRecordsQuery
+	accountID AccountID
 }
 
 // NewAccountRecordsQuery creates an AccountRecordsQuery query which can be used to construct and execute
@@ -32,16 +33,30 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 
 // SetAccountID sets the account ID for which the records should be retrieved.
 func (query *AccountRecordsQuery) SetAccountID(id AccountID) *AccountRecordsQuery {
-	query.pb.AccountID = id.toProtobuf()
+	query.accountID = id
 	return query
 }
 
 func (query *AccountRecordsQuery) GetAccountID() AccountID {
-	if query.pb.AccountID != nil {
-		return AccountID{}
-	} else {
-		return accountIDFromProtobuf(query.pb.AccountID)
+	return query.accountID
+}
+
+func (query *AccountRecordsQuery) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	if err != nil {
+		return err
 	}
+
+	return nil
+}
+
+func (query *AccountRecordsQuery) build() *AccountRecordsQuery {
+	if !query.accountID.isZero() {
+		query.pb.AccountID = query.accountID.toProtobuf()
+	}
+
+	return query
 }
 
 func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
@@ -57,6 +72,13 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -105,6 +127,13 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return []TransactionRecord{}, err
+	}
+
+	query.build()
+
 	records := make([]TransactionRecord, 0)
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
@@ -135,7 +164,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err = query_generatePayments(&query.Query, client, cost)
 	if err != nil {
 		return []TransactionRecord{}, err
 	}

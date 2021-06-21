@@ -25,7 +25,9 @@ import (
 // updated. If a token is created as immutable, anyone is able to extend the expiry time by paying the fee.
 type TokenCreateTransaction struct {
 	Transaction
-	pb *proto.TokenCreateTransactionBody
+	pb                 *proto.TokenCreateTransactionBody
+	treasuryAccountID  AccountID
+	autoRenewAccountID AccountID
 }
 
 func NewTokenCreateTransaction() *TokenCreateTransaction {
@@ -168,6 +170,29 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return key
 }
 
+func (transaction *TokenCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+	var err error
+	err = AccountIDValidateNetworkOnIDs(transaction.treasuryAccountID, id)
+	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (transaction *TokenCreateTransaction) build() *TokenCreateTransaction {
+	if !transaction.treasuryAccountID.isZero() {
+		transaction.pb.Treasury = transaction.treasuryAccountID.toProtobuf()
+	}
+
+	if !transaction.autoRenewAccountID.isZero() {
+		transaction.pb.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	}
+
+	return transaction
+}
+
 func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction.requireNotFrozen()
 
@@ -180,6 +205,7 @@ func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+	transaction.build()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -262,14 +288,14 @@ func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
 }
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
-func (transaction *TokenCreateTransaction) SetAutoRenewAccount(autoRenewAccount AccountID) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetAutoRenewAccount(id AccountID) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewAccount = autoRenewAccount.toProtobuf()
+	transaction.autoRenewAccountID = id
 	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetAutoRenewAccount())
+	return transaction.autoRenewAccountID
 }
 
 // The interval at which the auto-renew account will be charged to extend the token's expiry
@@ -439,6 +465,12 @@ func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCre
 		return transaction, nil
 	}
 	transaction.initFee(client)
+	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	if err != nil {
+		return &TokenCreateTransaction{}, err
+	}
+	transaction.build()
+
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
