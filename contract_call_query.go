@@ -82,7 +82,7 @@ func (query *ContractCallQuery) GetFunctionParameters() []byte {
 	return query.pb.FunctionParameters
 }
 
-func (query *ContractCallQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *ContractCallQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
 	if err != nil {
@@ -114,7 +114,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -167,7 +167,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}
@@ -224,7 +224,12 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		return ContractFunctionResult{}, err
 	}
 
-	return contractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult), nil
+	result := contractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult)
+	if result.ContractID != nil{
+		result.ContractID.SetNetworkName(*client.networkName)
+	}
+
+	return result, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

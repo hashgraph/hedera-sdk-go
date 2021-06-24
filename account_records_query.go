@@ -41,7 +41,7 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 	return query.accountID
 }
 
-func (query *AccountRecordsQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *AccountRecordsQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
 	if err != nil {
@@ -73,7 +73,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -127,7 +127,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return []TransactionRecord{}, err
 	}
@@ -188,7 +188,9 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {
-		records = append(records, transactionRecordFromProtobuf(element))
+		record := transactionRecordFromProtobuf(element)
+		record.TransactionID.AccountID.SetNetworkName(*client.networkName)
+		records = append(records, record)
 	}
 
 	return records, err

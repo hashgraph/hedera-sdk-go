@@ -146,7 +146,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	query.paymentTransactionID = TransactionIDGenerate(client.GetOperatorAccountID())
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -210,5 +210,8 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	return transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord), nil
+	record := transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord)
+	record.TransactionID.AccountID.SetNetworkName(*client.networkName)
+
+	return record, nil
 }

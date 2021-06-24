@@ -39,7 +39,7 @@ func TestAccountRecordQuery_Execute(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 0, len(recordsQuery))
+	assert.Equal(t, 1, len(recordsQuery))
 }
 
 func TestAccountRecordQueryCost_Execute(t *testing.T) {
@@ -77,7 +77,7 @@ func TestAccountRecordQueryCost_Execute(t *testing.T) {
 	recordsQuery, err := records.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 0, len(recordsQuery))
+	assert.Equal(t, 1, len(recordsQuery))
 }
 
 func TestAccountRecordQueryCost_BigMax_Execute(t *testing.T) {
@@ -116,7 +116,7 @@ func TestAccountRecordQueryCost_BigMax_Execute(t *testing.T) {
 	recordsQuery, err := records.Execute(env.Client)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 0, len(recordsQuery))
+	assert.Equal(t, 1, len(recordsQuery))
 }
 
 func TestAccountRecordQueryCost_SmallMax_Execute(t *testing.T) {

@@ -45,7 +45,7 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 	return topicIDFromProtobuf(transaction.pb.GetTopicID())
 }
 
-func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TopicIDValidateNetworkOnIDs(transaction.topicID, id)
 	if err != nil {
@@ -235,7 +235,7 @@ func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDel
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TopicDeleteTransaction{}, err
 	}

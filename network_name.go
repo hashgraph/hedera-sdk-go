@@ -5,18 +5,18 @@ import "fmt"
 type NetworkName string
 
 const (
-	Mainnet    NetworkName = "mainnet"
-	Testnet    NetworkName = "testnet"
-	Previewnet NetworkName = "previewnet"
+	NetworkNameMainnet    NetworkName = "mainnet"
+	NetworkNameTestnet    NetworkName = "testnet"
+	NetworkNamePreviewnet NetworkName = "previewnet"
 )
 
 //func (networkName NetworkName) String() string {
 //	switch networkName {
-//	case Mainnet:
+//	case NetworkNameMainnet:
 //		return "mainnet"
-//	case Testnet:
+//	case NetworkNameTestnet:
 //		return "testnet"
-//	case Previewnet:
+//	case NetworkNamePreviewnet:
 //		return "previewnet"
 //	}
 //
@@ -25,11 +25,11 @@ const (
 
 func (networkName NetworkName) Network() string {
 	switch networkName {
-	case Mainnet:
+	case NetworkNameMainnet:
 		return "0"
-	case Testnet:
+	case NetworkNameTestnet:
 		return "1"
-	case Previewnet:
+	case NetworkNamePreviewnet:
 		return "2"
 	}
 

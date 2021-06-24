@@ -37,7 +37,7 @@ func (query *FileContentsQuery) GetFileID(id FileID) FileID {
 	return query.fileID
 }
 
-func (query *FileContentsQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *FileContentsQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = FileIDValidateNetworkOnIDs(query.fileID, id)
 	if err != nil {
@@ -69,7 +69,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -123,7 +123,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return []byte{}, err
 	}

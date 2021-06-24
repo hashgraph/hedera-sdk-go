@@ -62,7 +62,7 @@ func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccoun
 	return transaction.transferAccountID
 }
 
-func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(transaction.deleteAccountID, id)
 	err = AccountIDValidateNetworkOnIDs(transaction.transferAccountID, id)
@@ -262,7 +262,7 @@ func (transaction *AccountDeleteTransaction) FreezeWith(client *Client) (*Accoun
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &AccountDeleteTransaction{}, err
 	}

@@ -36,7 +36,7 @@ func (query *TokenInfoQuery) GetTokenID() TokenID {
 	return query.tokenID
 }
 
-func (query *TokenInfoQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *TokenInfoQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TokenIDValidateNetworkOnIDs(query.tokenID, id)
 	if err != nil {
@@ -68,7 +68,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -127,7 +127,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return TokenInfo{}, err
 	}
@@ -185,7 +185,12 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	return tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo), nil
+	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
+	info.TokenID.SetNetworkName(*client.networkName)
+	info.Treasury.SetNetworkName(*client.networkName)
+	info.AutoRenewAccountID.SetNetworkName(*client.networkName)
+
+	return info, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

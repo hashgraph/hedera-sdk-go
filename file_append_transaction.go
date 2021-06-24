@@ -66,7 +66,7 @@ func (transaction *FileAppendTransaction) GetContents() []byte {
 	return transaction.contents
 }
 
-func (transaction *FileAppendTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *FileAppendTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
 	if err != nil {
@@ -296,7 +296,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 	}
 
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &FileAppendTransaction{}, err
 	}

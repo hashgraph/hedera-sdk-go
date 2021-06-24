@@ -140,7 +140,7 @@ func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *AccountCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *AccountCreateTransaction) validateNetworkOnIDs(id *Client) error {
 	return AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
 }
 
@@ -351,7 +351,7 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &AccountCreateTransaction{}, err
 	}

@@ -59,7 +59,7 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 	return query.contractID
 }
 
-func (query *AccountBalanceQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *AccountBalanceQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
 	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
@@ -100,7 +100,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -154,7 +154,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return AccountBalance{}, err
 	}
@@ -181,7 +181,9 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 
 	tokens := make(map[TokenID]uint64, len(resp.query.GetCryptogetAccountBalance().TokenBalances))
 	for _, token := range resp.query.GetCryptogetAccountBalance().TokenBalances {
-		tokens[tokenIDFromProtobuf(token.TokenId)] = token.Balance
+		t := tokenIDFromProtobuf(token.TokenId)
+		t.SetNetworkName(*client.networkName)
+		tokens[t] = token.Balance
 	}
 
 	return AccountBalance{

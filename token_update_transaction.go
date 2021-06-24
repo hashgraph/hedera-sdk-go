@@ -228,7 +228,7 @@ func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
 	return ""
 }
 
-func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
 	err = AccountIDValidateNetworkOnIDs(transaction.treasuryAccountID, id)
@@ -440,7 +440,7 @@ func (transaction *TokenUpdateTransaction) FreezeWith(client *Client) (*TokenUpd
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenUpdateTransaction{}, err
 	}

@@ -41,7 +41,7 @@ func (transaction *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
 	return transaction.scheduleID
 }
 
-func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = ScheduleIDValidateNetworkOnIDs(transaction.scheduleID, id)
 	if err != nil {
@@ -231,7 +231,7 @@ func (transaction *ScheduleDeleteTransaction) FreezeWith(client *Client) (*Sched
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &ScheduleDeleteTransaction{}, err
 	}

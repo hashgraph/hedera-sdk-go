@@ -63,7 +63,7 @@ func (transaction *TokenMintTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
-func (transaction *TokenMintTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TokenMintTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
 	if err != nil {
@@ -253,7 +253,7 @@ func (transaction *TokenMintTransaction) FreezeWith(client *Client) (*TokenMintT
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenMintTransaction{}, err
 	}

@@ -64,7 +64,7 @@ func (transaction *TokenUnfreezeTransaction) GetAccountID() AccountID {
 	return transaction.accountID
 }
 
-func (transaction *TokenUnfreezeTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TokenUnfreezeTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
 	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
@@ -255,7 +255,7 @@ func (transaction *TokenUnfreezeTransaction) UnfreezeWith(client *Client) (*Toke
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenUnfreezeTransaction{}, err
 	}

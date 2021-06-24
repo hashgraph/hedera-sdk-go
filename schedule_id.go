@@ -23,9 +23,9 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 	var err error
 
 	var networkNames = []NetworkName{
-		Mainnet,
-		Testnet,
-		Previewnet,
+		NetworkNameMainnet,
+		NetworkNameTestnet,
+		NetworkNamePreviewnet,
 	}
 
 	var network NetworkName
@@ -56,22 +56,27 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 	}, nil
 }
 
-func ScheduleIDValidateNetworkOnIDs(id ScheduleID, other AccountID) error {
-	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+func ScheduleIDValidateNetworkOnIDs(id ScheduleID, other *Client) error {
+	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
 		return errNetworkMismatch
 	}
 
 	return nil
 }
 
+func (id *ScheduleID) SetNetworkName(network NetworkName) {
+	id.Network = &network
+	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+	id.Checksum = &checksum
+}
+
 // String returns the string representation of an ScheduleID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id ScheduleID) String() string {
-	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
-	if err != nil {
+	if id.Network == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, checksum.correctChecksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, *id.Checksum)
 }
 
 func (id ScheduleID) toProtobuf() *proto.ScheduleID {

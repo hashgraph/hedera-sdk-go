@@ -90,7 +90,7 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 	return query
 }
 
-func (query *TopicMessageQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *TopicMessageQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TopicIDValidateNetworkOnIDs(query.topicID, id)
 	if err != nil {
@@ -111,7 +111,8 @@ func (query *TopicMessageQuery) build() *TopicMessageQuery {
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	handle := SubscriptionHandle{}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	query.topicID.SetNetworkName(*client.networkName)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return SubscriptionHandle{}, err
 	}

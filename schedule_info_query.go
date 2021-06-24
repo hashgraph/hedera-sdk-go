@@ -33,7 +33,7 @@ func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
 	return query.scheduleID
 }
 
-func (query *ScheduleInfoQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *ScheduleInfoQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = ScheduleIDValidateNetworkOnIDs(query.scheduleID, id)
 	if err != nil {
@@ -65,7 +65,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -123,7 +123,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
@@ -177,7 +177,15 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		return ScheduleInfo{}, err
 	}
 
-	return scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo), nil
+	info := scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo)
+	info.PayerAccountID.SetNetworkName(*client.networkName)
+	info.CreatorAccountID.SetNetworkName(*client.networkName)
+	info.ScheduleID.SetNetworkName(*client.networkName)
+	if info.ScheduledTransactionID != nil{
+		info.ScheduledTransactionID.AccountID.SetNetworkName(*client.networkName)
+	}
+
+	return info, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

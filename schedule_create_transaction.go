@@ -89,7 +89,7 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 	return transaction, nil
 }
 
-func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(transaction.payerAccountID, id)
 	if err != nil {
@@ -259,7 +259,7 @@ func (transaction *ScheduleCreateTransaction) FreezeWith(client *Client) (*Sched
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &ScheduleCreateTransaction{}, err
 	}
