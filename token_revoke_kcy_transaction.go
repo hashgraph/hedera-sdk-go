@@ -63,7 +63,7 @@ func (transaction *TokenRevokeKycTransaction) GetAccountID() AccountID {
 	return transaction.accountID
 }
 
-func (transaction *TokenRevokeKycTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TokenRevokeKycTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
 	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
@@ -259,7 +259,7 @@ func (transaction *TokenRevokeKycTransaction) FreezeWith(client *Client) (*Token
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenRevokeKycTransaction{}, err
 	}

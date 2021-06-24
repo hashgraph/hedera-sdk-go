@@ -37,9 +37,9 @@ func FileIDFromString(data string) (FileID, error) {
 	var err error
 
 	var networkNames = []NetworkName{
-		Mainnet,
-		Testnet,
-		Previewnet,
+		NetworkNameMainnet,
+		NetworkNameTestnet,
+		NetworkNamePreviewnet,
 	}
 
 	var network NetworkName
@@ -69,12 +69,18 @@ func FileIDFromString(data string) (FileID, error) {
 	}, nil
 }
 
-func FileIDValidateNetworkOnIDs(id FileID, other AccountID) error {
-	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+func FileIDValidateNetworkOnIDs(id FileID, other *Client) error {
+	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
 		return errNetworkMismatch
 	}
 
 	return nil
+}
+
+func (id *FileID) SetNetworkName(network NetworkName) {
+	id.Network = &network
+	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+	id.Checksum = &checksum
 }
 
 func FileIDFromSolidityAddress(s string) (FileID, error) {
@@ -95,11 +101,10 @@ func (id FileID) isZero() bool {
 }
 
 func (id FileID) String() string {
-	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
-	if err != nil {
+	if id.Network == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.File, checksum.correctChecksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.File, *id.Checksum)
 }
 
 func (id FileID) ToSolidityAddress() string {

@@ -17,5 +17,5 @@ func TestAccountIDChecksumToString(t *testing.T) {
 		Realm:   150,
 		Account: 520,
 	}
-	assert.Equal(t, id.String(), "50.150.520-ilqjy")
+	assert.Equal(t, id.String(), "50.150.520")
 }

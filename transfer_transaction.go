@@ -138,7 +138,7 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 	return transaction
 }
 
-func (transaction *TransferTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TransferTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	for tokenID, accountMap := range transaction.tokenTransfers {
 		err = TokenIDValidateNetworkOnIDs(tokenID, id)
@@ -365,7 +365,7 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 		return transaction, nil
 	}
 
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TransferTransaction{}, err
 	}

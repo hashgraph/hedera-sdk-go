@@ -24,9 +24,9 @@ func AccountIDFromString(data string) (AccountID, error) {
 	var err error
 
 	var networkNames = []NetworkName{
-		Mainnet,
-		Testnet,
-		Previewnet,
+		NetworkNameMainnet,
+		NetworkNameTestnet,
+		NetworkNamePreviewnet,
 	}
 
 	var network NetworkName
@@ -57,6 +57,12 @@ func AccountIDFromString(data string) (AccountID, error) {
 	}, nil
 }
 
+func (id *AccountID) SetNetworkName(network NetworkName) {
+	id.Network = &network
+	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	id.Checksum = &checksum
+}
+
 // AccountIDFromSolidityAddress constructs an AccountID from a string
 // representation of a solidity address
 func AccountIDFromSolidityAddress(s string) (AccountID, error) {
@@ -82,9 +88,9 @@ func (id *AccountID) GetNetworkFromChecksum() error {
 	var err error
 
 	var networkNames = []NetworkName{
-		Mainnet,
-		Testnet,
-		Previewnet,
+		NetworkNameMainnet,
+		NetworkNameTestnet,
+		NetworkNamePreviewnet,
 	}
 
 	var network NetworkName
@@ -103,8 +109,8 @@ func (id *AccountID) GetNetworkFromChecksum() error {
 	return nil
 }
 
-func AccountIDValidateNetworkOnIDs(id AccountID, other AccountID) error {
-	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+func AccountIDValidateNetworkOnIDs(id AccountID, other *Client) error {
+	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
 		return errNetworkMismatch
 	}
 
@@ -114,11 +120,10 @@ func AccountIDValidateNetworkOnIDs(id AccountID, other AccountID) error {
 // String returns the string representation of an AccountID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id AccountID) String() string {
-	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
-	if err != nil {
+	if id.Network == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, checksum.correctChecksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, *id.Checksum)
 }
 
 // ToSolidityAddress returns the string representation of the AccountID as a

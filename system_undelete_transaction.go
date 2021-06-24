@@ -52,7 +52,7 @@ func (transaction *SystemUndeleteTransaction) GetFileID() FileID {
 	return transaction.fileID
 }
 
-func (transaction *SystemUndeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *SystemUndeleteTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
 	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
@@ -265,7 +265,7 @@ func (transaction *SystemUndeleteTransaction) FreezeWith(client *Client) (*Syste
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &SystemUndeleteTransaction{}, err
 	}

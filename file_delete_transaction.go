@@ -41,7 +41,7 @@ func (transaction *FileDeleteTransaction) GetFileID() FileID {
 	return fileIDFromProtobuf(transaction.pb.GetFileID())
 }
 
-func (transaction *FileDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *FileDeleteTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
 	if err != nil {
@@ -232,7 +232,7 @@ func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDelet
 	}
 
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &FileDeleteTransaction{}, err
 	}

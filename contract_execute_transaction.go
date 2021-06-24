@@ -95,7 +95,7 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 	return transaction
 }
 
-func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
 	if err != nil {
@@ -288,7 +288,7 @@ func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*Cont
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &ContractExecuteTransaction{}, err
 	}

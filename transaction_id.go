@@ -188,3 +188,11 @@ func (id TransactionID) SetScheduled(scheduled bool) TransactionID {
 func (id TransactionID) GetScheduled() bool {
 	return id.scheduled
 }
+
+func TransactionIDValidateNetworkOnIDs(id TransactionID, other AccountID) error {
+	if !id.AccountID.isZero() && !other.isZero() && id.AccountID.Network != nil && other.Network != nil && *id.AccountID.Network != *other.Network {
+		return errNetworkMismatch
+	}
+
+	return nil
+}

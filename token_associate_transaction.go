@@ -93,7 +93,7 @@ func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 	return tokenIDs
 }
 
-func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
 	for _, tokenID := range transaction.tokens {
@@ -296,7 +296,7 @@ func (transaction *TokenAssociateTransaction) FreezeWith(client *Client) (*Token
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenAssociateTransaction{}, err
 	}

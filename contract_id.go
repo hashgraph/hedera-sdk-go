@@ -21,9 +21,9 @@ func ContractIDFromString(data string) (ContractID, error) {
 	var err error
 
 	var networkNames = []NetworkName{
-		Mainnet,
-		Testnet,
-		Previewnet,
+		NetworkNameMainnet,
+		NetworkNameTestnet,
+		NetworkNamePreviewnet,
 	}
 
 	var network NetworkName
@@ -54,12 +54,18 @@ func ContractIDFromString(data string) (ContractID, error) {
 	}, nil
 }
 
-func ContractIDValidateNetworkOnIDs(id ContractID, other AccountID) error {
-	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+func ContractIDValidateNetworkOnIDs(id ContractID, other *Client) error {
+	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
 		return errNetworkMismatch
 	}
 
 	return nil
+}
+
+func (id *ContractID) SetNetworkName(network NetworkName) {
+	id.Network = &network
+	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	id.Checksum = &checksum
 }
 
 // ContractIDFromSolidityAddress constructs a ContractID from a string representation of a solidity address
@@ -78,11 +84,10 @@ func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 
 // String returns the string representation of a ContractID formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func (id ContractID) String() string {
-	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
-	if err != nil {
+	if id.Network == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, checksum.correctChecksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, *id.Checksum)
 }
 
 // ToSolidityAddress returns the string representation of the ContractID as a solidity address.

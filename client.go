@@ -22,6 +22,7 @@ type Client struct {
 
 	network       network
 	mirrorNetwork *mirrorNetwork
+	networkName   *NetworkName
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -76,7 +77,7 @@ var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
-	return newClient(network, []string{})
+	return newClient(network, []string{}, "mainnet")
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
@@ -84,7 +85,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return newClient(mainnetNodes, mainnetMirror)
+	return newClient(mainnetNodes, mainnetMirror, NetworkNameMainnet)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -92,7 +93,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return newClient(testnetNodes, testnetMirror)
+	return newClient(testnetNodes, testnetMirror, NetworkNameTestnet)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -100,17 +101,18 @@ func ClientForTestnet() *Client {
 // Most users will want to set an operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return newClient(previewnetNodes, previewnetMirror)
+	return newClient(previewnetNodes, previewnetMirror, NetworkNamePreviewnet)
 }
 
 // newClient takes in a map of node addresses to their respective IDS (network)
 // and returns a Client instance which can be used to
-func newClient(network map[string]AccountID, mirrorNetwork []string) *Client {
+func newClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
 	client := Client{
 		maxQueryPayment:   defaultMaxQueryPayment,
 		maxTransactionFee: defaultMaxTransactionFee,
 		network:           newNetwork(),
 		mirrorNetwork:     newMirrorNetwork(),
+		networkName:       &name,
 	}
 
 	client.SetNetwork(network)
@@ -198,16 +200,16 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
-		client = newClient(network, arr)
+		client = newClient(network, arr, NetworkNameMainnet)
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
 			case "mainnet":
-				client = newClient(network, mainnetMirror)
+				client = newClient(network, mainnetMirror, NetworkNameMainnet)
 			case "previewnet":
-				client = newClient(network, previewnetMirror)
+				client = newClient(network, previewnetMirror, NetworkNamePreviewnet)
 			case "testnet":
-				client = newClient(network, testnetMirror)
+				client = newClient(network, testnetMirror, NetworkNameTestnet)
 			}
 		}
 	default:

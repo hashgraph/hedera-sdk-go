@@ -170,7 +170,7 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return key
 }
 
-func (transaction *TokenCreateTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TokenCreateTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(transaction.treasuryAccountID, id)
 	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
@@ -465,7 +465,7 @@ func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCre
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenCreateTransaction{}, err
 	}

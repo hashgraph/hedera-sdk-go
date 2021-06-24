@@ -34,11 +34,10 @@ func (id *TokenID) toProtobuf() *proto.TokenID {
 }
 
 func (id TokenID) String() string {
-	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
-	if err != nil {
+	if id.Network == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Token, checksum.correctChecksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Token, *id.Checksum)
 }
 
 func (id TokenID) ToBytes() []byte {
@@ -70,9 +69,9 @@ func TokenIDFromString(data string) (TokenID, error) {
 	var err error
 
 	var networkNames = []NetworkName{
-		Mainnet,
-		Testnet,
-		Previewnet,
+		NetworkNameMainnet,
+		NetworkNameTestnet,
+		NetworkNamePreviewnet,
 	}
 
 	var network NetworkName
@@ -103,12 +102,18 @@ func TokenIDFromString(data string) (TokenID, error) {
 	}, nil
 }
 
-func TokenIDValidateNetworkOnIDs(id TokenID, other AccountID) error {
-	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+func TokenIDValidateNetworkOnIDs(id TokenID, other *Client) error {
+	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
 		return errNetworkMismatch
 	}
 
 	return nil
+}
+
+func (id *TokenID) SetNetworkName(network NetworkName) {
+	id.Network = &network
+	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+	id.Checksum = &checksum
 }
 
 func (id TokenID) isZero() bool {

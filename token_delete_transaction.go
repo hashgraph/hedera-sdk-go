@@ -46,7 +46,7 @@ func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
 	return tokenIDFromProtobuf(transaction.pb.GetToken())
 }
 
-func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
 	if err != nil {
@@ -236,7 +236,7 @@ func (transaction *TokenDeleteTransaction) FreezeWith(client *Client) (*TokenDel
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenDeleteTransaction{}, err
 	}

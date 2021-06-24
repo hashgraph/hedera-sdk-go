@@ -41,7 +41,7 @@ func (query *AccountStakersQuery) GetAccountID() AccountID {
 	return query.accountID
 }
 
-func (query *AccountStakersQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *AccountStakersQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
 	if err != nil {
@@ -73,7 +73,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -127,7 +127,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return []Transfer{}, err
 	}
@@ -188,8 +188,10 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	var stakers = make([]Transfer, len(resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker))
 
 	for i, element := range resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
+		accountID := accountIDFromProtobuf(element.AccountID)
+		accountID.SetNetworkName(*client.networkName)
 		stakers[i] = Transfer{
-			AccountID: accountIDFromProtobuf(element.AccountID),
+			AccountID: accountID,
 			Amount:    HbarFromTinybar(element.Amount),
 		}
 	}

@@ -33,7 +33,7 @@ func (query *FileInfoQuery) GetFileID(id FileID) FileID {
 	return query.fileID
 }
 
-func (query *FileInfoQuery) validateNetworkOnIDs(id AccountID) error {
+func (query *FileInfoQuery) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = FileIDValidateNetworkOnIDs(query.fileID, id)
 	if err != nil {
@@ -65,7 +65,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err = query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -123,7 +123,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return FileInfo{}, err
 	}
@@ -181,7 +181,13 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	return fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)
+	info, err := fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)
+	if err != nil {
+		return FileInfo{}, err
+	}
+	info.FileID.SetNetworkName(*client.networkName)
+
+	return info, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

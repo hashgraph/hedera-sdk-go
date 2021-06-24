@@ -21,9 +21,9 @@ func TopicIDFromString(data string) (TopicID, error) {
 	var err error
 
 	var networkNames = []NetworkName{
-		Mainnet,
-		Testnet,
-		Previewnet,
+		NetworkNameMainnet,
+		NetworkNameTestnet,
+		NetworkNamePreviewnet,
 	}
 
 	var network NetworkName
@@ -54,12 +54,18 @@ func TopicIDFromString(data string) (TopicID, error) {
 	}, nil
 }
 
-func TopicIDValidateNetworkOnIDs(id TopicID, other AccountID) error {
-	if !id.isZero() && !other.isZero() && id.Network != nil && other.Network != nil && *id.Network != *other.Network {
+func TopicIDValidateNetworkOnIDs(id TopicID, other *Client) error {
+	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
 		return errNetworkMismatch
 	}
 
 	return nil
+}
+
+func (id *TopicID) SetNetworkName(network NetworkName) {
+	id.Network = &network
+	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
+	id.Checksum = &checksum
 }
 
 func (id TopicID) isZero() bool {
@@ -68,11 +74,10 @@ func (id TopicID) isZero() bool {
 
 // String returns the string representation of a TopicID in `Shard.Realm.Topic` (for example "0.0.3")
 func (id TopicID) String() string {
-	checksum, err := checksumParseAddress("", fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
-	if err != nil {
+	if id.Network == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, checksum.correctChecksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, *id.Checksum)
 }
 
 func (id TopicID) toProtobuf() *proto.TopicID {

@@ -89,7 +89,7 @@ func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
 	return transaction.accountID
 }
 
-func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
 	if err != nil {
@@ -259,7 +259,7 @@ func (transaction *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHash
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &LiveHashAddTransaction{}, err
 	}

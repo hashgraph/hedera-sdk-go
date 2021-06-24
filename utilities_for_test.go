@@ -53,6 +53,12 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		env.OperatorID, err = AccountIDFromString(configOperatorID)
 		assert.NoError(t, err)
 
+		if *env.Client.networkName == NetworkNameTestnet {
+			env.OperatorID.SetNetworkName(NetworkNameTestnet)
+		} else {
+			env.OperatorID.SetNetworkName(NetworkNamePreviewnet)
+		}
+
 		env.OperatorKey, err = PrivateKeyFromString(configOperatorKey)
 		assert.NoError(t, err)
 
@@ -93,7 +99,7 @@ func newMockClient() (*Client, error) {
 	var net = make(map[string]AccountID)
 	net["nonexistent-testnet"] = AccountID{Account: 3}
 
-	client := newClient(net, []string{})
+	client := newClient(net, []string{}, "testnet")
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
 	return client, nil

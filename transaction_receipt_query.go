@@ -162,5 +162,28 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		return TransactionReceipt{}, err
 	}
 
-	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
+	receipt := transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt())
+	if receipt.TokenID != nil {
+		receipt.TokenID.SetNetworkName(*client.networkName)
+	}
+	if receipt.TopicID != nil {
+		receipt.TopicID.SetNetworkName(*client.networkName)
+	}
+	if receipt.FileID != nil {
+		receipt.FileID.SetNetworkName(*client.networkName)
+	}
+	if receipt.ContractID != nil {
+		receipt.ContractID.SetNetworkName(*client.networkName)
+	}
+	if receipt.ScheduleID != nil {
+		receipt.ScheduleID.SetNetworkName(*client.networkName)
+	}
+	if receipt.AccountID != nil {
+		receipt.AccountID.SetNetworkName(*client.networkName)
+	}
+	if receipt.ScheduledTransactionID != nil {
+		receipt.ScheduledTransactionID.AccountID.SetNetworkName(*client.networkName)
+	}
+
+	return receipt, nil
 }

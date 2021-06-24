@@ -151,7 +151,7 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	return ""
 }
 
-func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(id AccountID) error {
+func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(id *Client) error {
 	var err error
 	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
 	err = AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
@@ -357,7 +357,7 @@ func (transaction *ContractUpdateTransaction) FreezeWith(client *Client) (*Contr
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client.GetOperatorAccountID())
+	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &ContractUpdateTransaction{}, err
 	}
