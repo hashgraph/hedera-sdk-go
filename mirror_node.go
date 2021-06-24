@@ -1,10 +1,13 @@
 package hedera
 
 import (
+	"strings"
+	"time"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
-	"time"
 
 	"google.golang.org/grpc"
 )
@@ -32,7 +35,15 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 		PermitWithoutStream: true,
 	}
 
-	conn, err := grpc.Dial(node.address, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+    var security grpc.DialOption
+
+    if strings.HasSuffix(node.address, ":50212") || strings.HasSuffix(node.address, ":443") {
+        security = grpc.WithTransportCredentials(credentials.NewTLS(nil)) 
+    } else {
+        security = grpc.WithInsecure()
+    }
+
+	conn, err := grpc.Dial(node.address, security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
 		return nil, errors.Wrapf(err, "error connecting to mirror at %s", node.address)
 	}
