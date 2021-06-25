@@ -68,11 +68,17 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 	return transaction.transferAccountID
 }
 
-func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
-	err = ContractIDValidateNetworkOnIDs(transaction.transferContactID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.transferAccountID, id)
+	err = transaction.contractID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.transferContactID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.transferAccountID.validate(client)
 	if err != nil {
 		return err
 	}

@@ -85,10 +85,13 @@ func (transaction *TokenWipeTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
-func (transaction *TokenWipeTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	err = transaction.tokenID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.accountID.validate(client)
 	if err != nil {
 		return err
 	}

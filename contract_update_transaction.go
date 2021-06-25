@@ -151,11 +151,17 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	return ""
 }
 
-func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
-	err = FileIDValidateNetworkOnIDs(transaction.bytecodeFileID, id)
+	err = transaction.contractID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.proxyAccountID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.bytecodeFileID.validate(client)
 	if err != nil {
 		return err
 	}

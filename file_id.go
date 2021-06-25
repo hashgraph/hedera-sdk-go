@@ -12,7 +12,6 @@ type FileID struct {
 	Realm    uint64
 	File     uint64
 	Checksum *string
-	Network  *NetworkName
 }
 
 // FileIDForAddressBook returns the public node address book for the current network.
@@ -42,14 +41,12 @@ func FileIDFromString(data string) (FileID, error) {
 		NetworkNamePreviewnet,
 	}
 
-	var network NetworkName
 	for _, name := range networkNames {
 		checksum, err = checksumParseAddress(name.Network(), data)
 		if err != nil {
 			return FileID{}, err
 		}
-		if checksum.status != 1 {
-			network = name
+		if checksum.status == 2 || checksum.status == 3 {
 			break
 		}
 	}
@@ -65,21 +62,33 @@ func FileIDFromString(data string) (FileID, error) {
 		Realm:    uint64(checksum.num2),
 		File:     uint64(checksum.num3),
 		Checksum: &tempChecksum,
-		Network:  &network,
 	}, nil
 }
 
-func FileIDValidateNetworkOnIDs(id FileID, other *Client) error {
-	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
-		return errNetworkMismatch
+func (id *FileID) validate(client *Client) error {
+	if !id.isZero() && client != nil && client.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+		if err != nil {
+			return err
+		}
+		err = checksumVerify(tempChecksum.status)
+		if err != nil {
+			return err
+		}
+		if id.Checksum == nil {
+			id.Checksum = &tempChecksum.correctChecksum
+			return nil
+		}
+		if tempChecksum.correctChecksum != *id.Checksum {
+			return errNetworkMismatch
+		}
 	}
 
 	return nil
 }
 
-func (id *FileID) SetNetworkName(network NetworkName) {
-	id.Network = &network
-	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+func (id *FileID) setNetworkWithClient(client *Client) {
+	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
 	id.Checksum = &checksum
 }
 
@@ -101,7 +110,7 @@ func (id FileID) isZero() bool {
 }
 
 func (id FileID) String() string {
-	if id.Network == nil {
+	if id.Checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File)
 	}
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.File, *id.Checksum)

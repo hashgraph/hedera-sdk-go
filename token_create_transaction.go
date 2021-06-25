@@ -170,10 +170,13 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return key
 }
 
-func (transaction *TokenCreateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(transaction.treasuryAccountID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
+	err = transaction.treasuryAccountID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.autoRenewAccountID.validate(client)
 	if err != nil {
 		return err
 	}

@@ -228,11 +228,17 @@ func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
 	return ""
 }
 
-func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.treasuryAccountID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
+	err = transaction.tokenID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.treasuryAccountID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.autoRenewAccountID.validate(client)
 	if err != nil {
 		return err
 	}

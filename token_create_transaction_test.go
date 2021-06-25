@@ -199,3 +199,56 @@ func Test_TokenCreate_AdminSign(t *testing.T) {
 
 	assert.NotNil(t, receipt.TokenID)
 }
+
+func Test_TokenCreate_Network(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	keys := make([]PrivateKey, 6)
+	pubKeys := make([]PublicKey, 6)
+
+	for i := range keys {
+		newKey, err := GeneratePrivateKey()
+		assert.NoError(t, err)
+
+		keys[i] = newKey
+		pubKeys[i] = newKey.PublicKey()
+	}
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(pubKeys[0]).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	newClient := Client{}
+	networkName := NetworkNameMainnet
+	newClient.networkName = &networkName
+	tokenID.setNetworkWithClient(&newClient)
+
+	_, err = NewTokenInfoQuery().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.Error(t, err)
+}

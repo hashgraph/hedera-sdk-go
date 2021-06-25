@@ -122,3 +122,35 @@ func Test_TopicCreate_JustSetMemo(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 }
+
+func TestTopicNetwork_Execute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
+
+	resp, err := NewTopicCreateTransaction().
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetSubmitKey(env.Client.GetOperatorPublicKey()).
+		SetTopicMemo(topicMemo).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	topicID := *receipt.TopicID
+	assert.NotNil(t, topicID)
+
+	newClient := Client{}
+	networkName := NetworkNameMainnet
+	newClient.networkName = &networkName
+	topicID.setNetworkWithClient(&newClient)
+
+	_, err = NewTopicInfoQuery().
+		SetTopicID(topicID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetQueryPayment(NewHbar(1)).
+		Execute(env.Client)
+	assert.Error(t, err)
+}

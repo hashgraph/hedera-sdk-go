@@ -143,10 +143,13 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *ContractCreateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = FileIDValidateNetworkOnIDs(transaction.byteCodeFileID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
+	err = transaction.byteCodeFileID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.proxyAccountID.validate(client)
 	if err != nil {
 		return err
 	}

@@ -36,9 +36,9 @@ func (query *TopicInfoQuery) GetTopicID() TopicID {
 	return query.topicID
 }
 
-func (query *TopicInfoQuery) validateNetworkOnIDs(id *Client) error {
+func (query *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TopicIDValidateNetworkOnIDs(query.topicID, id)
+	err = query.topicID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -189,8 +189,8 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	if err != nil {
 		return TopicInfo{}, err
 	}
-	if info.AutoRenewAccountID != nil{
-		info.AutoRenewAccountID.SetNetworkName(*client.networkName)
+	if info.AutoRenewAccountID != nil {
+		info.AutoRenewAccountID.setNetworkWithClient(client)
 	}
 	return info, nil
 }

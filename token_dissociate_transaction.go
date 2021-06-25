@@ -76,11 +76,14 @@ func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
 	return tokenIDs
 }
 
-func (transaction *TokenDissociateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	err = transaction.accountID.validate(client)
+	if err != nil {
+		return err
+	}
 	for _, tokenID := range transaction.tokens {
-		err = TokenIDValidateNetworkOnIDs(tokenID, id)
+		err = tokenID.validate(client)
 	}
 	if err != nil {
 		return err

@@ -40,9 +40,9 @@ func (query *ContractInfoQuery) GetContractID() ContractID {
 	return query.contractID
 }
 
-func (query *ContractInfoQuery) validateNetworkOnIDs(id *Client) error {
+func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	err = query.contractID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -192,8 +192,8 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	if err != nil {
 		return ContractInfo{}, err
 	}
-	info.AccountID.SetNetworkName(*client.networkName)
-	info.ContractID.SetNetworkName(*client.networkName)
+	info.AccountID.setNetworkWithClient(client)
+	info.ContractID.setNetworkWithClient(client)
 
 	return info, nil
 }

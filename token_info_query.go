@@ -36,9 +36,9 @@ func (query *TokenInfoQuery) GetTokenID() TokenID {
 	return query.tokenID
 }
 
-func (query *TokenInfoQuery) validateNetworkOnIDs(id *Client) error {
+func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TokenIDValidateNetworkOnIDs(query.tokenID, id)
+	err = query.tokenID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -186,9 +186,9 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	}
 
 	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
-	info.TokenID.SetNetworkName(*client.networkName)
-	info.Treasury.SetNetworkName(*client.networkName)
-	info.AutoRenewAccountID.SetNetworkName(*client.networkName)
+	info.TokenID.setNetworkWithClient(client)
+	info.Treasury.setNetworkWithClient(client)
+	info.AutoRenewAccountID.setNetworkWithClient(client)
 
 	return info, nil
 }

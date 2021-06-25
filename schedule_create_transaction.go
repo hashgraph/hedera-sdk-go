@@ -89,9 +89,9 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 	return transaction, nil
 }
 
-func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(transaction.payerAccountID, id)
+	err = transaction.payerAccountID.validate(client)
 	if err != nil {
 		return err
 	}

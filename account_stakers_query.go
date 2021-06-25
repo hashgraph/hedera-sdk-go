@@ -41,9 +41,9 @@ func (query *AccountStakersQuery) GetAccountID() AccountID {
 	return query.accountID
 }
 
-func (query *AccountStakersQuery) validateNetworkOnIDs(id *Client) error {
+func (query *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	err = query.accountID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	for i, element := range resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
 		accountID := accountIDFromProtobuf(element.AccountID)
-		accountID.SetNetworkName(*client.networkName)
+		accountID.setNetworkWithClient(client)
 		stakers[i] = Transfer{
 			AccountID: accountID,
 			Amount:    HbarFromTinybar(element.Amount),

@@ -136,9 +136,9 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	return transaction
 }
 
-func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TopicIDValidateNetworkOnIDs(transaction.topicID, id)
+	err = transaction.topicID.validate(client)
 	if err != nil {
 		return err
 	}

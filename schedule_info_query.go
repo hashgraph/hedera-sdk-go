@@ -33,9 +33,9 @@ func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
 	return query.scheduleID
 }
 
-func (query *ScheduleInfoQuery) validateNetworkOnIDs(id *Client) error {
+func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ScheduleIDValidateNetworkOnIDs(query.scheduleID, id)
+	err = query.scheduleID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -178,11 +178,11 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	}
 
 	info := scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo)
-	info.PayerAccountID.SetNetworkName(*client.networkName)
-	info.CreatorAccountID.SetNetworkName(*client.networkName)
-	info.ScheduleID.SetNetworkName(*client.networkName)
-	if info.ScheduledTransactionID != nil{
-		info.ScheduledTransactionID.AccountID.SetNetworkName(*client.networkName)
+	info.PayerAccountID.setNetworkWithClient(client)
+	info.CreatorAccountID.setNetworkWithClient(client)
+	info.ScheduleID.setNetworkWithClient(client)
+	if info.ScheduledTransactionID != nil {
+		info.ScheduledTransactionID.AccountID.setNetworkWithClient(client)
 	}
 
 	return info, nil

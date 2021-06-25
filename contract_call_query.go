@@ -82,9 +82,9 @@ func (query *ContractCallQuery) GetFunctionParameters() []byte {
 	return query.pb.FunctionParameters
 }
 
-func (query *ContractCallQuery) validateNetworkOnIDs(id *Client) error {
+func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	err = query.contractID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -225,8 +225,8 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	}
 
 	result := contractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult)
-	if result.ContractID != nil{
-		result.ContractID.SetNetworkName(*client.networkName)
+	if result.ContractID != nil {
+		result.ContractID.setNetworkWithClient(client)
 	}
 
 	return result, nil

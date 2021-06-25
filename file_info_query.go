@@ -33,9 +33,9 @@ func (query *FileInfoQuery) GetFileID(id FileID) FileID {
 	return query.fileID
 }
 
-func (query *FileInfoQuery) validateNetworkOnIDs(id *Client) error {
+func (query *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = FileIDValidateNetworkOnIDs(query.fileID, id)
+	err = query.fileID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	if err != nil {
 		return FileInfo{}, err
 	}
-	info.FileID.SetNetworkName(*client.networkName)
+	info.FileID.setNetworkWithClient(client)
 
 	return info, nil
 }

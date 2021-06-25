@@ -106,9 +106,9 @@ func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 	return transaction.autoRenewAccountID
 }
 
-func (transaction *TopicCreateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
+	err = transaction.autoRenewAccountID.validate(client)
 	if err != nil {
 		return err
 	}

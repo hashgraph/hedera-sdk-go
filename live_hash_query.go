@@ -42,9 +42,9 @@ func (query *LiveHashQuery) GetGetHash() []byte {
 	return query.pb.Hash
 }
 
-func (query *LiveHashQuery) validateNetworkOnIDs(id *Client) error {
+func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	err = query.accountID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	if err != nil {
 		return LiveHash{}, err
 	}
-	liveHash.AccountID.SetNetworkName(*client.networkName)
+	liveHash.AccountID.setNetworkWithClient(client)
 
 	return liveHash, nil
 }

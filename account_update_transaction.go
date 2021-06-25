@@ -113,10 +113,13 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 	return ""
 }
 
-func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
+	err = transaction.accountID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.proxyAccountID.validate(client)
 	if err != nil {
 		return err
 	}

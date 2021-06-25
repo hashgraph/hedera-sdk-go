@@ -31,19 +31,19 @@ func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	}
 }
 
-func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
+func (transaction *FileDeleteTransaction) SetFileID(id FileID) *FileDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.FileID = fileID.toProtobuf()
+	transaction.fileID = id
 	return transaction
 }
 
 func (transaction *FileDeleteTransaction) GetFileID() FileID {
-	return fileIDFromProtobuf(transaction.pb.GetFileID())
+	return transaction.fileID
 }
 
-func (transaction *FileDeleteTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	err = transaction.fileID.validate(client)
 	if err != nil {
 		return err
 	}

@@ -104,9 +104,9 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 	return ""
 }
 
-func (transaction *FileUpdateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	err = transaction.fileID.validate(client)
 	if err != nil {
 		return err
 	}

@@ -52,10 +52,13 @@ func (transaction *SystemUndeleteTransaction) GetFileID() FileID {
 	return transaction.fileID
 }
 
-func (transaction *SystemUndeleteTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *SystemUndeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
-	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	err = transaction.contractID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.fileID.validate(client)
 	if err != nil {
 		return err
 	}
