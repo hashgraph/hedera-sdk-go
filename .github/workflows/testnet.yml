@@ -31,7 +31,9 @@ jobs:
         run: go vet .
 
       - name: Lint
-        run: if [[ $(gofmt -l ./) ]]; then false; else true; fi
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.29
 
       - name: Build
         run: go build -v .
