@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"crypto/tls"
 	"strings"
 	"time"
 
@@ -38,7 +39,7 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 	var security grpc.DialOption
 
 	if strings.HasSuffix(node.address, ":50212") || strings.HasSuffix(node.address, ":443") {
-		security = grpc.WithTransportCredentials(credentials.NewTLS(nil))
+		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
 	} else {
 		security = grpc.WithInsecure()
 	}
