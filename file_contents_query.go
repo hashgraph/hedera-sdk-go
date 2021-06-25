@@ -37,9 +37,9 @@ func (query *FileContentsQuery) GetFileID(id FileID) FileID {
 	return query.fileID
 }
 
-func (query *FileContentsQuery) validateNetworkOnIDs(id *Client) error {
+func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = FileIDValidateNetworkOnIDs(query.fileID, id)
+	err = query.fileID.validate(client)
 	if err != nil {
 		return err
 	}

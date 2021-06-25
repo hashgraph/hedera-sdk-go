@@ -140,8 +140,8 @@ func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 	return transaction.pb.GetMemo()
 }
 
-func (transaction *AccountCreateTransaction) validateNetworkOnIDs(id *Client) error {
-	return AccountIDValidateNetworkOnIDs(transaction.proxyAccountID, id)
+func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client) error {
+	return transaction.proxyAccountID.validate(client)
 }
 
 func (transaction *AccountCreateTransaction) build() *AccountCreateTransaction {

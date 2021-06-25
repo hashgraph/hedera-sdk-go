@@ -59,10 +59,13 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 	return query.contractID
 }
 
-func (query *AccountBalanceQuery) validateNetworkOnIDs(id *Client) error {
+func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
-	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	err = query.accountID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = query.contractID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -182,7 +185,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	tokens := make(map[TokenID]uint64, len(resp.query.GetCryptogetAccountBalance().TokenBalances))
 	for _, token := range resp.query.GetCryptogetAccountBalance().TokenBalances {
 		t := tokenIDFromProtobuf(token.TokenId)
-		t.SetNetworkName(*client.networkName)
+		t.setNetworkWithClient(client)
 		tokens[t] = token.Balance
 	}
 

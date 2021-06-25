@@ -63,10 +63,13 @@ func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
 	return transaction.accountID
 }
 
-func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	err = transaction.tokenID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.accountID.validate(client)
 	if err != nil {
 		return err
 	}

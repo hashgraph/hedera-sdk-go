@@ -189,9 +189,19 @@ func (id TransactionID) GetScheduled() bool {
 	return id.scheduled
 }
 
-func TransactionIDValidateNetworkOnIDs(id TransactionID, other AccountID) error {
-	if !id.AccountID.isZero() && !other.isZero() && id.AccountID.Network != nil && other.Network != nil && *id.AccountID.Network != *other.Network {
-		return errNetworkMismatch
+func (id TransactionID) TransactionIDValidateNetworkOnIDs(client *Client) error {
+	if !id.AccountID.isZero() && client != nil && client.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.AccountID.Shard, id.AccountID.Realm, id.AccountID.Account))
+		if err != nil {
+			return err
+		}
+		err = checksumVerify(tempChecksum.status)
+		if err != nil {
+			return err
+		}
+		if tempChecksum.correctChecksum != *id.AccountID.Checksum {
+			return errNetworkMismatch
+		}
 	}
 
 	return nil

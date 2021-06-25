@@ -13,7 +13,6 @@ type ScheduleID struct {
 	Realm    uint64
 	Schedule uint64
 	Checksum *string
-	Network  *NetworkName
 }
 
 // ScheduleIDFromString constructs an ScheduleID from a string formatted as
@@ -28,14 +27,12 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 		NetworkNamePreviewnet,
 	}
 
-	var network NetworkName
 	for _, name := range networkNames {
 		checksum, err = checksumParseAddress(name.Network(), data)
 		if err != nil {
 			return ScheduleID{}, err
 		}
-		if checksum.status != 1 {
-			network = name
+		if checksum.status == 2 || checksum.status == 3 {
 			break
 		}
 	}
@@ -52,28 +49,40 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 		Realm:    uint64(checksum.num2),
 		Schedule: uint64(checksum.num3),
 		Checksum: &tempChecksum,
-		Network:  &network,
 	}, nil
 }
 
-func ScheduleIDValidateNetworkOnIDs(id ScheduleID, other *Client) error {
-	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
-		return errNetworkMismatch
+func (id *ScheduleID) validate(client *Client) error {
+	if !id.isZero() && client != nil && client.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+		if err != nil {
+			return err
+		}
+		err = checksumVerify(tempChecksum.status)
+		if err != nil {
+			return err
+		}
+		if id.Checksum == nil {
+			id.Checksum = &tempChecksum.correctChecksum
+			return nil
+		}
+		if tempChecksum.correctChecksum != *id.Checksum {
+			return errNetworkMismatch
+		}
 	}
 
 	return nil
 }
 
-func (id *ScheduleID) SetNetworkName(network NetworkName) {
-	id.Network = &network
-	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+func (id *ScheduleID) setNetworkWithClient(client *Client) {
+	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 	id.Checksum = &checksum
 }
 
 // String returns the string representation of an ScheduleID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id ScheduleID) String() string {
-	if id.Network == nil {
+	if id.Checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule)
 	}
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, *id.Checksum)

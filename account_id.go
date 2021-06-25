@@ -4,7 +4,6 @@ import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -14,7 +13,6 @@ type AccountID struct {
 	Realm    uint64
 	Account  uint64
 	Checksum *string
-	Network  *NetworkName
 }
 
 // AccountIDFromString constructs an AccountID from a string formatted as
@@ -29,14 +27,12 @@ func AccountIDFromString(data string) (AccountID, error) {
 		NetworkNamePreviewnet,
 	}
 
-	var network NetworkName
 	for _, name := range networkNames {
 		checksum, err = checksumParseAddress(name.Network(), data)
 		if err != nil {
 			return AccountID{}, err
 		}
-		if checksum.status != 1 {
-			network = name
+		if checksum.status == 2 || checksum.status == 3 {
 			break
 		}
 	}
@@ -53,13 +49,11 @@ func AccountIDFromString(data string) (AccountID, error) {
 		Realm:    uint64(checksum.num2),
 		Account:  uint64(checksum.num3),
 		Checksum: &tempChecksum,
-		Network:  &network,
 	}, nil
 }
 
-func (id *AccountID) SetNetworkName(network NetworkName) {
-	id.Network = &network
-	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+func (id *AccountID) setNetworkWithClient(client *Client) {
+	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 	id.Checksum = &checksum
 }
 
@@ -76,42 +70,26 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 		Realm:    realm,
 		Account:  account,
 		Checksum: nil,
-		Network:  nil,
 	}, nil
 }
 
-func (id *AccountID) GetNetworkFromChecksum() error {
-	if id.Checksum == nil {
-		return errors.New("Checksum is missing.")
-	}
-	var checksum parseAddressResult
-	var err error
-
-	var networkNames = []NetworkName{
-		NetworkNameMainnet,
-		NetworkNameTestnet,
-		NetworkNamePreviewnet,
-	}
-
-	var network NetworkName
-	for _, name := range networkNames {
-		checksum, err = checksumParseAddress(name.Network(), fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, *id.Checksum))
+func (id *AccountID) validate(client *Client) error {
+	if !id.isZero() && client != nil && client.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err
 		}
-		if checksum.status != 1 {
-			network = name
-			break
+		err = checksumVerify(tempChecksum.status)
+		if err != nil {
+			return err
 		}
-	}
-
-	id.Network = &network
-	return nil
-}
-
-func AccountIDValidateNetworkOnIDs(id AccountID, other *Client) error {
-	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
-		return errNetworkMismatch
+		if id.Checksum == nil {
+			id.Checksum = &tempChecksum.correctChecksum
+			return nil
+		}
+		if tempChecksum.correctChecksum != *id.Checksum {
+			return errNetworkMismatch
+		}
 	}
 
 	return nil
@@ -120,7 +98,7 @@ func AccountIDValidateNetworkOnIDs(id AccountID, other *Client) error {
 // String returns the string representation of an AccountID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id AccountID) String() string {
-	if id.Network == nil {
+	if id.Checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 	}
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, *id.Checksum)
@@ -162,7 +140,6 @@ func accountIDFromProtobuf(pb *proto.AccountID) AccountID {
 		Realm:    uint64(pb.RealmNum),
 		Account:  uint64(pb.AccountNum),
 		Checksum: nil,
-		Network:  nil,
 	}
 }
 

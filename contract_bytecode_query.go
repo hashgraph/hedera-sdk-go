@@ -37,9 +37,9 @@ func (query *ContractBytecodeQuery) GetContractID() ContractID {
 	return query.contractID
 }
 
-func (query *ContractBytecodeQuery) validateNetworkOnIDs(id *Client) error {
+func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ContractIDValidateNetworkOnIDs(query.contractID, id)
+	err = query.contractID.validate(client)
 	if err != nil {
 		return err
 	}

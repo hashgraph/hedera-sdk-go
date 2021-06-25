@@ -211,7 +211,28 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	}
 
 	record := transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord)
-	record.TransactionID.AccountID.SetNetworkName(*client.networkName)
+	record.TransactionID.AccountID.setNetworkWithClient(client)
+	if record.Receipt.TokenID != nil {
+		record.Receipt.TokenID.setNetworkWithClient(client)
+	}
+	if record.Receipt.TopicID != nil {
+		record.Receipt.TopicID.setNetworkWithClient(client)
+	}
+	if record.Receipt.FileID != nil {
+		record.Receipt.FileID.setNetworkWithClient(client)
+	}
+	if record.Receipt.ContractID != nil {
+		record.Receipt.ContractID.setNetworkWithClient(client)
+	}
+	if record.Receipt.ScheduleID != nil {
+		record.Receipt.ScheduleID.setNetworkWithClient(client)
+	}
+	if record.Receipt.AccountID != nil {
+		record.Receipt.AccountID.setNetworkWithClient(client)
+	}
+	if record.Receipt.ScheduledTransactionID != nil {
+		record.Receipt.ScheduledTransactionID.AccountID.setNetworkWithClient(client)
+	}
 
 	return record, nil
 }

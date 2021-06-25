@@ -66,9 +66,9 @@ func (transaction *FileAppendTransaction) GetContents() []byte {
 	return transaction.contents
 }
 
-func (transaction *FileAppendTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *FileAppendTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = FileIDValidateNetworkOnIDs(transaction.fileID, id)
+	err = transaction.fileID.validate(client)
 	if err != nil {
 		return err
 	}

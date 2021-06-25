@@ -34,9 +34,9 @@ func (query *AccountInfoQuery) GetAccountID() AccountID {
 	return query.accountID
 }
 
-func (query *AccountInfoQuery) validateNetworkOnIDs(id *Client) error {
+func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(query.accountID, id)
+	err = query.accountID.validate(client)
 	if err != nil {
 		return err
 	}
@@ -209,11 +209,11 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	if err != nil {
 		return AccountInfo{}, err
 	}
-	info.AccountID.SetNetworkName(*client.networkName)
-	info.ProxyAccountID.SetNetworkName(*client.networkName)
-	if info.TokenRelationships != nil{
-		for _, t := range info.TokenRelationships{
-			t.TokenID.SetNetworkName(*client.networkName)
+	info.AccountID.setNetworkWithClient(client)
+	info.ProxyAccountID.setNetworkWithClient(client)
+	if info.TokenRelationships != nil {
+		for _, t := range info.TokenRelationships {
+			t.TokenID.setNetworkWithClient(client)
 		}
 	}
 

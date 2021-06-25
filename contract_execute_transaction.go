@@ -95,9 +95,9 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 	return transaction
 }
 
-func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = ContractIDValidateNetworkOnIDs(transaction.contractID, id)
+	err = transaction.contractID.validate(client)
 	if err != nil {
 		return err
 	}

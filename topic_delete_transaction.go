@@ -45,9 +45,9 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 	return topicIDFromProtobuf(transaction.pb.GetTopicID())
 }
 
-func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TopicIDValidateNetworkOnIDs(transaction.topicID, id)
+	err = transaction.topicID.validate(client)
 	if err != nil {
 		return err
 	}

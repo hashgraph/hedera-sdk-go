@@ -138,16 +138,16 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 	return transaction
 }
 
-func (transaction *TransferTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TransferTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
 	for tokenID, accountMap := range transaction.tokenTransfers {
-		err = TokenIDValidateNetworkOnIDs(tokenID, id)
+		err = tokenID.validate(client)
 		for accountID, _ := range accountMap {
-			err = AccountIDValidateNetworkOnIDs(accountID, id)
+			err = accountID.validate(client)
 		}
 	}
 	for accountID, _ := range transaction.hbarTransfers {
-		err = AccountIDValidateNetworkOnIDs(accountID, id)
+		err = accountID.validate(client)
 	}
 	if err != nil {
 		return err

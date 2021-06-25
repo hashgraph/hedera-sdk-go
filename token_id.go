@@ -34,7 +34,7 @@ func (id *TokenID) toProtobuf() *proto.TokenID {
 }
 
 func (id TokenID) String() string {
-	if id.Network == nil {
+	if id.Checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
 	}
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Token, *id.Checksum)
@@ -74,14 +74,12 @@ func TokenIDFromString(data string) (TokenID, error) {
 		NetworkNamePreviewnet,
 	}
 
-	var network NetworkName
 	for _, name := range networkNames {
 		checksum, err = checksumParseAddress(name.Network(), data)
 		if err != nil {
 			return TokenID{}, err
 		}
-		if checksum.status != 1 {
-			network = name
+		if checksum.status == 2 || checksum.status == 3 {
 			break
 		}
 	}
@@ -98,21 +96,33 @@ func TokenIDFromString(data string) (TokenID, error) {
 		Realm:    uint64(checksum.num2),
 		Token:    uint64(checksum.num3),
 		Checksum: &tempChecksum,
-		Network:  &network,
 	}, nil
 }
 
-func TokenIDValidateNetworkOnIDs(id TokenID, other *Client) error {
-	if !id.isZero() && other != nil && id.Network != nil && other.networkName != nil && *id.Network != *other.networkName {
-		return errNetworkMismatch
+func (id *TokenID) validate(client *Client) error {
+	if !id.isZero() && client != nil && client.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+		if err != nil {
+			return err
+		}
+		err = checksumVerify(tempChecksum.status)
+		if err != nil {
+			return err
+		}
+		if id.Checksum == nil {
+			id.Checksum = &tempChecksum.correctChecksum
+			return nil
+		}
+		if tempChecksum.correctChecksum != *id.Checksum {
+			return errNetworkMismatch
+		}
 	}
 
 	return nil
 }
 
-func (id *TokenID) SetNetworkName(network NetworkName) {
-	id.Network = &network
-	checksum := checkChecksum(id.Network.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+func (id *TokenID) setNetworkWithClient(client *Client) {
+	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
 	id.Checksum = &checksum
 }
 

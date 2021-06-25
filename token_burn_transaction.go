@@ -68,9 +68,9 @@ func (transaction *TokenBurnTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
-func (transaction *TokenBurnTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TokenIDValidateNetworkOnIDs(transaction.tokenID, id)
+	err = transaction.tokenID.validate(client)
 	if err != nil {
 		return err
 	}

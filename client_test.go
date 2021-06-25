@@ -78,11 +78,11 @@ func TestClientSetNetwork(t *testing.T) {
 	assert.Nil(t, client.operator)
 
 	network := make(map[string]AccountID)
-	network["35.237.200.180:50211"] = AccountID{0, 0, 3, nil, nil}
-	network["35.186.191.247:50211"] = AccountID{0, 0, 4, nil, nil}
-	network["35.192.2.25:50211"] = AccountID{0, 0, 5, nil, nil}
-	network["35.199.161.108:50211"] = AccountID{0, 0, 6, nil, nil}
-	network["35.203.82.240:50211"] = AccountID{0, 0, 7, nil, nil}
+	network["35.237.200.180:50211"] = AccountID{0, 0, 3, nil}
+	network["35.186.191.247:50211"] = AccountID{0, 0, 4, nil}
+	network["35.192.2.25:50211"] = AccountID{0, 0, 5, nil}
+	network["35.199.161.108:50211"] = AccountID{0, 0, 6, nil}
+	network["35.203.82.240:50211"] = AccountID{0, 0, 7, nil}
 
 	err := client.SetNetwork(network)
 	assert.NoError(t, err)

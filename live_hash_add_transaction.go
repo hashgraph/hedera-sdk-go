@@ -89,9 +89,9 @@ func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
 	return transaction.accountID
 }
 
-func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = AccountIDValidateNetworkOnIDs(transaction.accountID, id)
+	err = transaction.accountID.validate(client)
 	if err != nil {
 		return err
 	}

@@ -147,10 +147,13 @@ func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdat
 	return transaction
 }
 
-func (transaction *TopicUpdateTransaction) validateNetworkOnIDs(id *Client) error {
+func (transaction *TopicUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = TopicIDValidateNetworkOnIDs(transaction.topicID, id)
-	err = AccountIDValidateNetworkOnIDs(transaction.autoRenewAccountID, id)
+	err = transaction.topicID.validate(client)
+	if err != nil {
+		return err
+	}
+	err = transaction.autoRenewAccountID.validate(client)
 	if err != nil {
 		return err
 	}
