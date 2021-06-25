@@ -35,13 +35,13 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 		PermitWithoutStream: true,
 	}
 
-    var security grpc.DialOption
+	var security grpc.DialOption
 
-    if strings.HasSuffix(node.address, ":50212") || strings.HasSuffix(node.address, ":443") {
-        security = grpc.WithTransportCredentials(credentials.NewTLS(nil)) 
-    } else {
-        security = grpc.WithInsecure()
-    }
+	if strings.HasSuffix(node.address, ":50212") || strings.HasSuffix(node.address, ":443") {
+		security = grpc.WithTransportCredentials(credentials.NewTLS(nil))
+	} else {
+		security = grpc.WithInsecure()
+	}
 
 	conn, err := grpc.Dial(node.address, security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
