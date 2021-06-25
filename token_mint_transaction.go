@@ -65,7 +65,7 @@ func (transaction *TokenMintTransaction) GetAmount() uint64 {
 
 func (transaction *TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.tokenID.validate(client)
+	err = transaction.tokenID.Validate(client)
 	if err != nil {
 		return err
 	}

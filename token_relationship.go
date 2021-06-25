@@ -14,12 +14,12 @@ type TokenRelationship struct {
 	FreezeStatus *bool
 }
 
-func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationship {
+func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship, networkName *NetworkName) TokenRelationship {
 	if pb == nil {
 		return TokenRelationship{}
 	}
 	return TokenRelationship{
-		TokenID:      tokenIDFromProtobuf(pb.GetTokenId()),
+		TokenID:      tokenIDFromProtobuf(pb.GetTokenId(), networkName),
 		Symbol:       pb.Symbol,
 		Balance:      pb.Balance,
 		KycStatus:    kycStatusFromProtobuf(pb.KycStatus),
@@ -76,5 +76,5 @@ func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
 		return TokenRelationship{}, err
 	}
 
-	return tokenRelationshipFromProtobuf(&pb), nil
+	return tokenRelationshipFromProtobuf(&pb, nil), nil
 }

@@ -58,7 +58,7 @@ func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *Contrac
 }
 
 func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey())
+	return keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
 }
 
 // Sets the gas to run the constructor.
@@ -145,11 +145,11 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 
 func (transaction *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.byteCodeFileID.validate(client)
+	err = transaction.byteCodeFileID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.proxyAccountID.validate(client)
+	err = transaction.proxyAccountID.Validate(client)
 	if err != nil {
 		return err
 	}

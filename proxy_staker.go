@@ -16,9 +16,9 @@ func newProxyStaker(accountId AccountID, amount int64) ProxyStaker {
 	}
 }
 
-func fromProtobuf(staker *proto.ProxyStaker) ProxyStaker {
+func fromProtobuf(staker *proto.ProxyStaker, networkName *NetworkName) ProxyStaker {
 	return ProxyStaker{
-		AccountID: accountIDFromProtobuf(staker.AccountID),
+		AccountID: accountIDFromProtobuf(staker.AccountID, networkName),
 		amount:    HbarFromTinybar(staker.Amount),
 	}
 }

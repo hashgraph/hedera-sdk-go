@@ -105,9 +105,9 @@ func (m Mnemonic) legacyValidate() (Mnemonic, error) {
 	}
 
 	entropy, checksum := m.toLegacyEntropy(indices)
-	newChecksum := crc8(entropy)
+	newchecksum := crc8(entropy)
 
-	if checksum != newChecksum {
+	if checksum != newchecksum {
 		return Mnemonic{}, fmt.Errorf("legacy mnemonic checksum mismatch")
 	}
 
@@ -238,7 +238,7 @@ func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
 
 	for i := 0; i < checksumBitsLen; i++ {
 		if concatBits[entropyBitsLen+i] != hashbits[i] {
-			return make([]uint8, 0), errors.New("Checksum mismatch")
+			return make([]uint8, 0), errors.New("checksum mismatch")
 		}
 	}
 

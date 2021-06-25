@@ -48,7 +48,7 @@ func (transaction *ContractExecuteTransaction) SetContractID(id ContractID) *Con
 }
 
 func (transaction ContractExecuteTransaction) GetContractID() ContractID {
-	return contractIDFromProtobuf(transaction.pb.GetContractID())
+	return transaction.contractID
 }
 
 // SetGas sets the maximum amount of gas to use for the call.
@@ -97,7 +97,7 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 
 func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.contractID.validate(client)
+	err = transaction.contractID.Validate(client)
 	if err != nil {
 		return err
 	}

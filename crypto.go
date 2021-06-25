@@ -28,7 +28,7 @@ type Key interface {
 	String() string
 }
 
-func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
+func keyFromProtobuf(pbKey *proto.Key, networkName *NetworkName) (Key, error) {
 	if pbKey == nil {
 		return PublicKey{}, errParameterNull
 	}
@@ -38,7 +38,7 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 
 	case *proto.Key_ThresholdKey:
 		threshold := int(key.ThresholdKey.GetThreshold())
-		keys, err := keyListFromProtobuf(key.ThresholdKey.GetKeys())
+		keys, err := keyListFromProtobuf(key.ThresholdKey.GetKeys(), networkName)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +47,7 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 		return &keys, nil
 
 	case *proto.Key_KeyList:
-		keys, err := keyListFromProtobuf(key.KeyList)
+		keys, err := keyListFromProtobuf(key.KeyList, networkName)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +55,7 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 		return &keys, nil
 
 	case *proto.Key_ContractID:
-		return contractIDFromProtobuf(key.ContractID), nil
+		return contractIDFromProtobuf(key.ContractID, networkName), nil
 
 	default:
 		return nil, newErrBadKeyf("key type not implemented: %v", key)

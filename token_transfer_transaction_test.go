@@ -92,7 +92,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 
 	var value uint64
 	for _, relation := range info.TokenRelationships {
-		if *tokenID.Checksum == *relation.TokenID.Checksum {
+		if *tokenID.checksum == *relation.TokenID.checksum {
 			value = relation.Balance
 		}
 	}

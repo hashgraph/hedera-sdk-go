@@ -42,12 +42,12 @@ func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTr
 }
 
 func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
-	return topicIDFromProtobuf(transaction.pb.GetTopicID())
+	return transaction.topicID
 }
 
 func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.topicID.validate(client)
+	err = transaction.topicID.Validate(client)
 	if err != nil {
 		return err
 	}

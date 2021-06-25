@@ -59,7 +59,7 @@ func (transaction *ScheduleCreateTransaction) setSchedulableTransactionBody(txBo
 }
 
 func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
 	if err != nil {
 		return nil
 	}
@@ -91,7 +91,7 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 
 func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.payerAccountID.validate(client)
+	err = transaction.payerAccountID.Validate(client)
 	if err != nil {
 		return err
 	}

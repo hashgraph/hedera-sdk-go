@@ -70,15 +70,15 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 
 func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.contractID.validate(client)
+	err = transaction.contractID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.transferContactID.validate(client)
+	err = transaction.transferContactID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.transferAccountID.validate(client)
+	err = transaction.transferAccountID.Validate(client)
 	if err != nil {
 		return err
 	}

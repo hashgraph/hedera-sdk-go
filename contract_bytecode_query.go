@@ -39,7 +39,7 @@ func (query *ContractBytecodeQuery) GetContractID() ContractID {
 
 func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.contractID.validate(client)
+	err = query.contractID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func contractBytecodeQuery_shouldRetry(_ request, response response) executionSt
 	return query_shouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
-func contractBytecodeQuery_mapStatusError(_ request, response response) error {
+func contractBytecodeQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
 	}

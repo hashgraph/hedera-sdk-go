@@ -25,12 +25,12 @@ type AccountInfo struct {
 	AccountMemo                    string
 }
 
-func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
+func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networkName *NetworkName) (AccountInfo, error) {
 	if pb == nil {
 		return AccountInfo{}, errParameterNull
 	}
 
-	pubKey, err := keyFromProtobuf(pb.Key)
+	pubKey, err := keyFromProtobuf(pb.Key, networkName)
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -39,18 +39,18 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 
 	if pb.TokenRelationships != nil {
 		for i, relationship := range pb.TokenRelationships {
-			singleRelationship := tokenRelationshipFromProtobuf(relationship)
+			singleRelationship := tokenRelationshipFromProtobuf(relationship, networkName)
 			tokenRelationship[i] = &singleRelationship
 		}
 	}
 
 	var proxyAccountID AccountID
 	if pb.ProxyAccountID != nil {
-		proxyAccountID = accountIDFromProtobuf(pb.ProxyAccountID)
+		proxyAccountID = accountIDFromProtobuf(pb.ProxyAccountID, networkName)
 	}
 
 	return AccountInfo{
-		AccountID:                      accountIDFromProtobuf(pb.AccountID),
+		AccountID:                      accountIDFromProtobuf(pb.AccountID, networkName),
 		ContractAccountID:              pb.ContractAccountID,
 		IsDeleted:                      pb.Deleted,
 		ProxyAccountID:                 proxyAccountID,
@@ -111,7 +111,7 @@ func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	info, err := accountInfoFromProtobuf(&pb)
+	info, err := accountInfoFromProtobuf(&pb, nil)
 	if err != nil {
 		return AccountInfo{}, err
 	}

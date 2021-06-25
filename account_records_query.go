@@ -43,7 +43,7 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 
 func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.accountID.validate(client)
+	err = query.accountID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func accountRecordsQuery_shouldRetry(_ request, response response) executionStat
 	return query_shouldRetry(Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
 }
 
-func accountRecordsQuery_mapStatusError(_ request, response response) error {
+func accountRecordsQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode),
 	}
@@ -188,8 +188,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {
-		record := transactionRecordFromProtobuf(element)
-		record.TransactionID.AccountID.setNetworkWithClient(client)
+		record := transactionRecordFromProtobuf(element, client.networkName)
 		records = append(records, record)
 	}
 

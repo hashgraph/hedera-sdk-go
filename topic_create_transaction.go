@@ -52,7 +52,7 @@ func (transaction *TopicCreateTransaction) SetAdminKey(publicKey Key) *TopicCrea
 }
 
 func (transaction *TopicCreateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey())
+	return keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
 }
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
@@ -63,7 +63,7 @@ func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey Key) *TopicCre
 }
 
 func (transaction *TopicCreateTransaction) GetSubmitKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetSubmitKey())
+	return keyFromProtobuf(transaction.pb.GetSubmitKey(), nil)
 }
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
@@ -108,7 +108,7 @@ func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 
 func (transaction *TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.autoRenewAccountID.validate(client)
+	err = transaction.autoRenewAccountID.Validate(client)
 	if err != nil {
 		return err
 	}

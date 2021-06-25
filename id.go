@@ -8,26 +8,37 @@ import (
 	"strings"
 )
 
-func idFromString(s string) (shard int, realm int, num int, err error) {
+func idFromString(s string) (shard int, realm int, num int, checksum *string, err error) {
+	if strings.Contains(s, "-") {
+		values := strings.SplitN(s, "-", 2)
+
+		if len(values) > 2 {
+			return 0, 0, 0, nil, fmt.Errorf("expected {shard}.{realm}.{num}-{checksum}")
+		}
+
+		checksum = &values[1]
+		s = values[0]
+	}
+
 	values := strings.SplitN(s, ".", 3)
 	if len(values) != 3 {
 		// Was not three values separated by periods
-		return 0, 0, 0, fmt.Errorf("expected {shard}.{realm}.{num}")
+		return 0, 0, 0, nil, fmt.Errorf("expected {shard}.{realm}.{num}")
 	}
 
 	shard, err = strconv.Atoi(values[0])
 	if err != nil {
-		return 0, 0, 0, err
+		return 0, 0, 0, nil, err
 	}
 
 	realm, err = strconv.Atoi(values[1])
 	if err != nil {
-		return 0, 0, 0, err
+		return 0, 0, 0, nil, err
 	}
 
 	num, err = strconv.Atoi(values[2])
 	if err != nil {
-		return 0, 0, 0, err
+		return 0, 0, 0, nil, err
 	}
 
 	return

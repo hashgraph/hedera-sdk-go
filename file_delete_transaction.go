@@ -43,7 +43,7 @@ func (transaction *FileDeleteTransaction) GetFileID() FileID {
 
 func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.fileID.validate(client)
+	err = transaction.fileID.Validate(client)
 	if err != nil {
 		return err
 	}

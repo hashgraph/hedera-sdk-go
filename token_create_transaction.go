@@ -103,7 +103,7 @@ func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury Account
 }
 
 func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetTreasury())
+	return accountIDFromProtobuf(transaction.pb.GetTreasury(), nil)
 }
 
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
@@ -114,7 +114,7 @@ func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCrea
 }
 
 func (transaction *TokenCreateTransaction) GetAdminKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -130,7 +130,7 @@ func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreate
 }
 
 func (transaction *TokenCreateTransaction) GetKycKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetKycKey())
+	key, err := keyFromProtobuf(transaction.pb.GetKycKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -146,7 +146,7 @@ func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCre
 }
 
 func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey())
+	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -162,7 +162,7 @@ func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreat
 }
 
 func (transaction *TokenCreateTransaction) GetWipeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetWipeKey())
+	key, err := keyFromProtobuf(transaction.pb.GetWipeKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -172,11 +172,11 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 
 func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.treasuryAccountID.validate(client)
+	err = transaction.treasuryAccountID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.autoRenewAccountID.validate(client)
+	err = transaction.autoRenewAccountID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -243,7 +243,7 @@ func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCre
 }
 
 func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey())
+	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}

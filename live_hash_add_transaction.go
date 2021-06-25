@@ -58,7 +58,7 @@ func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTran
 func (transaction *LiveHashAddTransaction) GetKeys() KeyList {
 	keys := transaction.pb.GetLiveHash().GetKeys()
 	if keys != nil {
-		keyList, err := keyListFromProtobuf(keys)
+		keyList, err := keyListFromProtobuf(keys, nil)
 		if err != nil {
 			return KeyList{}
 		}
@@ -91,7 +91,7 @@ func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
 
 func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.accountID.validate(client)
+	err = transaction.accountID.Validate(client)
 	if err != nil {
 		return err
 	}

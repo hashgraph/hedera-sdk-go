@@ -60,21 +60,21 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 	return *record.CallResult, nil
 }
 
-func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecord {
+func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *NetworkName) TransactionRecord {
 	if pb == nil {
 		return TransactionRecord{}
 	}
 	var transferList = make([]Transfer, len(pb.TransferList.AccountAmounts))
 
 	for i, element := range pb.TransferList.AccountAmounts {
-		transferList[i] = transferFromProtobuf(element)
+		transferList[i] = transferFromProtobuf(element, networkName)
 	}
 
 	txRecord := TransactionRecord{
-		Receipt:            transactionReceiptFromProtobuf(pb.Receipt),
+		Receipt:            transactionReceiptFromProtobuf(pb.Receipt, networkName),
 		TransactionHash:    pb.TransactionHash,
 		ConsensusTimestamp: timeFromProtobuf(pb.ConsensusTimestamp),
-		TransactionID:      transactionIDFromProtobuf(pb.TransactionID),
+		TransactionID:      transactionIDFromProtobuf(pb.TransactionID, networkName),
 		TransactionMemo:    pb.Memo,
 		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:          transferList,
@@ -83,11 +83,11 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 	}
 
 	if pb.GetContractCreateResult() != nil {
-		result := contractFunctionResultFromProtobuf(pb.GetContractCreateResult())
+		result := contractFunctionResultFromProtobuf(pb.GetContractCreateResult(), networkName)
 
 		txRecord.CallResult = &result
 	} else if pb.GetContractCallResult() != nil {
-		result := contractFunctionResultFromProtobuf(pb.GetContractCallResult())
+		result := contractFunctionResultFromProtobuf(pb.GetContractCallResult(), networkName)
 
 		txRecord.CallResult = &result
 		txRecord.CallResultIsCreate = false
@@ -171,5 +171,5 @@ func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
 		return TransactionRecord{}, err
 	}
 
-	return transactionRecordFromProtobuf(&pb), nil
+	return transactionRecordFromProtobuf(&pb, nil), nil
 }

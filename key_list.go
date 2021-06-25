@@ -104,14 +104,14 @@ func (kl *KeyList) toProtoKeyList() *proto.KeyList {
 	}
 }
 
-func keyListFromProtobuf(pb *proto.KeyList) (KeyList, error) {
+func keyListFromProtobuf(pb *proto.KeyList, networkName *NetworkName) (KeyList, error) {
 	if pb == nil {
 		return KeyList{}, errParameterNull
 	}
 	var keys []Key = make([]Key, len(pb.Keys))
 
 	for i, pbKey := range pb.Keys {
-		key, err := keyFromProtobuf(pbKey)
+		key, err := keyFromProtobuf(pbKey, networkName)
 
 		if err != nil {
 			return KeyList{}, err

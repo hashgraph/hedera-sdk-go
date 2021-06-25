@@ -41,7 +41,7 @@ func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTrans
 }
 
 func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetKey())
+	return keyFromProtobuf(transaction.pb.GetKey(), nil)
 }
 
 //Sets the account ID which is being updated in this transaction.
@@ -115,11 +115,11 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 
 func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.accountID.validate(client)
+	err = transaction.accountID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.proxyAccountID.validate(client)
+	err = transaction.proxyAccountID.Validate(client)
 	if err != nil {
 		return err
 	}

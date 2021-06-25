@@ -22,23 +22,23 @@ type ScheduleInfo struct {
 	scheduledTransactionBody *proto.SchedulableTransactionBody
 }
 
-func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
+func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo, networkName *NetworkName) ScheduleInfo {
 	if pb == nil {
 		return ScheduleInfo{}
 	}
 	var adminKey Key
 	if pb.AdminKey != nil {
-		adminKey, _ = keyFromProtobuf(pb.AdminKey)
+		adminKey, _ = keyFromProtobuf(pb.AdminKey, networkName)
 	}
 
 	var signatories KeyList
 	if pb.Signers != nil {
-		signatories, _ = keyListFromProtobuf(pb.Signers)
+		signatories, _ = keyListFromProtobuf(pb.Signers, networkName)
 	}
 
 	var scheduledTransactionID TransactionID
 	if pb.ScheduledTransactionID != nil {
-		scheduledTransactionID = transactionIDFromProtobuf(pb.ScheduledTransactionID)
+		scheduledTransactionID = transactionIDFromProtobuf(pb.ScheduledTransactionID, networkName)
 	}
 
 	var executed *time.Time
@@ -53,9 +53,9 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 	}
 
 	return ScheduleInfo{
-		ScheduleID:               scheduleIDFromProtobuf(pb.ScheduleID),
-		CreatorAccountID:         accountIDFromProtobuf(pb.CreatorAccountID),
-		PayerAccountID:           accountIDFromProtobuf(pb.PayerAccountID),
+		ScheduleID:               scheduleIDFromProtobuf(pb.ScheduleID, networkName),
+		CreatorAccountID:         accountIDFromProtobuf(pb.CreatorAccountID, networkName),
+		PayerAccountID:           accountIDFromProtobuf(pb.PayerAccountID, networkName),
 		ExecutedAt:               executed,
 		DeletedAt:                deleted,
 		ExpirationTime:           timeFromProtobuf(pb.ExpirationTime),

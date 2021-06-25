@@ -43,7 +43,7 @@ func (query *AccountStakersQuery) GetAccountID() AccountID {
 
 func (query *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.accountID.validate(client)
+	err = query.accountID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func accountStakersQuery_shouldRetry(_ request, response response) executionStat
 	return query_shouldRetry(Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
-func accountStakersQuery_mapStatusError(_ request, response response) error {
+func accountStakersQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
 	}
@@ -187,11 +187,10 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	var stakers = make([]Transfer, len(resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker))
 
+	// TODO: This is wrong, this method shold return `[]ProxyStaker` not `[]Transfer`
 	for i, element := range resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
-		accountID := accountIDFromProtobuf(element.AccountID)
-		accountID.setNetworkWithClient(client)
 		stakers[i] = Transfer{
-			AccountID: accountID,
+			AccountID: accountIDFromProtobuf(element.AccountID, client.networkName),
 			Amount:    HbarFromTinybar(element.Amount),
 		}
 	}

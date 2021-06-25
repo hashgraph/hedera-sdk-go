@@ -64,11 +64,11 @@ func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccoun
 
 func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.deleteAccountID.validate(client)
+	err = transaction.deleteAccountID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.transferAccountID.validate(client)
+	err = transaction.transferAccountID.Validate(client)
 	if err != nil {
 		return err
 	}

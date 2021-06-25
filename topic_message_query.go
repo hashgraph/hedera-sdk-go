@@ -92,7 +92,7 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 
 func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.topicID.validate(client)
+	err = query.topicID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			if resp.ChunkInfo == nil || (resp.ChunkInfo != nil && resp.ChunkInfo.Total == 1) {
 				onNext(topicMessageOfSingle(resp))
 			} else {
-				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
+				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID, nil).String()
 				message, ok := messages[txID]
 				if !ok {
 					message = make([]*mirror.ConsensusTopicResponse, 0)
@@ -189,7 +189,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				if int32(len(message)) == resp.ChunkInfo.Total {
 					delete(messages, txID)
 
-					onNext(topicMessageOfMany(message))
+					onNext(topicMessageOfMany(message, client.networkName))
 				}
 			}
 		}

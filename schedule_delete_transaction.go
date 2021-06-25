@@ -43,7 +43,7 @@ func (transaction *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
 
 func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.scheduleID.validate(client)
+	err = transaction.scheduleID.Validate(client)
 	if err != nil {
 		return err
 	}
