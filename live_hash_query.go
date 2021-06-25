@@ -30,7 +30,7 @@ func (query *LiveHashQuery) SetAccountID(id AccountID) *LiveHashQuery {
 }
 
 func (query *LiveHashQuery) GetAccountID() AccountID {
-	return accountIDFromProtobuf(query.pb.GetAccountID())
+	return query.accountID
 }
 
 func (query *LiveHashQuery) SetHash(hash []byte) *LiveHashQuery {
@@ -44,7 +44,7 @@ func (query *LiveHashQuery) GetGetHash() []byte {
 
 func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.accountID.validate(client)
+	err = query.accountID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func liveHashQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
 }
 
-func liveHashQuery_mapStatusError(_ request, response response) error {
+func liveHashQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode),
 	}
@@ -186,11 +186,10 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
+	liveHash, err := liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash, client.networkName)
 	if err != nil {
 		return LiveHash{}, err
 	}
-	liveHash.AccountID.setNetworkWithClient(client)
 
 	return liveHash, nil
 }

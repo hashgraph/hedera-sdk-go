@@ -97,11 +97,11 @@ func (result ContractFunctionResult) AsBytes() []byte {
 	return result.ContractCallResult
 }
 
-func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) ContractFunctionResult {
+func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult, networkName *NetworkName) ContractFunctionResult {
 	infos := make([]ContractLogInfo, len(pb.LogInfo))
 
 	for i, info := range pb.LogInfo {
-		infos[i] = contractLogInfoFromProtobuf(info)
+		infos[i] = contractLogInfoFromProtobuf(info, networkName)
 	}
 
 	result := ContractFunctionResult{
@@ -113,7 +113,7 @@ func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) Contra
 	}
 
 	if pb.ContractID != nil {
-		contractID := contractIDFromProtobuf(pb.ContractID)
+		contractID := contractIDFromProtobuf(pb.ContractID, networkName)
 		result.ContractID = &contractID
 	}
 

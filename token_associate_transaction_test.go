@@ -73,7 +73,7 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 
 	check := false
 	for _, relation := range info.TokenRelationships {
-		if *tokenID.Checksum == *relation.TokenID.Checksum {
+		if *tokenID.checksum == *relation.TokenID.checksum {
 			check = true
 		}
 	}

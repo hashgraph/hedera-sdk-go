@@ -54,7 +54,7 @@ func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
 
 func (transaction *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.accountID.validate(client)
+	err = transaction.accountID.Validate(client)
 	if err != nil {
 		return err
 	}

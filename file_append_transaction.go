@@ -68,7 +68,7 @@ func (transaction *FileAppendTransaction) GetContents() []byte {
 
 func (transaction *FileAppendTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.fileID.validate(client)
+	err = transaction.fileID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -329,7 +329,11 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 			end = len(transaction.contents)
 		}
 
-		transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
+		if client != nil {
+			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf(), client.networkName))
+		} else {
+			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf(), nil))
+		}
 
 		transaction.pb.Contents = transaction.contents[start:end]
 

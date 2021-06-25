@@ -10,19 +10,25 @@ type TokenID struct {
 	Shard    uint64
 	Realm    uint64
 	Token    uint64
-	Checksum *string
-	Network  *NetworkName
+	checksum *string
 }
 
-func tokenIDFromProtobuf(tokenID *proto.TokenID) TokenID {
+func tokenIDFromProtobuf(tokenID *proto.TokenID, networkName *NetworkName) TokenID {
 	if tokenID == nil {
 		return TokenID{}
 	}
-	return TokenID{
+
+	id := TokenID{
 		Shard: uint64(tokenID.ShardNum),
 		Realm: uint64(tokenID.RealmNum),
 		Token: uint64(tokenID.TokenNum),
 	}
+
+	if networkName != nil {
+		id.setNetwork(*networkName)
+	}
+
+	return id
 }
 
 func (id *TokenID) toProtobuf() *proto.TokenID {
@@ -34,10 +40,10 @@ func (id *TokenID) toProtobuf() *proto.TokenID {
 }
 
 func (id TokenID) String() string {
-	if id.Checksum == nil {
+	if id.checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Token, *id.Checksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Token, *id.checksum)
 }
 
 func (id TokenID) ToBytes() []byte {
@@ -59,49 +65,28 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 		return TokenID{}, err
 	}
 
-	return tokenIDFromProtobuf(&pb), nil
+	return tokenIDFromProtobuf(&pb, nil), nil
 }
 
 // TokenIDFromString constructs an TokenID from a string formatted as
 // `Shard.Realm.TokenID` (for example "0.0.3")
 func TokenIDFromString(data string) (TokenID, error) {
-	var checksum parseAddressResult
-	var err error
-
-	var networkNames = []NetworkName{
-		NetworkNameMainnet,
-		NetworkNameTestnet,
-		NetworkNamePreviewnet,
-	}
-
-	for _, name := range networkNames {
-		checksum, err = checksumParseAddress(name.Network(), data)
-		if err != nil {
-			return TokenID{}, err
-		}
-		if checksum.status == 2 || checksum.status == 3 {
-			break
-		}
-	}
-
-	err = checksumVerify(checksum.status)
+	shard, realm, num, checksum, err := idFromString(data)
 	if err != nil {
 		return TokenID{}, err
 	}
 
-	tempChecksum := checksum.correctChecksum
-
 	return TokenID{
-		Shard:    uint64(checksum.num1),
-		Realm:    uint64(checksum.num2),
-		Token:    uint64(checksum.num3),
-		Checksum: &tempChecksum,
+		Shard:    uint64(shard),
+		Realm:    uint64(realm),
+		Token:    uint64(num),
+		checksum: checksum,
 	}, nil
 }
 
-func (id *TokenID) validate(client *Client) error {
+func (id *TokenID) Validate(client *Client) error {
 	if !id.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
 		if err != nil {
 			return err
 		}
@@ -109,11 +94,11 @@ func (id *TokenID) validate(client *Client) error {
 		if err != nil {
 			return err
 		}
-		if id.Checksum == nil {
-			id.Checksum = &tempChecksum.correctChecksum
+		if id.checksum == nil {
+			id.checksum = &tempChecksum.correctChecksum
 			return nil
 		}
-		if tempChecksum.correctChecksum != *id.Checksum {
+		if tempChecksum.correctChecksum != *id.checksum {
 			return errNetworkMismatch
 		}
 	}
@@ -122,8 +107,14 @@ func (id *TokenID) validate(client *Client) error {
 }
 
 func (id *TokenID) setNetworkWithClient(client *Client) {
-	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
-	id.Checksum = &checksum
+	if client.networkName != nil {
+		id.setNetwork(*client.networkName)
+	}
+}
+
+func (id *TokenID) setNetwork(name NetworkName) {
+	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+	id.checksum = &checksum
 }
 
 func (id TokenID) isZero() bool {

@@ -21,7 +21,7 @@ func main() {
 		fmt.Printf("%s : %s\n", address, node.String())
 	}
 
-	println("Mirror Network: ")
+	println("Mirror ledgerID: ")
 	for _, mir := range client.GetMirrorNetwork() {
 		fmt.Printf("%s\n", mir)
 	}
@@ -41,7 +41,7 @@ func main() {
 		fmt.Printf("%s : %s\n", address, node.String())
 	}
 
-	println("Mirror Network: ")
+	println("Mirror ledgerID: ")
 	for _, mir := range client.GetMirrorNetwork() {
 		fmt.Printf("%s\n", mir)
 	}

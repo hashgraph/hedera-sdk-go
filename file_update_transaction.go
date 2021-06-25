@@ -58,7 +58,7 @@ func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransa
 func (transaction *FileUpdateTransaction) GetKeys() KeyList {
 	keys := transaction.pb.GetKeys()
 	if keys != nil {
-		keyList, err := keyListFromProtobuf(keys)
+		keyList, err := keyListFromProtobuf(keys, nil)
 		if err != nil {
 			return KeyList{}
 		}
@@ -106,7 +106,7 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 
 func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.fileID.validate(client)
+	err = transaction.fileID.Validate(client)
 	if err != nil {
 		return err
 	}

@@ -43,7 +43,7 @@ func (query *ContractCallQuery) SetContractID(id ContractID) *ContractCallQuery 
 }
 
 func (query *ContractCallQuery) GetContractID() ContractID {
-	return contractIDFromProtobuf(query.pb.ContractID)
+	return query.contractID
 }
 
 // SetGas sets the amount of gas to use for the call. All of the gas offered will be charged for.
@@ -84,7 +84,7 @@ func (query *ContractCallQuery) GetFunctionParameters() []byte {
 
 func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.contractID.validate(client)
+	err = query.contractID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func contractCallQuery_shouldRetry(_ request, response response) executionState 
 	return query_shouldRetry(Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
 }
 
-func contractCallQuery_mapStatusError(_ request, response response) error {
+func contractCallQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode),
 	}
@@ -224,7 +224,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		return ContractFunctionResult{}, err
 	}
 
-	result := contractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult)
+	result := contractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult, client.networkName)
 	if result.ContractID != nil {
 		result.ContractID.setNetworkWithClient(client)
 	}

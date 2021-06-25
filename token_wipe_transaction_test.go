@@ -92,7 +92,7 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 
 	var value uint64
 	for balanceTokenID, balance := range info.Token {
-		if *tokenID.Checksum == *balanceTokenID.Checksum {
+		if *tokenID.checksum == *balanceTokenID.checksum {
 			value = balance
 		}
 	}
@@ -117,7 +117,7 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	for balanceTokenID, balance := range info.Token {
-		if *tokenID.Checksum == *balanceTokenID.Checksum {
+		if *tokenID.checksum == *balanceTokenID.checksum {
 			value = balance
 		}
 	}
@@ -553,7 +553,7 @@ func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
 
 	var value uint64
 	for balanceTokenID, balance := range info.Token {
-		if *tokenID.Checksum == *balanceTokenID.Checksum {
+		if *tokenID.checksum == *balanceTokenID.checksum {
 			value = balance
 		}
 	}
@@ -578,7 +578,7 @@ func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	for balanceTokenID, balance := range info.Token {
-		if *tokenID.Checksum == *balanceTokenID.Checksum {
+		if *tokenID.checksum == *balanceTokenID.checksum {
 			value = balance
 		}
 	}

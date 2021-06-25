@@ -43,12 +43,12 @@ func (transaction *TokenDeleteTransaction) SetTokenID(tokenID TokenID) *TokenDel
 }
 
 func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
-	return tokenIDFromProtobuf(transaction.pb.GetToken())
+	return transaction.tokenID
 }
 
 func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.tokenID.validate(client)
+	err = transaction.tokenID.Validate(client)
 	if err != nil {
 		return err
 	}

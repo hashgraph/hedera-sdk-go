@@ -67,7 +67,7 @@ func networkVersionInfoQuery_shouldRetry(_ request, response response) execution
 	return query_shouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func networkVersionInfoQuery_mapStatusError(_ request, response response) error {
+func networkVersionInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 	}

@@ -11,48 +11,27 @@ type ContractID struct {
 	Shard    uint64
 	Realm    uint64
 	Contract uint64
-	Checksum *string
+	checksum *string
 }
 
 // ContractIDFromString constructs a ContractID from a string formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func ContractIDFromString(data string) (ContractID, error) {
-	var checksum parseAddressResult
-	var err error
-
-	var networkNames = []NetworkName{
-		NetworkNameMainnet,
-		NetworkNameTestnet,
-		NetworkNamePreviewnet,
-	}
-
-	for _, name := range networkNames {
-		checksum, err = checksumParseAddress(name.Network(), data)
-		if err != nil {
-			return ContractID{}, err
-		}
-		if checksum.status == 2 || checksum.status == 3 {
-			break
-		}
-	}
-
-	err = checksumVerify(checksum.status)
+	shard, realm, num, checksum, err := idFromString(data)
 	if err != nil {
 		return ContractID{}, err
 	}
 
-	tempChecksum := checksum.correctChecksum
-
 	return ContractID{
-		Shard:    uint64(checksum.num1),
-		Realm:    uint64(checksum.num2),
-		Contract: uint64(checksum.num3),
-		Checksum: &tempChecksum,
+		Shard:    uint64(shard),
+		Realm:    uint64(realm),
+		Contract: uint64(num),
+		checksum: checksum,
 	}, nil
 }
 
-func (id *ContractID) validate(client *Client) error {
+func (id *ContractID) Validate(client *Client) error {
 	if !id.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
 		if err != nil {
 			return err
 		}
@@ -60,11 +39,11 @@ func (id *ContractID) validate(client *Client) error {
 		if err != nil {
 			return err
 		}
-		if id.Checksum == nil {
-			id.Checksum = &tempChecksum.correctChecksum
+		if id.checksum == nil {
+			id.checksum = &tempChecksum.correctChecksum
 			return nil
 		}
-		if tempChecksum.correctChecksum != *id.Checksum {
+		if tempChecksum.correctChecksum != *id.checksum {
 			return errNetworkMismatch
 		}
 	}
@@ -73,8 +52,14 @@ func (id *ContractID) validate(client *Client) error {
 }
 
 func (id *ContractID) setNetworkWithClient(client *Client) {
-	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
-	id.Checksum = &checksum
+	if client.networkName != nil {
+		id.setNetwork(*client.networkName)
+	}
+}
+
+func (id *ContractID) setNetwork(name NetworkName) {
+	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	id.checksum = &checksum
 }
 
 // ContractIDFromSolidityAddress constructs a ContractID from a string representation of a solidity address
@@ -93,10 +78,10 @@ func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 
 // String returns the string representation of a ContractID formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func (id ContractID) String() string {
-	if id.Checksum == nil {
+	if id.checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, *id.Checksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, *id.checksum)
 }
 
 // ToSolidityAddress returns the string representation of the ContractID as a solidity address.
@@ -112,15 +97,22 @@ func (id ContractID) toProtobuf() *proto.ContractID {
 	}
 }
 
-func contractIDFromProtobuf(pb *proto.ContractID) ContractID {
-	if pb == nil {
+func contractIDFromProtobuf(contractID *proto.ContractID, networkName *NetworkName) ContractID {
+	if contractID == nil {
 		return ContractID{}
 	}
-	return ContractID{
-		Shard:    uint64(pb.ShardNum),
-		Realm:    uint64(pb.RealmNum),
-		Contract: uint64(pb.ContractNum),
+
+	id := ContractID{
+		Shard:    uint64(contractID.ShardNum),
+		Realm:    uint64(contractID.RealmNum),
+		Contract: uint64(contractID.ContractNum),
 	}
+
+	if networkName != nil {
+		id.setNetwork(*networkName)
+	}
+
+	return id
 }
 
 func (id ContractID) isZero() bool {
@@ -147,5 +139,5 @@ func ContractIDFromBytes(data []byte) (ContractID, error) {
 		return ContractID{}, err
 	}
 
-	return contractIDFromProtobuf(&pb), nil
+	return contractIDFromProtobuf(&pb, nil), nil
 }

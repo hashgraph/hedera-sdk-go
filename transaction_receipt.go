@@ -49,31 +49,31 @@ func newTransactionReceipt(
 
 }
 
-func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) TransactionReceipt {
+func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt, networkName *NetworkName) TransactionReceipt {
 	if protoReceipt == nil {
 		return TransactionReceipt{}
 	}
 	var accountID *AccountID
 	if protoReceipt.AccountID != nil {
-		accountIDValue := accountIDFromProtobuf(protoReceipt.AccountID)
+		accountIDValue := accountIDFromProtobuf(protoReceipt.AccountID, networkName)
 		accountID = &accountIDValue
 	}
 
 	var contractID *ContractID
 	if protoReceipt.ContractID != nil {
-		contractIDValue := contractIDFromProtobuf(protoReceipt.ContractID)
+		contractIDValue := contractIDFromProtobuf(protoReceipt.ContractID, networkName)
 		contractID = &contractIDValue
 	}
 
 	var fileID *FileID
 	if protoReceipt.FileID != nil {
-		fileIDValue := fileIDFromProtobuf(protoReceipt.FileID)
+		fileIDValue := fileIDFromProtobuf(protoReceipt.FileID, networkName)
 		fileID = &fileIDValue
 	}
 
 	var topicID *TopicID
 	if protoReceipt.TopicID != nil {
-		topicIDValue := topicIDFromProtobuf(protoReceipt.TopicID)
+		topicIDValue := topicIDFromProtobuf(protoReceipt.TopicID, networkName)
 		topicID = &topicIDValue
 	}
 
@@ -91,19 +91,19 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 
 	var tokenID *TokenID
 	if protoReceipt.TokenID != nil {
-		id := tokenIDFromProtobuf(protoReceipt.TokenID)
+		id := tokenIDFromProtobuf(protoReceipt.TokenID, networkName)
 		tokenID = &id
 	}
 
 	var scheduleID *ScheduleID
 	if protoReceipt.ScheduleID != nil {
-		scheduleIDValue := scheduleIDFromProtobuf(protoReceipt.ScheduleID)
+		scheduleIDValue := scheduleIDFromProtobuf(protoReceipt.ScheduleID, networkName)
 		scheduleID = &scheduleIDValue
 	}
 
 	var scheduledTransactionID *TransactionID
 	if protoReceipt.ScheduledTransactionID != nil {
-		scheduledTransactionIDValue := transactionIDFromProtobuf(protoReceipt.ScheduledTransactionID)
+		scheduledTransactionIDValue := transactionIDFromProtobuf(protoReceipt.ScheduledTransactionID, networkName)
 		scheduledTransactionID = &scheduledTransactionIDValue
 	}
 
@@ -164,5 +164,5 @@ func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
 		return TransactionReceipt{}, err
 	}
 
-	return transactionReceiptFromProtobuf(&pb), nil
+	return transactionReceiptFromProtobuf(&pb, nil), nil
 }

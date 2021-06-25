@@ -95,12 +95,12 @@ func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 
 func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.accountID.validate(client)
+	err = transaction.accountID.Validate(client)
 	if err != nil {
 		return err
 	}
 	for _, tokenID := range transaction.tokens {
-		err = tokenID.validate(client)
+		err = tokenID.Validate(client)
 	}
 	if err != nil {
 		return err

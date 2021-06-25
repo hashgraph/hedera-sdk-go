@@ -46,7 +46,7 @@ func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 
 func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.scheduleID.validate(client)
+	err = transaction.scheduleID.Validate(client)
 	if err != nil {
 		return err
 	}

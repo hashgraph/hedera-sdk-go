@@ -7,12 +7,12 @@ type Transfer struct {
 	Amount    Hbar
 }
 
-func transferFromProtobuf(pb *proto.AccountAmount) Transfer {
+func transferFromProtobuf(pb *proto.AccountAmount, networkName *NetworkName) Transfer {
 	if pb == nil {
 		return Transfer{}
 	}
 	return Transfer{
-		AccountID: accountIDFromProtobuf(pb.AccountID),
+		AccountID: accountIDFromProtobuf(pb.AccountID, networkName),
 		Amount:    HbarFromTinybar(pb.Amount),
 	}
 }

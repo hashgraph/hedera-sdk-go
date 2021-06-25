@@ -38,7 +38,7 @@ func (query *TopicInfoQuery) GetTopicID() TopicID {
 
 func (query *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.topicID.validate(client)
+	err = query.topicID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func topicInfoQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func topicInfoQuery_mapStatusError(_ request, response response) error {
+func topicInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -185,14 +185,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	info, err := topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo)
-	if err != nil {
-		return TopicInfo{}, err
-	}
-	if info.AutoRenewAccountID != nil {
-		info.AutoRenewAccountID.setNetworkWithClient(client)
-	}
-	return info, nil
+	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo, client.networkName)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

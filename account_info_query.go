@@ -36,7 +36,7 @@ func (query *AccountInfoQuery) GetAccountID() AccountID {
 
 func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.accountID.validate(client)
+	err = query.accountID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func accountInfoQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func accountInfoQuery_mapStatusError(_ request, response response) error {
+func accountInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -205,7 +205,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	info, err := accountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo)
+	info, err := accountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo, client.networkName)
 	if err != nil {
 		return AccountInfo{}, err
 	}

@@ -86,11 +86,11 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		var transactionID TransactionID
 		var nodeAccountID AccountID
 		if body.GetTransactionID() != nil {
-			transactionID = transactionIDFromProtobuf(body.GetTransactionID())
+			transactionID = transactionIDFromProtobuf(body.GetTransactionID(), nil)
 		}
 
 		if body.GetNodeAccountID() != nil {
-			nodeAccountID = accountIDFromProtobuf(body.GetNodeAccountID())
+			nodeAccountID = accountIDFromProtobuf(body.GetNodeAccountID(), nil)
 		}
 
 		found := false
@@ -437,6 +437,7 @@ func transaction_getNodeAccountID(request request) AccountID {
 func transaction_mapStatusError(
 	request request,
 	response response,
+	networkName *NetworkName,
 ) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.transaction.NodeTransactionPrecheckCode),

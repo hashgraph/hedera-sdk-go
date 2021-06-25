@@ -39,7 +39,7 @@ func (query *FileContentsQuery) GetFileID(id FileID) FileID {
 
 func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.fileID.validate(client)
+	err = query.fileID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func fileContentsQuery_shouldRetry(_ request, response response) executionState 
 	return query_shouldRetry(Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode))
 }
 
-func fileContentsQuery_mapStatusError(_ request, response response) error {
+func fileContentsQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode),
 	}

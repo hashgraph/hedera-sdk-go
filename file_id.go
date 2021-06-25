@@ -11,7 +11,7 @@ type FileID struct {
 	Shard    uint64
 	Realm    uint64
 	File     uint64
-	Checksum *string
+	checksum *string
 }
 
 // FileIDForAddressBook returns the public node address book for the current network.
@@ -32,42 +32,22 @@ func FileIDForExchangeRate() FileID {
 // FileIDFromString returns a FileID parsed from the given string.
 // A malformatted string will cause this to return an error instead.
 func FileIDFromString(data string) (FileID, error) {
-	var checksum parseAddressResult
-	var err error
-
-	var networkNames = []NetworkName{
-		NetworkNameMainnet,
-		NetworkNameTestnet,
-		NetworkNamePreviewnet,
-	}
-
-	for _, name := range networkNames {
-		checksum, err = checksumParseAddress(name.Network(), data)
-		if err != nil {
-			return FileID{}, err
-		}
-		if checksum.status == 2 || checksum.status == 3 {
-			break
-		}
-	}
-
-	err = checksumVerify(checksum.status)
+	shard, realm, num, checksum, err := idFromString(data)
 	if err != nil {
 		return FileID{}, err
 	}
 
-	tempChecksum := checksum.correctChecksum
 	return FileID{
-		Shard:    uint64(checksum.num1),
-		Realm:    uint64(checksum.num2),
-		File:     uint64(checksum.num3),
-		Checksum: &tempChecksum,
+		Shard:    uint64(shard),
+		Realm:    uint64(realm),
+		File:     uint64(num),
+		checksum: checksum,
 	}, nil
 }
 
-func (id *FileID) validate(client *Client) error {
+func (id *FileID) Validate(client *Client) error {
 	if !id.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
 		if err != nil {
 			return err
 		}
@@ -75,11 +55,11 @@ func (id *FileID) validate(client *Client) error {
 		if err != nil {
 			return err
 		}
-		if id.Checksum == nil {
-			id.Checksum = &tempChecksum.correctChecksum
+		if id.checksum == nil {
+			id.checksum = &tempChecksum.correctChecksum
 			return nil
 		}
-		if tempChecksum.correctChecksum != *id.Checksum {
+		if tempChecksum.correctChecksum != *id.checksum {
 			return errNetworkMismatch
 		}
 	}
@@ -88,8 +68,14 @@ func (id *FileID) validate(client *Client) error {
 }
 
 func (id *FileID) setNetworkWithClient(client *Client) {
-	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
-	id.Checksum = &checksum
+	if client.networkName != nil {
+		id.setNetwork(*client.networkName)
+	}
+}
+
+func (id *FileID) setNetwork(name NetworkName) {
+	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+	id.checksum = &checksum
 }
 
 func FileIDFromSolidityAddress(s string) (FileID, error) {
@@ -110,10 +96,10 @@ func (id FileID) isZero() bool {
 }
 
 func (id FileID) String() string {
-	if id.Checksum == nil {
+	if id.checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.File, *id.Checksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.File, *id.checksum)
 }
 
 func (id FileID) ToSolidityAddress() string {
@@ -128,15 +114,22 @@ func (id FileID) toProtobuf() *proto.FileID {
 	}
 }
 
-func fileIDFromProtobuf(pb *proto.FileID) FileID {
-	if pb == nil {
+func fileIDFromProtobuf(fileID *proto.FileID, networkName *NetworkName) FileID {
+	if fileID == nil {
 		return FileID{}
 	}
-	return FileID{
-		Shard: uint64(pb.ShardNum),
-		Realm: uint64(pb.RealmNum),
-		File:  uint64(pb.FileNum),
+
+	id := FileID{
+		Shard: uint64(fileID.ShardNum),
+		Realm: uint64(fileID.RealmNum),
+		File:  uint64(fileID.FileNum),
 	}
+
+	if networkName != nil {
+		id.setNetwork(*networkName)
+	}
+
+	return id
 }
 
 func (id FileID) ToBytes() []byte {
@@ -158,5 +151,5 @@ func FileIDFromBytes(data []byte) (FileID, error) {
 		return FileID{}, err
 	}
 
-	return fileIDFromProtobuf(&pb), nil
+	return fileIDFromProtobuf(&pb, nil), nil
 }

@@ -6,7 +6,8 @@ import (
 
 type TransactionRecordQuery struct {
 	Query
-	pb *proto.TransactionGetRecordQuery
+	pb            *proto.TransactionGetRecordQuery
+	transactionID TransactionID
 }
 
 func NewTransactionRecordQuery() *TransactionRecordQuery {
@@ -23,6 +24,24 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	}
 }
 
+func (query *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error {
+	var err error
+	err = query.transactionID.AccountID.Validate(client)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *TransactionRecordQuery) build() *TransactionRecordQuery {
+	if !query.transactionID.AccountID.isZero() {
+		query.pb.TransactionID = query.transactionID.toProtobuf()
+	}
+
+	return query
+}
+
 func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -36,6 +55,13 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -87,7 +113,7 @@ func transactionRecordQuery_shouldRetry(request request, response response) exec
 	}
 }
 
-func transactionRecordQuery_mapStatusError(_ request, response response) error {
+func transactionRecordQuery_mapStatusError(request request, response response, networkName *NetworkName) error {
 	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
@@ -98,7 +124,9 @@ func transactionRecordQuery_mapStatusError(_ request, response response) error {
 	}
 
 	return ErrHederaReceiptStatus{
-		Status: Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
+		Status:  Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
+		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
+		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt(), networkName),
 	}
 }
 
@@ -109,12 +137,12 @@ func transactionRecordQuery_getMethod(_ request, channel *channel) method {
 }
 
 func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
-	query.pb.TransactionID = transactionID.toProtobuf()
+	query.transactionID = transactionID
 	return query
 }
 
 func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
-	return transactionIDFromProtobuf(query.pb.TransactionID)
+	return query.transactionID
 }
 
 func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
@@ -145,6 +173,13 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
+
+	err := query.validateNetworkOnIDs(client)
+	if err != nil {
+		return TransactionRecord{}, err
+	}
+
+	query.build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.GetOperatorAccountID())
 
@@ -210,7 +245,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	record := transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord)
+	record := transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord, client.networkName)
 	record.TransactionID.AccountID.setNetworkWithClient(client)
 	if record.Receipt.TokenID != nil {
 		record.Receipt.TokenID.setNetworkWithClient(client)

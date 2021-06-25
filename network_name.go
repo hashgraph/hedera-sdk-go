@@ -10,20 +10,7 @@ const (
 	NetworkNamePreviewnet NetworkName = "previewnet"
 )
 
-//func (networkName NetworkName) String() string {
-//	switch networkName {
-//	case NetworkNameMainnet:
-//		return "mainnet"
-//	case NetworkNameTestnet:
-//		return "testnet"
-//	case NetworkNamePreviewnet:
-//		return "previewnet"
-//	}
-//
-//	panic(fmt.Sprintf("unreacahble: NetworkName.String() switch statement is non-exhaustive. NetworkName: %s", networkName))
-//}
-
-func (networkName NetworkName) Network() string {
+func (networkName NetworkName) ledgerID() string {
 	switch networkName {
 	case NetworkNameMainnet:
 		return "0"
@@ -33,5 +20,5 @@ func (networkName NetworkName) Network() string {
 		return "2"
 	}
 
-	panic(fmt.Sprintf("unreacahble: NetworkName.Network() switch statement is non-exhaustive. NetworkName: %s", networkName))
+	panic(fmt.Sprintf("unreacahble: NetworkName.ledgerID() switch statement is non-exhaustive. NetworkName: %s", networkName))
 }

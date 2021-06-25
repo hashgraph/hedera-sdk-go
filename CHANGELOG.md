@@ -1,3 +1,16 @@
+## v2.1.8
+
+### Added
+
+ * Support TLS for mirror node connections.
+ * Support for entity ID checksums which are validated whenever a request begins execution.
+   This includes the IDs within the request, the account ID within the transaction ID, and
+   query responses will contain entity IDs with a checksum for the network the query was executed on.
+
+### Fixed
+
+ * `TransactionTransaction.AddHbarTransfer()` incorrectly determine total transfer per account ID
+
 ## v2.1.7
 
 ### Fixed

@@ -67,7 +67,7 @@ func execute(
 	advanceRequest func(request),
 	getNodeAccountID func(request) AccountID,
 	getMethod func(request, *channel) method,
-	mapStatusError func(request, response) error,
+	mapStatusError func(request, response, *NetworkName) error,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
 	maxAttempts := 10
@@ -131,11 +131,11 @@ func execute(
 				delayForAttempt(attempt)
 				continue
 			} else {
-				errPersistent = mapStatusError(request, resp)
+				errPersistent = mapStatusError(request, resp, client.networkName)
 				break
 			}
 		case executionStateError:
-			return intermediateResponse{}, mapStatusError(request, resp)
+			return intermediateResponse{}, mapStatusError(request, resp, client.networkName)
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}

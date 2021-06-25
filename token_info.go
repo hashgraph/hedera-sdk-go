@@ -100,34 +100,34 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 	return &kycStatus
 }
 
-func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
+func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenInfo {
 	if pb == nil {
 		return TokenInfo{}
 	}
 
 	var adminKey Key
 	if pb.AdminKey != nil {
-		adminKey, _ = keyFromProtobuf(pb.AdminKey)
+		adminKey, _ = keyFromProtobuf(pb.AdminKey, networkName)
 	}
 
 	var kycKey Key
 	if pb.KycKey != nil {
-		kycKey, _ = keyFromProtobuf(pb.KycKey)
+		kycKey, _ = keyFromProtobuf(pb.KycKey, networkName)
 	}
 
 	var freezeKey Key
 	if pb.FreezeKey != nil {
-		freezeKey, _ = keyFromProtobuf(pb.FreezeKey)
+		freezeKey, _ = keyFromProtobuf(pb.FreezeKey, networkName)
 	}
 
 	var wipeKey Key
 	if pb.WipeKey != nil {
-		wipeKey, _ = keyFromProtobuf(pb.WipeKey)
+		wipeKey, _ = keyFromProtobuf(pb.WipeKey, networkName)
 	}
 
 	var supplyKey Key
 	if pb.SupplyKey != nil {
-		supplyKey, _ = keyFromProtobuf(pb.SupplyKey)
+		supplyKey, _ = keyFromProtobuf(pb.SupplyKey, networkName)
 	}
 
 	var autoRenewPeriod time.Duration
@@ -142,16 +142,16 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 
 	var accountID AccountID
 	if pb.AutoRenewAccount != nil {
-		accountID = accountIDFromProtobuf(pb.AutoRenewAccount)
+		accountID = accountIDFromProtobuf(pb.AutoRenewAccount, networkName)
 	}
 
 	return TokenInfo{
-		TokenID:             tokenIDFromProtobuf(pb.TokenId),
+		TokenID:             tokenIDFromProtobuf(pb.TokenId, networkName),
 		Name:                pb.Name,
 		Symbol:              pb.Symbol,
 		Decimals:            pb.Decimals,
 		TotalSupply:         pb.TotalSupply,
-		Treasury:            accountIDFromProtobuf(pb.Treasury),
+		Treasury:            accountIDFromProtobuf(pb.Treasury, networkName),
 		AdminKey:            adminKey,
 		KycKey:              kycKey,
 		FreezeKey:           freezeKey,
@@ -244,5 +244,5 @@ func TokenInfoFromBytes(data []byte) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	return tokenInfoFromProtobuf(&pb), nil
+	return tokenInfoFromProtobuf(&pb, nil), nil
 }

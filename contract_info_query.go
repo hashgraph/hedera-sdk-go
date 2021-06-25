@@ -42,7 +42,7 @@ func (query *ContractInfoQuery) GetContractID() ContractID {
 
 func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.contractID.validate(client)
+	err = query.contractID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func contractInfoQuery_shouldRetry(_ request, response response) executionState 
 	return query_shouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func contractInfoQuery_mapStatusError(_ request, response response) error {
+func contractInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -188,12 +188,10 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	info, err := contractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)
+	info, err := contractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo, client.networkName)
 	if err != nil {
 		return ContractInfo{}, err
 	}
-	info.AccountID.setNetworkWithClient(client)
-	info.ContractID.setNetworkWithClient(client)
 
 	return info, nil
 }

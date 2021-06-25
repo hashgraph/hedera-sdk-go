@@ -26,7 +26,7 @@ func topicMessageOfSingle(resp *mirror.ConsensusTopicResponse) TopicMessage {
 	}
 }
 
-func topicMessageOfMany(message []*mirror.ConsensusTopicResponse) TopicMessage {
+func topicMessageOfMany(message []*mirror.ConsensusTopicResponse, networkName *NetworkName) TopicMessage {
 	length := len(message)
 	size := uint64(0)
 	chunks := make([]TopicMessageChunk, length)
@@ -35,7 +35,7 @@ func topicMessageOfMany(message []*mirror.ConsensusTopicResponse) TopicMessage {
 
 	for _, m := range message {
 		if transactionID == nil {
-			value := transactionIDFromProtobuf(m.ChunkInfo.InitialTransactionID)
+			value := transactionIDFromProtobuf(m.ChunkInfo.InitialTransactionID, networkName)
 			transactionID = &value
 		}
 

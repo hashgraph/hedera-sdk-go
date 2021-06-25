@@ -138,7 +138,7 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 
 func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.topicID.validate(client)
+	err = transaction.topicID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -298,7 +298,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	}
 
 	initialTransactionID := transaction.GetTransactionID()
-	nextTransactionID := transactionIDFromProtobuf(initialTransactionID.toProtobuf())
+	nextTransactionID := transactionIDFromProtobuf(initialTransactionID.toProtobuf(), nil)
 
 	transaction.transactionIDs = make([]TransactionID, 0)
 	transaction.transactions = make([]*proto.Transaction, 0)
@@ -312,7 +312,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			end = len(transaction.message)
 		}
 
-		transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
+		transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf(), nil))
 
 		transaction.pb.Message = transaction.message[start:end]
 		transaction.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{

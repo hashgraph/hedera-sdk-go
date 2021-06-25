@@ -38,7 +38,7 @@ func (query *TokenInfoQuery) GetTokenID() TokenID {
 
 func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.tokenID.validate(client)
+	err = query.tokenID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func tokenInfoQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func tokenInfoQuery_mapStatusError(_ request, response response) error {
+func tokenInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -185,10 +185,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
-	info.TokenID.setNetworkWithClient(client)
-	info.Treasury.setNetworkWithClient(client)
-	info.AutoRenewAccountID.setNetworkWithClient(client)
+	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo, client.networkName)
 
 	return info, nil
 }

@@ -35,7 +35,7 @@ func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
 
 func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.scheduleID.validate(client)
+	err = query.scheduleID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func scheduleInfoQuery_shouldRetry(_ request, response response) executionState 
 	return query_shouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func scheduleInfoQuery_mapStatusError(_ request, response response) error {
+func scheduleInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -177,15 +177,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		return ScheduleInfo{}, err
 	}
 
-	info := scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo)
-	info.PayerAccountID.setNetworkWithClient(client)
-	info.CreatorAccountID.setNetworkWithClient(client)
-	info.ScheduleID.setNetworkWithClient(client)
-	if info.ScheduledTransactionID != nil {
-		info.ScheduledTransactionID.AccountID.setNetworkWithClient(client)
-	}
-
-	return info, nil
+	return scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo, client.networkName), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

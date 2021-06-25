@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-func TestAccountIDChecksumFromString(t *testing.T) {
+func TestAccountIDchecksumFromString(t *testing.T) {
 	id, err := AccountIDFromString("0.0.123-rmkyk")
 	assert.NoError(t, err)
 	assert.Equal(t, id.Account, uint64(123))
 }
 
-func TestAccountIDChecksumToString(t *testing.T) {
+func TestAccountIDchecksumToString(t *testing.T) {
 	id := AccountID{
 		Shard:   50,
 		Realm:   150,

@@ -6,7 +6,8 @@ import (
 
 type TransactionReceiptQuery struct {
 	Query
-	pb *proto.TransactionGetReceiptQuery
+	pb            *proto.TransactionGetReceiptQuery
+	transactionID TransactionID
 }
 
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
@@ -23,6 +24,24 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	}
 }
 
+func (query *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error {
+	var err error
+	err = query.transactionID.AccountID.Validate(client)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (query *TransactionReceiptQuery) build() *TransactionReceiptQuery {
+	if !query.transactionID.AccountID.isZero() {
+		query.pb.TransactionID = query.transactionID.toProtobuf()
+	}
+
+	return query
+}
+
 func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -36,6 +55,13 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	err = query.validateNetworkOnIDs(client)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	query.build()
 
 	resp, err := execute(
 		client,
@@ -79,7 +105,7 @@ func transactionReceiptQuery_shouldRetry(request request, response response) exe
 	}
 }
 
-func transactionReceiptQuery_mapStatusError(request request, response response) error {
+func transactionReceiptQuery_mapStatusError(request request, response response, networkName *NetworkName) error {
 	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
@@ -91,8 +117,8 @@ func transactionReceiptQuery_mapStatusError(request request, response response) 
 
 	return ErrHederaReceiptStatus{
 		Status:  Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
-		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetReceipt().TransactionID),
-		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
+		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetReceipt().TransactionID, networkName),
+		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt(), networkName),
 	}
 }
 
@@ -103,12 +129,12 @@ func transactionReceiptQuery_getMethod(_ request, channel *channel) method {
 }
 
 func (query *TransactionReceiptQuery) SetTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
-	query.pb.TransactionID = transactionID.toProtobuf()
+	query.transactionID = transactionID
 	return query
 }
 
 func (query *TransactionReceiptQuery) GetTransactionID() TransactionID {
-	return transactionIDFromProtobuf(query.pb.TransactionID)
+	return query.transactionID
 }
 
 func (query *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionReceiptQuery {
@@ -140,6 +166,13 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
+	err := query.validateNetworkOnIDs(client)
+	if err != nil {
+		return TransactionReceipt{}, err
+	}
+
+	query.build()
+
 	resp, err := execute(
 		client,
 		request{
@@ -162,28 +195,5 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		return TransactionReceipt{}, err
 	}
 
-	receipt := transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt())
-	if receipt.TokenID != nil {
-		receipt.TokenID.setNetworkWithClient(client)
-	}
-	if receipt.TopicID != nil {
-		receipt.TopicID.setNetworkWithClient(client)
-	}
-	if receipt.FileID != nil {
-		receipt.FileID.setNetworkWithClient(client)
-	}
-	if receipt.ContractID != nil {
-		receipt.ContractID.setNetworkWithClient(client)
-	}
-	if receipt.ScheduleID != nil {
-		receipt.ScheduleID.setNetworkWithClient(client)
-	}
-	if receipt.AccountID != nil {
-		receipt.AccountID.setNetworkWithClient(client)
-	}
-	if receipt.ScheduledTransactionID != nil {
-		receipt.ScheduledTransactionID.AccountID.setNetworkWithClient(client)
-	}
-
-	return receipt, nil
+	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt(), client.networkName), nil
 }

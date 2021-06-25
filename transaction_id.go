@@ -141,7 +141,7 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 	}
 }
 
-func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
+func transactionIDFromProtobuf(pb *proto.TransactionID, networkName *NetworkName) TransactionID {
 	if pb == nil {
 		return TransactionID{}
 	}
@@ -152,7 +152,7 @@ func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
 
 	var accountID AccountID
 	if pb.AccountID != nil {
-		accountID = accountIDFromProtobuf(pb.AccountID)
+		accountID = accountIDFromProtobuf(pb.AccountID, networkName)
 	}
 
 	return TransactionID{&accountID, &validStart, pb.Scheduled}
@@ -177,7 +177,7 @@ func TransactionIDFromBytes(data []byte) (TransactionID, error) {
 		return TransactionID{}, err
 	}
 
-	return transactionIDFromProtobuf(&pb), nil
+	return transactionIDFromProtobuf(&pb, nil), nil
 }
 
 func (id TransactionID) SetScheduled(scheduled bool) TransactionID {
@@ -189,9 +189,9 @@ func (id TransactionID) GetScheduled() bool {
 	return id.scheduled
 }
 
-func (id TransactionID) TransactionIDValidateNetworkOnIDs(client *Client) error {
+func (id TransactionID) transactionIDValidateNetworkOnIDs(client *Client) error {
 	if !id.AccountID.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.AccountID.Shard, id.AccountID.Realm, id.AccountID.Account))
+		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.AccountID.Shard, id.AccountID.Realm, id.AccountID.Account))
 		if err != nil {
 			return err
 		}
@@ -199,7 +199,7 @@ func (id TransactionID) TransactionIDValidateNetworkOnIDs(client *Client) error 
 		if err != nil {
 			return err
 		}
-		if tempChecksum.correctChecksum != *id.AccountID.Checksum {
+		if tempChecksum.correctChecksum != *id.AccountID.checksum {
 			return errNetworkMismatch
 		}
 	}

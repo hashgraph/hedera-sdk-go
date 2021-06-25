@@ -12,49 +12,34 @@ type AccountID struct {
 	Shard    uint64
 	Realm    uint64
 	Account  uint64
-	Checksum *string
+	checksum *string
 }
 
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
-	var checksum parseAddressResult
-	var err error
-
-	var networkNames = []NetworkName{
-		NetworkNameMainnet,
-		NetworkNameTestnet,
-		NetworkNamePreviewnet,
-	}
-
-	for _, name := range networkNames {
-		checksum, err = checksumParseAddress(name.Network(), data)
-		if err != nil {
-			return AccountID{}, err
-		}
-		if checksum.status == 2 || checksum.status == 3 {
-			break
-		}
-	}
-
-	err = checksumVerify(checksum.status)
+	shard, realm, num, checksum, err := idFromString(data)
 	if err != nil {
 		return AccountID{}, err
 	}
 
-	tempChecksum := checksum.correctChecksum
-
 	return AccountID{
-		Shard:    uint64(checksum.num1),
-		Realm:    uint64(checksum.num2),
-		Account:  uint64(checksum.num3),
-		Checksum: &tempChecksum,
+		Shard:    uint64(shard),
+		Realm:    uint64(realm),
+		Account:  uint64(num),
+		checksum: checksum,
 	}, nil
 }
 
 func (id *AccountID) setNetworkWithClient(client *Client) {
-	checksum := checkChecksum(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
-	id.Checksum = &checksum
+	if client.networkName != nil {
+		id.setNetwork(*client.networkName)
+	}
+}
+
+func (id *AccountID) setNetwork(name NetworkName) {
+	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	id.checksum = &checksum
 }
 
 // AccountIDFromSolidityAddress constructs an AccountID from a string
@@ -69,13 +54,13 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 		Shard:    shard,
 		Realm:    realm,
 		Account:  account,
-		Checksum: nil,
+		checksum: nil,
 	}, nil
 }
 
-func (id *AccountID) validate(client *Client) error {
+func (id *AccountID) Validate(client *Client) error {
 	if !id.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.Network(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err
 		}
@@ -83,11 +68,11 @@ func (id *AccountID) validate(client *Client) error {
 		if err != nil {
 			return err
 		}
-		if id.Checksum == nil {
-			id.Checksum = &tempChecksum.correctChecksum
+		if id.checksum == nil {
+			id.checksum = &tempChecksum.correctChecksum
 			return nil
 		}
-		if tempChecksum.correctChecksum != *id.Checksum {
+		if tempChecksum.correctChecksum != *id.checksum {
 			return errNetworkMismatch
 		}
 	}
@@ -98,10 +83,10 @@ func (id *AccountID) validate(client *Client) error {
 // String returns the string representation of an AccountID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id AccountID) String() string {
-	if id.Checksum == nil {
+	if id.checksum == nil {
 		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, *id.Checksum)
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, *id.checksum)
 }
 
 // ToSolidityAddress returns the string representation of the AccountID as a
@@ -131,16 +116,22 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func accountIDFromProtobuf(pb *proto.AccountID) AccountID {
-	if pb == nil {
+func accountIDFromProtobuf(accountID *proto.AccountID, networkName *NetworkName) AccountID {
+	if accountID == nil {
 		return AccountID{}
 	}
-	return AccountID{
-		Shard:    uint64(pb.ShardNum),
-		Realm:    uint64(pb.RealmNum),
-		Account:  uint64(pb.AccountNum),
-		Checksum: nil,
+
+	id := AccountID{
+		Shard:   uint64(accountID.ShardNum),
+		Realm:   uint64(accountID.RealmNum),
+		Account: uint64(accountID.AccountNum),
 	}
+
+	if networkName != nil {
+		id.setNetwork(*networkName)
+	}
+
+	return id
 }
 
 func (id AccountID) isZero() bool {
@@ -170,5 +161,5 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 		return AccountID{}, err
 	}
 
-	return accountIDFromProtobuf(&pb), nil
+	return accountIDFromProtobuf(&pb, nil), nil
 }

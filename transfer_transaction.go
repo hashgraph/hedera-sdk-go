@@ -37,7 +37,7 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 	tokenTransfers := make(map[TokenID]map[AccountID]int64)
 
 	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
-		accountID := accountIDFromProtobuf(aa.AccountID)
+		accountID := accountIDFromProtobuf(aa.AccountID, nil)
 		amount := HbarFromTinybar(aa.Amount)
 
 		if value, ok := hbarTransfers[accountID]; ok {
@@ -48,7 +48,7 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 	}
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
-		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token)
+		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token, nil)
 
 		var currentTokenTransfers map[AccountID]int64
 
@@ -59,7 +59,7 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 		}
 
 		for _, aa := range tokenTransfersList.GetTransfers() {
-			accountID := accountIDFromProtobuf(aa.AccountID)
+			accountID := accountIDFromProtobuf(aa.AccountID, nil)
 
 			if value, ok := currentTokenTransfers[accountID]; ok {
 				currentTokenTransfers[accountID] = aa.Amount + value
@@ -141,13 +141,13 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 func (transaction *TransferTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
 	for tokenID, accountMap := range transaction.tokenTransfers {
-		err = tokenID.validate(client)
+		err = tokenID.Validate(client)
 		for accountID, _ := range accountMap {
-			err = accountID.validate(client)
+			err = accountID.Validate(client)
 		}
 	}
 	for accountID, _ := range transaction.hbarTransfers {
-		err = accountID.validate(client)
+		err = accountID.Validate(client)
 	}
 	if err != nil {
 		return err

@@ -81,7 +81,7 @@ func (transaction *ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) *
 }
 
 func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey())
+	return keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
 }
 
 // SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,
@@ -153,15 +153,15 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 
 func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.contractID.validate(client)
+	err = transaction.contractID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.proxyAccountID.validate(client)
+	err = transaction.proxyAccountID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.bytecodeFileID.validate(client)
+	err = transaction.bytecodeFileID.Validate(client)
 	if err != nil {
 		return err
 	}

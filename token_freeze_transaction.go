@@ -67,11 +67,11 @@ func (transaction *TokenFreezeTransaction) GetAccountID() AccountID {
 
 func (transaction *TokenFreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.tokenID.validate(client)
+	err = transaction.tokenID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.accountID.validate(client)
+	err = transaction.accountID.Validate(client)
 	if err != nil {
 		return err
 	}

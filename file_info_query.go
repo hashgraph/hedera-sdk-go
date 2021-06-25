@@ -35,7 +35,7 @@ func (query *FileInfoQuery) GetFileID(id FileID) FileID {
 
 func (query *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.fileID.validate(client)
+	err = query.fileID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func fileInfoQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func fileInfoQuery_mapStatusError(_ request, response response) error {
+func fileInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -181,7 +181,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	info, err := fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)
+	info, err := fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo, client.networkName)
 	if err != nil {
 		return FileInfo{}, err
 	}

@@ -61,11 +61,11 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 
 func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = query.accountID.validate(client)
+	err = query.accountID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = query.contractID.validate(client)
+	err = query.contractID.Validate(client)
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func accountBalanceQuery_shouldRetry(_ request, response response) executionStat
 	return query_shouldRetry(Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
-func accountBalanceQuery_mapStatusError(_ request, response response) error {
+func accountBalanceQuery_mapStatusError(_ request, response response, networkName *NetworkName) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
 	}
@@ -182,17 +182,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, err
 	}
 
-	tokens := make(map[TokenID]uint64, len(resp.query.GetCryptogetAccountBalance().TokenBalances))
-	for _, token := range resp.query.GetCryptogetAccountBalance().TokenBalances {
-		t := tokenIDFromProtobuf(token.TokenId)
-		t.setNetworkWithClient(client)
-		tokens[t] = token.Balance
-	}
-
-	return AccountBalance{
-		Hbars: HbarFromTinybar(int64(resp.query.GetCryptogetAccountBalance().Balance)),
-		Token: tokens,
-	}, nil
+	return accountBalanceFromProtobuf(resp.query.GetCryptogetAccountBalance(), client.networkName), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

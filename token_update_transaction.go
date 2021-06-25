@@ -93,7 +93,7 @@ func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey Key) *TokenUpda
 }
 
 func (transaction *TokenUpdateTransaction) GetAdminKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -110,7 +110,7 @@ func (transaction *TokenUpdateTransaction) SetKycKey(publicKey Key) *TokenUpdate
 }
 
 func (transaction *TokenUpdateTransaction) GetKycKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetKycKey())
+	key, err := keyFromProtobuf(transaction.pb.GetKycKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -127,7 +127,7 @@ func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey Key) *TokenUpd
 }
 
 func (transaction *TokenUpdateTransaction) GetFreezeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey())
+	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -144,7 +144,7 @@ func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey Key) *TokenUpdat
 }
 
 func (transaction *TokenUpdateTransaction) GetWipeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetWipeKey())
+	key, err := keyFromProtobuf(transaction.pb.GetWipeKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -161,7 +161,7 @@ func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey Key) *TokenUpd
 }
 
 func (transaction *TokenUpdateTransaction) GetSupplyKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey())
+	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey(), nil)
 	if err != nil {
 		return PublicKey{}
 	}
@@ -230,15 +230,15 @@ func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
 
 func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
-	err = transaction.tokenID.validate(client)
+	err = transaction.tokenID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.treasuryAccountID.validate(client)
+	err = transaction.treasuryAccountID.Validate(client)
 	if err != nil {
 		return err
 	}
-	err = transaction.autoRenewAccountID.validate(client)
+	err = transaction.autoRenewAccountID.Validate(client)
 	if err != nil {
 		return err
 	}
