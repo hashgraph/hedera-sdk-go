@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"math/rand"
 )
 
