@@ -1,3 +1,10 @@
+## v2.1.9
+
+### Fixed
+
+ * `Client.SetMirroNetwork()` producing a nil pointer exception on next use of a mirror network
+ * Mirror node TLS no longer producing nil pointer exception
+
 ## v2.1.8
 
 ### Added
