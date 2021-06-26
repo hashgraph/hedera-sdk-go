@@ -68,6 +68,13 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 	return tokenIDFromProtobuf(&pb, nil), nil
 }
 
+func (id *TokenID) GenerateNft(serial int64) NftID {
+	return NftID{
+		TokenID:      *id,
+		SerialNumber: serial,
+	}
+}
+
 // TokenIDFromString constructs an TokenID from a string formatted as
 // `Shard.Realm.TokenID` (for example "0.0.3")
 func TokenIDFromString(data string) (TokenID, error) {

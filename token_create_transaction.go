@@ -40,7 +40,7 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
 	transaction.SetMaxTransactionFee(NewHbar(30))
-	transaction.pb.TokenType = proto.TokenType_FUNGIBLE_COMMON
+	transaction.SetTokenType(TokenTypeFungibleCommon)
 
 	return &transaction
 }
@@ -96,6 +96,12 @@ func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCrea
 
 func (transaction *TokenCreateTransaction) GetDecimals() uint {
 	return uint(transaction.pb.GetDecimals())
+}
+
+func (transaction *TokenCreateTransaction) SetTokenType(t TokenType) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.TokenType = proto.TokenType(t)
+	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetTokenType() TokenType {

@@ -155,24 +155,52 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 	return transaction
 }
 
-func (transaction *TransferTransaction) AddNftTransfer(tokenID TokenID, sender AccountID, receiver AccountID, serial int64) *TransferTransaction {
+func (transaction *TransferTransaction) AddNftTransfers(tokenID TokenID, sender AccountID, receiver AccountID, serials []int64) *TransferTransaction {
+	transaction.requireNotFrozen()
+	for _, serial := range serials {
+		if index, ok := transaction.tokenIndexes[tokenID]; ok {
+			transaction.pb.TokenTransfers[index].NftTransfers = append(
+				transaction.pb.TokenTransfers[index].NftTransfers,
+				&proto.NftTransfer{
+					SenderAccountID:   sender.toProtobuf(),
+					ReceiverAccountID: receiver.toProtobuf(),
+					SerialNumber:      serial,
+				},
+			)
+		} else {
+			transaction.tokenIndexes[tokenID] = len(transaction.pb.TokenTransfers)
+			transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
+				Token: tokenID.toProtobuf(),
+				NftTransfers: []*proto.NftTransfer{{
+					SenderAccountID:   sender.toProtobuf(),
+					ReceiverAccountID: receiver.toProtobuf(),
+					SerialNumber:      serial,
+				}},
+			})
+		}
+	}
+
+	return transaction
+}
+
+func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender AccountID, receiver AccountID) *TransferTransaction {
 	transaction.requireNotFrozen()
 
 	nftTransfer := proto.NftTransfer{
 		SenderAccountID:   sender.toProtobuf(),
 		ReceiverAccountID: receiver.toProtobuf(),
-		SerialNumber:      serial,
+		SerialNumber:      nftID.SerialNumber,
 	}
 
-	if index, ok := transaction.tokenIndexes[tokenID]; ok {
+	if index, ok := transaction.tokenIndexes[nftID.TokenID]; ok {
 		transaction.pb.TokenTransfers[index].NftTransfers = append(
 			transaction.pb.TokenTransfers[index].NftTransfers,
 			&nftTransfer,
 		)
 	} else {
-		transaction.tokenIndexes[tokenID] = len(transaction.pb.TokenTransfers)
+		transaction.tokenIndexes[nftID.TokenID] = len(transaction.pb.TokenTransfers)
 		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
-			Token:        tokenID.toProtobuf(),
+			Token:        nftID.TokenID.toProtobuf(),
 			NftTransfers: []*proto.NftTransfer{&nftTransfer},
 		})
 	}

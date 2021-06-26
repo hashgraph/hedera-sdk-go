@@ -87,6 +87,16 @@ func (transaction *TokenWipeTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
+func (transaction *TokenWipeTransaction) GetSerialNumbers() []int64 {
+	return transaction.pb.GetSerialNumbers()
+}
+
+func (transaction *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.SerialNumbers = serial
+	return transaction
+}
+
 func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
 	err = transaction.tokenID.Validate(client)

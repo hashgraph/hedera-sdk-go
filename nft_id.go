@@ -36,7 +36,7 @@ func NftIDFromString(s string) (NftID, error) {
 }
 
 func (id NftID) String() string {
-	return fmt.Sprintf("%d@%s",id.SerialNumber, id.TokenID.String())
+	return fmt.Sprintf("%d@%s", id.SerialNumber, id.TokenID.String())
 }
 
 func (id NftID) toProtobuf() *proto.NftID {
