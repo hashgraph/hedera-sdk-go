@@ -75,6 +75,15 @@ func (query *TopicMessageQuery) GetLimit() uint64 {
 	return query.pb.Limit
 }
 
+func (query *TopicMessageQuery) SetMaxAttempts(maxAttempts uint64) *TopicMessageQuery {
+	query.maxAttempts = maxAttempts
+	return query
+}
+
+func (query *TopicMessageQuery) GetMaxAttempts() uint64 {
+	return query.maxAttempts
+}
+
 func (query *TopicMessageQuery) SetErrorHandler(errorHandler func(stat status.Status)) *TopicMessageQuery {
 	query.errorHandler = errorHandler
 	return query

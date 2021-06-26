@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -30,20 +31,22 @@ func contains(arr []string, str string) bool {
 func (network *mirrorNetwork) setNetwork(newNetwork []string) {
 	for _, n := range network.network {
 		if !contains(newNetwork, n) {
+			_ = network.networkNodes[n].close()
 			delete(network.networkNodes, n)
 		}
 	}
 
+	network.network = newNetwork
+
 	for _, url := range newNetwork {
-		if !contains(network.network, url) {
-			network.network = append(network.network, url)
+		if _, ok := network.networkNodes[url]; !ok {
 			network.networkNodes[url] = newMirrorNode(url)
 		}
 	}
 
 	network.index = 0
 
-	if len(network.network) > 0 {
+	if len(network.network) > 1 {
 		rand.Shuffle(len(network.network), func(i, j int) {
 			network.network[i], network.network[j] = network.network[j], network.network[i]
 		})

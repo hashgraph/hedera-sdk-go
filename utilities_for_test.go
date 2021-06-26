@@ -43,7 +43,6 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		if err != nil {
 			env.Client = ClientForTestnet()
 		}
-
 	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
@@ -132,7 +131,6 @@ func newTestClient(t *testing.T, token bool) *Client {
 	var err error
 
 	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
-		println("here")
 		client = ClientForPreviewnet()
 	} else {
 		client, err = ClientFromConfigFile(os.Getenv("CONFIG_FILE"))

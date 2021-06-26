@@ -15,6 +15,7 @@ import (
 
 type mirrorNode struct {
 	channel *mirror.ConsensusServiceClient
+	client  *grpc.ClientConn
 	address string
 }
 
@@ -51,6 +52,15 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 
 	channel := mirror.NewConsensusServiceClient(conn)
 	node.channel = &channel
+	node.client = conn
 
 	return node.channel, nil
+}
+
+func (node *mirrorNode) close() error {
+	if node.channel != nil {
+		return node.client.Close()
+	}
+
+	return nil
 }
