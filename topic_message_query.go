@@ -161,6 +161,8 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				} else {
 					panic(err)
 				}
+
+				handle.Unsubscribe()
 			}
 
 			if subClient == nil {
@@ -181,18 +183,21 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				continue
 			}
 
-			query.pb.ConsensusStartTime = resp.ConsensusTimestamp
+			if resp.ConsensusTimestamp != nil {
+				query.pb.ConsensusStartTime = timeToProtobuf(timeFromProtobuf(resp.ConsensusTimestamp).Add(1 * time.Nanosecond))
+			}
+
 			if query.pb.Limit > 0 {
 				query.pb.Limit -= 1
 			}
 
-			if resp.ChunkInfo == nil || (resp.ChunkInfo != nil && resp.ChunkInfo.Total == 1) {
+			if resp.ChunkInfo == nil || resp.ChunkInfo.Total == 1 {
 				onNext(topicMessageOfSingle(resp))
 			} else {
 				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID, nil).String()
 				message, ok := messages[txID]
 				if !ok {
-					message = make([]*mirror.ConsensusTopicResponse, 0)
+					message = make([]*mirror.ConsensusTopicResponse, resp.ChunkInfo.Total)
 				}
 
 				message = append(message, resp)
