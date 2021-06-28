@@ -83,7 +83,7 @@ func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenT
 	transfers := make(map[TokenID][]TokenTransfer)
 
 	for tokenID, tokenTransfers := range transaction.tokenTransfers {
-		tokenTransfersList := make([]TokenTransfer, 1)
+		tokenTransfersList := make([]TokenTransfer, 0)
 
 		for accountID, amount := range tokenTransfers {
 			tokenTransfersList = append(tokenTransfersList, TokenTransfer{
