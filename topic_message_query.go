@@ -144,6 +144,8 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 
 		for {
 			if err != nil {
+				handle.Unsubscribe()
+
 				if grpcErr, ok := status.FromError(err); ok {
 					if query.attempt < query.maxAttempts && query.retryHandler(err) {
 						subClient = nil
@@ -161,8 +163,6 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				} else {
 					panic(err)
 				}
-
-				handle.Unsubscribe()
 			}
 
 			if subClient == nil {
@@ -197,7 +197,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID, nil).String()
 				message, ok := messages[txID]
 				if !ok {
-					message = make([]*mirror.ConsensusTopicResponse, resp.ChunkInfo.Total)
+					message = make([]*mirror.ConsensusTopicResponse, 0, resp.ChunkInfo.Total)
 				}
 
 				message = append(message, resp)
