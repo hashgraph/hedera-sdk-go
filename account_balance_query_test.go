@@ -16,6 +16,41 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestAccountBalanceQuery_TokenBalance(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMemo("fnord").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := receipt.TokenID
+
+	balance, err := NewAccountBalanceQuery().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(env.Client.GetOperatorAccountID()).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, balance.Tokens.Get(*tokenID), uint64(1000000))
+	assert.Equal(t, balance.TokenDecimals.Get(*tokenID), uint64(3))
+}
+
 func TestAccountBalanceQueryCost_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
