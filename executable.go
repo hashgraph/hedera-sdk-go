@@ -2,11 +2,10 @@ package hedera
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"math"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"google.golang.org/grpc"
@@ -114,7 +113,7 @@ func execute(
 
 		if err != nil {
 			errPersistent = err
-			if grpcErr, ok := status.FromError(err); ok && (grpcErr.Code() == codes.Unavailable || grpcErr.Code() == codes.ResourceExhausted) {
+			if defaultRetryHandler(err) {
 				node.increaseDelay()
 				continue
 			}

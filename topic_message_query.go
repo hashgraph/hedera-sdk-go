@@ -4,12 +4,15 @@ import (
 	"context"
 	"io"
 	"math"
+	"regexp"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+var RST_STREAM *regexp.Regexp
 
 type TopicMessageQuery struct {
 	pb                *mirror.ConsensusTopicQuery
@@ -219,8 +222,24 @@ func defaultRetryHandler(err error) bool {
 	code := status.Code(err)
 
 	switch code {
-	case codes.NotFound, codes.ResourceExhausted, codes.Internal, codes.Unavailable:
+	case codes.NotFound, codes.ResourceExhausted, codes.Unavailable:
 		return true
+	case codes.Internal:
+		if RST_STREAM == nil {
+			var err1 error
+			RST_STREAM, err1 = regexp.Compile(".*(rst.stream.*internal.error|internal.error.*rst.stream).*")
+			if err1 != nil {
+				panic(err1)
+			}
+		}
+
+		grpcErr, ok := status.FromError(err)
+
+		if !ok {
+			return false
+		}
+
+		return RST_STREAM.FindIndex([]byte(grpcErr.Message())) != nil
 	default:
 		return false
 	}
