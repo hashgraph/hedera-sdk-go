@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var RST_STREAM *regexp.Regexp
+var RST_STREAM = regexp.MustCompile("/\brst[^0-9a-zA-Z]stream\b/gi")
 
 type TopicMessageQuery struct {
 	pb                *mirror.ConsensusTopicQuery
@@ -225,14 +225,6 @@ func defaultRetryHandler(err error) bool {
 	case codes.NotFound, codes.ResourceExhausted, codes.Unavailable:
 		return true
 	case codes.Internal:
-		if RST_STREAM == nil {
-			var err1 error
-			RST_STREAM, err1 = regexp.Compile(".*(rst.stream.*internal.error|internal.error.*rst.stream).*")
-			if err1 != nil {
-				panic(err1)
-			}
-		}
-
 		grpcErr, ok := status.FromError(err)
 
 		if !ok {
