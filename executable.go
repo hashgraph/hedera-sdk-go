@@ -9,6 +9,8 @@ import (
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const maxAttempts = 10
@@ -113,7 +115,7 @@ func execute(
 
 		if err != nil {
 			errPersistent = err
-			if defaultRetryHandler(err) {
+			if executableDefaultRetryHandler(err) {
 				node.increaseDelay()
 				continue
 			}
@@ -147,4 +149,23 @@ func delayForAttempt(attempt int64) {
 	// 0.1s, 0.2s, 0.4s, 0.8s, ...
 	ms := int64(math.Floor(50 * math.Pow(2, float64(attempt))))
 	time.Sleep(time.Duration(ms) * time.Millisecond)
+}
+
+func executableDefaultRetryHandler(err error) bool {
+	code := status.Code(err)
+
+	switch code {
+	case codes.ResourceExhausted, codes.Unavailable:
+		return true
+	case codes.Internal:
+		grpcErr, ok := status.FromError(err)
+
+		if !ok {
+			return false
+		}
+
+		return RST_STREAM.FindIndex([]byte(grpcErr.Message())) != nil
+	default:
+		return false
+	}
 }
