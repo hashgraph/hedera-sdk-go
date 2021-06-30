@@ -370,7 +370,7 @@ func Test_TokenDissociate_NoAccountID(t *testing.T) {
 
 	check := false
 	for _, relation := range info.TokenRelationships {
-		if tokenID.Token == relation.TokenID.Token {
+		if tokenID.Shard == relation.TokenID.Shard && tokenID.Realm == relation.TokenID.Realm && tokenID.Token == relation.TokenID.Token {
 			check = true
 		}
 	}
