@@ -92,7 +92,7 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 
 	var value uint64
 	for balanceTokenID, balance := range info.Token {
-		if *tokenID.checksum == *balanceTokenID.checksum {
+		if tokenID.Shard == balanceTokenID.Shard && tokenID.Realm == balanceTokenID.Realm && tokenID.Token == balanceTokenID.Token {
 			value = balance
 		}
 	}
