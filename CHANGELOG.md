@@ -1,3 +1,25 @@
+## Unreleased
+
+### Added
+
+ * All requests should retry on gRPC error `INTERNAL` if the message contains `RST_STREAM`
+ * `AccountBalance.Tokens` as a replacement for `AccountBalance.Token`
+ * `AccountBalance.TokenDecimals`
+ * All transactions will now `sign-on-demand` which should result in improved performance
+
+### Fixed
+
+ * `TopicMessageQuery` not calling `Unsubscribe` when a stream is cancelled
+ * `TopicMessageQuery` should add 1 nanosecond to the `StartTime` of the last received message
+ * `TopicMessageQuery` allocate space for entire chunked message ahead of time
+   for retries
+ * `TokenDeleteTransaction.SetTokenID()` incorrectly setting `tokenID` resulting in `GetTokenID()` always returning an empty `TokenID`
+ * `TransferTransaction.GetTokenTransfers()` incorrectly setting an empty value
+
+### Deprecated
+
+ * `AccountBalance.Token` use `AccountBalance.Tokens` instead
+
 ## v2.1.9
 
 ### Fixed
