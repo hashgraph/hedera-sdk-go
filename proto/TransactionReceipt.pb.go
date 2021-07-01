@@ -89,7 +89,7 @@ type TransactionReceipt struct {
 	TopicRunningHashVersion uint64 `protobuf:"varint,9,opt,name=topicRunningHashVersion,proto3" json:"topicRunningHashVersion,omitempty"`
 	// In the receipt of a CreateToken, the id of the newly created token
 	TokenID *TokenID `protobuf:"bytes,10,opt,name=tokenID,proto3" json:"tokenID,omitempty"`
-	// In the receipt of TokenMint, TokenWipe, TokenBurn, the current total supply of this token
+	// In the receipt of TokenMint, TokenWipe, TokenBurn, For fungible tokens - the current total supply of this token. For non fungible tokens - the total number of NFTs issued for a given tokenID
 	NewTotalSupply uint64 `protobuf:"varint,11,opt,name=newTotalSupply,proto3" json:"newTotalSupply,omitempty"`
 	// In the receipt of a ScheduleCreate, the id of the newly created Scheduled Entity
 	ScheduleID *ScheduleID `protobuf:"bytes,12,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"`
