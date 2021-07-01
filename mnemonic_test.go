@@ -88,7 +88,7 @@ func TestNewMnemonic(t *testing.T) {
 	gKey, err := mnemonicLegacy.ToLegacyPrivateKey()
 	assert.NoError(t, err)
 
-	assert.Equal(t, "302e020100300506032b6570042204202b7345f302a10c2a6d55bf8b7af40f125ec41d780957826006d30776f0c441fb", gKey.String())
+	assert.Equal(t, "302e020100300506032b65700422042098aa82d6125b5efa04bf8372be7931d05cd77f5ef3330b97d6ee7c006eaaf312", gKey.String())
 }
 
 func TestLegacyMnemonic(t *testing.T) {
@@ -114,7 +114,7 @@ func TestLegacyMnemonic(t *testing.T) {
 
 	assert.Equal(t, gKey.keyData, slKey.keyData)
 	assert.Equal(t, gKey.keyData, stKey.keyData)
-	assert.Equal(t, gKey.String(), "302e020100300506032b657004220420882a565ad8cb45643892b5366c1ee1c1ef4a730c5ce821a219ff49b6bf173ddf")
+	assert.Equal(t, gKey.String(), "302e020100300506032b65700422042000c2f59212cb3417f0ee0d38e7bd876810d04f2dd2cb5c2d8f26ff406573f2bd")
 }
 
 func TestMnemonicBreaksWithBadLength(t *testing.T) {
