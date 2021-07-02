@@ -50,7 +50,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networ
 
 	if pb.LiveHashes != nil {
 		for i, liveHash := range pb.LiveHashes {
-			singleRelationship, err := liveHashFromProtobuf(liveHash)
+			singleRelationship, err := liveHashFromProtobuf(liveHash, networkName)
 			if err != nil {
 				return AccountInfo{}, err
 			}

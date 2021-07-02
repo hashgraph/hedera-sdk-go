@@ -11,11 +11,12 @@ import (
 type NftID struct {
 	TokenID      TokenID
 	SerialNumber int64
+	checksum     *string
 }
 
 func NftIDFromString(s string) (NftID, error) {
 	split := strings.Split(s, "@")
-	shard, realm, num, err := idFromString(split[1])
+	shard, realm, num, checksum, err := idFromString(split[1])
 	if err != nil {
 		return NftID{}, err
 	}
@@ -27,12 +28,32 @@ func NftIDFromString(s string) (NftID, error) {
 
 	return NftID{
 		TokenID: TokenID{
-			Shard: uint64(shard),
-			Realm: uint64(realm),
-			Token: uint64(num),
+			Shard:    uint64(shard),
+			Realm:    uint64(realm),
+			Token:    uint64(num),
+			checksum: checksum,
 		},
 		SerialNumber: int64(serial),
 	}, nil
+}
+
+func (id *NftID) Validate(client *Client) error {
+	if !id.isZero() && client != nil && client.networkName != nil {
+		return id.TokenID.Validate(client)
+	}
+
+	return nil
+}
+
+func (id *NftID) setNetworkWithClient(client *Client) {
+	if client.networkName != nil {
+		id.setNetwork(*client.networkName)
+	}
+}
+
+func (id *NftID) setNetwork(name NetworkName) {
+	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.TokenID.Shard, id.TokenID.Realm, id.TokenID.Token))
+	id.checksum = &checksum
 }
 
 func (id NftID) String() string {
@@ -46,14 +67,18 @@ func (id NftID) toProtobuf() *proto.NftID {
 	}
 }
 
-func nftIDFromProtobuf(pb *proto.NftID) NftID {
+func nftIDFromProtobuf(pb *proto.NftID, networkName *NetworkName) NftID {
 	if pb == nil {
 		return NftID{}
 	}
 	return NftID{
-		TokenID:      tokenIDFromProtobuf(pb.TokenID),
+		TokenID:      tokenIDFromProtobuf(pb.TokenID, networkName),
 		SerialNumber: pb.SerialNumber,
 	}
+}
+
+func (id NftID) isZero() bool {
+	return id.TokenID.isZero() && id.SerialNumber == 0
 }
 
 func (id NftID) ToBytes() []byte {
@@ -72,5 +97,5 @@ func NftIDFromBytes(data []byte) (NftID, error) {
 		return NftID{}, err
 	}
 
-	return nftIDFromProtobuf(&pb), nil
+	return nftIDFromProtobuf(&pb, nil), nil
 }

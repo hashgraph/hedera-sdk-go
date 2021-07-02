@@ -19,13 +19,13 @@ func NewNftTransfer(sender AccountID, receiver AccountID, serial int64) NftTrans
 	}
 }
 
-func nftTransferFromProtobuf(pb *proto.NftTransfer) NftTransfer {
+func nftTransferFromProtobuf(pb *proto.NftTransfer, networkName *NetworkName) NftTransfer {
 	if pb == nil {
 		return NftTransfer{}
 	}
 	return NftTransfer{
-		SenderAccountID:   accountIDFromProtobuf(pb.SenderAccountID),
-		ReceiverAccountID: accountIDFromProtobuf(pb.ReceiverAccountID),
+		SenderAccountID:   accountIDFromProtobuf(pb.SenderAccountID, networkName),
+		ReceiverAccountID: accountIDFromProtobuf(pb.ReceiverAccountID, networkName),
 		SerialNumber:      pb.SerialNumber,
 	}
 }
@@ -57,5 +57,5 @@ func NftTransferFromBytes(data []byte) (NftTransfer, error) {
 		return NftTransfer{}, err
 	}
 
-	return nftTransferFromProtobuf(&pb), nil
+	return nftTransferFromProtobuf(&pb, nil), nil
 }
