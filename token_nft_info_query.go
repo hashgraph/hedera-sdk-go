@@ -9,7 +9,7 @@ type TokenNftInfoQuery struct {
 	*Query
 	nftInfo     *proto.TokenGetNftInfoQuery
 	tokenInfo   *proto.TokenGetNftInfosQuery
-	accountInfo *proto.TokenGetAccountNftInfoQuery
+	accountInfo *proto.TokenGetAccountNftInfosQuery
 	tokenID     TokenID
 	nftID       NftID
 	accountID   AccountID
@@ -123,12 +123,12 @@ func (query *TokenNftInfoQuery) ByTokenID(id TokenID) *TokenNftInfoQuery {
 func (query *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
 	header := proto.QueryHeader{}
 	tempQuery := newQuery(true, &header)
-	pb := proto.TokenGetAccountNftInfoQuery{Header: &header}
+	pb := proto.TokenGetAccountNftInfosQuery{Header: &header}
 	pb.AccountID = id.toProtobuf()
 	pb.Start = int64(query.start)
 	pb.End = int64(query.end)
-	tempQuery.pb.Query = &proto.Query_TokenGetAccountNftInfo{
-		TokenGetAccountNftInfo: &pb,
+	tempQuery.pb.Query = &proto.Query_TokenGetAccountNftInfos{
+		TokenGetAccountNftInfos: &pb,
 	}
 
 	query.Query = &tempQuery
@@ -259,18 +259,18 @@ func tokenNftInfosQuery_getMethod(_ request, channel *channel) method {
 }
 
 func accountNftInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetTokenGetAccountNftInfo().Header.NodeTransactionPrecheckCode))
+	return query_shouldRetry(Status(response.query.GetTokenGetAccountNftInfos().Header.NodeTransactionPrecheckCode))
 }
 
 func accountNftInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetTokenGetAccountNftInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.query.GetTokenGetAccountNftInfos().Header.NodeTransactionPrecheckCode),
 	}
 }
 
 func accountNftInfoQuery_getMethod(_ request, channel *channel) method {
 	return method{
-		query: channel.getToken().GetAccountNftInfo,
+		query: channel.getToken().GetAccountNftInfos,
 	}
 }
 
@@ -399,7 +399,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 			return []TokenNftInfo{}, err
 		}
 
-		nfts := resp.query.GetTokenGetAccountNftInfo().GetNfts()
+		nfts := resp.query.GetTokenGetAccountNftInfos().GetNfts()
 		for _, tokenInfo := range nfts {
 			tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(tokenInfo))
 		}
