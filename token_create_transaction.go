@@ -28,6 +28,7 @@ type TokenCreateTransaction struct {
 	pb                 *proto.TokenCreateTransactionBody
 	treasuryAccountID  AccountID
 	autoRenewAccountID AccountID
+	customFees         []CustomFee
 }
 
 func NewTokenCreateTransaction() *TokenCreateTransaction {
@@ -203,6 +204,41 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return key
 }
 
+func (transaction *TokenCreateTransaction) SetFeeScheduleKey(key Key) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.FeeScheduleKey = key.toProtoKey()
+	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetFeeScheduleKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetFeeScheduleKey(), nil)
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
+}
+
+func (transaction *TokenCreateTransaction) SetCustomFees(customFee []CustomFee) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.customFees = customFee
+	return transaction
+}
+
+func (transaction *TokenCreateTransaction) AddCustomFee(customFee CustomFee) *TokenCreateTransaction {
+	transaction.requireNotFrozen()
+	if transaction.customFees == nil {
+		transaction.customFees = make([]CustomFee, 0)
+	}
+
+	transaction.customFees = append(transaction.customFees, customFee)
+	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetCustomFees() []CustomFee {
+	return transaction.customFees
+}
+
 func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
 	err = transaction.treasuryAccountID.Validate(client)
@@ -212,6 +248,19 @@ func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) 
 	err = transaction.autoRenewAccountID.Validate(client)
 	if err != nil {
 		return err
+	}
+	for _, customFee := range transaction.customFees {
+		err = customFee.FeeCollectorAccountID.Validate(client)
+		if err != nil {
+			return err
+		}
+		switch t := customFee.Fee.(type) {
+		case FixedFee:
+			err = t.DenominationTokenID.Validate(client)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -224,6 +273,15 @@ func (transaction *TokenCreateTransaction) build() *TokenCreateTransaction {
 
 	if !transaction.autoRenewAccountID.isZero() {
 		transaction.pb.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	}
+
+	if len(transaction.customFees) > 0 {
+		for _, customFee := range transaction.customFees {
+			if transaction.pb.CustomFees == nil {
+				transaction.pb.CustomFees = make([]*proto.CustomFee, 0)
+			}
+			transaction.pb.CustomFees = append(transaction.pb.CustomFees, customFee.toProtobuf())
+		}
 	}
 
 	return transaction

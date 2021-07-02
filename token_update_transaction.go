@@ -172,6 +172,21 @@ func (transaction *TokenUpdateTransaction) GetSupplyKey() Key {
 	return key
 }
 
+func (transaction *TokenUpdateTransaction) SetFeeScheduleKey(key Key) *TokenUpdateTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.FeeScheduleKey = key.toProtoKey()
+	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetFeeScheduleKey() Key {
+	key, err := keyFromProtobuf(transaction.pb.GetFeeScheduleKey(), nil)
+	if err != nil {
+		return PublicKey{}
+	}
+
+	return key
+}
+
 // The new account which will be automatically charged to renew the token's expiration, at
 // autoRenewPeriod interval.
 func (transaction *TokenUpdateTransaction) SetAutoRenewAccount(id AccountID) *TokenUpdateTransaction {

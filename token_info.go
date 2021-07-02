@@ -28,6 +28,7 @@ type TokenInfo struct {
 	TokenType           TokenType
 	SupplyType          TokenSupplyType
 	MaxSupply           int64
+	CustomFees          []CustomFee
 }
 
 func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
@@ -148,6 +149,13 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenI
 		accountID = accountIDFromProtobuf(pb.AutoRenewAccount, networkName)
 	}
 
+	customFees := make([]CustomFee, 0)
+	if pb.CustomFees != nil {
+		for _, custom := range pb.CustomFees {
+			customFees = append(customFees, customFeeFromProtobuf(custom, networkName))
+		}
+	}
+
 	return TokenInfo{
 		TokenID:             tokenIDFromProtobuf(pb.TokenId, networkName),
 		Name:                pb.Name,
@@ -170,6 +178,7 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenI
 		TokenType:           TokenType(pb.TokenType),
 		SupplyType:          TokenSupplyType(pb.SupplyType),
 		MaxSupply:           pb.MaxSupply,
+		CustomFees:          customFees,
 	}
 }
 
@@ -209,6 +218,13 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		expirationTime = timeToProtobuf(*tokenInfo.ExpirationTime)
 	}
 
+	customFees := make([]*proto.CustomFee, 0)
+	if tokenInfo.CustomFees != nil {
+		for _, customFee := range tokenInfo.CustomFees {
+			customFees = append(customFees, customFee.toProtobuf())
+		}
+	}
+
 	return &proto.TokenInfo{
 		TokenId:             tokenInfo.TokenID.toProtobuf(),
 		Name:                tokenInfo.Name,
@@ -231,6 +247,7 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		TokenType:           proto.TokenType(tokenInfo.TokenType),
 		SupplyType:          proto.TokenSupplyType(tokenInfo.SupplyType),
 		MaxSupply:           tokenInfo.MaxSupply,
+		CustomFees:          customFees,
 	}
 }
 
