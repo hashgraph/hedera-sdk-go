@@ -29,8 +29,10 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 
 func contractCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractCreateTransaction {
 	return ContractCreateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetContractCreateInstance(),
+		Transaction:    transaction,
+		pb:             pb.GetContractCreateInstance(),
+		byteCodeFileID: fileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID(), nil),
+		proxyAccountID: accountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID(), nil),
 	}
 }
 

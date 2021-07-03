@@ -29,6 +29,7 @@ func fileUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	return FileUpdateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileUpdate(),
+		fileID:      fileIDFromProtobuf(pb.GetFileUpdate().GetFileID(), nil),
 	}
 }
 

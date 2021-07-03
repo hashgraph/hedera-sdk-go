@@ -33,8 +33,10 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 
 func topicUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicUpdateTransaction {
 	return TopicUpdateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetConsensusUpdateTopic(),
+		Transaction:        transaction,
+		pb:                 pb.GetConsensusUpdateTopic(),
+		topicID:            topicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID(), nil),
+		autoRenewAccountID: accountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount(), nil),
 	}
 }
 

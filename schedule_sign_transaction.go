@@ -30,6 +30,7 @@ func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 	return ScheduleSignTransaction{
 		Transaction: transaction,
 		pb:          pb.GetScheduleSign(),
+		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID(), nil),
 	}
 }
 

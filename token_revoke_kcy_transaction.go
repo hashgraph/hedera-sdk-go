@@ -38,6 +38,8 @@ func tokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return TokenRevokeKycTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenRevokeKyc(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken(), nil),
+		accountID:   accountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount(), nil),
 	}
 }
 

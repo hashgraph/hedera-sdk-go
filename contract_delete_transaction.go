@@ -28,8 +28,11 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 
 func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractDeleteTransaction {
 	return ContractDeleteTransaction{
-		Transaction: transaction,
-		pb:          pb.GetContractDeleteInstance(),
+		Transaction:       transaction,
+		pb:                pb.GetContractDeleteInstance(),
+		contractID:        contractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID(), nil),
+		transferContactID: contractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID(), nil),
+		transferAccountID: accountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID(), nil),
 	}
 }
 

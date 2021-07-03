@@ -46,6 +46,8 @@ func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 	return TokenWipeTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenWipe(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenWipe().GetToken(), nil),
+		accountID:   accountIDFromProtobuf(pb.GetTokenWipe().GetAccount(), nil),
 	}
 }
 

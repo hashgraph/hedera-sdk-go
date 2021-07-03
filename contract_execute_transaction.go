@@ -37,6 +37,7 @@ func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.T
 	return ContractExecuteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetContractCall(),
+		contractID:  contractIDFromProtobuf(pb.GetContractCall().GetContractID(), nil),
 	}
 }
 

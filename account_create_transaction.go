@@ -44,8 +44,9 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 
 func accountCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountCreateTransaction {
 	return AccountCreateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetCryptoCreateAccount(),
+		Transaction:    transaction,
+		pb:             pb.GetCryptoCreateAccount(),
+		proxyAccountID: accountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID(), nil),
 	}
 }
 

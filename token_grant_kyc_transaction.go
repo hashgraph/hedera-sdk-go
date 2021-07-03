@@ -38,6 +38,8 @@ func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 	return TokenGrantKycTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenGrantKyc(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken(), nil),
+		accountID:   accountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount(), nil),
 	}
 }
 

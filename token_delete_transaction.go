@@ -32,6 +32,7 @@ func tokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return TokenDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenDeletion(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenDeletion().GetToken(), nil),
 	}
 }
 

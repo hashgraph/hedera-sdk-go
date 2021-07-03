@@ -36,6 +36,7 @@ func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *prot
 		pb:          pb.GetConsensusSubmitMessage(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
+		topicID:     topicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID(), nil),
 	}
 
 	return tx

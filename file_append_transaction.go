@@ -41,6 +41,7 @@ func fileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 		pb:          pb.GetFileAppend(),
 		maxChunks:   20,
 		contents:    make([]byte, 0),
+		fileID:      fileIDFromProtobuf(pb.GetFileAppend().GetFileID(), nil),
 	}
 }
 

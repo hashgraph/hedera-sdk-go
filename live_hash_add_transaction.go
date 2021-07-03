@@ -29,6 +29,7 @@ func liveHashAddTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return LiveHashAddTransaction{
 		Transaction: transaction,
 		pb:          pb.GetCryptoAddLiveHash(),
+		accountID:   accountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId(), nil),
 	}
 }
 
