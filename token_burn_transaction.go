@@ -35,6 +35,7 @@ func tokenBurnTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 	return TokenBurnTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenBurn(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenBurn().Token, nil),
 	}
 }
 

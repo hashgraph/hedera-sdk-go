@@ -22,8 +22,10 @@ type AccountDeleteTransaction struct {
 
 func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
 	return AccountDeleteTransaction{
-		Transaction: transaction,
-		pb:          pb.GetCryptoDelete(),
+		Transaction:       transaction,
+		pb:                pb.GetCryptoDelete(),
+		transferAccountID: accountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID(), nil),
+		deleteAccountID:   accountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID(), nil),
 	}
 }
 

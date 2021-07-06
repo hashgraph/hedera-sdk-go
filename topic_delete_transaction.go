@@ -31,6 +31,7 @@ func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return TopicDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetConsensusDeleteTopic(),
+		topicID:     topicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID(), nil),
 	}
 }
 

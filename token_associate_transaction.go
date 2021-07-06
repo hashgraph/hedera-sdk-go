@@ -43,9 +43,16 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 }
 
 func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenAssociateTransaction {
+	tokens := make([]TokenID, 0)
+	for _, token := range pb.GetTokenAssociate().Tokens {
+		tokens = append(tokens, tokenIDFromProtobuf(token, nil))
+	}
+
 	return TokenAssociateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenAssociate(),
+		accountID:   accountIDFromProtobuf(pb.GetTokenAssociate().GetAccount(), nil),
+		tokens:      tokens,
 	}
 }
 

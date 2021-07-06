@@ -39,6 +39,8 @@ func tokenFreezeTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return TokenFreezeTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenFreeze(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenFreeze().GetToken(), nil),
+		accountID:   accountIDFromProtobuf(pb.GetTokenFreeze().GetAccount(), nil),
 	}
 }
 

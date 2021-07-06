@@ -29,6 +29,8 @@ func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 	return SystemDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetSystemDelete(),
+		contractID:  contractIDFromProtobuf(pb.GetSystemDelete().GetContractID(), nil),
+		fileID:      fileIDFromProtobuf(pb.GetSystemDelete().GetFileID(), nil),
 	}
 }
 

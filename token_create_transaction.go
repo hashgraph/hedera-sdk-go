@@ -46,8 +46,10 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 
 func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
 	return TokenCreateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetTokenCreation(),
+		Transaction:        transaction,
+		pb:                 pb.GetTokenCreation(),
+		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenCreation().GetTreasury(), nil),
+		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount(), nil),
 	}
 }
 

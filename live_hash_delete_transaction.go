@@ -29,6 +29,7 @@ func liveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return LiveHashDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetCryptoDeleteLiveHash(),
+		accountID:   accountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash(), nil),
 	}
 }
 

@@ -28,8 +28,10 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 
 func accountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountUpdateTransaction {
 	return AccountUpdateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetCryptoUpdateAccount(),
+		Transaction:    transaction,
+		pb:             pb.GetCryptoUpdateAccount(),
+		accountID:      accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate(), nil),
+		proxyAccountID: accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID(), nil),
 	}
 }
 

@@ -33,8 +33,11 @@ func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 
 func tokenUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenUpdateTransaction {
 	return TokenUpdateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetTokenUpdate(),
+		Transaction:        transaction,
+		pb:                 pb.GetTokenUpdate(),
+		tokenID:            tokenIDFromProtobuf(pb.GetTokenUpdate().GetToken(), nil),
+		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury(), nil),
+		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount(), nil),
 	}
 }
 

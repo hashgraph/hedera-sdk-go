@@ -28,8 +28,9 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 
 func scheduleCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleCreateTransaction {
 	return ScheduleCreateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetScheduleCreate(),
+		Transaction:    transaction,
+		pb:             pb.GetScheduleCreate(),
+		payerAccountID: accountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID(), nil),
 	}
 }
 

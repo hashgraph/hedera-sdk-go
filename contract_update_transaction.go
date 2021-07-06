@@ -44,8 +44,11 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 
 func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractUpdateTransaction {
 	return ContractUpdateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetContractUpdateInstance(),
+		Transaction:    transaction,
+		pb:             pb.GetContractUpdateInstance(),
+		contractID:     contractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID(), nil),
+		proxyAccountID: accountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID(), nil),
+		bytecodeFileID: fileIDFromProtobuf(pb.GetContractUpdateInstance().GetFileID(), nil),
 	}
 }
 

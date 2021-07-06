@@ -38,8 +38,9 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 
 func topicCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicCreateTransaction {
 	return TopicCreateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetConsensusCreateTopic(),
+		Transaction:        transaction,
+		pb:                 pb.GetConsensusCreateTopic(),
+		autoRenewAccountID: accountIDFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewAccount(), nil),
 	}
 }
 

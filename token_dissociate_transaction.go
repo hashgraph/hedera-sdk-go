@@ -26,9 +26,16 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 }
 
 func tokenDissociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDissociateTransaction {
+	tokens := make([]TokenID, 0)
+	for _, token := range pb.GetTokenDissociate().Tokens {
+		tokens = append(tokens, tokenIDFromProtobuf(token, nil))
+	}
+
 	return TokenDissociateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenDissociate(),
+		accountID:   accountIDFromProtobuf(pb.GetTokenDissociate().GetAccount(), nil),
+		tokens:      tokens,
 	}
 }
 

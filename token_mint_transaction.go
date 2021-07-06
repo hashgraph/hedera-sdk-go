@@ -35,6 +35,7 @@ func tokenMintTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 	return TokenMintTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenMint(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenMint().GetToken(), nil),
 	}
 }
 

@@ -28,6 +28,7 @@ func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	return FileDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileDelete(),
+		fileID:      fileIDFromProtobuf(pb.GetFileDelete().GetFileID(), nil),
 	}
 }
 

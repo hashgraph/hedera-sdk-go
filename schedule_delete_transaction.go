@@ -28,6 +28,7 @@ func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return ScheduleDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetScheduleDelete(),
+		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID(), nil),
 	}
 }
 
