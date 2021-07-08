@@ -37,9 +37,9 @@ func (fee *CustomFee) toProtobuf() *proto.CustomFee {
 	}
 
 	switch t := fee.Fee.(type) {
-	case FractionalFee:
+	case CustomFractionalFee:
 		customFee.Fee = &proto.CustomFee_FractionalFee{FractionalFee: t.toProtobuf()}
-	case FixedFee:
+	case CustomFixedFee:
 		customFee.Fee = &proto.CustomFee_FixedFee{FixedFee: t.toProtobuf()}
 	}
 

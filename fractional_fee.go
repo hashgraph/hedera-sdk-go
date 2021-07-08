@@ -2,15 +2,15 @@ package hedera
 
 import "github.com/hashgraph/hedera-sdk-go/v2/proto"
 
-type FractionalFee struct {
+type CustomFractionalFee struct {
 	Numerator     int64
 	Denominator   int64
 	MinimumAmount int64
 	MaximumAmount int64
 }
 
-func fractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee) FractionalFee {
-	return FractionalFee{
+func fractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee) CustomFractionalFee {
+	return CustomFractionalFee{
 		Numerator:     fractionalFee.FractionalAmount.Numerator,
 		Denominator:   fractionalFee.FractionalAmount.Denominator,
 		MinimumAmount: fractionalFee.MinimumAmount,
@@ -18,7 +18,7 @@ func fractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee) FractionalFee
 	}
 }
 
-func (fee FractionalFee) toProtobuf() *proto.FractionalFee {
+func (fee CustomFractionalFee) toProtobuf() *proto.FractionalFee {
 	return &proto.FractionalFee{
 		FractionalAmount: &proto.Fraction{
 			Numerator:   fee.Numerator,
@@ -29,4 +29,4 @@ func (fee FractionalFee) toProtobuf() *proto.FractionalFee {
 	}
 }
 
-func (fee FractionalFee) Fee() {}
+func (fee CustomFractionalFee) Fee() {}

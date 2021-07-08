@@ -6,20 +6,20 @@ type Fee interface {
 	Fee()
 }
 
-type FixedFee struct {
+type CustomFixedFee struct {
 	Amount              int64
 	DenominationTokenID *TokenID
 }
 
-func fixedFeeFromProtobuf(fixedFee *proto.FixedFee, networkName *NetworkName) FixedFee {
+func fixedFeeFromProtobuf(fixedFee *proto.FixedFee, networkName *NetworkName) CustomFixedFee {
 	id := tokenIDFromProtobuf(fixedFee.DenominatingTokenId, networkName)
-	return FixedFee{
+	return CustomFixedFee{
 		Amount:              fixedFee.Amount,
 		DenominationTokenID: &id,
 	}
 }
 
-func (fee *FixedFee) toProtobuf() *proto.FixedFee {
+func (fee *CustomFixedFee) toProtobuf() *proto.FixedFee {
 	var tokenID *proto.TokenID
 	if fee.DenominationTokenID != nil {
 		tokenID = fee.DenominationTokenID.toProtobuf()
@@ -31,4 +31,4 @@ func (fee *FixedFee) toProtobuf() *proto.FixedFee {
 	}
 }
 
-func (fee FixedFee) Fee() {}
+func (fee CustomFixedFee) Fee() {}
