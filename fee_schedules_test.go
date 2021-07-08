@@ -19,4 +19,6 @@ func TestFetchFeeSchedules_Execute(t *testing.T) {
 	assert.Equal(t, feeSchedules.current.TransactionFeeSchedules[0].FeeData.ServiceData.Constant, int64(71970073651))
 	assert.Equal(t, feeSchedules.current.TransactionFeeSchedules[0].RequestType, RequestTypeCryptoCreate)
 
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

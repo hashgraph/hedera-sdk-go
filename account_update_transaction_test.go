@@ -77,6 +77,8 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 
 	assert.NoError(t, err)
 
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_AccountUpdate_NoSigning(t *testing.T) {
@@ -140,6 +142,9 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_AccountUpdate_AccountIDNotSet(t *testing.T) {
@@ -155,6 +160,9 @@ func Test_AccountUpdate_AccountIDNotSet(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_ACCOUNT_ID"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
@@ -239,4 +247,6 @@ func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
 
 	assert.NoError(t, err)
 
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

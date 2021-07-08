@@ -16,6 +16,9 @@ func TestAccountStakersQuery_Execute(t *testing.T) {
 		SetQueryPayment(HbarFromTinybar(25)).
 		Execute(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountStakersQueryCost_Execute(t *testing.T) {
@@ -31,6 +34,9 @@ func TestAccountStakersQueryCost_Execute(t *testing.T) {
 
 	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountStakersQueryCost_BigMax_Execute(t *testing.T) {
@@ -46,6 +52,9 @@ func TestAccountStakersQueryCost_BigMax_Execute(t *testing.T) {
 
 	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountStakersQueryCost_SmallMax_Execute(t *testing.T) {
@@ -61,6 +70,9 @@ func TestAccountStakersQueryCost_SmallMax_Execute(t *testing.T) {
 
 	_, err = accountStakers.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountStakersQueryCost_InsufficientFee_Execute(t *testing.T) {
@@ -78,6 +90,9 @@ func TestAccountStakersQueryCost_InsufficientFee_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountStakersNoAccountID_Execute(t *testing.T) {
@@ -90,4 +105,7 @@ func TestAccountStakersNoAccountID_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

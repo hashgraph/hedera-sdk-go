@@ -81,6 +81,9 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenAssociate_NoAccountID(t *testing.T) {
@@ -93,6 +96,9 @@ func Test_TokenAssociate_NoAccountID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp.TransactionID), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_TokenAssociate_NoTokenID(t *testing.T) {
@@ -181,5 +187,8 @@ func Test_TokenAssociate_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }

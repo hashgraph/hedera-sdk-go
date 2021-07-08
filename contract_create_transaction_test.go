@@ -60,6 +60,9 @@ func TestContractCreateTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_ContractCreate_NoAdminKey(t *testing.T) {
@@ -128,6 +131,9 @@ func Test_ContractCreate_NoAdminKey(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_ContractCreate_NoGas(t *testing.T) {
@@ -171,6 +177,9 @@ func Test_ContractCreate_NoGas(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_ContractCreate_NoBytecodeFileID(t *testing.T) {
@@ -213,6 +222,9 @@ func Test_ContractCreate_NoBytecodeFileID(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -262,4 +274,7 @@ func TestContractNetwork_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

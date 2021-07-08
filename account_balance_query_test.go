@@ -9,10 +9,21 @@ import (
 func TestAccountBalanceQuery_Execute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	_, err := NewAccountBalanceQuery().
+	balance, err := NewAccountBalanceQuery().
+		SetAccountID(env.OriginalOperatorID).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	println(balance.Hbars.String())
+
+	_, err = NewAccountBalanceQuery().
 		SetAccountID(env.OperatorID).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -49,6 +60,9 @@ func TestAccountBalanceQuery_TokenBalance(t *testing.T) {
 
 	assert.Equal(t, balance.Tokens.Get(*tokenID), uint64(1000000))
 	assert.Equal(t, balance.TokenDecimals.Get(*tokenID), uint64(3))
+
+	err = CloseIntegrationTestEnv(env, tokenID)
+	assert.NoError(t, err)
 }
 
 func TestAccountBalanceQueryCost_Execute(t *testing.T) {
@@ -63,6 +77,9 @@ func TestAccountBalanceQueryCost_Execute(t *testing.T) {
 
 	_, err = balance.SetMaxQueryPayment(cost).
 		Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -79,6 +96,9 @@ func TestAccountBalanceQueryCost_BigMax_Execute(t *testing.T) {
 
 	_, err = balance.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountBalanceQueryCost_SmallMax_Execute(t *testing.T) {
@@ -93,6 +113,9 @@ func TestAccountBalanceQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = balance.Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -110,6 +133,9 @@ func TestAccountBalanceQueryCost_SetPayment_Execute(t *testing.T) {
 
 	_, err = balance.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
@@ -126,6 +152,9 @@ func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
 
 	_, err = balance.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_AccountBalance_NoAccount(t *testing.T) {
@@ -136,4 +165,7 @@ func Test_AccountBalance_NoAccount(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	assert.True(t, err.Error() == "exceptional precheck status INVALID_ACCOUNT_ID")
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

@@ -56,6 +56,9 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 	assert.Equal(t, info.SupplyKey.String(), env.Client.GetOperatorPublicKey().String())
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_Execute(t *testing.T) {
@@ -92,6 +95,9 @@ func TestTokenInfoQueryCost_Execute(t *testing.T) {
 
 	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
@@ -127,6 +133,9 @@ func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }
 
@@ -166,6 +175,9 @@ func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
@@ -204,6 +216,9 @@ func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenInfo_NoPayment(t *testing.T) {
@@ -242,6 +257,9 @@ func Test_TokenInfo_NoPayment(t *testing.T) {
 	assert.Equal(t, info.Treasury, env.Client.GetOperatorAccountID())
 	assert.False(t, *info.DefaultFreezeStatus)
 	assert.False(t, *info.DefaultKycStatus)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenInfo_NoTokenID(t *testing.T) {
@@ -255,6 +273,9 @@ func Test_TokenInfo_NoTokenID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_TokenInfo_FromBytes_BadBytes(t *testing.T) {

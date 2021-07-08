@@ -71,6 +71,9 @@ func TestContractDeleteTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_ContractDelete_NoContractID(t *testing.T) {
@@ -121,5 +124,8 @@ func Test_ContractDelete_NoContractID(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }

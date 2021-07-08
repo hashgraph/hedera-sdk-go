@@ -119,6 +119,9 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 		err = errors.New("Message was not received within 30 seconds")
 	}
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
@@ -183,6 +186,9 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 		err = errors.New("Message was not received within 30 seconds")
 	}
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
@@ -244,6 +250,9 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 		err = errors.New("Message was not received within 30 seconds")
 	}
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
@@ -305,4 +314,7 @@ func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
 		err = errors.New("Message was not received within 30 seconds")
 	}
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

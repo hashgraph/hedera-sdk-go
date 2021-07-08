@@ -25,7 +25,10 @@ func TestTokenDeleteTransaction_Execute(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
 	assert.NoError(t, err)
 }
 
@@ -42,7 +45,7 @@ func Test_TokenDelete_NoKeys(t *testing.T) {
 		SetDecimals(3).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(newKey.PublicKey()).
+		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetFreezeDefault(false).
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
@@ -56,7 +59,10 @@ func Test_TokenDelete_NoKeys(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
 	assert.NoError(t, err)
 }
 
@@ -70,4 +76,7 @@ func Test_TokenDelete_NoTokenID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp.TransactionID), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

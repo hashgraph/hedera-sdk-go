@@ -122,6 +122,9 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenTransfer_NotZeroSum(t *testing.T) {
@@ -227,6 +230,9 @@ func Test_TokenTransfer_NotZeroSum(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }
 

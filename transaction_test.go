@@ -77,6 +77,9 @@ func TestTransactionAddSignature(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTransactionGetHash(t *testing.T) {
@@ -105,6 +108,8 @@ func TestTransactionGetHash(t *testing.T) {
 
 	assert.Equal(t, hash, record.TransactionHash)
 
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTransactionFromBytes(t *testing.T) {

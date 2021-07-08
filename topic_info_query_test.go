@@ -41,6 +41,9 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTopicInfoQueryCost_Execute(t *testing.T) {
@@ -76,6 +79,9 @@ func TestTopicInfoQueryCost_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTopicInfoQueryCost_BigMax_Execute(t *testing.T) {
@@ -110,6 +116,9 @@ func TestTopicInfoQueryCost_BigMax_Execute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -150,6 +159,9 @@ func TestTopicInfoQueryCost_SmallMax_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
@@ -187,6 +199,9 @@ func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -243,6 +258,9 @@ func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 		SetTopicID(topicID).
 		Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_TopicInfo_NoTopicID(t *testing.T) {
@@ -256,4 +274,7 @@ func Test_TopicInfo_NoTopicID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

@@ -80,6 +80,9 @@ func TestTokenMintTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenMint_NoAmount(t *testing.T) {
@@ -147,6 +150,9 @@ func Test_TokenMint_NoAmount(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenMint_NoTokenID(t *testing.T) {
@@ -190,6 +196,8 @@ func Test_TokenMint_NoTokenID(t *testing.T) {
 	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
+	tokenID := *receipt.TokenID
+
 	resp2, err := NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAmount(10).
@@ -211,5 +219,8 @@ func Test_TokenMint_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }

@@ -18,10 +18,12 @@ var testTransactionID TransactionID = TransactionID{
 }
 
 type IntegrationTestEnv struct {
-	Client         *Client
-	OperatorKey    PrivateKey
-	OperatorID     AccountID
-	NodeAccountIDs []AccountID
+	Client              *Client
+	OperatorKey         PrivateKey
+	OperatorID          AccountID
+	OriginalOperatorKey PrivateKey
+	OriginalOperatorID  AccountID
+	NodeAccountIDs      []AccountID
 }
 
 func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
@@ -76,12 +78,56 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
+	env.OriginalOperatorID = env.OperatorID
+	env.OriginalOperatorKey = env.OperatorKey
 	env.OperatorID = *receipt.AccountID
 	env.OperatorKey = newKey
 	env.NodeAccountIDs = []AccountID{resp.NodeID}
 	env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 
 	return env
+}
+
+func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
+	var resp TransactionResponse
+	var err error
+	if token != nil {
+		dissociateTx, err := NewTokenDeleteTransaction().
+			SetNodeAccountIDs(env.NodeAccountIDs).
+			SetTokenID(*token).
+			FreezeWith(env.Client)
+		if err != nil {
+			return err
+		}
+
+		resp, err = dissociateTx.
+			Sign(env.OperatorKey).
+			Execute(env.Client)
+		if err != nil {
+			return err
+		}
+
+		_, err = resp.GetReceipt(env.Client)
+		if err != nil {
+			return err
+		}
+	}
+
+	resp, err = NewAccountDeleteTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(env.OperatorID).
+		SetTransferAccountID(env.OriginalOperatorID).
+		Execute(env.Client)
+	if err != nil {
+		return err
+	}
+
+	_, err = resp.GetReceipt(env.Client)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func newMockClient() (*Client, error) {

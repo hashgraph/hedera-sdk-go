@@ -70,6 +70,9 @@ func TestContractBytecodeQuery_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestContractBytecodeQueryCost_Execute(t *testing.T) {
@@ -138,6 +141,9 @@ func TestContractBytecodeQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -208,6 +214,9 @@ func TestContractBytecodeQueryCost_BigMax_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestContractBytecodeQueryCost_SmallMax_Execute(t *testing.T) {
@@ -276,6 +285,9 @@ func TestContractBytecodeQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -346,6 +358,9 @@ func TestContractBytecodeQueryCost_InsufficientFee_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_ContractBytecode_NoContractID(t *testing.T) {
@@ -411,5 +426,8 @@ func Test_ContractBytecode_NoContractID(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }

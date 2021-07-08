@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -26,7 +27,10 @@ func TestTokenCreateTransaction_Execute(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
 	assert.NoError(t, err)
 }
 
@@ -74,7 +78,10 @@ func Test_TokenCreate_MultipleKeys(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
 	assert.NoError(t, err)
 }
 
@@ -178,7 +185,7 @@ func Test_TokenCreate_AdminSign(t *testing.T) {
 		SetDecimals(3).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(pubKeys[1]).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(pubKeys[1]).
 		SetWipeKey(pubKeys[2]).
 		SetKycKey(pubKeys[3]).
@@ -198,6 +205,9 @@ func Test_TokenCreate_AdminSign(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotNil(t, receipt.TokenID)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenCreate_Network(t *testing.T) {
@@ -233,6 +243,7 @@ func Test_TokenCreate_Network(t *testing.T) {
 		SetTokenSymbol("F").
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.OperatorKey.PublicKey()).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
@@ -251,4 +262,15 @@ func Test_TokenCreate_Network(t *testing.T) {
 		SetTokenID(tokenID).
 		Execute(env.Client)
 	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprint("network mismatch; some IDs have different networks set"), err.Error())
+	}
+
+	newClient = Client{}
+	networkName = NetworkNameTestnet
+	newClient.networkName = &networkName
+	tokenID.setNetworkWithClient(&newClient)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }

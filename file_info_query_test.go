@@ -45,6 +45,9 @@ func Test_FileInfo_Transaction(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_FileInfoCost_Transaction(t *testing.T) {
@@ -87,6 +90,9 @@ func Test_FileInfoCost_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -131,6 +137,9 @@ func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
@@ -171,6 +180,9 @@ func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -213,6 +225,9 @@ func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_FileInfoQuery_NoFileID(t *testing.T) {
@@ -226,4 +241,7 @@ func Test_FileInfoQuery_NoFileID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

@@ -448,4 +448,7 @@ func TestScheduleCreateTransaction_Transfer_Execute(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 	assert.NotNil(t, info.ExecutedAt)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
