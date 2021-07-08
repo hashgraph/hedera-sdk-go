@@ -12,6 +12,7 @@ type TokenRelationship struct {
 	Balance      uint64
 	KycStatus    *bool
 	FreezeStatus *bool
+	Decimals     uint32
 }
 
 func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship, networkName *NetworkName) TokenRelationship {
@@ -24,6 +25,7 @@ func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship, networkName *Net
 		Balance:      pb.Balance,
 		KycStatus:    kycStatusFromProtobuf(pb.KycStatus),
 		FreezeStatus: freezeStatusFromProtobuf(pb.FreezeStatus),
+		Decimals:     pb.Decimals,
 	}
 }
 
@@ -54,6 +56,7 @@ func (relationship *TokenRelationship) toProtobuf() *proto.TokenRelationship {
 		Balance:      relationship.Balance,
 		KycStatus:    kycStatus,
 		FreezeStatus: freezeStatus,
+		Decimals:     relationship.Decimals,
 	}
 }
 

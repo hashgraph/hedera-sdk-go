@@ -29,6 +29,7 @@ option java_multiple_files = true;
 
 import "proto/Timestamp.proto";
 import "proto/BasicTypes.proto";
+import "proto/CustomFees.proto";
 import "proto/TransactionReceipt.proto";
 import "proto/CryptoTransfer.proto";
 import "proto/ContractCallLocal.proto";
@@ -48,4 +49,5 @@ message TransactionRecord {
     TransferList transferList = 10; // All hbar transfers as a result of this transaction, such as fees, or transfers performed by the transaction, or by a smart contract it calls, or by the creation of threshold records that it triggers.
     repeated TokenTransferList tokenTransferLists = 11; // All Token transfers as a result of this transaction
     ScheduleID scheduleRef = 12; // Reference to the scheduled transaction ID that this transaction record represent
+    repeated AssessedCustomFee assessed_custom_fees = 13; // All custom fees that were assessed during a CryptoTransfer, and must be paid if the transaction status resolved to SUCCESS
 }

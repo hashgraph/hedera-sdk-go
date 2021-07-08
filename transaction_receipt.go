@@ -19,6 +19,7 @@ type TransactionReceipt struct {
 	TotalSupply             uint64
 	ScheduleID              *ScheduleID
 	ScheduledTransactionID  *TransactionID
+	SerialNumbers           []int64
 }
 
 func newTransactionReceipt(
@@ -27,7 +28,7 @@ func newTransactionReceipt(
 	contractID ContractID, accountID AccountID,
 	topicSequenceNumber uint64, topicRunningHash []byte,
 	topicRunningHashVersion uint64, totalSupply uint64, scheduleId ScheduleID,
-	scheduledTransactionID TransactionID, tokenID TokenID) TransactionReceipt {
+	scheduledTransactionID TransactionID, tokenID TokenID, serialNumbers []int64) TransactionReceipt {
 
 	receipt := TransactionReceipt{
 		Status:                  status,
@@ -43,6 +44,7 @@ func newTransactionReceipt(
 		TotalSupply:             totalSupply,
 		ScheduleID:              &scheduleId,
 		ScheduledTransactionID:  &scheduledTransactionID,
+		SerialNumbers:           serialNumbers,
 	}
 
 	return receipt
@@ -121,6 +123,7 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt, netw
 		TotalSupply:             protoReceipt.NewTotalSupply,
 		ScheduleID:              scheduleID,
 		ScheduledTransactionID:  scheduledTransactionID,
+		SerialNumbers:           protoReceipt.SerialNumbers,
 	}
 }
 
@@ -142,6 +145,7 @@ func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
 		NewTotalSupply:          receipt.TotalSupply,
 		ScheduleID:              receipt.ScheduleID.toProtobuf(),
 		ScheduledTransactionID:  receipt.ScheduledTransactionID.toProtobuf(),
+		SerialNumbers:           receipt.SerialNumbers,
 	}
 }
 

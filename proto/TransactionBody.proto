@@ -70,6 +70,7 @@ import "proto/TokenBurn.proto";
 import "proto/TokenWipeAccount.proto";
 import "proto/TokenAssociate.proto";
 import "proto/TokenDissociate.proto";
+import "proto/TokenFeeScheduleUpdate.proto";
 
 import "proto/ScheduleCreate.proto";
 import "proto/ScheduleDelete.proto";
@@ -123,6 +124,7 @@ message TransactionBody {
     TokenWipeAccountTransactionBody tokenWipe = 39; // Wipes amount of tokens from an account
     TokenAssociateTransactionBody tokenAssociate = 40; // Associate tokens to an account
     TokenDissociateTransactionBody tokenDissociate = 41; // Dissociate tokens from an account
+    TokenFeeScheduleUpdateTransactionBody token_fee_schedule_update = 45; // Updates a token's custom fee schedule
 
     ScheduleCreateTransactionBody scheduleCreate = 42; // Creates a schedule in the network's action queue
     ScheduleDeleteTransactionBody scheduleDelete = 43; // Deletes a schedule from the network's action queue

@@ -34,7 +34,7 @@ type TokenAssociateTransactionBody struct {
 	unknownFields protoimpl.UnknownFields
 
 	Account *AccountID `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"` // The account to be associated with the provided tokens
-	Tokens  []*TokenID `protobuf:"bytes,2,rep,name=tokens,proto3" json:"tokens,omitempty"`   // The tokens to be associated with the provided account
+	Tokens  []*TokenID `protobuf:"bytes,2,rep,name=tokens,proto3" json:"tokens,omitempty"`   // The tokens to be associated with the provided account. In the case of NON_FUNGIBLE_UNIQUE Type, once an account is associated, it can hold any number of NFTs (serial numbers) of that token type
 }
 
 func (x *TokenAssociateTransactionBody) Reset() {

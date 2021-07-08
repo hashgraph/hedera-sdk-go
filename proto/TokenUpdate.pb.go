@@ -35,19 +35,20 @@ type TokenUpdateTransactionBody struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token            *TokenID              `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`                        // The Token to be updated
-	Symbol           string                `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`                      // The new publicly visible Token symbol, limited to a UTF-8 encoding of length <tt>tokens.maxTokenNameUtf8Bytes</tt>.
-	Name             string                `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                          // The new publicly visible name of the Token, limited to a UTF-8 encoding of length <tt>tokens.maxSymbolUtf8Bytes</tt>.
-	Treasury         *AccountID            `protobuf:"bytes,4,opt,name=treasury,proto3" json:"treasury,omitempty"`                  // The new Treasury account of the Token. If the provided treasury account is not existing or deleted, the response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token balance held in the previous Treasury Account is transferred to the new one.
-	AdminKey         *Key                  `protobuf:"bytes,5,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                  // The new admin key of the Token. If Token is immutable, transaction will resolve to TOKEN_IS_IMMUTABlE.
-	KycKey           *Key                  `protobuf:"bytes,6,opt,name=kycKey,proto3" json:"kycKey,omitempty"`                      // The new KYC key of the Token. If Token does not have currently a KYC key, transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
-	FreezeKey        *Key                  `protobuf:"bytes,7,opt,name=freezeKey,proto3" json:"freezeKey,omitempty"`                // The new Freeze key of the Token. If the Token does not have currently a Freeze key, transaction will resolve to TOKEN_HAS_NO_FREEZE_KEY.
-	WipeKey          *Key                  `protobuf:"bytes,8,opt,name=wipeKey,proto3" json:"wipeKey,omitempty"`                    // The new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction will resolve to TOKEN_HAS_NO_WIPE_KEY.
-	SupplyKey        *Key                  `protobuf:"bytes,9,opt,name=supplyKey,proto3" json:"supplyKey,omitempty"`                // The new Supply key of the Token. If the Token does not have currently a Supply key, transaction will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
-	AutoRenewAccount *AccountID            `protobuf:"bytes,10,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"` // The new account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval.
-	AutoRenewPeriod  *Duration             `protobuf:"bytes,11,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`   // The new interval at which the auto-renew account will be charged to extend the token's expiry.
-	Expiry           *Timestamp            `protobuf:"bytes,12,opt,name=expiry,proto3" json:"expiry,omitempty"`                     // The new expiry time of the token. Expiry can be updated even if admin key is not set. If the provided expiry is earlier than the current token expiry, transaction wil resolve to INVALID_EXPIRATION_TIME
-	Memo             *wrappers.StringValue `protobuf:"bytes,13,opt,name=memo,proto3" json:"memo,omitempty"`                         // If set, the new memo to be associated with the token (UTF-8 encoding max 100 bytes)
+	Token            *TokenID              `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`                                            // The Token to be updated
+	Symbol           string                `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`                                          // The new publicly visible Token symbol, limited to a UTF-8 encoding of length <tt>tokens.maxTokenNameUtf8Bytes</tt>.
+	Name             string                `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                              // The new publicly visible name of the Token, limited to a UTF-8 encoding of length <tt>tokens.maxSymbolUtf8Bytes</tt>.
+	Treasury         *AccountID            `protobuf:"bytes,4,opt,name=treasury,proto3" json:"treasury,omitempty"`                                      // The new Treasury account of the Token. If the provided treasury account is not existing or deleted, the response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token balance held in the previous Treasury Account is transferred to the new one.
+	AdminKey         *Key                  `protobuf:"bytes,5,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                                      // The new admin key of the Token. If Token is immutable, transaction will resolve to TOKEN_IS_IMMUTABlE.
+	KycKey           *Key                  `protobuf:"bytes,6,opt,name=kycKey,proto3" json:"kycKey,omitempty"`                                          // The new KYC key of the Token. If Token does not have currently a KYC key, transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
+	FreezeKey        *Key                  `protobuf:"bytes,7,opt,name=freezeKey,proto3" json:"freezeKey,omitempty"`                                    // The new Freeze key of the Token. If the Token does not have currently a Freeze key, transaction will resolve to TOKEN_HAS_NO_FREEZE_KEY.
+	WipeKey          *Key                  `protobuf:"bytes,8,opt,name=wipeKey,proto3" json:"wipeKey,omitempty"`                                        // The new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction will resolve to TOKEN_HAS_NO_WIPE_KEY.
+	SupplyKey        *Key                  `protobuf:"bytes,9,opt,name=supplyKey,proto3" json:"supplyKey,omitempty"`                                    // The new Supply key of the Token. If the Token does not have currently a Supply key, transaction will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
+	AutoRenewAccount *AccountID            `protobuf:"bytes,10,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"`                     // The new account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval.
+	AutoRenewPeriod  *Duration             `protobuf:"bytes,11,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`                       // The new interval at which the auto-renew account will be charged to extend the token's expiry.
+	Expiry           *Timestamp            `protobuf:"bytes,12,opt,name=expiry,proto3" json:"expiry,omitempty"`                                         // The new expiry time of the token. Expiry can be updated even if admin key is not set. If the provided expiry is earlier than the current token expiry, transaction wil resolve to INVALID_EXPIRATION_TIME
+	Memo             *wrappers.StringValue `protobuf:"bytes,13,opt,name=memo,proto3" json:"memo,omitempty"`                                             // If set, the new memo to be associated with the token (UTF-8 encoding max 100 bytes)
+	FeeScheduleKey   *Key                  `protobuf:"bytes,14,opt,name=fee_schedule_key,json=feeScheduleKey,proto3" json:"fee_schedule_key,omitempty"` // If set, the new key to use to update the token's custom fee schedule; if the token does not currently have this key, transaction will resolve to TOKEN_HAS_NO_FEE_SCHEDULE_KEY
 }
 
 func (x *TokenUpdateTransactionBody) Reset() {
@@ -173,6 +174,13 @@ func (x *TokenUpdateTransactionBody) GetMemo() *wrappers.StringValue {
 	return nil
 }
 
+func (x *TokenUpdateTransactionBody) GetFeeScheduleKey() *Key {
+	if x != nil {
+		return x.FeeScheduleKey
+	}
+	return nil
+}
+
 var File_proto_TokenUpdate_proto protoreflect.FileDescriptor
 
 var file_proto_TokenUpdate_proto_rawDesc = []byte{
@@ -184,7 +192,7 @@ var file_proto_TokenUpdate_proto_rawDesc = []byte{
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x77, 0x72, 0x61, 0x70, 0x70, 0x65, 0x72, 0x73, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb7, 0x04, 0x0a, 0x1a, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x55,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xed, 0x04, 0x0a, 0x1a, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x55,
 	0x70, 0x64, 0x61, 0x74, 0x65, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e,
 	0x42, 0x6f, 0x64, 0x79, 0x12, 0x24, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65,
@@ -219,13 +227,16 @@ var file_proto_TokenUpdate_proto_rawDesc = []byte{
 	0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x06, 0x65, 0x78, 0x70, 0x69, 0x72, 0x79, 0x12, 0x30, 0x0a,
 	0x04, 0x6d, 0x65, 0x6d, 0x6f, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x6f,
 	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74,
-	0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x04, 0x6d, 0x65, 0x6d, 0x6f, 0x42,
-	0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61,
-	0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
-	0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68,
-	0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b,
-	0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x04, 0x6d, 0x65, 0x6d, 0x6f, 0x12,
+	0x34, 0x0a, 0x10, 0x66, 0x65, 0x65, 0x5f, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x5f,
+	0x6b, 0x65, 0x79, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x52, 0x0e, 0x66, 0x65, 0x65, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75,
+	0x6c, 0x65, 0x4b, 0x65, 0x79, 0x42, 0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64,
+	0x65, 0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65,
+	0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -262,11 +273,12 @@ var file_proto_TokenUpdate_proto_depIdxs = []int32{
 	4,  // 8: proto.TokenUpdateTransactionBody.autoRenewPeriod:type_name -> proto.Duration
 	5,  // 9: proto.TokenUpdateTransactionBody.expiry:type_name -> proto.Timestamp
 	6,  // 10: proto.TokenUpdateTransactionBody.memo:type_name -> google.protobuf.StringValue
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	3,  // 11: proto.TokenUpdateTransactionBody.fee_schedule_key:type_name -> proto.Key
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_proto_TokenUpdate_proto_init() }

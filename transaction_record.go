@@ -19,6 +19,7 @@ type TransactionRecord struct {
 	Transfers          []Transfer
 	CallResult         *ContractFunctionResult
 	CallResultIsCreate bool
+	AssessedCustomFees []AssessedCustomFee
 }
 
 func newTransactionRecord(
@@ -70,6 +71,11 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 		transferList[i] = transferFromProtobuf(element, networkName)
 	}
 
+	assessedCustomFees := make([]AssessedCustomFee, 0)
+	for _, fee := range pb.AssessedCustomFees {
+		assessedCustomFees = append(assessedCustomFees, assessedCustomFeeFromProtobuf(fee, networkName))
+	}
+
 	txRecord := TransactionRecord{
 		Receipt:            transactionReceiptFromProtobuf(pb.Receipt, networkName),
 		TransactionHash:    pb.TransactionHash,
@@ -80,6 +86,7 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 		Transfers:          transferList,
 		CallResultIsCreate: true,
 		CallResult:         nil,
+		AssessedCustomFees: assessedCustomFees,
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -109,6 +116,11 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		AccountAmounts: ammounts,
 	}
 
+	assessedCustomFees := make([]*proto.AssessedCustomFee, 0)
+	for _, fee := range record.AssessedCustomFees {
+		assessedCustomFees = append(assessedCustomFees, fee.toProtobuf())
+	}
+
 	var tRecord = proto.TransactionRecord{
 		Receipt:         record.Receipt.toProtobuf(),
 		TransactionHash: record.TransactionHash,
@@ -116,10 +128,11 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 			Seconds: int64(record.ConsensusTimestamp.Second()),
 			Nanos:   int32(record.ConsensusTimestamp.Nanosecond()),
 		},
-		TransactionID:  record.TransactionID.toProtobuf(),
-		Memo:           record.TransactionMemo,
-		TransactionFee: uint64(record.TransactionFee.AsTinybar()),
-		TransferList:   &transferList,
+		TransactionID:      record.TransactionID.toProtobuf(),
+		Memo:               record.TransactionMemo,
+		TransactionFee:     uint64(record.TransactionFee.AsTinybar()),
+		TransferList:       &transferList,
+		AssessedCustomFees: assessedCustomFees,
 	}
 
 	var err error

@@ -64,6 +64,25 @@ func (transaction *TokenMintTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
+func (transaction *TokenMintTransaction) SetMetadatas(meta [][]byte) *TokenMintTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.Metadata = meta
+	return transaction
+}
+
+func (transaction *TokenMintTransaction) SetMetadata(meta []byte) *TokenMintTransaction {
+	transaction.requireNotFrozen()
+	if transaction.pb.Metadata == nil {
+		transaction.pb.Metadata = make([][]byte, 0)
+	}
+	transaction.pb.Metadata = append(transaction.pb.Metadata, [][]byte{meta}...)
+	return transaction
+}
+
+func (transaction *TokenMintTransaction) GetMetadatas() [][]byte {
+	return transaction.pb.GetMetadata()
+}
+
 func (transaction *TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
 	err = transaction.tokenID.Validate(client)

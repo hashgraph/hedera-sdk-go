@@ -69,6 +69,25 @@ func (transaction *TokenBurnTransaction) GetAmount() uint64 {
 	return transaction.pb.GetAmount()
 }
 
+func (transaction *TokenBurnTransaction) SetSerialNumber(serial int64) *TokenBurnTransaction {
+	transaction.requireNotFrozen()
+	if transaction.pb.SerialNumbers == nil {
+		transaction.pb.SerialNumbers = make([]int64, 0)
+	}
+	transaction.pb.SerialNumbers = append(transaction.pb.SerialNumbers, serial)
+	return transaction
+}
+
+func (transaction *TokenBurnTransaction) SetSerialNumbers(serial []int64) *TokenBurnTransaction {
+	transaction.requireNotFrozen()
+	transaction.pb.SerialNumbers = serial
+	return transaction
+}
+
+func (transaction *TokenBurnTransaction) GetSerialNumbers() []int64 {
+	return transaction.pb.GetSerialNumbers()
+}
+
 func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
 	var err error
 	err = transaction.tokenID.Validate(client)
