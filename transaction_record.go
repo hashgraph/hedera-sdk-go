@@ -17,6 +17,8 @@ type TransactionRecord struct {
 	TransactionMemo    string
 	TransactionFee     Hbar
 	Transfers          []Transfer
+	TokenTransfers     map[TokenID][]TokenTransfer
+	NftTransfers       map[TokenID][]TokenNftTransfer
 	CallResult         *ContractFunctionResult
 	CallResultIsCreate bool
 	AssessedCustomFees []AssessedCustomFee
@@ -65,10 +67,24 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 	if pb == nil {
 		return TransactionRecord{}
 	}
-	var transferList = make([]Transfer, len(pb.TransferList.AccountAmounts))
+	var accountTransfers = make([]Transfer, len(pb.TransferList.AccountAmounts))
+	var tokenTransfers = make(map[TokenID][]TokenTransfer, 0)
+	var nftTransfers = make(map[TokenID][]TokenNftTransfer, 0)
 
 	for i, element := range pb.TransferList.AccountAmounts {
-		transferList[i] = transferFromProtobuf(element, networkName)
+		accountTransfers[i] = transferFromProtobuf(element, networkName)
+	}
+
+	for _, tokenTransfer := range pb.TokenTransferLists {
+		for _, nftTransfer := range tokenTransfer.NftTransfers {
+			token := tokenIDFromProtobuf(tokenTransfer.Token, nil)
+			nftTransfers[token] = append(nftTransfers[token], nftTransferFromProtobuf(nftTransfer, nil))
+		}
+
+		for _, accountAmount := range tokenTransfer.Transfers {
+			token := tokenIDFromProtobuf(tokenTransfer.Token, nil)
+			tokenTransfers[token] = append(tokenTransfers[token], tokenTransferFromProtobuf(accountAmount, nil))
+		}
 	}
 
 	assessedCustomFees := make([]AssessedCustomFee, 0)
@@ -83,9 +99,10 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 		TransactionID:      transactionIDFromProtobuf(pb.TransactionID, networkName),
 		TransactionMemo:    pb.Memo,
 		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
-		Transfers:          transferList,
+		Transfers:          accountTransfers,
+		TokenTransfers:     tokenTransfers,
+		NftTransfers:       nftTransfers,
 		CallResultIsCreate: true,
-		CallResult:         nil,
 		AssessedCustomFees: assessedCustomFees,
 	}
 
@@ -116,6 +133,34 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		AccountAmounts: ammounts,
 	}
 
+	var tokenTransfers = make([]*proto.TokenTransferList, 0)
+
+	for tokenID, tokenTransfer := range record.TokenTransfers {
+		tokenTemp := make([]*proto.AccountAmount, 0)
+
+		for _, accountAmount := range tokenTransfer {
+			tokenTemp = append(tokenTemp, accountAmount.toProtobuf())
+		}
+
+		tokenTransfers = append(tokenTransfers, &proto.TokenTransferList{
+			Token:     tokenID.toProtobuf(),
+			Transfers: tokenTemp,
+		})
+	}
+
+	for tokenID, nftTransfers := range record.NftTransfers {
+		nftTemp := make([]*proto.NftTransfer, 0)
+
+		for _, nftTransfer := range nftTransfers {
+			nftTemp = append(nftTemp, nftTransfer.toProtobuf())
+		}
+
+		tokenTransfers = append(tokenTransfers, &proto.TokenTransferList{
+			Token:        tokenID.toProtobuf(),
+			NftTransfers: nftTemp,
+		})
+	}
+
 	assessedCustomFees := make([]*proto.AssessedCustomFee, 0)
 	for _, fee := range record.AssessedCustomFees {
 		assessedCustomFees = append(assessedCustomFees, fee.toProtobuf())
@@ -132,6 +177,7 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		Memo:               record.TransactionMemo,
 		TransactionFee:     uint64(record.TransactionFee.AsTinybar()),
 		TransferList:       &transferList,
+		TokenTransferLists: tokenTransfers,
 		AssessedCustomFees: assessedCustomFees,
 	}
 

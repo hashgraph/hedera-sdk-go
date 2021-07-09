@@ -162,7 +162,6 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	if err != nil {
 		return FileInfo{}, err
 	}
-
 	resp, err := execute(
 		client,
 		request{
@@ -185,7 +184,6 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	if err != nil {
 		return FileInfo{}, err
 	}
-	info.FileID.setNetworkWithClient(client)
 
 	return info, nil
 }

@@ -68,7 +68,7 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 	return tokenIDFromProtobuf(&pb, nil), nil
 }
 
-func (id *TokenID) GenerateNft(serial int64) NftID {
+func (id *TokenID) Nft(serial int64) NftID {
 	return NftID{
 		TokenID:      *id,
 		SerialNumber: serial,
