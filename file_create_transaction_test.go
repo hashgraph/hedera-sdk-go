@@ -32,6 +32,9 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_FileCreate_NoKey(t *testing.T) {
@@ -59,6 +62,9 @@ func Test_FileCreate_NoKey(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status UNAUTHORIZED"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestFileNetwork_Execute(t *testing.T) {
@@ -89,4 +95,7 @@ func TestFileNetwork_Execute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

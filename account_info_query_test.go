@@ -56,6 +56,9 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountInfoQueryCost_Execute(t *testing.T) {
@@ -111,6 +114,9 @@ func TestAccountInfoQueryCost_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
@@ -162,6 +168,9 @@ func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -218,6 +227,9 @@ func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
@@ -270,6 +282,9 @@ func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_AccountInfo_NoAccountID(t *testing.T) {
@@ -282,4 +297,7 @@ func Test_AccountInfo_NoAccountID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

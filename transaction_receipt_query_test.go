@@ -34,6 +34,9 @@ func Test_Receipt_Transaction(t *testing.T) {
 
 	_, err = resp.GetRecord(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_ReceiptTransaction_InvalidTransactionID(t *testing.T) {
@@ -42,13 +45,13 @@ func Test_ReceiptTransaction_InvalidTransactionID(t *testing.T) {
 	key, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	response, err := NewAccountCreateTransaction().
+	resp, err := NewAccountCreateTransaction().
 		SetKey(key).
 		SetInitialBalance(NewHbar(2)).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := response.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -66,10 +69,10 @@ func Test_ReceiptTransaction_InvalidTransactionID(t *testing.T) {
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
 
-	response, err = scheduleTx.Execute(env.Client)
+	resp, err = scheduleTx.Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = response.GetReceipt(env.Client)
+	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	scheduleID := *receipt.ScheduleID
@@ -80,9 +83,9 @@ func Test_ReceiptTransaction_InvalidTransactionID(t *testing.T) {
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
-	response, err = scheduleSignTx.Execute(env.Client)
+	resp, err = scheduleSignTx.Execute(env.Client)
 
-	_, err = response.GetReceipt(env.Client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 
 	switch receiptErr := err.(type) {
@@ -91,4 +94,7 @@ func Test_ReceiptTransaction_InvalidTransactionID(t *testing.T) {
 	default:
 		panic("err was not a `ErrHederaReceiptStatus")
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

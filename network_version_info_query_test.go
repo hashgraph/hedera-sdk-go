@@ -13,6 +13,9 @@ func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestNetworkVersionInfoQueryCost_Execute(t *testing.T) {
@@ -24,5 +27,8 @@ func TestNetworkVersionInfoQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = query.SetQueryPayment(cost).Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }

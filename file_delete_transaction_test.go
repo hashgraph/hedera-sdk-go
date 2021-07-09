@@ -32,6 +32,9 @@ func TestFileDeleteTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_FileDelete_NothingSet(t *testing.T) {
@@ -62,4 +65,7 @@ func Test_FileDelete_NothingSet(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

@@ -44,6 +44,9 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
@@ -88,6 +91,9 @@ func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("transaction is immutable; it has at least one signature or has been explicitly frozen"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_AccountCreate_NoKey(t *testing.T) {
@@ -100,6 +106,9 @@ func Test_AccountCreate_NoKey(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status KEY_REQUIRED received for transaction %s", resp.TransactionID), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountCreateTransactionAddSignature(t *testing.T) {
@@ -140,6 +149,9 @@ func TestAccountCreateTransactionAddSignature(t *testing.T) {
 	}
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -202,6 +214,9 @@ func TestAccountProxy_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestAccountNetwork_Execute(t *testing.T) {
@@ -239,4 +254,7 @@ func TestAccountNetwork_Execute(t *testing.T) {
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

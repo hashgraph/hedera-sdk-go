@@ -46,6 +46,9 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 	assert.Equalf(t, "A", info.Symbol, fmt.Sprintf("token failed to update"))
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenUpdate_DifferentKeys(t *testing.T) {
@@ -126,6 +129,8 @@ func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 		freezeKey := info.FreezeKey
 		assert.Equal(t, pubKeys[1].String(), freezeKey.String())
 	}
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
 }
 
 func Test_TokenUpdate_NoTokenID(t *testing.T) {
@@ -147,7 +152,7 @@ func Test_TokenUpdate_NoTokenID(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	resp2, err := NewTokenUpdateTransaction().
@@ -156,4 +161,7 @@ func Test_TokenUpdate_NoTokenID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID received for transaction %s", resp2.TransactionID), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	assert.NoError(t, err)
 }

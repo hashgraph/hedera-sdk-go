@@ -95,6 +95,9 @@ func TestNewContractCallQuery_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestNewContractCallQueryCost_Execute(t *testing.T) {
@@ -164,6 +167,9 @@ func TestNewContractCallQueryCost_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestNewContractCallQueryCost_BigMax_Execute(t *testing.T) {
@@ -232,6 +238,9 @@ func TestNewContractCallQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -304,6 +313,9 @@ func TestNewContractCallQueryCost_SmallMax_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func TestNewContractCallQueryCost_InsufficientFee_Execute(t *testing.T) {
@@ -375,6 +387,9 @@ func TestNewContractCallQueryCost_InsufficientFee_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_NewContractCall_NoContractID(t *testing.T) {
@@ -390,6 +405,9 @@ func Test_NewContractCall_NoContractID(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_NewContractCall_NoGas(t *testing.T) {
@@ -456,6 +474,9 @@ func Test_NewContractCall_NoGas(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -524,5 +545,8 @@ func Test_NewContractCall_NoFunction(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }

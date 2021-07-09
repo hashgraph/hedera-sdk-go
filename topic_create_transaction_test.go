@@ -44,6 +44,9 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_TopicCreate_DifferentKeys(t *testing.T) {
@@ -106,6 +109,9 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_TopicCreate_JustSetMemo(t *testing.T) {
@@ -120,6 +126,9 @@ func Test_TopicCreate_JustSetMemo(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -153,4 +162,7 @@ func TestTopicNetwork_Execute(t *testing.T) {
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
 	assert.Error(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }

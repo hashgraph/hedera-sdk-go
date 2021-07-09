@@ -18,6 +18,9 @@ func TestCryptoTransferTransaction_Execute(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 func Test_CryptoTransfer_Nothing(t *testing.T) {
@@ -29,6 +32,9 @@ func Test_CryptoTransfer_Nothing(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
@@ -48,6 +54,9 @@ func TestCryptoTransferTransaction_FlippedAmount_Execute(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_SIGNATURE"), err.Error())
 	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
 }
 
 //func Test_CryptoTransfer_1000(t *testing.T) {
