@@ -1,3 +1,18 @@
+## v2.1.11-beta.1
+
+### Added
+
+ * Support for NFTS
+    * Creating NFT tokens
+    * Minting NFTs
+    * Burning NFTs
+    * Transfering NFTs
+    * Wiping NFTs
+    * Query NFT information
+ * Support for Custom Fees on tokens:
+    * Setting custom fees on a token
+    * Updating custom fees on an existing token
+
 ## v2.1.10
 
 ### Added
