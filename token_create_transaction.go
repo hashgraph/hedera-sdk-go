@@ -256,9 +256,11 @@ func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) 
 		}
 		switch t := customFee.Fee.(type) {
 		case CustomFixedFee:
-			err = t.DenominationTokenID.Validate(client)
-			if err != nil {
-				return err
+			if t.DenominationTokenID != nil {
+				err = t.DenominationTokenID.Validate(client)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

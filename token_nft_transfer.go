@@ -5,32 +5,32 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
-type NftTransfer struct {
+type TokenNftTransfer struct {
 	SenderAccountID   AccountID
 	ReceiverAccountID AccountID
 	SerialNumber      int64
 }
 
-func NewNftTransfer(sender AccountID, receiver AccountID, serial int64) NftTransfer {
-	return NftTransfer{
+func newNftTransfer(sender AccountID, receiver AccountID, serial int64) TokenNftTransfer {
+	return TokenNftTransfer{
 		SenderAccountID:   sender,
 		ReceiverAccountID: receiver,
 		SerialNumber:      serial,
 	}
 }
 
-func nftTransferFromProtobuf(pb *proto.NftTransfer, networkName *NetworkName) NftTransfer {
+func nftTransferFromProtobuf(pb *proto.NftTransfer, networkName *NetworkName) TokenNftTransfer {
 	if pb == nil {
-		return NftTransfer{}
+		return TokenNftTransfer{}
 	}
-	return NftTransfer{
+	return TokenNftTransfer{
 		SenderAccountID:   accountIDFromProtobuf(pb.SenderAccountID, networkName),
 		ReceiverAccountID: accountIDFromProtobuf(pb.ReceiverAccountID, networkName),
 		SerialNumber:      pb.SerialNumber,
 	}
 }
 
-func (transfer *NftTransfer) toProtobuf() *proto.NftTransfer {
+func (transfer *TokenNftTransfer) toProtobuf() *proto.NftTransfer {
 	return &proto.NftTransfer{
 		SenderAccountID:   transfer.SenderAccountID.toProtobuf(),
 		ReceiverAccountID: transfer.ReceiverAccountID.toProtobuf(),
@@ -38,7 +38,7 @@ func (transfer *NftTransfer) toProtobuf() *proto.NftTransfer {
 	}
 }
 
-func (transfer NftTransfer) ToBytes() []byte {
+func (transfer TokenNftTransfer) ToBytes() []byte {
 	data, err := protobuf.Marshal(transfer.toProtobuf())
 	if err != nil {
 		return make([]byte, 0)
@@ -47,14 +47,14 @@ func (transfer NftTransfer) ToBytes() []byte {
 	return data
 }
 
-func NftTransferFromBytes(data []byte) (NftTransfer, error) {
+func NftTransferFromBytes(data []byte) (TokenNftTransfer, error) {
 	if data == nil {
-		return NftTransfer{}, errByteArrayNull
+		return TokenNftTransfer{}, errByteArrayNull
 	}
 	pb := proto.NftTransfer{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
-		return NftTransfer{}, err
+		return TokenNftTransfer{}, err
 	}
 
 	return nftTransferFromProtobuf(&pb, nil), nil

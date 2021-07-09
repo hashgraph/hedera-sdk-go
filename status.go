@@ -210,6 +210,9 @@ const (
 	StatusCustomFeeDenominationMustBeFungibleCommon       Status = 245
 	StatusCustomFractionalFeeOnlyAllowedForFungibleCommon Status = 246
 	StatusInvalidCustomFeeScheduleKey                     Status = 247
+	StatusInvalidTokenMintMetadata                        Status = 248
+	StatusInvalidTokenBurnMetadata                        Status = 249
+	StatusCurrentTreasuryStillOwnsNfts                    Status = 250
 )
 
 // String() returns a string representation of the status
@@ -625,6 +628,12 @@ func (status Status) String() string {
 		return "FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT"
 	case StatusInvalidCustomFeeScheduleKey:
 		return "INVALID_CUSTOM_FEE_SCHEDULE_KEY"
+	case StatusInvalidTokenMintMetadata:
+		return "INVALID_TOKEN_MINT_METADATA"
+	case StatusInvalidTokenBurnMetadata:
+		return "INVALID_TOKEN_BURN_METADATA"
+	case StatusCurrentTreasuryStillOwnsNfts:
+		return "CURRENT_TREASURY_STILL_OWNS_NFTS"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
