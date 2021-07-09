@@ -27,9 +27,17 @@ func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 }
 
 func TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenFeeScheduleUpdateTransaction {
+	customFees := make([]CustomFee, 0)
+
+	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {
+		customFees = append(customFees, customFeeFromProtobuf(fee, nil))
+	}
+
 	return TokenFeeScheduleUpdateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenFeeScheduleUpdate(),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId, nil),
+		customFees:  customFees,
 	}
 }
 
@@ -50,7 +58,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Custo
 	return transaction
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFeed() []CustomFee {
+func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []CustomFee {
 	return transaction.customFees
 }
 

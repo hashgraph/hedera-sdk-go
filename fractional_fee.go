@@ -9,7 +9,7 @@ type CustomFractionalFee struct {
 	MaximumAmount int64
 }
 
-func fractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee) CustomFractionalFee {
+func customFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee) CustomFractionalFee {
 	return CustomFractionalFee{
 		Numerator:     fractionalFee.FractionalAmount.Numerator,
 		Denominator:   fractionalFee.FractionalAmount.Denominator,
