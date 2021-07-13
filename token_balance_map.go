@@ -23,3 +23,20 @@ func tokenBalanceMapFromProtobuf(pb []*proto.TokenBalance, _ *NetworkName) Token
 
 	return TokenBalanceMap{balances}
 }
+
+func (tokenBalances *TokenBalanceMap) toProtobuf() []*proto.TokenBalance {
+	decimals := make([]*proto.TokenBalance, 0)
+
+	for s, t := range tokenBalances.balances {
+		token, err := TokenIDFromString(s)
+		if err != nil {
+			return []*proto.TokenBalance{}
+		}
+		decimals = append(decimals, &proto.TokenBalance{
+			TokenId: token.toProtobuf(),
+			Balance: t,
+		})
+	}
+
+	return decimals
+}

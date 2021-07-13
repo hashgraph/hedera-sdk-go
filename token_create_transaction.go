@@ -47,11 +47,18 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 }
 
 func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
+	customFees := make([]CustomFee, 0)
+
+	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
+		customFees = append(customFees, customFeeFromProtobuf(fee, nil))
+	}
+
 	return TokenCreateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetTokenCreation(),
 		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenCreation().GetTreasury(), nil),
 		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount(), nil),
+		customFees:         customFees,
 	}
 }
 
@@ -277,13 +284,11 @@ func (transaction *TokenCreateTransaction) build() *TokenCreateTransaction {
 		transaction.pb.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
 	}
 
-	if len(transaction.customFees) > 0 {
-		for _, customFee := range transaction.customFees {
-			if transaction.pb.CustomFees == nil {
-				transaction.pb.CustomFees = make([]*proto.CustomFee, 0)
-			}
-			transaction.pb.CustomFees = append(transaction.pb.CustomFees, customFee.toProtobuf())
-		}
+	if transaction.pb.CustomFees == nil {
+		transaction.pb.CustomFees = make([]*proto.CustomFee, 0)
+	}
+	for _, customFee := range transaction.customFees {
+		transaction.pb.CustomFees = append(transaction.pb.CustomFees, customFee.toProtobuf())
 	}
 
 	return transaction

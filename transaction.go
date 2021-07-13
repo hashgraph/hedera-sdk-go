@@ -215,6 +215,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		return scheduleSignTransactionFromProtobuf(tx, first), nil
 	case *proto.TransactionBody_ScheduleDelete:
 		return scheduleDeleteTransactionFromProtobuf(tx, first), nil
+	case *proto.TransactionBody_TokenFeeScheduleUpdate:
+		return TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}

@@ -1,6 +1,8 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+)
 
 type TokenDecimalMap struct {
 	decimals map[string]uint64
@@ -22,4 +24,21 @@ func tokenDecimalMapFromProtobuf(pb []*proto.TokenBalance, _ *NetworkName) Token
 	}
 
 	return TokenDecimalMap{decimals}
+}
+
+func (tokenDecimals TokenDecimalMap) toProtobuf() []*proto.TokenBalance {
+	decimals := make([]*proto.TokenBalance, 0)
+
+	for s, t := range tokenDecimals.decimals {
+		token, err := TokenIDFromString(s)
+		if err != nil {
+			return []*proto.TokenBalance{}
+		}
+		decimals = append(decimals, &proto.TokenBalance{
+			TokenId:  token.toProtobuf(),
+			Decimals: uint32(t),
+		})
+	}
+
+	return decimals
 }

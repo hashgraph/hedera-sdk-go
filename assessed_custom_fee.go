@@ -1,6 +1,9 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	protobuf "github.com/golang/protobuf/proto"
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+)
 
 type AssessedCustomFee struct {
 	Amount                int64
@@ -35,4 +38,26 @@ func (fee *AssessedCustomFee) toProtobuf() *proto.AssessedCustomFee {
 		TokenId:               tokenID,
 		FeeCollectorAccountId: accountID,
 	}
+}
+
+func (fee *AssessedCustomFee) ToBytes() []byte {
+	data, err := protobuf.Marshal(fee.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func AssessedCustomFeeFromBytes(data []byte) (AssessedCustomFee, error) {
+	if data == nil {
+		return AssessedCustomFee{}, errByteArrayNull
+	}
+	pb := proto.AssessedCustomFee{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return AssessedCustomFee{}, err
+	}
+
+	return assessedCustomFeeFromProtobuf(&pb, nil), nil
 }
