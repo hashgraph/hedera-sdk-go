@@ -1,20 +1,19 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type ScheduleSignTransaction struct {
 	Transaction
-	pb         *proto.ScheduleSignTransactionBody
+	pb         *services.ScheduleSignTransactionBody
 	scheduleID ScheduleID
 }
 
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
-	pb := &proto.ScheduleSignTransactionBody{}
+	pb := &services.ScheduleSignTransactionBody{}
 
 	transaction := ScheduleSignTransaction{
 		pb:          pb,
@@ -26,7 +25,7 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	return &transaction
 }
 
-func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleSignTransaction {
+func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleSignTransaction {
 	return ScheduleSignTransaction{
 		Transaction: transaction,
 		pb:          pb.GetScheduleSign(),
@@ -63,7 +62,7 @@ func (transaction *ScheduleSignTransaction) build() *ScheduleSignTransaction {
 	return transaction
 }
 
-func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
@@ -185,9 +184,9 @@ func (transaction *ScheduleSignTransaction) Execute(
 }
 
 func (transaction *ScheduleSignTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ScheduleSign{
+	pbBody.Data = &services.TransactionBody_ScheduleSign{
 		ScheduleSign: transaction.pb,
 	}
 

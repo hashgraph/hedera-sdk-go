@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Unfreezes transfers of the specified token for the account. Must be signed by the Token's freezeKey.
@@ -18,13 +17,13 @@ import (
 // operation is idempotent.
 type TokenUnfreezeTransaction struct {
 	Transaction
-	pb        *proto.TokenUnfreezeAccountTransactionBody
+	pb        *services.TokenUnfreezeAccountTransactionBody
 	tokenID   TokenID
 	accountID AccountID
 }
 
 func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
-	pb := &proto.TokenUnfreezeAccountTransactionBody{}
+	pb := &services.TokenUnfreezeAccountTransactionBody{}
 
 	transaction := TokenUnfreezeTransaction{
 		pb:          pb,
@@ -35,7 +34,7 @@ func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 	return &transaction
 }
 
-func tokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenUnfreezeTransaction {
+func tokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenUnfreezeTransaction {
 	return TokenUnfreezeTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenUnfreeze(),
@@ -103,13 +102,13 @@ func (transaction *TokenUnfreezeTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenUnfreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenUnfreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenUnfreeze{
-			TokenUnfreeze: &proto.TokenUnfreezeAccountTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenUnfreeze{
+			TokenUnfreeze: &services.TokenUnfreezeAccountTransactionBody{
 				Token:   transaction.pb.GetToken(),
 				Account: transaction.pb.GetAccount(),
 			},
@@ -242,9 +241,9 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 }
 
 func (transaction *TokenUnfreezeTransaction) onUnfreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenUnfreeze{
+	pbBody.Data = &services.TransactionBody_TokenUnfreeze{
 		TokenUnfreeze: transaction.pb,
 	}
 

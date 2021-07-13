@@ -1,22 +1,22 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TopicInfoQuery struct {
 	Query
-	pb      *proto.ConsensusGetTopicInfoQuery
+	pb      *services.ConsensusGetTopicInfoQuery
 	topicID TopicID
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := proto.ConsensusGetTopicInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_ConsensusGetTopicInfo{
+	pb := services.ConsensusGetTopicInfoQuery{Header: &header}
+	query.pb.Query = &services.Query_ConsensusGetTopicInfo{
 		ConsensusGetTopicInfo: &pb,
 	}
 
@@ -65,7 +65,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

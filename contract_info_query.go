@@ -1,24 +1,24 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractInfoQuery retrieves information about a smart contract instance. This includes the account that it uses, the
 // file containing its bytecode, and the time when it will expire.
 type ContractInfoQuery struct {
 	Query
-	pb         *proto.ContractGetInfoQuery
+	pb         *services.ContractGetInfoQuery
 	contractID ContractID
 }
 
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
 // Contract Get Info Query.
 func NewContractInfoQuery() *ContractInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := proto.ContractGetInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_ContractGetInfo{
+	pb := services.ContractGetInfoQuery{Header: &header}
+	query.pb.Query = &services.Query_ContractGetInfo{
 		ContractGetInfo: &pb,
 	}
 
@@ -69,7 +69,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

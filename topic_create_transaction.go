@@ -1,22 +1,21 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // A TopicCreateTransaction is for creating a new Topic on HCS.
 type TopicCreateTransaction struct {
 	Transaction
-	pb                 *proto.ConsensusCreateTopicTransactionBody
+	pb                 *services.ConsensusCreateTopicTransactionBody
 	autoRenewAccountID AccountID
 }
 
 // NewTopicCreateTransaction creates a TopicCreateTransaction transaction which can be
 // used to construct and execute a  Create Topic Transaction.
 func NewTopicCreateTransaction() *TopicCreateTransaction {
-	pb := &proto.ConsensusCreateTopicTransactionBody{}
+	pb := &services.ConsensusCreateTopicTransactionBody{}
 
 	transaction := TopicCreateTransaction{
 		pb:          pb,
@@ -36,7 +35,7 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 
 }
 
-func topicCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicCreateTransaction {
+func topicCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TopicCreateTransaction {
 	return TopicCreateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetConsensusCreateTopic(),
@@ -136,13 +135,13 @@ func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TopicCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ConsensusCreateTopic{
-			ConsensusCreateTopic: &proto.ConsensusCreateTopicTransactionBody{
+		Data: &services.SchedulableTransactionBody_ConsensusCreateTopic{
+			ConsensusCreateTopic: &services.ConsensusCreateTopicTransactionBody{
 				Memo:             transaction.pb.GetMemo(),
 				AdminKey:         transaction.pb.GetAdminKey(),
 				SubmitKey:        transaction.pb.GetSubmitKey(),
@@ -272,9 +271,9 @@ func (transaction *TopicCreateTransaction) Execute(
 }
 
 func (transaction *TopicCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ConsensusCreateTopic{
+	pbBody.Data = &services.TransactionBody_ConsensusCreateTopic{
 		ConsensusCreateTopic: transaction.pb,
 	}
 

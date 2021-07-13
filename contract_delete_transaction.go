@@ -1,21 +1,20 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
 type ContractDeleteTransaction struct {
 	Transaction
-	pb                *proto.ContractDeleteTransactionBody
+	pb                *services.ContractDeleteTransactionBody
 	contractID        ContractID
 	transferContactID ContractID
 	transferAccountID AccountID
 }
 
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
-	pb := &proto.ContractDeleteTransactionBody{}
+	pb := &services.ContractDeleteTransactionBody{}
 
 	transaction := ContractDeleteTransaction{
 		pb:          pb,
@@ -26,7 +25,7 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	return &transaction
 }
 
-func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractDeleteTransaction {
+func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractDeleteTransaction {
 	return ContractDeleteTransaction{
 		Transaction:       transaction,
 		pb:                pb.GetContractDeleteInstance(),
@@ -95,13 +94,13 @@ func (transaction *ContractDeleteTransaction) build() *ContractDeleteTransaction
 	}
 
 	if !transaction.transferContactID.isZero() {
-		transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+		transaction.pb.Obtainers = &services.ContractDeleteTransactionBody_TransferContractID{
 			TransferContractID: transaction.transferContactID.toProtobuf(),
 		}
 	}
 
 	if !transaction.transferAccountID.isZero() {
-		transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+		transaction.pb.Obtainers = &services.ContractDeleteTransactionBody_TransferAccountID{
 			TransferAccountID: transaction.transferAccountID.toProtobuf(),
 		}
 	}
@@ -120,13 +119,13 @@ func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ContractDeleteInstance{
-			ContractDeleteInstance: &proto.ContractDeleteTransactionBody{
+		Data: &services.SchedulableTransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: &services.ContractDeleteTransactionBody{
 				ContractID: transaction.pb.GetContractID(),
 				Obtainers:  transaction.pb.GetObtainers(),
 			},
@@ -253,9 +252,9 @@ func (transaction *ContractDeleteTransaction) Execute(
 }
 
 func (transaction *ContractDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ContractDeleteInstance{
+	pbBody.Data = &services.TransactionBody_ContractDeleteInstance{
 		ContractDeleteInstance: transaction.pb,
 	}
 

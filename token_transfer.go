@@ -2,7 +2,7 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenTransfer struct {
@@ -17,7 +17,7 @@ func NewTokenTransfer(accountID AccountID, amount int64) TokenTransfer {
 	}
 }
 
-func tokenTransferFromProtobuf(pb *proto.AccountAmount, networkName *NetworkName) TokenTransfer {
+func tokenTransferFromProtobuf(pb *services.AccountAmount, networkName *NetworkName) TokenTransfer {
 	if pb == nil {
 		return TokenTransfer{}
 	}
@@ -27,8 +27,8 @@ func tokenTransferFromProtobuf(pb *proto.AccountAmount, networkName *NetworkName
 	}
 }
 
-func (transfer *TokenTransfer) toProtobuf() *proto.AccountAmount {
-	return &proto.AccountAmount{
+func (transfer *TokenTransfer) toProtobuf() *services.AccountAmount {
+	return &services.AccountAmount{
 		AccountID: transfer.AccountID.toProtobuf(),
 		Amount:    transfer.Amount,
 	}
@@ -47,7 +47,7 @@ func TokenTransferFromBytes(data []byte) (TokenTransfer, error) {
 	if data == nil {
 		return TokenTransfer{}, errByteArrayNull
 	}
-	pb := proto.AccountAmount{}
+	pb := services.AccountAmount{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenTransfer{}, err

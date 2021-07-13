@@ -2,12 +2,12 @@ package hedera
 
 import (
 	"context"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"math"
 	"time"
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,33 +26,33 @@ const (
 type method struct {
 	query func(
 		context.Context,
-		*proto.Query,
+		*services.Query,
 		...grpc.CallOption,
-	) (*proto.Response, error)
+	) (*services.Response, error)
 	transaction func(
 		context.Context,
-		*proto.Transaction,
+		*services.Transaction,
 		...grpc.CallOption,
-	) (*proto.TransactionResponse, error)
+	) (*services.TransactionResponse, error)
 }
 
 type response struct {
-	query       *proto.Response
-	transaction *proto.TransactionResponse
+	query       *services.Response
+	transaction *services.TransactionResponse
 }
 
 type intermediateResponse struct {
-	query       *proto.Response
+	query       *services.Response
 	transaction TransactionResponse
 }
 
 type protoRequest struct {
-	query       *proto.Query
-	transaction *proto.Transaction
+	query       *services.Query
+	transaction *services.Transaction
 }
 
 type QueryHeader struct {
-	header *proto.QueryHeader
+	header *services.QueryHeader
 }
 
 type request struct {

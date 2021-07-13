@@ -2,9 +2,8 @@ package hedera
 
 import (
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ContractUpdateTransaction is used to modify a smart contract instance to have the given parameter values. Any nil
@@ -22,7 +21,7 @@ import (
 // bytecode will be immutable.
 type ContractUpdateTransaction struct {
 	Transaction
-	pb             *proto.ContractUpdateTransactionBody
+	pb             *services.ContractUpdateTransactionBody
 	contractID     ContractID
 	proxyAccountID AccountID
 	bytecodeFileID FileID
@@ -31,7 +30,7 @@ type ContractUpdateTransaction struct {
 // NewContractUpdateTransaction creates a ContractUpdateTransaction transaction which can be
 // used to construct and execute a Contract Update Transaction.
 func NewContractUpdateTransaction() *ContractUpdateTransaction {
-	pb := &proto.ContractUpdateTransactionBody{}
+	pb := &services.ContractUpdateTransactionBody{}
 
 	transaction := ContractUpdateTransaction{
 		pb:          pb,
@@ -42,7 +41,7 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 	return &transaction
 }
 
-func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractUpdateTransaction {
+func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractUpdateTransaction {
 	return ContractUpdateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetContractUpdateInstance(),
@@ -131,7 +130,7 @@ func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *Cont
 	if transaction.pb.GetMemoWrapper() != nil {
 		transaction.pb.GetMemoWrapper().Value = memo
 	} else {
-		transaction.pb.MemoField = &proto.ContractUpdateTransactionBody_MemoWrapper{
+		transaction.pb.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
 			MemoWrapper: &wrappers.StringValue{Value: memo},
 		}
 	}
@@ -142,9 +141,9 @@ func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *Cont
 func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	if transaction.pb.GetMemoField() != nil {
 		switch transaction.pb.GetMemoField().(type) {
-		case *proto.ContractUpdateTransactionBody_Memo:
+		case *services.ContractUpdateTransactionBody_Memo:
 			return transaction.pb.GetMemo()
-		case *proto.ContractUpdateTransactionBody_MemoWrapper:
+		case *services.ContractUpdateTransactionBody_MemoWrapper:
 			return transaction.pb.GetMemoWrapper().Value
 		default:
 			return ""
@@ -199,13 +198,13 @@ func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ContractUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ContractUpdateInstance{
-			ContractUpdateInstance: &proto.ContractUpdateTransactionBody{
+		Data: &services.SchedulableTransactionBody_ContractUpdateInstance{
+			ContractUpdateInstance: &services.ContractUpdateTransactionBody{
 				ContractID:      transaction.pb.GetContractID(),
 				ExpirationTime:  transaction.pb.GetExpirationTime(),
 				AdminKey:        transaction.pb.GetAdminKey(),
@@ -337,9 +336,9 @@ func (transaction *ContractUpdateTransaction) Execute(
 }
 
 func (transaction *ContractUpdateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ContractUpdateInstance{
+	pbBody.Data = &services.TransactionBody_ContractUpdateInstance{
 		ContractUpdateInstance: transaction.pb,
 	}
 

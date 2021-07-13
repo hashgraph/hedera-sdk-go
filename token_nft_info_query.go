@@ -1,15 +1,15 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 )
 
 type TokenNftInfoQuery struct {
 	Query
-	nftInfo     *proto.TokenGetNftInfoQuery
-	tokenInfo   *proto.TokenGetNftInfosQuery
-	accountInfo *proto.TokenGetAccountNftInfosQuery
+	nftInfo     *services.TokenGetNftInfoQuery
+	tokenInfo   *services.TokenGetNftInfosQuery
+	accountInfo *services.TokenGetAccountNftInfosQuery
 	tokenID     TokenID
 	nftID       NftID
 	accountID   AccountID
@@ -86,10 +86,10 @@ func (query *TokenNftInfoQuery) isByAccount() bool {
 }
 
 func (query *TokenNftInfoQuery) ByNftID(id NftID) *TokenNftInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	tempQuery := newQuery(true, &header)
-	pb := proto.TokenGetNftInfoQuery{Header: &header}
-	tempQuery.pb.Query = &proto.Query_TokenGetNftInfo{
+	pb := services.TokenGetNftInfoQuery{Header: &header}
+	tempQuery.pb.Query = &services.Query_TokenGetNftInfo{
 		TokenGetNftInfo: &pb,
 	}
 
@@ -101,10 +101,10 @@ func (query *TokenNftInfoQuery) ByNftID(id NftID) *TokenNftInfoQuery {
 }
 
 func (query *TokenNftInfoQuery) ByTokenID(id TokenID) *TokenNftInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	tempQuery := newQuery(true, &header)
-	pb := proto.TokenGetNftInfosQuery{Header: &header}
-	tempQuery.pb.Query = &proto.Query_TokenGetNftInfos{
+	pb := services.TokenGetNftInfosQuery{Header: &header}
+	tempQuery.pb.Query = &services.Query_TokenGetNftInfos{
 		TokenGetNftInfos: &pb,
 	}
 
@@ -116,10 +116,10 @@ func (query *TokenNftInfoQuery) ByTokenID(id TokenID) *TokenNftInfoQuery {
 }
 
 func (query *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	tempQuery := newQuery(true, &header)
-	pb := proto.TokenGetAccountNftInfosQuery{Header: &header}
-	tempQuery.pb.Query = &proto.Query_TokenGetAccountNftInfos{
+	pb := services.TokenGetAccountNftInfosQuery{Header: &header}
+	tempQuery.pb.Query = &services.Query_TokenGetAccountNftInfos{
 		TokenGetAccountNftInfos: &pb,
 	}
 
@@ -183,7 +183,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

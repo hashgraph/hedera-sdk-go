@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractCallQuery calls a function of the given smart contract instance, giving it ContractFunctionParameters as its
@@ -14,17 +14,17 @@ import (
 // purely local to a single  node.
 type ContractCallQuery struct {
 	Query
-	pb         *proto.ContractCallLocalQuery
+	pb         *services.ContractCallLocalQuery
 	contractID ContractID
 }
 
 // NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
 // Contract Call Local Query.
 func NewContractCallQuery() *ContractCallQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := proto.ContractCallLocalQuery{Header: &header}
-	query.pb.Query = &proto.Query_ContractCallLocal{
+	pb := services.ContractCallLocalQuery{Header: &header}
+	query.pb.Query = &services.Query_ContractCallLocal{
 		ContractCallLocal: &pb,
 	}
 
@@ -111,7 +111,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

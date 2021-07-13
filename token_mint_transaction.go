@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Mints tokens from the Token's treasury Account. If no Supply Key is defined, the transaction
@@ -15,12 +14,12 @@ import (
 // to mint 100.55 tokens, one must provide amount of 10055.
 type TokenMintTransaction struct {
 	Transaction
-	pb      *proto.TokenMintTransactionBody
+	pb      *services.TokenMintTransactionBody
 	tokenID TokenID
 }
 
 func NewTokenMintTransaction() *TokenMintTransaction {
-	pb := &proto.TokenMintTransactionBody{}
+	pb := &services.TokenMintTransactionBody{}
 
 	transaction := TokenMintTransaction{
 		pb:          pb,
@@ -31,7 +30,7 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 	return &transaction
 }
 
-func tokenMintTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenMintTransaction {
+func tokenMintTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenMintTransaction {
 	return TokenMintTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenMint(),
@@ -112,13 +111,13 @@ func (transaction *TokenMintTransaction) Schedule() (*ScheduleCreateTransaction,
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenMintTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenMintTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenMint{
-			TokenMint: &proto.TokenMintTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenMint{
+			TokenMint: &services.TokenMintTransactionBody{
 				Token:  transaction.pb.GetToken(),
 				Amount: transaction.pb.GetAmount(),
 			},
@@ -244,9 +243,9 @@ func (transaction *TokenMintTransaction) Execute(
 }
 
 func (transaction *TokenMintTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenMint{
+	pbBody.Data = &services.TransactionBody_TokenMint{
 		TokenMint: transaction.pb,
 	}
 

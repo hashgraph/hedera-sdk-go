@@ -2,19 +2,18 @@ package hedera
 
 import (
 	"errors"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type ScheduleCreateTransaction struct {
 	Transaction
-	pb             *proto.ScheduleCreateTransactionBody
+	pb             *services.ScheduleCreateTransactionBody
 	payerAccountID AccountID
 }
 
 func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
-	pb := &proto.ScheduleCreateTransactionBody{}
+	pb := &services.ScheduleCreateTransactionBody{}
 
 	transaction := ScheduleCreateTransaction{
 		pb:          pb,
@@ -26,7 +25,7 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	return &transaction
 }
 
-func scheduleCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleCreateTransaction {
+func scheduleCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleCreateTransaction {
 	return ScheduleCreateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetScheduleCreate(),
@@ -52,7 +51,7 @@ func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCrea
 	return transaction
 }
 
-func (transaction *ScheduleCreateTransaction) setSchedulableTransactionBody(txBody *proto.SchedulableTransactionBody) *ScheduleCreateTransaction {
+func (transaction *ScheduleCreateTransaction) setSchedulableTransactionBody(txBody *services.SchedulableTransactionBody) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.pb.ScheduledTransactionBody = txBody
 
@@ -108,7 +107,7 @@ func (transaction *ScheduleCreateTransaction) build() *ScheduleCreateTransaction
 	return transaction
 }
 
-func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleCreateTransaction`")
 }
 
@@ -231,9 +230,9 @@ func (transaction *ScheduleCreateTransaction) Execute(
 }
 
 func (transaction *ScheduleCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ScheduleCreate{
+	pbBody.Data = &services.TransactionBody_ScheduleCreate{
 		ScheduleCreate: transaction.pb,
 	}
 

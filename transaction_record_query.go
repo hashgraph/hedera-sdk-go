@@ -1,20 +1,20 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionRecordQuery struct {
 	Query
-	pb            *proto.TransactionGetRecordQuery
+	pb            *services.TransactionGetRecordQuery
 	transactionID TransactionID
 }
 
 func NewTransactionRecordQuery() *TransactionRecordQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := &proto.TransactionGetRecordQuery{Header: &header}
-	query.pb.Query = &proto.Query_TransactionGetRecord{
+	pb := &services.TransactionGetRecordQuery{Header: &header}
+	query.pb.Query = &services.Query_TransactionGetRecord{
 		TransactionGetRecord: pb,
 	}
 
@@ -53,7 +53,7 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)
@@ -94,7 +94,7 @@ func transactionRecordQuery_shouldRetry(request request, response response) exec
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
-		if request.query.pb.GetTransactionGetRecord().GetHeader().ResponseType == proto.ResponseType_COST_ANSWER {
+		if request.query.pb.GetTransactionGetRecord().GetHeader().ResponseType == services.ResponseType_COST_ANSWER {
 			return executionStateFinished
 		} else {
 			break

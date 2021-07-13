@@ -1,30 +1,30 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type ExchangeRate struct {
 	Hbars          int32
 	cents          int32
-	expirationTime *proto.TimestampSeconds
+	expirationTime *services.TimestampSeconds
 }
 
 func newExchangeRate(hbars int32, cents int32, expirationTime int64) *ExchangeRate {
 	exchange := ExchangeRate{
 		Hbars:          hbars,
 		cents:          cents,
-		expirationTime: &proto.TimestampSeconds{Seconds: expirationTime},
+		expirationTime: &services.TimestampSeconds{Seconds: expirationTime},
 	}
 
 	return &exchange
 }
 
-func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
+func exchangeRateFromProtobuf(protoExchange *services.ExchangeRate) ExchangeRate {
 	if protoExchange == nil {
 		return ExchangeRate{}
 	}
-	var expirationTime *proto.TimestampSeconds
+	var expirationTime *services.TimestampSeconds
 	if protoExchange.ExpirationTime != nil {
 		expirationTime = protoExchange.ExpirationTime
 	}
@@ -36,8 +36,8 @@ func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
 	}
 }
 
-func (exchange *ExchangeRate) toProtobuf() *proto.ExchangeRate {
-	return &proto.ExchangeRate{
+func (exchange *ExchangeRate) toProtobuf() *services.ExchangeRate {
+	return &services.ExchangeRate{
 		HbarEquiv:      exchange.Hbars,
 		CentEquiv:      exchange.cents,
 		ExpirationTime: exchange.expirationTime,

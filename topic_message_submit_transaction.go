@@ -1,18 +1,18 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 const chunkSize = 1024
 
 type TopicMessageSubmitTransaction struct {
 	Transaction
-	pb        *proto.ConsensusSubmitMessageTransactionBody
+	pb        *services.ConsensusSubmitMessageTransactionBody
 	maxChunks uint64
 	message   []byte
 	topicID   TopicID
@@ -20,7 +20,7 @@ type TopicMessageSubmitTransaction struct {
 
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	transaction := TopicMessageSubmitTransaction{
-		pb:          &proto.ConsensusSubmitMessageTransactionBody{},
+		pb:          &services.ConsensusSubmitMessageTransactionBody{},
 		Transaction: newTransaction(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
@@ -30,7 +30,7 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return &transaction
 }
 
-func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
+func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TopicMessageSubmitTransaction {
 	tx := TopicMessageSubmitTransaction{
 		Transaction: transaction,
 		pb:          pb.GetConsensusSubmitMessage(),
@@ -164,16 +164,16 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicMessageSubmitTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TopicMessageSubmitTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ConsensusSubmitMessage{
-			ConsensusSubmitMessage: &proto.ConsensusSubmitMessageTransactionBody{
+		Data: &services.SchedulableTransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: &services.ConsensusSubmitMessageTransactionBody{
 				TopicID:   transaction.pb.GetTopicID(),
 				Message:   transaction.message,
-				ChunkInfo: &proto.ConsensusMessageChunkInfo{},
+				ChunkInfo: &services.ConsensusMessageChunkInfo{},
 			},
 		},
 	}, nil
@@ -291,8 +291,8 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	nextTransactionID := transactionIDFromProtobuf(initialTransactionID.toProtobuf(), nil)
 
 	transaction.transactionIDs = make([]TransactionID, 0)
-	transaction.transactions = make([]*proto.Transaction, 0)
-	transaction.signedTransactions = make([]*proto.SignedTransaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
+	transaction.signedTransactions = make([]*services.SignedTransaction, 0)
 
 	for i := 0; uint64(i) < chunks; i += 1 {
 		start := i * chunkSize
@@ -305,14 +305,14 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf(), nil))
 
 		transaction.pb.Message = transaction.message[start:end]
-		transaction.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
+		transaction.pb.ChunkInfo = &services.ConsensusMessageChunkInfo{
 			InitialTransactionID: initialTransactionID.toProtobuf(),
 			Total:                int32(chunks),
 			Number:               int32(i) + 1,
 		}
 
 		transaction.pbBody.TransactionID = nextTransactionID.toProtobuf()
-		transaction.pbBody.Data = &proto.TransactionBody_ConsensusSubmitMessage{
+		transaction.pbBody.Data = &services.TransactionBody_ConsensusSubmitMessage{
 			ConsensusSubmitMessage: transaction.pb,
 		}
 
@@ -324,9 +324,9 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 				return transaction, errors.Wrap(err, "error serializing transaction body for topic submission")
 			}
 
-			transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+			transaction.signedTransactions = append(transaction.signedTransactions, &services.SignedTransaction{
 				BodyBytes: bodyBytes,
-				SigMap:    &proto.SignatureMap{},
+				SigMap:    &services.SignatureMap{},
 			})
 		}
 

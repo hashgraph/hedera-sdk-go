@@ -2,9 +2,8 @@ package hedera
 
 import (
 	"fmt"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"strings"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ScheduleID is the ID for a Hedera account
@@ -73,8 +72,8 @@ func (id ScheduleID) String() string {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, *id.checksum)
 }
 
-func (id ScheduleID) toProtobuf() *proto.ScheduleID {
-	return &proto.ScheduleID{
+func (id ScheduleID) toProtobuf() *services.ScheduleID {
+	return &services.ScheduleID{
 		ShardNum:    int64(id.Shard),
 		RealmNum:    int64(id.Realm),
 		ScheduleNum: int64(id.Schedule),
@@ -94,7 +93,7 @@ func (id *ScheduleID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func scheduleIDFromProtobuf(scheduleID *proto.ScheduleID, networkName *NetworkName) ScheduleID {
+func scheduleIDFromProtobuf(scheduleID *services.ScheduleID, networkName *NetworkName) ScheduleID {
 	if scheduleID == nil {
 		return ScheduleID{}
 	}

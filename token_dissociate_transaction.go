@@ -1,20 +1,19 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TokenDissociateTransaction struct {
 	Transaction
-	pb        *proto.TokenDissociateTransactionBody
+	pb        *services.TokenDissociateTransactionBody
 	accountID AccountID
 	tokens    []TokenID
 }
 
 func NewTokenDissociateTransaction() *TokenDissociateTransaction {
-	pb := &proto.TokenDissociateTransactionBody{}
+	pb := &services.TokenDissociateTransactionBody{}
 
 	transaction := TokenDissociateTransaction{
 		pb:          pb,
@@ -25,7 +24,7 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	return &transaction
 }
 
-func tokenDissociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDissociateTransaction {
+func tokenDissociateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
 		tokens = append(tokens, tokenIDFromProtobuf(token, nil))
@@ -107,7 +106,7 @@ func (transaction *TokenDissociateTransaction) build() *TokenDissociateTransacti
 	if len(transaction.tokens) > 0 {
 		for _, tokenID := range transaction.tokens {
 			if transaction.pb.Tokens == nil {
-				transaction.pb.Tokens = make([]*proto.TokenID, 0)
+				transaction.pb.Tokens = make([]*services.TokenID, 0)
 			}
 			transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
 		}
@@ -127,13 +126,13 @@ func (transaction *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransa
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenDissociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenDissociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenDissociate{
-			TokenDissociate: &proto.TokenDissociateTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenDissociate{
+			TokenDissociate: &services.TokenDissociateTransactionBody{
 				Account: transaction.pb.GetAccount(),
 				Tokens:  transaction.pb.GetTokens(),
 			},
@@ -260,9 +259,9 @@ func (transaction *TokenDissociateTransaction) Execute(
 }
 
 func (transaction *TokenDissociateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenDissociate{
+	pbBody.Data = &services.TransactionBody_TokenDissociate{
 		TokenDissociate: transaction.pb,
 	}
 

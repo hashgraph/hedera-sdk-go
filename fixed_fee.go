@@ -1,6 +1,6 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import "github.com/hashgraph/hedera-protobufs-go/services"
 
 type Fee interface {
 	Fee()
@@ -11,7 +11,7 @@ type CustomFixedFee struct {
 	DenominationTokenID *TokenID
 }
 
-func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, networkName *NetworkName) CustomFixedFee {
+func customFixedFeeFromProtobuf(fixedFee *services.FixedFee, networkName *NetworkName) CustomFixedFee {
 	id := tokenIDFromProtobuf(fixedFee.DenominatingTokenId, networkName)
 	return CustomFixedFee{
 		Amount:              fixedFee.Amount,
@@ -19,13 +19,13 @@ func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, networkName *NetworkNa
 	}
 }
 
-func (fee *CustomFixedFee) toProtobuf() *proto.FixedFee {
-	var tokenID *proto.TokenID
+func (fee *CustomFixedFee) toProtobuf() *services.FixedFee {
+	var tokenID *services.TokenID
 	if fee.DenominationTokenID != nil {
 		tokenID = fee.DenominationTokenID.toProtobuf()
 	}
 
-	return &proto.FixedFee{
+	return &services.FixedFee{
 		Amount:              fee.Amount,
 		DenominatingTokenId: tokenID,
 	}

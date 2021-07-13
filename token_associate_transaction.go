@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Associates the provided account with the provided tokens. Must be signed by the provided Account's key.
@@ -25,13 +24,13 @@ import (
 // ready to interact with the tokens.
 type TokenAssociateTransaction struct {
 	Transaction
-	pb        *proto.TokenAssociateTransactionBody
+	pb        *services.TokenAssociateTransactionBody
 	accountID AccountID
 	tokens    []TokenID
 }
 
 func NewTokenAssociateTransaction() *TokenAssociateTransaction {
-	pb := &proto.TokenAssociateTransactionBody{}
+	pb := &services.TokenAssociateTransactionBody{}
 
 	transaction := TokenAssociateTransaction{
 		pb:          pb,
@@ -42,7 +41,7 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 	return &transaction
 }
 
-func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenAssociateTransaction {
+func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenAssociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenAssociate().Tokens {
 		tokens = append(tokens, tokenIDFromProtobuf(token, nil))
@@ -124,7 +123,7 @@ func (transaction *TokenAssociateTransaction) build() *TokenAssociateTransaction
 	if len(transaction.tokens) > 0 {
 		for _, tokenID := range transaction.tokens {
 			if transaction.pb.Tokens == nil {
-				transaction.pb.Tokens = make([]*proto.TokenID, 0)
+				transaction.pb.Tokens = make([]*services.TokenID, 0)
 			}
 			transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
 		}
@@ -144,13 +143,13 @@ func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenAssociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenAssociateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenAssociate{
-			TokenAssociate: &proto.TokenAssociateTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenAssociate{
+			TokenAssociate: &services.TokenAssociateTransactionBody{
 				Account: transaction.pb.GetAccount(),
 				Tokens:  transaction.pb.GetTokens(),
 			},
@@ -277,9 +276,9 @@ func (transaction *TokenAssociateTransaction) Execute(
 }
 
 func (transaction *TokenAssociateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenAssociate{
+	pbBody.Data = &services.TransactionBody_TokenAssociate{
 		TokenAssociate: transaction.pb,
 	}
 

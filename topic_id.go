@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // TopicID is a unique identifier for a topic (used by the  service)
@@ -73,15 +73,15 @@ func (id TopicID) String() string {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, *id.checksum)
 }
 
-func (id TopicID) toProtobuf() *proto.TopicID {
-	return &proto.TopicID{
+func (id TopicID) toProtobuf() *services.TopicID {
+	return &services.TopicID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
 		TopicNum: int64(id.Topic),
 	}
 }
 
-func topicIDFromProtobuf(topicID *proto.TopicID, networkName *NetworkName) TopicID {
+func topicIDFromProtobuf(topicID *services.TopicID, networkName *NetworkName) TopicID {
 	if topicID == nil {
 		return TopicID{}
 	}
@@ -112,7 +112,7 @@ func TopicIDFromBytes(data []byte) (TopicID, error) {
 	if data == nil {
 		return TopicID{}, errByteArrayNull
 	}
-	pb := proto.TopicID{}
+	pb := services.TopicID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TopicID{}, err

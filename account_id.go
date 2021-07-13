@@ -3,7 +3,8 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"strings"
 )
 
@@ -95,8 +96,8 @@ func (id AccountID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.Account)
 }
 
-func (id AccountID) toProtobuf() *proto.AccountID {
-	return &proto.AccountID{
+func (id AccountID) toProtobuf() *services.AccountID {
+	return &services.AccountID{
 		ShardNum:   int64(id.Shard),
 		RealmNum:   int64(id.Realm),
 		AccountNum: int64(id.Account),
@@ -116,7 +117,7 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func accountIDFromProtobuf(accountID *proto.AccountID, networkName *NetworkName) AccountID {
+func accountIDFromProtobuf(accountID *services.AccountID, networkName *NetworkName) AccountID {
 	if accountID == nil {
 		return AccountID{}
 	}
@@ -155,7 +156,7 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 	if data == nil {
 		return AccountID{}, errByteArrayNull
 	}
-	pb := proto.AccountID{}
+	pb := services.AccountID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return AccountID{}, err

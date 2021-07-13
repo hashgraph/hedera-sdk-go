@@ -1,20 +1,19 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
 type SystemUndeleteTransaction struct {
 	Transaction
-	pb         *proto.SystemUndeleteTransactionBody
+	pb         *services.SystemUndeleteTransactionBody
 	contractID ContractID
 	fileID     FileID
 }
 
 func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
-	pb := &proto.SystemUndeleteTransactionBody{}
+	pb := &services.SystemUndeleteTransactionBody{}
 
 	transaction := SystemUndeleteTransaction{
 		pb:          pb,
@@ -25,7 +24,7 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	return &transaction
 }
 
-func systemUndeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemUndeleteTransaction {
+func systemUndeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) SystemUndeleteTransaction {
 	return SystemUndeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetSystemUndelete(),
@@ -70,13 +69,13 @@ func (transaction *SystemUndeleteTransaction) validateNetworkOnIDs(client *Clien
 
 func (transaction *SystemUndeleteTransaction) build() *SystemUndeleteTransaction {
 	if !transaction.contractID.isZero() {
-		transaction.pb.Id = &proto.SystemUndeleteTransactionBody_ContractID{
+		transaction.pb.Id = &services.SystemUndeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID.toProtobuf(),
 		}
 	}
 
 	if !transaction.fileID.isZero() {
-		transaction.pb.Id = &proto.SystemUndeleteTransactionBody_FileID{
+		transaction.pb.Id = &services.SystemUndeleteTransactionBody_FileID{
 			FileID: transaction.fileID.toProtobuf(),
 		}
 	}
@@ -95,21 +94,21 @@ func (transaction *SystemUndeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *SystemUndeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *SystemUndeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	body := &proto.SchedulableTransactionBody{
+	body := &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_SystemUndelete{
-			SystemUndelete: &proto.SystemUndeleteTransactionBody{},
+		Data: &services.SchedulableTransactionBody_SystemUndelete{
+			SystemUndelete: &services.SystemUndeleteTransactionBody{},
 		},
 	}
 
 	switch transaction.pb.GetId().(type) {
-	case *proto.SystemUndeleteTransactionBody_ContractID:
-		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: transaction.pb.GetContractID()}
-	case *proto.SystemUndeleteTransactionBody_FileID:
-		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: transaction.pb.GetFileID()}
+	case *services.SystemUndeleteTransactionBody_ContractID:
+		body.GetSystemUndelete().Id = &services.SystemUndeleteTransactionBody_ContractID{ContractID: transaction.pb.GetContractID()}
+	case *services.SystemUndeleteTransactionBody_FileID:
+		body.GetSystemUndelete().Id = &services.SystemUndeleteTransactionBody_FileID{FileID: transaction.pb.GetFileID()}
 	}
 
 	return body, nil
@@ -122,7 +121,7 @@ func (transaction *SystemUndeleteTransaction) constructScheduleProtobuf() (*prot
 
 func systemUndeleteTransaction_getMethod(request request, channel *channel) method {
 	switch request.transaction.pbBody.GetSystemUndelete().Id.(type) {
-	case *proto.SystemUndeleteTransactionBody_ContractID:
+	case *services.SystemUndeleteTransactionBody_ContractID:
 		return method{
 			transaction: channel.getContract().SystemUndelete,
 		}
@@ -241,9 +240,9 @@ func (transaction *SystemUndeleteTransaction) Execute(
 }
 
 func (transaction *SystemUndeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_SystemUndelete{
+	pbBody.Data = &services.TransactionBody_SystemUndelete{
 		SystemUndelete: transaction.pb,
 	}
 

@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type AccountBalance struct {
@@ -14,7 +14,7 @@ type AccountBalance struct {
 	TokenDecimals TokenDecimalMap
 }
 
-func accountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse, networkName *NetworkName) AccountBalance {
+func accountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse, networkName *NetworkName) AccountBalance {
 	tokens := make(map[TokenID]uint64, len(pb.TokenBalances))
 	for _, token := range pb.TokenBalances {
 		t := tokenIDFromProtobuf(token.TokenId, nil)

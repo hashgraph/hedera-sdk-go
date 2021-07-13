@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Wipes the provided amount of tokens from the specified Account. Must be signed by the Token's
@@ -25,13 +24,13 @@ import (
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
 	Transaction
-	pb        *proto.TokenWipeAccountTransactionBody
+	pb        *services.TokenWipeAccountTransactionBody
 	tokenID   TokenID
 	accountID AccountID
 }
 
 func NewTokenWipeTransaction() *TokenWipeTransaction {
-	pb := &proto.TokenWipeAccountTransactionBody{}
+	pb := &services.TokenWipeAccountTransactionBody{}
 
 	transaction := TokenWipeTransaction{
 		pb:          pb,
@@ -42,7 +41,7 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 	return &transaction
 }
 
-func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenWipeTransaction {
+func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenWipeTransaction {
 	return TokenWipeTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenWipe(),
@@ -134,13 +133,13 @@ func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction,
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenWipe{
-			TokenWipe: &proto.TokenWipeAccountTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenWipe{
+			TokenWipe: &services.TokenWipeAccountTransactionBody{
 				Token:   transaction.pb.GetToken(),
 				Account: transaction.pb.GetAccount(),
 				Amount:  transaction.pb.GetAmount(),
@@ -264,9 +263,9 @@ func (transaction *TokenWipeTransaction) Execute(
 }
 
 func (transaction *TokenWipeTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenWipe{
+	pbBody.Data = &services.TransactionBody_TokenWipe{
 		TokenWipe: transaction.pb,
 	}
 

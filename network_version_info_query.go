@@ -1,19 +1,17 @@
 package hedera
 
-import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-)
+import "github.com/hashgraph/hedera-protobufs-go/services"
 
 type NetworkVersionInfoQuery struct {
 	Query
-	pb *proto.NetworkGetVersionInfoQuery
+	pb *services.NetworkGetVersionInfoQuery
 }
 
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := proto.NetworkGetVersionInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_NetworkGetVersionInfo{
+	pb := services.NetworkGetVersionInfoQuery{Header: &header}
+	query.pb.Query = &services.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &pb,
 	}
 
@@ -34,7 +32,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	resp, err := execute(

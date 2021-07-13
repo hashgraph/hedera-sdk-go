@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Create a new token. After the token is created, the Token ID for it is in the receipt.
@@ -25,14 +24,14 @@ import (
 // updated. If a token is created as immutable, anyone is able to extend the expiry time by paying the fee.
 type TokenCreateTransaction struct {
 	Transaction
-	pb                 *proto.TokenCreateTransactionBody
+	pb                 *services.TokenCreateTransactionBody
 	treasuryAccountID  AccountID
 	autoRenewAccountID AccountID
 	customFees         []CustomFee
 }
 
 func NewTokenCreateTransaction() *TokenCreateTransaction {
-	pb := &proto.TokenCreateTransactionBody{}
+	pb := &services.TokenCreateTransactionBody{}
 
 	transaction := TokenCreateTransaction{
 		pb:          pb,
@@ -46,7 +45,7 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	return &transaction
 }
 
-func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
+func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenCreateTransaction {
 	return TokenCreateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetTokenCreation(),
@@ -101,7 +100,7 @@ func (transaction *TokenCreateTransaction) GetDecimals() uint {
 
 func (transaction *TokenCreateTransaction) SetTokenType(t TokenType) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.TokenType = proto.TokenType(t)
+	transaction.pb.TokenType = services.TokenType(t)
 	return transaction
 }
 
@@ -111,7 +110,7 @@ func (transaction *TokenCreateTransaction) GetTokenType() TokenType {
 
 func (transaction *TokenCreateTransaction) SetSupplyType(t TokenSupplyType) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.SupplyType = proto.TokenSupplyType(t)
+	transaction.pb.SupplyType = services.TokenSupplyType(t)
 	return transaction
 }
 
@@ -280,7 +279,7 @@ func (transaction *TokenCreateTransaction) build() *TokenCreateTransaction {
 	if len(transaction.customFees) > 0 {
 		for _, customFee := range transaction.customFees {
 			if transaction.pb.CustomFees == nil {
-				transaction.pb.CustomFees = make([]*proto.CustomFee, 0)
+				transaction.pb.CustomFees = make([]*services.CustomFee, 0)
 			}
 			transaction.pb.CustomFees = append(transaction.pb.CustomFees, customFee.toProtobuf())
 		}
@@ -300,13 +299,13 @@ func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenCreation{
-			TokenCreation: &proto.TokenCreateTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenCreation{
+			TokenCreation: &services.TokenCreateTransactionBody{
 				Name:             transaction.pb.GetName(),
 				Symbol:           transaction.pb.GetSymbol(),
 				Decimals:         transaction.pb.GetDecimals(),
@@ -531,9 +530,9 @@ func (transaction *TokenCreateTransaction) Execute(
 }
 
 func (transaction *TokenCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenCreation{
+	pbBody.Data = &services.TransactionBody_TokenCreation{
 		TokenCreation: transaction.pb,
 	}
 

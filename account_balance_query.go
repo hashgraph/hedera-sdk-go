@@ -1,14 +1,14 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller
 // and faster reply than AccountInfoQuery, which returns the balance plus additional information.
 type AccountBalanceQuery struct {
 	Query
-	pb         *proto.CryptoGetAccountBalanceQuery
+	pb         *services.CryptoGetAccountBalanceQuery
 	accountID  AccountID
 	contractID ContractID
 }
@@ -18,10 +18,10 @@ type AccountBalanceQuery struct {
 // It is recommended that you use this for creating new instances of an AccountBalanceQuery
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(false, &header)
-	pb := proto.CryptoGetAccountBalanceQuery{Header: &header}
-	query.pb.Query = &proto.Query_CryptogetAccountBalance{
+	pb := services.CryptoGetAccountBalanceQuery{Header: &header}
+	query.pb.Query = &services.Query_CryptogetAccountBalance{
 		CryptogetAccountBalance: &pb,
 	}
 
@@ -75,13 +75,13 @@ func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 
 func (query *AccountBalanceQuery) build() *AccountBalanceQuery {
 	if !query.accountID.isZero() {
-		query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
+		query.pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_AccountID{
 			AccountID: query.accountID.toProtobuf(),
 		}
 	}
 
 	if !query.contractID.isZero() {
-		query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
+		query.pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_ContractID{
 			ContractID: query.contractID.toProtobuf(),
 		}
 	}
@@ -100,7 +100,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

@@ -1,23 +1,23 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // FileContentsQuery retrieves the contents of a file.
 type FileContentsQuery struct {
 	Query
-	pb     *proto.FileGetContentsQuery
+	pb     *services.FileGetContentsQuery
 	fileID FileID
 }
 
 // NewFileContentsQuery creates a FileContentsQuery query which can be used to construct and execute a
 // File Get Contents Query.
 func NewFileContentsQuery() *FileContentsQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := proto.FileGetContentsQuery{Header: &header}
-	query.pb.Query = &proto.Query_FileGetContents{
+	pb := services.FileGetContentsQuery{Header: &header}
+	query.pb.Query = &services.Query_FileGetContents{
 		FileGetContents: &pb,
 	}
 
@@ -66,7 +66,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

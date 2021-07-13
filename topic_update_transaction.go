@@ -2,15 +2,14 @@ package hedera
 
 import (
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // *TopicUpdateTransaction updates all fields on a Topic that are set in the transaction.
 type TopicUpdateTransaction struct {
 	Transaction
-	pb                 *proto.ConsensusUpdateTopicTransactionBody
+	pb                 *services.ConsensusUpdateTopicTransactionBody
 	topicID            TopicID
 	autoRenewAccountID AccountID
 }
@@ -18,7 +17,7 @@ type TopicUpdateTransaction struct {
 // NewTopicUpdateTransaction creates a *TopicUpdateTransaction transaction which can be
 // used to construct and execute a  Update Topic Transaction.
 func NewTopicUpdateTransaction() *TopicUpdateTransaction {
-	pb := &proto.ConsensusUpdateTopicTransactionBody{}
+	pb := &services.ConsensusUpdateTopicTransactionBody{}
 
 	transaction := TopicUpdateTransaction{
 		pb:          pb,
@@ -31,7 +30,7 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	return &transaction
 }
 
-func topicUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicUpdateTransaction {
+func topicUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TopicUpdateTransaction {
 	return TopicUpdateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetConsensusUpdateTopic(),
@@ -144,7 +143,7 @@ func (transaction *TopicUpdateTransaction) ClearSubmitKey() *TopicUpdateTransact
 
 // ClearAutoRenewAccountID explicitly clears any auto renew account ID on the topic by sending an empty accountID
 func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdateTransaction {
-	transaction.pb.AutoRenewAccount = &proto.AccountID{}
+	transaction.pb.AutoRenewAccount = &services.AccountID{}
 
 	return transaction
 }
@@ -186,13 +185,13 @@ func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TopicUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ConsensusUpdateTopic{
-			ConsensusUpdateTopic: &proto.ConsensusUpdateTopicTransactionBody{
+		Data: &services.SchedulableTransactionBody_ConsensusUpdateTopic{
+			ConsensusUpdateTopic: &services.ConsensusUpdateTopicTransactionBody{
 				TopicID:          transaction.pb.GetTopicID(),
 				Memo:             transaction.pb.GetMemo(),
 				ExpirationTime:   transaction.pb.GetExpirationTime(),
@@ -324,9 +323,9 @@ func (transaction *TopicUpdateTransaction) Execute(
 }
 
 func (transaction *TopicUpdateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ConsensusUpdateTopic{
+	pbBody.Data = &services.TransactionBody_ConsensusUpdateTopic{
 		ConsensusUpdateTopic: transaction.pb,
 	}
 

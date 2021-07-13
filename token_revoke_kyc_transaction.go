@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Revokes KYC to the account for the given token. Must be signed by the Token's kycKey.
@@ -17,13 +16,13 @@ import (
 // Once executed the Account is marked as KYC Revoked
 type TokenRevokeKycTransaction struct {
 	Transaction
-	pb        *proto.TokenRevokeKycTransactionBody
+	pb        *services.TokenRevokeKycTransactionBody
 	tokenID   TokenID
 	accountID AccountID
 }
 
 func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
-	pb := &proto.TokenRevokeKycTransactionBody{}
+	pb := &services.TokenRevokeKycTransactionBody{}
 
 	transaction := TokenRevokeKycTransaction{
 		pb:          pb,
@@ -34,7 +33,7 @@ func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 	return &transaction
 }
 
-func tokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenRevokeKycTransaction {
+func tokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenRevokeKycTransaction {
 	return TokenRevokeKycTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenRevokeKyc(),
@@ -102,13 +101,13 @@ func (transaction *TokenRevokeKycTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenRevokeKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenRevokeKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenRevokeKyc{
-			TokenRevokeKyc: &proto.TokenRevokeKycTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenRevokeKyc{
+			TokenRevokeKyc: &services.TokenRevokeKycTransactionBody{
 				Token:   transaction.pb.GetToken(),
 				Account: transaction.pb.GetAccount(),
 			},
@@ -235,9 +234,9 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 }
 
 func (transaction *TokenRevokeKycTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenRevokeKyc{
+	pbBody.Data = &services.TransactionBody_TokenRevokeKyc{
 		TokenRevokeKyc: transaction.pb,
 	}
 

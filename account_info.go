@@ -1,10 +1,10 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // AccountInfo is info about the account returned from an AccountInfoQuery
@@ -27,7 +27,7 @@ type AccountInfo struct {
 	OwnedNfts                      int64
 }
 
-func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networkName *NetworkName) (AccountInfo, error) {
+func accountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo, networkName *NetworkName) (AccountInfo, error) {
 	if pb == nil {
 		return AccountInfo{}, errParameterNull
 	}
@@ -83,23 +83,23 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networ
 	}, nil
 }
 
-func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
+func (info AccountInfo) toProtobuf() *services.CryptoGetInfoResponse_AccountInfo {
 
-	tokenRelationship := make([]*proto.TokenRelationship, len(info.TokenRelationships))
+	tokenRelationship := make([]*services.TokenRelationship, len(info.TokenRelationships))
 
 	for i, relationship := range info.TokenRelationships {
 		singleRelationship := relationship.toProtobuf()
 		tokenRelationship[i] = singleRelationship
 	}
 
-	liveHashes := make([]*proto.LiveHash, len(info.LiveHashes))
+	liveHashes := make([]*services.LiveHash, len(info.LiveHashes))
 
 	for i, liveHash := range info.LiveHashes {
 		singleRelationship := liveHash.toProtobuf()
 		liveHashes[i] = singleRelationship
 	}
 
-	return &proto.CryptoGetInfoResponse_AccountInfo{
+	return &services.CryptoGetInfoResponse_AccountInfo{
 		AccountID:                      info.AccountID.toProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
 		Deleted:                        info.IsDeleted,
@@ -132,7 +132,7 @@ func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
 	if data == nil {
 		return AccountInfo{}, errByteArrayNull
 	}
-	pb := proto.CryptoGetInfoResponse_AccountInfo{}
+	pb := services.CryptoGetInfoResponse_AccountInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return AccountInfo{}, err

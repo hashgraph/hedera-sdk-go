@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractID is the ID for a Hedera smart contract
@@ -89,15 +89,15 @@ func (id ContractID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.Contract)
 }
 
-func (id ContractID) toProtobuf() *proto.ContractID {
-	return &proto.ContractID{
+func (id ContractID) toProtobuf() *services.ContractID {
+	return &services.ContractID{
 		ShardNum:    int64(id.Shard),
 		RealmNum:    int64(id.Realm),
 		ContractNum: int64(id.Contract),
 	}
 }
 
-func contractIDFromProtobuf(contractID *proto.ContractID, networkName *NetworkName) ContractID {
+func contractIDFromProtobuf(contractID *services.ContractID, networkName *NetworkName) ContractID {
 	if contractID == nil {
 		return ContractID{}
 	}
@@ -119,8 +119,8 @@ func (id ContractID) isZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Contract == 0
 }
 
-func (id ContractID) toProtoKey() *proto.Key {
-	return &proto.Key{Key: &proto.Key_ContractID{ContractID: id.toProtobuf()}}
+func (id ContractID) toProtoKey() *services.Key {
+	return &services.Key{Key: &services.Key_ContractID{ContractID: id.toProtobuf()}}
 }
 
 func (id ContractID) ToBytes() []byte {
@@ -133,7 +133,7 @@ func (id ContractID) ToBytes() []byte {
 }
 
 func ContractIDFromBytes(data []byte) (ContractID, error) {
-	pb := proto.ContractID{}
+	pb := services.ContractID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return ContractID{}, err

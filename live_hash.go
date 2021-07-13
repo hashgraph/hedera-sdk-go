@@ -2,7 +2,7 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
@@ -23,18 +23,18 @@ func newLiveHash(accountId AccountID, hash []byte, keys KeyList, duration time.T
 	}
 }
 
-func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
-	return &proto.LiveHash{
+func (liveHash *LiveHash) toProtobuf() *services.LiveHash {
+	return &services.LiveHash{
 		AccountId: liveHash.AccountID.toProtobuf(),
 		Hash:      liveHash.Hash,
 		Keys:      liveHash.Keys.toProtoKeyList(),
-		Duration: &proto.Duration{
+		Duration: &services.Duration{
 			Seconds: int64(liveHash.Duration.Second()),
 		},
 	}
 }
 
-func liveHashFromProtobuf(hash *proto.LiveHash, networkName *NetworkName) (LiveHash, error) {
+func liveHashFromProtobuf(hash *services.LiveHash, networkName *NetworkName) (LiveHash, error) {
 	if hash == nil {
 		return LiveHash{}, errParameterNull
 	}
@@ -66,7 +66,7 @@ func LiveHashFromBytes(data []byte) (LiveHash, error) {
 	if data == nil {
 		return LiveHash{}, errByteArrayNull
 	}
-	pb := proto.LiveHash{}
+	pb := services.LiveHash{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return LiveHash{}, err

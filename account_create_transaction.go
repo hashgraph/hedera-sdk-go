@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // AccountCreateTransaction creates a new account. After the account is created, the AccountID for it is in the receipt,
@@ -16,14 +15,14 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
 	Transaction
-	pb             *proto.CryptoCreateTransactionBody
+	pb             *services.CryptoCreateTransactionBody
 	proxyAccountID AccountID
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
 // execute a Crypto Create Transaction.
 func NewAccountCreateTransaction() *AccountCreateTransaction {
-	pb := &proto.CryptoCreateTransactionBody{}
+	pb := &services.CryptoCreateTransactionBody{}
 
 	transaction := AccountCreateTransaction{
 		pb:          pb,
@@ -42,7 +41,7 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	return &transaction
 }
 
-func accountCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountCreateTransaction {
+func accountCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) AccountCreateTransaction {
 	return AccountCreateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetCryptoCreateAccount(),
@@ -178,13 +177,13 @@ func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_CryptoCreateAccount{
-			CryptoCreateAccount: &proto.CryptoCreateTransactionBody{
+		Data: &services.SchedulableTransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: &services.CryptoCreateTransactionBody{
 				Key:                    transaction.pb.GetKey(),
 				InitialBalance:         transaction.pb.GetInitialBalance(),
 				ProxyAccountID:         transaction.pb.GetProxyAccountID(),
@@ -320,9 +319,9 @@ func (transaction *AccountCreateTransaction) Execute(
 }
 
 func (transaction *AccountCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{
+	pbBody.Data = &services.TransactionBody_CryptoCreateAccount{
 		CryptoCreateAccount: transaction.pb,
 	}
 

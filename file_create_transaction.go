@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // FileCreateTransaction creates a new file, containing the given contents.  It is referenced by its FileID, and does
@@ -17,13 +16,13 @@ import (
 // a null key. Future versions of the API will support multiple realms and multiple shards.
 type FileCreateTransaction struct {
 	Transaction
-	pb *proto.FileCreateTransactionBody
+	pb *services.FileCreateTransactionBody
 }
 
 // NewFileCreateTransaction creates a FileCreateTransaction transaction which can be
 // used to construct and execute a File Create Transaction.
 func NewFileCreateTransaction() *FileCreateTransaction {
-	pb := &proto.FileCreateTransactionBody{}
+	pb := &services.FileCreateTransactionBody{}
 
 	transaction := FileCreateTransaction{
 		pb:          pb,
@@ -36,7 +35,7 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	return &transaction
 }
 
-func fileCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileCreateTransaction {
+func fileCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileCreateTransaction {
 	return FileCreateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileCreate(),
@@ -56,7 +55,7 @@ func fileCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransaction {
 	transaction.requireNotFrozen()
 	if transaction.pb.Keys == nil {
-		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+		transaction.pb.Keys = &services.KeyList{Keys: []*services.Key{}}
 	}
 	keyList := NewKeyList()
 	keyList.AddAll(keys)
@@ -118,12 +117,12 @@ func (transaction *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	return &proto.SchedulableTransactionBody{
+func (transaction *FileCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_FileCreate{
-			FileCreate: &proto.FileCreateTransactionBody{
+		Data: &services.SchedulableTransactionBody_FileCreate{
+			FileCreate: &services.FileCreateTransactionBody{
 				ExpirationTime:   transaction.pb.GetExpirationTime(),
 				Keys:             transaction.pb.GetKeys(),
 				Contents:         transaction.pb.GetContents(),
@@ -254,9 +253,9 @@ func (transaction *FileCreateTransaction) Execute(
 }
 
 func (transaction *FileCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_FileCreate{
+	pbBody.Data = &services.TransactionBody_FileCreate{
 		FileCreate: transaction.pb,
 	}
 

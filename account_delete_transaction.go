@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
@@ -15,12 +15,12 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountDeleteTransaction struct {
 	Transaction
-	pb                *proto.CryptoDeleteTransactionBody
+	pb                *services.CryptoDeleteTransactionBody
 	transferAccountID AccountID
 	deleteAccountID   AccountID
 }
 
-func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
+func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) AccountDeleteTransaction {
 	return AccountDeleteTransaction{
 		Transaction:       transaction,
 		pb:                pb.GetCryptoDelete(),
@@ -30,7 +30,7 @@ func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 }
 
 func NewAccountDeleteTransaction() *AccountDeleteTransaction {
-	pb := &proto.CryptoDeleteTransactionBody{}
+	pb := &services.CryptoDeleteTransactionBody{}
 
 	transaction := AccountDeleteTransaction{
 		pb:          pb,
@@ -101,13 +101,13 @@ func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_CryptoDelete{
-			CryptoDelete: &proto.CryptoDeleteTransactionBody{
+		Data: &services.SchedulableTransactionBody_CryptoDelete{
+			CryptoDelete: &services.CryptoDeleteTransactionBody{
 				TransferAccountID: transaction.pb.GetTransferAccountID(),
 				DeleteAccountID:   transaction.pb.GetDeleteAccountID(),
 			},
@@ -235,9 +235,9 @@ func (transaction *AccountDeleteTransaction) Execute(
 }
 
 func (transaction *AccountDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoDelete{
+	pbBody.Data = &services.TransactionBody_CryptoDelete{
 		CryptoDelete: transaction.pb,
 	}
 

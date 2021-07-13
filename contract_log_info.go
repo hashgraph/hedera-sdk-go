@@ -1,6 +1,6 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import "github.com/hashgraph/hedera-protobufs-go/services"
 
 // ContractLogInfo is the log info for events returned by a function
 type ContractLogInfo struct {
@@ -10,7 +10,7 @@ type ContractLogInfo struct {
 	Data       []byte
 }
 
-func contractLogInfoFromProtobuf(pb *proto.ContractLoginfo, networkName *NetworkName) ContractLogInfo {
+func contractLogInfoFromProtobuf(pb *services.ContractLoginfo, networkName *NetworkName) ContractLogInfo {
 	if pb == nil {
 		return ContractLogInfo{}
 	}
@@ -22,8 +22,8 @@ func contractLogInfoFromProtobuf(pb *proto.ContractLoginfo, networkName *Network
 	}
 }
 
-func (logInfo ContractLogInfo) toProtobuf() *proto.ContractLoginfo {
-	return &proto.ContractLoginfo{
+func (logInfo ContractLogInfo) toProtobuf() *services.ContractLoginfo {
+	return &services.ContractLoginfo{
 		ContractID: logInfo.ContractID.toProtobuf(),
 		Bloom:      logInfo.Bloom,
 		Topic:      logInfo.Topics,

@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type FeeData struct {
@@ -20,7 +20,7 @@ func newFeeData() FeeData {
 	}
 }
 
-func feeDataFromProtobuf(feeData *proto.FeeData) (FeeData, error) {
+func feeDataFromProtobuf(feeData *services.FeeData) (FeeData, error) {
 	if feeData == nil {
 		return FeeData{}, errParameterNull
 	}
@@ -47,23 +47,23 @@ func feeDataFromProtobuf(feeData *proto.FeeData) (FeeData, error) {
 	}, nil
 }
 
-func (feeData FeeData) toProtobuf() *proto.FeeData {
-	var nodeData *proto.FeeComponents
+func (feeData FeeData) toProtobuf() *services.FeeData {
+	var nodeData *services.FeeComponents
 	if feeData.NodeData != nil {
 		nodeData = feeData.NodeData.toProtobuf()
 	}
 
-	var networkData *proto.FeeComponents
+	var networkData *services.FeeComponents
 	if feeData.NetworkData != nil {
 		networkData = feeData.NetworkData.toProtobuf()
 	}
 
-	var serviceData *proto.FeeComponents
+	var serviceData *services.FeeComponents
 	if feeData.ServiceData != nil {
 		serviceData = feeData.ServiceData.toProtobuf()
 	}
 
-	return &proto.FeeData{
+	return &services.FeeData{
 		Nodedata:    nodeData,
 		Networkdata: networkData,
 		Servicedata: serviceData,
@@ -83,7 +83,7 @@ func FeeDataFromBytes(data []byte) (FeeData, error) {
 	if data == nil {
 		return FeeData{}, errByteArrayNull
 	}
-	pb := proto.FeeData{}
+	pb := services.FeeData{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FeeData{}, err
