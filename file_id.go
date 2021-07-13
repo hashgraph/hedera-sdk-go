@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // A FileID is the ID for a file on the network.
@@ -106,15 +106,15 @@ func (id FileID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.File)
 }
 
-func (id FileID) toProtobuf() *proto.FileID {
-	return &proto.FileID{
+func (id FileID) toProtobuf() *services.FileID {
+	return &services.FileID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
 		FileNum:  int64(id.File),
 	}
 }
 
-func fileIDFromProtobuf(fileID *proto.FileID, networkName *NetworkName) FileID {
+func fileIDFromProtobuf(fileID *services.FileID, networkName *NetworkName) FileID {
 	if fileID == nil {
 		return FileID{}
 	}
@@ -145,7 +145,7 @@ func FileIDFromBytes(data []byte) (FileID, error) {
 	if data == nil {
 		return FileID{}, errByteArrayNull
 	}
-	pb := proto.FileID{}
+	pb := services.FileID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FileID{}, err

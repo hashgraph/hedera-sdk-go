@@ -1,20 +1,20 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type FileInfoQuery struct {
 	Query
-	pb     *proto.FileGetInfoQuery
+	pb     *services.FileGetInfoQuery
 	fileID FileID
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := proto.FileGetInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_FileGetInfo{
+	pb := services.FileGetInfoQuery{Header: &header}
+	query.pb.Query = &services.Query_FileGetInfo{
 		FileGetInfo: &pb,
 	}
 
@@ -62,7 +62,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

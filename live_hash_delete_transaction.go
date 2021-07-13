@@ -2,19 +2,19 @@ package hedera
 
 import (
 	"errors"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
 
 type LiveHashDeleteTransaction struct {
 	Transaction
-	pb        *proto.CryptoDeleteLiveHashTransactionBody
+	pb        *services.CryptoDeleteLiveHashTransactionBody
 	accountID AccountID
 }
 
 func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
-	pb := &proto.CryptoDeleteLiveHashTransactionBody{}
+	pb := &services.CryptoDeleteLiveHashTransactionBody{}
 
 	transaction := LiveHashDeleteTransaction{
 		pb:          pb,
@@ -25,7 +25,7 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	return &transaction
 }
 
-func liveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) LiveHashDeleteTransaction {
+func liveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) LiveHashDeleteTransaction {
 	return LiveHashDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetCryptoDeleteLiveHash(),
@@ -71,7 +71,7 @@ func (transaction *LiveHashDeleteTransaction) build() *LiveHashDeleteTransaction
 	return transaction
 }
 
-func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
@@ -194,9 +194,9 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 }
 
 func (transaction *LiveHashDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoDeleteLiveHash{
+	pbBody.Data = &services.TransactionBody_CryptoDeleteLiveHash{
 		CryptoDeleteLiveHash: transaction.pb,
 	}
 

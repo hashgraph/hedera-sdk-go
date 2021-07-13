@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionFeeSchedule struct {
@@ -18,7 +18,7 @@ func newTransactionFeeSchedule() TransactionFeeSchedule {
 	}
 }
 
-func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSchedule) (TransactionFeeSchedule, error) {
+func transactionFeeScheduleFromProtobuf(txFeeSchedule *services.TransactionFeeSchedule) (TransactionFeeSchedule, error) {
 	if txFeeSchedule == nil {
 		return TransactionFeeSchedule{}, errParameterNull
 	}
@@ -34,14 +34,14 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 	}, nil
 }
 
-func (txFeeSchedule TransactionFeeSchedule) toProtobuf() *proto.TransactionFeeSchedule {
-	var feeData *proto.FeeData
+func (txFeeSchedule TransactionFeeSchedule) toProtobuf() *services.TransactionFeeSchedule {
+	var feeData *services.FeeData
 	if txFeeSchedule.FeeData != nil {
 		feeData = txFeeSchedule.FeeData.toProtobuf()
 	}
 
-	return &proto.TransactionFeeSchedule{
-		HederaFunctionality: proto.HederaFunctionality(txFeeSchedule.RequestType),
+	return &services.TransactionFeeSchedule{
+		HederaFunctionality: services.HederaFunctionality(txFeeSchedule.RequestType),
 		FeeData:             feeData,
 	}
 }
@@ -59,7 +59,7 @@ func transactionFeeScheduleFromBytes(data []byte) (TransactionFeeSchedule, error
 	if data == nil {
 		return TransactionFeeSchedule{}, errByteArrayNull
 	}
-	pb := proto.TransactionFeeSchedule{}
+	pb := services.TransactionFeeSchedule{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionFeeSchedule{}, err

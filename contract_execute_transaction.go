@@ -1,8 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
@@ -15,14 +14,14 @@ import (
 // For a cheaper but more limited method to call functions, see ContractCallQuery.
 type ContractExecuteTransaction struct {
 	Transaction
-	pb         *proto.ContractCallTransactionBody
+	pb         *services.ContractCallTransactionBody
 	contractID ContractID
 }
 
 // NewContractExecuteTransaction creates a ContractExecuteTransaction transaction which can be
 // used to construct and execute a Contract Call Transaction.
 func NewContractExecuteTransaction() *ContractExecuteTransaction {
-	pb := &proto.ContractCallTransactionBody{}
+	pb := &services.ContractCallTransactionBody{}
 
 	transaction := ContractExecuteTransaction{
 		pb:          pb,
@@ -33,7 +32,7 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	return &transaction
 }
 
-func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractExecuteTransaction {
+func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractExecuteTransaction {
 	return ContractExecuteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetContractCall(),
@@ -125,13 +124,13 @@ func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransa
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ContractCall{
-			ContractCall: &proto.ContractCallTransactionBody{
+		Data: &services.SchedulableTransactionBody_ContractCall{
+			ContractCall: &services.ContractCallTransactionBody{
 				ContractID:         transaction.pb.GetContractID(),
 				Gas:                transaction.pb.GetGas(),
 				Amount:             transaction.pb.GetAmount(),
@@ -260,9 +259,9 @@ func (transaction *ContractExecuteTransaction) Execute(
 }
 
 func (transaction *ContractExecuteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ContractCall{
+	pbBody.Data = &services.TransactionBody_ContractCall{
 		ContractCall: transaction.pb,
 	}
 

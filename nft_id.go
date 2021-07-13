@@ -3,7 +3,8 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"strconv"
 	"strings"
 )
@@ -60,14 +61,14 @@ func (id NftID) String() string {
 	return fmt.Sprintf("%d@%s", id.SerialNumber, id.TokenID.String())
 }
 
-func (id NftID) toProtobuf() *proto.NftID {
-	return &proto.NftID{
+func (id NftID) toProtobuf() *services.NftID {
+	return &services.NftID{
 		TokenID:      id.TokenID.toProtobuf(),
 		SerialNumber: id.SerialNumber,
 	}
 }
 
-func nftIDFromProtobuf(pb *proto.NftID, networkName *NetworkName) NftID {
+func nftIDFromProtobuf(pb *services.NftID, networkName *NetworkName) NftID {
 	if pb == nil {
 		return NftID{}
 	}
@@ -91,7 +92,7 @@ func (id NftID) ToBytes() []byte {
 }
 
 func NftIDFromBytes(data []byte) (NftID, error) {
-	pb := proto.NftID{}
+	pb := services.NftID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return NftID{}, err

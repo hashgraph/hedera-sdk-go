@@ -3,13 +3,12 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // TransactionID is the id used to identify a Transaction on the Hedera network. It consists of an AccountID and a
@@ -64,7 +63,7 @@ func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 
 // String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos` format
 func (id TransactionID) String() string {
-	var pb *proto.Timestamp
+	var pb *services.Timestamp
 	var returnString string
 	if id.AccountID != nil && id.ValidStart != nil {
 		pb = timeToProtobuf(*id.ValidStart)
@@ -123,25 +122,25 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 	}, nil
 }
 
-func (id TransactionID) toProtobuf() *proto.TransactionID {
-	var validStart *proto.Timestamp
+func (id TransactionID) toProtobuf() *services.TransactionID {
+	var validStart *services.Timestamp
 	if id.ValidStart != nil {
 		validStart = timeToProtobuf(*id.ValidStart)
 	}
 
-	var accountID *proto.AccountID
+	var accountID *services.AccountID
 	if id.AccountID != nil {
 		accountID = id.AccountID.toProtobuf()
 	}
 
-	return &proto.TransactionID{
+	return &services.TransactionID{
 		TransactionValidStart: validStart,
 		AccountID:             accountID,
 		Scheduled:             id.scheduled,
 	}
 }
 
-func transactionIDFromProtobuf(pb *proto.TransactionID, networkName *NetworkName) TransactionID {
+func transactionIDFromProtobuf(pb *services.TransactionID, networkName *NetworkName) TransactionID {
 	if pb == nil {
 		return TransactionID{}
 	}
@@ -171,7 +170,7 @@ func TransactionIDFromBytes(data []byte) (TransactionID, error) {
 	if data == nil {
 		return TransactionID{}, errByteArrayNull
 	}
-	pb := proto.TransactionID{}
+	pb := services.TransactionID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionID{}, err

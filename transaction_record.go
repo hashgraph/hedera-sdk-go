@@ -2,11 +2,10 @@ package hedera
 
 import (
 	"fmt"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 
 	protobuf "github.com/golang/protobuf/proto"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TransactionRecord struct {
@@ -63,7 +62,7 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 	return *record.CallResult, nil
 }
 
-func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *NetworkName) TransactionRecord {
+func transactionRecordFromProtobuf(pb *services.TransactionRecord, networkName *NetworkName) TransactionRecord {
 	if pb == nil {
 		return TransactionRecord{}
 	}
@@ -120,56 +119,56 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 	return txRecord
 }
 
-func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
-	var ammounts = make([]*proto.AccountAmount, 0)
+func (record TransactionRecord) toProtobuf() (*services.TransactionRecord, error) {
+	var ammounts = make([]*services.AccountAmount, 0)
 	for _, ammount := range record.Transfers {
-		ammounts = append(ammounts, &proto.AccountAmount{
+		ammounts = append(ammounts, &services.AccountAmount{
 			AccountID: ammount.AccountID.toProtobuf(),
 			Amount:    ammount.Amount.tinybar,
 		})
 	}
 
-	var transferList = proto.TransferList{
+	var transferList = services.TransferList{
 		AccountAmounts: ammounts,
 	}
 
-	var tokenTransfers = make([]*proto.TokenTransferList, 0)
+	var tokenTransfers = make([]*services.TokenTransferList, 0)
 
 	for tokenID, tokenTransfer := range record.TokenTransfers {
-		tokenTemp := make([]*proto.AccountAmount, 0)
+		tokenTemp := make([]*services.AccountAmount, 0)
 
 		for _, accountAmount := range tokenTransfer {
 			tokenTemp = append(tokenTemp, accountAmount.toProtobuf())
 		}
 
-		tokenTransfers = append(tokenTransfers, &proto.TokenTransferList{
+		tokenTransfers = append(tokenTransfers, &services.TokenTransferList{
 			Token:     tokenID.toProtobuf(),
 			Transfers: tokenTemp,
 		})
 	}
 
 	for tokenID, nftTransfers := range record.NftTransfers {
-		nftTemp := make([]*proto.NftTransfer, 0)
+		nftTemp := make([]*services.NftTransfer, 0)
 
 		for _, nftTransfer := range nftTransfers {
 			nftTemp = append(nftTemp, nftTransfer.toProtobuf())
 		}
 
-		tokenTransfers = append(tokenTransfers, &proto.TokenTransferList{
+		tokenTransfers = append(tokenTransfers, &services.TokenTransferList{
 			Token:        tokenID.toProtobuf(),
 			NftTransfers: nftTemp,
 		})
 	}
 
-	assessedCustomFees := make([]*proto.AssessedCustomFee, 0)
+	assessedCustomFees := make([]*services.AssessedCustomFee, 0)
 	for _, fee := range record.AssessedCustomFees {
 		assessedCustomFees = append(assessedCustomFees, fee.toProtobuf())
 	}
 
-	var tRecord = proto.TransactionRecord{
+	var tRecord = services.TransactionRecord{
 		Receipt:         record.Receipt.toProtobuf(),
 		TransactionHash: record.TransactionHash,
-		ConsensusTimestamp: &proto.Timestamp{
+		ConsensusTimestamp: &services.Timestamp{
 			Seconds: int64(record.ConsensusTimestamp.Second()),
 			Nanos:   int32(record.ConsensusTimestamp.Nanosecond()),
 		},
@@ -189,7 +188,7 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 			return nil, err
 		}
 
-		tRecord.Body = &proto.TransactionRecord_ContractCreateResult{
+		tRecord.Body = &services.TransactionRecord_ContractCreateResult{
 			ContractCreateResult: choice.toProtobuf(),
 		}
 	} else {
@@ -199,7 +198,7 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 			return nil, err
 		}
 
-		tRecord.Body = &proto.TransactionRecord_ContractCallResult{
+		tRecord.Body = &services.TransactionRecord_ContractCallResult{
 			ContractCallResult: choice.toProtobuf(),
 		}
 	}
@@ -224,7 +223,7 @@ func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
 	if data == nil {
 		return TransactionRecord{}, errByteArrayNull
 	}
-	pb := proto.TransactionRecord{}
+	pb := services.TransactionRecord{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionRecord{}, err

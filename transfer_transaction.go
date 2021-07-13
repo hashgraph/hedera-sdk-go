@@ -1,23 +1,22 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TransferTransaction struct {
 	Transaction
-	pb             *proto.CryptoTransferTransactionBody
+	pb             *services.CryptoTransferTransactionBody
 	tokenTransfers map[TokenID]map[AccountID]int64
 	hbarTransfers  map[AccountID]Hbar
 	nftTransfers   map[TokenID][]TokenNftTransfer
 }
 
 func NewTransferTransaction() *TransferTransaction {
-	pb := &proto.CryptoTransferTransactionBody{
-		Transfers: &proto.TransferList{
-			AccountAmounts: []*proto.AccountAmount{},
+	pb := &services.CryptoTransferTransactionBody{
+		Transfers: &services.TransferList{
+			AccountAmounts: []*services.AccountAmount{},
 		},
 	}
 
@@ -33,7 +32,7 @@ func NewTransferTransaction() *TransferTransaction {
 	return &transaction
 }
 
-func transferTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TransferTransaction {
+func transferTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TransferTransaction {
 	hbarTransfers := make(map[AccountID]Hbar)
 	tokenTransfers := make(map[TokenID]map[AccountID]int64)
 
@@ -208,15 +207,15 @@ func (transaction *TransferTransaction) Schedule() (*ScheduleCreateTransaction, 
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TransferTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.buildHbarTransfers()
 	transaction.buildTokenTransfers()
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_CryptoTransfer{
-			CryptoTransfer: &proto.CryptoTransferTransactionBody{
+		Data: &services.SchedulableTransactionBody_CryptoTransfer{
+			CryptoTransfer: &services.CryptoTransferTransactionBody{
 				Transfers:      transaction.pb.GetTransfers(),
 				TokenTransfers: transaction.pb.GetTokenTransfers(),
 			},
@@ -347,9 +346,9 @@ func (transaction *TransferTransaction) Execute(
 }
 
 func (transaction *TransferTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoTransfer{
+	pbBody.Data = &services.TransactionBody_CryptoTransfer{
 		CryptoTransfer: transaction.pb,
 	}
 
@@ -357,9 +356,9 @@ func (transaction *TransferTransaction) onFreeze(
 }
 
 func (transaction *TransferTransaction) buildHbarTransfers() {
-	transaction.pb.Transfers.AccountAmounts = make([]*proto.AccountAmount, 0)
+	transaction.pb.Transfers.AccountAmounts = make([]*services.AccountAmount, 0)
 	for accountID, amount := range transaction.hbarTransfers {
-		transaction.pb.Transfers.AccountAmounts = append(transaction.pb.Transfers.AccountAmounts, &proto.AccountAmount{
+		transaction.pb.Transfers.AccountAmounts = append(transaction.pb.Transfers.AccountAmounts, &services.AccountAmount{
 			AccountID: accountID.toProtobuf(),
 			Amount:    amount.AsTinybar(),
 		})
@@ -368,20 +367,20 @@ func (transaction *TransferTransaction) buildHbarTransfers() {
 
 func (transaction *TransferTransaction) buildTokenTransfers() {
 	if transaction.pb.TokenTransfers == nil {
-		transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
+		transaction.pb.TokenTransfers = make([]*services.TokenTransferList, 0)
 	}
 
 	for tokenID, tokenTransfers := range transaction.tokenTransfers {
-		transfers := make([]*proto.AccountAmount, 0)
+		transfers := make([]*services.AccountAmount, 0)
 
 		for accountID, amount := range tokenTransfers {
-			transfers = append(transfers, &proto.AccountAmount{
+			transfers = append(transfers, &services.AccountAmount{
 				AccountID: accountID.toProtobuf(),
 				Amount:    amount,
 			})
 		}
 
-		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
+		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &services.TokenTransferList{
 			Token:     tokenID.toProtobuf(),
 			Transfers: transfers,
 		})
@@ -390,17 +389,17 @@ func (transaction *TransferTransaction) buildTokenTransfers() {
 
 func (transaction *TransferTransaction) buildNftTransfers() {
 	if transaction.pb.TokenTransfers == nil {
-		transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
+		transaction.pb.TokenTransfers = make([]*services.TokenTransferList, 0)
 	}
 
 	for tokenID, nftTransfers := range transaction.nftTransfers {
-		transfers := make([]*proto.NftTransfer, 0)
+		transfers := make([]*services.NftTransfer, 0)
 
 		for _, nftTransfer := range nftTransfers {
 			transfers = append(transfers, nftTransfer.toProtobuf())
 		}
 
-		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
+		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &services.TokenTransferList{
 			Token:        tokenID.toProtobuf(),
 			NftTransfers: transfers,
 		})

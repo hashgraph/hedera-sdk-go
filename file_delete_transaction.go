@@ -1,19 +1,18 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
 type FileDeleteTransaction struct {
 	Transaction
-	pb     *proto.FileDeleteTransactionBody
+	pb     *services.FileDeleteTransactionBody
 	fileID FileID
 }
 
 func NewFileDeleteTransaction() *FileDeleteTransaction {
-	pb := &proto.FileDeleteTransactionBody{}
+	pb := &services.FileDeleteTransactionBody{}
 
 	transaction := FileDeleteTransaction{
 		pb:          pb,
@@ -24,7 +23,7 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 	return &transaction
 }
 
-func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileDeleteTransaction {
+func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileDeleteTransaction {
 	return FileDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileDelete(),
@@ -71,13 +70,13 @@ func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_FileDelete{
-			FileDelete: &proto.FileDeleteTransactionBody{
+		Data: &services.SchedulableTransactionBody_FileDelete{
+			FileDelete: &services.FileDeleteTransactionBody{
 				FileID: transaction.pb.GetFileID(),
 			},
 		},
@@ -203,9 +202,9 @@ func (transaction *FileDeleteTransaction) Execute(
 }
 
 func (transaction *FileDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_FileDelete{
+	pbBody.Data = &services.TransactionBody_FileDelete{
 		FileDelete: transaction.pb,
 	}
 

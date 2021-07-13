@@ -3,18 +3,18 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type ContractCreateTransaction struct {
 	Transaction
-	pb             *proto.ContractCreateTransactionBody
+	pb             *services.ContractCreateTransactionBody
 	byteCodeFileID FileID
 	proxyAccountID AccountID
 }
 
 func NewContractCreateTransaction() *ContractCreateTransaction {
-	pb := &proto.ContractCreateTransactionBody{}
+	pb := &services.ContractCreateTransactionBody{}
 
 	transaction := ContractCreateTransaction{
 		pb:          pb,
@@ -27,7 +27,7 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 	return &transaction
 }
 
-func contractCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractCreateTransaction {
+func contractCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractCreateTransaction {
 	return ContractCreateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetContractCreateInstance(),
@@ -182,13 +182,13 @@ func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ContractCreateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ContractCreateInstance{
-			ContractCreateInstance: &proto.ContractCreateTransactionBody{
+		Data: &services.SchedulableTransactionBody_ContractCreateInstance{
+			ContractCreateInstance: &services.ContractCreateTransactionBody{
 				FileID:                transaction.pb.GetFileID(),
 				AdminKey:              transaction.pb.GetAdminKey(),
 				Gas:                   transaction.pb.GetGas(),
@@ -324,9 +324,9 @@ func (transaction *ContractCreateTransaction) Execute(
 }
 
 func (transaction *ContractCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ContractCreateInstance{
+	pbBody.Data = &services.TransactionBody_ContractCreateInstance{
 		ContractCreateInstance: transaction.pb,
 	}
 

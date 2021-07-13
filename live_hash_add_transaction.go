@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 
 	"time"
@@ -9,12 +9,12 @@ import (
 
 type LiveHashAddTransaction struct {
 	Transaction
-	pb        *proto.CryptoAddLiveHashTransactionBody
+	pb        *services.CryptoAddLiveHashTransactionBody
 	accountID AccountID
 }
 
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
-	pb := &proto.CryptoAddLiveHashTransactionBody{LiveHash: &proto.LiveHash{}}
+	pb := &services.CryptoAddLiveHashTransactionBody{LiveHash: &services.LiveHash{}}
 
 	transaction := LiveHashAddTransaction{
 		pb:          pb,
@@ -25,7 +25,7 @@ func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	return &transaction
 }
 
-func liveHashAddTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) LiveHashAddTransaction {
+func liveHashAddTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) LiveHashAddTransaction {
 	return LiveHashAddTransaction{
 		Transaction: transaction,
 		pb:          pb.GetCryptoAddLiveHash(),
@@ -46,7 +46,7 @@ func (transaction *LiveHashAddTransaction) GetHash() []byte {
 func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
 	transaction.requireNotFrozen()
 	if transaction.pb.LiveHash.Keys == nil {
-		transaction.pb.LiveHash.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+		transaction.pb.LiveHash.Keys = &services.KeyList{Keys: []*services.Key{}}
 	}
 	keyList := NewKeyList()
 	keyList.AddAll(keys)
@@ -108,7 +108,7 @@ func (transaction *LiveHashAddTransaction) build() *LiveHashAddTransaction {
 	return transaction
 }
 
-func (transaction *LiveHashAddTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *LiveHashAddTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
@@ -231,9 +231,9 @@ func (transaction *LiveHashAddTransaction) Execute(
 }
 
 func (transaction *LiveHashAddTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoAddLiveHash{
+	pbBody.Data = &services.TransactionBody_CryptoAddLiveHash{
 		CryptoAddLiveHash: transaction.pb,
 	}
 

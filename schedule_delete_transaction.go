@@ -1,19 +1,18 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
 type ScheduleDeleteTransaction struct {
 	Transaction
-	pb         *proto.ScheduleDeleteTransactionBody
+	pb         *services.ScheduleDeleteTransactionBody
 	scheduleID ScheduleID
 }
 
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
-	pb := &proto.ScheduleDeleteTransactionBody{}
+	pb := &services.ScheduleDeleteTransactionBody{}
 
 	transaction := ScheduleDeleteTransaction{
 		pb:          pb,
@@ -24,7 +23,7 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	return &transaction
 }
 
-func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleDeleteTransaction {
+func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleDeleteTransaction {
 	return ScheduleDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetScheduleDelete(),
@@ -71,13 +70,13 @@ func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ScheduleDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ScheduleDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ScheduleDelete{
-			ScheduleDelete: &proto.ScheduleDeleteTransactionBody{
+		Data: &services.SchedulableTransactionBody_ScheduleDelete{
+			ScheduleDelete: &services.ScheduleDeleteTransactionBody{
 				ScheduleID: transaction.pb.GetScheduleID(),
 			},
 		},
@@ -203,9 +202,9 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 }
 
 func (transaction *ScheduleDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ScheduleDelete{
+	pbBody.Data = &services.TransactionBody_ScheduleDelete{
 		ScheduleDelete: transaction.pb,
 	}
 

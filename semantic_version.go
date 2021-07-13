@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type SemanticVersion struct {
@@ -22,7 +22,7 @@ func newSemanticVersion(major uint32, minor uint32, patch uint32, pre string, bu
 	}
 }
 
-func semanticVersionFromProtobuf(version *proto.SemanticVersion) SemanticVersion {
+func semanticVersionFromProtobuf(version *services.SemanticVersion) SemanticVersion {
 	if version == nil {
 		return SemanticVersion{}
 	}
@@ -35,8 +35,8 @@ func semanticVersionFromProtobuf(version *proto.SemanticVersion) SemanticVersion
 	}
 }
 
-func (version *SemanticVersion) toProtobuf() *proto.SemanticVersion {
-	return &proto.SemanticVersion{
+func (version *SemanticVersion) toProtobuf() *services.SemanticVersion {
+	return &services.SemanticVersion{
 		Major: int32(version.Major),
 		Minor: int32(version.Minor),
 		Patch: int32(version.Patch),

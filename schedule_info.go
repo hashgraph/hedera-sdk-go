@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -19,10 +19,10 @@ type ScheduleInfo struct {
 	AdminKey                 Key
 	Memo                     string
 	ScheduledTransactionID   *TransactionID
-	scheduledTransactionBody *proto.SchedulableTransactionBody
+	scheduledTransactionBody *services.SchedulableTransactionBody
 }
 
-func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo, networkName *NetworkName) ScheduleInfo {
+func scheduleInfoFromProtobuf(pb *services.ScheduleInfo, networkName *NetworkName) ScheduleInfo {
 	if pb == nil {
 		return ScheduleInfo{}
 	}
@@ -44,10 +44,10 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo, networkName *NetworkName) 
 	var executed *time.Time
 	var deleted *time.Time
 	switch t := pb.Data.(type) {
-	case *proto.ScheduleInfo_ExecutionTime:
+	case *services.ScheduleInfo_ExecutionTime:
 		time := timeFromProtobuf(t.ExecutionTime)
 		executed = &time
-	case *proto.ScheduleInfo_DeletionTime:
+	case *services.ScheduleInfo_DeletionTime:
 		time := timeFromProtobuf(t.DeletionTime)
 		deleted = &time
 	}
@@ -68,20 +68,20 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo, networkName *NetworkName) 
 	}
 }
 
-func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
-	var adminKey *proto.Key
+func (scheduleInfo *ScheduleInfo) toProtobuf() *services.ScheduleInfo {
+	var adminKey *services.Key
 	if scheduleInfo.AdminKey != nil {
 		adminKey = scheduleInfo.AdminKey.toProtoKey()
 	}
 
-	var signatories *proto.KeyList
+	var signatories *services.KeyList
 	if scheduleInfo.Signatories != nil {
 		signatories = scheduleInfo.Signatories.toProtoKeyList()
 	} else if scheduleInfo.Signers != nil {
 		signatories = scheduleInfo.Signers.toProtoKeyList()
 	}
 
-	info := &proto.ScheduleInfo{
+	info := &services.ScheduleInfo{
 		ScheduleID:               scheduleInfo.ScheduleID.toProtobuf(),
 		ExpirationTime:           timeToProtobuf(scheduleInfo.ExpirationTime),
 		ScheduledTransactionBody: scheduleInfo.scheduledTransactionBody,
@@ -94,11 +94,11 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 	}
 
 	if scheduleInfo.ExecutedAt != nil {
-		info.Data = &proto.ScheduleInfo_DeletionTime{
+		info.Data = &services.ScheduleInfo_DeletionTime{
 			DeletionTime: timeToProtobuf(*scheduleInfo.DeletedAt),
 		}
 	} else if scheduleInfo.DeletedAt != nil {
-		info.Data = &proto.ScheduleInfo_ExecutionTime{
+		info.Data = &services.ScheduleInfo_ExecutionTime{
 			ExecutionTime: timeToProtobuf(*scheduleInfo.ExecutedAt),
 		}
 	}
@@ -109,7 +109,7 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error) {
 	pb := scheduleInfo.scheduledTransactionBody
 
-	pbBody := &proto.TransactionBody{
+	pbBody := &services.TransactionBody{
 		TransactionFee: pb.TransactionFee,
 		Memo:           pb.Memo,
 	}
@@ -117,225 +117,225 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 	tx := Transaction{pbBody: pbBody}
 
 	switch pb.Data.(type) {
-	case *proto.SchedulableTransactionBody_ContractCall:
-		pbBody.Data = &proto.TransactionBody_ContractCall{
+	case *services.SchedulableTransactionBody_ContractCall:
+		pbBody.Data = &services.TransactionBody_ContractCall{
 			ContractCall: pb.GetContractCall(),
 		}
 
 		tx2 := contractExecuteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ContractCreateInstance:
-		pbBody.Data = &proto.TransactionBody_ContractCreateInstance{
+	case *services.SchedulableTransactionBody_ContractCreateInstance:
+		pbBody.Data = &services.TransactionBody_ContractCreateInstance{
 			ContractCreateInstance: pb.GetContractCreateInstance(),
 		}
 
 		tx2 := contractCreateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ContractUpdateInstance:
-		pbBody.Data = &proto.TransactionBody_ContractUpdateInstance{
+	case *services.SchedulableTransactionBody_ContractUpdateInstance:
+		pbBody.Data = &services.TransactionBody_ContractUpdateInstance{
 			ContractUpdateInstance: pb.GetContractUpdateInstance(),
 		}
 
 		tx2 := contractUpdateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ContractDeleteInstance:
-		pbBody.Data = &proto.TransactionBody_ContractDeleteInstance{
+	case *services.SchedulableTransactionBody_ContractDeleteInstance:
+		pbBody.Data = &services.TransactionBody_ContractDeleteInstance{
 			ContractDeleteInstance: pb.GetContractDeleteInstance(),
 		}
 
 		tx2 := contractDeleteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_CryptoCreateAccount:
-		pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{
+	case *services.SchedulableTransactionBody_CryptoCreateAccount:
+		pbBody.Data = &services.TransactionBody_CryptoCreateAccount{
 			CryptoCreateAccount: pb.GetCryptoCreateAccount(),
 		}
 
 		tx2 := accountCreateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_CryptoDelete:
-		pbBody.Data = &proto.TransactionBody_CryptoDelete{
+	case *services.SchedulableTransactionBody_CryptoDelete:
+		pbBody.Data = &services.TransactionBody_CryptoDelete{
 			CryptoDelete: pb.GetCryptoDelete(),
 		}
 
 		tx2 := accountDeleteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_CryptoTransfer:
-		pbBody.Data = &proto.TransactionBody_CryptoTransfer{
+	case *services.SchedulableTransactionBody_CryptoTransfer:
+		pbBody.Data = &services.TransactionBody_CryptoTransfer{
 			CryptoTransfer: pb.GetCryptoTransfer(),
 		}
 
 		tx2 := transferTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_CryptoUpdateAccount:
-		pbBody.Data = &proto.TransactionBody_CryptoUpdateAccount{
+	case *services.SchedulableTransactionBody_CryptoUpdateAccount:
+		pbBody.Data = &services.TransactionBody_CryptoUpdateAccount{
 			CryptoUpdateAccount: pb.GetCryptoUpdateAccount(),
 		}
 
 		tx2 := accountUpdateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_FileAppend:
-		pbBody.Data = &proto.TransactionBody_FileAppend{
+	case *services.SchedulableTransactionBody_FileAppend:
+		pbBody.Data = &services.TransactionBody_FileAppend{
 			FileAppend: pb.GetFileAppend(),
 		}
 
 		tx2 := fileAppendTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_FileCreate:
-		pbBody.Data = &proto.TransactionBody_FileCreate{
+	case *services.SchedulableTransactionBody_FileCreate:
+		pbBody.Data = &services.TransactionBody_FileCreate{
 			FileCreate: pb.GetFileCreate(),
 		}
 
 		tx2 := fileCreateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_FileDelete:
-		pbBody.Data = &proto.TransactionBody_FileDelete{
+	case *services.SchedulableTransactionBody_FileDelete:
+		pbBody.Data = &services.TransactionBody_FileDelete{
 			FileDelete: pb.GetFileDelete(),
 		}
 
 		tx2 := fileDeleteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_FileUpdate:
-		pbBody.Data = &proto.TransactionBody_FileUpdate{
+	case *services.SchedulableTransactionBody_FileUpdate:
+		pbBody.Data = &services.TransactionBody_FileUpdate{
 			FileUpdate: pb.GetFileUpdate(),
 		}
 
 		tx2 := fileUpdateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_SystemDelete:
-		pbBody.Data = &proto.TransactionBody_SystemDelete{
+	case *services.SchedulableTransactionBody_SystemDelete:
+		pbBody.Data = &services.TransactionBody_SystemDelete{
 			SystemDelete: pb.GetSystemDelete(),
 		}
 
 		tx2 := systemDeleteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_SystemUndelete:
-		pbBody.Data = &proto.TransactionBody_SystemUndelete{
+	case *services.SchedulableTransactionBody_SystemUndelete:
+		pbBody.Data = &services.TransactionBody_SystemUndelete{
 			SystemUndelete: pb.GetSystemUndelete(),
 		}
 
 		tx2 := systemUndeleteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_Freeze:
-		pbBody.Data = &proto.TransactionBody_Freeze{
+	case *services.SchedulableTransactionBody_Freeze:
+		pbBody.Data = &services.TransactionBody_Freeze{
 			Freeze: pb.GetFreeze(),
 		}
 
 		tx2 := freezeTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ConsensusCreateTopic:
-		pbBody.Data = &proto.TransactionBody_ConsensusCreateTopic{
+	case *services.SchedulableTransactionBody_ConsensusCreateTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusCreateTopic{
 			ConsensusCreateTopic: pb.GetConsensusCreateTopic(),
 		}
 
 		tx2 := topicCreateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ConsensusUpdateTopic:
-		pbBody.Data = &proto.TransactionBody_ConsensusUpdateTopic{
+	case *services.SchedulableTransactionBody_ConsensusUpdateTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusUpdateTopic{
 			ConsensusUpdateTopic: pb.GetConsensusUpdateTopic(),
 		}
 
 		tx2 := topicUpdateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ConsensusDeleteTopic:
-		pbBody.Data = &proto.TransactionBody_ConsensusDeleteTopic{
+	case *services.SchedulableTransactionBody_ConsensusDeleteTopic:
+		pbBody.Data = &services.TransactionBody_ConsensusDeleteTopic{
 			ConsensusDeleteTopic: pb.GetConsensusDeleteTopic(),
 		}
 
 		tx2 := topicDeleteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ConsensusSubmitMessage:
-		pbBody.Data = &proto.TransactionBody_ConsensusSubmitMessage{
+	case *services.SchedulableTransactionBody_ConsensusSubmitMessage:
+		pbBody.Data = &services.TransactionBody_ConsensusSubmitMessage{
 			ConsensusSubmitMessage: pb.GetConsensusSubmitMessage(),
 		}
 
 		tx2 := topicMessageSubmitTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenCreation:
-		pbBody.Data = &proto.TransactionBody_TokenCreation{
+	case *services.SchedulableTransactionBody_TokenCreation:
+		pbBody.Data = &services.TransactionBody_TokenCreation{
 			TokenCreation: pb.GetTokenCreation(),
 		}
 
 		tx2 := tokenCreateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenFreeze:
-		pbBody.Data = &proto.TransactionBody_TokenFreeze{
+	case *services.SchedulableTransactionBody_TokenFreeze:
+		pbBody.Data = &services.TransactionBody_TokenFreeze{
 			TokenFreeze: pb.GetTokenFreeze(),
 		}
 
 		tx2 := tokenFreezeTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenUnfreeze:
-		pbBody.Data = &proto.TransactionBody_TokenUnfreeze{
+	case *services.SchedulableTransactionBody_TokenUnfreeze:
+		pbBody.Data = &services.TransactionBody_TokenUnfreeze{
 			TokenUnfreeze: pb.GetTokenUnfreeze(),
 		}
 
 		tx2 := tokenUnfreezeTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenGrantKyc:
-		pbBody.Data = &proto.TransactionBody_TokenGrantKyc{
+	case *services.SchedulableTransactionBody_TokenGrantKyc:
+		pbBody.Data = &services.TransactionBody_TokenGrantKyc{
 			TokenGrantKyc: pb.GetTokenGrantKyc(),
 		}
 
 		tx2 := tokenGrantKycTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenRevokeKyc:
-		pbBody.Data = &proto.TransactionBody_TokenRevokeKyc{
+	case *services.SchedulableTransactionBody_TokenRevokeKyc:
+		pbBody.Data = &services.TransactionBody_TokenRevokeKyc{
 			TokenRevokeKyc: pb.GetTokenRevokeKyc(),
 		}
 
 		tx2 := tokenRevokeKycTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenDeletion:
-		pbBody.Data = &proto.TransactionBody_TokenDeletion{
+	case *services.SchedulableTransactionBody_TokenDeletion:
+		pbBody.Data = &services.TransactionBody_TokenDeletion{
 			TokenDeletion: pb.GetTokenDeletion(),
 		}
 
 		tx2 := tokenDeleteTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenUpdate:
-		pbBody.Data = &proto.TransactionBody_TokenUpdate{
+	case *services.SchedulableTransactionBody_TokenUpdate:
+		pbBody.Data = &services.TransactionBody_TokenUpdate{
 			TokenUpdate: pb.GetTokenUpdate(),
 		}
 
 		tx2 := tokenUpdateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenMint:
-		pbBody.Data = &proto.TransactionBody_TokenMint{
+	case *services.SchedulableTransactionBody_TokenMint:
+		pbBody.Data = &services.TransactionBody_TokenMint{
 			TokenMint: pb.GetTokenMint(),
 		}
 
 		tx2 := tokenMintTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenBurn:
-		pbBody.Data = &proto.TransactionBody_TokenBurn{
+	case *services.SchedulableTransactionBody_TokenBurn:
+		pbBody.Data = &services.TransactionBody_TokenBurn{
 			TokenBurn: pb.GetTokenBurn(),
 		}
 
 		tx2 := tokenBurnTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenWipe:
-		pbBody.Data = &proto.TransactionBody_TokenWipe{
+	case *services.SchedulableTransactionBody_TokenWipe:
+		pbBody.Data = &services.TransactionBody_TokenWipe{
 			TokenWipe: pb.GetTokenWipe(),
 		}
 
 		tx2 := tokenWipeTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenAssociate:
-		pbBody.Data = &proto.TransactionBody_TokenAssociate{
+	case *services.SchedulableTransactionBody_TokenAssociate:
+		pbBody.Data = &services.TransactionBody_TokenAssociate{
 			TokenAssociate: pb.GetTokenAssociate(),
 		}
 
 		tx2 := tokenAssociateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_TokenDissociate:
-		pbBody.Data = &proto.TransactionBody_TokenDissociate{
+	case *services.SchedulableTransactionBody_TokenDissociate:
+		pbBody.Data = &services.TransactionBody_TokenDissociate{
 			TokenDissociate: pb.GetTokenDissociate(),
 		}
 
 		tx2 := tokenDissociateTransactionFromProtobuf(tx, pbBody)
 		return &tx2, nil
-	case *proto.SchedulableTransactionBody_ScheduleDelete:
-		pbBody.Data = &proto.TransactionBody_ScheduleDelete{
+	case *services.SchedulableTransactionBody_ScheduleDelete:
+		pbBody.Data = &services.TransactionBody_ScheduleDelete{
 			ScheduleDelete: pb.GetScheduleDelete(),
 		}
 

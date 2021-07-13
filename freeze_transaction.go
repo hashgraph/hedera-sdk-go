@@ -1,18 +1,17 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
 type FreezeTransaction struct {
 	Transaction
-	pb *proto.FreezeTransactionBody
+	pb *services.FreezeTransactionBody
 }
 
 func NewFreezeTransaction() *FreezeTransaction {
-	pb := &proto.FreezeTransactionBody{}
+	pb := &services.FreezeTransactionBody{}
 
 	transaction := FreezeTransaction{
 		pb:          pb,
@@ -24,7 +23,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 	return &transaction
 }
 
-func freezeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FreezeTransaction {
+func freezeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FreezeTransaction {
 	return FreezeTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFreeze(),
@@ -74,12 +73,12 @@ func (transaction *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, er
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	return &proto.SchedulableTransactionBody{
+func (transaction *FreezeTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_Freeze{
-			Freeze: &proto.FreezeTransactionBody{
+		Data: &services.SchedulableTransactionBody_Freeze{
+			Freeze: &services.FreezeTransactionBody{
 				StartHour:  transaction.pb.GetStartHour(),
 				StartMin:   transaction.pb.GetStartMin(),
 				EndHour:    transaction.pb.GetEndHour(),
@@ -210,9 +209,9 @@ func (transaction *FreezeTransaction) Execute(
 }
 
 func (transaction *FreezeTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_Freeze{
+	pbBody.Data = &services.TransactionBody_Freeze{
 		Freeze: transaction.pb,
 	}
 

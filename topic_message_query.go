@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
+	"github.com/hashgraph/hedera-protobufs-go/mirror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

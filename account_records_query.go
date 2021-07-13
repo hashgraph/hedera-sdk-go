@@ -1,14 +1,14 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
 // it, that were above the threshold, during the last 25 hours.
 type AccountRecordsQuery struct {
 	Query
-	pb        *proto.CryptoGetAccountRecordsQuery
+	pb        *services.CryptoGetAccountRecordsQuery
 	accountID AccountID
 }
 
@@ -18,10 +18,10 @@ type AccountRecordsQuery struct {
 // It is recommended that you use this for creating new instances of an AccountRecordQuery
 // instead of manually creating an instance of the struct.
 func NewAccountRecordsQuery() *AccountRecordsQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(true, &header)
-	pb := proto.CryptoGetAccountRecordsQuery{Header: &header}
-	query.pb.Query = &proto.Query_CryptoGetAccountRecords{
+	pb := services.CryptoGetAccountRecordsQuery{Header: &header}
+	query.pb.Query = &services.Query_CryptoGetAccountRecords{
 		CryptoGetAccountRecords: &pb,
 	}
 
@@ -70,7 +70,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

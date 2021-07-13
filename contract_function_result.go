@@ -2,8 +2,7 @@ package hedera
 
 import (
 	"encoding/binary"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractFunctionResult is the result returned by a call to a smart contract function. This is The response to
@@ -97,7 +96,7 @@ func (result ContractFunctionResult) AsBytes() []byte {
 	return result.ContractCallResult
 }
 
-func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult, networkName *NetworkName) ContractFunctionResult {
+func contractFunctionResultFromProtobuf(pb *services.ContractFunctionResult, networkName *NetworkName) ContractFunctionResult {
 	infos := make([]ContractLogInfo, len(pb.LogInfo))
 
 	for i, info := range pb.LogInfo {
@@ -120,25 +119,25 @@ func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult, networ
 	return result
 }
 
-func (contractFuncRes ContractFunctionResult) toProtobuf() *proto.ContractFunctionResult {
-	infos := make([]*proto.ContractLoginfo, len(contractFuncRes.LogInfo))
+func (result ContractFunctionResult) toProtobuf() *services.ContractFunctionResult {
+	infos := make([]*services.ContractLoginfo, len(result.LogInfo))
 
-	for i, info := range contractFuncRes.LogInfo {
+	for i, info := range result.LogInfo {
 		infos[i] = info.toProtobuf()
 	}
 
-	contractIDs := make([]*proto.ContractID, len(contractFuncRes.CreatedContractIDs))
+	contractIDs := make([]*services.ContractID, len(result.CreatedContractIDs))
 
-	for i, contractID := range contractFuncRes.CreatedContractIDs {
+	for i, contractID := range result.CreatedContractIDs {
 		contractIDs[i] = contractID.toProtobuf()
 	}
 
-	return &proto.ContractFunctionResult{
-		ContractID:         contractFuncRes.ContractID.toProtobuf(),
-		ContractCallResult: contractFuncRes.ContractCallResult,
-		ErrorMessage:       contractFuncRes.ErrorMessage,
-		Bloom:              contractFuncRes.Bloom,
-		GasUsed:            contractFuncRes.GasUsed,
+	return &services.ContractFunctionResult{
+		ContractID:         result.ContractID.toProtobuf(),
+		ContractCallResult: result.ContractCallResult,
+		ErrorMessage:       result.ErrorMessage,
+		Bloom:              result.Bloom,
+		GasUsed:            result.GasUsed,
 		LogInfo:            infos,
 		CreatedContractIDs: contractIDs,
 	}

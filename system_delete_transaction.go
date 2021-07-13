@@ -1,20 +1,19 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type SystemDeleteTransaction struct {
 	Transaction
-	pb         *proto.SystemDeleteTransactionBody
+	pb         *services.SystemDeleteTransactionBody
 	contractID ContractID
 	fileID     FileID
 }
 
 func NewSystemDeleteTransaction() *SystemDeleteTransaction {
-	pb := &proto.SystemDeleteTransactionBody{}
+	pb := &services.SystemDeleteTransactionBody{}
 
 	transaction := SystemDeleteTransaction{
 		pb:          pb,
@@ -25,7 +24,7 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	return &transaction
 }
 
-func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemDeleteTransaction {
+func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) SystemDeleteTransaction {
 	return SystemDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetSystemDelete(),
@@ -36,7 +35,7 @@ func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 
 func (transaction *SystemDeleteTransaction) SetExpirationTime(expiration time.Time) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ExpirationTime = &proto.TimestampSeconds{
+	transaction.pb.ExpirationTime = &services.TimestampSeconds{
 		Seconds: expiration.Unix(),
 	}
 	return transaction
@@ -82,13 +81,13 @@ func (transaction *SystemDeleteTransaction) validateNetworkOnIDs(client *Client)
 
 func (transaction *SystemDeleteTransaction) build() *SystemDeleteTransaction {
 	if !transaction.contractID.isZero() {
-		transaction.pb.Id = &proto.SystemDeleteTransactionBody_ContractID{
+		transaction.pb.Id = &services.SystemDeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID.toProtobuf(),
 		}
 	}
 
 	if !transaction.fileID.isZero() {
-		transaction.pb.Id = &proto.SystemDeleteTransactionBody_FileID{
+		transaction.pb.Id = &services.SystemDeleteTransactionBody_FileID{
 			FileID: transaction.fileID.toProtobuf(),
 		}
 	}
@@ -107,13 +106,13 @@ func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransacti
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	body := &proto.SchedulableTransactionBody{
+	body := &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_SystemDelete{
-			SystemDelete: &proto.SystemDeleteTransactionBody{
+		Data: &services.SchedulableTransactionBody_SystemDelete{
+			SystemDelete: &services.SystemDeleteTransactionBody{
 				Id:             nil,
 				ExpirationTime: transaction.pb.GetExpirationTime(),
 			},
@@ -121,10 +120,10 @@ func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.
 	}
 
 	switch transaction.pb.GetId().(type) {
-	case *proto.SystemDeleteTransactionBody_ContractID:
-		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: transaction.pb.GetContractID()}
-	case *proto.SystemDeleteTransactionBody_FileID:
-		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: transaction.pb.GetFileID()}
+	case *services.SystemDeleteTransactionBody_ContractID:
+		body.GetSystemUndelete().Id = &services.SystemUndeleteTransactionBody_ContractID{ContractID: transaction.pb.GetContractID()}
+	case *services.SystemDeleteTransactionBody_FileID:
+		body.GetSystemUndelete().Id = &services.SystemUndeleteTransactionBody_FileID{FileID: transaction.pb.GetFileID()}
 	}
 
 	return body, nil
@@ -137,7 +136,7 @@ func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.
 
 func systemDeleteTransaction_getMethod(request request, channel *channel) method {
 	switch request.transaction.pbBody.GetSystemDelete().Id.(type) {
-	case *proto.SystemDeleteTransactionBody_ContractID:
+	case *services.SystemDeleteTransactionBody_ContractID:
 		return method{
 			transaction: channel.getContract().SystemDelete,
 		}
@@ -260,9 +259,9 @@ func (transaction *SystemDeleteTransaction) Execute(
 }
 
 func (transaction *SystemDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_SystemDelete{
+	pbBody.Data = &services.TransactionBody_SystemDelete{
 		SystemDelete: transaction.pb,
 	}
 

@@ -2,9 +2,8 @@ package hedera
 
 import (
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Updates an already created Token.
@@ -13,14 +12,14 @@ import (
 // other field in that case will cause the transaction status to resolve to TOKEN_IS_IMMUTABlE.
 type TokenUpdateTransaction struct {
 	Transaction
-	pb                 *proto.TokenUpdateTransactionBody
+	pb                 *services.TokenUpdateTransactionBody
 	tokenID            TokenID
 	treasuryAccountID  AccountID
 	autoRenewAccountID AccountID
 }
 
 func NewTokenUpdateTransaction() *TokenUpdateTransaction {
-	pb := &proto.TokenUpdateTransactionBody{}
+	pb := &services.TokenUpdateTransactionBody{}
 
 	transaction := TokenUpdateTransaction{
 		pb:          pb,
@@ -31,7 +30,7 @@ func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	return &transaction
 }
 
-func tokenUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenUpdateTransaction {
+func tokenUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenUpdateTransaction {
 	return TokenUpdateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetTokenUpdate(),
@@ -291,13 +290,13 @@ func (transaction *TokenUpdateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenUpdate{
-			TokenUpdate: &proto.TokenUpdateTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenUpdate{
+			TokenUpdate: &services.TokenUpdateTransactionBody{
 				Token:            transaction.pb.GetToken(),
 				Symbol:           transaction.pb.GetSymbol(),
 				Name:             transaction.pb.GetName(),
@@ -435,9 +434,9 @@ func (transaction *TokenUpdateTransaction) Execute(
 }
 
 func (transaction *TokenUpdateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenUpdate{
+	pbBody.Data = &services.TransactionBody_TokenUpdate{
 		TokenUpdate: transaction.pb,
 	}
 

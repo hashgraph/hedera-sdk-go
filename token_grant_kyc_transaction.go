@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Grants KYC to the account for the given token. Must be signed by the Token's kycKey.
@@ -17,13 +16,13 @@ import (
 // Once executed the Account is marked as KYC Granted.
 type TokenGrantKycTransaction struct {
 	Transaction
-	pb        *proto.TokenGrantKycTransactionBody
+	pb        *services.TokenGrantKycTransactionBody
 	tokenID   TokenID
 	accountID AccountID
 }
 
 func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
-	pb := &proto.TokenGrantKycTransactionBody{}
+	pb := &services.TokenGrantKycTransactionBody{}
 
 	transaction := TokenGrantKycTransaction{
 		pb:          pb,
@@ -34,7 +33,7 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	return &transaction
 }
 
-func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenGrantKycTransaction {
+func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenGrantKycTransaction {
 	return TokenGrantKycTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenGrantKyc(),
@@ -102,13 +101,13 @@ func (transaction *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenGrantKyc{
-			TokenGrantKyc: &proto.TokenGrantKycTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenGrantKyc{
+			TokenGrantKyc: &services.TokenGrantKycTransactionBody{
 				Token:   transaction.pb.GetToken(),
 				Account: transaction.pb.GetAccount(),
 			},
@@ -235,9 +234,9 @@ func (transaction *TokenGrantKycTransaction) Execute(
 }
 
 func (transaction *TokenGrantKycTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenGrantKyc{
+	pbBody.Data = &services.TransactionBody_TokenGrantKyc{
 		TokenGrantKyc: transaction.pb,
 	}
 

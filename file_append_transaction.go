@@ -2,7 +2,8 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"github.com/pkg/errors"
 
 	"time"
@@ -13,7 +14,7 @@ import (
 // to create the entire file.
 type FileAppendTransaction struct {
 	Transaction
-	pb        *proto.FileAppendTransactionBody
+	pb        *services.FileAppendTransactionBody
 	maxChunks uint64
 	contents  []byte
 	fileID    FileID
@@ -22,7 +23,7 @@ type FileAppendTransaction struct {
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
 // used to construct and execute a File Append Transaction.
 func NewFileAppendTransaction() *FileAppendTransaction {
-	pb := &proto.FileAppendTransactionBody{}
+	pb := &services.FileAppendTransactionBody{}
 
 	transaction := FileAppendTransaction{
 		pb:          pb,
@@ -35,7 +36,7 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	return &transaction
 }
 
-func fileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileAppendTransaction {
+func fileAppendTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileAppendTransaction {
 	return FileAppendTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileAppend(),
@@ -104,13 +105,13 @@ func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileAppendTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *FileAppendTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_FileAppend{
-			FileAppend: &proto.FileAppendTransactionBody{
+		Data: &services.SchedulableTransactionBody_FileAppend{
+			FileAppend: &services.FileAppendTransactionBody{
 				FileID:   transaction.pb.GetFileID(),
 				Contents: transaction.contents,
 			},
@@ -308,8 +309,8 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 	nextTransactionID := initialTransactionID
 
 	transaction.transactionIDs = []TransactionID{}
-	transaction.transactions = []*proto.Transaction{}
-	transaction.signedTransactions = []*proto.SignedTransaction{}
+	transaction.transactions = []*services.Transaction{}
+	transaction.signedTransactions = []*services.SignedTransaction{}
 
 	for i := 0; uint64(i) < chunks; i += 1 {
 		start := i * chunkSize
@@ -328,7 +329,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 		transaction.pb.Contents = transaction.contents[start:end]
 
 		transaction.pbBody.TransactionID = nextTransactionID.toProtobuf()
-		transaction.pbBody.Data = &proto.TransactionBody_FileAppend{
+		transaction.pbBody.Data = &services.TransactionBody_FileAppend{
 			FileAppend: transaction.pb,
 		}
 
@@ -340,9 +341,9 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 				return transaction, errors.Wrap(err, "error serializing body for file append")
 			}
 
-			transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+			transaction.signedTransactions = append(transaction.signedTransactions, &services.SignedTransaction{
 				BodyBytes: bodyBytes,
-				SigMap:    &proto.SignatureMap{},
+				SigMap:    &services.SignatureMap{},
 			})
 		}
 

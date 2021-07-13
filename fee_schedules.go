@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type FeeSchedules struct {
@@ -18,7 +18,7 @@ func newFeeSchedules() FeeSchedules {
 	}
 }
 
-func feeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (FeeSchedules, error) {
+func feeSchedulesFromProtobuf(feeSchedules *services.CurrentAndNextFeeSchedule) (FeeSchedules, error) {
 	if feeSchedules == nil {
 		return FeeSchedules{}, errParameterNull
 	}
@@ -46,18 +46,18 @@ func feeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (Fe
 	}, nil
 }
 
-func (feeSchedules FeeSchedules) toProtobuf() *proto.CurrentAndNextFeeSchedule {
-	var current *proto.FeeSchedule
+func (feeSchedules FeeSchedules) toProtobuf() *services.CurrentAndNextFeeSchedule {
+	var current *services.FeeSchedule
 	if feeSchedules.current != nil {
 		current = feeSchedules.current.toProtobuf()
 	}
 
-	var next *proto.FeeSchedule
+	var next *services.FeeSchedule
 	if feeSchedules.next != nil {
 		next = feeSchedules.next.toProtobuf()
 	}
 
-	return &proto.CurrentAndNextFeeSchedule{
+	return &services.CurrentAndNextFeeSchedule{
 		CurrentFeeSchedule: current,
 		NextFeeSchedule:    next,
 	}
@@ -76,7 +76,7 @@ func FeeSchedulesFromBytes(data []byte) (FeeSchedules, error) {
 	if data == nil {
 		return FeeSchedules{}, errByteArrayNull
 	}
-	pb := proto.CurrentAndNextFeeSchedule{}
+	pb := services.CurrentAndNextFeeSchedule{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FeeSchedules{}, err

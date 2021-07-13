@@ -1,22 +1,21 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
 )
 
 // A ConsensusTopicDeleteTransaction is for deleting a topic on HCS.
 type TopicDeleteTransaction struct {
 	Transaction
-	pb      *proto.ConsensusDeleteTopicTransactionBody
+	pb      *services.ConsensusDeleteTopicTransactionBody
 	topicID TopicID
 }
 
 // NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction transaction which can be used to construct
 // and execute a Consensus Delete Topic Transaction.
 func NewTopicDeleteTransaction() *TopicDeleteTransaction {
-	pb := &proto.ConsensusDeleteTopicTransactionBody{}
+	pb := &services.ConsensusDeleteTopicTransactionBody{}
 
 	transaction := TopicDeleteTransaction{
 		pb:          pb,
@@ -27,7 +26,7 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	return &transaction
 }
 
-func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicDeleteTransaction {
+func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TopicDeleteTransaction {
 	return TopicDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetConsensusDeleteTopic(),
@@ -75,13 +74,13 @@ func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_ConsensusDeleteTopic{
-			ConsensusDeleteTopic: &proto.ConsensusDeleteTopicTransactionBody{
+		Data: &services.SchedulableTransactionBody_ConsensusDeleteTopic{
+			ConsensusDeleteTopic: &services.ConsensusDeleteTopicTransactionBody{
 				TopicID: transaction.pb.TopicID,
 			},
 		},
@@ -207,9 +206,9 @@ func (transaction *TopicDeleteTransaction) Execute(
 }
 
 func (transaction *TopicDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_ConsensusDeleteTopic{
+	pbBody.Data = &services.TransactionBody_ConsensusDeleteTopic{
 		ConsensusDeleteTopic: transaction.pb,
 	}
 

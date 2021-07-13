@@ -2,7 +2,7 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionReceipt struct {
@@ -51,7 +51,7 @@ func newTransactionReceipt(
 
 }
 
-func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt, networkName *NetworkName) TransactionReceipt {
+func transactionReceiptFromProtobuf(protoReceipt *services.TransactionReceipt, networkName *NetworkName) TransactionReceipt {
 	if protoReceipt == nil {
 		return TransactionReceipt{}
 	}
@@ -127,13 +127,13 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt, netw
 	}
 }
 
-func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
-	return &proto.TransactionReceipt{
-		Status:     proto.ResponseCodeEnum(receipt.Status),
+func (receipt TransactionReceipt) toProtobuf() *services.TransactionReceipt {
+	return &services.TransactionReceipt{
+		Status:     services.ResponseCodeEnum(receipt.Status),
 		AccountID:  receipt.AccountID.toProtobuf(),
 		FileID:     receipt.FileID.toProtobuf(),
 		ContractID: receipt.ContractID.toProtobuf(),
-		ExchangeRate: &proto.ExchangeRateSet{
+		ExchangeRate: &services.ExchangeRateSet{
 			CurrentRate: receipt.ExchangeRate.toProtobuf(),
 			NextRate:    receipt.ExchangeRate.toProtobuf(),
 		},
@@ -162,7 +162,7 @@ func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
 	if data == nil {
 		return TransactionReceipt{}, errByteArrayNull
 	}
-	pb := proto.TransactionReceipt{}
+	pb := services.TransactionReceipt{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionReceipt{}, err

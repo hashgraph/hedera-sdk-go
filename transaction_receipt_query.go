@@ -1,20 +1,20 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionReceiptQuery struct {
 	Query
-	pb            *proto.TransactionGetReceiptQuery
+	pb            *services.TransactionGetReceiptQuery
 	transactionID TransactionID
 }
 
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := newQuery(false, &header)
-	pb := &proto.TransactionGetReceiptQuery{Header: &header}
-	query.pb.Query = &proto.Query_TransactionGetReceipt{
+	pb := &services.TransactionGetReceiptQuery{Header: &header}
+	query.pb.Query = &services.Query_TransactionGetReceipt{
 		TransactionGetReceipt: pb,
 	}
 
@@ -53,7 +53,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	err = query.validateNetworkOnIDs(client)

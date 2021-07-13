@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenID struct {
@@ -13,7 +13,7 @@ type TokenID struct {
 	checksum *string
 }
 
-func tokenIDFromProtobuf(tokenID *proto.TokenID, networkName *NetworkName) TokenID {
+func tokenIDFromProtobuf(tokenID *services.TokenID, networkName *NetworkName) TokenID {
 	if tokenID == nil {
 		return TokenID{}
 	}
@@ -31,8 +31,8 @@ func tokenIDFromProtobuf(tokenID *proto.TokenID, networkName *NetworkName) Token
 	return id
 }
 
-func (id *TokenID) toProtobuf() *proto.TokenID {
-	return &proto.TokenID{
+func (id *TokenID) toProtobuf() *services.TokenID {
+	return &services.TokenID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
 		TokenNum: int64(id.Token),
@@ -59,7 +59,7 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 	if data == nil {
 		return TokenID{}, errByteArrayNull
 	}
-	pb := proto.TokenID{}
+	pb := services.TokenID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenID{}, err

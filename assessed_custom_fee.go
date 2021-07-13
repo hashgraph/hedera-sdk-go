@@ -1,6 +1,6 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import "github.com/hashgraph/hedera-protobufs-go/services"
 
 type AssessedCustomFee struct {
 	Amount                int64
@@ -8,7 +8,7 @@ type AssessedCustomFee struct {
 	FeeCollectorAccountId *AccountID
 }
 
-func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee, networkName *NetworkName) AssessedCustomFee {
+func assessedCustomFeeFromProtobuf(assessedFee *services.AssessedCustomFee, networkName *NetworkName) AssessedCustomFee {
 	accountID := accountIDFromProtobuf(assessedFee.FeeCollectorAccountId, networkName)
 	tokenID := tokenIDFromProtobuf(assessedFee.TokenId, networkName)
 
@@ -19,18 +19,18 @@ func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee, network
 	}
 }
 
-func (fee *AssessedCustomFee) toProtobuf() *proto.AssessedCustomFee {
-	var tokenID *proto.TokenID
+func (fee *AssessedCustomFee) toProtobuf() *services.AssessedCustomFee {
+	var tokenID *services.TokenID
 	if fee.TokenID != nil {
 		tokenID = fee.TokenID.toProtobuf()
 	}
 
-	var accountID *proto.AccountID
+	var accountID *services.AccountID
 	if fee.TokenID != nil {
 		accountID = fee.FeeCollectorAccountId.toProtobuf()
 	}
 
-	return &proto.AssessedCustomFee{
+	return &services.AssessedCustomFee{
 		Amount:                fee.Amount,
 		TokenId:               tokenID,
 		FeeCollectorAccountId: accountID,

@@ -2,7 +2,8 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"time"
 )
 
@@ -26,7 +27,7 @@ func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted 
 	}
 }
 
-func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo, networkName *NetworkName) (FileInfo, error) {
+func fileInfoFromProtobuf(fileInfo *services.FileGetInfoResponse_FileInfo, networkName *NetworkName) (FileInfo, error) {
 	if fileInfo == nil {
 		return FileInfo{}, errParameterNull
 	}
@@ -49,11 +50,11 @@ func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo, networkN
 	}, nil
 }
 
-func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {
-	return &proto.FileGetInfoResponse_FileInfo{
+func (fileInfo *FileInfo) toProtobuf() *services.FileGetInfoResponse_FileInfo {
+	return &services.FileGetInfoResponse_FileInfo{
 		FileID: fileInfo.FileID.toProtobuf(),
 		Size:   fileInfo.Size,
-		ExpirationTime: &proto.Timestamp{
+		ExpirationTime: &services.Timestamp{
 			Seconds: int64(fileInfo.ExpirationTime.Second()),
 			Nanos:   int32(fileInfo.ExpirationTime.Nanosecond()),
 		},
@@ -76,7 +77,7 @@ func FileInfoFromBytes(data []byte) (FileInfo, error) {
 	if data == nil {
 		return FileInfo{}, errByteArrayNull
 	}
-	pb := proto.FileGetInfoResponse_FileInfo{}
+	pb := services.FileGetInfoResponse_FileInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FileInfo{}, err

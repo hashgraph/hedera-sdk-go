@@ -2,20 +2,20 @@ package hedera
 
 import (
 	"github.com/golang/protobuf/ptypes/wrappers"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
 
 type AccountUpdateTransaction struct {
 	Transaction
-	pb             *proto.CryptoUpdateTransactionBody
+	pb             *services.CryptoUpdateTransactionBody
 	accountID      AccountID
 	proxyAccountID AccountID
 }
 
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
-	pb := &proto.CryptoUpdateTransactionBody{}
+	pb := &services.CryptoUpdateTransactionBody{}
 
 	transaction := AccountUpdateTransaction{
 		pb:          pb,
@@ -26,7 +26,7 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return &transaction
 }
 
-func accountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountUpdateTransaction {
+func accountUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) AccountUpdateTransaction {
 	return AccountUpdateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetCryptoUpdateAccount(),
@@ -152,13 +152,13 @@ func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_CryptoUpdateAccount{
-			CryptoUpdateAccount: &proto.CryptoUpdateTransactionBody{
+		Data: &services.SchedulableTransactionBody_CryptoUpdateAccount{
+			CryptoUpdateAccount: &services.CryptoUpdateTransactionBody{
 				AccountIDToUpdate:           transaction.pb.GetAccountIDToUpdate(),
 				Key:                         transaction.pb.GetKey(),
 				ProxyAccountID:              transaction.pb.GetProxyAccountID(),
@@ -294,9 +294,9 @@ func (transaction *AccountUpdateTransaction) Execute(
 }
 
 func (transaction *AccountUpdateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoUpdateAccount{
+	pbBody.Data = &services.TransactionBody_CryptoUpdateAccount{
 		CryptoUpdateAccount: transaction.pb,
 	}
 

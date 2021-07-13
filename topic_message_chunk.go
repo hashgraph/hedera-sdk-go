@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto/mirror"
+	"github.com/hashgraph/hedera-protobufs-go/mirror"
 )
 
 type TopicMessageChunk struct {

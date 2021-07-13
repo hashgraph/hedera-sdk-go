@@ -2,7 +2,7 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenNftTransfer struct {
@@ -19,7 +19,7 @@ func newNftTransfer(sender AccountID, receiver AccountID, serial int64) TokenNft
 	}
 }
 
-func nftTransferFromProtobuf(pb *proto.NftTransfer, networkName *NetworkName) TokenNftTransfer {
+func nftTransferFromProtobuf(pb *services.NftTransfer, networkName *NetworkName) TokenNftTransfer {
 	if pb == nil {
 		return TokenNftTransfer{}
 	}
@@ -30,8 +30,8 @@ func nftTransferFromProtobuf(pb *proto.NftTransfer, networkName *NetworkName) To
 	}
 }
 
-func (transfer *TokenNftTransfer) toProtobuf() *proto.NftTransfer {
-	return &proto.NftTransfer{
+func (transfer *TokenNftTransfer) toProtobuf() *services.NftTransfer {
+	return &services.NftTransfer{
 		SenderAccountID:   transfer.SenderAccountID.toProtobuf(),
 		ReceiverAccountID: transfer.ReceiverAccountID.toProtobuf(),
 		SerialNumber:      transfer.SerialNumber,
@@ -51,7 +51,7 @@ func NftTransferFromBytes(data []byte) (TokenNftTransfer, error) {
 	if data == nil {
 		return TokenNftTransfer{}, errByteArrayNull
 	}
-	pb := proto.NftTransfer{}
+	pb := services.NftTransfer{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenNftTransfer{}, err

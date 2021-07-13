@@ -2,19 +2,18 @@ package hedera
 
 import (
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type FileUpdateTransaction struct {
 	Transaction
-	pb     *proto.FileUpdateTransactionBody
+	pb     *services.FileUpdateTransactionBody
 	fileID FileID
 }
 
 func NewFileUpdateTransaction() *FileUpdateTransaction {
-	pb := &proto.FileUpdateTransactionBody{}
+	pb := &services.FileUpdateTransactionBody{}
 
 	transaction := FileUpdateTransaction{
 		pb:          pb,
@@ -25,7 +24,7 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 	return &transaction
 }
 
-func fileUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileUpdateTransaction {
+func fileUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileUpdateTransaction {
 	return FileUpdateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileUpdate(),
@@ -46,7 +45,7 @@ func (transaction *FileUpdateTransaction) GetFileID() FileID {
 func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
 	if transaction.pb.Keys == nil {
-		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+		transaction.pb.Keys = &services.KeyList{Keys: []*services.Key{}}
 	}
 	keyList := NewKeyList()
 	keyList.AddAll(keys)
@@ -134,13 +133,13 @@ func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *FileUpdateTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_FileUpdate{
-			FileUpdate: &proto.FileUpdateTransactionBody{
+		Data: &services.SchedulableTransactionBody_FileUpdate{
+			FileUpdate: &services.FileUpdateTransactionBody{
 				FileID:         transaction.pb.GetFileID(),
 				ExpirationTime: transaction.pb.GetExpirationTime(),
 				Keys:           transaction.pb.GetKeys(),
@@ -270,9 +269,9 @@ func (transaction *FileUpdateTransaction) Execute(
 }
 
 func (transaction *FileUpdateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_FileUpdate{
+	pbBody.Data = &services.TransactionBody_FileUpdate{
 		FileUpdate: transaction.pb,
 	}
 

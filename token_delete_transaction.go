@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Deletes an already created Token.
@@ -12,12 +11,12 @@ import (
 // other field in that case will cause the transaction status to resolve to TOKEN_IS_IMMUTABlE.
 type TokenDeleteTransaction struct {
 	Transaction
-	pb      *proto.TokenDeleteTransactionBody
+	pb      *services.TokenDeleteTransactionBody
 	tokenID TokenID
 }
 
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
-	pb := &proto.TokenDeleteTransactionBody{}
+	pb := &services.TokenDeleteTransactionBody{}
 
 	transaction := TokenDeleteTransaction{
 		pb:          pb,
@@ -28,7 +27,7 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	return &transaction
 }
 
-func tokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDeleteTransaction {
+func tokenDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenDeleteTransaction {
 	return TokenDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenDeletion(),
@@ -76,13 +75,13 @@ func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenDeleteTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenDeletion{
-			TokenDeletion: &proto.TokenDeleteTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenDeletion{
+			TokenDeletion: &services.TokenDeleteTransactionBody{
 				Token: transaction.pb.GetToken(),
 			},
 		},
@@ -208,9 +207,9 @@ func (transaction *TokenDeleteTransaction) Execute(
 }
 
 func (transaction *TokenDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenDeletion{
+	pbBody.Data = &services.TransactionBody_TokenDeletion{
 		TokenDeletion: transaction.pb,
 	}
 

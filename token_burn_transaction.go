@@ -1,9 +1,8 @@
 package hedera
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"time"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // Burns tokens from the Token's treasury Account. If no Supply Key is defined, the transaction
@@ -15,12 +14,12 @@ import (
 // to burn 100.55 tokens, one must provide amount of 10055.
 type TokenBurnTransaction struct {
 	Transaction
-	pb      *proto.TokenBurnTransactionBody
+	pb      *services.TokenBurnTransactionBody
 	tokenID TokenID
 }
 
 func NewTokenBurnTransaction() *TokenBurnTransaction {
-	pb := &proto.TokenBurnTransactionBody{}
+	pb := &services.TokenBurnTransactionBody{}
 
 	transaction := TokenBurnTransaction{
 		pb:          pb,
@@ -31,7 +30,7 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 	return &transaction
 }
 
-func tokenBurnTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenBurnTransaction {
+func tokenBurnTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenBurnTransaction {
 	return TokenBurnTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenBurn(),
@@ -117,13 +116,13 @@ func (transaction *TokenBurnTransaction) Schedule() (*ScheduleCreateTransaction,
 	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenBurnTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenBurnTransaction) constructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	transaction.build()
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
-		Data: &proto.SchedulableTransactionBody_TokenBurn{
-			TokenBurn: &proto.TokenBurnTransactionBody{
+		Data: &services.SchedulableTransactionBody_TokenBurn{
+			TokenBurn: &services.TokenBurnTransactionBody{
 				Token:  transaction.pb.GetToken(),
 				Amount: transaction.pb.GetAmount(),
 			},
@@ -254,9 +253,9 @@ func (transaction *TokenBurnTransaction) Execute(
 }
 
 func (transaction *TokenBurnTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
+	pbBody *services.TransactionBody,
 ) bool {
-	pbBody.Data = &proto.TransactionBody_TokenBurn{
+	pbBody.Data = &services.TransactionBody_TokenBurn{
 		TokenBurn: transaction.pb,
 	}
 

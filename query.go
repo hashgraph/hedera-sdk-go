@@ -2,13 +2,14 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"github.com/pkg/errors"
 )
 
 type Query struct {
-	pb       *proto.Query
-	pbHeader *proto.QueryHeader
+	pb       *services.Query
+	pbHeader *services.QueryHeader
 
 	paymentTransactionID        TransactionID
 	nodeIDs                     []AccountID
@@ -18,19 +19,19 @@ type Query struct {
 	nextTransactionIndex        int
 	maxRetry                    int
 
-	paymentTransactions []*proto.Transaction
+	paymentTransactions []*services.Transaction
 
 	isPaymentRequired bool
 }
 
-func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
+func newQuery(isPaymentRequired bool, queryHeader *services.QueryHeader) Query {
 	return Query{
-		pb:                   &proto.Query{},
+		pb:                   &services.Query{},
 		pbHeader:             queryHeader,
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
 		maxRetry:             10,
-		paymentTransactions:  make([]*proto.Transaction, 0),
+		paymentTransactions:  make([]*services.Transaction, 0),
 		isPaymentRequired:    isPaymentRequired,
 		maxQueryPayment:      NewHbar(0),
 		queryPayment:         NewHbar(0),
@@ -102,7 +103,7 @@ func query_makeRequest(request request) protoRequest {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
 	}
-	request.query.pbHeader.ResponseType = proto.ResponseType_ANSWER_ONLY
+	request.query.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 	return protoRequest{
 		query: request.query.pb,
 	}
@@ -148,27 +149,27 @@ func query_generatePayments(query *Query, client *Client, cost Hbar) error {
 	return nil
 }
 
-func query_makePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
-	accountAmounts := make([]*proto.AccountAmount, 0)
-	accountAmounts = append(accountAmounts, &proto.AccountAmount{
+func query_makePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *operator, cost Hbar) (*services.Transaction, error) {
+	accountAmounts := make([]*services.AccountAmount, 0)
+	accountAmounts = append(accountAmounts, &services.AccountAmount{
 		AccountID: nodeAccountID.toProtobuf(),
 		Amount:    cost.tinybar,
 	})
-	accountAmounts = append(accountAmounts, &proto.AccountAmount{
+	accountAmounts = append(accountAmounts, &services.AccountAmount{
 		AccountID: operator.accountID.toProtobuf(),
 		Amount:    -cost.tinybar,
 	})
 
-	body := proto.TransactionBody{
+	body := services.TransactionBody{
 		TransactionID:  transactionID.toProtobuf(),
 		NodeAccountID:  nodeAccountID.toProtobuf(),
 		TransactionFee: uint64(NewHbar(1).tinybar),
-		TransactionValidDuration: &proto.Duration{
+		TransactionValidDuration: &services.Duration{
 			Seconds: 120,
 		},
-		Data: &proto.TransactionBody_CryptoTransfer{
-			CryptoTransfer: &proto.CryptoTransferTransactionBody{
-				Transfers: &proto.TransferList{
+		Data: &services.TransactionBody_CryptoTransfer{
+			CryptoTransfer: &services.CryptoTransferTransactionBody{
+				Transfers: &services.TransferList{
 					AccountAmounts: accountAmounts,
 				},
 			},
@@ -181,12 +182,12 @@ func query_makePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 	}
 
 	signature := operator.signer(bodyBytes)
-	sigPairs := make([]*proto.SignaturePair, 0)
+	sigPairs := make([]*services.SignaturePair, 0)
 	sigPairs = append(sigPairs, operator.publicKey.toSignaturePairProtobuf(signature))
 
-	return &proto.Transaction{
+	return &services.Transaction{
 		BodyBytes: bodyBytes,
-		SigMap: &proto.SignatureMap{
+		SigMap: &services.SignatureMap{
 			SigPair: sigPairs,
 		},
 	}, nil

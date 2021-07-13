@@ -2,7 +2,8 @@ package hedera
 
 import (
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"time"
 )
 
@@ -31,7 +32,7 @@ type TokenInfo struct {
 	CustomFees          []CustomFee
 }
 
-func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
+func freezeStatusFromProtobuf(pb services.TokenFreezeStatus) *bool {
 	var freezeStatus bool
 	switch pb.Number() {
 	case 1:
@@ -47,7 +48,7 @@ func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
 	return &freezeStatus
 }
 
-func kycStatusFromProtobuf(pb proto.TokenKycStatus) *bool {
+func kycStatusFromProtobuf(pb services.TokenKycStatus) *bool {
 	var kycStatus bool
 	switch pb.Number() {
 	case 1:
@@ -62,8 +63,8 @@ func kycStatusFromProtobuf(pb proto.TokenKycStatus) *bool {
 	return &kycStatus
 }
 
-func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *proto.TokenFreezeStatus {
-	var freezeStatus proto.TokenFreezeStatus
+func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *services.TokenFreezeStatus {
+	var freezeStatus services.TokenFreezeStatus
 
 	if tokenInfo.DefaultFreezeStatus == nil {
 		return nil
@@ -71,20 +72,20 @@ func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *proto.TokenFreezeStatus {
 
 	switch *tokenInfo.DefaultFreezeStatus {
 	case true:
-		freezeStatus = proto.TokenFreezeStatus_Frozen
+		freezeStatus = services.TokenFreezeStatus_Frozen
 		break
 	case false:
-		freezeStatus = proto.TokenFreezeStatus_Unfrozen
+		freezeStatus = services.TokenFreezeStatus_Unfrozen
 		break
 	default:
-		freezeStatus = proto.TokenFreezeStatus_FreezeNotApplicable
+		freezeStatus = services.TokenFreezeStatus_FreezeNotApplicable
 	}
 
 	return &freezeStatus
 }
 
-func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
-	var kycStatus proto.TokenKycStatus
+func (tokenInfo *TokenInfo) KycStatusToProtobuf() *services.TokenKycStatus {
+	var kycStatus services.TokenKycStatus
 
 	if tokenInfo.DefaultKycStatus == nil {
 		return nil
@@ -92,19 +93,19 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 
 	switch *tokenInfo.DefaultKycStatus {
 	case true:
-		kycStatus = proto.TokenKycStatus_Granted
+		kycStatus = services.TokenKycStatus_Granted
 		break
 	case false:
-		kycStatus = proto.TokenKycStatus_Revoked
+		kycStatus = services.TokenKycStatus_Revoked
 		break
 	default:
-		kycStatus = proto.TokenKycStatus_KycNotApplicable
+		kycStatus = services.TokenKycStatus_KycNotApplicable
 	}
 
 	return &kycStatus
 }
 
-func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenInfo {
+func tokenInfoFromProtobuf(pb *services.TokenInfo, networkName *NetworkName) TokenInfo {
 	if pb == nil {
 		return TokenInfo{}
 	}
@@ -182,50 +183,50 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenI
 	}
 }
 
-func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
-	var adminKey *proto.Key
+func (tokenInfo *TokenInfo) toProtobuf() *services.TokenInfo {
+	var adminKey *services.Key
 	if tokenInfo.AdminKey != nil {
 		adminKey = tokenInfo.AdminKey.toProtoKey()
 	}
 
-	var kycKey *proto.Key
+	var kycKey *services.Key
 	if tokenInfo.KycKey != nil {
 		kycKey = tokenInfo.KycKey.toProtoKey()
 	}
 
-	var freezeKey *proto.Key
+	var freezeKey *services.Key
 	if tokenInfo.FreezeKey != nil {
 		freezeKey = tokenInfo.FreezeKey.toProtoKey()
 	}
 
-	var wipeKey *proto.Key
+	var wipeKey *services.Key
 	if tokenInfo.WipeKey != nil {
 		wipeKey = tokenInfo.WipeKey.toProtoKey()
 	}
 
-	var supplyKey *proto.Key
+	var supplyKey *services.Key
 	if tokenInfo.SupplyKey != nil {
 		supplyKey = tokenInfo.SupplyKey.toProtoKey()
 	}
 
-	var autoRenewPeriod *proto.Duration
+	var autoRenewPeriod *services.Duration
 	if tokenInfo.AutoRenewPeriod != nil {
 		autoRenewPeriod = durationToProtobuf(*tokenInfo.AutoRenewPeriod)
 	}
 
-	var expirationTime *proto.Timestamp
+	var expirationTime *services.Timestamp
 	if tokenInfo.ExpirationTime != nil {
 		expirationTime = timeToProtobuf(*tokenInfo.ExpirationTime)
 	}
 
-	customFees := make([]*proto.CustomFee, 0)
+	customFees := make([]*services.CustomFee, 0)
 	if tokenInfo.CustomFees != nil {
 		for _, customFee := range tokenInfo.CustomFees {
 			customFees = append(customFees, customFee.toProtobuf())
 		}
 	}
 
-	return &proto.TokenInfo{
+	return &services.TokenInfo{
 		TokenId:             tokenInfo.TokenID.toProtobuf(),
 		Name:                tokenInfo.Name,
 		Symbol:              tokenInfo.Symbol,
@@ -244,8 +245,8 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		AutoRenewPeriod:     autoRenewPeriod,
 		Expiry:              expirationTime,
 		Memo:                tokenInfo.TokenMemo,
-		TokenType:           proto.TokenType(tokenInfo.TokenType),
-		SupplyType:          proto.TokenSupplyType(tokenInfo.SupplyType),
+		TokenType:           services.TokenType(tokenInfo.TokenType),
+		SupplyType:          services.TokenSupplyType(tokenInfo.SupplyType),
 		MaxSupply:           tokenInfo.MaxSupply,
 		CustomFees:          customFees,
 	}
@@ -264,7 +265,7 @@ func TokenInfoFromBytes(data []byte) (TokenInfo, error) {
 	if data == nil {
 		return TokenInfo{}, errByteArrayNull
 	}
-	pb := proto.TokenInfo{}
+	pb := services.TokenInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenInfo{}, err

@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type CustomFee struct {
@@ -9,16 +9,16 @@ type CustomFee struct {
 	FeeCollectorAccountID *AccountID
 }
 
-func customFeeFromProtobuf(customFee *proto.CustomFee, networkName *NetworkName) CustomFee {
+func customFeeFromProtobuf(customFee *services.CustomFee, networkName *NetworkName) CustomFee {
 	if customFee == nil {
 		return CustomFee{}
 	}
 
 	var fee Fee
 	switch t := customFee.Fee.(type) {
-	case *proto.CustomFee_FixedFee:
+	case *services.CustomFee_FixedFee:
 		fee = customFixedFeeFromProtobuf(t.FixedFee, networkName)
-	case *proto.CustomFee_FractionalFee:
+	case *services.CustomFee_FractionalFee:
 		fee = customFractionalFeeFromProtobuf(t.FractionalFee)
 	}
 
@@ -30,21 +30,21 @@ func customFeeFromProtobuf(customFee *proto.CustomFee, networkName *NetworkName)
 	}
 }
 
-func (fee *CustomFee) toProtobuf() *proto.CustomFee {
-	var accountID *proto.AccountID
+func (fee *CustomFee) toProtobuf() *services.CustomFee {
+	var accountID *services.AccountID
 	if fee.FeeCollectorAccountID != nil {
 		accountID = fee.FeeCollectorAccountID.toProtobuf()
 	}
 
-	customFee := &proto.CustomFee{
+	customFee := &services.CustomFee{
 		FeeCollectorAccountId: accountID,
 	}
 
 	switch t := fee.Fee.(type) {
 	case CustomFractionalFee:
-		customFee.Fee = &proto.CustomFee_FractionalFee{FractionalFee: t.toProtobuf()}
+		customFee.Fee = &services.CustomFee_FractionalFee{FractionalFee: t.toProtobuf()}
 	case CustomFixedFee:
-		customFee.Fee = &proto.CustomFee_FixedFee{FixedFee: t.toProtobuf()}
+		customFee.Fee = &services.CustomFee_FixedFee{FixedFee: t.toProtobuf()}
 	}
 
 	return customFee

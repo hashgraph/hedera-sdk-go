@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -16,7 +17,6 @@ import (
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/youmark/pkcs8"
 )
 
@@ -24,19 +24,19 @@ const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
 type Key interface {
-	toProtoKey() *proto.Key
+	toProtoKey() *services.Key
 	String() string
 }
 
-func keyFromProtobuf(pbKey *proto.Key, networkName *NetworkName) (Key, error) {
+func keyFromProtobuf(pbKey *services.Key, networkName *NetworkName) (Key, error) {
 	if pbKey == nil {
 		return PublicKey{}, errParameterNull
 	}
 	switch key := pbKey.GetKey().(type) {
-	case *proto.Key_Ed25519:
+	case *services.Key_Ed25519:
 		return PublicKeyFromBytes(key.Ed25519)
 
-	case *proto.Key_ThresholdKey:
+	case *services.Key_ThresholdKey:
 		threshold := int(key.ThresholdKey.GetThreshold())
 		keys, err := keyListFromProtobuf(key.ThresholdKey.GetKeys(), networkName)
 		if err != nil {
@@ -46,7 +46,7 @@ func keyFromProtobuf(pbKey *proto.Key, networkName *NetworkName) (Key, error) {
 
 		return &keys, nil
 
-	case *proto.Key_KeyList:
+	case *services.Key_KeyList:
 		keys, err := keyListFromProtobuf(key.KeyList, networkName)
 		if err != nil {
 			return nil, err
@@ -54,7 +54,7 @@ func keyFromProtobuf(pbKey *proto.Key, networkName *NetworkName) (Key, error) {
 
 		return &keys, nil
 
-	case *proto.Key_ContractID:
+	case *services.Key_ContractID:
 		return contractIDFromProtobuf(key.ContractID, networkName), nil
 
 	default:
@@ -375,18 +375,18 @@ func (pk PublicKey) Bytes() []byte {
 	return pk.keyData
 }
 
-func (sk PrivateKey) toProtoKey() *proto.Key {
+func (sk PrivateKey) toProtoKey() *services.Key {
 	return sk.PublicKey().toProtoKey()
 }
 
-func (pk PublicKey) toProtoKey() *proto.Key {
-	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
+func (pk PublicKey) toProtoKey() *services.Key {
+	return &services.Key{Key: &services.Key_Ed25519{Ed25519: pk.keyData}}
 }
 
-func (pk PublicKey) toSignaturePairProtobuf(signature []byte) *proto.SignaturePair {
-	return &proto.SignaturePair{
+func (pk PublicKey) toSignaturePairProtobuf(signature []byte) *services.SignaturePair {
+	return &services.SignaturePair{
 		PubKeyPrefix: pk.keyData,
-		Signature: &proto.SignaturePair_Ed25519{
+		Signature: &services.SignaturePair_Ed25519{
 			Ed25519: signature,
 		},
 	}
