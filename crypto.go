@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -265,28 +266,30 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	return digest[0:32], digest[32:]
 }
 
-func deriveLegacyChildKey(parentKey []byte, index int32) []byte {
-	in := make([]byte, 4)
-	k := 0
-	binary.LittleEndian.PutUint32(in, uint32(index))
-	password := make([]uint8, len(parentKey)+8)
+func deriveLegacyChildKey(parentKey []byte, index int64) []byte {
+	in := make([]uint8, 8)
+
+	if index == int64(0xffffffffff) {
+		in = []uint8{0, 0, 0, 0xff, 0xff, 0xff, 0xff, 0xff}
+	} else if index > 0xffffffff {
+		panic(errors.New("derive index is out of range"))
+	} else {
+		if index < 0 {
+			for i := 0; i < 4; i++ {
+				in[i] = uint8(0xff)
+			}
+		}
+
+		for i := 4; i < len(in); i++ {
+			in[i] = uint8(index)
+		}
+	}
+	password := make([]uint8, len(parentKey))
 	for i, number := range parentKey {
 		password[i] = number
 	}
 
-	if index >= 0 {
-		for i := len(parentKey); i < len(parentKey)+4; i++ {
-			password[i] = 0
-		}
-	} else {
-		for i := len(parentKey); i < len(parentKey)+4; i++ {
-			password[i] = 0xFF
-		}
-	}
-	for i := len(parentKey) + 4; i < len(password); i++ {
-		password[i] = in[k]
-		k++
-	}
+	password = append(password, in...)
 
 	salt := []byte{0xFF}
 
@@ -312,7 +315,7 @@ func (pk PublicKey) String() string {
 
 // Bytes returns the byte slice representation of the PrivateKey.
 func (sk PrivateKey) Bytes() []byte {
-	return sk.keyData
+	return sk.keyData[0:32]
 }
 
 // Keystore returns an encrypted keystore containing the PrivateKey.
@@ -364,8 +367,8 @@ func (sk PrivateKey) Derive(index uint32) (PrivateKey, error) {
 	return derivedKey, nil
 }
 
-func (sk PrivateKey) LegacyDerive(index int32) (PrivateKey, error) {
-	keyData := deriveLegacyChildKey(sk.keyData, index)
+func (sk PrivateKey) LegacyDerive(index int64) (PrivateKey, error) {
+	keyData := deriveLegacyChildKey(sk.Bytes(), index)
 
 	return PrivateKeyFromBytes(keyData)
 }
