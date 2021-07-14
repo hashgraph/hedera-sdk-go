@@ -8,7 +8,9 @@ import (
 
 type TransactionFeeSchedule struct {
 	RequestType RequestType
-	FeeData     *FeeData
+	//Deprecated use Fees
+	FeeData *FeeData
+	Fees    []*FeeData
 }
 
 func newTransactionFeeSchedule() TransactionFeeSchedule {
@@ -23,26 +25,45 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 		return TransactionFeeSchedule{}, errParameterNull
 	}
 
-	feeData, err := feeDataFromProtobuf(txFeeSchedule.GetFeeData())
+	feeData := make([]*FeeData, 0)
+
+	for _, data := range txFeeSchedule.GetFees() {
+		temp, err := feeDataFromProtobuf(data)
+		if err != nil {
+			return TransactionFeeSchedule{}, err
+		}
+		feeData = append(feeData, &temp)
+	}
+
+	singleFeeData, err := feeDataFromProtobuf(txFeeSchedule.GetFeeData())
 	if err != nil {
 		return TransactionFeeSchedule{}, err
 	}
 
 	return TransactionFeeSchedule{
 		RequestType: RequestType(txFeeSchedule.GetHederaFunctionality()),
-		FeeData:     &feeData,
+		Fees:        feeData,
+		FeeData:     &singleFeeData,
 	}, nil
 }
 
 func (txFeeSchedule TransactionFeeSchedule) toProtobuf() *proto.TransactionFeeSchedule {
-	var feeData *proto.FeeData
+	feeData := make([]*proto.FeeData, 0)
+	if txFeeSchedule.Fees != nil {
+		for _, data := range txFeeSchedule.Fees {
+			feeData = append(feeData, data.toProtobuf())
+		}
+	}
+
+	var singleFee *proto.FeeData
 	if txFeeSchedule.FeeData != nil {
-		feeData = txFeeSchedule.FeeData.toProtobuf()
+		singleFee = txFeeSchedule.FeeData.toProtobuf()
 	}
 
 	return &proto.TransactionFeeSchedule{
 		HederaFunctionality: proto.HederaFunctionality(txFeeSchedule.RequestType),
-		FeeData:             feeData,
+		Fees:                feeData,
+		FeeData:             singleFee,
 	}
 }
 
@@ -74,5 +95,14 @@ func transactionFeeScheduleFromBytes(data []byte) (TransactionFeeSchedule, error
 }
 
 func (txFeeSchedule TransactionFeeSchedule) String() string {
-	return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), txFeeSchedule.FeeData.String())
+	str := ""
+	for _, dat := range txFeeSchedule.Fees {
+		str = str + dat.String() + ", "
+	}
+
+	if txFeeSchedule.FeeData != nil {
+		return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), txFeeSchedule.FeeData.String())
+	} else {
+		return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), str)
+	}
 }

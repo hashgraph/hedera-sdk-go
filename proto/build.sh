@@ -8,11 +8,13 @@
 dir="$( cd "$( dirname $( dirname "${BASH_SOURCE[0]}" ) )" >/dev/null 2>&1 && pwd )"
 
 protoc \
-   --go_out=plugins=grpc,paths=source_relative:. \
+   --go_out=. --go_opt=paths=source_relative \
+   --go-grpc_out=. --go-grpc_opt=paths=source_relative \
    --proto_path "$dir" \
    "$dir"/proto/*.proto
 
 protoc \
-    --go_out=plugins=grpc,paths=source_relative:. \
+    --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
     --proto_path "$dir" \
     "$dir/proto/mirror"/*.proto

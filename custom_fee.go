@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -48,4 +49,26 @@ func (fee *CustomFee) toProtobuf() *proto.CustomFee {
 	}
 
 	return customFee
+}
+
+func (fee *CustomFee) ToBytes() []byte {
+	data, err := protobuf.Marshal(fee.toProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func CustomFeeFromBytes(data []byte) (CustomFee, error) {
+	if data == nil {
+		return CustomFee{}, errByteArrayNull
+	}
+	pb := proto.CustomFee{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return CustomFee{}, err
+	}
+
+	return customFeeFromProtobuf(&pb, nil), nil
 }

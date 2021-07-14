@@ -36,6 +36,7 @@ func NewTransferTransaction() *TransferTransaction {
 func transferTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TransferTransaction {
 	hbarTransfers := make(map[AccountID]Hbar)
 	tokenTransfers := make(map[TokenID]map[AccountID]int64)
+	nftTransfers := make(map[TokenID][]TokenNftTransfer, 0)
 
 	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
 		accountID := accountIDFromProtobuf(aa.AccountID, nil)
@@ -72,11 +73,23 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 		tokenTransfers[tokenID] = currentTokenTransfers
 	}
 
+	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
+		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token, nil)
+
+		for _, aa := range tokenTransfersList.GetNftTransfers() {
+			if nftTransfers[tokenID] == nil {
+				nftTransfers[tokenID] = make([]TokenNftTransfer, 0)
+			}
+			nftTransfers[tokenID] = append(nftTransfers[tokenID], nftTransferFromProtobuf(aa, nil))
+		}
+	}
+
 	return TransferTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetCryptoTransfer(),
 		hbarTransfers:  hbarTransfers,
 		tokenTransfers: tokenTransfers,
+		nftTransfers:   nftTransfers,
 	}
 }
 
@@ -211,6 +224,7 @@ func (transaction *TransferTransaction) Schedule() (*ScheduleCreateTransaction, 
 func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	transaction.buildHbarTransfers()
 	transaction.buildTokenTransfers()
+	transaction.buildNftTransfers()
 
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
