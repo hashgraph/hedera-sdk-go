@@ -12,10 +12,14 @@ type CustomFixedFee struct {
 }
 
 func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, networkName *NetworkName) CustomFixedFee {
-	id := tokenIDFromProtobuf(fixedFee.DenominatingTokenId, networkName)
+	var tokenID TokenID
+	if fixedFee.DenominatingTokenId != nil {
+		tokenID = tokenIDFromProtobuf(fixedFee.DenominatingTokenId, networkName)
+	}
+
 	return CustomFixedFee{
 		Amount:              fixedFee.Amount,
-		DenominationTokenID: &id,
+		DenominationTokenID: &tokenID,
 	}
 }
 

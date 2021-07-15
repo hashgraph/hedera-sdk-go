@@ -21,6 +21,7 @@ type TransactionRecord struct {
 	NftTransfers       map[TokenID][]TokenNftTransfer
 	CallResult         *ContractFunctionResult
 	CallResultIsCreate bool
+	ScheduleRef        *ScheduleID
 	AssessedCustomFees []AssessedCustomFee
 }
 
@@ -87,6 +88,11 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 		}
 	}
 
+	var scheduleRef ScheduleID
+	if pb.ScheduleRef != nil {
+		scheduleRef = scheduleIDFromProtobuf(pb.ScheduleRef, nil)
+	}
+
 	assessedCustomFees := make([]AssessedCustomFee, 0)
 	for _, fee := range pb.AssessedCustomFees {
 		assessedCustomFees = append(assessedCustomFees, assessedCustomFeeFromProtobuf(fee, networkName))
@@ -103,6 +109,7 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 		TokenTransfers:     tokenTransfers,
 		NftTransfers:       nftTransfers,
 		CallResultIsCreate: true,
+		ScheduleRef:        &scheduleRef,
 		AssessedCustomFees: assessedCustomFees,
 	}
 

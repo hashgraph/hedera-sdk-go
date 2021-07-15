@@ -17,5 +17,5 @@ func (tokenSupplyType TokenSupplyType) String() string {
 		return "TOKEN_SUPPLY_TYPE_FINITE"
 	}
 
-	panic(fmt.Sprintf("unreacahble: TokenType.String() switch statement is non-exhaustive. Status: %v", uint32(tokenSupplyType)))
+	panic(fmt.Sprintf("unreacahble: TokenSupply.String() switch statement is non-exhaustive. TokenSupply: %v", uint32(tokenSupplyType)))
 }

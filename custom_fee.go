@@ -23,11 +23,14 @@ func customFeeFromProtobuf(customFee *proto.CustomFee, networkName *NetworkName)
 		fee = customFractionalFeeFromProtobuf(t.FractionalFee)
 	}
 
-	id := accountIDFromProtobuf(customFee.FeeCollectorAccountId, networkName)
+	var accountID AccountID
+	if customFee.FeeCollectorAccountId != nil {
+		accountID = accountIDFromProtobuf(customFee.FeeCollectorAccountId, networkName)
+	}
 
 	return CustomFee{
 		Fee:                   fee,
-		FeeCollectorAccountID: &id,
+		FeeCollectorAccountID: &accountID,
 	}
 }
 

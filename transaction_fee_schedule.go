@@ -26,7 +26,7 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 	}
 
 	feeData := make([]*FeeData, 0)
-
+	var err error
 	for _, data := range txFeeSchedule.GetFees() {
 		temp, err := feeDataFromProtobuf(data)
 		if err != nil {
@@ -35,9 +35,12 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 		feeData = append(feeData, &temp)
 	}
 
-	singleFeeData, err := feeDataFromProtobuf(txFeeSchedule.GetFeeData())
-	if err != nil {
-		return TransactionFeeSchedule{}, err
+	var singleFeeData FeeData
+	if txFeeSchedule.GetFeeData() != nil {
+		singleFeeData, err = feeDataFromProtobuf(txFeeSchedule.GetFeeData())
+		if err != nil {
+			return TransactionFeeSchedule{}, err
+		}
 	}
 
 	return TransactionFeeSchedule{
