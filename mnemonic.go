@@ -153,21 +153,18 @@ func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
 	}
 
 	var entropy []byte
-	var keyData []byte
 	if len(indices) == 22 {
 		entropy, _ = m.toLegacyEntropy(indices)
-		keyData = deriveLegacyChildKey(entropy, -1)
 	} else if len(indices) == 24 {
 		entropy, err = m.toLegacyEntropy2()
 		if err != nil {
 			return PrivateKey{}, err
 		}
-		keyData = deriveLegacyChildKey(entropy, 0)
 	} else {
 		return PrivateKey{}, errors.New("Not a legacy key.")
 	}
 
-	return PrivateKeyFromBytes(keyData)
+	return PrivateKeyFromBytes(entropy)
 }
 
 func bytesToBits(dat []uint8) []bool {
