@@ -2,7 +2,11 @@ package hedera
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"math"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 // Hbar is a typesafe wrapper around values of HBAR providing foolproof conversions to other denominations.
@@ -45,15 +49,48 @@ func (hbar Hbar) As(unit HbarUnit) float64 {
 
 func (hbar Hbar) String() string {
 	// Format the string as tinybar if the value is 1000 tinybar or less
-	if hbar.tinybar <= 1000 {
-		return fmt.Sprintf("%v tħ", hbar.tinybar)
+	if -1000 <= hbar.tinybar && hbar.tinybar <= 1000 {
+		return fmt.Sprintf("%v tℏ", hbar.tinybar)
 	}
 
 	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()))
 }
 
+func HbarFromString(hbar string) (Hbar, error) {
+	match, err := regexp.Compile(`^((?:\+|\-)?\d+(?:\.\d+)?)(?: (tℏ|μℏ|mℏ|ℏ|kℏ|Mℏ|Gℏ))?$`)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	matchArray := match.FindStringSubmatch(hbar)
+	if len(matchArray)== 0{
+		return Hbar{}, errors.New("Invalid number and/or symbol.")
+	}
+
+	a, err := strconv.ParseFloat(matchArray[1], 64)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	if strings.Contains(hbar, "tℏ") {
+		return HbarFrom(a, HbarUnits.Tinybar), nil
+	} else if strings.Contains(hbar, "μℏ") {
+		return HbarFrom(a, HbarUnits.Microbar), nil
+	} else if strings.Contains(hbar, "mℏ") {
+		return HbarFrom(a, HbarUnits.Millibar), nil
+	} else if strings.Contains(hbar, "kℏ") {
+		return HbarFrom(a, HbarUnits.Kilobar), nil
+	} else if strings.Contains(hbar, "Mℏ") {
+		return HbarFrom(a, HbarUnits.Megabar), nil
+	} else if strings.Contains(hbar, "Gℏ") {
+		return HbarFrom(a, HbarUnits.Gigabar), nil
+	} else {
+		return HbarFrom(a, HbarUnits.Hbar), nil
+	}
+}
+
 func (hbar Hbar) ToString(unit HbarUnit) string {
-	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit.numberOfTinybar()), unit.String())
+	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit.numberOfTinybar()), unit.Symbol())
 }
 
 func (hbar Hbar) Negated() Hbar {
