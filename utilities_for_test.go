@@ -21,7 +21,7 @@ type IntegrationTestEnv struct {
 	Client              *Client
 	OperatorKey         PrivateKey
 	OperatorID          AccountID
-	OriginalOperatorKey PrivateKey
+	OriginalOperatorKey PublicKey
 	OriginalOperatorID  AccountID
 	NodeAccountIDs      []AccountID
 }
@@ -70,7 +70,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(NewHbar(10)).
+		SetInitialBalance(NewHbar(30)).
 		SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -78,8 +78,8 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	env.OriginalOperatorID = env.OperatorID
-	env.OriginalOperatorKey = env.OperatorKey
+	env.OriginalOperatorID = env.Client.GetOperatorAccountID()
+	env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()
 	env.OperatorID = *receipt.AccountID
 	env.OperatorKey = newKey
 	env.NodeAccountIDs = []AccountID{resp.NodeID}
