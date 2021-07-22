@@ -1,5 +1,9 @@
 ## v2.1.11
 
+### Removed
+
+ * `*.AddCustomFee()` use `*.SetCustomFees()` instead
+
 ### Changes
 
  * Update `Status` with new codes
