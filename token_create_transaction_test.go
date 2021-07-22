@@ -410,7 +410,7 @@ func TestTokenCreateWithInvalidFeeCollectorAccountIDTransaction_Execute(t *testi
 				MinimumAmount: 1,
 				MaximumAmount: 10,
 			},
-			FeeCollectorAccountID: &AccountID{0, 0 , 0, nil},
+			FeeCollectorAccountID: &AccountID{0, 0, 0, nil},
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)

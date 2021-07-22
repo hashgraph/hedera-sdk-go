@@ -74,19 +74,16 @@ func (feeSchedules FeeSchedules) ToBytes() []byte {
 
 func FeeSchedulesFromBytes(data []byte) (FeeSchedules, error) {
 	if data == nil {
-		println("here 1")
 		return FeeSchedules{}, errByteArrayNull
 	}
 	pb := proto.CurrentAndNextFeeSchedule{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
-		println("here 2")
 		return FeeSchedules{}, err
 	}
 
 	info, err := feeSchedulesFromProtobuf(&pb)
 	if err != nil {
-		println("here 3")
 		return FeeSchedules{}, err
 	}
 

@@ -217,10 +217,10 @@ const (
 	StatusTreasuryMustOwnBurnedNft                           Status = 252
 	StatusAccountDoesNotOwnWipedNft                          Status = 253
 	StatusAccountAmountTransfersOnlyAllowedForFungibleCommon Status = 254
-	StatusMaxNftsInPriceRegimeHaveBeenMinted Status = 255
-	StatusPayerAccountDeleted Status = 256
-	StatusCustomFeeChargingExceededMaxRecursionDepth Status = 257
-	StatusCustomFeeChargingExceededMaxAccountAmounts Status = 258
+	StatusMaxNftsInPriceRegimeHaveBeenMinted                 Status = 255
+	StatusPayerAccountDeleted                                Status = 256
+	StatusCustomFeeChargingExceededMaxRecursionDepth         Status = 257
+	StatusCustomFeeChargingExceededMaxAccountAmounts         Status = 258
 )
 
 // String() returns a string representation of the status
