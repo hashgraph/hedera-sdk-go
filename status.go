@@ -117,6 +117,7 @@ const (
 	StatusExpirationReductionNotAllowed                      Status = 110
 	StatusMaxGasLimitExceeded                                Status = 111
 	StatusMaxFileSizeExceeded                                Status = 112
+	StatusReceiverSigRequired                                Status = 113
 	StatusInvalidTopicID                                     Status = 150
 	StatusInvalidAdminKey                                    Status = 155
 	StatusInvalidSubmitKey                                   Status = 156
@@ -191,14 +192,14 @@ const (
 	StatusInvalidNftID                                       Status = 226
 	StatusMetadataTooLong                                    Status = 227
 	StatusBatchSizeLimitExceeded                             Status = 228
-	StatusQueryRangeLimitExceeded                            Status = 229
+	StatusInvalidQueryRange                                  Status = 229
 	StatusFractionDividesByZero                              Status = 230
 	StatusInsufficientPayerBalanceForCustomFee               Status = 231
 	StatusCustomFeesListTooLong                              Status = 232
 	StatusInvalidCustomFeeCollector                          Status = 233
 	StatusInvalidTokenIDInCustomFees                         Status = 234
 	StatusTokenNotAssociatedToFeeCollector                   Status = 235
-	StatusTokenMaxSuppleReached                              Status = 236
+	StatusTokenMaxSupplyReached                              Status = 236
 	StatusSenderDoesNotOwnNftSerialNo                        Status = 237
 	StatusCustomFeeNotFullySpecified                         Status = 238
 	StatusCustomFeeMustBePositive                            Status = 239
@@ -450,6 +451,8 @@ func (status Status) String() string {
 		return "MAX_GAS_LIMIT_EXCEEDED"
 	case StatusMaxFileSizeExceeded:
 		return "MAX_FILE_SIZE_EXCEEDED"
+	case StatusReceiverSigRequired:
+		return "RECEIVER_SIG_REQUIRED"
 	case StatusInvalidTopicID:
 		return "INVALID_TOPIC_ID"
 	case StatusInvalidAdminKey:
@@ -598,8 +601,8 @@ func (status Status) String() string {
 		return "METADATA_TOO_LONG"
 	case StatusBatchSizeLimitExceeded:
 		return "BATCH_SIZE_LIMIT_EXCEEDED"
-	case StatusQueryRangeLimitExceeded:
-		return "QUERY_RANGE_LIMIT_EXCEEDED"
+	case StatusInvalidQueryRange:
+		return "INVALID_QUERY_RANGE"
 	case StatusFractionDividesByZero:
 		return "FRACTION_DIVIDES_BY_ZERO"
 	case StatusInsufficientPayerBalanceForCustomFee:
@@ -609,10 +612,10 @@ func (status Status) String() string {
 	case StatusInvalidCustomFeeCollector:
 		return "INVALID_CUSTOM_FEE_COLLECTOR"
 	case StatusInvalidTokenIDInCustomFees:
-		return "QUERY_RANGE_LIMIT_EXCEEDED"
+		return "INVALID_TOKEN_ID_IN_CUSTOM_FEES"
 	case StatusTokenNotAssociatedToFeeCollector:
 		return "TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR"
-	case StatusTokenMaxSuppleReached:
+	case StatusTokenMaxSupplyReached:
 		return "TOKEN_MAX_SUPPLY_REACHED"
 	case StatusSenderDoesNotOwnNftSerialNo:
 		return "SENDER_DOES_NOT_OWN_NFT_SERIAL_NO"
@@ -633,7 +636,7 @@ func (status Status) String() string {
 	case StatusCustomFeeDenominationMustBeFungibleCommon:
 		return "CUSTOM_FEE_DENOMINATION_MUST_BE_FUNGIBLE_COMMON"
 	case StatusCustomFractionalFeeOnlyAllowedForFungibleCommon:
-		return "FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT"
+		return "CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON"
 	case StatusInvalidCustomFeeScheduleKey:
 		return "INVALID_CUSTOM_FEE_SCHEDULE_KEY"
 	case StatusInvalidTokenMintMetadata:
