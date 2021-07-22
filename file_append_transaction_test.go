@@ -79,7 +79,7 @@ func Test_FileAppend_NoFileID(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_FILE_ID"), err.Error())
 	}
 
 	_, err = resp.GetReceipt(env.Client)
@@ -107,7 +107,7 @@ func Test_FileAppend_NothingSet(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_FILE_ID"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

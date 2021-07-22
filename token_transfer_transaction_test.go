@@ -92,7 +92,7 @@ func TestTokenTransferTransaction_Execute(t *testing.T) {
 
 	var value uint64
 	for _, relation := range info.TokenRelationships {
-		if *tokenID.checksum == *relation.TokenID.checksum {
+		if tokenID.String() == relation.TokenID.String() {
 			value = relation.Balance
 		}
 	}
@@ -362,6 +362,326 @@ func TestTokenNftTransferTransaction_Execute(t *testing.T) {
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+}
+
+func TestTokenFeeScheduleUpdateRecursionDepthTransaction_Execute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	customFee := CustomFee{
+		Fee: CustomFixedFee{
+			Amount:              100000000,
+			DenominationTokenID: &tokenID,
+		},
+		FeeCollectorAccountID: &env.OperatorID,
+	}
+
+	resp, err = NewTokenFeeScheduleUpdateTransaction().
+		SetTokenID(tokenID).
+		AddCustomFee(customFee).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transferTx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddTokenTransfer(tokenID, accountID, -10).
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), 10).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	transferTx.Sign(newKey)
+
+	resp, err = transferTx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH"), err.Error())
+	}
+}
+
+func TestTokenFeeScheduleUpdateHugeAmountTransaction_Execute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(10).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	customFee := CustomFee{
+		Fee: CustomFixedFee{
+			Amount:              1000,
+			DenominationTokenID: nil,
+		},
+		FeeCollectorAccountID: &env.OperatorID,
+	}
+
+	resp, err = NewTokenFeeScheduleUpdateTransaction().
+		SetTokenID(tokenID).
+		AddCustomFee(customFee).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transferTx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -5).
+		AddTokenTransfer(tokenID, accountID, 5).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transferTx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+}
+
+func TestTokenFeeScheduleUpdateHugeAmount1Transaction_Execute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID2 := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(10).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	customFee := CustomFee{
+		Fee: CustomFixedFee{
+			Amount:              1000,
+			DenominationTokenID: nil,
+		},
+		FeeCollectorAccountID: &accountID2,
+	}
+
+	resp, err = NewTokenFeeScheduleUpdateTransaction().
+		SetTokenID(tokenID).
+		AddCustomFee(customFee).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transferTx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -5).
+		AddTokenTransfer(tokenID, accountID, 5).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transferTx.Execute(env.Client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)

@@ -217,6 +217,10 @@ const (
 	StatusTreasuryMustOwnBurnedNft                           Status = 252
 	StatusAccountDoesNotOwnWipedNft                          Status = 253
 	StatusAccountAmountTransfersOnlyAllowedForFungibleCommon Status = 254
+	StatusMaxNftsInPriceRegimeHaveBeenMinted Status = 255
+	StatusPayerAccountDeleted Status = 256
+	StatusCustomFeeChargingExceededMaxRecursionDepth Status = 257
+	StatusCustomFeeChargingExceededMaxAccountAmounts Status = 258
 )
 
 // String() returns a string representation of the status
@@ -646,6 +650,14 @@ func (status Status) String() string {
 		return "ACCOUNT_DOES_NOT_OWN_WIPED_NFT"
 	case StatusAccountAmountTransfersOnlyAllowedForFungibleCommon:
 		return "ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON"
+	case StatusMaxNftsInPriceRegimeHaveBeenMinted:
+		return "MAX_NFTS_IN_PRICE_REGIME_HAVE_BEEN_MINTED"
+	case StatusPayerAccountDeleted:
+		return "PAYER_ACCOUNT_DELETED"
+	case StatusCustomFeeChargingExceededMaxRecursionDepth:
+		return "CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH"
+	case StatusCustomFeeChargingExceededMaxAccountAmounts:
+		return "CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

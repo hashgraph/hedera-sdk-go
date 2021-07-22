@@ -162,7 +162,7 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_TOPIC_ID"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_TOPIC_ID"), err.Error())
 	}
 
 	for {

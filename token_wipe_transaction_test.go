@@ -252,7 +252,7 @@ func Test_TokenWipe_NoAmount(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -361,7 +361,7 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -472,7 +472,7 @@ func Test_TokenWipe_NoAccountID(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -611,7 +611,7 @@ func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)

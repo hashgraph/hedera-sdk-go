@@ -70,7 +70,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
-		SetInitialBalance(NewHbar(10)).
+		SetInitialBalance(NewHbar(30)).
 		SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
 		Execute(env.Client)
 	assert.NoError(t, err)
