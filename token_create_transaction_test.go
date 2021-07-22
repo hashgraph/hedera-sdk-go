@@ -319,20 +319,22 @@ func TestTokenCreateWithCustomFeesTransaction_Execute(t *testing.T) {
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		AddCustomFee(CustomFee{
-			Fee: CustomFixedFee{
+		SetCustomFees([]Fee{
+			CustomFixedFee{
+				CustomFee: CustomFee{
+					FeeCollectorAccountID: &env.OperatorID,
+				},
 				Amount: 10,
 			},
-			FeeCollectorAccountID: &env.OperatorID,
-		}).
-		AddCustomFee(CustomFee{
-			Fee: CustomFractionalFee{
+			CustomFractionalFee{
+				CustomFee: CustomFee{
+					FeeCollectorAccountID: &env.OperatorID,
+				},
 				Numerator:     1,
 				Denominator:   20,
 				MinimumAmount: 1,
 				MaximumAmount: 10,
 			},
-			FeeCollectorAccountID: &env.OperatorID,
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
@@ -361,20 +363,22 @@ func TestTokenCreateWithCustomFeesDenominatorZeroTransaction_Execute(t *testing.
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		AddCustomFee(CustomFee{
-			Fee: CustomFixedFee{
+		SetCustomFees([]Fee{
+			CustomFixedFee{
+				CustomFee: CustomFee{
+					FeeCollectorAccountID: &env.OperatorID,
+				},
 				Amount: 10,
 			},
-			FeeCollectorAccountID: &env.OperatorID,
-		}).
-		AddCustomFee(CustomFee{
-			Fee: CustomFractionalFee{
+			CustomFractionalFee{
+				CustomFee: CustomFee{
+					FeeCollectorAccountID: &env.OperatorID,
+				},
 				Numerator:     1,
 				Denominator:   0,
 				MinimumAmount: 1,
 				MaximumAmount: 10,
 			},
-			FeeCollectorAccountID: &env.OperatorID,
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
@@ -403,14 +407,16 @@ func TestTokenCreateWithInvalidFeeCollectorAccountIDTransaction_Execute(t *testi
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		AddCustomFee(CustomFee{
-			Fee: CustomFractionalFee{
+		SetCustomFees([]Fee{
+			CustomFractionalFee{
+				CustomFee: CustomFee{
+					FeeCollectorAccountID: &AccountID{},
+				},
 				Numerator:     1,
 				Denominator:   20,
 				MinimumAmount: 1,
 				MaximumAmount: 10,
 			},
-			FeeCollectorAccountID: &AccountID{0, 0, 0, nil},
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
@@ -420,39 +426,6 @@ func TestTokenCreateWithInvalidFeeCollectorAccountIDTransaction_Execute(t *testi
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, fmt.Sprint("exceptional receipt status: INVALID_CUSTOM_FEE_COLLECTOR"), err.Error())
-	}
-
-	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
-}
-
-func TestTokenCreateWithCustomFeesNotFullTransaction_Execute(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
-
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenMemo("fnord").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		AddCustomFee(CustomFee{
-			FeeCollectorAccountID: &env.OperatorID,
-		}).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err := resp.GetReceipt(env.Client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, fmt.Sprint("exceptional receipt status: CUSTOM_FEE_NOT_FULLY_SPECIFIED"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
@@ -475,14 +448,16 @@ func TestTokenCreateWithMaxLessThanMinTransaction_Execute(t *testing.T) {
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		AddCustomFee(CustomFee{
-			Fee: CustomFractionalFee{
+		SetCustomFees([]Fee{
+			CustomFractionalFee{
+				CustomFee: CustomFee{
+					FeeCollectorAccountID: &env.OperatorID,
+				},
 				Numerator:     1,
 				Denominator:   20,
 				MinimumAmount: 100,
 				MaximumAmount: 10,
 			},
-			FeeCollectorAccountID: &env.OperatorID,
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)

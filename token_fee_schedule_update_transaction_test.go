@@ -41,17 +41,17 @@ func TestTokenFeeScheduleUpdateTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	customFee := CustomFee{
-		Fee: CustomFixedFee{
-			Amount:              1,
-			DenominationTokenID: &tokenID,
+	customFee := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &env.OperatorID,
 		},
-		FeeCollectorAccountID: &env.OperatorID,
+		Amount:              1,
+		DenominationTokenID: &tokenID,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
-		AddCustomFee(customFee).
+		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
@@ -104,19 +104,19 @@ func TestTokenFeeScheduleUpdateTransactionWithFractional_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	customFee := CustomFee{
-		Fee: CustomFractionalFee{
-			Numerator:     1,
-			Denominator:   20,
-			MinimumAmount: 1,
-			MaximumAmount: 10,
+	customFee := CustomFractionalFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &env.OperatorID,
 		},
-		FeeCollectorAccountID: &env.OperatorID,
+		Numerator:     1,
+		Denominator:   20,
+		MinimumAmount: 1,
+		MaximumAmount: 10,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
-		AddCustomFee(customFee).
+		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
@@ -168,17 +168,17 @@ func TestTokenFeeScheduleUpdateNoFeeScheduleKeyTransaction_Execute(t *testing.T)
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	customFee := CustomFee{
-		Fee: CustomFixedFee{
-			Amount:              1,
-			DenominationTokenID: &tokenID,
+	customFee := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &env.OperatorID,
 		},
-		FeeCollectorAccountID: &env.OperatorID,
+		Amount:              1,
+		DenominationTokenID: &tokenID,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
-		AddCustomFee(customFee).
+		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
@@ -230,17 +230,17 @@ func TestTokenFeeScheduleUpdateWrongScheduleKeyTransaction_Execute(t *testing.T)
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	customFee := CustomFee{
-		Fee: CustomFixedFee{
-			Amount:              1,
-			DenominationTokenID: &tokenID,
+	customFee := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &env.OperatorID,
 		},
-		FeeCollectorAccountID: &env.OperatorID,
+		Amount:              1,
+		DenominationTokenID: &tokenID,
 	}
 
 	feeSchedule, err := NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
-		AddCustomFee(customFee).
+		SetCustomFees([]Fee{customFee}).
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 

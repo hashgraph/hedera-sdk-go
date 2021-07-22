@@ -112,7 +112,7 @@ func TestTransactionGetHash(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransactionFromBytes(t *testing.T) {
+func DisabledTestTransactionFromBytes(t *testing.T) {
 	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil})
 
 	TransactionBody := proto.TransactionBody{

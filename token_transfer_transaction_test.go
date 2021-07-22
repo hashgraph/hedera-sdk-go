@@ -413,17 +413,17 @@ func TestTokenFeeScheduleUpdateRecursionDepthTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	customFee := CustomFee{
-		Fee: CustomFixedFee{
-			Amount:              100000000,
-			DenominationTokenID: &tokenID,
+	customFee := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &env.OperatorID,
 		},
-		FeeCollectorAccountID: &env.OperatorID,
+		Amount:              100000000,
+		DenominationTokenID: &tokenID,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
-		AddCustomFee(customFee).
+		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
@@ -519,17 +519,17 @@ func TestTokenFeeScheduleUpdateHugeAmountTransaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	customFee := CustomFee{
-		Fee: CustomFixedFee{
-			Amount:              1000,
-			DenominationTokenID: nil,
+	customFee := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &env.OperatorID,
 		},
-		FeeCollectorAccountID: &env.OperatorID,
+		Amount:              1000,
+		DenominationTokenID: nil,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
-		AddCustomFee(customFee).
+		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
@@ -632,17 +632,17 @@ func TestTokenFeeScheduleUpdateHugeAmount1Transaction_Execute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	customFee := CustomFee{
-		Fee: CustomFixedFee{
-			Amount:              1000,
-			DenominationTokenID: nil,
+	customFee := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &accountID2,
 		},
-		FeeCollectorAccountID: &accountID2,
+		Amount:              1000,
+		DenominationTokenID: nil,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
-		AddCustomFee(customFee).
+		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
