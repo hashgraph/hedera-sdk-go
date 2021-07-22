@@ -216,7 +216,7 @@ func TestTokenTransferRecordsQuery_Execute(t *testing.T) {
 		SetWipeKey(env.Client.GetOperatorPublicKey()).
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		AddCustomFee(CustomFee{
+		SetCustomFees([]CustomFee{{
 			Fee: CustomFractionalFee{
 				Numerator:     1,
 				Denominator:   20,
@@ -224,7 +224,7 @@ func TestTokenTransferRecordsQuery_Execute(t *testing.T) {
 				MaximumAmount: 10,
 			},
 			FeeCollectorAccountID: &env.OperatorID,
-		}).
+		}}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
 	assert.NoError(t, err)

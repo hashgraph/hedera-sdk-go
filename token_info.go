@@ -28,7 +28,7 @@ type TokenInfo struct {
 	TokenType           TokenType
 	SupplyType          TokenSupplyType
 	MaxSupply           int64
-	CustomFees          []CustomFee
+	CustomFees          []Fee
 }
 
 func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
@@ -149,7 +149,7 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenI
 		accountID = accountIDFromProtobuf(pb.AutoRenewAccount, networkName)
 	}
 
-	customFees := make([]CustomFee, 0)
+	customFees := make([]Fee, 0)
 	if pb.CustomFees != nil {
 		for _, custom := range pb.CustomFees {
 			customFees = append(customFees, customFeeFromProtobuf(custom, networkName))

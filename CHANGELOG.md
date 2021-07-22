@@ -1,3 +1,13 @@
+## v2.1.11
+
+### Changes
+
+ * Update `Status` with new codes
+
+### Fixes
+
+ * `PrivateKey.LegacyDerive()` should correctly handle indicies
+
 ## v2.1.11-beta.1
 
 ### Added

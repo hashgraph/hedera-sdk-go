@@ -11,7 +11,7 @@ type TokenFeeScheduleUpdateTransaction struct {
 	Transaction
 	pb         *proto.TokenFeeScheduleUpdateTransactionBody
 	tokenID    TokenID
-	customFees []CustomFee
+	customFees []Fee
 }
 
 func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
@@ -27,7 +27,7 @@ func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 }
 
 func TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenFeeScheduleUpdateTransaction {
-	customFees := make([]CustomFee, 0)
+	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {
 		customFees = append(customFees, customFeeFromProtobuf(fee, nil))
@@ -52,24 +52,14 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetTokenID() TokenID {
 	return transaction.tokenID
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []CustomFee) *TokenFeeScheduleUpdateTransaction {
+func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Fee) *TokenFeeScheduleUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.customFees = fees
 	return transaction
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []CustomFee {
+func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
 	return transaction.customFees
-}
-
-func (transaction *TokenFeeScheduleUpdateTransaction) AddCustomFee(customFee CustomFee) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
-	if transaction.customFees == nil {
-		transaction.customFees = make([]CustomFee, 0)
-	}
-
-	transaction.customFees = append(transaction.customFees, customFee)
-	return transaction
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
@@ -78,19 +68,10 @@ func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(clien
 	if err != nil {
 		return err
 	}
+
 	for _, customFee := range transaction.customFees {
-		err = customFee.FeeCollectorAccountID.Validate(client)
-		if err != nil {
+		if err := customFee.validateNetworkOnIDs(client); err != nil {
 			return err
-		}
-		switch t := customFee.Fee.(type) {
-		case CustomFixedFee:
-			if t.DenominationTokenID != nil {
-				err = t.DenominationTokenID.Validate(client)
-				if err != nil {
-					return err
-				}
-			}
 		}
 	}
 
