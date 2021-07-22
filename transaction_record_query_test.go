@@ -157,7 +157,7 @@ func Test_Record_Record_Insufficient_Transaction(t *testing.T) {
 		SetQueryPayment(HbarFromTinybar(1)).
 		Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INSUFFICIENT_TX_FEE"), err.Error())
 	}
 
 	accountID := receipt.AccountID

@@ -162,7 +162,7 @@ func Test_AccountDelete_NoSigning(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status INVALID_SIGNATURE"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_SIGNATURE"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

@@ -94,7 +94,7 @@ type FixedFee struct {
 	unknownFields protoimpl.UnknownFields
 
 	Amount              int64    `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`                                                       // The number of units to assess as a fee
-	DenominatingTokenId *TokenID `protobuf:"bytes,2,opt,name=denominating_token_id,json=denominatingTokenId,proto3" json:"denominating_token_id,omitempty"` // The denomination of the fee; taken as hbar if left unset
+	DenominatingTokenId *TokenID `protobuf:"bytes,2,opt,name=denominating_token_id,json=denominatingTokenId,proto3" json:"denominating_token_id,omitempty"` // The denomination of the fee; taken as hbar if left unset and, in a TokenCreate, taken as the id of the newly created token if set to the sentinel value of 0.0.0
 }
 
 func (x *FixedFee) Reset() {

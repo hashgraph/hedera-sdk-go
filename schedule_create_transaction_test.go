@@ -61,7 +61,7 @@ import (
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
-//		assert.Equal(t, fmt.Sprintf("exceptional receipt status SCHEDULE_ALREADY_EXECUTED"), err.Error())
+//		assert.Equal(t, fmt.Sprintf("exceptional receipt status: SCHEDULE_ALREADY_EXECUTED"), err.Error())
 //	}
 //}
 //
@@ -114,7 +114,7 @@ import (
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
-//		assert.Equal(t, fmt.Sprintf("exceptional receipt status SCHEDULE_ALREADY_EXECUTED"), err.Error())
+//		assert.Equal(t, fmt.Sprintf("exceptional receipt status: SCHEDULE_ALREADY_EXECUTED"), err.Error())
 //	}
 //}
 //
@@ -334,7 +334,7 @@ import (
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
-//		assert.Equal(t, fmt.Sprintf("exceptional receipt status SCHEDULE_ALREADY_EXECUTED"), err.Error())
+//		assert.Equal(t, fmt.Sprintf("exceptional receipt status: SCHEDULE_ALREADY_EXECUTED"), err.Error())
 //	}
 //}
 //

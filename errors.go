@@ -138,7 +138,7 @@ func newErrHederaReceiptStatus(id TransactionID, status Status) ErrHederaReceipt
 
 // Error() implements the Error interface
 func (e ErrHederaReceiptStatus) Error() string {
-	return fmt.Sprintf("exceptional receipt status %s", e.Status.String())
+	return fmt.Sprintf("exceptional receipt status: %s", e.Status.String())
 }
 
 // ErrHederaRecordStatus is returned by TransactionID.GetRecord if the status of the record is exceptional.

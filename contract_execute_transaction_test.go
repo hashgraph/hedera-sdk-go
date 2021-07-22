@@ -135,7 +135,7 @@ func Test_ContractExecute_NoGas(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status INSUFFICIENT_GAS"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INSUFFICIENT_GAS"), err.Error())
 	}
 
 	resp, err = NewContractDeleteTransaction().
@@ -206,7 +206,7 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status CONTRACT_REVERT_EXECUTED"), err.Error())
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: CONTRACT_REVERT_EXECUTED"), err.Error())
 	}
 
 	resp, err = NewContractDeleteTransaction().

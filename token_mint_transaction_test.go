@@ -224,3 +224,79 @@ func Test_TokenMint_NoTokenID(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }
+
+func TestTokenMintMaxTransaction_Execute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(10).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetMaxSupply(30).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	resp, err = NewTokenMintTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAmount(10000000).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TOKEN_MAX_SUPPLY_REACHED"), err.Error())
+	}
+
+	tx, err := NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = tx.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
+}
