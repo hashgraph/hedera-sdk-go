@@ -173,7 +173,7 @@ func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
 
 	_, err = infoQuery.Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
+		assert.Equal(t, fmt.Sprintf("cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)

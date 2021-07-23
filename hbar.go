@@ -6,7 +6,6 @@ import (
 	"math"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 // Hbar is a typesafe wrapper around values of HBAR providing foolproof conversions to other denominations.
@@ -49,11 +48,11 @@ func (hbar Hbar) As(unit HbarUnit) float64 {
 
 func (hbar Hbar) String() string {
 	// Format the string as tinybar if the value is 1000 tinybar or less
-	if -1000 <= hbar.tinybar && hbar.tinybar <= 1000 {
-		return fmt.Sprintf("%v tℏ", hbar.tinybar)
+	if -10000 <= hbar.tinybar && hbar.tinybar <= 10000 {
+		return fmt.Sprintf("%v %s", hbar.tinybar, HbarUnits.Tinybar.Symbol())
 	}
 
-	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()))
+	return fmt.Sprintf("%v %s", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()), HbarUnits.Hbar.Symbol())
 }
 
 func HbarFromString(hbar string) (Hbar, error) {
@@ -72,20 +71,25 @@ func HbarFromString(hbar string) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	if strings.Contains(hbar, "tℏ") {
-		return HbarFrom(a, HbarUnits.Tinybar), nil
-	} else if strings.Contains(hbar, "μℏ") {
-		return HbarFrom(a, HbarUnits.Microbar), nil
-	} else if strings.Contains(hbar, "mℏ") {
-		return HbarFrom(a, HbarUnits.Millibar), nil
-	} else if strings.Contains(hbar, "kℏ") {
-		return HbarFrom(a, HbarUnits.Kilobar), nil
-	} else if strings.Contains(hbar, "Mℏ") {
-		return HbarFrom(a, HbarUnits.Megabar), nil
-	} else if strings.Contains(hbar, "Gℏ") {
-		return HbarFrom(a, HbarUnits.Gigabar), nil
-	} else {
-		return HbarFrom(a, HbarUnits.Hbar), nil
+	return HbarFrom(a, hbarUnitFromString(matchArray[2])), nil
+}
+
+func hbarUnitFromString(symbol string) HbarUnit {
+	switch symbol {
+	case HbarUnits.Tinybar.Symbol():
+		return HbarUnits.Tinybar
+	case HbarUnits.Microbar.Symbol():
+		return HbarUnits.Microbar
+	case HbarUnits.Millibar.Symbol():
+		return HbarUnits.Millibar
+	case HbarUnits.Kilobar.Symbol():
+		return HbarUnits.Kilobar
+	case HbarUnits.Megabar.Symbol():
+		return HbarUnits.Megabar
+	case HbarUnits.Gigabar.Symbol():
+		return HbarUnits.Gigabar
+	default:
+		return HbarUnits.Hbar
 	}
 }
 

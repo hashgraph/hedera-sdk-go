@@ -293,7 +293,7 @@ func TestNewContractCallQueryCost_SmallMax_Execute(t *testing.T) {
 
 	_, err = callQuery.Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of ContractCallQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
+		assert.Equal(t, fmt.Sprintf("cost of ContractCallQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
 	}
 
 	resp, err = NewContractDeleteTransaction().

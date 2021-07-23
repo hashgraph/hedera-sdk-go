@@ -163,7 +163,7 @@ func TestAccountRecordQueryCost_SmallMax_Execute(t *testing.T) {
 
 	recordsQuery, err := records.Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tħ"), err.Error())
+		assert.Equal(t, fmt.Sprintf("cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
 	}
 
 	assert.Equal(t, 0, len(recordsQuery))
