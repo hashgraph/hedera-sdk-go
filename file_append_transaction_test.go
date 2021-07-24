@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFileAppendTransaction_Execute(t *testing.T) {
+func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -55,7 +55,7 @@ func TestFileAppendTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileAppend_NoFileID(t *testing.T) {
+func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -98,7 +98,7 @@ func Test_FileAppend_NoFileID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileAppend_NothingSet(t *testing.T) {
+func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewFileAppendTransaction().

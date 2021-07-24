@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenDissociateTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -125,7 +125,7 @@ func TestTokenDissociateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenDissociate_NoSigningOne(t *testing.T) {
+func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -201,7 +201,7 @@ func Test_TokenDissociate_NoSigningOne(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenDissociate_NoTokenID(t *testing.T) {
+func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -300,7 +300,7 @@ func Test_TokenDissociate_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenDissociate_NoAccountID(t *testing.T) {
+func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

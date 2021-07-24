@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestAccountUpdateTransaction_Execute(t *testing.T) {
+func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -81,7 +81,7 @@ func TestAccountUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountUpdate_NoSigning(t *testing.T) {
+func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -147,7 +147,7 @@ func Test_AccountUpdate_NoSigning(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountUpdate_AccountIDNotSet(t *testing.T) {
+func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewAccountUpdateTransaction().

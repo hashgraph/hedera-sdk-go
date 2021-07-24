@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenMintTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -85,7 +85,7 @@ func TestTokenMintTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenMint_NoAmount(t *testing.T) {
+func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -155,7 +155,7 @@ func Test_TokenMint_NoAmount(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenMint_NoTokenID(t *testing.T) {
+func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -225,7 +225,7 @@ func Test_TokenMint_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenMintMaxTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

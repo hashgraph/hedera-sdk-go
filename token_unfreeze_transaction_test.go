@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenUnfreezeTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -134,7 +134,7 @@ func TestTokenUnfreezeTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenUnfreeze_NoTokenID(t *testing.T) {
+func TestIntegrationTokenUnfreezeTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -229,7 +229,7 @@ func Test_TokenUnfreeze_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenUnfreeze_NoAccountID(t *testing.T) {
+func TestIntegrationTokenUnfreezeTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

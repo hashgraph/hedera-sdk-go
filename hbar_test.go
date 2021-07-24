@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestHbarFromTinybar(t *testing.T) {
+func TestUnitHbarFromTinybar(t *testing.T) {
 	tinybar := HbarUnits.Hbar.numberOfTinybar()
 
 	hbar := HbarFromTinybar(tinybar)

@@ -54,21 +54,21 @@ R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
 
 const pemPassphrase = "this is a passphrase"
 
-func TestPrivateKeyGenerate(t *testing.T) {
+func TestUnitPrivateKeyGenerate(t *testing.T) {
 	key, err := GeneratePrivateKey()
 
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(key.String(), ed25519PrivateKeyPrefix))
 }
 
-func TestPrivateKeyExternalSerialization(t *testing.T) {
+func TestUnitPrivateKeyExternalSerialization(t *testing.T) {
 	key, err := PrivateKeyFromString(testPrivateKeyStr)
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
-func TestPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
+func TestUnitPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
 	key, err := PrivateKeyFromString(keyStr)
 
@@ -76,7 +76,7 @@ func TestPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
 	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
-func TestShouldMatchHbarWalletV1(t *testing.T) {
+func TestUnitShouldMatchHbarWalletV1(t *testing.T) {
 	mnemonic, err := MnemonicFromString("jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure")
 	assert.NoError(t, err)
 
@@ -89,7 +89,7 @@ func TestShouldMatchHbarWalletV1(t *testing.T) {
 	assert.Equal(t, "302a300506032b657003210045f3a673984a0b4ee404a1f4404ed058475ecd177729daa042e437702f7791e9", deriveKey.PublicKey().String())
 }
 
-func TestLegacyPrivateKeyFromMnemonicDerive(t *testing.T) {
+func TestUnitLegacyPrivateKeyFromMnemonicDerive(t *testing.T) {
 	mnemonic, err := MnemonicFromString("jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure")
 	assert.NoError(t, err)
 
@@ -105,7 +105,7 @@ func TestLegacyPrivateKeyFromMnemonicDerive(t *testing.T) {
 	assert.Equal(t, "302e020100300506032b657004220420fae0002d2716ea3a60c9cd05ee3c4bb88723b196341b68a02d20975f9d049dc6", deriveKey.String())
 }
 
-func TestPrivateKeyExternalSerializationForRawHex(t *testing.T) {
+func TestUnitPrivateKeyExternalSerializationForRawHex(t *testing.T) {
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
 	key, err := PrivateKeyFromString(keyStr)
 
@@ -113,14 +113,14 @@ func TestPrivateKeyExternalSerializationForRawHex(t *testing.T) {
 	assert.Equal(t, testPrivateKeyStr, key.String())
 }
 
-func TestPublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
+func TestUnitPublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
 	key, err := PublicKeyFromString(testPublicKeyStr)
 
 	assert.NoError(t, err)
 	assert.Equal(t, testPublicKeyStr, key.String())
 }
 
-func TestPublicKeyExternalSerializationForRawHex(t *testing.T) {
+func TestUnitPublicKeyExternalSerializationForRawHex(t *testing.T) {
 	keyStr := "e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
 	key, err := PublicKeyFromString(keyStr)
 
@@ -128,7 +128,7 @@ func TestPublicKeyExternalSerializationForRawHex(t *testing.T) {
 	assert.Equal(t, testPublicKeyStr, key.String())
 }
 
-func TestPrivateKeyFromMnemonic(t *testing.T) {
+func TestUnitPrivateKeyFromMnemonic(t *testing.T) {
 	mnemonic, err := MnemonicFromString(testMnemonic)
 	assert.NoError(t, err)
 
@@ -142,7 +142,7 @@ func TestPrivateKeyFromMnemonic(t *testing.T) {
 	assert.Equal(t, testMnemonicKey, key.String())
 }
 
-func TestMnemonicToPrivateKey(t *testing.T) {
+func TestUnitMnemonicToPrivateKey(t *testing.T) {
 	mnemonic, err := MnemonicFromString(testMnemonic)
 	assert.NoError(t, err)
 
@@ -152,7 +152,7 @@ func TestMnemonicToPrivateKey(t *testing.T) {
 	assert.Equal(t, testMnemonicKey, key.String())
 }
 
-func TestIOSPrivateKeyFromMnemonic(t *testing.T) {
+func TestUnitIOSPrivateKeyFromMnemonic(t *testing.T) {
 	mnemonic, err := MnemonicFromString(iosMnemonicString)
 	assert.NoError(t, err)
 
@@ -168,7 +168,7 @@ func TestIOSPrivateKeyFromMnemonic(t *testing.T) {
 	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
 }
 
-func TestAndroidPrivateKeyFromMnemonic(t *testing.T) {
+func TestUnitAndroidPrivateKeyFromMnemonic(t *testing.T) {
 	mnemonic, err := MnemonicFromString(androidMnemonicString)
 	assert.NoError(t, err)
 
@@ -184,7 +184,7 @@ func TestAndroidPrivateKeyFromMnemonic(t *testing.T) {
 	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
 }
 
-func TestMnemonic3(t *testing.T) {
+func TestUnitMnemonic3(t *testing.T) {
 	mnemonic, err := MnemonicFromString(testMnemonic3)
 	assert.NoError(t, err)
 
@@ -200,7 +200,7 @@ func TestMnemonic3(t *testing.T) {
 	assert.Equal(t, "302e020100300506032b657004220420caffc03fdb9853e6a91a5b3c57a5c0031d164ce1c464dea88f3114786b5199e5", derivedKey2.String())
 }
 
-func TestSigning(t *testing.T) {
+func TestUnitSigning(t *testing.T) {
 	priKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	pubKey, err := PublicKeyFromString(testPublicKeyStr)
 	testSignData := []byte("this is the test data to sign")
@@ -210,7 +210,7 @@ func TestSigning(t *testing.T) {
 	assert.True(t, ed25519.Verify(pubKey.Bytes(), []byte("this is the test data to sign"), signature))
 }
 
-func TestGenerated24MnemonicToWorkingPrivateKey(t *testing.T) {
+func TestUnitGenerated24MnemonicToWorkingPrivateKey(t *testing.T) {
 	mnemonic, err := GenerateMnemonic24()
 
 	assert.NoError(t, err)
@@ -226,7 +226,7 @@ func TestGenerated24MnemonicToWorkingPrivateKey(t *testing.T) {
 	assert.True(t, ed25519.Verify(privateKey.PublicKey().Bytes(), message, signature))
 }
 
-func TestGenerated12MnemonicToWorkingPrivateKey(t *testing.T) {
+func TestUnitGenerated12MnemonicToWorkingPrivateKey(t *testing.T) {
 	mnemonic, err := GenerateMnemonic12()
 
 	assert.NoError(t, err)
@@ -242,7 +242,7 @@ func TestGenerated12MnemonicToWorkingPrivateKey(t *testing.T) {
 	assert.True(t, ed25519.Verify(privateKey.PublicKey().Bytes(), message, signature))
 }
 
-func TestPrivateKeyFromKeystore(t *testing.T) {
+func TestUnitPrivateKeyFromKeystore(t *testing.T) {
 	privatekey, err := PrivateKeyFromKeystore([]byte(testKeystore), passphrase)
 	assert.NoError(t, err)
 
@@ -252,7 +252,7 @@ func TestPrivateKeyFromKeystore(t *testing.T) {
 	assert.Equal(t, actualPrivateKey.keyData, privatekey.keyData)
 }
 
-func TestPrivateKey_Keystore(t *testing.T) {
+func TestUnitPrivateKeyKeystore(t *testing.T) {
 	privateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 
@@ -265,7 +265,7 @@ func TestPrivateKey_Keystore(t *testing.T) {
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
 }
 
-func TestPrivateKey_ReadKeystore(t *testing.T) {
+func TestUnitPrivateKeyReadKeystore(t *testing.T) {
 	actualPrivateKey, err := PrivateKeyFromString(testKeystoreKeyString)
 	assert.NoError(t, err)
 
@@ -277,7 +277,7 @@ func TestPrivateKey_ReadKeystore(t *testing.T) {
 	assert.Equal(t, actualPrivateKey.keyData, privateKey.keyData)
 }
 
-func TestPrivateKey_FromPem(t *testing.T) {
+func TestUnitPrivateKeyFromPem(t *testing.T) {
 	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 
@@ -287,7 +287,7 @@ func TestPrivateKey_FromPem(t *testing.T) {
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
 
-func TestPrivateKey_FromPemWithPassphrase(t *testing.T) {
+func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
 	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenGrantKycTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -108,7 +108,7 @@ func TestTokenGrantKycTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenGrantKyc_NoTokenID(t *testing.T) {
+func TestIntegrationTokenGrantKycTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -193,7 +193,7 @@ func Test_TokenGrantKyc_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenGrantKyc_NoAccountID(t *testing.T) {
+func TestIntegrationTokenGrantKycTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -278,7 +278,7 @@ func Test_TokenGrantKyc_NoAccountID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenGrantKycTransaction_NoKycSet_Execute(t *testing.T) {
+func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

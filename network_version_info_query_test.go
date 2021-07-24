@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
+func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewNetworkVersionQuery().
@@ -18,7 +18,7 @@ func TestNetworkVersionInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestNetworkVersionInfoQueryCost_Execute(t *testing.T) {
+func TestIntegrationNetworkVersionInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	query := NewNetworkVersionQuery().SetNodeAccountIDs(env.NodeAccountIDs)

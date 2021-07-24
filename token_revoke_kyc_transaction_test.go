@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenRevokeKycTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -134,7 +134,7 @@ func TestTokenRevokeKycTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenRevokeKyc_NoTokenID(t *testing.T) {
+func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -229,7 +229,7 @@ func Test_TokenRevokeKyc_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenRevokeKyc_NoAccountID(t *testing.T) {
+func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

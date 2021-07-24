@@ -62,7 +62,7 @@ func HbarFromString(hbar string) (Hbar, error) {
 	}
 
 	matchArray := match.FindStringSubmatch(hbar)
-	if len(matchArray)== 0{
+	if len(matchArray) == 0 {
 		return Hbar{}, errors.New("Invalid number and/or symbol.")
 	}
 

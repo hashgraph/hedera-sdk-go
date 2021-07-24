@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestTokenInfoQuery_Execute(t *testing.T) {
+func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -61,7 +61,7 @@ func TestTokenInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenInfoQueryCost_Execute(t *testing.T) {
+func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -100,7 +100,7 @@ func TestTokenInfoQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
+func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -139,7 +139,7 @@ func TestTokenInfoQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
+func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -180,7 +180,7 @@ func TestTokenInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
+func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -221,7 +221,7 @@ func TestTokenInfoQueryCost_InsufficientCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenInfo_NoPayment(t *testing.T) {
+func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -262,7 +262,7 @@ func Test_TokenInfo_NoPayment(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenInfo_NoTokenID(t *testing.T) {
+func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewTokenInfoQuery().
@@ -278,7 +278,7 @@ func Test_TokenInfo_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenInfo_FromBytes_BadBytes(t *testing.T) {
+func TestUnitTokenInfoFromBytesBadBytes(t *testing.T) {
 	bytes, err := base64.StdEncoding.DecodeString("tfhyY++/Q4BycortAgD4cmMKACB/")
 	assert.NoError(t, err)
 
@@ -286,12 +286,12 @@ func Test_TokenInfo_FromBytes_BadBytes(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenInfo_FromBytes_Nil(t *testing.T) {
+func TestUnitTokenInfoFromBytesNil(t *testing.T) {
 	_, err := TokenRelationshipFromBytes(nil)
 	assert.Error(t, err)
 }
 
-func Test_TokenInfo_FromBytes_EmptyBytes(t *testing.T) {
+func TestUnitTokenInfoFromBytesEmptyBytes(t *testing.T) {
 	_, err := TokenInfoFromBytes([]byte{})
 	assert.NoError(t, err)
 }

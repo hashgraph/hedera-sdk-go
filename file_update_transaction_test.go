@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFileUpdateTransaction_Execute(t *testing.T) {
+func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -58,7 +58,7 @@ func TestFileUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileUpdate_NoFileID(t *testing.T) {
+func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().

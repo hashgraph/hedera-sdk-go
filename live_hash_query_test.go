@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestLiveHashQuery_Execute(t *testing.T) {
+func TestIntegrationLiveHashQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
@@ -81,7 +81,7 @@ func TestLiveHashQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestLiveHashQueryCost_Execute(t *testing.T) {
+func TestIntegrationLiveHashQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")

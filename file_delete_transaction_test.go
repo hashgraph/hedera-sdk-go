@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFileDeleteTransaction_Execute(t *testing.T) {
+func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -37,7 +37,7 @@ func TestFileDeleteTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileDelete_NothingSet(t *testing.T) {
+func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().

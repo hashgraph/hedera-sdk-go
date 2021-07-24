@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTopicDeleteTransaction_Execute(t *testing.T) {
+func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"
@@ -55,7 +55,7 @@ func TestTopicDeleteTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TopicDelete_NoTopicID(t *testing.T) {
+func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicDeleteTransaction_Execute"

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTopicInfoQuery_Execute(t *testing.T) {
+func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
@@ -46,7 +46,7 @@ func TestTopicInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicInfoQueryCost_Execute(t *testing.T) {
+func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
@@ -84,7 +84,7 @@ func TestTopicInfoQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicInfoQueryCost_BigMax_Execute(t *testing.T) {
+func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
@@ -122,7 +122,7 @@ func TestTopicInfoQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicInfoQueryCost_SmallMax_Execute(t *testing.T) {
+func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
@@ -164,7 +164,7 @@ func TestTopicInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
+func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
@@ -205,7 +205,7 @@ func TestTopicInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
+func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 3)
@@ -263,7 +263,7 @@ func TestTopicInfoQuery_Threshold_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TopicInfo_NoTopicID(t *testing.T) {
+func TestIntegrationTopicInfoQueryNoTopicID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewTopicInfoQuery().

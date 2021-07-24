@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenDeleteTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenDeleteTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -32,7 +32,7 @@ func TestTokenDeleteTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenDelete_NoKeys(t *testing.T) {
+func TestIntegrationTokenDeleteTransactionNoKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -66,7 +66,7 @@ func Test_TokenDelete_NoKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenDelete_NoTokenID(t *testing.T) {
+func TestIntegrationTokenDeleteTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenDeleteTransaction().

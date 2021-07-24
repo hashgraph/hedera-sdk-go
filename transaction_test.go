@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTransactionSerializationDeserialization(t *testing.T) {
+func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 	transaction, err := newMockTransaction()
 	assert.NoError(t, err)
 
@@ -38,7 +38,7 @@ func TestTransactionSerializationDeserialization(t *testing.T) {
 	assert.Equal(t, transaction.String(), deserializedTXTyped.String())
 }
 
-func TestTransactionAddSignature(t *testing.T) {
+func TestIntegrationTransactionAddSignature(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -82,7 +82,7 @@ func TestTransactionAddSignature(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransactionGetHash(t *testing.T) {
+func TestIntegrationTransactionGetHash(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

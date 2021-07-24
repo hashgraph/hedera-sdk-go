@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFileCreateTransaction_Execute(t *testing.T) {
+func TestIntegrationFileCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -37,7 +37,7 @@ func TestFileCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileCreate_NoKey(t *testing.T) {
+func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -67,7 +67,7 @@ func Test_FileCreate_NoKey(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileNetwork_Execute(t *testing.T) {
+func TestIntegrationFileCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().

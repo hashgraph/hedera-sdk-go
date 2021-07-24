@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFileContentsQuery_Execute(t *testing.T) {
+func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -52,7 +52,7 @@ func TestFileContentsQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileContentsQueryCost_Execute(t *testing.T) {
+func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -101,7 +101,7 @@ func TestFileContentsQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileContentsQueryCost_BigMax_Execute(t *testing.T) {
+func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -150,7 +150,7 @@ func TestFileContentsQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileContentsQueryCost_SmallMax_Execute(t *testing.T) {
+func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -199,7 +199,7 @@ func TestFileContentsQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestFileContentsQueryCost_InsufficientFee_Execute(t *testing.T) {
+func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	var contents = []byte("Hellow world!")
@@ -248,7 +248,7 @@ func TestFileContentsQueryCost_InsufficientFee_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileContents_NoFileID(t *testing.T) {
+func TestIntegrationFileContentsQueryNoFileID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewFileContentsQuery().
