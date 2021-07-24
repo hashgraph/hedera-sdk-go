@@ -9,34 +9,25 @@ func main() {
 	var client *hedera.Client
 	var err error
 
-	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
-		client = hedera.ClientForPreviewnet()
-	} else {
-		client, err = hedera.ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
-
-		if err != nil {
-			client = hedera.ClientForTestnet()
-		}
+	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	if err != nil {
+		println(err.Error(), ": error creating client")
+		return
 	}
 
-	configOperatorID := os.Getenv("OPERATOR_ID")
-	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-	if configOperatorID != "" && configOperatorKey != "" && client.GetOperatorPublicKey().Bytes() == nil {
-		operatorAccountID, err := hedera.AccountIDFromString(configOperatorID)
-		if err != nil {
-			println(err.Error(), ": error converting string to AccountID")
-			return
-		}
-
-		operatorKey, err := hedera.PrivateKeyFromString(configOperatorKey)
-		if err != nil {
-			println(err.Error(), ": error converting string to PrivateKey")
-			return
-		}
-
-		client.SetOperator(operatorAccountID, operatorKey)
+	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	if err != nil {
+		println(err.Error(), ": error converting string to AccountID")
+		return
 	}
+
+	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	if err != nil {
+		println(err.Error(), ": error converting string to PrivateKey")
+		return
+	}
+
+	client.SetOperator(operatorAccountID, operatorKey)
 
 	key1, err := hedera.GeneratePrivateKey()
 	if err != nil {
