@@ -2,7 +2,10 @@ package hedera
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"math"
+	"regexp"
+	"strconv"
 )
 
 // Hbar is a typesafe wrapper around values of HBAR providing foolproof conversions to other denominations.
@@ -45,15 +48,53 @@ func (hbar Hbar) As(unit HbarUnit) float64 {
 
 func (hbar Hbar) String() string {
 	// Format the string as tinybar if the value is 1000 tinybar or less
-	if hbar.tinybar <= 1000 {
-		return fmt.Sprintf("%v tħ", hbar.tinybar)
+	if -10000 <= hbar.tinybar && hbar.tinybar <= 10000 {
+		return fmt.Sprintf("%v %s", hbar.tinybar, HbarUnits.Tinybar.Symbol())
 	}
 
-	return fmt.Sprintf("%v ℏ", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()))
+	return fmt.Sprintf("%v %s", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()), HbarUnits.Hbar.Symbol())
+}
+
+func HbarFromString(hbar string) (Hbar, error) {
+	match, err := regexp.Compile(`^((?:\+|\-)?\d+(?:\.\d+)?)(?: (tℏ|μℏ|mℏ|ℏ|kℏ|Mℏ|Gℏ))?$`)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	matchArray := match.FindStringSubmatch(hbar)
+	if len(matchArray)== 0{
+		return Hbar{}, errors.New("Invalid number and/or symbol.")
+	}
+
+	a, err := strconv.ParseFloat(matchArray[1], 64)
+	if err != nil {
+		return Hbar{}, err
+	}
+
+	return HbarFrom(a, hbarUnitFromString(matchArray[2])), nil
+}
+
+func hbarUnitFromString(symbol string) HbarUnit {
+	switch symbol {
+	case HbarUnits.Tinybar.Symbol():
+		return HbarUnits.Tinybar
+	case HbarUnits.Microbar.Symbol():
+		return HbarUnits.Microbar
+	case HbarUnits.Millibar.Symbol():
+		return HbarUnits.Millibar
+	case HbarUnits.Kilobar.Symbol():
+		return HbarUnits.Kilobar
+	case HbarUnits.Megabar.Symbol():
+		return HbarUnits.Megabar
+	case HbarUnits.Gigabar.Symbol():
+		return HbarUnits.Gigabar
+	default:
+		return HbarUnits.Hbar
+	}
 }
 
 func (hbar Hbar) ToString(unit HbarUnit) string {
-	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit.numberOfTinybar()), unit.String())
+	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit.numberOfTinybar()), unit.Symbol())
 }
 
 func (hbar Hbar) Negated() Hbar {

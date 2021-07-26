@@ -454,299 +454,299 @@ func TestScheduleCreateTransaction_Transfer_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestScheduledTokenNftTransferTransaction_Execute(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
-
-	keys := make([]PrivateKey, 3)
-	pubKeys := make([]PublicKey, 3)
-
-	for i := range keys {
-		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
-
-		keys[i] = newKey
-		pubKeys[i] = newKey.PublicKey()
-	}
-
-	keyList := NewKeyList().
-		AddAllPublicKeys(pubKeys)
-
-	newBalance := NewHbar(2)
-
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
-
-	resp, err := NewAccountCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetKey(keyList).
-		SetInitialBalance(newBalance).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	accountID := *receipt.AccountID
-
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	tokenID := *receipt.TokenID
-	metaData := [][]byte{{50}, {50}}
-
-	mint, err := NewTokenMintTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		SetMetadatas(metaData).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	mintReceipt, err := mint.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetAccountID(accountID).
-		SetTokenIDs(tokenID).
-		FreezeWith(env.Client)
-	assert.NoError(t, err)
-
-	resp, err = transaction.
-		Sign(keys[0]).
-		Sign(keys[1]).
-		Sign(keys[2]).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetAccountID(accountID).
-		SetTokenID(tokenID).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	tx := NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[0]), env.OperatorID, accountID).
-		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID)
-
-	scheduleTx, err := tx.Schedule()
-	assert.NoError(t, err)
-
-	scheduleTx = scheduleTx.
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetPayerAccountID(accountID).
-		SetAdminKey(env.OperatorKey).
-		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
-
-	resp, err = scheduleTx.Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	scheduleID := *receipt.ScheduleID
-
-	info, err := NewScheduleInfoQuery().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetScheduleID(scheduleID).
-		Execute(env.Client)
-	assert.NoError(t, err)
-	assert.Equal(t, info.CreatorAccountID.String(), env.OperatorID.String())
-
-	signTransaction, err := NewScheduleSignTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetScheduleID(scheduleID).
-		FreezeWith(env.Client)
-	assert.NoError(t, err)
-
-	signTransaction.Sign(keys[0])
-	signTransaction.Sign(keys[1])
-	signTransaction.Sign(keys[2])
-
-	resp, err = signTransaction.Execute(env.Client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	info2, err := NewScheduleInfoQuery().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetScheduleID(scheduleID).
-		Execute(env.Client)
-	assert.NoError(t, err)
-	assert.NotNil(t, info2.ExecutedAt)
-
-	nftInfo, err := NewTokenNftInfoQuery().
-		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[0])).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	assert.Equal(t, accountID.String(), nftInfo[0].AccountID.String())
-
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
-}
-
-func TestScheduledTokenNftTransferTransactionSigned_Execute(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
-
-	keys := make([]PrivateKey, 3)
-	pubKeys := make([]PublicKey, 3)
-
-	for i := range keys {
-		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
-
-		keys[i] = newKey
-		pubKeys[i] = newKey.PublicKey()
-	}
-
-	keyList := NewKeyList().
-		AddAllPublicKeys(pubKeys)
-
-	newBalance := NewHbar(2)
-
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
-
-	resp, err := NewAccountCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetKey(keyList).
-		SetInitialBalance(newBalance).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	accountID := *receipt.AccountID
-
-	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetTokenType(TokenTypeNonFungibleUnique).
-		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	tokenID := *receipt.TokenID
-	metaData := [][]byte{{50}, {50}}
-
-	mint, err := NewTokenMintTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTokenID(tokenID).
-		SetMetadatas(metaData).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	mintReceipt, err := mint.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetAccountID(accountID).
-		SetTokenIDs(tokenID).
-		FreezeWith(env.Client)
-	assert.NoError(t, err)
-
-	resp, err = transaction.
-		Sign(keys[0]).
-		Sign(keys[1]).
-		Sign(keys[2]).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetAccountID(accountID).
-		SetTokenID(tokenID).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	tx := NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[0]), env.OperatorID, accountID).
-		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID)
-
-	scheduleTx, err := tx.Schedule()
-	assert.NoError(t, err)
-
-	scheduleTx, err = scheduleTx.
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetPayerAccountID(accountID).
-		SetAdminKey(env.OperatorKey).
-		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID())).
-		FreezeWith(env.Client)
-	assert.NoError(t, err)
-
-	scheduleTx.Sign(keys[0])
-	scheduleTx.Sign(keys[1])
-	scheduleTx.Sign(keys[2])
-
-	resp, err = scheduleTx.Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	scheduleID := *receipt.ScheduleID
-
-	info2, err := NewScheduleInfoQuery().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetScheduleID(scheduleID).
-		Execute(env.Client)
-	assert.NoError(t, err)
-	assert.NotNil(t, info2.ExecutedAt)
-
-	nftInfo, err := NewTokenNftInfoQuery().
-		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[0])).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	assert.Equal(t, accountID.String(), nftInfo[0].AccountID.String())
-
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
-}
+//func TestScheduledTokenNftTransferTransaction_Execute(t *testing.T) {
+//	env := NewIntegrationTestEnv(t)
+//
+//	keys := make([]PrivateKey, 3)
+//	pubKeys := make([]PublicKey, 3)
+//
+//	for i := range keys {
+//		newKey, err := GeneratePrivateKey()
+//		assert.NoError(t, err)
+//
+//		keys[i] = newKey
+//		pubKeys[i] = newKey.PublicKey()
+//	}
+//
+//	keyList := NewKeyList().
+//		AddAllPublicKeys(pubKeys)
+//
+//	newBalance := NewHbar(2)
+//
+//	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//
+//	resp, err := NewAccountCreateTransaction().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetKey(keyList).
+//		SetInitialBalance(newBalance).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	receipt, err := resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	accountID := *receipt.AccountID
+//
+//	resp, err = NewTokenCreateTransaction().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetTokenName("ffff").
+//		SetTokenSymbol("F").
+//		SetTokenType(TokenTypeNonFungibleUnique).
+//		SetSupplyType(TokenSupplyTypeFinite).
+//		SetMaxSupply(5).
+//		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+//		SetAdminKey(env.Client.GetOperatorPublicKey()).
+//		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+//		SetWipeKey(env.Client.GetOperatorPublicKey()).
+//		SetKycKey(env.Client.GetOperatorPublicKey()).
+//		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+//		SetFreezeDefault(false).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	receipt, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	tokenID := *receipt.TokenID
+//	metaData := [][]byte{{50}, {50}}
+//
+//	mint, err := NewTokenMintTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		SetTokenID(tokenID).
+//		SetMetadatas(metaData).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	mintReceipt, err := mint.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	transaction, err := NewTokenAssociateTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		SetAccountID(accountID).
+//		SetTokenIDs(tokenID).
+//		FreezeWith(env.Client)
+//	assert.NoError(t, err)
+//
+//	resp, err = transaction.
+//		Sign(keys[0]).
+//		Sign(keys[1]).
+//		Sign(keys[2]).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	_, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	resp, err = NewTokenGrantKycTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		SetAccountID(accountID).
+//		SetTokenID(tokenID).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	_, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	tx := NewTransferTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[0]), env.OperatorID, accountID).
+//		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID)
+//
+//	scheduleTx, err := tx.Schedule()
+//	assert.NoError(t, err)
+//
+//	scheduleTx = scheduleTx.
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetPayerAccountID(accountID).
+//		SetAdminKey(env.OperatorKey).
+//		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
+//
+//	resp, err = scheduleTx.Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	receipt, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	scheduleID := *receipt.ScheduleID
+//
+//	info, err := NewScheduleInfoQuery().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetScheduleID(scheduleID).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//	assert.Equal(t, info.CreatorAccountID.String(), env.OperatorID.String())
+//
+//	signTransaction, err := NewScheduleSignTransaction().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetScheduleID(scheduleID).
+//		FreezeWith(env.Client)
+//	assert.NoError(t, err)
+//
+//	signTransaction.Sign(keys[0])
+//	signTransaction.Sign(keys[1])
+//	signTransaction.Sign(keys[2])
+//
+//	resp, err = signTransaction.Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	_, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	info2, err := NewScheduleInfoQuery().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetScheduleID(scheduleID).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//	assert.NotNil(t, info2.ExecutedAt)
+//
+//	nftInfo, err := NewTokenNftInfoQuery().
+//		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[0])).
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	assert.Equal(t, accountID.String(), nftInfo[0].AccountID.String())
+//
+//	err = CloseIntegrationTestEnv(env, &tokenID)
+//	assert.NoError(t, err)
+//}
+//
+//func TestScheduledTokenNftTransferTransactionSigned_Execute(t *testing.T) {
+//	env := NewIntegrationTestEnv(t)
+//
+//	keys := make([]PrivateKey, 3)
+//	pubKeys := make([]PublicKey, 3)
+//
+//	for i := range keys {
+//		newKey, err := GeneratePrivateKey()
+//		assert.NoError(t, err)
+//
+//		keys[i] = newKey
+//		pubKeys[i] = newKey.PublicKey()
+//	}
+//
+//	keyList := NewKeyList().
+//		AddAllPublicKeys(pubKeys)
+//
+//	newBalance := NewHbar(2)
+//
+//	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//
+//	resp, err := NewAccountCreateTransaction().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetKey(keyList).
+//		SetInitialBalance(newBalance).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	receipt, err := resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	accountID := *receipt.AccountID
+//
+//	resp, err = NewTokenCreateTransaction().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetTokenName("ffff").
+//		SetTokenSymbol("F").
+//		SetTokenType(TokenTypeNonFungibleUnique).
+//		SetSupplyType(TokenSupplyTypeFinite).
+//		SetMaxSupply(5).
+//		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+//		SetAdminKey(env.Client.GetOperatorPublicKey()).
+//		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+//		SetWipeKey(env.Client.GetOperatorPublicKey()).
+//		SetKycKey(env.Client.GetOperatorPublicKey()).
+//		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+//		SetFreezeDefault(false).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	receipt, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	tokenID := *receipt.TokenID
+//	metaData := [][]byte{{50}, {50}}
+//
+//	mint, err := NewTokenMintTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		SetTokenID(tokenID).
+//		SetMetadatas(metaData).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	mintReceipt, err := mint.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	transaction, err := NewTokenAssociateTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		SetAccountID(accountID).
+//		SetTokenIDs(tokenID).
+//		FreezeWith(env.Client)
+//	assert.NoError(t, err)
+//
+//	resp, err = transaction.
+//		Sign(keys[0]).
+//		Sign(keys[1]).
+//		Sign(keys[2]).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	_, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	resp, err = NewTokenGrantKycTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		SetAccountID(accountID).
+//		SetTokenID(tokenID).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	_, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	tx := NewTransferTransaction().
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[0]), env.OperatorID, accountID).
+//		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID)
+//
+//	scheduleTx, err := tx.Schedule()
+//	assert.NoError(t, err)
+//
+//	scheduleTx, err = scheduleTx.
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetPayerAccountID(accountID).
+//		SetAdminKey(env.OperatorKey).
+//		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID())).
+//		FreezeWith(env.Client)
+//	assert.NoError(t, err)
+//
+//	scheduleTx.Sign(keys[0])
+//	scheduleTx.Sign(keys[1])
+//	scheduleTx.Sign(keys[2])
+//
+//	resp, err = scheduleTx.Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	receipt, err = resp.GetReceipt(env.Client)
+//	assert.NoError(t, err)
+//
+//	scheduleID := *receipt.ScheduleID
+//
+//	info2, err := NewScheduleInfoQuery().
+//		SetNodeAccountIDs(env.NodeAccountIDs).
+//		SetScheduleID(scheduleID).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//	assert.NotNil(t, info2.ExecutedAt)
+//
+//	nftInfo, err := NewTokenNftInfoQuery().
+//		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[0])).
+//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+//		Execute(env.Client)
+//	assert.NoError(t, err)
+//
+//	assert.Equal(t, accountID.String(), nftInfo[0].AccountID.String())
+//
+//	err = CloseIntegrationTestEnv(env, &tokenID)
+//	assert.NoError(t, err)
+//}
