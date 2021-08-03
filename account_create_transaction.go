@@ -21,15 +21,21 @@ import (
 // ProtobufAccessor: CryptoCreateAccount
 type AccountCreateTransaction struct {
 	Transaction
-	pb                     *proto.CryptoCreateTransactionBody
-	key                    Key
-	initialBalance         Hbar
-    accountMemo            string `hedera:"memo"`
-	sendRecordThreshold    Hbar
-	receiveRecordThreshold Hbar
-	proxyAccountID         AccountID
-	autoRenewPeriod        time.Duration
-	receiverSigRequired    bool
+	pb                       *proto.CryptoCreateTransactionBody
+	key                      Key
+	initialBalance           Hbar
+	accountMemo              string `hedera:"protobuf=memo"`
+	sendRecordThreshold      Hbar
+	receiveRecordThreshold   Hbar
+	proxyAccountID           AccountID
+	autoRenewPeriod          time.Duration
+	receiverSigRequired      bool
+	transactionIDs           []TransactionID `hedera:"ignore=protobuf,singular"`
+	nodeAccountIDS           []AccountID     `hedera:"ignore=protobuf"`
+	maxRetry                 int             `hedera:"ignore=protobuf"`
+	transactionValidDuration time.Duration   `hedera:"ignore=protobuf"`
+	transactionMemo          string          `hedera:"ignore=protobuf"`
+	transactionFee           Hbar            `hedera:"ignore=protobuf"`
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
@@ -42,7 +48,7 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 		Transaction: newTransaction(),
 	}
 
-    // TODO: Undo this change, this should use setters
+	// TODO: Undo this change, this should use setters
 	transaction.autoRenewPeriod = 7890000 * time.Second
 	transaction.SetMaxTransactionFee(NewHbar(2))
 
@@ -67,7 +73,7 @@ func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransact
 }
 
 func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-    pb := transaction.toProtobuf()
+	pb := transaction.toProtobuf()
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.pbBody.GetTransactionFee(),
 		Memo:           transaction.pbBody.GetMemo(),
@@ -195,16 +201,6 @@ func (transaction *AccountCreateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *AccountCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{
-		CryptoCreateAccount: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -221,70 +217,12 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 	if err != nil {
 		return &AccountCreateTransaction{}, err
 	}
-	transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
+	if !transaction.onFreeze(transaction.pbBody, transaction.toProtobuf()) {
 		return transaction, nil
 	}
 
 	return transaction, transaction_freezeWith(&transaction.Transaction, client)
-}
-
-func (transaction *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
-	return transaction.Transaction.GetMaxTransactionFee()
-}
-
-// SetMaxTransactionFee sets the max transaction fee for this AccountCreateTransaction.
-func (transaction *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *AccountCreateTransaction {
-	transaction.requireNotFrozen()
-	transaction.Transaction.SetMaxTransactionFee(fee)
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) GetTransactionMemo() string {
-	return transaction.Transaction.GetTransactionMemo()
-}
-
-// SetTransactionMemo sets the memo for this AccountCreateTransaction.
-func (transaction *AccountCreateTransaction) SetTransactionMemo(memo string) *AccountCreateTransaction {
-	transaction.requireNotFrozen()
-	transaction.Transaction.SetTransactionMemo(memo)
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) GetTransactionValidDuration() time.Duration {
-	return transaction.Transaction.GetTransactionValidDuration()
-}
-
-// SetTransactionValidDuration sets the valid duration for this AccountCreateTransaction.
-func (transaction *AccountCreateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountCreateTransaction {
-	transaction.requireNotFrozen()
-	transaction.Transaction.SetTransactionValidDuration(duration)
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) GetTransactionID() TransactionID {
-	return transaction.Transaction.GetTransactionID()
-}
-
-// SetTransactionID sets the TransactionID for this AccountCreateTransaction.
-func (transaction *AccountCreateTransaction) SetTransactionID(transactionID TransactionID) *AccountCreateTransaction {
-	transaction.requireNotFrozen()
-
-	transaction.Transaction.SetTransactionID(transactionID)
-	return transaction
-}
-
-// SetNodeAccountIDs sets the node AccountID for this AccountCreateTransaction.
-func (transaction *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountCreateTransaction {
-	transaction.requireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) SetMaxRetry(count int) *AccountCreateTransaction {
-	transaction.Transaction.SetMaxRetry(count)
-	return transaction
 }
 
 func (transaction *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {

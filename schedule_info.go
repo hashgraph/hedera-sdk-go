@@ -150,8 +150,7 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 			CryptoCreateAccount: pb.GetCryptoCreateAccount(),
 		}
 
-		tx2 := accountCreateTransactionFromProtobuf(tx, pbBody)
-		return &tx2, nil
+		return accountCreateTransactionFromProtobuf(tx, pbBody), nil
 	case *proto.SchedulableTransactionBody_CryptoDelete:
 		pbBody.Data = &proto.TransactionBody_CryptoDelete{
 			CryptoDelete: pb.GetCryptoDelete(),

@@ -24,12 +24,12 @@ type Structs struct {
 }
 
 type Struct struct {
-	name      string
-	fileName  string
-	fields    []Field
-	protoName string
+	name          string
+	fileName      string
+	fields        []Field
+	protoName     string
 	protoAccessor string
-	usesTime  bool
+	usesTime      bool
 }
 
 type Field struct {
@@ -104,11 +104,11 @@ func main() {
 						fileName = fmt.Sprintf("%s_accessors.go", fileName)
 
 						structure := Struct{
-							name:      typeSpec.Name.Name,
-							fileName:  fileName,
-							fields:    make([]Field, 0),
-							protoName: protoName,
-                            protoAccessor: protoAccessor,
+							name:          typeSpec.Name.Name,
+							fileName:      fileName,
+							fields:        make([]Field, 0),
+							protoName:     protoName,
+							protoAccessor: protoAccessor,
 						}
 
 						switch typeSpec.Type.(type) {
@@ -154,6 +154,9 @@ func main() {
 									default:
 										panic(fmt.Sprintf("Unhandled field type: %T", field.Type.(*ast.SelectorExpr).X))
 									}
+								case *ast.ArrayType:
+									arrayType := field.Type.(*ast.ArrayType)
+									ty = fmt.Sprintf("[]%s", arrayType.Elt)
 								default:
 									panic(fmt.Sprintf("Unhandled field type: %T", field.Type))
 								}
@@ -225,16 +228,46 @@ import (
 	for _, field := range structure.fields {
 		title := UpperInitial(field.name)
 		protoTitle := title
+		singular := false
+		singularName := field.name
+		protobufIgnored := false
+		for _, option := range field.options {
+			if strings.Contains(option, "=") {
+				s := strings.Split(option, "=")
+				switch s[0] {
+				case "protobuf":
+					protoTitle = UpperInitial(s[1])
+				case "ignore":
+					protobufIgnored = s[1] == "protobuf"
+				}
+			} else {
+				switch option {
+				case "singular":
+					singular = true
+					singularName = UpperInitial(field.name[0 : len(field.name)-1])
+				}
+			}
+		}
+
 		if len(field.options) > 0 && !strings.Contains(field.options[0], "=") {
 			protoTitle = strings.Title(field.options[0])
 		}
 
-		s += fmt.Sprintf(`
+		if singular {
+			s += fmt.Sprintf(`
+func (%s *%s) Set%s(%s %s) *%s {
+    %s.%s = []%s{%s}
+    return %s
+}
+`, param, structure.name, singularName, LowerInitial(singularName), field.ty[2:], structure.name, param, field.name, field.ty[2:], LowerInitial(singularName), param)
+		} else {
+			s += fmt.Sprintf(`
 func (%s *%s) Set%s(%s %s) *%s {
     %s.%s = %s
     return %s
 }
 `, param, structure.name, title, field.name, field.ty, structure.name, param, field.name, field.name, param)
+		}
 		switch field.ty {
 		case "Key":
 			s += fmt.Sprintf(`
@@ -243,11 +276,27 @@ func (%s %s) Get%s() (%s, error) {
 }
 `, param, structure.name, title, field.ty, param, field.name)
 		default:
-			s += fmt.Sprintf(`
+			if singular {
+				s += fmt.Sprintf(`
+func (%s %s) Get%s() %s {
+    if len(%s.%s) > 0 {
+        return %s.%s[0]
+    } else {
+        return %s{}
+    }
+}
+`, param, structure.name, singularName, field.ty[2:], param, field.name, param, field.name, field.ty[2:])
+			} else {
+				s += fmt.Sprintf(`
 func (%s %s) Get%s() %s {
     return %s.%s
 }
 `, param, structure.name, title, field.ty, param, field.name)
+			}
+		}
+
+		if protobufIgnored {
+			continue
 		}
 
 		switch field.ty {
@@ -277,7 +326,7 @@ func (%s %s) Get%s() %s {
     `, param, field.name, protoTitle, param, field.name)
 		case "bool":
 			toProtobuf += fmt.Sprintf(`
-        pb.%s = %s.%s
+    pb.%s = %s.%s
         `, protoTitle, param, field.name)
 		case "AccountID", "FileID", "ContractID", "TopicID", "TokenID", "ScheduleID", "NftID":
 			toProtobuf += fmt.Sprintf(`
@@ -366,7 +415,17 @@ func %sFromProtobuf(transaction Transaction, body *proto.TransactionBody) *%s {
     return tx
 }
 `, LowerInitial(structure.name), structure.name, structure.name, structure.protoAccessor, fromProtobuf)
+
+		s += fmt.Sprintf(`
+func (%s *%s) onFreeze(body *proto.TransactionBody, pb *proto.%s) bool {
+    body.Data = &proto.TransactionBody_%s{
+        %s: pb,
+    }
+    return true
+}
+`, param, structure.name, structure.protoName, structure.protoAccessor, structure.protoAccessor)
 	}
+
 	return s
 }
 
