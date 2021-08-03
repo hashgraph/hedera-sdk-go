@@ -53,7 +53,7 @@ func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
 	return transaction.accountID
 }
 
-func (transaction *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *LiveHashDeleteTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {
@@ -212,7 +212,7 @@ func (transaction *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveH
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &LiveHashDeleteTransaction{}, err
 	}

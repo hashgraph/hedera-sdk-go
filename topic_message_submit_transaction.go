@@ -126,7 +126,7 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	return transaction
 }
 
-func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TopicMessageSubmitTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.topicID.Validate(client)
 	if err != nil {
@@ -269,7 +269,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	}
 
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TopicMessageSubmitTransaction{}, err
 	}

@@ -115,7 +115,7 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 	return ""
 }
 
-func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *AccountUpdateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {
@@ -315,7 +315,7 @@ func (transaction *AccountUpdateTransaction) FreezeWith(client *Client) (*Accoun
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &AccountUpdateTransaction{}, err
 	}

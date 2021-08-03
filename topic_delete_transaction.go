@@ -46,7 +46,7 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 	return transaction.topicID
 }
 
-func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TopicDeleteTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.topicID.Validate(client)
 	if err != nil {
@@ -225,7 +225,7 @@ func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDel
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TopicDeleteTransaction{}, err
 	}

@@ -246,7 +246,7 @@ func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
 	return ""
 }
 
-func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenUpdateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {
@@ -453,7 +453,7 @@ func (transaction *TokenUpdateTransaction) FreezeWith(client *Client) (*TokenUpd
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TokenUpdateTransaction{}, err
 	}

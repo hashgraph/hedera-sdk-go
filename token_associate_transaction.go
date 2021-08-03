@@ -100,7 +100,7 @@ func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 	return tokenIDs
 }
 
-func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenAssociateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {
@@ -295,7 +295,7 @@ func (transaction *TokenAssociateTransaction) FreezeWith(client *Client) (*Token
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TokenAssociateTransaction{}, err
 	}

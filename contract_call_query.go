@@ -82,7 +82,7 @@ func (query *ContractCallQuery) GetFunctionParameters() []byte {
 	return query.pb.FunctionParameters
 }
 
-func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ContractCallQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.contractID.Validate(client)
 	if err != nil {
@@ -114,7 +114,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -167,7 +167,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}

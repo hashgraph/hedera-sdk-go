@@ -7,7 +7,7 @@ import (
 
 type Fee interface {
 	toProtobuf() *proto.CustomFee
-	validateNetworkOnIDs(client *Client) error
+	validateChecksums(client *Client) error
 }
 
 type CustomFixedFee struct {
@@ -25,7 +25,7 @@ func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee, n
 	}
 }
 
-func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
+func (fee CustomFixedFee) validateChecksums(client *Client) error {
 	if fee.DenominationTokenID != nil {
 		if err := fee.DenominationTokenID.Validate(client); err != nil {
 			return err

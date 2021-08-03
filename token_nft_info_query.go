@@ -130,7 +130,7 @@ func (query *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
 	return query
 }
 
-func (query *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TokenNftInfoQuery) validateChecksums(client *Client) error {
 	var err error
 	if query.isByToken() {
 		err = query.tokenID.Validate(client)
@@ -186,7 +186,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -345,7 +345,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return []TokenNftInfo{}, err
 	}

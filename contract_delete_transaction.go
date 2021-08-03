@@ -71,7 +71,7 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 	return transaction.transferAccountID
 }
 
-func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *ContractDeleteTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.contractID.Validate(client)
 	if err != nil {
@@ -271,7 +271,7 @@ func (transaction *ContractDeleteTransaction) FreezeWith(client *Client) (*Contr
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &ContractDeleteTransaction{}, err
 	}

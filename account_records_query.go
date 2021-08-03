@@ -41,7 +41,7 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 	return query.accountID
 }
 
-func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
+func (query *AccountRecordsQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.accountID.Validate(client)
 	if err != nil {
@@ -73,7 +73,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -127,7 +127,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return []TransactionRecord{}, err
 	}

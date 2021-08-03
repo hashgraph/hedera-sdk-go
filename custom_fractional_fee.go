@@ -23,7 +23,7 @@ func customFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee, fee Cus
 	}
 }
 
-func (fee CustomFractionalFee) validateNetworkOnIDs(client *Client) error {
+func (fee CustomFractionalFee) validateChecksums(client *Client) error {
 	if fee.FeeCollectorAccountID != nil {
 		if err := fee.FeeCollectorAccountID.Validate(client); err != nil {
 			return err

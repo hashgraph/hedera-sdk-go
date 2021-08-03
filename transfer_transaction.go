@@ -189,7 +189,7 @@ func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender Accou
 	return transaction
 }
 
-func (transaction *TransferTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TransferTransaction) validateChecksums(client *Client) error {
 	var err error
 	for tokenID, accountMap := range transaction.tokenTransfers {
 		err = tokenID.Validate(client)
@@ -430,7 +430,7 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 		return transaction, nil
 	}
 
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TransferTransaction{}, err
 	}

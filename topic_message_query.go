@@ -102,7 +102,7 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 	return query
 }
 
-func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TopicMessageQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.topicID.Validate(client)
 	if err != nil {
@@ -124,7 +124,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 	handle := SubscriptionHandle{}
 
 	query.topicID.setNetworkWithClient(client)
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return SubscriptionHandle{}, err
 	}

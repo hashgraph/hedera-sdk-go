@@ -62,7 +62,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
 	return transaction.customFees
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenFeeScheduleUpdateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {
@@ -70,7 +70,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(clien
 	}
 
 	for _, customFee := range transaction.customFees {
-		if err := customFee.validateNetworkOnIDs(client); err != nil {
+		if err := customFee.validateChecksums(client); err != nil {
 			return err
 		}
 	}
@@ -247,7 +247,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) FreezeWith(client *Client)
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TokenFeeScheduleUpdateTransaction{}, err
 	}

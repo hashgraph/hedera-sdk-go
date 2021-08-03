@@ -59,7 +59,7 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 	return query.contractID
 }
 
-func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
+func (query *AccountBalanceQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.accountID.Validate(client)
 	if err != nil {
@@ -103,7 +103,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -157,7 +157,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return AccountBalance{}, err
 	}

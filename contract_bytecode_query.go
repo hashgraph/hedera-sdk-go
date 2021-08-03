@@ -37,7 +37,7 @@ func (query *ContractBytecodeQuery) GetContractID() ContractID {
 	return query.contractID
 }
 
-func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ContractBytecodeQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.contractID.Validate(client)
 	if err != nil {
@@ -69,7 +69,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -123,7 +123,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return []byte{}, err
 	}

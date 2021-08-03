@@ -24,7 +24,7 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	}
 }
 
-func (query *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TransactionReceiptQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.transactionID.AccountID.Validate(client)
 	if err != nil {
@@ -56,7 +56,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -166,7 +166,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return TransactionReceipt{}, err
 	}

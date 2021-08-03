@@ -33,7 +33,7 @@ func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
 	return query.scheduleID
 }
 
-func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ScheduleInfoQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.scheduleID.Validate(client)
 	if err != nil {
@@ -65,7 +65,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -123,7 +123,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}

@@ -236,7 +236,7 @@ func (transaction *TokenCreateTransaction) GetCustomFees() []Fee {
 	return transaction.customFees
 }
 
-func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenCreateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.treasuryAccountID.Validate(client)
 	if err != nil {
@@ -249,7 +249,7 @@ func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) 
 	}
 
 	for _, customFee := range transaction.customFees {
-		if err := customFee.validateNetworkOnIDs(client); err != nil {
+		if err := customFee.validateChecksums(client); err != nil {
 			return err
 		}
 	}
@@ -540,7 +540,7 @@ func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCre
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TokenCreateTransaction{}, err
 	}

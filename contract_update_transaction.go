@@ -154,7 +154,7 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	return ""
 }
 
-func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *ContractUpdateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.contractID.Validate(client)
 	if err != nil {
@@ -355,7 +355,7 @@ func (transaction *ContractUpdateTransaction) FreezeWith(client *Client) (*Contr
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &ContractUpdateTransaction{}, err
 	}

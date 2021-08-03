@@ -105,7 +105,7 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 	return ""
 }
 
-func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *FileUpdateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.fileID.Validate(client)
 	if err != nil {
@@ -288,7 +288,7 @@ func (transaction *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdat
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &FileUpdateTransaction{}, err
 	}

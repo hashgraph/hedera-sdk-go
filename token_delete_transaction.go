@@ -47,7 +47,7 @@ func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
 	return transaction.tokenID
 }
 
-func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenDeleteTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {
@@ -226,7 +226,7 @@ func (transaction *TokenDeleteTransaction) FreezeWith(client *Client) (*TokenDel
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TokenDeleteTransaction{}, err
 	}

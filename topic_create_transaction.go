@@ -107,7 +107,7 @@ func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 	return transaction.autoRenewAccountID
 }
 
-func (transaction *TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TopicCreateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.autoRenewAccountID.Validate(client)
 	if err != nil {
@@ -290,7 +290,7 @@ func (transaction *TopicCreateTransaction) FreezeWith(client *Client) (*TopicCre
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TopicCreateTransaction{}, err
 	}

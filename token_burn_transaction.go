@@ -88,7 +88,7 @@ func (transaction *TokenBurnTransaction) GetSerialNumbers() []int64 {
 	return transaction.pb.GetSerialNumbers()
 }
 
-func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenBurnTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {
@@ -272,7 +272,7 @@ func (transaction *TokenBurnTransaction) FreezeWith(client *Client) (*TokenBurnT
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TokenBurnTransaction{}, err
 	}

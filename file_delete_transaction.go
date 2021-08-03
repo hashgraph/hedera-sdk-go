@@ -42,7 +42,7 @@ func (transaction *FileDeleteTransaction) GetFileID() FileID {
 	return transaction.fileID
 }
 
-func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *FileDeleteTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.fileID.Validate(client)
 	if err != nil {
@@ -222,7 +222,7 @@ func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDelet
 	}
 
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &FileDeleteTransaction{}, err
 	}

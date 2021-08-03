@@ -36,7 +36,7 @@ func (query *TokenInfoQuery) GetTokenID() TokenID {
 	return query.tokenID
 }
 
-func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TokenInfoQuery) validateChecksums(client *Client) error {
 	var err error
 	err = query.tokenID.Validate(client)
 	if err != nil {
@@ -68,7 +68,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err = query.validateChecksums(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -127,7 +127,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query.validateChecksums(client)
 	if err != nil {
 		return TokenInfo{}, err
 	}

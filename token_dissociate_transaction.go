@@ -83,7 +83,7 @@ func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
 	return tokenIDs
 }
 
-func (transaction *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenDissociateTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {
@@ -278,7 +278,7 @@ func (transaction *TokenDissociateTransaction) FreezeWith(client *Client) (*Toke
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &TokenDissociateTransaction{}, err
 	}

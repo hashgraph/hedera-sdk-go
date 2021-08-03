@@ -45,7 +45,7 @@ func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 	return transaction.scheduleID
 }
 
-func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *ScheduleSignTransaction) validateChecksums(client *Client) error {
 	var err error
 	err = transaction.scheduleID.Validate(client)
 	if err != nil {
@@ -203,7 +203,7 @@ func (transaction *ScheduleSignTransaction) FreezeWith(client *Client) (*Schedul
 		return transaction, nil
 	}
 	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction.validateChecksums(client)
 	if err != nil {
 		return &ScheduleSignTransaction{}, err
 	}
