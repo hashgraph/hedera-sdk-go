@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestAccountStakersQuery_Execute(t *testing.T) {
+func TestIntegrationAccountStakersQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountStakersQuery().
@@ -21,7 +21,7 @@ func TestAccountStakersQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountStakersQueryCost_Execute(t *testing.T) {
+func TestIntegrationAccountStakersQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -39,7 +39,7 @@ func TestAccountStakersQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountStakersQueryCost_BigMax_Execute(t *testing.T) {
+func TestIntegrationAccountStakersQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -57,7 +57,7 @@ func TestAccountStakersQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountStakersQueryCost_SmallMax_Execute(t *testing.T) {
+func TestIntegrationAccountStakersQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -75,7 +75,7 @@ func TestAccountStakersQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountStakersQueryCost_InsufficientFee_Execute(t *testing.T) {
+func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	accountStakers := NewAccountStakersQuery().
@@ -95,7 +95,7 @@ func TestAccountStakersQueryCost_InsufficientFee_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountStakersNoAccountID_Execute(t *testing.T) {
+func TestIntegrationAccountStakersQueryNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountStakersQuery().

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestAccountDeleteTransaction_Execute(t *testing.T) {
+func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -52,7 +52,7 @@ func TestAccountDeleteTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
+func TestIntegrationAccountDeleteTransactionNoTransferAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -91,7 +91,7 @@ func Test_AccountDelete_NoTransferAccountID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountDelete_NoAccountID(t *testing.T) {
+func TestIntegrationAccountDeleteTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -127,7 +127,7 @@ func Test_AccountDelete_NoAccountID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountDelete_NoSigning(t *testing.T) {
+func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

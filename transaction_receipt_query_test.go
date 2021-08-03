@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Receipt_Transaction(t *testing.T) {
+func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -39,7 +39,7 @@ func Test_Receipt_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_ReceiptTransaction_InvalidTransactionID(t *testing.T) {
+func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	key, err := GeneratePrivateKey()

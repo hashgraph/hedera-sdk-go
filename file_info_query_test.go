@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func Test_FileInfo_Transaction(t *testing.T) {
+func TestIntegrationFileInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -50,7 +50,7 @@ func Test_FileInfo_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileInfoCost_Transaction(t *testing.T) {
+func TestIntegrationFileInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -96,7 +96,7 @@ func Test_FileInfoCost_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
+func TestIntegrationFileInfoQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -142,7 +142,7 @@ func Test_FileInfoCost_BigMax_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
+func TestIntegrationFileInfoQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -186,7 +186,7 @@ func Test_FileInfoCost_SmallMax_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
+func TestIntegrationFileInfoQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -230,7 +230,7 @@ func Test_FileInfoCost_InsufficientFee_Transaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_FileInfoQuery_NoFileID(t *testing.T) {
+func TestIntegrationFileInfoQueryNoFileID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewFileInfoQuery().

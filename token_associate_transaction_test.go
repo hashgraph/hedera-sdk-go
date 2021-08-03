@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenAssociateTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -86,7 +86,7 @@ func TestTokenAssociateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenAssociate_NoAccountID(t *testing.T) {
+func TestIntegrationTokenAssociateTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenAssociateTransaction().
@@ -101,7 +101,7 @@ func Test_TokenAssociate_NoAccountID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenAssociate_NoTokenID(t *testing.T) {
+func TestIntegrationTokenAssociateTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

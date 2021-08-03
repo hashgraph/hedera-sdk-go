@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestTopicCreateTransaction_Execute(t *testing.T) {
+func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
@@ -49,7 +49,7 @@ func TestTopicCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TopicCreate_DifferentKeys(t *testing.T) {
+func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
@@ -114,7 +114,7 @@ func Test_TopicCreate_DifferentKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TopicCreate_JustSetMemo(t *testing.T) {
+func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
@@ -132,7 +132,7 @@ func Test_TopicCreate_JustSetMemo(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicNetwork_Execute(t *testing.T) {
+func TestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"

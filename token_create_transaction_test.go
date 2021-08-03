@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestTokenCreateTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -34,7 +34,7 @@ func TestTokenCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenCreate_MultipleKeys(t *testing.T) {
+func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 5)
@@ -85,7 +85,7 @@ func Test_TokenCreate_MultipleKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenCreate_NoKeys(t *testing.T) {
+func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 6)
@@ -151,7 +151,7 @@ func Test_TokenCreate_NoKeys(t *testing.T) {
 	assert.NotNil(t, info.ExpirationTime)
 }
 
-func Test_TokenCreate_AdminSign(t *testing.T) {
+func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 6)
@@ -210,7 +210,7 @@ func Test_TokenCreate_AdminSign(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenCreate_Network(t *testing.T) {
+func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 6)
@@ -275,32 +275,35 @@ func Test_TokenCreate_Network(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-//func TestTokenNftCreateTransaction_Execute(t *testing.T) {
-//	env := NewIntegrationTestEnv(t)
-//
-//	resp, err := NewTokenCreateTransaction().
-//		SetNodeAccountIDs(env.NodeAccountIDs).
-//		SetTokenName("ffff").
-//		SetTokenSymbol("F").
-//		SetTokenMemo("fnord").
-//		SetTokenType(TokenTypeNonFungibleUnique).
-//		SetSupplyType(TokenSupplyTypeFinite).
-//		SetMaxSupply(5).
-//		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-//		SetAdminKey(env.Client.GetOperatorPublicKey()).
-//		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-//		SetWipeKey(env.Client.GetOperatorPublicKey()).
-//		SetKycKey(env.Client.GetOperatorPublicKey()).
-//		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-//		SetFreezeDefault(false).
-//		Execute(env.Client)
-//	assert.NoError(t, err)
-//
-//	_, err = resp.GetReceipt(env.Client)
-//	assert.NoError(t, err)
-//}
+func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
 
-func TestTokenCreateWithCustomFeesTransaction_Execute(t *testing.T) {
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMemo("fnord").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetMaxSupply(5).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	assert.NoError(t, err)
+}
+
+func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -344,7 +347,7 @@ func TestTokenCreateWithCustomFeesTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenCreateWithCustomFeesDenominatorZeroTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -388,7 +391,7 @@ func TestTokenCreateWithCustomFeesDenominatorZeroTransaction_Execute(t *testing.
 	}
 }
 
-func TestTokenCreateWithInvalidFeeCollectorAccountIDTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -429,7 +432,7 @@ func TestTokenCreateWithInvalidFeeCollectorAccountIDTransaction_Execute(t *testi
 	assert.NoError(t, err)
 }
 
-func TestTokenCreateWithMaxLessThanMinTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().

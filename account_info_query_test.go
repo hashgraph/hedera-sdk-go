@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestAccountInfoQuery_Execute(t *testing.T) {
+func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -61,7 +61,7 @@ func TestAccountInfoQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountInfoQueryCost_Execute(t *testing.T) {
+func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -119,7 +119,7 @@ func TestAccountInfoQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
+func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -174,7 +174,7 @@ func TestAccountInfoQueryCost_InsufficientFee_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
+func TestIntegrationAccountInfoQuerySetSetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -232,7 +232,7 @@ func TestAccountInfoQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
+func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -287,7 +287,7 @@ func TestAccountInfoQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountInfo_NoAccountID(t *testing.T) {
+func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountInfoQuery().

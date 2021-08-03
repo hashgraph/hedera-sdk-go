@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenWipeTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -142,7 +142,7 @@ func TestTokenWipeTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenWipe_NoAmount(t *testing.T) {
+func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -259,7 +259,7 @@ func Test_TokenWipe_NoAmount(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenWipe_NoTokenID(t *testing.T) {
+func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -368,7 +368,7 @@ func Test_TokenWipe_NoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenWipe_NoAccountID(t *testing.T) {
+func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -479,7 +479,7 @@ func Test_TokenWipe_NoAccountID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenWipeTransaction_NotZeroTokensAtDelete_Execute(t *testing.T) {
+func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

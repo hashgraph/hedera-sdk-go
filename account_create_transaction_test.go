@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestAccountCreateTransaction_Execute(t *testing.T) {
+func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -49,7 +49,7 @@ func TestAccountCreateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
+func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -96,7 +96,7 @@ func TestAccountCreateTransaction_FreezeModify_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountCreate_NoKey(t *testing.T) {
+func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewAccountCreateTransaction().
@@ -111,7 +111,7 @@ func Test_AccountCreate_NoKey(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountCreateTransactionAddSignature(t *testing.T) {
+func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -155,7 +155,7 @@ func TestAccountCreateTransactionAddSignature(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountProxy_Execute(t *testing.T) {
+func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -219,7 +219,7 @@ func TestAccountProxy_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountNetwork_Execute(t *testing.T) {
+func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

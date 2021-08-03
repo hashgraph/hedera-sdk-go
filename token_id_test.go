@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestTokenIDFromString(t *testing.T) {
+func TestUnitTokenIDFromString(t *testing.T) {
 	tokID := TokenID{
 		Shard: 1,
 		Realm: 2,

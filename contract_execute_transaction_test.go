@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestContractExecuteTransaction_Execute(t *testing.T) {
+func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract
@@ -75,7 +75,7 @@ func TestContractExecuteTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_ContractExecute_NoContractID(t *testing.T) {
+func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewContractExecuteTransaction().
@@ -89,7 +89,7 @@ func Test_ContractExecute_NoContractID(t *testing.T) {
 	}
 }
 
-func Test_ContractExecute_NoGas(t *testing.T) {
+func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract
@@ -160,7 +160,7 @@ func Test_ContractExecute_NoGas(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_ContractExecute_NoFunction(t *testing.T) {
+func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract
@@ -231,84 +231,82 @@ func Test_ContractExecute_NoFunction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-//func Test_ContractExecuteTransaction_ID(t *testing.T) {
-//	env := NewIntegrationTestEnv(t)
-//
-//	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract
-//	testContractByteCode := []byte(`608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029`)
-//
-//	resp, err := NewFileCreateTransaction().
-//		SetKeys(env.Client.GetOperatorPublicKey()).
-//		SetNodeAccountIDs(env.NodeAccountIDs).
-//		SetContents(testContractByteCode).
-//		Execute(env.Client)
-//	assert.NoError(t, err)
-//
-//	receipt, err := resp.GetReceipt(env.Client)
-//	assert.NoError(t, err)
-//
-//	fileID := *receipt.FileID
-//	assert.NotNil(t, fileID)
-//
-//	transactionID := resp.TransactionID
-//	assert.NotNil(t, transactionID)
-//
-//	nodeIDs := make([]AccountID, 1)
-//	nodeIDs[0] = resp.NodeID
-//
-//	resp, err = NewContractCreateTransaction().
-//		SetAdminKey(env.Client.GetOperatorPublicKey()).
-//		SetGas(2000).
-//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-//		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
-//		SetBytecodeFileID(fileID).
-//		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
-//		Execute(env.Client)
-//	assert.NoError(t, err)
-//
-//	receipt, err = resp.GetReceipt(env.Client)
-//	assert.NoError(t, err)
-//
-//	assert.NotNil(t, receipt.ContractID)
-//	contractID := *receipt.ContractID
-//
-//
-//	resp, err = NewContractExecuteTransaction().
-//		SetContractID(contractID).
-//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-//		SetGas(10000).
-//		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
-//		Execute(env.Client)
-//	assert.NoError(t, err)
-//
-//
-//	record, err := resp.GetRecord(env.Client)
-//	assert.NoError(t, err)
-//	assert.NotNil(t, record)
-//
-//	receipt, err = resp.GetReceipt(env.Client)
-//	assert.NoError(t, err)
-//	result, err := record.GetContractExecuteResult()
-//	assert.NoError(t, err)
-//
-//	resp, err = NewContractDeleteTransaction().
-//		SetContractID(contractID).
-//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-//		Execute(env.Client)
-//	assert.NoError(t, err)
-//
-//	_, err = resp.GetReceipt(env.Client)
-//	assert.NoError(t, err)
-//
-//	resp, err = NewFileDeleteTransaction().
-//		SetFileID(fileID).
-//		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-//		Execute(env.Client)
-//	assert.NoError(t, err)
-//
-//	_, err = resp.GetReceipt(env.Client)
-//	assert.NoError(t, err)
-//
-//	err = CloseIntegrationTestEnv(env)
-//	assert.NoError(t, err)
-//}
+func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract
+	testContractByteCode := []byte(`608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029`)
+
+	resp, err := NewFileCreateTransaction().
+		SetKeys(env.Client.GetOperatorPublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetContents(testContractByteCode).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	fileID := *receipt.FileID
+	assert.NotNil(t, fileID)
+
+	transactionID := resp.TransactionID
+	assert.NotNil(t, transactionID)
+
+	nodeIDs := make([]AccountID, 1)
+	nodeIDs[0] = resp.NodeID
+
+	resp, err = NewContractCreateTransaction().
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetGas(2000).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
+		SetBytecodeFileID(fileID).
+		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	assert.NotNil(t, receipt.ContractID)
+	contractID := *receipt.ContractID
+
+	resp, err = NewContractExecuteTransaction().
+		SetContractID(contractID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetGas(10000).
+		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	record, err := resp.GetRecord(env.Client)
+	assert.NoError(t, err)
+	assert.NotNil(t, record)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+	_, err = record.GetContractExecuteResult()
+	assert.NoError(t, err)
+
+	resp, err = NewContractDeleteTransaction().
+		SetContractID(contractID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewFileDeleteTransaction().
+		SetFileID(fileID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
+}

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenFeeScheduleUpdateTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -69,7 +69,7 @@ func TestTokenFeeScheduleUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenFeeScheduleUpdateTransactionWithFractional_Execute(t *testing.T) {
+func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -134,7 +134,7 @@ func TestTokenFeeScheduleUpdateTransactionWithFractional_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTokenFeeScheduleUpdateNoFeeScheduleKeyTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKe(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -192,7 +192,7 @@ func TestTokenFeeScheduleUpdateNoFeeScheduleKeyTransaction_Execute(t *testing.T)
 	assert.NoError(t, err)
 }
 
-func TestTokenFeeScheduleUpdateWrongScheduleKeyTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

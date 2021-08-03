@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestLiveHashAddTransaction_Execute(t *testing.T) {
+func TestIntegrationLiveHashAddTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")

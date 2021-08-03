@@ -61,7 +61,7 @@ const testClientJSONWrongTypeNetwork string = `{
  	"mirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
 }`
 
-func TestClientFromConfig(t *testing.T) {
+func TestUnitClientFromConfig(t *testing.T) {
 	client, err := ClientFromConfig([]byte(testClientJSON))
 	assert.NoError(t, err)
 
@@ -70,7 +70,7 @@ func TestClientFromConfig(t *testing.T) {
 	assert.Nil(t, client.operator)
 }
 
-func TestClientSetNetwork(t *testing.T) {
+func TestUnitClientSetNetwork(t *testing.T) {
 	client := ClientForPreviewnet()
 
 	assert.NotNil(t, client)

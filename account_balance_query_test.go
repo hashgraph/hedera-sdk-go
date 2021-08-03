@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccountBalanceQuery_Execute(t *testing.T) {
+func TestIntegrationAccountBalanceQuery(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	balance, err := NewAccountBalanceQuery().
@@ -27,7 +27,7 @@ func TestAccountBalanceQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountBalanceQuery_TokenBalance(t *testing.T) {
+func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -65,7 +65,7 @@ func TestAccountBalanceQuery_TokenBalance(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountBalanceQueryCost_Execute(t *testing.T) {
+func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -83,7 +83,7 @@ func TestAccountBalanceQueryCost_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountBalanceQueryCost_BigMax_Execute(t *testing.T) {
+func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -101,7 +101,7 @@ func TestAccountBalanceQueryCost_BigMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountBalanceQueryCost_SmallMax_Execute(t *testing.T) {
+func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -119,7 +119,7 @@ func TestAccountBalanceQueryCost_SmallMax_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountBalanceQueryCost_SetPayment_Execute(t *testing.T) {
+func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -138,7 +138,7 @@ func TestAccountBalanceQueryCost_SetPayment_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
+func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	balance := NewAccountBalanceQuery().
@@ -157,7 +157,7 @@ func TestAccountBalanceQueryCost_SetPaymentOneTinybar_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_AccountBalance_NoAccount(t *testing.T) {
+func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountBalanceQuery().

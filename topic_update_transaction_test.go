@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestTopicUpdateTransaction_Execute(t *testing.T) {
+func TestIntegrationTopicUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
@@ -73,7 +73,7 @@ func TestTopicUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TopicUpdate_NoMemo(t *testing.T) {
+func TestIntegrationTopicUpdateTransactionNoMemo(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
@@ -126,7 +126,7 @@ func Test_TopicUpdate_NoMemo(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TopicUpdate_NoTopicID(t *testing.T) {
+func TestIntegrationTopicUpdateTransactionNoTopicID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"

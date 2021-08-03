@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestContractUpdateTransaction_Execute(t *testing.T) {
+func TestIntegrationContractUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	// Note: this is the bytecode for the contract found in the example for ./examples/create_simple_contract
@@ -109,7 +109,7 @@ func TestContractUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_ContractUpdate_NoContractID(t *testing.T) {
+func TestIntegrationContractUpdateTransactionNoContractID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewContractUpdateTransaction().

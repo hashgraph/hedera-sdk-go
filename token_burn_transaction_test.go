@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenBurnTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -85,7 +85,7 @@ func TestTokenBurnTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenBurn_NoAmount(t *testing.T) {
+func TestIntegrationTokenBurnTransactionNoAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -157,7 +157,7 @@ func Test_TokenBurn_NoAmount(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenBurn_NoTokenID(t *testing.T) {
+func TestIntegrationTokenBurnTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

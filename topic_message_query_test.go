@@ -57,7 +57,7 @@ In consequat, nisi iaculis laoreet elementum, massa mauris varius nisi, et porta
 Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam consectetur neque, non rutrum dolor metus nec ex. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed egestas augue elit, sollicitudin accumsan massa lobortis ac. Curabitur placerat, dolor a aliquam maximus, velit ipsum laoreet ligula, id ullamcorper lacus nibh eget nisl. Donec eget lacus venenatis enim consequat auctor vel in.
 `
 
-func TestTopicMessageQuery_Execute(t *testing.T) {
+func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -124,7 +124,7 @@ func TestTopicMessageQuery_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
+func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -191,7 +191,7 @@ func TestTopicMessageQuery_NoTopicID_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
+func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().
@@ -255,7 +255,7 @@ func TestTopicMessageQuery_NoMessage_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTopicMessageQuery_NoStartTime_Execute(t *testing.T) {
+func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTopicCreateTransaction().

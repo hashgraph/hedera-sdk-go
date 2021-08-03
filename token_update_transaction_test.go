@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenUpdateTransaction_Execute(t *testing.T) {
+func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -51,7 +51,7 @@ func TestTokenUpdateTransaction_Execute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenUpdate_DifferentKeys(t *testing.T) {
+func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 5)
@@ -133,7 +133,7 @@ func Test_TokenUpdate_DifferentKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_TokenUpdate_NoTokenID(t *testing.T) {
+func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
