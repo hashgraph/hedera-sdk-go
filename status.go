@@ -222,6 +222,7 @@ const (
 	StatusPayerAccountDeleted                                Status = 256
 	StatusCustomFeeChargingExceededMaxRecursionDepth         Status = 257
 	StatusCustomFeeChargingExceededMaxAccountAmounts         Status = 258
+	StatusInsufficientSenderAccountBalanceForCustomFee       Status = 259
 )
 
 // String() returns a string representation of the status
@@ -661,6 +662,8 @@ func (status Status) String() string {
 		return "CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH"
 	case StatusCustomFeeChargingExceededMaxAccountAmounts:
 		return "CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS"
+	case StatusInsufficientSenderAccountBalanceForCustomFee:
+		return "INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
