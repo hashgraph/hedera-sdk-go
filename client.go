@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 // Default max fees and payments to 1 h-bar
@@ -24,6 +25,7 @@ type Client struct {
 	mirrorNetwork         *mirrorNetwork
 	networkName           *NetworkName
 	autoValidateChecksums bool
+	maxAttempts   *int
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -115,9 +117,10 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 		mirrorNetwork:         newMirrorNetwork(),
 		networkName:           &name,
 		autoValidateChecksums: false,
+		maxAttempts:       nil,
 	}
 
-	client.SetNetwork(network)
+	_ = client.SetNetwork(network)
 	client.SetMirrorNetwork(mirrorNetwork)
 
 	return &client
@@ -282,6 +285,38 @@ func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network.network
 }
 
+func (client *Client) SetMaxAttempts(max int) {
+	client.maxAttempts = &max
+}
+
+func (client *Client) GetMaxAttempts() int {
+	if client.maxAttempts == nil {
+		return -1
+	}
+
+	return *client.maxAttempts
+}
+
+func (client *Client) SetMaxNodeAttempts(max int) {
+	client.network.setMaxNodeAttempts(max)
+}
+
+func (client *Client) GetMaxNodeAttempts() int {
+	return client.network.getMaxNodeAttempts()
+}
+
+func (client *Client) SetNodeWaitTime(nodeWait time.Duration) {
+	client.network.setNodeWaitTime(nodeWait)
+}
+
+func (client *Client) GetNodeWaitTime() time.Duration {
+	return client.network.getNodeWaitTime()
+}
+
+func (client *Client) SetMaxNodesPerTransaction(max int) {
+	client.network.setMaxNodesPerTransaction(max)
+}
+
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
@@ -362,5 +397,14 @@ func (client *Client) Ping(nodeID AccountID) error {
 		SetAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{nodeID}).
 		Execute(client)
+
 	return err
+}
+
+func (client *Client) PingAll() {
+	for _, s := range client.network.network {
+		_ = client.Ping(s)
+	}
+
+	return
 }

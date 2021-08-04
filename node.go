@@ -1,10 +1,15 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
+	"crypto/tls"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/status"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -16,13 +21,15 @@ type node struct {
 	delayUntil int64
 	useCount   int64
 	channel    *channel
+	waitTime   int64
+	attempts   int64
 }
 
 type nodes struct {
 	nodes []*node
 }
 
-func newNode(accountID AccountID, address string) node {
+func newNode(accountID AccountID, address string, waitTime int64) node {
 	return node{
 		accountID:  accountID,
 		address:    address,
@@ -31,7 +38,17 @@ func newNode(accountID AccountID, address string) node {
 		delayUntil: time.Now().UTC().UnixNano(),
 		useCount:   0,
 		channel:    nil,
+		waitTime:   waitTime,
+		attempts:   0,
 	}
+}
+
+func (node *node) setWaitTime(waitTime int64) {
+	if node.delay == node.waitTime {
+		node.delay = node.waitTime
+	}
+
+	node.waitTime = waitTime
 }
 
 func (node *node) inUse() {
@@ -44,6 +61,7 @@ func (node *node) isHealthy() bool {
 }
 
 func (node *node) increaseDelay() {
+	node.attempts++
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
 	node.delayUntil = (node.delay * 100000) + time.Now().UTC().UnixNano()
 }
@@ -69,9 +87,19 @@ func (node *node) getChannel() (*channel, error) {
 		PermitWithoutStream: true,
 	}
 
-	conn, err := grpc.Dial(node.address, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	var conn *grpc.ClientConn
+	var err error
+	parts := strings.SplitN(node.address, ":", 2)
+	security := grpc.WithInsecure()
+	if parts[1] == "443" || parts[1] == "50212" {
+		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true}))
+	}
+
+	cont, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn, err = grpc.DialContext(cont, node.address, security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
-		return nil, errors.Wrapf(err, "error connecting to node at %s", node.address)
+		return nil, status.Error(codes.ResourceExhausted, "dial timeout of 10sec exceeded")
 	}
 
 	ch := newChannel(conn)
@@ -82,7 +110,9 @@ func (node *node) getChannel() (*channel, error) {
 
 func (node *node) close() error {
 	if node.channel != nil {
-		return node.channel.client.Close()
+		err := node.channel.client.Close()
+		node.channel = nil
+		return err
 	}
 
 	return nil

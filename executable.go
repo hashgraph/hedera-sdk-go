@@ -71,15 +71,21 @@ func execute(
 	mapStatusError func(request, response, *NetworkName) error,
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
-	maxAttempts := 10
+	var maxAttempts int
+	if client.maxAttempts != nil {
+		maxAttempts = *client.maxAttempts
+	} else {
+		maxAttempts = 10
+		if request.query != nil {
+			maxAttempts = request.query.maxRetry
+		} else {
+			maxAttempts = request.transaction.maxRetry
+		}
+
+	}
+
 	var attempt int64
 	var errPersistent error
-
-	if request.query != nil {
-		maxAttempts = request.query.maxRetry
-	} else {
-		maxAttempts = request.transaction.maxRetry
-	}
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
 		protoRequest := makeRequest(request)
@@ -94,7 +100,8 @@ func execute(
 
 		channel, err := node.getChannel()
 		if err != nil {
-			return intermediateResponse{}, err
+			node.increaseDelay()
+			continue
 		}
 
 		method := getMethod(request, channel)
@@ -140,6 +147,7 @@ func execute(
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
+
 	}
 
 	return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)

@@ -104,7 +104,9 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 
 	query.pbHeader.Payment = paymentTransaction
 	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+	}
 
 	err = query.validateNetworkOnIDs(client)
 	if err != nil {
@@ -156,9 +158,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, errNoClientProvided
 	}
 
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
-	}
+	query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
 
 	err := query.validateNetworkOnIDs(client)
 	if err != nil {
