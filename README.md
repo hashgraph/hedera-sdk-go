@@ -26,19 +26,19 @@ $ go get github.com/hashgraph/hedera-sdk-go/v2
 
 ## Running Integration Tests
 ```bash
-$ env CONFIG_FILE="<your_config_file>" go test -v _Execute
+$ env CONFIG_FILE="<your_config_file>" go test -v Integration -timeout 9999s
 ```
 
 or
 
 ```bash
-$ env CONFIG_FILE="<your_config_file>" OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v _Execute
+$ env CONFIG_FILE="<your_config_file>" OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v Integration -timeout 9999s
 ```
 
 or
 
 ```bash
-$ env OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v _Execute
+$ env OPERATOR_KEY="<key>" OPERATOR_ID="<id>" go test -v Integration -timeout 9999s
 ```
 
 The config file _can_ contain both the network and the operator, but you can also
