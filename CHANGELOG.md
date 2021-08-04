@@ -1,3 +1,10 @@
+## v2.1.12
+
+### Added
+
+ * Updated `Status` with new response codes
+ * Support for `Hbar.[from|to]String()` to be reversable
+
 ## v2.1.11
 
 ### Removed
