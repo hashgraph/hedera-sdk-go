@@ -617,3 +617,93 @@ func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }
+
+func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetMaxSupply(20).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+	metaData := []byte{50, 50}
+
+	mint, err := NewTokenMintTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		SetMetadata(metaData).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	mintReceipt, err := mint.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	resp, err = NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(NewHbar(2)).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	freezeAssociate, err := NewTokenAssociateTransaction().
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	freezeAssociate.Sign(newKey)
+
+	resp, err = freezeAssociate.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenWipeTransaction().
+		SetTokenID(tokenID).
+		SetAccountID(accountID).
+		SetSerialNumbers(mintReceipt.SerialNumbers).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+}
