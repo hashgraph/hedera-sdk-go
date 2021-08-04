@@ -329,7 +329,7 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) {
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
-	metaData := make([]byte, 101, 50)
+	metaData := make([]byte, 50, 101)
 
 	mint, err := NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

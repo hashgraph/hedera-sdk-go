@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
+func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -220,7 +220,7 @@ func DisabledTestIntegrationScheduleDeleteTransactionCanExecute(t *testing.T) {
 	assert.False(t, info2.DeletedAt.IsZero())
 }
 
-func TestScheduleCreateTransaction_CheckValidGetTransaction_Execute(t *testing.T) {
+func DisabledTestIntegrationScheduleCreateTransactionCheckValidGetTransaction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
