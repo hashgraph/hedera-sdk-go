@@ -3,7 +3,7 @@
 ### Added
 
  * Updated `Status` with new response codes
- * Support for `Hbar.[from|to]String()` to be reversable
+ * Support for `Hbar.[from|to]String()` to be reversible
 
 ## v2.1.11
 
