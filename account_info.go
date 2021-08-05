@@ -27,12 +27,12 @@ type AccountInfo struct {
 	OwnedNfts                      int64
 }
 
-func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networkName *NetworkName) (AccountInfo, error) {
+func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
 	if pb == nil {
 		return AccountInfo{}, errParameterNull
 	}
 
-	pubKey, err := keyFromProtobuf(pb.Key, networkName)
+	pubKey, err := keyFromProtobuf(pb.Key)
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -41,7 +41,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networ
 
 	if pb.TokenRelationships != nil {
 		for i, relationship := range pb.TokenRelationships {
-			singleRelationship := tokenRelationshipFromProtobuf(relationship, networkName)
+			singleRelationship := tokenRelationshipFromProtobuf(relationship)
 			tokenRelationship[i] = &singleRelationship
 		}
 	}
@@ -50,7 +50,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networ
 
 	if pb.LiveHashes != nil {
 		for i, liveHash := range pb.LiveHashes {
-			singleRelationship, err := liveHashFromProtobuf(liveHash, networkName)
+			singleRelationship, err := liveHashFromProtobuf(liveHash)
 			if err != nil {
 				return AccountInfo{}, err
 			}
@@ -60,11 +60,11 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo, networ
 
 	var proxyAccountID AccountID
 	if pb.ProxyAccountID != nil {
-		proxyAccountID = accountIDFromProtobuf(pb.ProxyAccountID, networkName)
+		proxyAccountID = accountIDFromProtobuf(pb.ProxyAccountID)
 	}
 
 	return AccountInfo{
-		AccountID:                      accountIDFromProtobuf(pb.AccountID, networkName),
+		AccountID:                      accountIDFromProtobuf(pb.AccountID),
 		ContractAccountID:              pb.ContractAccountID,
 		IsDeleted:                      pb.Deleted,
 		ProxyAccountID:                 proxyAccountID,
@@ -138,7 +138,7 @@ func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	info, err := accountInfoFromProtobuf(&pb, nil)
+	info, err := accountInfoFromProtobuf(&pb)
 	if err != nil {
 		return AccountInfo{}, err
 	}

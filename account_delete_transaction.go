@@ -24,8 +24,8 @@ func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 	return AccountDeleteTransaction{
 		Transaction:       transaction,
 		pb:                pb.GetCryptoDelete(),
-		transferAccountID: accountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID(), nil),
-		deleteAccountID:   accountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID(), nil),
+		transferAccountID: accountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
+		deleteAccountID:   accountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}
 }
 
@@ -65,6 +65,9 @@ func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccoun
 }
 
 func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.deleteAccountID.Validate(client)
 	if err != nil {

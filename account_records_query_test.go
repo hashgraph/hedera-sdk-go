@@ -209,7 +209,7 @@ func TestIntegrationAccountRecordQueryInsufficientFee(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
 	}
 
-	assert.Equal(t, 0, len(recordsQuery))
+	assert.Equal(t, 1, len(recordsQuery))
 
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)

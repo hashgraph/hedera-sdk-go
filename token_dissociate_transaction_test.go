@@ -72,7 +72,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 
 	check := false
 	for _, relation := range info.TokenRelationships {
-		if *tokenID.checksum == *relation.TokenID.checksum {
+		if tokenID.String() == relation.TokenID.String() {
 			check = true
 		}
 	}
@@ -101,7 +101,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 
 	check = false
 	for _, relation := range info.TokenRelationships {
-		if *tokenID.checksum == *relation.TokenID.checksum {
+		if tokenID.String() == relation.TokenID.String() {
 			check = true
 		}
 	}
@@ -281,7 +281,7 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 
 	check := false
 	for _, relation := range info.TokenRelationships {
-		if *tokenID.checksum == *relation.TokenID.checksum {
+		if tokenID.String() == relation.TokenID.String() {
 			check = true
 		}
 	}
@@ -379,7 +379,7 @@ func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 
 	check := false
 	for _, relation := range info.TokenRelationships {
-		if tokenID.Shard == relation.TokenID.Shard && tokenID.Realm == relation.TokenID.Realm && tokenID.Token == relation.TokenID.Token {
+		if tokenID.String() == relation.TokenID.String() {
 			check = true
 		}
 	}

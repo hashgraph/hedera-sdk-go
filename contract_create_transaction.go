@@ -31,8 +31,8 @@ func contractCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return ContractCreateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetContractCreateInstance(),
-		byteCodeFileID: fileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID(), nil),
-		proxyAccountID: accountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID(), nil),
+		byteCodeFileID: fileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
+		proxyAccountID: accountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID()),
 	}
 }
 
@@ -60,7 +60,7 @@ func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *Contrac
 }
 
 func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
+	return keyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 // Sets the gas to run the constructor.
@@ -146,6 +146,9 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 }
 
 func (transaction *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.byteCodeFileID.Validate(client)
 	if err != nil {

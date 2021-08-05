@@ -25,6 +25,9 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 }
 
 func (query *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.transactionID.AccountID.Validate(client)
 	if err != nil {
@@ -125,8 +128,8 @@ func transactionRecordQuery_mapStatusError(request request, response response, n
 
 	return ErrHederaReceiptStatus{
 		Status:  Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
-		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
-		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt(), networkName),
+		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetRecord().TransactionID),
+		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
 	}
 }
 
@@ -245,7 +248,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	record := transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord, client.networkName)
+	record := transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord)
 	record.TransactionID.AccountID.setNetworkWithClient(client)
 	if record.Receipt.TokenID != nil {
 		record.Receipt.TokenID.setNetworkWithClient(client)

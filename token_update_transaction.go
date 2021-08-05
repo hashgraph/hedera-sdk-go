@@ -35,9 +35,9 @@ func tokenUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return TokenUpdateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetTokenUpdate(),
-		tokenID:            tokenIDFromProtobuf(pb.GetTokenUpdate().GetToken(), nil),
-		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury(), nil),
-		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount(), nil),
+		tokenID:            tokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
+		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
+		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
 	}
 }
 
@@ -96,7 +96,7 @@ func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey Key) *TokenUpda
 }
 
 func (transaction *TokenUpdateTransaction) GetAdminKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -113,7 +113,7 @@ func (transaction *TokenUpdateTransaction) SetKycKey(publicKey Key) *TokenUpdate
 }
 
 func (transaction *TokenUpdateTransaction) GetKycKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetKycKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetKycKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -130,7 +130,7 @@ func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey Key) *TokenUpd
 }
 
 func (transaction *TokenUpdateTransaction) GetFreezeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -147,7 +147,7 @@ func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey Key) *TokenUpdat
 }
 
 func (transaction *TokenUpdateTransaction) GetWipeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetWipeKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetWipeKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -164,7 +164,7 @@ func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey Key) *TokenUpd
 }
 
 func (transaction *TokenUpdateTransaction) GetSupplyKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -179,7 +179,7 @@ func (transaction *TokenUpdateTransaction) SetFeeScheduleKey(key Key) *TokenUpda
 }
 
 func (transaction *TokenUpdateTransaction) GetFeeScheduleKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetFeeScheduleKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetFeeScheduleKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -247,6 +247,9 @@ func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
 }
 
 func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

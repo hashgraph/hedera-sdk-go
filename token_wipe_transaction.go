@@ -46,8 +46,8 @@ func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 	return TokenWipeTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenWipe(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenWipe().GetToken(), nil),
-		accountID:   accountIDFromProtobuf(pb.GetTokenWipe().GetAccount(), nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
+		accountID:   accountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
 	}
 }
 
@@ -98,6 +98,9 @@ func (transaction *TokenWipeTransaction) SetSerialNumbers(serial []int64) *Token
 }
 
 func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

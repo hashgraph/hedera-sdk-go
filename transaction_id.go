@@ -141,7 +141,7 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 	}
 }
 
-func transactionIDFromProtobuf(pb *proto.TransactionID, networkName *NetworkName) TransactionID {
+func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
 	if pb == nil {
 		return TransactionID{}
 	}
@@ -152,7 +152,7 @@ func transactionIDFromProtobuf(pb *proto.TransactionID, networkName *NetworkName
 
 	var accountID AccountID
 	if pb.AccountID != nil {
-		accountID = accountIDFromProtobuf(pb.AccountID, networkName)
+		accountID = accountIDFromProtobuf(pb.AccountID)
 	}
 
 	return TransactionID{&accountID, &validStart, pb.Scheduled}
@@ -177,7 +177,7 @@ func TransactionIDFromBytes(data []byte) (TransactionID, error) {
 		return TransactionID{}, err
 	}
 
-	return transactionIDFromProtobuf(&pb, nil), nil
+	return transactionIDFromProtobuf(&pb), nil
 }
 
 func (id TransactionID) SetScheduled(scheduled bool) TransactionID {

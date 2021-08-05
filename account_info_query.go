@@ -35,6 +35,9 @@ func (query *AccountInfoQuery) GetAccountID() AccountID {
 }
 
 func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.accountID.Validate(client)
 	if err != nil {
@@ -205,17 +208,5 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	info, err := accountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo, client.networkName)
-	if err != nil {
-		return AccountInfo{}, err
-	}
-	info.AccountID.setNetworkWithClient(client)
-	info.ProxyAccountID.setNetworkWithClient(client)
-	if info.TokenRelationships != nil {
-		for _, t := range info.TokenRelationships {
-			t.TokenID.setNetworkWithClient(client)
-		}
-	}
-
-	return info, nil
+	return accountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo)
 }

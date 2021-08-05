@@ -35,7 +35,7 @@ func tokenMintTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 	return TokenMintTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenMint(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenMint().GetToken(), nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
 	}
 }
 
@@ -84,6 +84,9 @@ func (transaction *TokenMintTransaction) GetMetadatas() [][]byte {
 }
 
 func (transaction *TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

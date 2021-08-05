@@ -131,6 +131,9 @@ func (query *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
 }
 
 func (query *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	if query.isByToken() {
 		err = query.tokenID.Validate(client)
@@ -422,7 +425,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 			return []TokenNftInfo{}, err
 		}
 
-		tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(resp.query.GetTokenGetNftInfo().GetNft(), client.networkName))
+		tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(resp.query.GetTokenGetNftInfo().GetNft()))
 
 	} else if query.isByToken() {
 		resp, err = execute(
@@ -445,7 +448,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 
 		nfts := resp.query.GetTokenGetNftInfos().GetNfts()
 		for _, tokenInfo := range nfts {
-			tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(tokenInfo, client.networkName))
+			tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(tokenInfo))
 		}
 
 	} else {
@@ -469,7 +472,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 
 		nfts := resp.query.GetTokenGetAccountNftInfos().GetNfts()
 		for _, tokenInfo := range nfts {
-			tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(tokenInfo, client.networkName))
+			tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(tokenInfo))
 		}
 	}
 

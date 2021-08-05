@@ -25,6 +25,9 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 }
 
 func (query *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.transactionID.AccountID.Validate(client)
 	if err != nil {
@@ -117,8 +120,8 @@ func transactionReceiptQuery_mapStatusError(request request, response response, 
 
 	return ErrHederaReceiptStatus{
 		Status:  Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
-		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetReceipt().TransactionID, networkName),
-		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt(), networkName),
+		TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetReceipt().TransactionID),
+		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
 	}
 }
 
@@ -195,5 +198,5 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		return TransactionReceipt{}, err
 	}
 
-	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt(), client.networkName), nil
+	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
 }

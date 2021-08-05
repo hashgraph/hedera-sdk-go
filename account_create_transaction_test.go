@@ -223,6 +223,7 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
+	env.Client.SetAutoValidateChecksums(true)
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)

@@ -41,7 +41,7 @@ func fileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 		pb:          pb.GetFileAppend(),
 		maxChunks:   20,
 		contents:    make([]byte, 0),
-		fileID:      fileIDFromProtobuf(pb.GetFileAppend().GetFileID(), nil),
+		fileID:      fileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
 }
 
@@ -320,9 +320,9 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 		}
 
 		if client != nil {
-			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf(), client.networkName))
+			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
 		} else {
-			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf(), nil))
+			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
 		}
 
 		transaction.pb.Contents = transaction.contents[start:end]

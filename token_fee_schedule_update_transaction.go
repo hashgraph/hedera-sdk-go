@@ -30,13 +30,13 @@ func TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {
-		customFees = append(customFees, customFeeFromProtobuf(fee, nil))
+		customFees = append(customFees, customFeeFromProtobuf(fee))
 	}
 
 	return TokenFeeScheduleUpdateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenFeeScheduleUpdate(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId, nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
 		customFees:  customFees,
 	}
 }
@@ -63,6 +63,9 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

@@ -42,6 +42,9 @@ func (query *AccountStakersQuery) GetAccountID() AccountID {
 }
 
 func (query *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.accountID.Validate(client)
 	if err != nil {
@@ -190,7 +193,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	// TODO: This is wrong, this method shold return `[]ProxyStaker` not `[]Transfer`
 	for i, element := range resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
 		stakers[i] = Transfer{
-			AccountID: accountIDFromProtobuf(element.AccountID, client.networkName),
+			AccountID: accountIDFromProtobuf(element.AccountID),
 			Amount:    HbarFromTinybar(element.Amount),
 		}
 	}

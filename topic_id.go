@@ -67,10 +67,18 @@ func (id TopicID) isZero() bool {
 
 // String returns the string representation of a TopicID in `Shard.Realm.Topic` (for example "0.0.3")
 func (id TopicID) String() string {
-	if id.checksum == nil {
-		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic)
+	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic)
+}
+
+func (id TopicID) ToStringWithChecksum(client Client) (string, error) {
+	if client.networkName == nil {
+		return "", errNetworkNameMissing
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, *id.checksum)
+	checksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, checksum.correctChecksum), nil
 }
 
 func (id TopicID) toProtobuf() *proto.TopicID {
@@ -81,7 +89,7 @@ func (id TopicID) toProtobuf() *proto.TopicID {
 	}
 }
 
-func topicIDFromProtobuf(topicID *proto.TopicID, networkName *NetworkName) TopicID {
+func topicIDFromProtobuf(topicID *proto.TopicID) TopicID {
 	if topicID == nil {
 		return TopicID{}
 	}
@@ -90,10 +98,6 @@ func topicIDFromProtobuf(topicID *proto.TopicID, networkName *NetworkName) Topic
 		Shard: uint64(topicID.ShardNum),
 		Realm: uint64(topicID.RealmNum),
 		Topic: uint64(topicID.TopicNum),
-	}
-
-	if networkName != nil {
-		id.setNetwork(*networkName)
 	}
 
 	return id
@@ -118,5 +122,5 @@ func TopicIDFromBytes(data []byte) (TopicID, error) {
 		return TopicID{}, err
 	}
 
-	return topicIDFromProtobuf(&pb, nil), nil
+	return topicIDFromProtobuf(&pb), nil
 }

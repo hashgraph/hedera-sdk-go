@@ -45,13 +45,13 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenAssociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenAssociate().Tokens {
-		tokens = append(tokens, tokenIDFromProtobuf(token, nil))
+		tokens = append(tokens, tokenIDFromProtobuf(token))
 	}
 
 	return TokenAssociateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenAssociate(),
-		accountID:   accountIDFromProtobuf(pb.GetTokenAssociate().GetAccount(), nil),
+		accountID:   accountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
 		tokens:      tokens,
 	}
 }
@@ -101,6 +101,9 @@ func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 }
 
 func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {

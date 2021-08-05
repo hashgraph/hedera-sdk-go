@@ -46,9 +46,9 @@ func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return ContractUpdateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetContractUpdateInstance(),
-		contractID:     contractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID(), nil),
-		proxyAccountID: accountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID(), nil),
-		bytecodeFileID: fileIDFromProtobuf(pb.GetContractUpdateInstance().GetFileID(), nil),
+		contractID:     contractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
+		proxyAccountID: accountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID()),
+		bytecodeFileID: fileIDFromProtobuf(pb.GetContractUpdateInstance().GetFileID()),
 	}
 }
 
@@ -84,7 +84,7 @@ func (transaction *ContractUpdateTransaction) SetAdminKey(publicKey PublicKey) *
 }
 
 func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
+	return keyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 // SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,
@@ -155,6 +155,9 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 }
 
 func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.contractID.Validate(client)
 	if err != nil {

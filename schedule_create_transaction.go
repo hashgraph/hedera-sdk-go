@@ -30,7 +30,7 @@ func scheduleCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return ScheduleCreateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetScheduleCreate(),
-		payerAccountID: accountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID(), nil),
+		payerAccountID: accountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
 	}
 }
 
@@ -60,7 +60,7 @@ func (transaction *ScheduleCreateTransaction) setSchedulableTransactionBody(txBo
 }
 
 func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
 	if err != nil {
 		return nil
 	}
@@ -91,6 +91,9 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 }
 
 func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.payerAccountID.Validate(client)
 	if err != nil {

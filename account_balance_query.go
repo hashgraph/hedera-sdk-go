@@ -60,6 +60,9 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 }
 
 func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.accountID.Validate(client)
 	if err != nil {
@@ -182,7 +185,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, err
 	}
 
-	return accountBalanceFromProtobuf(resp.query.GetCryptogetAccountBalance(), client.networkName), nil
+	return accountBalanceFromProtobuf(resp.query.GetCryptogetAccountBalance()), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

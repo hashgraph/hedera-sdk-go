@@ -50,14 +50,14 @@ func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
-		customFees = append(customFees, customFeeFromProtobuf(fee, nil))
+		customFees = append(customFees, customFeeFromProtobuf(fee))
 	}
 
 	return TokenCreateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetTokenCreation(),
-		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenCreation().GetTreasury(), nil),
-		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount(), nil),
+		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
+		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
 		customFees:         customFees,
 	}
 }
@@ -144,7 +144,7 @@ func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury Account
 }
 
 func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
-	return accountIDFromProtobuf(transaction.pb.GetTreasury(), nil)
+	return accountIDFromProtobuf(transaction.pb.GetTreasury())
 }
 
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
@@ -155,7 +155,7 @@ func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCrea
 }
 
 func (transaction *TokenCreateTransaction) GetAdminKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -171,7 +171,7 @@ func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreate
 }
 
 func (transaction *TokenCreateTransaction) GetKycKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetKycKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetKycKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -187,7 +187,7 @@ func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCre
 }
 
 func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetFreezeKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -203,7 +203,7 @@ func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreat
 }
 
 func (transaction *TokenCreateTransaction) GetWipeKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetWipeKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetWipeKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -218,7 +218,7 @@ func (transaction *TokenCreateTransaction) SetFeeScheduleKey(key Key) *TokenCrea
 }
 
 func (transaction *TokenCreateTransaction) GetFeeScheduleKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetFeeScheduleKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetFeeScheduleKey())
 	if err != nil {
 		return PublicKey{}
 	}
@@ -237,6 +237,9 @@ func (transaction *TokenCreateTransaction) GetCustomFees() []Fee {
 }
 
 func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.treasuryAccountID.Validate(client)
 	if err != nil {
@@ -326,7 +329,7 @@ func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCre
 }
 
 func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
-	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey(), nil)
+	key, err := keyFromProtobuf(transaction.pb.GetSupplyKey())
 	if err != nil {
 		return PublicKey{}
 	}

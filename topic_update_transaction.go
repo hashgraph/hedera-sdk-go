@@ -35,8 +35,8 @@ func topicUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return TopicUpdateTransaction{
 		Transaction:        transaction,
 		pb:                 pb.GetConsensusUpdateTopic(),
-		topicID:            topicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID(), nil),
-		autoRenewAccountID: accountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount(), nil),
+		topicID:            topicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID()),
+		autoRenewAccountID: accountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount()),
 	}
 }
 
@@ -61,7 +61,7 @@ func (transaction *TopicUpdateTransaction) SetAdminKey(publicKey Key) *TopicUpda
 }
 
 func (transaction *TopicUpdateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey(), nil)
+	return keyFromProtobuf(transaction.pb.GetAdminKey())
 }
 
 // SetSubmitKey will set the key allowed to submit messages to the topic.  If unset, the key will not be changed.
@@ -74,7 +74,7 @@ func (transaction *TopicUpdateTransaction) SetSubmitKey(publicKey Key) *TopicUpd
 }
 
 func (transaction *TopicUpdateTransaction) GetSubmitKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetSubmitKey(), nil)
+	return keyFromProtobuf(transaction.pb.GetSubmitKey())
 }
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
@@ -150,6 +150,9 @@ func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdat
 }
 
 func (transaction *TopicUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.topicID.Validate(client)
 	if err != nil {

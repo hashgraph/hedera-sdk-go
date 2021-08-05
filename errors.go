@@ -28,6 +28,7 @@ var errNoTransactions = errors.New("no transactions to execute")
 var errByteArrayNull = errors.New("byte array can't be null")
 var errParameterNull = errors.New("the parameter can't be null")
 var errNetworkMismatch = errors.New("network mismatch; some IDs have different networks set")
+var errNetworkNameMissing = errors.New("Can't derive checksum for ID without knowing which network the ID is for.  Ensure client's network name is set.")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID

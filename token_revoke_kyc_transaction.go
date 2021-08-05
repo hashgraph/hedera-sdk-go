@@ -38,8 +38,8 @@ func tokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return TokenRevokeKycTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenRevokeKyc(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken(), nil),
-		accountID:   accountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount(), nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
+		accountID:   accountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),
 	}
 }
 
@@ -66,6 +66,9 @@ func (transaction *TokenRevokeKycTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *TokenRevokeKycTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

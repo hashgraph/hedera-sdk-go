@@ -29,8 +29,8 @@ func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 	return SystemDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetSystemDelete(),
-		contractID:  contractIDFromProtobuf(pb.GetSystemDelete().GetContractID(), nil),
-		fileID:      fileIDFromProtobuf(pb.GetSystemDelete().GetFileID(), nil),
+		contractID:  contractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
+		fileID:      fileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
 	}
 }
 
@@ -67,6 +67,9 @@ func (transaction *SystemDeleteTransaction) GetFileID() FileID {
 }
 
 func (transaction *SystemDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.contractID.Validate(client)
 	if err != nil {

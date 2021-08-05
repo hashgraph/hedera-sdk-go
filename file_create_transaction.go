@@ -69,7 +69,7 @@ func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransa
 func (transaction *FileCreateTransaction) GetKeys() KeyList {
 	keys := transaction.pb.GetKeys()
 	if keys != nil {
-		keyList, err := keyListFromProtobuf(keys, nil)
+		keyList, err := keyListFromProtobuf(keys)
 		if err != nil {
 			return KeyList{}
 		}

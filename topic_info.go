@@ -17,7 +17,7 @@ type TopicInfo struct {
 	AutoRenewAccountID *AccountID
 }
 
-func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo, networkName *NetworkName) (TopicInfo, error) {
+func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, error) {
 	if topicInfo == nil {
 		return TopicInfo{}, errParameterNull
 	}
@@ -33,15 +33,15 @@ func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo, networkName *Net
 	}
 
 	if adminKey := topicInfo.AdminKey; adminKey != nil {
-		tempTopicInfo.AdminKey, err = keyFromProtobuf(adminKey, networkName)
+		tempTopicInfo.AdminKey, err = keyFromProtobuf(adminKey)
 	}
 
 	if submitKey := topicInfo.SubmitKey; submitKey != nil {
-		tempTopicInfo.SubmitKey, err = keyFromProtobuf(submitKey, networkName)
+		tempTopicInfo.SubmitKey, err = keyFromProtobuf(submitKey)
 	}
 
 	if ARAccountID := topicInfo.AutoRenewAccount; ARAccountID != nil {
-		ID := accountIDFromProtobuf(ARAccountID, networkName)
+		ID := accountIDFromProtobuf(ARAccountID)
 
 		tempTopicInfo.AutoRenewAccountID = &ID
 	}
@@ -83,7 +83,7 @@ func TopicInfoFromBytes(data []byte) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	info, err := topicInfoFromProtobuf(&pb, nil)
+	info, err := topicInfoFromProtobuf(&pb)
 	if err != nil {
 		return TopicInfo{}, err
 	}

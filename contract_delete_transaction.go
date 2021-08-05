@@ -30,9 +30,9 @@ func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return ContractDeleteTransaction{
 		Transaction:       transaction,
 		pb:                pb.GetContractDeleteInstance(),
-		contractID:        contractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID(), nil),
-		transferContactID: contractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID(), nil),
-		transferAccountID: accountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID(), nil),
+		contractID:        contractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
+		transferContactID: contractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
+		transferAccountID: accountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
 	}
 }
 
@@ -72,6 +72,9 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 }
 
 func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.contractID.Validate(client)
 	if err != nil {

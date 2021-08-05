@@ -43,6 +43,9 @@ func (query *LiveHashQuery) GetGetHash() []byte {
 }
 
 func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.accountID.Validate(client)
 	if err != nil {
@@ -186,7 +189,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash, client.networkName)
+	liveHash, err := liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
 	if err != nil {
 		return LiveHash{}, err
 	}

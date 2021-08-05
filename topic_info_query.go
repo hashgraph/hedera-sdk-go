@@ -37,6 +37,9 @@ func (query *TopicInfoQuery) GetTopicID() TopicID {
 }
 
 func (query *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.topicID.Validate(client)
 	if err != nil {
@@ -185,7 +188,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo, client.networkName)
+	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

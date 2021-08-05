@@ -34,6 +34,9 @@ func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
 }
 
 func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.scheduleID.Validate(client)
 	if err != nil {
@@ -177,7 +180,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		return ScheduleInfo{}, err
 	}
 
-	return scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo, client.networkName), nil
+	return scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

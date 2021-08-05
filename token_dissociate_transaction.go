@@ -28,13 +28,13 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 func tokenDissociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
-		tokens = append(tokens, tokenIDFromProtobuf(token, nil))
+		tokens = append(tokens, tokenIDFromProtobuf(token))
 	}
 
 	return TokenDissociateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenDissociate(),
-		accountID:   accountIDFromProtobuf(pb.GetTokenDissociate().GetAccount(), nil),
+		accountID:   accountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
 		tokens:      tokens,
 	}
 }
@@ -84,6 +84,9 @@ func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
 }
 
 func (transaction *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {
