@@ -83,64 +83,10 @@ func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
 func accountCreateTransaction_getMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().CreateAccount,
 	}
-}
-
-func (transaction *AccountCreateTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
-}
-
-// Sign uses the provided privateKey to sign the transaction.
-func (transaction *AccountCreateTransaction) Sign(
-	privateKey PrivateKey,
-) *AccountCreateTransaction {
-	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
-}
-
-func (transaction *AccountCreateTransaction) SignWithOperator(
-	client *Client,
-) (*AccountCreateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
-
-	if client == nil {
-		return nil, errNoClientProvided
-	} else if client.operator == nil {
-		return nil, errClientOperatorSigning
-	}
-
-	if !transaction.IsFrozen() {
-		_, err := transaction.FreezeWith(client)
-		if err != nil {
-			return transaction, err
-		}
-	}
-	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
-}
-
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
-func (transaction *AccountCreateTransaction) SignWith(
-	publicKey PublicKey,
-	signer TransactionSigner,
-) *AccountCreateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
-	}
-
-	return transaction
 }
 
 // Execute executes the Transaction with the provided client
@@ -201,10 +147,6 @@ func (transaction *AccountCreateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
-	return transaction.FreezeWith(nil)
-}
-
 func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*AccountCreateTransaction, error) {
 	if transaction.IsFrozen() {
 		return transaction, nil
@@ -225,11 +167,3 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 	return transaction, transaction_freezeWith(&transaction.Transaction, client)
 }
 
-func (transaction *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
-	if !transaction.IsFrozen() {
-		transaction.Freeze()
-	}
-
-	transaction.Transaction.AddSignature(publicKey, signature)
-	return transaction
-}

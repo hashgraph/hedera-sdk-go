@@ -1,9 +1,66 @@
+// THIS FILE IS GENERATED DO NOT EDIT
 package hedera
 
 import (
 <imports>
 )
 
+
+func (this *<this.type>) IsFrozen() bool {
+	return this.isFrozen()
+}
+
+func (this *<this.type>) Sign(
+	privateKey PrivateKey,
+) *<this.type> {
+	return this.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (this *<this.type>) SignWithOperator(
+	client *Client,
+) (*<this.type>, error) {
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !this.IsFrozen() {
+		_, err := this.FreezeWith(client)
+		if err != nil {
+			return this, err
+		}
+	}
+	return this.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+func (this *<this.type>) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *<this.type> {
+	if !this.IsFrozen() {
+		_, _ = this.Freeze()
+	}
+
+	if !this.keyAlreadySigned(publicKey) {
+		this.signWith(publicKey, signer)
+	}
+
+	return this
+}
+
+func (this *<this.type>) AddSignature(publicKey PublicKey, signature []byte) *<this.type> {
+	if !this.IsFrozen() {
+		this.Freeze()
+	}
+
+	this.<this.parent>.AddSignature(publicKey, signature)
+	return this
+}
+
+func (this *<this.type>) Freeze() (*<this.type>, error) {
+	return this.FreezeWith(nil)
+}
 
 <setters>
 <getters>

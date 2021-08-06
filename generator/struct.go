@@ -19,6 +19,7 @@ type Struct struct {
 	fields        []Field
 	protoName     string
 	protoAccessor string
+	parent        string
 }
 
 var request string
@@ -106,12 +107,20 @@ func StructFromTypeSpec(fileName string, spec *ast.TypeSpec, documentation *doc.
 		return nil
 	}
 
+	var parent string
+	if strings.HasSuffix(spec.Name.Name, "Transaction") {
+		parent = "Transaction"
+	} else {
+		parent = "Query"
+	}
+
 	return &Struct{
 		name:          spec.Name.Name,
 		fileName:      fileName,
 		fields:        FieldsFromExpr(spec.Type),
 		protoName:     *protoName,
 		protoAccessor: *protoAccessor,
+		parent:        parent,
 	}
 }
 
@@ -133,6 +142,8 @@ func (structure Struct) String() string {
 		"<fromProtobuf>", GenerateFromProtobufs(structure),
 		"<toProtobuf>", GenerateToProtobufs(structure),
 		"<validateChecksums>", GenerateValidateChecksums(structure),
+		"<this.parent>", structure.parent,
+		"<this.type>", structure.name,
 	)
 
 	if replacer == nil {
