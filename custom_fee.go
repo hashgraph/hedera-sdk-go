@@ -34,6 +34,14 @@ func customFeeFromProtobuf(customFee *proto.CustomFee, networkName *NetworkName)
 	return nil
 }
 
+func (fee *CustomFee) SetFeeCollectorAccountID(id AccountID) {
+	fee.FeeCollectorAccountID = &id
+}
+
+func (fee *CustomFee) GetFeeCollectorAccountID() AccountID {
+	return *fee.FeeCollectorAccountID
+}
+
 func CustomFeeFromBytes(data []byte) (Fee, error) {
 	if data == nil {
 		return nil, errByteArrayNull
