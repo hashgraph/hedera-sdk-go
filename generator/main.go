@@ -9,7 +9,6 @@ import (
 	// "io/ioutil"
 	"path/filepath"
 	"regexp"
-    "fmt"
 )
 
 var protobufTypeRegex = regexp.MustCompile("ProtobufType: .+")
@@ -43,21 +42,5 @@ func main() {
 	documentation := doc.New(docPkg, path, 0)
     structs := StructsFromFiles(astPkg.Files, documentation)
 
-    fmt.Printf("Structs: %+v\n", structs)
-
     structs.WriteToFiles()
-	for _, structure := range structs.structs {
-		data := []byte(structure.String())
-		src, err := format.Source(data)
-		if err != nil {
-			panic(err)
-		}
-	
-		output := filepath.Join(Dir, structure.fileName)
-		err = ioutil.WriteFile(output, src, 0644)
-		if err != nil {
-			panic(err)
-		}
-	}
 }
-

@@ -171,10 +171,6 @@ func FieldTypeFromType(expr ast.Expr) FieldType {
 
 func (field Field) Replacer() *strings.Replacer {
     nameLower := field.name
-    if field.config.singular && strings.HasSuffix(nameLower, "s") {
-        nameLower = nameLower[0:len(nameLower)-1]
-    }
-
     nameUpper := UpperInitial(nameLower)
 
     protoName := nameUpper
@@ -184,9 +180,20 @@ func (field Field) Replacer() *strings.Replacer {
 
     ty := field.ty.String(field.config)
 
+    nameLowerSingular := nameLower
+    nameUpperSingular := nameLower
+    if field.config.singular == true && strings.HasSuffix(nameLower, "s") {
+        nameLowerSingular = nameLower[0:len(nameLower)-1]
+        nameUpperSingular = nameUpper[0:len(nameUpper)-1]
+    }
+
     return strings.NewReplacer(
         "<field.name.lower>", nameLower, 
         "<field.name.upper>", nameUpper, 
+        "<field.name.lower.singular>", nameLowerSingular, 
+        "<field.name.upper.singular>", nameUpperSingular, 
+        "<field.name.lower.plural>", nameLower, 
+        "<field.name.upper.plural>", nameUpper, 
         "<field.type>", ty,
         "<proto.name>", protoName,
     )

@@ -1,4 +1,4 @@
-if !this.<field.name.lower>.izZero() {
+if !this.<field.name.lower>.isZero() {
     pb.<proto.name> = this.<field.name.lower>.toProtobuf()
 }
 

@@ -1,4 +1,4 @@
 if this.<field.name.lower>.tinybar != 0 {
-    pb.<proto.name> = uint64(this.<field.name.lower>.tinybars)
+    pb.<proto.name> = uint64(this.<field.name.lower>.tinybar)
 }
 
