@@ -2,6 +2,7 @@ package main
 
 import (
 	"go/doc"
+    "go/ast"
 	// "go/format"
 	"go/parser"
 	"go/token"
@@ -18,28 +19,29 @@ var dir = filepath.Dir(".")
 var path = "./"
 var fileSet = token.NewFileSet()
 
+func ParseDir(mode parser.Mode) map[string]*ast.Package {
+    pkgs, err := parser.ParseDir(fileSet, path, nil, mode)
+	if err != nil {
+		panic(err)
+	}
+
+    return pkgs
+}
+
+func GetAstPackage() *ast.Package {
+	return ParseDir(0)["hedera"]
+}
+
+func GetDocPackage() *ast.Package {
+	return ParseDir(parser.ParseComments)["hedera"]
+
+}
 func main() {
-	pkgs, err := parser.ParseDir(fileSet, path, nil, 0)
-	if err != nil {
-		panic(err)
-	}
+    astPkg := GetAstPackage()
+    docPkg := GetDocPackage()
 
-	// Used for AST
-	pkg := pkgs["hedera"]
-
-	pkgs, err = parser.ParseDir(fileSet, path, nil, parser.ParseComments)
-	if err != nil {
-		panic(err)
-	}
-
-	// Used for Comments
-	// The reason we need this is because `doc.New()` takes over the `pkg` and completely removes the AST
-	docPkg := pkgs["hedera"]
-
-	documentation := doc.New(docPkg, "./", 0)
-	structs := Structs{
-        structs: StructsFromFiles(pkg.Files, documentation),
-    }
+	documentation := doc.New(docPkg, path, 0)
+    structs := StructsFromFiles(astPkg.Files, documentation)
 
     fmt.Printf("Structs: %+v\n", structs)
 	// for _, structure := range structs.structs {

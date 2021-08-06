@@ -18,12 +18,16 @@ type Struct struct {
 	protoAccessor string
 }
 
-func StructsFromFiles(files map[string]*ast.File, documentation *doc.Package) []Struct {
+func StructsFromFiles(files map[string]*ast.File, documentation *doc.Package) Structs {
+    structs := Structs{
+        structs: make([]Struct, 0),
+    }
+
 	for fileName, file := range files {
-        return StructsFromFile(fileName, file, documentation)
+        structs.structs = StructsFromFile(fileName, file, documentation)
 	}
 
-    return make([]Struct, 0)
+    return Structs{}
 }
 
 func StructsFromFile(fileName string, file *ast.File, documentation *doc.Package) []Struct {

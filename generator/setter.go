@@ -1,20 +1,45 @@
 package main
 
-// func GenerateSetters(config Config) {
-//     s := ""
-//     if singular {
-//         s += fmt.Sprintf(`
-// func (%s *%s) Set%s(%s %s) *%s {
-//     %s.%s = []%s{%s}
-//     return %s
-// }
-// `, param, structure.name, singularName, LowerInitial(singularName), field.ty[2:], structure.name, param, field.name, field.ty[2:], LowerInitial(singularName), param)
-//     } else {
-//         s += fmt.Sprintf(`
-// func (%s *%s) Set%s(%s %s) *%s {
-//     %s.%s = %s
-//     return %s
-// }
-// `, param, structure.name, title, field.name, field.ty, structure.name, param, field.name, field.name, param)
-//     }
-// }
+import (
+    "io/ioutil"
+    "strings"
+)
+
+var setter string
+var setterSingular string
+
+func init() {
+    s, err := ioutil.ReadFile("./generator/templates/setter.txt")
+    if err != nil {
+        panic(err)
+    }
+
+    setter = string(s)
+
+    s, err = ioutil.ReadFile("./generator/templates/setter_singular.txt")
+    if err != nil {
+        panic(err)
+    }
+
+    setterSingular = string(s)
+}
+
+func GenerateSetters(structure Struct) string {
+    s := ""
+
+    for _, field := range structure.fields {
+        if !field.config.setter {
+            continue
+        }
+
+        replacer := field.Replacer()
+
+        if field.config.singular {
+            s += strings.ReplaceAll(replacer.Replace(setterSingular), "<this.type>", structure.name)
+        } else {
+            s += strings.ReplaceAll(replacer.Replace(setter), "<this.type>", structure.name)
+        }
+    }
+
+    return s
+}

@@ -14,20 +14,20 @@ type Field struct {
 }
 
 type FieldConfig struct {
+	name         string
 	getter       bool
 	setter       bool
 	singular     bool
 	toProtobuf   bool
 	fromProtobuf bool
-	name         string
 	protobufName string
 }
 
 type FieldType struct {
 	reference   bool
+    array       bool
 	packageName string
 	name        string
-	config      FieldConfig
 }
 
 func FieldConfigFromTag(fieldTag *ast.BasicLit) FieldConfig {
@@ -139,7 +139,6 @@ func FieldTypeFromSelectorExpr(expr *ast.SelectorExpr) FieldType {
 	switch expr.X.(type) {
 	case *ast.Ident:
 		return FieldType{
-			reference:   false,
 			packageName: fmt.Sprintf("%s", expr.X),
 			name:        fmt.Sprintf("%s", expr.Sel),
 		}
@@ -150,7 +149,7 @@ func FieldTypeFromSelectorExpr(expr *ast.SelectorExpr) FieldType {
 
 func FieldTypeFromArrayType(expr *ast.ArrayType) FieldType {
 	return FieldType{
-		reference: false,
+        array:     true,
 		name:      fmt.Sprintf("%s", expr.Elt),
 	}
 }
@@ -170,3 +169,37 @@ func FieldTypeFromType(expr ast.Expr) FieldType {
 	}
 }
 
+func (field Field) Replacer() *strings.Replacer {
+    name := field.name
+    if field.config.singular && strings.HasSuffix(name, "s") {
+        name = name[0:len(name)-1]
+    }
+
+    ty := field.ty.String(field.config)
+
+    return strings.NewReplacer("<field.name>", name, "<field.type>", ty)
+}
+
+func (ty FieldType) String(config FieldConfig) string {
+    s := ""
+
+    if ty.reference {
+        s += "*"
+    }
+
+    if ty.array && !config.singular {
+        s += "[]"
+    }
+
+    if ty.packageName != "" {
+        s += ty.packageName
+    }
+
+    if config.singular && strings.HasSuffix(ty.name, "s") {
+        s += ty.name[0:len(ty.name)-1]
+    } else {
+        s += ty.name
+    }
+
+    return s
+}
