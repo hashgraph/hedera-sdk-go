@@ -1,0 +1,4 @@
+func (this *<this.type>) Get<field.name.upper>() <field.type> {
+    return this.<field.name.lower>
+}
+

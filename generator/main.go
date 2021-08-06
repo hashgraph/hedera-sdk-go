@@ -44,18 +44,20 @@ func main() {
     structs := StructsFromFiles(astPkg.Files, documentation)
 
     fmt.Printf("Structs: %+v\n", structs)
-	// for _, structure := range structs.structs {
-	// 	data := []byte(structure.String())
-	// 	src, err := format.Source(data)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 
-	// 	output := filepath.Join(Dir, structure.fileName)
-	// 	err = ioutil.WriteFile(output, src, 0644)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
+
+    structs.WriteToFiles()
+	for _, structure := range structs.structs {
+		data := []byte(structure.String())
+		src, err := format.Source(data)
+		if err != nil {
+			panic(err)
+		}
+	
+		output := filepath.Join(Dir, structure.fileName)
+		err = ioutil.WriteFile(output, src, 0644)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 

@@ -1,0 +1,5 @@
+if pb.<proto.name> != 0 {
+    <field.name.lower> := HbarFromTinybar(int64(pb.<proto.name>))
+    this.Set<field.name.upper>(<field.name.lower>)
+}
+

@@ -22,20 +22,20 @@ import (
 type AccountCreateTransaction struct {
 	Transaction
 	pb                       *proto.CryptoCreateTransactionBody
-	key                      Key
-	initialBalance           Hbar
-	accountMemo              string `hedera:"protobuf=memo"`
-	sendRecordThreshold      Hbar
-	receiveRecordThreshold   Hbar
-	proxyAccountID           AccountID
-	autoRenewPeriod          time.Duration
-	receiverSigRequired      bool
-	transactionIDs           []TransactionID `hedera:"ignore=protobuf,singular"`
-	nodeAccountIDs           []AccountID     `hedera:"ignore=protobuf"`
-	maxRetry                 int             `hedera:"ignore=protobuf"`
-	transactionValidDuration time.Duration   `hedera:"ignore=protobuf"`
-	transactionMemo          string          `hedera:"ignore=protobuf"`
-	maxTransactionFee        Hbar            `hedera:"ignore=protobuf"`
+	key                      Key             `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	initialBalance           Hbar            `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	accountMemo              string          `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	sendRecordThreshold      Hbar            `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	receiveRecordThreshold   Hbar            `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	proxyAccountID           AccountID       `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	autoRenewPeriod          time.Duration   `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	receiverSigRequired      bool            `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	transactionIDs           []TransactionID `hedera:"setter,getter,singular"`
+	nodeAccountIDs           []AccountID     `hedera:"setter,getter"`
+	maxRetry                 int             `hedera:"setter,getter"`
+	transactionValidDuration time.Duration   `hedera:"setter,getter"`
+	transactionMemo          string          `hedera:"setter,getter"`
+	maxTransactionFee        Hbar            `hedera:"setter,getter"`
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and

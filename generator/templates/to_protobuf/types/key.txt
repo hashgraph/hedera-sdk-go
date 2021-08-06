@@ -1,0 +1,4 @@
+if this.<field.name.lower> != nil {
+    pb.<proto.name> = this.<field.name.lower>.toProtoKey()
+}
+

@@ -1,4 +1,4 @@
-func (this *<this.type>) Set<field.name>(<field.name> <field.type>) *<this.type> {
-    <this>.<field.name> = []<field.type>{<field.name>}
+func (this *<this.type>) Set<field.name.upper>(<field.name.lower> <field.type>) *<this.type> {
+    this.<field.name.lower> = []<field.type>{<field.name.lower>}
     return this
 }

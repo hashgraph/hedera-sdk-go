@@ -1,0 +1,2 @@
+this.Set<field.name.upper>(pb.<proto.name>)
+

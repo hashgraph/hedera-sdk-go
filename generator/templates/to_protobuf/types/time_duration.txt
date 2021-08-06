@@ -1,0 +1,4 @@
+if this.<field.name.lower> != 0 {
+    pb.<proto.name> = durationToProtobuf(this.<field.name.lower>)
+}
+

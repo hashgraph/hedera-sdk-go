@@ -1,0 +1,5 @@
+if pb.<proto.name> != nil {
+    <field.name.lower> := _KeyFromProtobuf(pb.<proto.name>)
+    this.Set<field.name.upper>(<field.name.lower>)
+}
+

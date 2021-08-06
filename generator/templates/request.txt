@@ -1,0 +1,11 @@
+package hedera
+
+import (
+<imports>
+)
+
+
+<setters>
+<getters>
+<fromProtobuf>
+<toProtobuf>

@@ -1,0 +1,2 @@
+pb.<proto.name> = this.<field.name.lower>
+

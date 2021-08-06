@@ -1,0 +1,5 @@
+if pb.<proto.name> != nil {
+    <field.name.lower> := _DurationFromProtobuf(pb.<proto.name>)
+    this.Set<field.name.upper>(<field.name.lower>)
+}
+

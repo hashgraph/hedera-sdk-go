@@ -94,7 +94,7 @@ func FieldsFromStructType(expr *ast.StructType) []Field {
     for _, field := range expr.Fields.List {
         f := FieldFromField(field)
         if f == nil {
-            return nil
+            continue
         }
 
         fields = append(fields, *f)
@@ -170,14 +170,26 @@ func FieldTypeFromType(expr ast.Expr) FieldType {
 }
 
 func (field Field) Replacer() *strings.Replacer {
-    name := field.name
-    if field.config.singular && strings.HasSuffix(name, "s") {
-        name = name[0:len(name)-1]
+    nameLower := field.name
+    if field.config.singular && strings.HasSuffix(nameLower, "s") {
+        nameLower = nameLower[0:len(nameLower)-1]
+    }
+
+    nameUpper := UpperInitial(nameLower)
+
+    protoName := nameUpper
+    if field.config.protobufName != "" {
+        protoName = field.config.protobufName
     }
 
     ty := field.ty.String(field.config)
 
-    return strings.NewReplacer("<field.name>", name, "<field.type>", ty)
+    return strings.NewReplacer(
+        "<field.name.lower>", nameLower, 
+        "<field.name.upper>", nameUpper, 
+        "<field.type>", ty,
+        "<proto.name>", protoName,
+    )
 }
 
 func (ty FieldType) String(config FieldConfig) string {
@@ -192,7 +204,7 @@ func (ty FieldType) String(config FieldConfig) string {
     }
 
     if ty.packageName != "" {
-        s += ty.packageName
+        s += ty.packageName + "."
     }
 
     if config.singular && strings.HasSuffix(ty.name, "s") {

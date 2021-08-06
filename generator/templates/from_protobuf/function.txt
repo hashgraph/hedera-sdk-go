@@ -1,0 +1,8 @@
+func _<this.type>FromProtobuf(pb *proto.<proto.type>) *<this.type> {
+    this := New<this.type>()
+
+<conditinals>
+
+    return this
+}
+

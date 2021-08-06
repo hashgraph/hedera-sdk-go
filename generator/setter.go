@@ -34,6 +34,10 @@ func GenerateSetters(structure Struct) string {
 
         replacer := field.Replacer()
 
+        if replacer == nil {
+            continue
+        }
+
         if field.config.singular {
             s += strings.ReplaceAll(replacer.Replace(setterSingular), "<this.type>", structure.name)
         } else {

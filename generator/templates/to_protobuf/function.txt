@@ -1,0 +1,6 @@
+func (this *<this.type>) toProtobuf() *proto.<proto.type> {
+    pb := &proto.<proto.type>{}
+
+<conditionals>
+    return pb
+}
