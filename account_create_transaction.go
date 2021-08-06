@@ -31,11 +31,11 @@ type AccountCreateTransaction struct {
 	autoRenewPeriod          time.Duration
 	receiverSigRequired      bool
 	transactionIDs           []TransactionID `hedera:"ignore=protobuf,singular"`
-	nodeAccountIDS           []AccountID     `hedera:"ignore=protobuf"`
+	nodeAccountIDs           []AccountID     `hedera:"ignore=protobuf"`
 	maxRetry                 int             `hedera:"ignore=protobuf"`
 	transactionValidDuration time.Duration   `hedera:"ignore=protobuf"`
 	transactionMemo          string          `hedera:"ignore=protobuf"`
-	transactionFee           Hbar            `hedera:"ignore=protobuf"`
+	maxTransactionFee        Hbar            `hedera:"ignore=protobuf"`
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
