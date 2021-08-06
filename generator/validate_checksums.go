@@ -1,28 +1,11 @@
 package main
 
 import (
-	"io/ioutil"
 	"strings"
 )
 
-var validateChecksumsFunction string
-var validateChecksumsId string
-
-func init() {
-	s, err := ioutil.ReadFile("./generator/templates/validate_checksums/function.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	validateChecksumsFunction = string(s)
-
-	s, err = ioutil.ReadFile("./generator/templates/validate_checksums/id.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	validateChecksumsId = string(s)
-}
+var validateChecksumsFunction string = ReadFileToString("./generator/templates/validate_checksums/function.txt")
+var validateChecksumsId string = ReadFileToString("./generator/templates/validate_checksums/id.txt")
 
 func GenerateValidateChecksums(structure Struct) string {
 	s := ""

@@ -2,62 +2,16 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"strings"
 )
 
-var from_protobuf_function string
-var from_protobuf_bool string
-var from_protobuf_hbar string
-var from_protobuf_id string
-var from_protobuf_key string
-var from_protobuf_time_duration string
-var from_protobuf_string string
-
-func init() {
-	s, err := ioutil.ReadFile("./generator/templates/from_protobuf/function.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	from_protobuf_function = string(s)
-
-	s, err = ioutil.ReadFile("./generator/templates/from_protobuf/types/bool.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	from_protobuf_bool = string(s)
-
-	s, err = ioutil.ReadFile("./generator/templates/from_protobuf/types/hbar.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	from_protobuf_hbar = string(s)
-
-	s, err = ioutil.ReadFile("./generator/templates/from_protobuf/types/id.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	from_protobuf_id = string(s)
-
-	s, err = ioutil.ReadFile("./generator/templates/from_protobuf/types/key.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	from_protobuf_key = string(s)
-
-	s, err = ioutil.ReadFile("./generator/templates/from_protobuf/types/time_duration.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	from_protobuf_time_duration = string(s)
-
-}
+var from_protobuf_function string = ReadFileToString("./generator/templates/from_protobuf/function.txt")
+var from_protobuf_bool string = ReadFileToString("./generator/templates/from_protobuf/types/bool.txt")
+var from_protobuf_hbar string = ReadFileToString("./generator/templates/from_protobuf/types/hbar.txt")
+var from_protobuf_id string = ReadFileToString("./generator/templates/from_protobuf/types/id.txt")
+var from_protobuf_key string = ReadFileToString("./generator/templates/from_protobuf/types/key.txt")
+var from_protobuf_time_duration string = ReadFileToString("./generator/templates/from_protobuf/types/time_duration.txt")
+var from_protobuf_string string = ReadFileToString("./generator/templates/from_protobuf/types/string.txt")
 
 func GenerateFromProtobufs(structure Struct) string {
 	s := ""

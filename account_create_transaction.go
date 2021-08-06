@@ -24,7 +24,7 @@ type AccountCreateTransaction struct {
 	pb                       *proto.CryptoCreateTransactionBody
 	key                      Key             `hedera:"setter,getter,fromProtobuf,toProtobuf"`
 	initialBalance           Hbar            `hedera:"setter,getter,fromProtobuf,toProtobuf"`
-	accountMemo              string          `hedera:"setter,getter,fromProtobuf,toProtobuf"`
+	accountMemo              string          `hedera:"setter,getter,fromProtobuf,toProtobuf,protobufName=Memo"`
 	sendRecordThreshold      Hbar            `hedera:"setter,getter,fromProtobuf,toProtobuf"`
 	receiveRecordThreshold   Hbar            `hedera:"setter,getter,fromProtobuf,toProtobuf"`
 	proxyAccountID           AccountID       `hedera:"setter,getter,fromProtobuf,toProtobuf"`
@@ -166,4 +166,3 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 
 	return transaction, transaction_freezeWith(&transaction.Transaction, client)
 }
-

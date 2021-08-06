@@ -22,16 +22,7 @@ type Struct struct {
 	parent        string
 }
 
-var request string
-
-func init() {
-	s, err := ioutil.ReadFile("./generator/templates/request.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	request = string(s)
-}
+var request string = ReadFileToString("./generator/templates/request.txt")
 
 func StructsFromFiles(files map[string]*ast.File, documentation *doc.Package) Structs {
 	structs := Structs{
@@ -164,7 +155,7 @@ func (structs Structs) WriteToFiles() {
 		data := []byte(structure.String())
 		src, err := format.Source(data)
 		if err != nil {
-			panic(err)
+			src = data
 		}
 
 		output := filepath.Join(dir, structure.fileName)

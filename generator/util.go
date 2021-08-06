@@ -3,9 +3,19 @@ package main
 import (
 	"fmt"
 	"go/doc"
+	"io/ioutil"
 	"strings"
 	"unicode"
 )
+
+func ReadFileToString(fileName string) string {
+	s, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(s)
+}
 
 func CreateGeneratedFileName(name string) string {
 	name = strings.Split(name, ".go")[0]
