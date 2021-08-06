@@ -63,6 +63,19 @@ func (fee CustomFixedFee) toProtobuf() *proto.CustomFee {
 	}
 }
 
+func (fee *CustomFixedFee) SetHbarAmount(hbar Hbar) {
+	fee.Amount = int64(hbar.As(HbarUnits.Hbar))
+	fee.DenominationTokenID = nil
+}
+
+func (fee *CustomFixedFee) GetHbarAmount() Hbar {
+	return NewHbar(float64(fee.Amount))
+}
+
+func (fee *CustomFixedFee) SetDenominatingTokenToSameToken() {
+	fee.DenominationTokenID = &TokenID{0, 0, 0, nil}
+}
+
 func (fee CustomFixedFee) ToBytes() []byte {
 	data, err := protobuf.Marshal(fee.toProtobuf())
 	if err != nil {
