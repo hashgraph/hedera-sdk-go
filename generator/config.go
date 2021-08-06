@@ -7,11 +7,11 @@ package main
 // 	"go/token"
 // 	"strings"
 // )
-// 
+//
 // type GeneratorConfig struct {
 // 	protobufType    string
 // 	protobufAcessor string
 // 	fields          []FieldConfig
 // 	imports         map[string]string
 // }
-// 
+//

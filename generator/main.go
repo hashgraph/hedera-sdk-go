@@ -1,8 +1,8 @@
 package main
 
 import (
+	"go/ast"
 	"go/doc"
-    "go/ast"
 	// "go/format"
 	"go/parser"
 	"go/token"
@@ -19,12 +19,12 @@ var path = "./"
 var fileSet = token.NewFileSet()
 
 func ParseDir(mode parser.Mode) map[string]*ast.Package {
-    pkgs, err := parser.ParseDir(fileSet, path, nil, mode)
+	pkgs, err := parser.ParseDir(fileSet, path, nil, mode)
 	if err != nil {
 		panic(err)
 	}
 
-    return pkgs
+	return pkgs
 }
 
 func GetAstPackage() *ast.Package {
@@ -36,11 +36,11 @@ func GetDocPackage() *ast.Package {
 
 }
 func main() {
-    astPkg := GetAstPackage()
-    docPkg := GetDocPackage()
+	astPkg := GetAstPackage()
+	docPkg := GetDocPackage()
 
 	documentation := doc.New(docPkg, path, 0)
-    structs := StructsFromFiles(astPkg.Files, documentation)
+	structs := StructsFromFiles(astPkg.Files, documentation)
 
-    structs.WriteToFiles()
+	structs.WriteToFiles()
 }

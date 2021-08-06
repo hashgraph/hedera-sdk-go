@@ -25,7 +25,7 @@ type FieldConfig struct {
 
 type FieldType struct {
 	reference   bool
-    array       bool
+	array       bool
 	packageName string
 	name        string
 }
@@ -82,40 +82,40 @@ func FieldConfigFromTag(fieldTag *ast.BasicLit) FieldConfig {
 func FieldsFromExpr(expr ast.Expr) []Field {
 	switch expr.(type) {
 	case *ast.StructType:
-        return FieldsFromStructType(expr.(*ast.StructType))
-    default:
-        return make([]Field, 0)
+		return FieldsFromStructType(expr.(*ast.StructType))
+	default:
+		return make([]Field, 0)
 	}
 }
 
 func FieldsFromStructType(expr *ast.StructType) []Field {
-    fields := make([]Field, 0)
+	fields := make([]Field, 0)
 
-    for _, field := range expr.Fields.List {
-        f := FieldFromField(field)
-        if f == nil {
-            continue
-        }
+	for _, field := range expr.Fields.List {
+		f := FieldFromField(field)
+		if f == nil {
+			continue
+		}
 
-        fields = append(fields, *f)
-    }
+		fields = append(fields, *f)
+	}
 
-    return fields
+	return fields
 }
 
 func FieldFromField(field *ast.Field) *Field {
-    config := FieldConfigFromTag(field.Tag)
-    ty := FieldTypeFromType(field.Type)
+	config := FieldConfigFromTag(field.Tag)
+	ty := FieldTypeFromType(field.Type)
 
-    if len(field.Names) != 1 {
-        return nil
-    }
+	if len(field.Names) != 1 {
+		return nil
+	}
 
-    return &Field{
-        name:   field.Names[0].Name,
-        ty:     ty,
-        config: config,
-    }
+	return &Field{
+		name:   field.Names[0].Name,
+		ty:     ty,
+		config: config,
+	}
 }
 
 func FieldTypeFromIdent(ident *ast.Ident) FieldType {
@@ -149,8 +149,8 @@ func FieldTypeFromSelectorExpr(expr *ast.SelectorExpr) FieldType {
 
 func FieldTypeFromArrayType(expr *ast.ArrayType) FieldType {
 	return FieldType{
-        array:     true,
-		name:      fmt.Sprintf("%s", expr.Elt),
+		array: true,
+		name:  fmt.Sprintf("%s", expr.Elt),
 	}
 }
 
@@ -170,55 +170,55 @@ func FieldTypeFromType(expr ast.Expr) FieldType {
 }
 
 func (field Field) Replacer() *strings.Replacer {
-    nameLower := field.name
-    nameUpper := UpperInitial(nameLower)
+	nameLower := field.name
+	nameUpper := UpperInitial(nameLower)
 
-    protoName := nameUpper
-    if field.config.protobufName != "" {
-        protoName = field.config.protobufName
-    }
+	protoName := nameUpper
+	if field.config.protobufName != "" {
+		protoName = field.config.protobufName
+	}
 
-    ty := field.ty.String(field.config)
+	ty := field.ty.String(field.config)
 
-    nameLowerSingular := nameLower
-    nameUpperSingular := nameLower
-    if field.config.singular == true && strings.HasSuffix(nameLower, "s") {
-        nameLowerSingular = nameLower[0:len(nameLower)-1]
-        nameUpperSingular = nameUpper[0:len(nameUpper)-1]
-    }
+	nameLowerSingular := nameLower
+	nameUpperSingular := nameLower
+	if field.config.singular == true && strings.HasSuffix(nameLower, "s") {
+		nameLowerSingular = nameLower[0 : len(nameLower)-1]
+		nameUpperSingular = nameUpper[0 : len(nameUpper)-1]
+	}
 
-    return strings.NewReplacer(
-        "<field.name.lower>", nameLower, 
-        "<field.name.upper>", nameUpper, 
-        "<field.name.lower.singular>", nameLowerSingular, 
-        "<field.name.upper.singular>", nameUpperSingular, 
-        "<field.name.lower.plural>", nameLower, 
-        "<field.name.upper.plural>", nameUpper, 
-        "<field.type>", ty,
-        "<proto.name>", protoName,
-    )
+	return strings.NewReplacer(
+		"<field.name.lower>", nameLower,
+		"<field.name.upper>", nameUpper,
+		"<field.name.lower.singular>", nameLowerSingular,
+		"<field.name.upper.singular>", nameUpperSingular,
+		"<field.name.lower.plural>", nameLower,
+		"<field.name.upper.plural>", nameUpper,
+		"<field.type>", ty,
+		"<proto.name>", protoName,
+	)
 }
 
 func (ty FieldType) String(config FieldConfig) string {
-    s := ""
+	s := ""
 
-    if ty.reference {
-        s += "*"
-    }
+	if ty.reference {
+		s += "*"
+	}
 
-    if ty.array && !config.singular {
-        s += "[]"
-    }
+	if ty.array && !config.singular {
+		s += "[]"
+	}
 
-    if ty.packageName != "" {
-        s += ty.packageName + "."
-    }
+	if ty.packageName != "" {
+		s += ty.packageName + "."
+	}
 
-    if config.singular && strings.HasSuffix(ty.name, "s") {
-        s += ty.name[0:len(ty.name)-1]
-    } else {
-        s += ty.name
-    }
+	if config.singular && strings.HasSuffix(ty.name, "s") {
+		s += ty.name[0 : len(ty.name)-1]
+	} else {
+		s += ty.name
+	}
 
-    return s
+	return s
 }

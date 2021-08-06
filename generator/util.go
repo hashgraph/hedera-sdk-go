@@ -1,10 +1,10 @@
 package main
 
 import (
-    "go/doc"
-    "fmt"
-    "unicode"
-    "strings"
+	"fmt"
+	"go/doc"
+	"strings"
+	"unicode"
 )
 
 func CreateGeneratedFileName(name string) string {
