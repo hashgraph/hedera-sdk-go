@@ -150,18 +150,22 @@ func (structure Struct) String() string {
 	return s
 }
 
+func (structure Struct) WriteToFile() {
+    data := []byte(structure.String())
+    src, err := format.Source(data)
+    if err != nil {
+        src = data
+    }
+
+    output := filepath.Join(dir, structure.fileName)
+    err = ioutil.WriteFile(output, src, 0644)
+    if err != nil {
+        panic(err)
+    }
+}
+
 func (structs Structs) WriteToFiles() {
 	for _, structure := range structs.structs {
-		data := []byte(structure.String())
-		src, err := format.Source(data)
-		if err != nil {
-			src = data
-		}
-
-		output := filepath.Join(dir, structure.fileName)
-		err = ioutil.WriteFile(output, src, 0644)
-		if err != nil {
-			panic(err)
-		}
+        structure.WriteToFile()
 	}
 }
