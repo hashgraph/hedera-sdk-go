@@ -1,0 +1,3 @@
+if err := this.<field.name.lower>.ValidateChecksums(client); err != nil {
+    return err
+}

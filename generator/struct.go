@@ -132,6 +132,7 @@ func (structure Struct) String() string {
 		"<getters>", GenerateGetters(structure),
 		"<fromProtobuf>", GenerateFromProtobufs(structure),
 		"<toProtobuf>", GenerateToProtobufs(structure),
+		"<validateChecksums>", GenerateValidateChecksums(structure),
 	)
 
 	if replacer == nil {

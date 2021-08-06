@@ -1,0 +1,3 @@
+func (this <this.type>) validateChecksums(client *Client) error {
+<conditionals>
+}
