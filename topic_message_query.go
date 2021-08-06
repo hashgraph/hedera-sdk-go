@@ -15,18 +15,19 @@ import (
 var RST_STREAM = regexp.MustCompile("/\brst[^0-9a-zA-Z]stream\b/gi")
 
 type TopicMessageQuery struct {
-	pb                *mirror.ConsensusTopicQuery
 	errorHandler      func(stat status.Status)
 	completionHandler func()
 	retryHandler      func(err error) bool
 	attempt           uint64
 	maxAttempts       uint64
 	topicID           TopicID
+	startTime         *time.Time
+	endTime           *time.Time
+	limit             uint64
 }
 
 func NewTopicMessageQuery() *TopicMessageQuery {
 	return &TopicMessageQuery{
-		pb:                &mirror.ConsensusTopicQuery{},
 		maxAttempts:       maxAttempts,
 		errorHandler:      defaultErrorHandler,
 		retryHandler:      defaultRetryHandler,
@@ -44,38 +45,38 @@ func (query *TopicMessageQuery) GetTopicID() TopicID {
 }
 
 func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQuery {
-	query.pb.ConsensusStartTime = timeToProtobuf(startTime)
+	query.startTime = &startTime
 	return query
 }
 
 func (query *TopicMessageQuery) GetStartTime() time.Time {
-	if query.pb.ConsensusStartTime != nil {
-		return timeFromProtobuf(query.pb.ConsensusStartTime)
+	if query.startTime != nil {
+		return *query.startTime
 	} else {
 		return time.Time{}
 	}
 }
 
 func (query *TopicMessageQuery) SetEndTime(endTime time.Time) *TopicMessageQuery {
-	query.pb.ConsensusEndTime = timeToProtobuf(endTime)
+	query.endTime = &endTime
 	return query
 }
 
 func (query *TopicMessageQuery) GetEndTime() time.Time {
-	if query.pb.ConsensusEndTime != nil {
-		return timeFromProtobuf(query.pb.ConsensusEndTime)
+	if query.endTime != nil {
+		return *query.endTime
 	} else {
 		return time.Time{}
 	}
 }
 
 func (query *TopicMessageQuery) SetLimit(limit uint64) *TopicMessageQuery {
-	query.pb.Limit = limit
+	query.limit = limit
 	return query
 }
 
 func (query *TopicMessageQuery) GetLimit() uint64 {
-	return query.pb.Limit
+	return query.limit
 }
 
 func (query *TopicMessageQuery) SetMaxAttempts(maxAttempts uint64) *TopicMessageQuery {
@@ -115,12 +116,21 @@ func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TopicMessageQuery) build() *TopicMessageQuery {
+func (query *TopicMessageQuery) build() *mirror.ConsensusTopicQuery {
+	body := &mirror.ConsensusTopicQuery{
+		Limit: query.limit,
+	}
 	if !query.topicID.isZero() {
-		query.pb.TopicID = query.topicID.toProtobuf()
+		body.TopicID = query.topicID.toProtobuf()
+	}
+	if query.startTime != nil {
+		body.ConsensusStartTime = timeToProtobuf(*query.startTime)
+	}
+	if query.endTime != nil {
+		body.ConsensusStartTime = timeToProtobuf(*query.endTime)
 	}
 
-	return query
+	return body
 }
 
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
@@ -132,7 +142,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 		return SubscriptionHandle{}, err
 	}
 
-	query.build()
+	pb := query.build()
 
 	messages := make(map[string][]*mirror.ConsensusTopicResponse, 0)
 
@@ -172,7 +182,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				ctx, cancel := context.WithCancel(context.TODO())
 				handle.onUnsubscribe = cancel
 
-				subClient, err = (*channel).SubscribeTopic(ctx, query.pb)
+				subClient, err = (*channel).SubscribeTopic(ctx, pb)
 
 				if err != nil {
 					continue
@@ -187,11 +197,11 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			}
 
 			if resp.ConsensusTimestamp != nil {
-				query.pb.ConsensusStartTime = timeToProtobuf(timeFromProtobuf(resp.ConsensusTimestamp).Add(1 * time.Nanosecond))
+				pb.ConsensusStartTime = timeToProtobuf(timeFromProtobuf(resp.ConsensusTimestamp).Add(1 * time.Nanosecond))
 			}
 
-			if query.pb.Limit > 0 {
-				query.pb.Limit -= 1
+			if pb.Limit > 0 {
+				pb.Limit -= 1
 			}
 
 			if resp.ChunkInfo == nil || resp.ChunkInfo.Total == 1 {

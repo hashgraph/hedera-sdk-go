@@ -9,15 +9,14 @@ import (
 
 type ScheduleCreateTransaction struct {
 	Transaction
-	pb             *proto.ScheduleCreateTransactionBody
-	payerAccountID AccountID
+	payerAccountID  AccountID
+	adminKey        Key
+	schedulableBody *proto.SchedulableTransactionBody
+	memo            string
 }
 
 func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
-	pb := &proto.ScheduleCreateTransactionBody{}
-
 	transaction := ScheduleCreateTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 
@@ -27,10 +26,14 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 }
 
 func scheduleCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleCreateTransaction {
+	key, _ := keyFromProtobuf(pb.GetScheduleCreate().GetAdminKey())
+
 	return ScheduleCreateTransaction{
-		Transaction:    transaction,
-		pb:             pb.GetScheduleCreate(),
-		payerAccountID: accountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
+		Transaction:     transaction,
+		payerAccountID:  accountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
+		adminKey:        key,
+		schedulableBody: pb.GetScheduleCreate().GetScheduledTransactionBody(),
+		memo:            pb.GetScheduleCreate().GetMemo(),
 	}
 }
 
@@ -47,35 +50,34 @@ func (transaction *ScheduleCreateTransaction) GetPayerAccountID() AccountID {
 
 func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AdminKey = key.toProtoKey()
+	transaction.adminKey = key
 
 	return transaction
 }
 
 func (transaction *ScheduleCreateTransaction) setSchedulableTransactionBody(txBody *proto.SchedulableTransactionBody) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ScheduledTransactionBody = txBody
+	transaction.schedulableBody = txBody
 
 	return transaction
 }
 
 func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
-	key, err := keyFromProtobuf(transaction.pb.GetAdminKey())
-	if err != nil {
+	if transaction.adminKey == nil {
 		return nil
 	}
-	return &key
+	return &transaction.adminKey
 }
 
 func (transaction *ScheduleCreateTransaction) SetScheduleMemo(memo string) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Memo = memo
+	transaction.memo = memo
 
 	return transaction
 }
 
 func (transaction *ScheduleCreateTransaction) GetScheduleMemo() string {
-	return transaction.pb.GetMemo()
+	return transaction.memo
 }
 
 func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransaction) (*ScheduleCreateTransaction, error) {
@@ -86,7 +88,7 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 		return transaction, err
 	}
 
-	transaction.pb.ScheduledTransactionBody = scheduled
+	transaction.schedulableBody = scheduled
 	return transaction, nil
 }
 
@@ -103,12 +105,32 @@ func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *ScheduleCreateTransaction) build() *ScheduleCreateTransaction {
-	if !transaction.payerAccountID.isZero() {
-		transaction.pb.PayerAccountID = transaction.payerAccountID.toProtobuf()
+func (transaction *ScheduleCreateTransaction) build() *proto.TransactionBody {
+	body := &proto.ScheduleCreateTransactionBody{
+		Memo: transaction.memo,
 	}
 
-	return transaction
+	if !transaction.payerAccountID.isZero() {
+		body.PayerAccountID = transaction.payerAccountID.toProtobuf()
+	}
+
+	if transaction.adminKey != nil {
+		body.AdminKey = transaction.adminKey.toProtoKey()
+	}
+
+	if transaction.schedulableBody != nil {
+		body.ScheduledTransactionBody = transaction.schedulableBody
+	}
+
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ScheduleCreate{
+			ScheduleCreate: body,
+		},
+	}
 }
 
 func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -208,7 +230,9 @@ func (transaction *ScheduleCreateTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		scheduleCreateTransaction_getMethod,
@@ -233,16 +257,6 @@ func (transaction *ScheduleCreateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *ScheduleCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ScheduleCreate{
-		ScheduleCreate: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *ScheduleCreateTransaction) Freeze() (*ScheduleCreateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -256,19 +270,14 @@ func (transaction *ScheduleCreateTransaction) FreezeWith(client *Client) (*Sched
 	if err != nil {
 		return &ScheduleCreateTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
 	//transaction.transactionIDs[0] = transaction.transactionIDs[0].SetScheduled(true)
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ScheduleCreateTransaction) GetMaxTransactionFee() Hbar {

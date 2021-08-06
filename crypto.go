@@ -408,7 +408,7 @@ func (sk PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
 	}
 
 	signature := sk.Sign(transaction.signedTransactions[0].GetBodyBytes())
-	transaction.AddSignature(sk.PublicKey(), signature)
+	//transaction.AddSignature(sk.PublicKey(), signature)
 
 	return signature, nil
 }

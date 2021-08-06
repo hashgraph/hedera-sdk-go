@@ -6,21 +6,13 @@ import (
 
 type FileInfoQuery struct {
 	Query
-	pb     *proto.FileGetInfoQuery
 	fileID FileID
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.FileGetInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_FileGetInfo{
-		FileGetInfo: &pb,
-	}
 
 	return &FileInfoQuery{
-		Query: query,
-		pb:    &pb,
+		Query: newQuery(true),
 	}
 }
 
@@ -46,12 +38,49 @@ func (query *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *FileInfoQuery) build() *FileInfoQuery {
+func (query *FileInfoQuery) build() *proto.Query_FileGetInfo {
+	body := &proto.FileGetInfoQuery{
+		Header: &proto.QueryHeader{},
+	}
 	if !query.fileID.isZero() {
-		query.pb.FileID = query.fileID.toProtobuf()
+		body.FileID = query.fileID.toProtobuf()
 	}
 
-	return query
+	return &proto.Query_FileGetInfo{
+		FileGetInfo: body,
+	}
+}
+
+func (query *FileInfoQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.FileGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.FileGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *FileInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	pb.FileGetInfo.Header.Payment = paymentTransaction
+	pb.FileGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -59,21 +88,17 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.build()
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -81,7 +106,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		fileInfoQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		fileInfoQuery_getMethod,
@@ -105,7 +130,7 @@ func fileInfoQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func fileInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func fileInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -171,7 +196,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 			query: &query.Query,
 		},
 		fileInfoQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		fileInfoQuery_getMethod,

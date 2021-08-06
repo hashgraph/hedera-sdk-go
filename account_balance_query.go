@@ -8,7 +8,6 @@ import (
 // and faster reply than AccountInfoQuery, which returns the balance plus additional information.
 type AccountBalanceQuery struct {
 	Query
-	pb         *proto.CryptoGetAccountBalanceQuery
 	accountID  AccountID
 	contractID ContractID
 }
@@ -18,16 +17,8 @@ type AccountBalanceQuery struct {
 // It is recommended that you use this for creating new instances of an AccountBalanceQuery
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(false, &header)
-	pb := proto.CryptoGetAccountBalanceQuery{Header: &header}
-	query.pb.Query = &proto.Query_CryptogetAccountBalance{
-		CryptogetAccountBalance: &pb,
-	}
-
 	return &AccountBalanceQuery{
-		Query: query,
-		pb:    &pb,
+		Query: newQuery(false),
 	}
 }
 
@@ -76,44 +67,42 @@ func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountBalanceQuery) build() *AccountBalanceQuery {
+func (query *AccountBalanceQuery) build() *proto.Query_CryptogetAccountBalance {
+	pb := proto.CryptoGetAccountBalanceQuery{Header: &proto.QueryHeader{}}
+
 	if !query.accountID.isZero() {
-		query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
+		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
 			AccountID: query.accountID.toProtobuf(),
 		}
 	}
 
 	if !query.contractID.isZero() {
-		query.pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
+		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
 			ContractID: query.contractID.toProtobuf(),
 		}
 	}
 
-	return query
+	return &proto.Query_CryptogetAccountBalance{
+		CryptogetAccountBalance: &pb,
+	}
+
 }
 
 func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
+	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
-	}
-
-	err = query.validateNetworkOnIDs(client)
+	protoReq, err := query.costQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-
-	query.build()
 
 	resp, err := execute(
 		client,
@@ -121,7 +110,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		accountBalanceQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		accountBalanceQuery_getMethod,
@@ -137,11 +126,42 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
+func (query *AccountBalanceQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.CryptogetAccountBalance.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.CryptogetAccountBalance.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *AccountBalanceQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	pb.CryptogetAccountBalance.Header.Payment = paymentTransaction
+	pb.CryptogetAccountBalance.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
+}
+
 func accountBalanceQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
-func accountBalanceQuery_mapStatusError(_ request, response response, networkName *NetworkName) error {
+func accountBalanceQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
 	}
@@ -165,15 +185,13 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, err
 	}
 
-	query.build()
-
 	resp, err := execute(
 		client,
 		request{
 			query: &query.Query,
 		},
 		accountBalanceQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		accountBalanceQuery_getMethod,

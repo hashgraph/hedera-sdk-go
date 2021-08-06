@@ -25,16 +25,14 @@ import (
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
 	Transaction
-	pb        *proto.TokenWipeAccountTransactionBody
 	tokenID   TokenID
 	accountID AccountID
+	amount    uint64
+	serial    []int64
 }
 
 func NewTokenWipeTransaction() *TokenWipeTransaction {
-	pb := &proto.TokenWipeAccountTransactionBody{}
-
 	transaction := TokenWipeTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
@@ -45,9 +43,10 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenWipeTransaction {
 	return TokenWipeTransaction{
 		Transaction: transaction,
-		pb:          pb.GetTokenWipe(),
 		tokenID:     tokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
 		accountID:   accountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
+		amount:      pb.GetTokenWipe().Amount,
+		serial:      pb.GetTokenWipe().GetSerialNumbers(),
 	}
 }
 
@@ -79,21 +78,21 @@ func (transaction *TokenWipeTransaction) GetAccountID() AccountID {
 // (0; balance]
 func (transaction *TokenWipeTransaction) SetAmount(amount uint64) *TokenWipeTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Amount = amount
+	transaction.amount = amount
 	return transaction
 }
 
 func (transaction *TokenWipeTransaction) GetAmount() uint64 {
-	return transaction.pb.GetAmount()
+	return transaction.amount
 }
 
 func (transaction *TokenWipeTransaction) GetSerialNumbers() []int64 {
-	return transaction.pb.GetSerialNumbers()
+	return transaction.serial
 }
 
 func (transaction *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.SerialNumbers = serial
+	transaction.serial = serial
 	return transaction
 }
 
@@ -114,16 +113,32 @@ func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) er
 	return nil
 }
 
-func (transaction *TokenWipeTransaction) build() *TokenWipeTransaction {
+func (transaction *TokenWipeTransaction) build() *proto.TransactionBody {
+	body := &proto.TokenWipeAccountTransactionBody{
+		Amount: transaction.amount,
+	}
+
+	if len(transaction.serial) > 0 {
+		body.SerialNumbers = transaction.serial
+	}
+
 	if !transaction.tokenID.isZero() {
-		transaction.pb.Token = transaction.tokenID.toProtobuf()
+		body.Token = transaction.tokenID.toProtobuf()
 	}
 
 	if !transaction.accountID.isZero() {
-		transaction.pb.Account = transaction.accountID.toProtobuf()
+		body.Account = transaction.accountID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_TokenWipe{
+			TokenWipe: body,
+		},
+	}
 }
 
 func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -138,16 +153,26 @@ func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction,
 }
 
 func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.TokenWipeAccountTransactionBody{
+		Amount: transaction.amount,
+	}
+
+	if len(transaction.serial) > 0 {
+		body.SerialNumbers = transaction.serial
+	}
+
+	if !transaction.tokenID.isZero() {
+		body.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if !transaction.accountID.isZero() {
+		body.Account = transaction.accountID.toProtobuf()
+	}
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_TokenWipe{
-			TokenWipe: &proto.TokenWipeAccountTransactionBody{
-				Token:   transaction.pb.GetToken(),
-				Account: transaction.pb.GetAccount(),
-				Amount:  transaction.pb.GetAmount(),
-			},
+			TokenWipe: body,
 		},
 	}, nil
 }
@@ -242,7 +267,9 @@ func (transaction *TokenWipeTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenWipeTransaction_getMethod,
@@ -266,16 +293,6 @@ func (transaction *TokenWipeTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenWipeTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_TokenWipe{
-		TokenWipe: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TokenWipeTransaction) Freeze() (*TokenWipeTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -289,17 +306,12 @@ func (transaction *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeT
 	if err != nil {
 		return &TokenWipeTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenWipeTransaction) GetMaxTransactionFee() Hbar {
@@ -360,10 +372,31 @@ func (transaction *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransa
 }
 
 func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenWipeTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

@@ -8,17 +8,13 @@ import (
 
 type ContractDeleteTransaction struct {
 	Transaction
-	pb                *proto.ContractDeleteTransactionBody
 	contractID        ContractID
 	transferContactID ContractID
 	transferAccountID AccountID
 }
 
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
-	pb := &proto.ContractDeleteTransactionBody{}
-
 	transaction := ContractDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -29,7 +25,6 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractDeleteTransaction {
 	return ContractDeleteTransaction{
 		Transaction:       transaction,
-		pb:                pb.GetContractDeleteInstance(),
 		contractID:        contractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: contractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: accountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
@@ -92,24 +87,36 @@ func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *ContractDeleteTransaction) build() *ContractDeleteTransaction {
+func (transaction *ContractDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.ContractDeleteTransactionBody{}
+
 	if !transaction.contractID.isZero() {
-		transaction.pb.ContractID = transaction.contractID.toProtobuf()
+		body.ContractID = transaction.contractID.toProtobuf()
 	}
 
 	if !transaction.transferContactID.isZero() {
-		transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
 			TransferContractID: transaction.transferContactID.toProtobuf(),
 		}
 	}
 
 	if !transaction.transferAccountID.isZero() {
-		transaction.pb.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
 			TransferAccountID: transaction.transferAccountID.toProtobuf(),
 		}
 	}
 
-	return transaction
+	pb := proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ContractDeleteInstance{
+			ContractDeleteInstance: body,
+		},
+	}
+
+	return &pb
 }
 
 func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -124,15 +131,29 @@ func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.ContractDeleteTransactionBody{}
+
+	if !transaction.contractID.isZero() {
+		body.ContractID = transaction.contractID.toProtobuf()
+	}
+
+	if !transaction.transferContactID.isZero() {
+		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+			TransferContractID: transaction.transferContactID.toProtobuf(),
+		}
+	}
+
+	if !transaction.transferAccountID.isZero() {
+		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+			TransferAccountID: transaction.transferAccountID.toProtobuf(),
+		}
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_ContractDeleteInstance{
-			ContractDeleteInstance: &proto.ContractDeleteTransactionBody{
-				ContractID: transaction.pb.GetContractID(),
-				Obtainers:  transaction.pb.GetObtainers(),
-			},
+			ContractDeleteInstance: body,
 		},
 	}, nil
 }
@@ -231,7 +252,9 @@ func (transaction *ContractDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		contractDeleteTransaction_getMethod,
@@ -255,16 +278,6 @@ func (transaction *ContractDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *ContractDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ContractDeleteInstance{
-		ContractDeleteInstance: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *ContractDeleteTransaction) Freeze() (*ContractDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -278,17 +291,12 @@ func (transaction *ContractDeleteTransaction) FreezeWith(client *Client) (*Contr
 	if err != nil {
 		return &ContractDeleteTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -349,10 +357,31 @@ func (transaction *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDe
 }
 
 func (transaction *ContractDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractDeleteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

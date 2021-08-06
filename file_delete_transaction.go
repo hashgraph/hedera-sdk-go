@@ -8,15 +8,11 @@ import (
 
 type FileDeleteTransaction struct {
 	Transaction
-	pb     *proto.FileDeleteTransactionBody
 	fileID FileID
 }
 
 func NewFileDeleteTransaction() *FileDeleteTransaction {
-	pb := &proto.FileDeleteTransactionBody{}
-
 	transaction := FileDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
@@ -27,7 +23,6 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileDeleteTransaction {
 	return FileDeleteTransaction{
 		Transaction: transaction,
-		pb:          pb.GetFileDelete(),
 		fileID:      fileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
 }
@@ -55,12 +50,21 @@ func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) e
 	return nil
 }
 
-func (transaction *FileDeleteTransaction) build() *FileDeleteTransaction {
+func (transaction *FileDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.FileDeleteTransactionBody{}
 	if !transaction.fileID.isZero() {
-		transaction.pb.FileID = transaction.fileID.toProtobuf()
+		body.FileID = transaction.fileID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_FileDelete{
+			FileDelete: body,
+		},
+	}
 }
 
 func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -75,14 +79,15 @@ func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction
 }
 
 func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.FileDeleteTransactionBody{}
+	if !transaction.fileID.isZero() {
+		body.FileID = transaction.fileID.toProtobuf()
+	}
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_FileDelete{
-			FileDelete: &proto.FileDeleteTransactionBody{
-				FileID: transaction.pb.GetFileID(),
-			},
+			FileDelete: body,
 		},
 	}, nil
 }
@@ -181,7 +186,9 @@ func (transaction *FileDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		fileDeleteTransaction_getMethod,
@@ -205,16 +212,6 @@ func (transaction *FileDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *FileDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_FileDelete{
-		FileDelete: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *FileDeleteTransaction) Freeze() (*FileDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -229,17 +226,12 @@ func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDelet
 	if err != nil {
 		return &FileDeleteTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -300,10 +292,31 @@ func (transaction *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTran
 }
 
 func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileDeleteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

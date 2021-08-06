@@ -15,15 +15,13 @@ import (
 // to mint 100.55 tokens, one must provide amount of 10055.
 type TokenMintTransaction struct {
 	Transaction
-	pb      *proto.TokenMintTransactionBody
 	tokenID TokenID
+	amount  uint64
+	meta    [][]byte
 }
 
 func NewTokenMintTransaction() *TokenMintTransaction {
-	pb := &proto.TokenMintTransactionBody{}
-
 	transaction := TokenMintTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
@@ -34,8 +32,9 @@ func NewTokenMintTransaction() *TokenMintTransaction {
 func tokenMintTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenMintTransaction {
 	return TokenMintTransaction{
 		Transaction: transaction,
-		pb:          pb.GetTokenMint(),
 		tokenID:     tokenIDFromProtobuf(pb.GetTokenMint().GetToken()),
+		amount:      pb.GetTokenMint().GetAmount(),
+		meta:        pb.GetTokenMint().GetMetadata(),
 	}
 }
 
@@ -56,31 +55,31 @@ func (transaction *TokenMintTransaction) GetTokenID() TokenID {
 // denomination.
 func (transaction *TokenMintTransaction) SetAmount(amount uint64) *TokenMintTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Amount = amount
+	transaction.amount = amount
 	return transaction
 }
 
 func (transaction *TokenMintTransaction) GetAmount() uint64 {
-	return transaction.pb.GetAmount()
+	return transaction.amount
 }
 
 func (transaction *TokenMintTransaction) SetMetadatas(meta [][]byte) *TokenMintTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Metadata = meta
+	transaction.meta = meta
 	return transaction
 }
 
 func (transaction *TokenMintTransaction) SetMetadata(meta []byte) *TokenMintTransaction {
 	transaction.requireNotFrozen()
-	if transaction.pb.Metadata == nil {
-		transaction.pb.Metadata = make([][]byte, 0)
+	if transaction.meta == nil {
+		transaction.meta = make([][]byte, 0)
 	}
-	transaction.pb.Metadata = append(transaction.pb.Metadata, [][]byte{meta}...)
+	transaction.meta = append(transaction.meta, [][]byte{meta}...)
 	return transaction
 }
 
 func (transaction *TokenMintTransaction) GetMetadatas() [][]byte {
-	return transaction.pb.GetMetadata()
+	return transaction.meta
 }
 
 func (transaction *TokenMintTransaction) validateNetworkOnIDs(client *Client) error {
@@ -96,12 +95,28 @@ func (transaction *TokenMintTransaction) validateNetworkOnIDs(client *Client) er
 	return nil
 }
 
-func (transaction *TokenMintTransaction) build() *TokenMintTransaction {
-	if !transaction.tokenID.isZero() {
-		transaction.pb.Token = transaction.tokenID.toProtobuf()
+func (transaction *TokenMintTransaction) build() *proto.TransactionBody {
+	body := &proto.TokenMintTransactionBody{
+		Amount: transaction.amount,
 	}
 
-	return transaction
+	if transaction.meta != nil {
+		body.Metadata = transaction.meta
+	}
+
+	if !transaction.tokenID.isZero() {
+		body.Token = transaction.tokenID.toProtobuf()
+	}
+
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_TokenMint{
+			TokenMint: body,
+		},
+	}
 }
 
 func (transaction *TokenMintTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -116,15 +131,22 @@ func (transaction *TokenMintTransaction) Schedule() (*ScheduleCreateTransaction,
 }
 
 func (transaction *TokenMintTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.TokenMintTransactionBody{
+		Amount: transaction.amount,
+	}
+
+	if transaction.meta != nil {
+		body.Metadata = transaction.meta
+	}
+
+	if !transaction.tokenID.isZero() {
+		body.Token = transaction.tokenID.toProtobuf()
+	}
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_TokenMint{
-			TokenMint: &proto.TokenMintTransactionBody{
-				Token:  transaction.pb.GetToken(),
-				Amount: transaction.pb.GetAmount(),
-			},
+			TokenMint: body,
 		},
 	}, nil
 }
@@ -222,7 +244,9 @@ func (transaction *TokenMintTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenMintTransaction_getMethod,
@@ -246,16 +270,6 @@ func (transaction *TokenMintTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenMintTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_TokenMint{
-		TokenMint: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TokenMintTransaction) Freeze() (*TokenMintTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -269,16 +283,12 @@ func (transaction *TokenMintTransaction) FreezeWith(client *Client) (*TokenMintT
 	if err != nil {
 		return &TokenMintTransaction{}, err
 	}
-	transaction.build()
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenMintTransaction) GetMaxTransactionFee() Hbar {
@@ -339,10 +349,31 @@ func (transaction *TokenMintTransaction) SetMaxRetry(count int) *TokenMintTransa
 }
 
 func (transaction *TokenMintTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenMintTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

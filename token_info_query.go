@@ -6,23 +6,14 @@ import (
 
 type TokenInfoQuery struct {
 	Query
-	pb      *proto.TokenGetInfoQuery
 	tokenID TokenID
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTokenInfoQuery() *TokenInfoQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.TokenGetInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_TokenGetInfo{
-		TokenGetInfo: &pb,
-	}
-
 	return &TokenInfoQuery{
-		Query: query,
-		pb:    &pb,
+		Query: newQuery(true),
 	}
 }
 
@@ -49,12 +40,49 @@ func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TokenInfoQuery) build() *TokenInfoQuery {
+func (query *TokenInfoQuery) build() *proto.Query_TokenGetInfo {
+	body := &proto.TokenGetInfoQuery{
+		Header: &proto.QueryHeader{},
+	}
 	if !query.tokenID.isZero() {
-		query.pb.Token = query.tokenID.toProtobuf()
+		body.Token = query.tokenID.toProtobuf()
 	}
 
-	return query
+	return &proto.Query_TokenGetInfo{
+		TokenGetInfo: body,
+	}
+}
+
+func (query *TokenInfoQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.TokenGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.TokenGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *TokenInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	pb.TokenGetInfo.Header.Payment = paymentTransaction
+	pb.TokenGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -62,21 +90,17 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.build()
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -84,7 +108,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		tokenInfoQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		tokenInfoQuery_getMethod,
@@ -108,7 +132,7 @@ func tokenInfoQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func tokenInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func tokenInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -134,8 +158,6 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	if err != nil {
 		return TokenInfo{}, err
 	}
-
-	query.build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -176,7 +198,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 			query: &query.Query,
 		},
 		tokenInfoQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		tokenInfoQuery_getMethod,

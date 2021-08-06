@@ -8,16 +8,18 @@ import (
 
 type ContractCreateTransaction struct {
 	Transaction
-	pb             *proto.ContractCreateTransactionBody
-	byteCodeFileID FileID
-	proxyAccountID AccountID
+	byteCodeFileID  FileID
+	proxyAccountID  AccountID
+	adminKey        Key
+	gas             int64
+	initialBalance  int64
+	autoRenewPeriod *time.Duration
+	parameters      []byte
+	memo            string
 }
 
 func NewContractCreateTransaction() *ContractCreateTransaction {
-	pb := &proto.ContractCreateTransactionBody{}
-
 	transaction := ContractCreateTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 
@@ -28,11 +30,19 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 }
 
 func contractCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractCreateTransaction {
+	key, _ := keyFromProtobuf(pb.GetContractCreateInstance().GetAdminKey())
+	autoRenew := durationFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewPeriod())
+
 	return ContractCreateTransaction{
-		Transaction:    transaction,
-		pb:             pb.GetContractCreateInstance(),
-		byteCodeFileID: fileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
-		proxyAccountID: accountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID()),
+		Transaction:     transaction,
+		byteCodeFileID:  fileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
+		proxyAccountID:  accountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID()),
+		adminKey:        key,
+		gas:             pb.GetContractCreateInstance().Gas,
+		initialBalance:  pb.GetContractCreateInstance().InitialBalance,
+		autoRenewPeriod: &autoRenew,
+		parameters:      pb.GetContractCreateInstance().ConstructorParameters,
+		memo:            pb.GetContractCreateInstance().GetMemo(),
 	}
 }
 
@@ -55,35 +65,35 @@ func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
  */
 func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AdminKey = adminKey.toProtoKey()
+	transaction.adminKey = adminKey
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey())
+	return transaction.adminKey, nil
 }
 
 // Sets the gas to run the constructor.
 func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Gas = int64(gas)
+	transaction.gas = int64(gas)
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetGas() uint64 {
-	return uint64(transaction.pb.GetGas())
+	return uint64(transaction.gas)
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
 func (transaction *ContractCreateTransaction) SetInitialBalance(initialBalance Hbar) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.InitialBalance = initialBalance.AsTinybar()
+	transaction.initialBalance = initialBalance.AsTinybar()
 	return transaction
 }
 
 // GetInitialBalance gets the initial number of Hbar in the account
 func (transaction *ContractCreateTransaction) GetInitialBalance() Hbar {
-	return HbarFromTinybar(transaction.pb.GetInitialBalance())
+	return HbarFromTinybar(transaction.initialBalance)
 }
 
 // SetAutoRenewPeriod sets the time duration for when account is charged to extend its expiration date. When the account
@@ -94,12 +104,16 @@ func (transaction *ContractCreateTransaction) GetInitialBalance() Hbar {
 // then it is deleted.
 func (transaction *ContractCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
+	transaction.autoRenewPeriod = &autoRenewPeriod
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	return durationFromProtobuf(transaction.pb.GetAutoRenewPeriod())
+	if transaction.autoRenewPeriod != nil {
+		return *transaction.autoRenewPeriod
+	}
+
+	return time.Duration(0)
 }
 
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
@@ -119,30 +133,30 @@ func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
 //Sets the constructor parameters
 func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ConstructorParameters = params.build(nil)
+	transaction.parameters = params.build(nil)
 	return transaction
 }
 
 //Sets the constructor parameters as their raw bytes.
 func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ConstructorParameters = params
+	transaction.parameters = params
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte {
-	return transaction.pb.ConstructorParameters
+	return transaction.parameters
 }
 
 //Sets the memo to be associated with this contract.
 func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Memo = memo
+	transaction.memo = memo
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetContractMemo() string {
-	return transaction.pb.GetMemo()
+	return transaction.memo
 }
 
 func (transaction *ContractCreateTransaction) validateNetworkOnIDs(client *Client) error {
@@ -162,16 +176,41 @@ func (transaction *ContractCreateTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *ContractCreateTransaction) build() *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) build() *proto.TransactionBody {
+	body := &proto.ContractCreateTransactionBody{
+		Gas:                   transaction.gas,
+		InitialBalance:        transaction.initialBalance,
+		ConstructorParameters: transaction.parameters,
+		Memo:                  transaction.memo,
+	}
+
+	if transaction.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.adminKey != nil {
+		body.AdminKey = transaction.adminKey.toProtoKey()
+	}
+
 	if !transaction.byteCodeFileID.isZero() {
-		transaction.pb.FileID = transaction.byteCodeFileID.toProtobuf()
+		body.FileID = transaction.byteCodeFileID.toProtobuf()
 	}
 
 	if !transaction.proxyAccountID.isZero() {
-		transaction.pb.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+		body.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
 	}
 
-	return transaction
+	pb := proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ContractCreateInstance{
+			ContractCreateInstance: body,
+		},
+	}
+
+	return &pb
 }
 
 func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -186,24 +225,34 @@ func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ContractCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.ContractCreateTransactionBody{
+		Gas:                   transaction.gas,
+		InitialBalance:        transaction.initialBalance,
+		ConstructorParameters: transaction.parameters,
+		Memo:                  transaction.memo,
+	}
+
+	if transaction.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.adminKey != nil {
+		body.AdminKey = transaction.adminKey.toProtoKey()
+	}
+
+	if !transaction.byteCodeFileID.isZero() {
+		body.FileID = transaction.byteCodeFileID.toProtobuf()
+	}
+
+	if !transaction.proxyAccountID.isZero() {
+		body.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_ContractCreateInstance{
-			ContractCreateInstance: &proto.ContractCreateTransactionBody{
-				FileID:                transaction.pb.GetFileID(),
-				AdminKey:              transaction.pb.GetAdminKey(),
-				Gas:                   transaction.pb.GetGas(),
-				InitialBalance:        transaction.pb.GetInitialBalance(),
-				ProxyAccountID:        transaction.pb.GetProxyAccountID(),
-				AutoRenewPeriod:       transaction.pb.GetAutoRenewPeriod(),
-				ConstructorParameters: transaction.pb.GetConstructorParameters(),
-				ShardID:               transaction.pb.GetShardID(),
-				RealmID:               transaction.pb.GetRealmID(),
-				NewRealmAdminKey:      transaction.pb.GetNewRealmAdminKey(),
-				Memo:                  transaction.pb.GetMemo(),
-			},
+			ContractCreateInstance: body,
 		},
 	}, nil
 }
@@ -302,7 +351,9 @@ func (transaction *ContractCreateTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		contractCreateTransaction_getMethod,
@@ -326,16 +377,6 @@ func (transaction *ContractCreateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *ContractCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ContractCreateInstance{
-		ContractCreateInstance: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *ContractCreateTransaction) Freeze() (*ContractCreateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -349,17 +390,12 @@ func (transaction *ContractCreateTransaction) FreezeWith(client *Client) (*Contr
 	if err != nil {
 		return &ContractCreateTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -420,10 +456,31 @@ func (transaction *ContractCreateTransaction) SetMaxRetry(count int) *ContractCr
 }
 
 func (transaction *ContractCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractCreateTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

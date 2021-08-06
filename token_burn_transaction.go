@@ -15,15 +15,13 @@ import (
 // to burn 100.55 tokens, one must provide amount of 10055.
 type TokenBurnTransaction struct {
 	Transaction
-	pb      *proto.TokenBurnTransactionBody
 	tokenID TokenID
+	amount  uint64
+	serial  []int64
 }
 
 func NewTokenBurnTransaction() *TokenBurnTransaction {
-	pb := &proto.TokenBurnTransactionBody{}
-
 	transaction := TokenBurnTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -34,8 +32,9 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 func tokenBurnTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenBurnTransaction {
 	return TokenBurnTransaction{
 		Transaction: transaction,
-		pb:          pb.GetTokenBurn(),
 		tokenID:     tokenIDFromProtobuf(pb.GetTokenBurn().Token),
+		amount:      pb.GetTokenBurn().GetAmount(),
+		serial:      pb.GetTokenBurn().GetSerialNumbers(),
 	}
 }
 
@@ -56,36 +55,36 @@ func (transaction *TokenBurnTransaction) GetTokenID() TokenID {
 // denomination.
 func (transaction *TokenBurnTransaction) SetAmount(amount uint64) *TokenBurnTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Amount = amount
+	transaction.amount = amount
 	return transaction
 }
 
 // Deprecated: Use TokenBurnTransaction.GetAmount() instead.
 func (transaction *TokenBurnTransaction) GetAmmount() uint64 {
-	return transaction.pb.GetAmount()
+	return transaction.amount
 }
 
 func (transaction *TokenBurnTransaction) GetAmount() uint64 {
-	return transaction.pb.GetAmount()
+	return transaction.amount
 }
 
 func (transaction *TokenBurnTransaction) SetSerialNumber(serial int64) *TokenBurnTransaction {
 	transaction.requireNotFrozen()
-	if transaction.pb.SerialNumbers == nil {
-		transaction.pb.SerialNumbers = make([]int64, 0)
+	if transaction.serial == nil {
+		transaction.serial = make([]int64, 0)
 	}
-	transaction.pb.SerialNumbers = append(transaction.pb.SerialNumbers, serial)
+	transaction.serial = append(transaction.serial, serial)
 	return transaction
 }
 
 func (transaction *TokenBurnTransaction) SetSerialNumbers(serial []int64) *TokenBurnTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.SerialNumbers = serial
+	transaction.serial = serial
 	return transaction
 }
 
 func (transaction *TokenBurnTransaction) GetSerialNumbers() []int64 {
-	return transaction.pb.GetSerialNumbers()
+	return transaction.serial
 }
 
 func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
@@ -101,12 +100,28 @@ func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) er
 	return nil
 }
 
-func (transaction *TokenBurnTransaction) build() *TokenBurnTransaction {
-	if !transaction.tokenID.isZero() {
-		transaction.pb.Token = transaction.tokenID.toProtobuf()
+func (transaction *TokenBurnTransaction) build() *proto.TransactionBody {
+	body := &proto.TokenBurnTransactionBody{
+		Amount: transaction.amount,
 	}
 
-	return transaction
+	if !transaction.tokenID.isZero() {
+		body.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if transaction.serial != nil {
+		body.SerialNumbers = transaction.serial
+	}
+
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_TokenBurn{
+			TokenBurn: body,
+		},
+	}
 }
 
 func (transaction *TokenBurnTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -121,15 +136,22 @@ func (transaction *TokenBurnTransaction) Schedule() (*ScheduleCreateTransaction,
 }
 
 func (transaction *TokenBurnTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.TokenBurnTransactionBody{
+		Amount: transaction.amount,
+	}
+
+	if !transaction.tokenID.isZero() {
+		body.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if transaction.serial != nil {
+		body.SerialNumbers = transaction.serial
+	}
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_TokenBurn{
-			TokenBurn: &proto.TokenBurnTransactionBody{
-				Token:  transaction.pb.GetToken(),
-				Amount: transaction.pb.GetAmount(),
-			},
+			TokenBurn: body,
 		},
 	}, nil
 }
@@ -232,7 +254,9 @@ func (transaction *TokenBurnTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenBurnTransaction_getMethod,
@@ -256,16 +280,6 @@ func (transaction *TokenBurnTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenBurnTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_TokenBurn{
-		TokenBurn: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TokenBurnTransaction) Freeze() (*TokenBurnTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -279,17 +293,12 @@ func (transaction *TokenBurnTransaction) FreezeWith(client *Client) (*TokenBurnT
 	if err != nil {
 		return &TokenBurnTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenBurnTransaction) GetMaxTransactionFee() Hbar {
@@ -350,10 +359,31 @@ func (transaction *TokenBurnTransaction) SetMaxRetry(count int) *TokenBurnTransa
 }
 
 func (transaction *TokenBurnTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenBurnTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

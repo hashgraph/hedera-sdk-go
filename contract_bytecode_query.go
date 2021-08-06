@@ -7,23 +7,14 @@ import (
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
 type ContractBytecodeQuery struct {
 	Query
-	pb         *proto.ContractGetBytecodeQuery
 	contractID ContractID
 }
 
 // NewContractBytecodeQuery creates a ContractBytecodeQuery query which can be used to construct and execute a
 // Contract Get Bytecode Query.
 func NewContractBytecodeQuery() *ContractBytecodeQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.ContractGetBytecodeQuery{Header: &header}
-	query.pb.Query = &proto.Query_ContractGetBytecode{
-		ContractGetBytecode: &pb,
-	}
-
 	return &ContractBytecodeQuery{
-		Query: query,
-		pb:    &pb,
+		Query: newQuery(true),
 	}
 }
 
@@ -50,12 +41,44 @@ func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractBytecodeQuery) build() *ContractBytecodeQuery {
-	if !query.contractID.isZero() {
-		query.pb.ContractID = query.contractID.toProtobuf()
+func (query *ContractBytecodeQuery) build() *proto.Query_ContractGetBytecode {
+	return &proto.Query_ContractGetBytecode{
+		ContractGetBytecode: &proto.ContractGetBytecodeQuery{
+			Header:     &proto.QueryHeader{},
+			ContractID: query.contractID.toProtobuf(),
+		},
+	}
+}
+
+func (query *ContractBytecodeQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.ContractGetBytecode.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.ContractGetBytecode.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *ContractBytecodeQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
 	}
 
-	return query
+	pb.ContractGetBytecode.Header.Payment = paymentTransaction
+	pb.ContractGetBytecode.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
@@ -63,21 +86,17 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.build()
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -85,7 +104,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		contractBytecodeQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		contractBytecodeQuery_getMethod,
@@ -105,7 +124,7 @@ func contractBytecodeQuery_shouldRetry(_ request, response response) executionSt
 	return query_shouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
-func contractBytecodeQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func contractBytecodeQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
 	}
@@ -130,8 +149,6 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-
-	query.build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -172,7 +189,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 			query: &query.Query,
 		},
 		contractBytecodeQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		contractBytecodeQuery_getMethod,

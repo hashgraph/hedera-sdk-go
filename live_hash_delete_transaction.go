@@ -9,15 +9,12 @@ import (
 
 type LiveHashDeleteTransaction struct {
 	Transaction
-	pb        *proto.CryptoDeleteLiveHashTransactionBody
 	accountID AccountID
+	hash      []byte
 }
 
 func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
-	pb := &proto.CryptoDeleteLiveHashTransactionBody{}
-
 	transaction := LiveHashDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -28,19 +25,19 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 func liveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) LiveHashDeleteTransaction {
 	return LiveHashDeleteTransaction{
 		Transaction: transaction,
-		pb:          pb.GetCryptoDeleteLiveHash(),
 		accountID:   accountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
+		hash:        pb.GetCryptoDeleteLiveHash().LiveHashToDelete,
 	}
 }
 
 func (transaction *LiveHashDeleteTransaction) SetHash(hash []byte) *LiveHashDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.LiveHashToDelete = hash
+	transaction.hash = hash
 	return transaction
 }
 
 func (transaction *LiveHashDeleteTransaction) GetHash() []byte {
-	return transaction.pb.GetLiveHashToDelete()
+	return transaction.hash
 }
 
 func (transaction *LiveHashDeleteTransaction) SetAccountID(id AccountID) *LiveHashDeleteTransaction {
@@ -66,12 +63,26 @@ func (transaction *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *LiveHashDeleteTransaction) build() *LiveHashDeleteTransaction {
+func (transaction *LiveHashDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.CryptoDeleteLiveHashTransactionBody{}
+
 	if !transaction.accountID.isZero() {
-		transaction.pb.AccountOfLiveHash = transaction.accountID.toProtobuf()
+		body.AccountOfLiveHash = transaction.accountID.toProtobuf()
 	}
 
-	return transaction
+	if transaction.hash != nil {
+		body.LiveHashToDelete = transaction.hash
+	}
+
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_CryptoDeleteLiveHash{
+			CryptoDeleteLiveHash: body,
+		},
+	}
 }
 
 func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -172,7 +183,9 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		liveHashDeleteTransaction_getMethod,
@@ -196,16 +209,6 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *LiveHashDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoDeleteLiveHash{
-		CryptoDeleteLiveHash: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *LiveHashDeleteTransaction) Freeze() (*LiveHashDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -219,17 +222,12 @@ func (transaction *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveH
 	if err != nil {
 		return &LiveHashDeleteTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *LiveHashDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -290,10 +288,31 @@ func (transaction *LiveHashDeleteTransaction) SetMaxRetry(count int) *LiveHashDe
 }
 
 func (transaction *LiveHashDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashDeleteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

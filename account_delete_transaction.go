@@ -15,7 +15,6 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountDeleteTransaction struct {
 	Transaction
-	pb                *proto.CryptoDeleteTransactionBody
 	transferAccountID AccountID
 	deleteAccountID   AccountID
 }
@@ -23,17 +22,13 @@ type AccountDeleteTransaction struct {
 func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
 	return AccountDeleteTransaction{
 		Transaction:       transaction,
-		pb:                pb.GetCryptoDelete(),
 		transferAccountID: accountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
 		deleteAccountID:   accountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}
 }
 
 func NewAccountDeleteTransaction() *AccountDeleteTransaction {
-	pb := &proto.CryptoDeleteTransactionBody{}
-
 	transaction := AccountDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 
@@ -81,16 +76,26 @@ func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (transaction *AccountDeleteTransaction) build() *AccountDeleteTransaction {
+func (transaction *AccountDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.CryptoDeleteTransactionBody{}
+
 	if !transaction.transferAccountID.isZero() {
-		transaction.pb.TransferAccountID = transaction.transferAccountID.toProtobuf()
+		body.TransferAccountID = transaction.transferAccountID.toProtobuf()
 	}
 
 	if !transaction.deleteAccountID.isZero() {
-		transaction.pb.DeleteAccountID = transaction.deleteAccountID.toProtobuf()
+		body.DeleteAccountID = transaction.deleteAccountID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_CryptoDelete{
+			CryptoDelete: body,
+		},
+	}
 }
 
 func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -105,15 +110,21 @@ func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransact
 }
 
 func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.CryptoDeleteTransactionBody{}
+
+	if !transaction.transferAccountID.isZero() {
+		body.TransferAccountID = transaction.transferAccountID.toProtobuf()
+	}
+
+	if !transaction.deleteAccountID.isZero() {
+		body.DeleteAccountID = transaction.deleteAccountID.toProtobuf()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_CryptoDelete{
-			CryptoDelete: &proto.CryptoDeleteTransactionBody{
-				TransferAccountID: transaction.pb.GetTransferAccountID(),
-				DeleteAccountID:   transaction.pb.GetDeleteAccountID(),
-			},
+			CryptoDelete: body,
 		},
 	}, nil
 }
@@ -212,7 +223,9 @@ func (transaction *AccountDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		accountDeleteTransaction_getMethod,
@@ -237,16 +250,6 @@ func (transaction *AccountDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *AccountDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoDelete{
-		CryptoDelete: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *AccountDeleteTransaction) Freeze() (*AccountDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -263,13 +266,9 @@ func (transaction *AccountDeleteTransaction) FreezeWith(client *Client) (*Accoun
 	if err != nil {
 		return &AccountDeleteTransaction{}, err
 	}
-	transaction.build()
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *AccountDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -330,10 +329,31 @@ func (transaction *AccountDeleteTransaction) SetMaxRetry(count int) *AccountDele
 }
 
 func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountDeleteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

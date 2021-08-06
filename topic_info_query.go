@@ -6,23 +6,14 @@ import (
 
 type TopicInfoQuery struct {
 	Query
-	pb      *proto.ConsensusGetTopicInfoQuery
 	topicID TopicID
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.ConsensusGetTopicInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_ConsensusGetTopicInfo{
-		ConsensusGetTopicInfo: &pb,
-	}
-
 	return &TopicInfoQuery{
-		Query: query,
-		pb:    &pb,
+		Query: newQuery(true),
 	}
 }
 
@@ -49,12 +40,49 @@ func (query *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TopicInfoQuery) build() *TopicInfoQuery {
+func (query *TopicInfoQuery) build() *proto.Query_ConsensusGetTopicInfo {
+	body := &proto.ConsensusGetTopicInfoQuery{
+		Header: &proto.QueryHeader{},
+	}
 	if !query.topicID.isZero() {
-		query.pb.TopicID = query.topicID.toProtobuf()
+		body.TopicID = query.topicID.toProtobuf()
 	}
 
-	return query
+	return &proto.Query_ConsensusGetTopicInfo{
+		ConsensusGetTopicInfo: body,
+	}
+}
+
+func (query *TopicInfoQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.ConsensusGetTopicInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.ConsensusGetTopicInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *TopicInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	pb.ConsensusGetTopicInfo.Header.Payment = paymentTransaction
+	pb.ConsensusGetTopicInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -62,21 +90,17 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.build()
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -84,7 +108,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		topicInfoQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		topicInfoQuery_getMethod,
@@ -108,7 +132,7 @@ func topicInfoQuery_shouldRetry(_ request, response response) executionState {
 	return query_shouldRetry(Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func topicInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func topicInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -134,8 +158,6 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	if err != nil {
 		return TopicInfo{}, err
 	}
-
-	query.build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -176,7 +198,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 			query: &query.Query,
 		},
 		topicInfoQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		topicInfoQuery_getMethod,

@@ -9,16 +9,12 @@ import (
 
 type TokenFeeScheduleUpdateTransaction struct {
 	Transaction
-	pb         *proto.TokenFeeScheduleUpdateTransactionBody
 	tokenID    TokenID
 	customFees []Fee
 }
 
 func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
-	pb := &proto.TokenFeeScheduleUpdateTransactionBody{}
-
 	transaction := TokenFeeScheduleUpdateTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
@@ -35,7 +31,6 @@ func TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *
 
 	return TokenFeeScheduleUpdateTransaction{
 		Transaction: transaction,
-		pb:          pb.GetTokenFeeScheduleUpdate(),
 		tokenID:     tokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
 		customFees:  customFees,
 	}
@@ -81,21 +76,30 @@ func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(clien
 	return nil
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) build() *TokenFeeScheduleUpdateTransaction {
+func (transaction *TokenFeeScheduleUpdateTransaction) build() *proto.TransactionBody {
+	body := &proto.TokenFeeScheduleUpdateTransactionBody{}
 	if !transaction.tokenID.isZero() {
-		transaction.pb.TokenId = transaction.tokenID.toProtobuf()
+		body.TokenId = transaction.tokenID.toProtobuf()
 	}
 
 	if len(transaction.customFees) > 0 {
 		for _, customFee := range transaction.customFees {
-			if transaction.pb.CustomFees == nil {
-				transaction.pb.CustomFees = make([]*proto.CustomFee, 0)
+			if body.CustomFees == nil {
+				body.CustomFees = make([]*proto.CustomFee, 0)
 			}
-			transaction.pb.CustomFees = append(transaction.pb.CustomFees, customFee.toProtobuf())
+			body.CustomFees = append(body.CustomFees, customFee.toProtobuf())
 		}
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_TokenFeeScheduleUpdate{
+			TokenFeeScheduleUpdate: body,
+		},
+	}
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -207,7 +211,9 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenFeeScheduleUpdateTransaction_getMethod,
@@ -231,16 +237,6 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_TokenFeeScheduleUpdate{
-		TokenFeeScheduleUpdate: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TokenFeeScheduleUpdateTransaction) Freeze() (*TokenFeeScheduleUpdateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -254,16 +250,12 @@ func (transaction *TokenFeeScheduleUpdateTransaction) FreezeWith(client *Client)
 	if err != nil {
 		return &TokenFeeScheduleUpdateTransaction{}, err
 	}
-	transaction.build()
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -324,10 +316,31 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxRetry(count int) *To
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFeeScheduleUpdateTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

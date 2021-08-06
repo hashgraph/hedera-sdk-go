@@ -9,17 +9,13 @@ import (
 // A ConsensusTopicDeleteTransaction is for deleting a topic on HCS.
 type TopicDeleteTransaction struct {
 	Transaction
-	pb      *proto.ConsensusDeleteTopicTransactionBody
 	topicID TopicID
 }
 
 // NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction transaction which can be used to construct
 // and execute a Consensus Delete Topic Transaction.
 func NewTopicDeleteTransaction() *TopicDeleteTransaction {
-	pb := &proto.ConsensusDeleteTopicTransactionBody{}
-
 	transaction := TopicDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -30,7 +26,6 @@ func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicDeleteTransaction {
 	return TopicDeleteTransaction{
 		Transaction: transaction,
-		pb:          pb.GetConsensusDeleteTopic(),
 		topicID:     topicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
 	}
 }
@@ -38,7 +33,7 @@ func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 // SetTopicID sets the topic IDentifier.
 func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.TopicID = ID.toProtobuf()
+	transaction.topicID = ID
 	return transaction
 }
 
@@ -59,12 +54,21 @@ func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *TopicDeleteTransaction) build() *TopicDeleteTransaction {
+func (transaction *TopicDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.ConsensusDeleteTopicTransactionBody{}
 	if !transaction.topicID.isZero() {
-		transaction.pb.TopicID = transaction.topicID.toProtobuf()
+		body.TopicID = transaction.topicID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ConsensusDeleteTopic{
+			ConsensusDeleteTopic: body,
+		},
+	}
 }
 
 func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -79,14 +83,16 @@ func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.ConsensusDeleteTopicTransactionBody{}
+	if !transaction.topicID.isZero() {
+		body.TopicID = transaction.topicID.toProtobuf()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_ConsensusDeleteTopic{
-			ConsensusDeleteTopic: &proto.ConsensusDeleteTopicTransactionBody{
-				TopicID: transaction.pb.TopicID,
-			},
+			ConsensusDeleteTopic: body,
 		},
 	}, nil
 }
@@ -185,7 +191,9 @@ func (transaction *TopicDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		topicDeleteTransaction_getMethod,
@@ -209,16 +217,6 @@ func (transaction *TopicDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TopicDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ConsensusDeleteTopic{
-		ConsensusDeleteTopic: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TopicDeleteTransaction) Freeze() (*TopicDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -232,17 +230,12 @@ func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDel
 	if err != nil {
 		return &TopicDeleteTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicDeleteTransaction.
@@ -287,10 +280,31 @@ func (transaction *TopicDeleteTransaction) SetMaxRetry(count int) *TopicDeleteTr
 }
 
 func (transaction *TopicDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicDeleteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

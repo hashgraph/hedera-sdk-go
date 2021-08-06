@@ -8,7 +8,6 @@ import (
 // it, that were above the threshold, during the last 25 hours.
 type AccountRecordsQuery struct {
 	Query
-	pb        *proto.CryptoGetAccountRecordsQuery
 	accountID AccountID
 }
 
@@ -18,16 +17,8 @@ type AccountRecordsQuery struct {
 // It is recommended that you use this for creating new instances of an AccountRecordQuery
 // instead of manually creating an instance of the struct.
 func NewAccountRecordsQuery() *AccountRecordsQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.CryptoGetAccountRecordsQuery{Header: &header}
-	query.pb.Query = &proto.Query_CryptoGetAccountRecords{
-		CryptoGetAccountRecords: &pb,
-	}
-
 	return &AccountRecordsQuery{
-		Query: query,
-		pb:    &pb,
+		Query: newQuery(true),
 	}
 }
 
@@ -54,12 +45,13 @@ func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountRecordsQuery) build() *AccountRecordsQuery {
-	if !query.accountID.isZero() {
-		query.pb.AccountID = query.accountID.toProtobuf()
+func (query *AccountRecordsQuery) build() *proto.Query_CryptoGetAccountRecords {
+	return &proto.Query_CryptoGetAccountRecords{
+		CryptoGetAccountRecords: &proto.CryptoGetAccountRecordsQuery{
+			Header:    &proto.QueryHeader{},
+			AccountID: query.accountID.toProtobuf(),
+		},
 	}
-
-	return query
 }
 
 func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
@@ -67,21 +59,17 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.build()
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -89,7 +77,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		accountRecordsQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		accountRecordsQuery_getMethod,
@@ -109,7 +97,7 @@ func accountRecordsQuery_shouldRetry(_ request, response response) executionStat
 	return query_shouldRetry(Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
 }
 
-func accountRecordsQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func accountRecordsQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode),
 	}
@@ -119,6 +107,37 @@ func accountRecordsQuery_getMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getCrypto().GetAccountRecords,
 	}
+}
+
+func (query *AccountRecordsQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.CryptoGetAccountRecords.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.CryptoGetAccountRecords.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *AccountRecordsQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	pb.CryptoGetAccountRecords.Header.Payment = paymentTransaction
+	pb.CryptoGetAccountRecords.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
@@ -134,8 +153,6 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	if err != nil {
 		return []TransactionRecord{}, err
 	}
-
-	query.build()
 
 	records := make([]TransactionRecord, 0)
 
@@ -178,7 +195,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 			query: &query.Query,
 		},
 		accountRecordsQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		accountRecordsQuery_getMethod,

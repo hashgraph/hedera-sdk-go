@@ -8,16 +8,13 @@ import (
 
 type SystemDeleteTransaction struct {
 	Transaction
-	pb         *proto.SystemDeleteTransactionBody
-	contractID ContractID
-	fileID     FileID
+	contractID     ContractID
+	fileID         FileID
+	expirationTime *time.Time
 }
 
 func NewSystemDeleteTransaction() *SystemDeleteTransaction {
-	pb := &proto.SystemDeleteTransactionBody{}
-
 	transaction := SystemDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -26,24 +23,31 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 }
 
 func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemDeleteTransaction {
+	expiration := time.Date(
+		time.Now().Year(), time.Now().Month(), time.Now().Day(),
+		time.Now().Hour(), time.Now().Minute(),
+		int(pb.GetSystemDelete().ExpirationTime.Seconds), time.Now().Nanosecond(), time.Now().Location(),
+	)
 	return SystemDeleteTransaction{
-		Transaction: transaction,
-		pb:          pb.GetSystemDelete(),
-		contractID:  contractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
-		fileID:      fileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
+		Transaction:    transaction,
+		contractID:     contractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
+		fileID:         fileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
+		expirationTime: &expiration,
 	}
 }
 
 func (transaction *SystemDeleteTransaction) SetExpirationTime(expiration time.Time) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ExpirationTime = &proto.TimestampSeconds{
-		Seconds: expiration.Unix(),
-	}
+	transaction.expirationTime = &expiration
 	return transaction
 }
 
 func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
-	return transaction.pb.GetExpirationTime().Seconds
+	if transaction.expirationTime != nil {
+		return transaction.expirationTime.Unix()
+	}
+
+	return 0
 }
 
 func (transaction *SystemDeleteTransaction) SetContractID(id ContractID) *SystemDeleteTransaction {
@@ -83,20 +87,36 @@ func (transaction *SystemDeleteTransaction) validateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *SystemDeleteTransaction) build() *SystemDeleteTransaction {
+func (transaction *SystemDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.SystemDeleteTransactionBody{}
+
+	if transaction.expirationTime != nil {
+		body.ExpirationTime = &proto.TimestampSeconds{
+			Seconds: transaction.expirationTime.Unix(),
+		}
+	}
+
 	if !transaction.contractID.isZero() {
-		transaction.pb.Id = &proto.SystemDeleteTransactionBody_ContractID{
+		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID.toProtobuf(),
 		}
 	}
 
 	if !transaction.fileID.isZero() {
-		transaction.pb.Id = &proto.SystemDeleteTransactionBody_FileID{
+		body.Id = &proto.SystemDeleteTransactionBody_FileID{
 			FileID: transaction.fileID.toProtobuf(),
 		}
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_SystemDelete{
+			SystemDelete: body,
+		},
+	}
 }
 
 func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -111,26 +131,34 @@ func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransacti
 }
 
 func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
-	body := &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+	body := &proto.SystemDeleteTransactionBody{}
+
+	if transaction.expirationTime != nil {
+		body.ExpirationTime = &proto.TimestampSeconds{
+			Seconds: transaction.expirationTime.Unix(),
+		}
+	}
+
+	if !transaction.contractID.isZero() {
+		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
+			ContractID: transaction.contractID.toProtobuf(),
+		}
+	}
+
+	if !transaction.fileID.isZero() {
+		body.Id = &proto.SystemDeleteTransactionBody_FileID{
+			FileID: transaction.fileID.toProtobuf(),
+		}
+	}
+
+	return &proto.SchedulableTransactionBody{
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_SystemDelete{
-			SystemDelete: &proto.SystemDeleteTransactionBody{
-				Id:             nil,
-				ExpirationTime: transaction.pb.GetExpirationTime(),
-			},
+			SystemDelete: body,
 		},
-	}
+	}, nil
 
-	switch transaction.pb.GetId().(type) {
-	case *proto.SystemDeleteTransactionBody_ContractID:
-		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_ContractID{ContractID: transaction.pb.GetContractID()}
-	case *proto.SystemDeleteTransactionBody_FileID:
-		body.GetSystemUndelete().Id = &proto.SystemUndeleteTransactionBody_FileID{FileID: transaction.pb.GetFileID()}
-	}
-
-	return body, nil
 }
 
 //
@@ -139,14 +167,17 @@ func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.
 //
 
 func systemDeleteTransaction_getMethod(request request, channel *channel) method {
-	switch request.transaction.pbBody.GetSystemDelete().Id.(type) {
-	case *proto.SystemDeleteTransactionBody_ContractID:
-		return method{
-			transaction: channel.getContract().SystemDelete,
-		}
-	default:
+	//switch os := runtime.GOOS; os {
+	//case "darwin":
+	//	fmt.Println("OS X.")
+	//}
+	if channel.getContract() == nil {
 		return method{
 			transaction: channel.getFile().SystemDelete,
+		}
+	} else {
+		return method{
+			transaction: channel.getContract().SystemDelete,
 		}
 	}
 }
@@ -238,7 +269,9 @@ func (transaction *SystemDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		systemDeleteTransaction_getMethod,
@@ -262,16 +295,6 @@ func (transaction *SystemDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *SystemDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_SystemDelete{
-		SystemDelete: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *SystemDeleteTransaction) Freeze() (*SystemDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -285,17 +308,12 @@ func (transaction *SystemDeleteTransaction) FreezeWith(client *Client) (*SystemD
 	if err != nil {
 		return &SystemDeleteTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *SystemDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -356,10 +374,31 @@ func (transaction *SystemDeleteTransaction) SetMaxRetry(count int) *SystemDelete
 }
 
 func (transaction *SystemDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *SystemDeleteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

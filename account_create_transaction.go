@@ -16,17 +16,20 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
 	Transaction
-	pb             *proto.CryptoCreateTransactionBody
-	proxyAccountID AccountID
+	proxyAccountID            AccountID
+	key                       Key
+	initialBalance            uint64
+	receiveRecordThreshold    uint64
+	sendRecordThreshold       uint64
+	autoRenewPeriod           *time.Duration
+	memo                      string
+	receiverSignatureRequired bool
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
 // execute a Crypto Create Transaction.
 func NewAccountCreateTransaction() *AccountCreateTransaction {
-	pb := &proto.CryptoCreateTransactionBody{}
-
 	transaction := AccountCreateTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 
@@ -43,10 +46,18 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 }
 
 func accountCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountCreateTransaction {
+	key, _ := keyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
+	renew := durationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
 	return AccountCreateTransaction{
-		Transaction:    transaction,
-		pb:             pb.GetCryptoCreateAccount(),
-		proxyAccountID: accountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
+		Transaction:               transaction,
+		proxyAccountID:            accountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
+		key:                       key,
+		initialBalance:            pb.GetCryptoCreateAccount().InitialBalance,
+		receiveRecordThreshold:    pb.GetCryptoCreateAccount().GetReceiveRecordThreshold(),
+		sendRecordThreshold:       pb.GetCryptoCreateAccount().GetSendRecordThreshold(),
+		autoRenewPeriod:           &renew,
+		memo:                      pb.GetCryptoCreateAccount().GetMemo(),
+		receiverSignatureRequired: pb.GetCryptoCreateAccount().ReceiverSigRequired,
 	}
 }
 
@@ -54,23 +65,23 @@ func accountCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 // must also sign any transfer into the account.
 func (transaction *AccountCreateTransaction) SetKey(key Key) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Key = key.toProtoKey()
+	transaction.key = key
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) GetKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetKey())
+	return transaction.key, nil
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
 func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hbar) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.InitialBalance = uint64(initialBalance.AsTinybar())
+	transaction.initialBalance = uint64(initialBalance.AsTinybar())
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) GetInitialBalance() Hbar {
-	return HbarFromTinybar(int64(transaction.pb.GetInitialBalance()))
+	return HbarFromTinybar(int64(transaction.initialBalance))
 }
 
 // SetAutoRenewPeriod sets the time duration for when account is charged to extend its expiration date. When the account
@@ -81,12 +92,16 @@ func (transaction *AccountCreateTransaction) GetInitialBalance() Hbar {
 // then it is deleted.
 func (transaction *AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = durationToProtobuf(autoRenewPeriod)
+	transaction.autoRenewPeriod = &autoRenewPeriod
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	return durationFromProtobuf(transaction.pb.AutoRenewPeriod)
+	if transaction.autoRenewPeriod != nil {
+		return *transaction.autoRenewPeriod
+	}
+
+	return time.Duration(0)
 }
 
 // SetSendRecordThreshold sets the threshold amount for which an account record is created for any send/withdraw
@@ -95,12 +110,12 @@ func (transaction *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration 
 // Deprecated: No longer used by Hedera
 func (transaction *AccountCreateTransaction) setSendRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.SendRecordThreshold = uint64(recordThreshold.AsTinybar())
+	transaction.sendRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) getSendRecordThreshold() Hbar {
-	return HbarFromTinybar(int64(transaction.pb.GetSendRecordThreshold()))
+	return HbarFromTinybar(int64(transaction.sendRecordThreshold))
 }
 
 // SetReceiveRecordThreshold sets the threshold amount for which an account record is created for any receive/deposit
@@ -109,12 +124,12 @@ func (transaction *AccountCreateTransaction) getSendRecordThreshold() Hbar {
 // Deprecated: No longer used by Hedera
 func (transaction *AccountCreateTransaction) setReceiveRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ReceiveRecordThreshold = uint64(recordThreshold.AsTinybar())
+	transaction.receiveRecordThreshold = uint64(recordThreshold.AsTinybar())
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) getReceiveRecordThreshold() Hbar {
-	return HbarFromTinybar(int64(transaction.pb.GetReceiveRecordThreshold()))
+	return HbarFromTinybar(int64(transaction.receiveRecordThreshold))
 }
 
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
@@ -133,12 +148,12 @@ func (transaction *AccountCreateTransaction) GetProxyAccountID() AccountID {
 
 func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Memo = memo
+	transaction.memo = memo
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) GetAccountMemo() string {
-	return transaction.pb.GetMemo()
+	return transaction.memo
 }
 
 func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client) error {
@@ -148,12 +163,36 @@ func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client
 	return transaction.proxyAccountID.Validate(client)
 }
 
-func (transaction *AccountCreateTransaction) build() *AccountCreateTransaction {
-	if !transaction.proxyAccountID.isZero() {
-		transaction.pb.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+func (transaction *AccountCreateTransaction) build() *proto.TransactionBody {
+	body := &proto.CryptoCreateTransactionBody{
+		InitialBalance:         transaction.initialBalance,
+		SendRecordThreshold:    transaction.receiveRecordThreshold,
+		ReceiveRecordThreshold: transaction.sendRecordThreshold,
+		ReceiverSigRequired:    transaction.receiverSignatureRequired,
+		Memo:                   transaction.memo,
 	}
 
-	return transaction
+	if transaction.key != nil {
+		body.Key = transaction.key.toProtoKey()
+	}
+
+	if !transaction.proxyAccountID.isZero() {
+		body.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	}
+
+	if transaction.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	return &proto.TransactionBody{
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionFee:           transaction.transactionFee,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		Memo:                     transaction.Transaction.memo,
+		Data: &proto.TransactionBody_CryptoCreateAccount{
+			CryptoCreateAccount: body,
+		},
+	}
 }
 
 // SetReceiverSignatureRequired sets the receiverSigRequired flag. If the receiverSigRequired flag is set to true, then
@@ -162,12 +201,12 @@ func (transaction *AccountCreateTransaction) build() *AccountCreateTransaction {
 // payer account. If receiverSigRequired is false, then the transaction does not have to be signed by the keys in the
 // keys field. If it is true, then it must be signed by them, in addition to the keys of the payer account.
 func (transaction *AccountCreateTransaction) SetReceiverSignatureRequired(required bool) *AccountCreateTransaction {
-	transaction.pb.ReceiverSigRequired = required
+	transaction.receiverSignatureRequired = required
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
-	return transaction.pb.GetReceiverSigRequired()
+	return transaction.receiverSignatureRequired
 }
 
 func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -182,24 +221,31 @@ func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransact
 }
 
 func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.CryptoCreateTransactionBody{
+		InitialBalance:         transaction.initialBalance,
+		SendRecordThreshold:    transaction.receiveRecordThreshold,
+		ReceiveRecordThreshold: transaction.sendRecordThreshold,
+		ReceiverSigRequired:    transaction.receiverSignatureRequired,
+		Memo:                   transaction.memo,
+	}
+
+	if transaction.key != nil {
+		body.Key = transaction.key.toProtoKey()
+	}
+
+	if !transaction.proxyAccountID.isZero() {
+		body.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	}
+
+	if transaction.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_CryptoCreateAccount{
-			CryptoCreateAccount: &proto.CryptoCreateTransactionBody{
-				Key:                    transaction.pb.GetKey(),
-				InitialBalance:         transaction.pb.GetInitialBalance(),
-				ProxyAccountID:         transaction.pb.GetProxyAccountID(),
-				SendRecordThreshold:    transaction.pb.GetSendRecordThreshold(),
-				ReceiveRecordThreshold: transaction.pb.GetReceiveRecordThreshold(),
-				ReceiverSigRequired:    transaction.pb.GetReceiverSigRequired(),
-				AutoRenewPeriod:        transaction.pb.GetAutoRenewPeriod(),
-				ShardID:                transaction.pb.GetShardID(),
-				RealmID:                transaction.pb.GetRealmID(),
-				NewRealmAdminKey:       transaction.pb.GetNewRealmAdminKey(),
-				Memo:                   transaction.pb.GetMemo(),
-			},
+			CryptoCreateAccount: body,
 		},
 	}, nil
 }
@@ -298,7 +344,9 @@ func (transaction *AccountCreateTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		accountCreateTransaction_getMethod,
@@ -322,16 +370,6 @@ func (transaction *AccountCreateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *AccountCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_CryptoCreateAccount{
-		CryptoCreateAccount: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *AccountCreateTransaction) Freeze() (*AccountCreateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -345,16 +383,12 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 		return transaction, err
 	}
 	err := transaction.validateNetworkOnIDs(client)
+	body := transaction.build()
 	if err != nil {
 		return &AccountCreateTransaction{}, err
 	}
-	transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -415,10 +449,31 @@ func (transaction *AccountCreateTransaction) SetMaxRetry(count int) *AccountCrea
 }
 
 func (transaction *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

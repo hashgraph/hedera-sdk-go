@@ -18,16 +18,12 @@ import (
 // unless unfrozen. The operation is idempotent.
 type TokenFreezeTransaction struct {
 	Transaction
-	pb        *proto.TokenFreezeAccountTransactionBody
 	tokenID   TokenID
 	accountID AccountID
 }
 
 func NewTokenFreezeTransaction() *TokenFreezeTransaction {
-	pb := &proto.TokenFreezeAccountTransactionBody{}
-
 	transaction := TokenFreezeTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
@@ -38,7 +34,6 @@ func NewTokenFreezeTransaction() *TokenFreezeTransaction {
 func tokenFreezeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenFreezeTransaction {
 	return TokenFreezeTransaction{
 		Transaction: transaction,
-		pb:          pb.GetTokenFreeze(),
 		tokenID:     tokenIDFromProtobuf(pb.GetTokenFreeze().GetToken()),
 		accountID:   accountIDFromProtobuf(pb.GetTokenFreeze().GetAccount()),
 	}
@@ -84,16 +79,25 @@ func (transaction *TokenFreezeTransaction) validateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *TokenFreezeTransaction) build() *TokenFreezeTransaction {
+func (transaction *TokenFreezeTransaction) build() *proto.TransactionBody {
+	body := &proto.TokenFreezeAccountTransactionBody{}
 	if !transaction.tokenID.isZero() {
-		transaction.pb.Token = transaction.tokenID.toProtobuf()
+		body.Token = transaction.tokenID.toProtobuf()
 	}
 
 	if !transaction.accountID.isZero() {
-		transaction.pb.Account = transaction.accountID.toProtobuf()
+		body.Account = transaction.accountID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_TokenFreeze{
+			TokenFreeze: body,
+		},
+	}
 }
 
 func (transaction *TokenFreezeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -108,15 +112,20 @@ func (transaction *TokenFreezeTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TokenFreezeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.TokenFreezeAccountTransactionBody{}
+	if !transaction.tokenID.isZero() {
+		body.Token = transaction.tokenID.toProtobuf()
+	}
+
+	if !transaction.accountID.isZero() {
+		body.Account = transaction.accountID.toProtobuf()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_TokenFreeze{
-			TokenFreeze: &proto.TokenFreezeAccountTransactionBody{
-				Token:   transaction.pb.GetToken(),
-				Account: transaction.pb.GetAccount(),
-			},
+			TokenFreeze: body,
 		},
 	}, nil
 }
@@ -215,7 +224,9 @@ func (transaction *TokenFreezeTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenFreezeTransaction_getMethod,
@@ -239,16 +250,6 @@ func (transaction *TokenFreezeTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenFreezeTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_TokenFreeze{
-		TokenFreeze: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TokenFreezeTransaction) Freeze() (*TokenFreezeTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -262,17 +263,12 @@ func (transaction *TokenFreezeTransaction) FreezeWith(client *Client) (*TokenFre
 	if err != nil {
 		return &TokenFreezeTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenFreezeTransaction) GetMaxTransactionFee() Hbar {
@@ -333,10 +329,31 @@ func (transaction *TokenFreezeTransaction) SetMaxRetry(count int) *TokenFreezeTr
 }
 
 func (transaction *TokenFreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFreezeTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

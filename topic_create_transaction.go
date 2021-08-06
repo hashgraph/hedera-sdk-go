@@ -9,17 +9,17 @@ import (
 // A TopicCreateTransaction is for creating a new Topic on HCS.
 type TopicCreateTransaction struct {
 	Transaction
-	pb                 *proto.ConsensusCreateTopicTransactionBody
 	autoRenewAccountID AccountID
+	adminKey           Key
+	submitKey          Key
+	memo               string
+	autoRenewPeriod    *time.Duration
 }
 
 // NewTopicCreateTransaction creates a TopicCreateTransaction transaction which can be
 // used to construct and execute a  Create Topic Transaction.
 func NewTopicCreateTransaction() *TopicCreateTransaction {
-	pb := &proto.ConsensusCreateTopicTransactionBody{}
-
 	transaction := TopicCreateTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 
@@ -37,10 +37,17 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 }
 
 func topicCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicCreateTransaction {
+	adminKey, _ := keyFromProtobuf(pb.GetConsensusCreateTopic().GetAdminKey())
+	submitKey, _ := keyFromProtobuf(pb.GetConsensusCreateTopic().GetSubmitKey())
+
+	autoRenew := durationFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewPeriod())
 	return TopicCreateTransaction{
 		Transaction:        transaction,
-		pb:                 pb.GetConsensusCreateTopic(),
 		autoRenewAccountID: accountIDFromProtobuf(pb.GetConsensusCreateTopic().GetAutoRenewAccount()),
+		adminKey:           adminKey,
+		submitKey:          submitKey,
+		memo:               pb.GetContractCreateInstance().GetMemo(),
+		autoRenewPeriod:    &autoRenew,
 	}
 }
 
@@ -48,34 +55,34 @@ func topicCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 // expirationTime.
 func (transaction *TopicCreateTransaction) SetAdminKey(publicKey Key) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AdminKey = publicKey.toProtoKey()
+	transaction.adminKey = publicKey
 	return transaction
 }
 
 func (transaction *TopicCreateTransaction) GetAdminKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetAdminKey())
+	return transaction.adminKey, nil
 }
 
 // SetSubmitKey sets the key required for submitting messages to the topic. If unspecified, all submissions are allowed.
 func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey Key) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.SubmitKey = publicKey.toProtoKey()
+	transaction.submitKey = publicKey
 	return transaction
 }
 
 func (transaction *TopicCreateTransaction) GetSubmitKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetSubmitKey())
+	return transaction.submitKey, nil
 }
 
 // SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.
 func (transaction *TopicCreateTransaction) SetTopicMemo(memo string) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Memo = memo
+	transaction.memo = memo
 	return transaction
 }
 
 func (transaction *TopicCreateTransaction) GetTopicMemo() string {
-	return transaction.pb.GetMemo()
+	return transaction.memo
 }
 
 // SetAutoRenewPeriod sets the initial lifetime of the topic and the amount of time to extend the topic's lifetime
@@ -84,12 +91,16 @@ func (transaction *TopicCreateTransaction) GetTopicMemo() string {
 // Required. Limited to a maximum of 90 days (server-sIDe configuration which may change).
 func (transaction *TopicCreateTransaction) SetAutoRenewPeriod(period time.Duration) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.AutoRenewPeriod = durationToProtobuf(period)
+	transaction.autoRenewPeriod = &period
 	return transaction
 }
 
 func (transaction *TopicCreateTransaction) GetAutoRenewPeriod() time.Duration {
-	return durationFromProtobuf(transaction.pb.GetAutoRenewPeriod())
+	if transaction.autoRenewPeriod != nil {
+		return *transaction.autoRenewPeriod
+	}
+
+	return time.Duration(0)
 }
 
 // SetAutoRenewAccountID sets an optional account to be used at the topic's expirationTime to extend the life of the
@@ -120,12 +131,36 @@ func (transaction *TopicCreateTransaction) validateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *TopicCreateTransaction) build() *TopicCreateTransaction {
-	if !transaction.autoRenewAccountID.isZero() {
-		transaction.pb.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+func (transaction *TopicCreateTransaction) build() *proto.TransactionBody {
+	body := &proto.ConsensusCreateTopicTransactionBody{
+		Memo: transaction.memo,
 	}
 
-	return transaction
+	if transaction.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if !transaction.autoRenewAccountID.isZero() {
+		body.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	}
+
+	if transaction.adminKey != nil {
+		body.AdminKey = transaction.adminKey.toProtoKey()
+	}
+
+	if transaction.submitKey != nil {
+		body.SubmitKey = transaction.submitKey.toProtoKey()
+	}
+
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ConsensusCreateTopic{
+			ConsensusCreateTopic: body,
+		},
+	}
 }
 
 func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -140,18 +175,31 @@ func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TopicCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.ConsensusCreateTopicTransactionBody{
+		Memo: transaction.memo,
+	}
+
+	if transaction.autoRenewPeriod != nil {
+		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if !transaction.autoRenewAccountID.isZero() {
+		body.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	}
+
+	if transaction.adminKey != nil {
+		body.AdminKey = transaction.adminKey.toProtoKey()
+	}
+
+	if transaction.submitKey != nil {
+		body.SubmitKey = transaction.submitKey.toProtoKey()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_ConsensusCreateTopic{
-			ConsensusCreateTopic: &proto.ConsensusCreateTopicTransactionBody{
-				Memo:             transaction.pb.GetMemo(),
-				AdminKey:         transaction.pb.GetAdminKey(),
-				SubmitKey:        transaction.pb.GetSubmitKey(),
-				AutoRenewPeriod:  transaction.pb.GetAutoRenewPeriod(),
-				AutoRenewAccount: transaction.pb.GetAutoRenewAccount(),
-			},
+			ConsensusCreateTopic: body,
 		},
 	}, nil
 }
@@ -250,7 +298,9 @@ func (transaction *TopicCreateTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		topicCreateTransaction_getMethod,
@@ -274,16 +324,6 @@ func (transaction *TopicCreateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TopicCreateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ConsensusCreateTopic{
-		ConsensusCreateTopic: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TopicCreateTransaction) Freeze() (*TopicCreateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -297,17 +337,12 @@ func (transaction *TopicCreateTransaction) FreezeWith(client *Client) (*TopicCre
 	if err != nil {
 		return &TopicCreateTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TopicCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -368,10 +403,31 @@ func (transaction *TopicCreateTransaction) SetMaxRetry(count int) *TopicCreateTr
 }
 
 func (transaction *TopicCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicCreateTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

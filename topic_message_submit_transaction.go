@@ -12,7 +12,6 @@ const chunkSize = 1024
 
 type TopicMessageSubmitTransaction struct {
 	Transaction
-	pb        *proto.ConsensusSubmitMessageTransactionBody
 	maxChunks uint64
 	message   []byte
 	topicID   TopicID
@@ -20,7 +19,6 @@ type TopicMessageSubmitTransaction struct {
 
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	transaction := TopicMessageSubmitTransaction{
-		pb:          &proto.ConsensusSubmitMessageTransactionBody{},
 		Transaction: newTransaction(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
@@ -33,7 +31,6 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
 	tx := TopicMessageSubmitTransaction{
 		Transaction: transaction,
-		pb:          pb.GetConsensusSubmitMessage(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
 		topicID:     topicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
@@ -139,12 +136,21 @@ func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *C
 	return nil
 }
 
-func (transaction *TopicMessageSubmitTransaction) build() *TopicMessageSubmitTransaction {
+func (transaction *TopicMessageSubmitTransaction) build() *proto.TransactionBody {
+	body := &proto.ConsensusSubmitMessageTransactionBody{}
 	if !transaction.topicID.isZero() {
-		transaction.pb.TopicID = transaction.topicID.toProtobuf()
+		body.TopicID = transaction.topicID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ConsensusSubmitMessage{
+			ConsensusSubmitMessage: body,
+		},
+	}
 }
 
 func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -168,16 +174,20 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 }
 
 func (transaction *TopicMessageSubmitTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.ConsensusSubmitMessageTransactionBody{
+		Message:   transaction.message,
+		ChunkInfo: &proto.ConsensusMessageChunkInfo{},
+	}
+
+	if !transaction.topicID.isZero() {
+		body.TopicID = transaction.topicID.toProtobuf()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_ConsensusSubmitMessage{
-			ConsensusSubmitMessage: &proto.ConsensusSubmitMessageTransactionBody{
-				TopicID:   transaction.pb.GetTopicID(),
-				Message:   transaction.message,
-				ChunkInfo: &proto.ConsensusMessageChunkInfo{},
-			},
+			ConsensusSubmitMessage: body,
 		},
 	}, nil
 }
@@ -240,7 +250,9 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 				transaction: &transaction.Transaction,
 			},
 			transaction_shouldRetry,
-			transaction_makeRequest,
+			transaction_makeRequest(request{
+				transaction: &transaction.Transaction,
+			}),
 			transaction_advanceRequest,
 			transaction_getNodeAccountID,
 			topicMessageSubmitTransaction_getMethod,
@@ -276,11 +288,10 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	if err != nil {
 		return &TopicMessageSubmitTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
 	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
 	if chunks > transaction.maxChunks {
@@ -296,46 +307,48 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	transaction.transactionIDs = make([]TransactionID, 0)
 	transaction.transactions = make([]*proto.Transaction, 0)
 	transaction.signedTransactions = make([]*proto.SignedTransaction, 0)
+	switch b := body.Data.(type) {
+	case *proto.TransactionBody_ConsensusSubmitMessage:
+		for i := 0; uint64(i) < chunks; i += 1 {
+			start := i * chunkSize
+			end := start + chunkSize
 
-	for i := 0; uint64(i) < chunks; i += 1 {
-		start := i * chunkSize
-		end := start + chunkSize
-
-		if end > len(transaction.message) {
-			end = len(transaction.message)
-		}
-
-		transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
-
-		transaction.pb.Message = transaction.message[start:end]
-		transaction.pb.ChunkInfo = &proto.ConsensusMessageChunkInfo{
-			InitialTransactionID: initialTransactionID.toProtobuf(),
-			Total:                int32(chunks),
-			Number:               int32(i) + 1,
-		}
-
-		transaction.pbBody.TransactionID = nextTransactionID.toProtobuf()
-		transaction.pbBody.Data = &proto.TransactionBody_ConsensusSubmitMessage{
-			ConsensusSubmitMessage: transaction.pb,
-		}
-
-		for _, nodeAccountID := range transaction.nodeIDs {
-			transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
-
-			bodyBytes, err := protobuf.Marshal(transaction.pbBody)
-			if err != nil {
-				return transaction, errors.Wrap(err, "error serializing transaction body for topic submission")
+			if end > len(transaction.message) {
+				end = len(transaction.message)
 			}
 
-			transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
-				BodyBytes: bodyBytes,
-				SigMap:    &proto.SignatureMap{},
-			})
+			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
+
+			b.ConsensusSubmitMessage.Message = transaction.message[start:end]
+			b.ConsensusSubmitMessage.ChunkInfo = &proto.ConsensusMessageChunkInfo{
+				InitialTransactionID: initialTransactionID.toProtobuf(),
+				Total:                int32(chunks),
+				Number:               int32(i) + 1,
+			}
+
+			body.TransactionID = nextTransactionID.toProtobuf()
+			body.Data = &proto.TransactionBody_ConsensusSubmitMessage{
+				ConsensusSubmitMessage: b.ConsensusSubmitMessage,
+			}
+
+			for _, nodeAccountID := range transaction.nodeIDs {
+				body.NodeAccountID = nodeAccountID.toProtobuf()
+
+				bodyBytes, err := protobuf.Marshal(body)
+				if err != nil {
+					return transaction, errors.Wrap(err, "error serializing transaction body for topic submission")
+				}
+
+				transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+					BodyBytes: bodyBytes,
+					SigMap:    &proto.SignatureMap{},
+				})
+			}
+
+			validStart := *nextTransactionID.ValidStart
+
+			*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
 		}
-
-		validStart := *nextTransactionID.ValidStart
-
-		*nextTransactionID.ValidStart = validStart.Add(1 * time.Nanosecond)
 	}
 
 	return transaction, nil
@@ -405,10 +418,31 @@ func (transaction *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicM
 }
 
 func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

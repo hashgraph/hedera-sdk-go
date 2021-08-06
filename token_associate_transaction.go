@@ -25,16 +25,12 @@ import (
 // ready to interact with the tokens.
 type TokenAssociateTransaction struct {
 	Transaction
-	pb        *proto.TokenAssociateTransactionBody
 	accountID AccountID
 	tokens    []TokenID
 }
 
 func NewTokenAssociateTransaction() *TokenAssociateTransaction {
-	pb := &proto.TokenAssociateTransactionBody{}
-
 	transaction := TokenAssociateTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
@@ -50,7 +46,6 @@ func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 
 	return TokenAssociateTransaction{
 		Transaction: transaction,
-		pb:          pb.GetTokenAssociate(),
 		accountID:   accountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
 		tokens:      tokens,
 	}
@@ -119,21 +114,30 @@ func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *TokenAssociateTransaction) build() *TokenAssociateTransaction {
+func (transaction *TokenAssociateTransaction) build() *proto.TransactionBody {
+	body := &proto.TokenAssociateTransactionBody{}
 	if !transaction.accountID.isZero() {
-		transaction.pb.Account = transaction.accountID.toProtobuf()
+		body.Account = transaction.accountID.toProtobuf()
 	}
 
 	if len(transaction.tokens) > 0 {
 		for _, tokenID := range transaction.tokens {
-			if transaction.pb.Tokens == nil {
-				transaction.pb.Tokens = make([]*proto.TokenID, 0)
+			if body.Tokens == nil {
+				body.Tokens = make([]*proto.TokenID, 0)
 			}
-			transaction.pb.Tokens = append(transaction.pb.Tokens, tokenID.toProtobuf())
+			body.Tokens = append(body.Tokens, tokenID.toProtobuf())
 		}
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_TokenAssociate{
+			TokenAssociate: body,
+		},
+	}
 }
 
 func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -148,15 +152,24 @@ func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *TokenAssociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.TokenAssociateTransactionBody{}
+	if !transaction.accountID.isZero() {
+		body.Account = transaction.accountID.toProtobuf()
+	}
+
+	if len(transaction.tokens) > 0 {
+		for _, tokenID := range transaction.tokens {
+			if body.Tokens == nil {
+				body.Tokens = make([]*proto.TokenID, 0)
+			}
+			body.Tokens = append(body.Tokens, tokenID.toProtobuf())
+		}
+	}
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_TokenAssociate{
-			TokenAssociate: &proto.TokenAssociateTransactionBody{
-				Account: transaction.pb.GetAccount(),
-				Tokens:  transaction.pb.GetTokens(),
-			},
+			TokenAssociate: body,
 		},
 	}, nil
 }
@@ -255,7 +268,9 @@ func (transaction *TokenAssociateTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenAssociateTransaction_getMethod,
@@ -279,16 +294,6 @@ func (transaction *TokenAssociateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenAssociateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_TokenAssociate{
-		TokenAssociate: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TokenAssociateTransaction) Freeze() (*TokenAssociateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -302,17 +307,12 @@ func (transaction *TokenAssociateTransaction) FreezeWith(client *Client) (*Token
 	if err != nil {
 		return &TokenAssociateTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenAssociateTransaction) GetMaxTransactionFee() Hbar {
@@ -373,10 +373,31 @@ func (transaction *TokenAssociateTransaction) SetMaxRetry(count int) *TokenAssoc
 }
 
 func (transaction *TokenAssociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenAssociateTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

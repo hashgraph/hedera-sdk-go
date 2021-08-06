@@ -15,17 +15,16 @@ import (
 // For a cheaper but more limited method to call functions, see ContractCallQuery.
 type ContractExecuteTransaction struct {
 	Transaction
-	pb         *proto.ContractCallTransactionBody
 	contractID ContractID
+	gas        int64
+	amount     int64
+	parameters []byte
 }
 
 // NewContractExecuteTransaction creates a ContractExecuteTransaction transaction which can be
 // used to construct and execute a Contract Call Transaction.
 func NewContractExecuteTransaction() *ContractExecuteTransaction {
-	pb := &proto.ContractCallTransactionBody{}
-
 	transaction := ContractExecuteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -36,8 +35,10 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractExecuteTransaction {
 	return ContractExecuteTransaction{
 		Transaction: transaction,
-		pb:          pb.GetContractCall(),
 		contractID:  contractIDFromProtobuf(pb.GetContractCall().GetContractID()),
+		gas:         pb.GetContractCall().GetGas(),
+		amount:      pb.GetContractCall().GetAmount(),
+		parameters:  pb.GetContractCall().GetFunctionParameters(),
 	}
 }
 
@@ -55,34 +56,34 @@ func (transaction ContractExecuteTransaction) GetContractID() ContractID {
 // SetGas sets the maximum amount of gas to use for the call.
 func (transaction *ContractExecuteTransaction) SetGas(gas uint64) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Gas = int64(gas)
+	transaction.gas = int64(gas)
 	return transaction
 }
 
 func (transaction *ContractExecuteTransaction) GetGas() uint64 {
-	return uint64(transaction.pb.Gas)
+	return uint64(transaction.gas)
 }
 
 // SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
 func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Amount = amount.AsTinybar()
+	transaction.amount = amount.AsTinybar()
 	return transaction
 }
 
 func (transaction ContractExecuteTransaction) GetPayableAmount() Hbar {
-	return HbarFromTinybar(transaction.pb.Amount)
+	return HbarFromTinybar(transaction.amount)
 }
 
 //Sets the function parameters
 func (transaction *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.FunctionParameters = params
+	transaction.parameters = params
 	return transaction
 }
 
 func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
-	return transaction.pb.GetFunctionParameters()
+	return transaction.parameters
 }
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
@@ -92,7 +93,7 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 		params = NewContractFunctionParameters()
 	}
 
-	transaction.pb.FunctionParameters = params.build(&name)
+	transaction.parameters = params.build(&name)
 	return transaction
 }
 
@@ -109,12 +110,26 @@ func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *ContractExecuteTransaction) build() *ContractExecuteTransaction {
-	if !transaction.contractID.isZero() {
-		transaction.pb.ContractID = transaction.contractID.toProtobuf()
+func (transaction *ContractExecuteTransaction) build() *proto.TransactionBody {
+	body := proto.ContractCallTransactionBody{
+		Gas:                transaction.gas,
+		Amount:             transaction.amount,
+		FunctionParameters: transaction.parameters,
 	}
 
-	return transaction
+	if !transaction.contractID.isZero() {
+		body.ContractID = transaction.contractID.toProtobuf()
+	}
+
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ContractCall{
+			ContractCall: &body,
+		},
+	}
 }
 
 func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -129,17 +144,21 @@ func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransa
 }
 
 func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := proto.ContractCallTransactionBody{
+		Gas:                transaction.gas,
+		Amount:             transaction.amount,
+		FunctionParameters: transaction.parameters,
+	}
+
+	if !transaction.contractID.isZero() {
+		body.ContractID = transaction.contractID.toProtobuf()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_ContractCall{
-			ContractCall: &proto.ContractCallTransactionBody{
-				ContractID:         transaction.pb.GetContractID(),
-				Gas:                transaction.pb.GetGas(),
-				Amount:             transaction.pb.GetAmount(),
-				FunctionParameters: transaction.pb.GetFunctionParameters(),
-			},
+			ContractCall: &body,
 		},
 	}, nil
 }
@@ -238,7 +257,9 @@ func (transaction *ContractExecuteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		contractExecuteTransaction_getMethod,
@@ -262,16 +283,6 @@ func (transaction *ContractExecuteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *ContractExecuteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ContractCall{
-		ContractCall: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *ContractExecuteTransaction) Freeze() (*ContractExecuteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -285,17 +296,12 @@ func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*Cont
 	if err != nil {
 		return &ContractExecuteTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
@@ -356,10 +362,31 @@ func (transaction *ContractExecuteTransaction) SetMaxRetry(count int) *ContractE
 }
 
 func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

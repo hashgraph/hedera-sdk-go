@@ -8,15 +8,11 @@ import (
 
 type ScheduleDeleteTransaction struct {
 	Transaction
-	pb         *proto.ScheduleDeleteTransactionBody
 	scheduleID ScheduleID
 }
 
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
-	pb := &proto.ScheduleDeleteTransactionBody{}
-
 	transaction := ScheduleDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
@@ -27,7 +23,6 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleDeleteTransaction {
 	return ScheduleDeleteTransaction{
 		Transaction: transaction,
-		pb:          pb.GetScheduleDelete(),
 		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
 }
@@ -55,12 +50,21 @@ func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *ScheduleDeleteTransaction) build() *ScheduleDeleteTransaction {
+func (transaction *ScheduleDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.ScheduleDeleteTransactionBody{}
 	if !transaction.scheduleID.isZero() {
-		transaction.pb.ScheduleID = transaction.scheduleID.toProtobuf()
+		body.ScheduleID = transaction.scheduleID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ScheduleDelete{
+			ScheduleDelete: body,
+		},
+	}
 }
 
 func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -75,14 +79,16 @@ func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ScheduleDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.ScheduleDeleteTransactionBody{}
+	if !transaction.scheduleID.isZero() {
+		body.ScheduleID = transaction.scheduleID.toProtobuf()
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_ScheduleDelete{
-			ScheduleDelete: &proto.ScheduleDeleteTransactionBody{
-				ScheduleID: transaction.pb.GetScheduleID(),
-			},
+			ScheduleDelete: body,
 		},
 	}, nil
 }
@@ -181,7 +187,9 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		scheduleDeleteTransaction_getMethod,
@@ -205,16 +213,6 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *ScheduleDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ScheduleDelete{
-		ScheduleDelete: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *ScheduleDeleteTransaction) Freeze() (*ScheduleDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -228,17 +226,12 @@ func (transaction *ScheduleDeleteTransaction) FreezeWith(client *Client) (*Sched
 	if err != nil {
 		return &ScheduleDeleteTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ScheduleDeleteTransaction) GetMaxTransactionFee() Hbar {

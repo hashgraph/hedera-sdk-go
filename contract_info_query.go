@@ -8,25 +8,18 @@ import (
 // file containing its bytecode, and the time when it will expire.
 type ContractInfoQuery struct {
 	Query
-	pb         *proto.ContractGetInfoQuery
 	contractID ContractID
 }
 
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
 // Contract Get Info Query.
 func NewContractInfoQuery() *ContractInfoQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.ContractGetInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_ContractGetInfo{
-		ContractGetInfo: &pb,
-	}
+	query := newQuery(true)
 
 	query.SetMaxQueryPayment(NewHbar(2))
 
 	return &ContractInfoQuery{
 		Query: query,
-		pb:    &pb,
 	}
 }
 
@@ -53,12 +46,47 @@ func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractInfoQuery) build() *ContractInfoQuery {
+func (query *ContractInfoQuery) build() *proto.Query_ContractGetInfo {
+	body := &proto.ContractGetInfoQuery{Header: &proto.QueryHeader{}}
 	if !query.contractID.isZero() {
-		query.pb.ContractID = query.contractID.toProtobuf()
+		body.ContractID = query.contractID.toProtobuf()
 	}
 
-	return query
+	return &proto.Query_ContractGetInfo{
+		ContractGetInfo: body,
+	}
+}
+
+func (query *ContractInfoQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.ContractGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.ContractGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *ContractInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	pb.ContractGetInfo.Header.Payment = paymentTransaction
+	pb.ContractGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -66,21 +94,17 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.build()
+	protoResp, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -88,7 +112,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		contractInfoQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoResp,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		contractInfoQuery_getMethod,
@@ -112,7 +136,7 @@ func contractInfoQuery_shouldRetry(_ request, response response) executionState 
 	return query_shouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func contractInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func contractInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -137,8 +161,6 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	if err != nil {
 		return ContractInfo{}, err
 	}
-
-	query.build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -179,7 +201,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 			query: &query.Query,
 		},
 		contractInfoQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		contractInfoQuery_getMethod,

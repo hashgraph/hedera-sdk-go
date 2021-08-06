@@ -14,31 +14,26 @@ import (
 // purely local to a single  node.
 type ContractCallQuery struct {
 	Query
-	pb         *proto.ContractCallLocalQuery
-	contractID ContractID
+	contractID         ContractID
+	gas                uint64
+	maxResultSize      uint64
+	functionParameters []byte
 }
 
 // NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
 // Contract Call Local Query.
 func NewContractCallQuery() *ContractCallQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.ContractCallLocalQuery{Header: &header}
-	query.pb.Query = &proto.Query_ContractCallLocal{
-		ContractCallLocal: &pb,
-	}
-
+	query := newQuery(true)
 	query.SetMaxQueryPayment(NewHbar(2))
 
 	return &ContractCallQuery{
 		Query: query,
-		pb:    &pb,
 	}
 }
 
 // SetContractID sets the contract instance to call
 func (query *ContractCallQuery) SetContractID(id ContractID) *ContractCallQuery {
-	query.pb.ContractID = id.toProtobuf()
+	query.contractID = id
 	return query
 }
 
@@ -48,18 +43,18 @@ func (query *ContractCallQuery) GetContractID() ContractID {
 
 // SetGas sets the amount of gas to use for the call. All of the gas offered will be charged for.
 func (query *ContractCallQuery) SetGas(gas uint64) *ContractCallQuery {
-	query.pb.Gas = int64(gas)
+	query.gas = gas
 	return query
 }
 
 func (query *ContractCallQuery) GetGas() uint64 {
-	return uint64(query.pb.Gas)
+	return query.gas
 }
 
 // SetMaxResultSize sets the max number of bytes that the result might include. The run will fail if it would have
 // returned more than this number of bytes.
 func (query *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQuery {
-	query.pb.MaxResultSize = int64(size)
+	query.maxResultSize = size
 	return query
 }
 
@@ -69,17 +64,17 @@ func (query *ContractCallQuery) SetFunction(name string, params *ContractFunctio
 		params = NewContractFunctionParameters()
 	}
 
-	query.pb.FunctionParameters = params.build(&name)
+	query.functionParameters = params.build(&name)
 	return query
 }
 
 func (query *ContractCallQuery) SetFunctionParameters(byteArray []byte) *ContractCallQuery {
-	query.pb.FunctionParameters = byteArray
+	query.functionParameters = byteArray
 	return query
 }
 
 func (query *ContractCallQuery) GetFunctionParameters() []byte {
-	return query.pb.FunctionParameters
+	return query.functionParameters
 }
 
 func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
@@ -95,12 +90,53 @@ func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractCallQuery) build() *ContractCallQuery {
+func (query *ContractCallQuery) build() *proto.Query_ContractCallLocal {
+	body := &proto.ContractCallLocalQuery{
+		Header:        &proto.QueryHeader{},
+		Gas:           int64(query.gas),
+		MaxResultSize: int64(query.maxResultSize),
+	}
 	if !query.contractID.isZero() {
-		query.pb.ContractID = query.contractID.toProtobuf()
+		body.ContractID = query.contractID.toProtobuf()
+	}
+	if len(query.functionParameters) > 0 {
+		body.FunctionParameters = query.functionParameters
 	}
 
-	return query
+	return &proto.Query_ContractCallLocal{
+		ContractCallLocal: body,
+	}
+}
+
+func (query *ContractCallQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.ContractCallLocal.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *ContractCallQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	pb.ContractCallLocal.Header.Payment = paymentTransaction
+	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
@@ -108,20 +144,17 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-	query.build()
+
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -129,7 +162,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		contractCallQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		contractCallQuery_getMethod,
@@ -149,7 +182,7 @@ func contractCallQuery_shouldRetry(_ request, response response) executionState 
 	return query_shouldRetry(Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
 }
 
-func contractCallQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func contractCallQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode),
 	}
@@ -174,7 +207,6 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}
-	query.build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -215,7 +247,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 			query: &query.Query,
 		},
 		contractCallQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		contractCallQuery_getMethod,

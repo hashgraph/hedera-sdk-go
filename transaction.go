@@ -19,11 +19,14 @@ type ITransaction interface {
 }
 
 type Transaction struct {
-	pbBody *proto.TransactionBody
-
 	nextNodeIndex        int
 	nextTransactionIndex int
 	maxRetry             int
+
+	transactionFee           uint64
+	memo                     string
+	transactionValidDuration *time.Duration
+	transactionID            TransactionID
 
 	transactionIDs     []TransactionID
 	transactions       []*proto.Transaction
@@ -37,18 +40,17 @@ type Transaction struct {
 }
 
 func newTransaction() Transaction {
+	duration := 120 * time.Second
 	return Transaction{
-		pbBody: &proto.TransactionBody{
-			TransactionValidDuration: durationToProtobuf(120 * time.Second),
-		},
-		nextNodeIndex:        0,
-		nextTransactionIndex: 0,
-		maxRetry:             10,
-		transactionIDs:       make([]TransactionID, 0),
-		transactions:         make([]*proto.Transaction, 0),
-		signedTransactions:   make([]*proto.SignedTransaction, 0),
-		nodeIDs:              make([]AccountID, 0),
-		freezeError:          nil,
+		nextNodeIndex:            0,
+		nextTransactionIndex:     0,
+		maxRetry:                 10,
+		transactionValidDuration: &duration,
+		transactionIDs:           make([]TransactionID, 0),
+		transactions:             make([]*proto.Transaction, 0),
+		signedTransactions:       make([]*proto.SignedTransaction, 0),
+		nodeIDs:                  make([]AccountID, 0),
+		freezeError:              nil,
 	}
 }
 
@@ -255,35 +257,35 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 	return returnMap, nil
 }
 
-func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
-	transaction.requireOneNodeAccountID()
-
-	if !transaction.isFrozen() {
-		transaction.freeze()
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	if len(transaction.signedTransactions) == 0 {
-		return transaction
-	}
-
-	transaction.transactions = make([]*proto.Transaction, 0)
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
-		)
-	}
-
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
-	return transaction
-}
+//func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
+//	transaction.requireOneNodeAccountID()
+//
+//	if !transaction.isFrozen() {
+//		transaction.freeze()
+//	}
+//
+//	if transaction.keyAlreadySigned(publicKey) {
+//		return transaction
+//	}
+//
+//	if len(transaction.signedTransactions) == 0 {
+//		return transaction
+//	}
+//
+//	transaction.transactions = make([]*proto.Transaction, 0)
+//	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+//	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+//
+//	for index := 0; index < len(transaction.signedTransactions); index++ {
+//		transaction.signedTransactions[index].SigMap.SigPair = append(
+//			transaction.signedTransactions[index].SigMap.SigPair,
+//			publicKey.toSignaturePairProtobuf(signature),
+//		)
+//	}
+//
+//	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
+//	return transaction
+//}
 
 func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
 	hashes, err := transaction.GetTransactionHashPerNode()
@@ -322,7 +324,7 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 }
 
 func (transaction *Transaction) initFee(client *Client) {
-	if client != nil && transaction.pbBody.TransactionFee == 0 {
+	if client != nil && transaction.transactionFee == 0 {
 		transaction.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 }
@@ -340,7 +342,7 @@ func (transaction *Transaction) initTransactionID(client *Client) error {
 		}
 	}
 
-	transaction.pbBody.TransactionID = transaction.GetTransactionID().toProtobuf()
+	transaction.transactionID = transaction.GetTransactionID()
 	return nil
 }
 
@@ -363,6 +365,7 @@ func (transaction *Transaction) requireOneNodeAccountID() {
 func transaction_freezeWith(
 	transaction *Transaction,
 	client *Client,
+	body *proto.TransactionBody,
 ) error {
 	if len(transaction.nodeIDs) == 0 {
 		if client != nil {
@@ -373,8 +376,8 @@ func transaction_freezeWith(
 	}
 
 	for _, nodeAccountID := range transaction.nodeIDs {
-		transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
-		bodyBytes, err := protobuf.Marshal(transaction.pbBody)
+		body.NodeAccountID = nodeAccountID.toProtobuf()
+		bodyBytes, err := protobuf.Marshal(body)
 		if err != nil {
 			// This should be unreachable
 			// From the documentation this appears to only be possible if there are missing proto types
@@ -399,24 +402,6 @@ func (transaction *Transaction) signWith(
 	transaction.transactions = make([]*proto.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, signer)
-}
-func (transaction *Transaction) freeze() {
-	for _, nodeAccountID := range transaction.nodeIDs {
-		transaction.pbBody.NodeAccountID = nodeAccountID.toProtobuf()
-		bodyBytes, err := protobuf.Marshal(transaction.pbBody)
-		if err != nil {
-			// This should be unreachable
-			// From the documentation this appears to only be possible if there are missing proto types
-			panic(err)
-		}
-
-		transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
-			BodyBytes: bodyBytes,
-			SigMap: &proto.SignatureMap{
-				SigPair: make([]*proto.SignaturePair, 0),
-			},
-		})
-	}
 }
 
 func (transaction *Transaction) keyAlreadySigned(
@@ -464,7 +449,6 @@ func transaction_getNodeAccountID(request request) AccountID {
 func transaction_mapStatusError(
 	request request,
 	response response,
-	networkName *NetworkName,
 ) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.transaction.NodeTransactionPrecheckCode),
@@ -581,28 +565,28 @@ func (transaction *Transaction) buildTransaction(index int) error {
 //
 
 func (transaction *Transaction) GetMaxTransactionFee() Hbar {
-	return HbarFromTinybar(int64(transaction.pbBody.TransactionFee))
+	return HbarFromTinybar(int64(transaction.transactionFee))
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (transaction *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
-	transaction.pbBody.TransactionFee = uint64(fee.AsTinybar())
+	transaction.transactionFee = uint64(fee.AsTinybar())
 	return transaction
 }
 
 func (transaction *Transaction) GetTransactionMemo() string {
-	return transaction.pbBody.Memo
+	return transaction.memo
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
 func (transaction *Transaction) SetTransactionMemo(memo string) *Transaction {
-	transaction.pbBody.Memo = memo
+	transaction.memo = memo
 	return transaction
 }
 
 func (transaction *Transaction) GetTransactionValidDuration() time.Duration {
-	if transaction.pbBody.TransactionValidDuration != nil {
-		return durationFromProtobuf(transaction.pbBody.TransactionValidDuration)
+	if transaction.transactionValidDuration != nil {
+		return *transaction.transactionValidDuration
 	} else {
 		return 0
 	}
@@ -610,7 +594,7 @@ func (transaction *Transaction) GetTransactionValidDuration() time.Duration {
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
 func (transaction *Transaction) SetTransactionValidDuration(duration time.Duration) *Transaction {
-	transaction.pbBody.TransactionValidDuration = durationToProtobuf(duration)
+	transaction.transactionValidDuration = &duration
 	return transaction
 }
 

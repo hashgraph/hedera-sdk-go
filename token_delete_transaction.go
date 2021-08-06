@@ -12,15 +12,11 @@ import (
 // other field in that case will cause the transaction status to resolve to TOKEN_IS_IMMUTABlE.
 type TokenDeleteTransaction struct {
 	Transaction
-	pb      *proto.TokenDeleteTransactionBody
 	tokenID TokenID
 }
 
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
-	pb := &proto.TokenDeleteTransactionBody{}
-
 	transaction := TokenDeleteTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
@@ -31,7 +27,6 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 func tokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDeleteTransaction {
 	return TokenDeleteTransaction{
 		Transaction: transaction,
-		pb:          pb.GetTokenDeletion(),
 		tokenID:     tokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 }
@@ -60,12 +55,21 @@ func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *TokenDeleteTransaction) build() *TokenDeleteTransaction {
+func (transaction *TokenDeleteTransaction) build() *proto.TransactionBody {
+	body := &proto.TokenDeleteTransactionBody{}
 	if !transaction.tokenID.isZero() {
-		transaction.pb.Token = transaction.tokenID.toProtobuf()
+		body.Token = transaction.tokenID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_TokenDeletion{
+			TokenDeletion: body,
+		},
+	}
 }
 
 func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -80,14 +84,15 @@ func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 }
 
 func (transaction *TokenDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.TokenDeleteTransactionBody{}
+	if !transaction.tokenID.isZero() {
+		body.Token = transaction.tokenID.toProtobuf()
+	}
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_TokenDeletion{
-			TokenDeletion: &proto.TokenDeleteTransactionBody{
-				Token: transaction.pb.GetToken(),
-			},
+			TokenDeletion: body,
 		},
 	}, nil
 }
@@ -186,7 +191,9 @@ func (transaction *TokenDeleteTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		tokenDeleteTransaction_getMethod,
@@ -210,16 +217,6 @@ func (transaction *TokenDeleteTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenDeleteTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_TokenDeletion{
-		TokenDeletion: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *TokenDeleteTransaction) Freeze() (*TokenDeleteTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -233,16 +230,12 @@ func (transaction *TokenDeleteTransaction) FreezeWith(client *Client) (*TokenDel
 	if err != nil {
 		return &TokenDeleteTransaction{}, err
 	}
-	transaction.build()
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -303,10 +296,31 @@ func (transaction *TokenDeleteTransaction) SetMaxRetry(count int) *TokenDeleteTr
 }
 
 func (transaction *TokenDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDeleteTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }

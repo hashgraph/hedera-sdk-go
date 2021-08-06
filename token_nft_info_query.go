@@ -7,24 +7,25 @@ import (
 
 type TokenNftInfoQuery struct {
 	Query
-	nftInfo     *proto.TokenGetNftInfoQuery
-	tokenInfo   *proto.TokenGetNftInfosQuery
-	accountInfo *proto.TokenGetAccountNftInfosQuery
-	tokenID     TokenID
-	nftID       NftID
-	accountID   AccountID
-	start       int64
-	end         int64
+	byNft     bool
+	byToken   bool
+	byAccount bool
+	tokenID   TokenID
+	nftID     NftID
+	accountID AccountID
+	start     int64
+	end       int64
 }
 
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	return &TokenNftInfoQuery{
-		nftInfo:     nil,
-		tokenInfo:   nil,
-		accountInfo: nil,
-		tokenID:     TokenID{},
-		nftID:       NftID{},
-		accountID:   AccountID{},
+		Query:     newQuery(true),
+		byNft:     false,
+		byToken:   false,
+		byAccount: false,
+		tokenID:   TokenID{},
+		nftID:     NftID{},
+		accountID: AccountID{},
 	}
 }
 
@@ -74,57 +75,33 @@ func (query *TokenNftInfoQuery) GetEnd() int64 {
 }
 
 func (query *TokenNftInfoQuery) isByNft() bool {
-	return query.nftInfo != nil
+	return query.byNft
 }
 
 func (query *TokenNftInfoQuery) isByToken() bool {
-	return query.tokenInfo != nil
+	return query.byToken
 }
 
 func (query *TokenNftInfoQuery) isByAccount() bool {
-	return query.accountInfo != nil
+	return query.byAccount
 }
 
 func (query *TokenNftInfoQuery) ByNftID(id NftID) *TokenNftInfoQuery {
-	header := proto.QueryHeader{}
-	tempQuery := newQuery(true, &header)
-	pb := proto.TokenGetNftInfoQuery{Header: &header}
-	tempQuery.pb.Query = &proto.Query_TokenGetNftInfo{
-		TokenGetNftInfo: &pb,
-	}
-
-	query.Query = tempQuery
-	query.nftInfo = &pb
+	query.byNft = true
 	query.nftID = id
 
 	return query
 }
 
 func (query *TokenNftInfoQuery) ByTokenID(id TokenID) *TokenNftInfoQuery {
-	header := proto.QueryHeader{}
-	tempQuery := newQuery(true, &header)
-	pb := proto.TokenGetNftInfosQuery{Header: &header}
-	tempQuery.pb.Query = &proto.Query_TokenGetNftInfos{
-		TokenGetNftInfos: &pb,
-	}
-
-	query.Query = tempQuery
-	query.tokenInfo = &pb
+	query.byToken = true
 	query.tokenID = id
 
 	return query
 }
 
 func (query *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
-	header := proto.QueryHeader{}
-	tempQuery := newQuery(true, &header)
-	pb := proto.TokenGetAccountNftInfosQuery{Header: &header}
-	tempQuery.pb.Query = &proto.Query_TokenGetAccountNftInfos{
-		TokenGetAccountNftInfos: &pb,
-	}
-
-	query.Query = tempQuery
-	query.accountInfo = &pb
+	query.byAccount = true
 	query.accountID = id
 
 	return query
@@ -157,22 +134,144 @@ func (query *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TokenNftInfoQuery) build() *TokenNftInfoQuery {
+func (query *TokenNftInfoQuery) buildByToken() *proto.Query_TokenGetNftInfos {
 	if query.isByToken() {
-		query.tokenInfo.TokenID = query.tokenID.toProtobuf()
-		query.tokenInfo.Start = query.start
-		query.tokenInfo.End = query.end
-	}
-	if query.isByNft() {
-		query.nftInfo.NftID = query.nftID.toProtobuf()
-	}
-	if query.isByAccount() {
-		query.accountInfo.AccountID = query.accountID.toProtobuf()
-		query.accountInfo.Start = query.start
-		query.accountInfo.End = query.end
+		body := &proto.TokenGetNftInfosQuery{
+			Header: &proto.QueryHeader{},
+		}
+		if !query.tokenID.isZero() {
+			body.TokenID = query.tokenID.toProtobuf()
+		}
+		body.Start = query.start
+		body.End = query.end
+
+		return &proto.Query_TokenGetNftInfos{
+			TokenGetNftInfos: body,
+		}
 	}
 
-	return query
+	return &proto.Query_TokenGetNftInfos{}
+}
+
+func (query *TokenNftInfoQuery) buildByNft() *proto.Query_TokenGetNftInfo {
+	if query.isByNft() {
+		body := &proto.TokenGetNftInfoQuery{
+			Header: &proto.QueryHeader{},
+		}
+		body.NftID = query.nftID.toProtobuf()
+
+		return &proto.Query_TokenGetNftInfo{
+			TokenGetNftInfo: body,
+		}
+	}
+
+	return &proto.Query_TokenGetNftInfo{}
+}
+
+func (query *TokenNftInfoQuery) buildByAccount() *proto.Query_TokenGetAccountNftInfos {
+	if query.isByAccount() {
+		body := &proto.TokenGetAccountNftInfosQuery{Header: &proto.QueryHeader{}}
+		if !query.accountID.isZero() {
+			body.AccountID = query.accountID.toProtobuf()
+		}
+		body.Start = query.start
+		body.End = query.end
+
+		return &proto.Query_TokenGetAccountNftInfos{
+			TokenGetAccountNftInfos: body,
+		}
+	}
+
+	return &proto.Query_TokenGetAccountNftInfos{}
+}
+
+func (query *TokenNftInfoQuery) queryMakeRequest() protoRequest {
+	if query.isByToken() {
+		pb := query.buildByToken()
+		if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+			pb.TokenGetNftInfos.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+		}
+		pb.TokenGetNftInfos.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+		return protoRequest{
+			query: &proto.Query{
+				Query: pb,
+			},
+		}
+	}
+	if query.isByNft() {
+		pb := query.buildByNft()
+		if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+			pb.TokenGetNftInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+		}
+		pb.TokenGetNftInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+		return protoRequest{
+			query: &proto.Query{
+				Query: pb,
+			},
+		}
+	}
+	if query.isByAccount() {
+		pb := query.buildByAccount()
+		if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+			pb.TokenGetAccountNftInfos.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+		}
+		pb.TokenGetAccountNftInfos.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+		return protoRequest{
+			query: &proto.Query{
+				Query: pb,
+			},
+		}
+	}
+
+	return protoRequest{}
+}
+
+func (query *TokenNftInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
+	}
+
+	if query.isByToken() {
+		pb := query.buildByToken()
+		pb.TokenGetNftInfos.Header.Payment = paymentTransaction
+		pb.TokenGetNftInfos.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+		return protoRequest{
+			query: &proto.Query{
+				Query: pb,
+			},
+		}, nil
+	}
+
+	if query.isByNft() {
+		pb := query.buildByNft()
+		pb.TokenGetNftInfo.Header.Payment = paymentTransaction
+		pb.TokenGetNftInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+		return protoRequest{
+			query: &proto.Query{
+				Query: pb,
+			},
+		}, nil
+	}
+
+	if query.isByToken() {
+		pb := query.buildByAccount()
+		pb.TokenGetAccountNftInfos.Header.Payment = paymentTransaction
+		pb.TokenGetAccountNftInfos.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+		return protoRequest{
+			query: &proto.Query{
+				Query: pb,
+			},
+		}, nil
+	}
+
+	return protoRequest{}, nil
 }
 
 func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -180,21 +279,12 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-
-	query.build()
 
 	enabled := 0
 	if query.isByNft() {
@@ -213,6 +303,11 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errors.New("TokenNftInfoQuery must be one of ByNftId, ByTokenId, or ByAccountId, but none of these modes have been selected")
 	}
 
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
+
 	var resp intermediateResponse
 	if query.isByNft() {
 		resp, err = execute(
@@ -221,7 +316,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 				query: &query.Query,
 			},
 			tokenNftInfoQuery_shouldRetry,
-			costQuery_makeRequest,
+			protoReq,
 			costQuery_advanceRequest,
 			costQuery_getNodeAccountID,
 			tokenNftInfoQuery_getMethod,
@@ -245,7 +340,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 				query: &query.Query,
 			},
 			tokenNftInfosQuery_shouldRetry,
-			costQuery_makeRequest,
+			protoReq,
 			costQuery_advanceRequest,
 			costQuery_getNodeAccountID,
 			tokenNftInfosQuery_getMethod,
@@ -270,7 +365,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 				query: &query.Query,
 			},
 			accountNftInfoQuery_shouldRetry,
-			costQuery_makeRequest,
+			protoReq,
 			costQuery_advanceRequest,
 			costQuery_getNodeAccountID,
 			accountNftInfoQuery_getMethod,
@@ -295,7 +390,7 @@ func tokenNftInfoQuery_shouldRetry(_ request, response response) executionState 
 	return query_shouldRetry(Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func tokenNftInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func tokenNftInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -311,7 +406,7 @@ func tokenNftInfosQuery_shouldRetry(_ request, response response) executionState
 	return query_shouldRetry(Status(response.query.GetTokenGetNftInfos().Header.NodeTransactionPrecheckCode))
 }
 
-func tokenNftInfosQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func tokenNftInfosQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetNftInfos().Header.NodeTransactionPrecheckCode),
 	}
@@ -327,7 +422,7 @@ func accountNftInfoQuery_shouldRetry(_ request, response response) executionStat
 	return query_shouldRetry(Status(response.query.GetTokenGetAccountNftInfos().Header.NodeTransactionPrecheckCode))
 }
 
-func accountNftInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func accountNftInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetAccountNftInfos().Header.NodeTransactionPrecheckCode),
 	}
@@ -353,8 +448,6 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		return []TokenNftInfo{}, err
 	}
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
-
-	query.build()
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -413,7 +506,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 				query: &query.Query,
 			},
 			tokenNftInfoQuery_shouldRetry,
-			query_makeRequest,
+			query.queryMakeRequest(),
 			query_advanceRequest,
 			query_getNodeAccountID,
 			tokenNftInfoQuery_getMethod,
@@ -434,7 +527,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 				query: &query.Query,
 			},
 			tokenNftInfosQuery_shouldRetry,
-			query_makeRequest,
+			query.queryMakeRequest(),
 			query_advanceRequest,
 			query_getNodeAccountID,
 			tokenNftInfosQuery_getMethod,
@@ -458,7 +551,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 				query: &query.Query,
 			},
 			accountNftInfoQuery_shouldRetry,
-			query_makeRequest,
+			query.queryMakeRequest(),
 			query_advanceRequest,
 			query_getNodeAccountID,
 			accountNftInfoQuery_getMethod,

@@ -8,7 +8,6 @@ import (
 // currently staked will be given. This is not yet implemented, but will be in a future version of the API.
 type AccountStakersQuery struct {
 	Query
-	pb        *proto.CryptoGetStakersQuery
 	accountID AccountID
 }
 
@@ -18,16 +17,8 @@ type AccountStakersQuery struct {
 // It is recommended that you use this for creating new instances of an AccountStakersQuery
 // instead of manually creating an instance of the struct.
 func NewAccountStakersQuery() *AccountStakersQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.CryptoGetStakersQuery{Header: &header}
-	query.pb.Query = &proto.Query_CryptoGetProxyStakers{
-		CryptoGetProxyStakers: &pb,
-	}
-
 	return &AccountStakersQuery{
-		Query: query,
-		pb:    &pb,
+		Query: newQuery(true),
 	}
 }
 
@@ -54,12 +45,44 @@ func (query *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountStakersQuery) build() *AccountStakersQuery {
-	if !query.accountID.isZero() {
-		query.pb.AccountID = query.accountID.toProtobuf()
+func (query *AccountStakersQuery) build() *proto.Query_CryptoGetProxyStakers {
+	return &proto.Query_CryptoGetProxyStakers{
+		CryptoGetProxyStakers: &proto.CryptoGetStakersQuery{
+			Header:    &proto.QueryHeader{},
+			AccountID: query.accountID.toProtobuf(),
+		},
+	}
+}
+
+func (query *AccountStakersQuery) queryMakeRequest() protoRequest {
+	pb := query.build()
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.CryptoGetProxyStakers.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *AccountStakersQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := query.build()
+
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
 	}
 
-	return query
+	pb.CryptoGetProxyStakers.Header.Payment = paymentTransaction
+	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
@@ -67,21 +90,17 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return Hbar{}, err
-	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
 	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
-	err = query.validateNetworkOnIDs(client)
+	err := query.validateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	query.build()
+	protoReq, err := query.costQueryMakeRequest(client)
+	if err != nil {
+		return Hbar{}, err
+	}
 
 	resp, err := execute(
 		client,
@@ -89,7 +108,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		accountStakersQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		accountStakersQuery_getMethod,
@@ -109,7 +128,7 @@ func accountStakersQuery_shouldRetry(_ request, response response) executionStat
 	return query_shouldRetry(Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
-func accountStakersQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func accountStakersQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
 	}
@@ -176,7 +195,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 			query: &query.Query,
 		},
 		accountStakersQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		accountStakersQuery_getMethod,
