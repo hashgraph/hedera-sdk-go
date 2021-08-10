@@ -13,14 +13,14 @@ type TokenNftInfo struct {
 	Metadata     []byte
 }
 
-func tokenNftInfoFromProtobuf(pb *proto.TokenNftInfo, networkName *NetworkName) TokenNftInfo {
+func tokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
 	if pb == nil {
 		return TokenNftInfo{}
 	}
 
 	return TokenNftInfo{
-		NftID:        nftIDFromProtobuf(pb.NftID, networkName),
-		AccountID:    accountIDFromProtobuf(pb.AccountID, networkName),
+		NftID:        nftIDFromProtobuf(pb.NftID),
+		AccountID:    accountIDFromProtobuf(pb.AccountID),
 		CreationTime: timeFromProtobuf(pb.CreationTime),
 		Metadata:     pb.Metadata,
 	}
@@ -54,5 +54,5 @@ func TokenNftInfoFromBytes(data []byte) (TokenNftInfo, error) {
 		return TokenNftInfo{}, err
 	}
 
-	return tokenNftInfoFromProtobuf(&pb, nil), nil
+	return tokenNftInfoFromProtobuf(&pb), nil
 }

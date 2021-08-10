@@ -11,9 +11,9 @@ type AssessedCustomFee struct {
 	FeeCollectorAccountId *AccountID
 }
 
-func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee, networkName *NetworkName) AssessedCustomFee {
-	accountID := accountIDFromProtobuf(assessedFee.FeeCollectorAccountId, networkName)
-	tokenID := tokenIDFromProtobuf(assessedFee.TokenId, networkName)
+func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) AssessedCustomFee {
+	accountID := accountIDFromProtobuf(assessedFee.FeeCollectorAccountId)
+	tokenID := tokenIDFromProtobuf(assessedFee.TokenId)
 
 	return AssessedCustomFee{
 		Amount:                assessedFee.Amount,
@@ -59,5 +59,5 @@ func AssessedCustomFeeFromBytes(data []byte) (AssessedCustomFee, error) {
 		return AssessedCustomFee{}, err
 	}
 
-	return assessedCustomFeeFromProtobuf(&pb, nil), nil
+	return assessedCustomFeeFromProtobuf(&pb), nil
 }

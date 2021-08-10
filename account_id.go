@@ -59,7 +59,7 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 }
 
 func (id *AccountID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.networkName != nil {
+	if !id.isZero() && client != nil && client.networkName != nil{
 		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err
@@ -83,10 +83,18 @@ func (id *AccountID) Validate(client *Client) error {
 // String returns the string representation of an AccountID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id AccountID) String() string {
-	if id.checksum == nil {
-		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
+	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
+}
+
+func (id AccountID) ToStringWithChecksum(client Client) (string, error) {
+	if client.networkName == nil {
+		return "", errNetworkNameMissing
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, *id.checksum)
+	checksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, checksum.correctChecksum), nil
 }
 
 // ToSolidityAddress returns the string representation of the AccountID as a
@@ -116,7 +124,7 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func accountIDFromProtobuf(accountID *proto.AccountID, networkName *NetworkName) AccountID {
+func accountIDFromProtobuf(accountID *proto.AccountID) AccountID {
 	if accountID == nil {
 		return AccountID{}
 	}
@@ -125,10 +133,6 @@ func accountIDFromProtobuf(accountID *proto.AccountID, networkName *NetworkName)
 		Shard:   uint64(accountID.ShardNum),
 		Realm:   uint64(accountID.RealmNum),
 		Account: uint64(accountID.AccountNum),
-	}
-
-	if networkName != nil {
-		id.setNetwork(*networkName)
 	}
 
 	return id
@@ -161,5 +165,5 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 		return AccountID{}, err
 	}
 
-	return accountIDFromProtobuf(&pb, nil), nil
+	return accountIDFromProtobuf(&pb), nil
 }

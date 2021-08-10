@@ -20,9 +20,10 @@ type Client struct {
 
 	operator *operator
 
-	network       network
-	mirrorNetwork *mirrorNetwork
-	networkName   *NetworkName
+	network               network
+	mirrorNetwork         *mirrorNetwork
+	networkName           *NetworkName
+	autoValidateChecksums bool
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -108,11 +109,12 @@ func ClientForPreviewnet() *Client {
 // and returns a Client instance which can be used to
 func newClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
 	client := Client{
-		maxQueryPayment:   defaultMaxQueryPayment,
-		maxTransactionFee: defaultMaxTransactionFee,
-		network:           newNetwork(),
-		mirrorNetwork:     newMirrorNetwork(),
-		networkName:       &name,
+		maxQueryPayment:       defaultMaxQueryPayment,
+		maxTransactionFee:     defaultMaxTransactionFee,
+		network:               newNetwork(),
+		mirrorNetwork:         newMirrorNetwork(),
+		networkName:           &name,
+		autoValidateChecksums: false,
 	}
 
 	client.SetNetwork(network)
@@ -288,6 +290,22 @@ func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
 
 func (client *Client) GetMirrorNetwork() []string {
 	return client.mirrorNetwork.network
+}
+
+func (client *Client) SetNetworkName(name NetworkName) {
+	client.networkName = &name
+}
+
+func (client *Client) GetNetworkName() NetworkName {
+	return *client.networkName
+}
+
+func (client *Client) SetAutoValidateChecksums(validate bool) {
+	client.autoValidateChecksums = validate
+}
+
+func (client *Client) GetAutoValidateChecksums() bool {
+	return client.autoValidateChecksums
 }
 
 // SetOperator sets that account that will, by default, be paying for

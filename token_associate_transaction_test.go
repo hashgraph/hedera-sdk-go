@@ -73,7 +73,7 @@ func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
 
 	check := false
 	for _, relation := range info.TokenRelationships {
-		if *tokenID.checksum == *relation.TokenID.checksum {
+		if tokenID.String() == relation.TokenID.String() {
 			check = true
 		}
 	}
@@ -168,7 +168,7 @@ func TestIntegrationTokenAssociateTransactionNoTokenID(t *testing.T) {
 
 	check := false
 	for _, relation := range info.TokenRelationships {
-		if tokenID == relation.TokenID {
+		if tokenID.String() == relation.TokenID.String() {
 			check = true
 		}
 	}

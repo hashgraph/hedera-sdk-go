@@ -63,7 +63,7 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 	return *record.CallResult, nil
 }
 
-func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *NetworkName) TransactionRecord {
+func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecord {
 	if pb == nil {
 		return TransactionRecord{}
 	}
@@ -72,31 +72,31 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 	var nftTransfers = make(map[TokenID][]TokenNftTransfer, 0)
 
 	for i, element := range pb.TransferList.AccountAmounts {
-		accountTransfers[i] = transferFromProtobuf(element, networkName)
+		accountTransfers[i] = transferFromProtobuf(element)
 	}
 
 	for _, tokenTransfer := range pb.TokenTransferLists {
 		for _, nftTransfer := range tokenTransfer.NftTransfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token, nil)
-			nftTransfers[token] = append(nftTransfers[token], nftTransferFromProtobuf(nftTransfer, nil))
+			token := tokenIDFromProtobuf(tokenTransfer.Token)
+			nftTransfers[token] = append(nftTransfers[token], nftTransferFromProtobuf(nftTransfer))
 		}
 
 		for _, accountAmount := range tokenTransfer.Transfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token, nil)
-			tokenTransfers[token] = append(tokenTransfers[token], tokenTransferFromProtobuf(accountAmount, nil))
+			token := tokenIDFromProtobuf(tokenTransfer.Token)
+			tokenTransfers[token] = append(tokenTransfers[token], tokenTransferFromProtobuf(accountAmount))
 		}
 	}
 
 	assessedCustomFees := make([]AssessedCustomFee, 0)
 	for _, fee := range pb.AssessedCustomFees {
-		assessedCustomFees = append(assessedCustomFees, assessedCustomFeeFromProtobuf(fee, networkName))
+		assessedCustomFees = append(assessedCustomFees, assessedCustomFeeFromProtobuf(fee))
 	}
 
 	txRecord := TransactionRecord{
-		Receipt:            transactionReceiptFromProtobuf(pb.Receipt, networkName),
+		Receipt:            transactionReceiptFromProtobuf(pb.Receipt),
 		TransactionHash:    pb.TransactionHash,
 		ConsensusTimestamp: timeFromProtobuf(pb.ConsensusTimestamp),
-		TransactionID:      transactionIDFromProtobuf(pb.TransactionID, networkName),
+		TransactionID:      transactionIDFromProtobuf(pb.TransactionID),
 		TransactionMemo:    pb.Memo,
 		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:          accountTransfers,
@@ -107,11 +107,11 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord, networkName *Net
 	}
 
 	if pb.GetContractCreateResult() != nil {
-		result := contractFunctionResultFromProtobuf(pb.GetContractCreateResult(), networkName)
+		result := contractFunctionResultFromProtobuf(pb.GetContractCreateResult())
 
 		txRecord.CallResult = &result
 	} else if pb.GetContractCallResult() != nil {
-		result := contractFunctionResultFromProtobuf(pb.GetContractCallResult(), networkName)
+		result := contractFunctionResultFromProtobuf(pb.GetContractCallResult())
 
 		txRecord.CallResult = &result
 		txRecord.CallResultIsCreate = false
@@ -230,5 +230,5 @@ func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
 		return TransactionRecord{}, err
 	}
 
-	return transactionRecordFromProtobuf(&pb, nil), nil
+	return transactionRecordFromProtobuf(&pb), nil
 }

@@ -38,6 +38,9 @@ func (query *FileContentsQuery) GetFileID(id FileID) FileID {
 }
 
 func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.fileID.Validate(client)
 	if err != nil {

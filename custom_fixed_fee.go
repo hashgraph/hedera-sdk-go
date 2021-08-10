@@ -16,8 +16,8 @@ type CustomFixedFee struct {
 	DenominationTokenID *TokenID
 }
 
-func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee, networkName *NetworkName) CustomFixedFee {
-	id := tokenIDFromProtobuf(fixedFee.DenominatingTokenId, networkName)
+func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) CustomFixedFee {
+	id := tokenIDFromProtobuf(fixedFee.DenominatingTokenId)
 	return CustomFixedFee{
 		CustomFee:           customFee,
 		Amount:              fixedFee.Amount,

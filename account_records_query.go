@@ -42,6 +42,9 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 }
 
 func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.accountID.Validate(client)
 	if err != nil {
@@ -188,7 +191,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {
-		record := transactionRecordFromProtobuf(element, client.networkName)
+		record := transactionRecordFromProtobuf(element)
 		records = append(records, record)
 	}
 

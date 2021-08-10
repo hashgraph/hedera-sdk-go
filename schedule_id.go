@@ -67,10 +67,18 @@ func (id *ScheduleID) setNetwork(name NetworkName) {
 // String returns the string representation of an ScheduleID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id ScheduleID) String() string {
-	if id.checksum == nil {
-		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule)
+	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule)
+}
+
+func (id ScheduleID) ToStringWithChecksum(client Client) (string, error) {
+	if client.networkName == nil {
+		return "", errNetworkNameMissing
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, *id.checksum)
+	checksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, checksum.correctChecksum), nil
 }
 
 func (id ScheduleID) toProtobuf() *proto.ScheduleID {
@@ -94,7 +102,7 @@ func (id *ScheduleID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func scheduleIDFromProtobuf(scheduleID *proto.ScheduleID, networkName *NetworkName) ScheduleID {
+func scheduleIDFromProtobuf(scheduleID *proto.ScheduleID) ScheduleID {
 	if scheduleID == nil {
 		return ScheduleID{}
 	}
@@ -103,10 +111,6 @@ func scheduleIDFromProtobuf(scheduleID *proto.ScheduleID, networkName *NetworkNa
 		Shard:    uint64(scheduleID.ShardNum),
 		Realm:    uint64(scheduleID.RealmNum),
 		Schedule: uint64(scheduleID.ScheduleNum),
-	}
-
-	if networkName != nil {
-		id.setNetwork(*networkName)
 	}
 
 	return id

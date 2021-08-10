@@ -35,7 +35,7 @@ func tokenBurnTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 	return TokenBurnTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenBurn(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenBurn().Token, nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenBurn().Token),
 	}
 }
 
@@ -89,6 +89,9 @@ func (transaction *TokenBurnTransaction) GetSerialNumbers() []int64 {
 }
 
 func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

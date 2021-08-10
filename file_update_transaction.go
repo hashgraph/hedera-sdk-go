@@ -29,7 +29,7 @@ func fileUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	return FileUpdateTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileUpdate(),
-		fileID:      fileIDFromProtobuf(pb.GetFileUpdate().GetFileID(), nil),
+		fileID:      fileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
 	}
 }
 
@@ -59,7 +59,7 @@ func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransa
 func (transaction *FileUpdateTransaction) GetKeys() KeyList {
 	keys := transaction.pb.GetKeys()
 	if keys != nil {
-		keyList, err := keyListFromProtobuf(keys, nil)
+		keyList, err := keyListFromProtobuf(keys)
 		if err != nil {
 			return KeyList{}
 		}

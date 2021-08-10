@@ -39,8 +39,8 @@ func tokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 	return TokenUnfreezeTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenUnfreeze(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken(), nil),
-		accountID:   accountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount(), nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
+		accountID:   accountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
 	}
 }
 
@@ -67,6 +67,9 @@ func (transaction *TokenUnfreezeTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *TokenUnfreezeTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

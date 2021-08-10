@@ -29,7 +29,7 @@ func liveHashAddTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return LiveHashAddTransaction{
 		Transaction: transaction,
 		pb:          pb.GetCryptoAddLiveHash(),
-		accountID:   accountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId(), nil),
+		accountID:   accountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 	}
 }
 
@@ -59,7 +59,7 @@ func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTran
 func (transaction *LiveHashAddTransaction) GetKeys() KeyList {
 	keys := transaction.pb.GetLiveHash().GetKeys()
 	if keys != nil {
-		keyList, err := keyListFromProtobuf(keys, nil)
+		keyList, err := keyListFromProtobuf(keys)
 		if err != nil {
 			return KeyList{}
 		}
@@ -91,6 +91,9 @@ func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {

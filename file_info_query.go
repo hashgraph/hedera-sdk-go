@@ -34,6 +34,9 @@ func (query *FileInfoQuery) GetFileID(id FileID) FileID {
 }
 
 func (query *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.fileID.Validate(client)
 	if err != nil {
@@ -180,7 +183,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	info, err := fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo, client.networkName)
+	info, err := fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)
 	if err != nil {
 		return FileInfo{}, err
 	}

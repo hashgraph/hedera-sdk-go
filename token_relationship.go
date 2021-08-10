@@ -15,12 +15,12 @@ type TokenRelationship struct {
 	Decimals     uint32
 }
 
-func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship, networkName *NetworkName) TokenRelationship {
+func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationship {
 	if pb == nil {
 		return TokenRelationship{}
 	}
 	return TokenRelationship{
-		TokenID:      tokenIDFromProtobuf(pb.GetTokenId(), networkName),
+		TokenID:      tokenIDFromProtobuf(pb.GetTokenId()),
 		Symbol:       pb.Symbol,
 		Balance:      pb.Balance,
 		KycStatus:    kycStatusFromProtobuf(pb.KycStatus),
@@ -79,5 +79,5 @@ func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
 		return TokenRelationship{}, err
 	}
 
-	return tokenRelationshipFromProtobuf(&pb, nil), nil
+	return tokenRelationshipFromProtobuf(&pb), nil
 }

@@ -38,8 +38,8 @@ func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 	return TokenGrantKycTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenGrantKyc(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken(), nil),
-		accountID:   accountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount(), nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
+		accountID:   accountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
 }
 
@@ -66,6 +66,9 @@ func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

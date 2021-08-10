@@ -17,12 +17,12 @@ func NewTokenTransfer(accountID AccountID, amount int64) TokenTransfer {
 	}
 }
 
-func tokenTransferFromProtobuf(pb *proto.AccountAmount, networkName *NetworkName) TokenTransfer {
+func tokenTransferFromProtobuf(pb *proto.AccountAmount) TokenTransfer {
 	if pb == nil {
 		return TokenTransfer{}
 	}
 	return TokenTransfer{
-		AccountID: accountIDFromProtobuf(pb.AccountID, networkName),
+		AccountID: accountIDFromProtobuf(pb.AccountID),
 		Amount:    pb.Amount,
 	}
 }
@@ -53,5 +53,5 @@ func TokenTransferFromBytes(data []byte) (TokenTransfer, error) {
 		return TokenTransfer{}, err
 	}
 
-	return tokenTransferFromProtobuf(&pb, nil), nil
+	return tokenTransferFromProtobuf(&pb), nil
 }

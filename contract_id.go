@@ -78,10 +78,18 @@ func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 
 // String returns the string representation of a ContractID formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func (id ContractID) String() string {
-	if id.checksum == nil {
-		return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
+	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
+}
+
+func (id ContractID) ToStringWithChecksum(client Client) (string, error) {
+	if client.networkName == nil {
+		return "", errNetworkNameMissing
 	}
-	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, *id.checksum)
+	checksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, checksum.correctChecksum), nil
 }
 
 // ToSolidityAddress returns the string representation of the ContractID as a solidity address.
@@ -97,7 +105,7 @@ func (id ContractID) toProtobuf() *proto.ContractID {
 	}
 }
 
-func contractIDFromProtobuf(contractID *proto.ContractID, networkName *NetworkName) ContractID {
+func contractIDFromProtobuf(contractID *proto.ContractID) ContractID {
 	if contractID == nil {
 		return ContractID{}
 	}
@@ -106,10 +114,6 @@ func contractIDFromProtobuf(contractID *proto.ContractID, networkName *NetworkNa
 		Shard:    uint64(contractID.ShardNum),
 		Realm:    uint64(contractID.RealmNum),
 		Contract: uint64(contractID.ContractNum),
-	}
-
-	if networkName != nil {
-		id.setNetwork(*networkName)
 	}
 
 	return id
@@ -139,5 +143,5 @@ func ContractIDFromBytes(data []byte) (ContractID, error) {
 		return ContractID{}, err
 	}
 
-	return contractIDFromProtobuf(&pb, nil), nil
+	return contractIDFromProtobuf(&pb), nil
 }

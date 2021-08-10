@@ -31,7 +31,7 @@ func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return TopicDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetConsensusDeleteTopic(),
-		topicID:     topicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID(), nil),
+		topicID:     topicIDFromProtobuf(pb.GetConsensusDeleteTopic().GetTopicID()),
 	}
 }
 
@@ -47,6 +47,9 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 }
 
 func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.topicID.Validate(client)
 	if err != nil {

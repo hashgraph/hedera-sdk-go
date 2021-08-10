@@ -14,11 +14,11 @@ func (tokenBalances *TokenBalanceMap) Get(tokenID TokenID) uint64 {
 	}.String()]
 }
 
-func tokenBalanceMapFromProtobuf(pb []*proto.TokenBalance, _ *NetworkName) TokenBalanceMap {
+func tokenBalanceMapFromProtobuf(pb []*proto.TokenBalance) TokenBalanceMap {
 	balances := make(map[string]uint64, 0)
 
 	for _, tokenBalance := range pb {
-		balances[tokenIDFromProtobuf(tokenBalance.TokenId, nil).String()] = tokenBalance.Balance
+		balances[tokenIDFromProtobuf(tokenBalance.TokenId).String()] = tokenBalance.Balance
 	}
 
 	return TokenBalanceMap{balances}

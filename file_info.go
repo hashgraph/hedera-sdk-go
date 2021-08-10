@@ -26,21 +26,21 @@ func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted 
 	}
 }
 
-func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo, networkName *NetworkName) (FileInfo, error) {
+func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {
 	if fileInfo == nil {
 		return FileInfo{}, errParameterNull
 	}
 	var keys KeyList
 	var err error
 	if fileInfo.Keys != nil {
-		keys, err = keyListFromProtobuf(fileInfo.Keys, networkName)
+		keys, err = keyListFromProtobuf(fileInfo.Keys)
 		if err != nil {
 			return FileInfo{}, err
 		}
 	}
 
 	return FileInfo{
-		FileID:         fileIDFromProtobuf(fileInfo.FileID, networkName),
+		FileID:         fileIDFromProtobuf(fileInfo.FileID),
 		Size:           fileInfo.Size,
 		ExpirationTime: timeFromProtobuf(fileInfo.ExpirationTime),
 		IsDeleted:      fileInfo.Deleted,
@@ -82,7 +82,7 @@ func FileInfoFromBytes(data []byte) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	info, err := fileInfoFromProtobuf(&pb, nil)
+	info, err := fileInfoFromProtobuf(&pb)
 	if err != nil {
 		return FileInfo{}, err
 	}

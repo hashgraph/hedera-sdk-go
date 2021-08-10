@@ -32,7 +32,7 @@ func tokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 	return TokenDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetTokenDeletion(),
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenDeletion().GetToken(), nil),
+		tokenID:     tokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 }
 
@@ -48,6 +48,9 @@ func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
 }
 
 func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.tokenID.Validate(client)
 	if err != nil {

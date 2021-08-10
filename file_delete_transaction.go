@@ -28,7 +28,7 @@ func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	return FileDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetFileDelete(),
-		fileID:      fileIDFromProtobuf(pb.GetFileDelete().GetFileID(), nil),
+		fileID:      fileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
 }
 
@@ -43,6 +43,9 @@ func (transaction *FileDeleteTransaction) GetFileID() FileID {
 }
 
 func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.fileID.Validate(client)
 	if err != nil {

@@ -97,11 +97,11 @@ func (result ContractFunctionResult) AsBytes() []byte {
 	return result.ContractCallResult
 }
 
-func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult, networkName *NetworkName) ContractFunctionResult {
+func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) ContractFunctionResult {
 	infos := make([]ContractLogInfo, len(pb.LogInfo))
 
 	for i, info := range pb.LogInfo {
-		infos[i] = contractLogInfoFromProtobuf(info, networkName)
+		infos[i] = contractLogInfoFromProtobuf(info)
 	}
 
 	result := ContractFunctionResult{
@@ -113,32 +113,32 @@ func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult, networ
 	}
 
 	if pb.ContractID != nil {
-		contractID := contractIDFromProtobuf(pb.ContractID, networkName)
+		contractID := contractIDFromProtobuf(pb.ContractID)
 		result.ContractID = &contractID
 	}
 
 	return result
 }
 
-func (contractFuncRes ContractFunctionResult) toProtobuf() *proto.ContractFunctionResult {
-	infos := make([]*proto.ContractLoginfo, len(contractFuncRes.LogInfo))
+func (result ContractFunctionResult) toProtobuf() *proto.ContractFunctionResult {
+	infos := make([]*proto.ContractLoginfo, len(result.LogInfo))
 
-	for i, info := range contractFuncRes.LogInfo {
+	for i, info := range result.LogInfo {
 		infos[i] = info.toProtobuf()
 	}
 
-	contractIDs := make([]*proto.ContractID, len(contractFuncRes.CreatedContractIDs))
+	contractIDs := make([]*proto.ContractID, len(result.CreatedContractIDs))
 
-	for i, contractID := range contractFuncRes.CreatedContractIDs {
+	for i, contractID := range result.CreatedContractIDs {
 		contractIDs[i] = contractID.toProtobuf()
 	}
 
 	return &proto.ContractFunctionResult{
-		ContractID:         contractFuncRes.ContractID.toProtobuf(),
-		ContractCallResult: contractFuncRes.ContractCallResult,
-		ErrorMessage:       contractFuncRes.ErrorMessage,
-		Bloom:              contractFuncRes.Bloom,
-		GasUsed:            contractFuncRes.GasUsed,
+		ContractID:         result.ContractID.toProtobuf(),
+		ContractCallResult: result.ContractCallResult,
+		ErrorMessage:       result.ErrorMessage,
+		Bloom:              result.Bloom,
+		GasUsed:            result.GasUsed,
 		LogInfo:            infos,
 		CreatedContractIDs: contractIDs,
 	}

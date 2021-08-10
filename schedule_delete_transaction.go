@@ -28,7 +28,7 @@ func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	return ScheduleDeleteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetScheduleDelete(),
-		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID(), nil),
+		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
 }
 
@@ -43,6 +43,9 @@ func (transaction *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
 }
 
 func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.scheduleID.Validate(client)
 	if err != nil {

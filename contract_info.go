@@ -32,18 +32,18 @@ func newContractInfo(accountID AccountID, contractID ContractID, contractAccount
 	}
 }
 
-func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo, networkName *NetworkName) (ContractInfo, error) {
+func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
 	if contractInfo == nil {
 		return ContractInfo{}, errParameterNull
 	}
-	adminKey, err := keyFromProtobuf(contractInfo.GetAdminKey(), networkName)
+	adminKey, err := keyFromProtobuf(contractInfo.GetAdminKey())
 	if err != nil {
 		return ContractInfo{}, err
 	}
 
 	return ContractInfo{
-		AccountID:         accountIDFromProtobuf(contractInfo.AccountID, networkName),
-		ContractID:        contractIDFromProtobuf(contractInfo.ContractID, networkName),
+		AccountID:         accountIDFromProtobuf(contractInfo.AccountID),
+		ContractID:        contractIDFromProtobuf(contractInfo.ContractID),
 		ContractAccountID: contractInfo.ContractAccountID,
 		AdminKey:          adminKey,
 		ExpirationTime:    timeFromProtobuf(contractInfo.ExpirationTime),
@@ -87,7 +87,7 @@ func ContractInfoFromBytes(data []byte) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	info, err := contractInfoFromProtobuf(&pb, nil)
+	info, err := contractInfoFromProtobuf(&pb)
 	if err != nil {
 		return ContractInfo{}, err
 	}

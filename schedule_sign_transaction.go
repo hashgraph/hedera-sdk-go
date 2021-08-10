@@ -30,7 +30,7 @@ func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 	return ScheduleSignTransaction{
 		Transaction: transaction,
 		pb:          pb.GetScheduleSign(),
-		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID(), nil),
+		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}
 }
 
@@ -46,6 +46,9 @@ func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 }
 
 func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.scheduleID.Validate(client)
 	if err != nil {

@@ -60,6 +60,14 @@ func (id NftID) String() string {
 	return fmt.Sprintf("%d@%s", id.SerialNumber, id.TokenID.String())
 }
 
+func (id NftID) ToStringWithChecksum(client Client) (string, error) {
+	token, err := id.TokenID.ToStringWithChecksum(client)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d@%s", id.SerialNumber, token), nil
+}
+
 func (id NftID) toProtobuf() *proto.NftID {
 	return &proto.NftID{
 		TokenID:      id.TokenID.toProtobuf(),
@@ -67,12 +75,12 @@ func (id NftID) toProtobuf() *proto.NftID {
 	}
 }
 
-func nftIDFromProtobuf(pb *proto.NftID, networkName *NetworkName) NftID {
+func nftIDFromProtobuf(pb *proto.NftID) NftID {
 	if pb == nil {
 		return NftID{}
 	}
 	return NftID{
-		TokenID:      tokenIDFromProtobuf(pb.TokenID, networkName),
+		TokenID:      tokenIDFromProtobuf(pb.TokenID),
 		SerialNumber: pb.SerialNumber,
 	}
 }
@@ -97,5 +105,5 @@ func NftIDFromBytes(data []byte) (NftID, error) {
 		return NftID{}, err
 	}
 
-	return nftIDFromProtobuf(&pb, nil), nil
+	return nftIDFromProtobuf(&pb), nil
 }

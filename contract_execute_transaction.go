@@ -37,7 +37,7 @@ func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.T
 	return ContractExecuteTransaction{
 		Transaction: transaction,
 		pb:          pb.GetContractCall(),
-		contractID:  contractIDFromProtobuf(pb.GetContractCall().GetContractID(), nil),
+		contractID:  contractIDFromProtobuf(pb.GetContractCall().GetContractID()),
 	}
 }
 
@@ -97,6 +97,9 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 }
 
 func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.contractID.Validate(client)
 	if err != nil {

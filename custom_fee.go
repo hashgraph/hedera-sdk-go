@@ -9,14 +9,14 @@ type CustomFee struct {
 	FeeCollectorAccountID *AccountID
 }
 
-func customFeeFromProtobuf(customFee *proto.CustomFee, networkName *NetworkName) Fee {
+func customFeeFromProtobuf(customFee *proto.CustomFee) Fee {
 	if customFee == nil {
 		return nil
 	}
 
 	var id *AccountID
 	if customFee.FeeCollectorAccountId != nil {
-		id_ := accountIDFromProtobuf(customFee.FeeCollectorAccountId, networkName)
+		id_ := accountIDFromProtobuf(customFee.FeeCollectorAccountId)
 		id = &id_
 	}
 
@@ -26,7 +26,7 @@ func customFeeFromProtobuf(customFee *proto.CustomFee, networkName *NetworkName)
 
 	switch t := customFee.Fee.(type) {
 	case *proto.CustomFee_FixedFee:
-		return customFixedFeeFromProtobuf(t.FixedFee, fee, networkName)
+		return customFixedFeeFromProtobuf(t.FixedFee, fee)
 	case *proto.CustomFee_FractionalFee:
 		return customFractionalFeeFromProtobuf(t.FractionalFee, fee)
 	}
@@ -52,5 +52,5 @@ func CustomFeeFromBytes(data []byte) (Fee, error) {
 		return nil, err
 	}
 
-	return customFeeFromProtobuf(&pb, nil), nil
+	return customFeeFromProtobuf(&pb), nil
 }

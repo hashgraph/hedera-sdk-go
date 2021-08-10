@@ -30,8 +30,8 @@ func accountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 	return AccountUpdateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetCryptoUpdateAccount(),
-		accountID:      accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate(), nil),
-		proxyAccountID: accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID(), nil),
+		accountID:      accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
+		proxyAccountID: accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID()),
 	}
 }
 
@@ -43,7 +43,7 @@ func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTrans
 }
 
 func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetKey(), nil)
+	return keyFromProtobuf(transaction.pb.GetKey())
 }
 
 //Sets the account ID which is being updated in this transaction.
@@ -116,6 +116,9 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 }
 
 func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = transaction.accountID.Validate(client)
 	if err != nil {

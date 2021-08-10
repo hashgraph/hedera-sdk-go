@@ -104,34 +104,34 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 	return &kycStatus
 }
 
-func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenInfo {
+func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 	if pb == nil {
 		return TokenInfo{}
 	}
 
 	var adminKey Key
 	if pb.AdminKey != nil {
-		adminKey, _ = keyFromProtobuf(pb.AdminKey, networkName)
+		adminKey, _ = keyFromProtobuf(pb.AdminKey)
 	}
 
 	var kycKey Key
 	if pb.KycKey != nil {
-		kycKey, _ = keyFromProtobuf(pb.KycKey, networkName)
+		kycKey, _ = keyFromProtobuf(pb.KycKey)
 	}
 
 	var freezeKey Key
 	if pb.FreezeKey != nil {
-		freezeKey, _ = keyFromProtobuf(pb.FreezeKey, networkName)
+		freezeKey, _ = keyFromProtobuf(pb.FreezeKey)
 	}
 
 	var wipeKey Key
 	if pb.WipeKey != nil {
-		wipeKey, _ = keyFromProtobuf(pb.WipeKey, networkName)
+		wipeKey, _ = keyFromProtobuf(pb.WipeKey)
 	}
 
 	var supplyKey Key
 	if pb.SupplyKey != nil {
-		supplyKey, _ = keyFromProtobuf(pb.SupplyKey, networkName)
+		supplyKey, _ = keyFromProtobuf(pb.SupplyKey)
 	}
 
 	var autoRenewPeriod time.Duration
@@ -146,23 +146,23 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo, networkName *NetworkName) TokenI
 
 	var accountID AccountID
 	if pb.AutoRenewAccount != nil {
-		accountID = accountIDFromProtobuf(pb.AutoRenewAccount, networkName)
+		accountID = accountIDFromProtobuf(pb.AutoRenewAccount)
 	}
 
 	customFees := make([]Fee, 0)
 	if pb.CustomFees != nil {
 		for _, custom := range pb.CustomFees {
-			customFees = append(customFees, customFeeFromProtobuf(custom, networkName))
+			customFees = append(customFees, customFeeFromProtobuf(custom))
 		}
 	}
 
 	return TokenInfo{
-		TokenID:             tokenIDFromProtobuf(pb.TokenId, networkName),
+		TokenID:             tokenIDFromProtobuf(pb.TokenId),
 		Name:                pb.Name,
 		Symbol:              pb.Symbol,
 		Decimals:            pb.Decimals,
 		TotalSupply:         pb.TotalSupply,
-		Treasury:            accountIDFromProtobuf(pb.Treasury, networkName),
+		Treasury:            accountIDFromProtobuf(pb.Treasury),
 		AdminKey:            adminKey,
 		KycKey:              kycKey,
 		FreezeKey:           freezeKey,
@@ -270,5 +270,5 @@ func TokenInfoFromBytes(data []byte) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	return tokenInfoFromProtobuf(&pb, nil), nil
+	return tokenInfoFromProtobuf(&pb), nil
 }

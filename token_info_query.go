@@ -37,6 +37,9 @@ func (query *TokenInfoQuery) GetTokenID() TokenID {
 }
 
 func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	err = query.tokenID.Validate(client)
 	if err != nil {
@@ -185,7 +188,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo, client.networkName)
+	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
 
 	return info, nil
 }

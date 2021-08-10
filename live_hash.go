@@ -34,17 +34,17 @@ func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
 	}
 }
 
-func liveHashFromProtobuf(hash *proto.LiveHash, networkName *NetworkName) (LiveHash, error) {
+func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
 	if hash == nil {
 		return LiveHash{}, errParameterNull
 	}
-	keyList, err := keyListFromProtobuf(hash.Keys, networkName)
+	keyList, err := keyListFromProtobuf(hash.Keys)
 	if err != nil {
 		return LiveHash{}, err
 	}
 
 	return LiveHash{
-		AccountID: accountIDFromProtobuf(hash.GetAccountId(), networkName),
+		AccountID: accountIDFromProtobuf(hash.GetAccountId()),
 		Hash:      hash.Hash,
 		Keys:      keyList,
 		Duration: time.Date(time.Now().Year(), time.Now().Month(),
@@ -72,7 +72,7 @@ func LiveHashFromBytes(data []byte) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := liveHashFromProtobuf(&pb, nil)
+	liveHash, err := liveHashFromProtobuf(&pb)
 	if err != nil {
 		return LiveHash{}, err
 	}

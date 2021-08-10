@@ -46,7 +46,7 @@ func accountCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 	return AccountCreateTransaction{
 		Transaction:    transaction,
 		pb:             pb.GetCryptoCreateAccount(),
-		proxyAccountID: accountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID(), nil),
+		proxyAccountID: accountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
 	}
 }
 
@@ -59,7 +59,7 @@ func (transaction *AccountCreateTransaction) SetKey(key Key) *AccountCreateTrans
 }
 
 func (transaction *AccountCreateTransaction) GetKey() (Key, error) {
-	return keyFromProtobuf(transaction.pb.GetKey(), nil)
+	return keyFromProtobuf(transaction.pb.GetKey())
 }
 
 // SetInitialBalance sets the initial number of Hbar to put into the account
@@ -142,6 +142,9 @@ func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 }
 
 func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	return transaction.proxyAccountID.Validate(client)
 }
 

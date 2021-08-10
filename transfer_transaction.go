@@ -39,7 +39,7 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 	nftTransfers := make(map[TokenID][]TokenNftTransfer, 0)
 
 	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
-		accountID := accountIDFromProtobuf(aa.AccountID, nil)
+		accountID := accountIDFromProtobuf(aa.AccountID)
 		amount := HbarFromTinybar(aa.Amount)
 
 		if value, ok := hbarTransfers[accountID]; ok {
@@ -50,7 +50,7 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 	}
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
-		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token, nil)
+		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token)
 
 		var currentTokenTransfers map[AccountID]int64
 
@@ -61,7 +61,7 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 		}
 
 		for _, aa := range tokenTransfersList.GetTransfers() {
-			accountID := accountIDFromProtobuf(aa.AccountID, nil)
+			accountID := accountIDFromProtobuf(aa.AccountID)
 
 			if value, ok := currentTokenTransfers[accountID]; ok {
 				currentTokenTransfers[accountID] = aa.Amount + value
@@ -74,13 +74,13 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 	}
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
-		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token, nil)
+		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token)
 
 		for _, aa := range tokenTransfersList.GetNftTransfers() {
 			if nftTransfers[tokenID] == nil {
 				nftTransfers[tokenID] = make([]TokenNftTransfer, 0)
 			}
-			nftTransfers[tokenID] = append(nftTransfers[tokenID], nftTransferFromProtobuf(aa, nil))
+			nftTransfers[tokenID] = append(nftTransfers[tokenID], nftTransferFromProtobuf(aa))
 		}
 	}
 
@@ -102,8 +102,8 @@ func (transaction *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNft
 
 	for _, tokenTransfer := range transaction.pb.TokenTransfers {
 		for _, nftTransfer := range tokenTransfer.NftTransfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token, nil)
-			nftTransferMap[token] = append(nftTransferMap[token], nftTransferFromProtobuf(nftTransfer, nil))
+			token := tokenIDFromProtobuf(tokenTransfer.Token)
+			nftTransferMap[token] = append(nftTransferMap[token], nftTransferFromProtobuf(nftTransfer))
 		}
 	}
 
@@ -190,6 +190,9 @@ func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender Accou
 }
 
 func (transaction *TransferTransaction) validateNetworkOnIDs(client *Client) error {
+	if !client.autoValidateChecksums {
+		return nil
+	}
 	var err error
 	for tokenID, accountMap := range transaction.tokenTransfers {
 		err = tokenID.Validate(client)
