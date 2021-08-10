@@ -189,6 +189,11 @@ func PrivateKeyFromPem(bytes []byte, passphrase string) (PrivateKey, error) {
 		}
 	}
 
+	if pk == nil {
+		// no key was found
+		return PrivateKey{}, newErrBadKeyf("no PEM data is found")
+	}
+
 	if len(passphrase) == 0 {
 		// key does not need decrypted, end here
 		return PrivateKeyFromString(hex.EncodeToString(pk.Bytes))

@@ -287,6 +287,11 @@ func TestUnitPrivateKeyFromPem(t *testing.T) {
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
 
+func TestUnitPrivateKeyFromPemInvalid(t *testing.T) {
+	_, err := PrivateKeyFromPem([]byte("invalid"), "")
+	assert.Error(t, err)
+}
+
 func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
 	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
