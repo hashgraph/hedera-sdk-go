@@ -25,7 +25,7 @@ type Client struct {
 	mirrorNetwork         *mirrorNetwork
 	networkName           *NetworkName
 	autoValidateChecksums bool
-	maxAttempts   *int
+	maxAttempts           *int
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -117,7 +117,7 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 		mirrorNetwork:         newMirrorNetwork(),
 		networkName:           &name,
 		autoValidateChecksums: false,
-		maxAttempts:       nil,
+		maxAttempts:           nil,
 	}
 
 	_ = client.SetNetwork(network)

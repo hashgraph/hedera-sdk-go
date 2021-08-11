@@ -59,7 +59,7 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 }
 
 func (id *AccountID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.networkName != nil{
+	if !id.isZero() && client != nil && client.networkName != nil {
 		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err
