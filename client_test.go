@@ -115,3 +115,78 @@ func TestClientFromConfigWrongType(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("network is expected to be map of string to string, or string"), err.Error())
 	}
 }
+
+func TestIntegrationClientPingAllGoodNetwork(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	env.Client.SetMaxNodeAttempts(1)
+	env.Client.PingAll()
+
+	net := env.Client.GetNetwork()
+
+	keys := make([]string, len(net))
+	val := make([]AccountID, len(net))
+	i := 0
+	for st, n := range net {
+		keys[i] = st
+		val[i] = n
+		i++
+	}
+
+	_, err := NewAccountBalanceQuery().
+		SetAccountID(val[0]).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
+}
+
+func TestIntegrationClientPingAllBadNetwork(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	tempClient := newClient(env.Client.GetNetwork(), env.Client.GetMirrorNetwork(), *env.Client.networkName)
+	tempClient.SetOperator(env.OperatorID, env.OperatorKey)
+
+	tempClient.SetMaxNodeAttempts(1)
+	tempClient.SetMaxNodesPerTransaction(2)
+	tempClient.SetMaxAttempts(3)
+	net := tempClient.GetNetwork()
+	assert.True(t, len(net) > 1)
+
+	keys := make([]string, len(net))
+	val := make([]AccountID, len(net))
+	i := 0
+	for st, n := range net {
+		keys[i] = st
+		val[i] = n
+		i++
+	}
+
+	tempNet := make(map[string]AccountID, 2)
+	tempNet["in-process:name"] = val[0]
+	tempNet[keys[1]] = val[1]
+
+	err := tempClient.SetNetwork(tempNet)
+	assert.NoError(t, err)
+
+	tempClient.PingAll()
+
+	net = tempClient.GetNetwork()
+	i = 0
+	for st, n := range net {
+		keys[i] = st
+		val[i] = n
+		i++
+	}
+
+	_, err = NewAccountBalanceQuery().
+		SetAccountID(val[0]).
+		Execute(tempClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, len(tempClient.GetNetwork()))
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
+}

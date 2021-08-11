@@ -14,11 +14,17 @@ type AccountBalance struct {
 	TokenDecimals TokenDecimalMap
 }
 
-func accountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse) AccountBalance {
-	tokens := make(map[TokenID]uint64, len(pb.TokenBalances))
-	for _, token := range pb.TokenBalances {
-		t := tokenIDFromProtobuf(token.TokenId)
-		tokens[t] = token.Balance
+func accountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse, networkName *NetworkName) AccountBalance {
+	if pb == nil {
+		return AccountBalance{}
+	}
+	var tokens map[TokenID]uint64
+	if pb.TokenBalances != nil {
+		tokens = make(map[TokenID]uint64, len(pb.TokenBalances))
+		for _, token := range pb.TokenBalances {
+			t := tokenIDFromProtobuf(token.TokenId, nil)
+			tokens[t] = token.Balance
+		}
 	}
 
 	return AccountBalance{
