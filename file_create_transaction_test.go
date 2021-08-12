@@ -67,8 +67,9 @@ func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationFileCreateTransactionNetwork(t *testing.T) {
+func TestIntegrationFileCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	env.Client.SetAutoValidateChecksums(true)
 
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).

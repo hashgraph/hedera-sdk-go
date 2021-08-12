@@ -219,7 +219,7 @@ func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
+func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
