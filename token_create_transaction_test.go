@@ -210,11 +210,12 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
+func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 6)
 	pubKeys := make([]PublicKey, 6)
+	env.Client.SetAutoValidateChecksums(true)
 
 	for i := range keys {
 		newKey, err := GeneratePrivateKey()

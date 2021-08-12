@@ -132,8 +132,9 @@ func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
+func TestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
+	env.Client.SetAutoValidateChecksums(true)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
