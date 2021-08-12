@@ -67,7 +67,7 @@ func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestIntegrationFileCreateTransactionNetwork(t *testing.T) {
+func DisabledTestIntegrationFileCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().

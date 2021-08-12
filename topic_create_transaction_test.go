@@ -132,7 +132,7 @@ func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
+func DisabledTestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"

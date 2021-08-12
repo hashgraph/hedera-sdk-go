@@ -210,7 +210,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
+func DisabledTestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	keys := make([]PrivateKey, 6)
