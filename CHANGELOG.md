@@ -1,3 +1,14 @@
+## v2.1.13
+
+### Added
+
+ * Implement `Client.pingAll()`
+ * Implement `Client.SetAutoChecksumValidation()` which validates all entity ID checksums on requests before executing
+
+### Fixed
+
+ * nil dereference errors when decoding invalid PEM files
+
 ## v2.1.12
 
 ### Added
