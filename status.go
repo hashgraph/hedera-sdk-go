@@ -223,6 +223,8 @@ const (
 	StatusCustomFeeChargingExceededMaxRecursionDepth         Status = 257
 	StatusCustomFeeChargingExceededMaxAccountAmounts         Status = 258
 	StatusInsufficientSenderAccountBalanceForCustomFee       Status = 259
+	StatusSerialNumberLimitReached                           Status = 260
+	StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique    Status = 261
 )
 
 // String() returns a string representation of the status
@@ -664,6 +666,10 @@ func (status Status) String() string {
 		return "CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS"
 	case StatusInsufficientSenderAccountBalanceForCustomFee:
 		return "INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE"
+	case StatusSerialNumberLimitReached:
+		return "SERIAL_NUMBER_LIMIT_REACHED"
+	case StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique:
+		return "CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

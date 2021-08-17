@@ -473,3 +473,44 @@ func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
 	assert.NoError(t, err)
 }
+
+func TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMemo("fnord").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetCustomFees([]Fee{
+			CustomRoyaltyFee{
+				CustomFee: CustomFee{
+					FeeCollectorAccountID: &env.OperatorID,
+				},
+				Numerator:   1,
+				Denominator: 20,
+				FallbackFee: &CustomFixedFee{
+					CustomFee: CustomFee{
+						FeeCollectorAccountID: &env.OperatorID,
+					},
+					Amount: 10,
+				},
+			},
+		}).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, receipt.TokenID)
+	assert.NoError(t, err)
+}
