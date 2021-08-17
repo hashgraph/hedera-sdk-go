@@ -97,7 +97,7 @@ func (transaction *ContractExecuteTransaction) SetFunction(name string, params *
 }
 
 func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

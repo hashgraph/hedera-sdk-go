@@ -98,7 +98,7 @@ func (transaction *TokenWipeTransaction) SetSerialNumbers(serial []int64) *Token
 }
 
 func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

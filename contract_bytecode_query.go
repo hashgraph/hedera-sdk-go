@@ -38,7 +38,7 @@ func (query *ContractBytecodeQuery) GetContractID() ContractID {
 }
 
 func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

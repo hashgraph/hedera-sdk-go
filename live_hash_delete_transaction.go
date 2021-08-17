@@ -54,7 +54,7 @@ func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

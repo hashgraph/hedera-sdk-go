@@ -34,7 +34,7 @@ func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
 }
 
 func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

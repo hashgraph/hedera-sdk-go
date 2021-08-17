@@ -101,7 +101,7 @@ func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 }
 
 func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

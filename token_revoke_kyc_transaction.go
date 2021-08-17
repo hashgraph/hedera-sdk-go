@@ -66,7 +66,7 @@ func (transaction *TokenRevokeKycTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *TokenRevokeKycTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

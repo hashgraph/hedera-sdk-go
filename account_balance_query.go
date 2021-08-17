@@ -60,7 +60,7 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 }
 
 func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

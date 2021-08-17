@@ -190,7 +190,7 @@ func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender Accou
 }
 
 func (transaction *TransferTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error
@@ -433,6 +433,10 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 		return transaction, nil
 	}
 
+	transaction.initFee(client)
+	if err := transaction.initTransactionID(client); err != nil {
+		return transaction, err
+	}
 	err := transaction.validateNetworkOnIDs(client)
 	if err != nil {
 		return &TransferTransaction{}, err
@@ -440,11 +444,6 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 	transaction.buildHbarTransfers()
 	transaction.buildTokenTransfers()
 	transaction.buildNftTransfers()
-
-	transaction.initFee(client)
-	if err := transaction.initTransactionID(client); err != nil {
-		return transaction, err
-	}
 
 	if !transaction.onFreeze(transaction.pbBody) {
 		return transaction, nil

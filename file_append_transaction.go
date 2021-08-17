@@ -68,6 +68,9 @@ func (transaction *FileAppendTransaction) GetContents() []byte {
 }
 
 func (transaction *FileAppendTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil {
+		return nil
+	}
 	var err error
 	err = transaction.fileID.Validate(client)
 	if err != nil {

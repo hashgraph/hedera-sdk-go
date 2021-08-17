@@ -142,7 +142,7 @@ func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 }
 
 func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	return transaction.proxyAccountID.Validate(client)

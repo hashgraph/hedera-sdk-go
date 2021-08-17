@@ -116,7 +116,7 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 }
 
 func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error
