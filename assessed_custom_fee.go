@@ -9,7 +9,7 @@ type AssessedCustomFee struct {
 	Amount                int64
 	TokenID               *TokenID
 	FeeCollectorAccountId *AccountID
-	PayeAccountIDs        []*AccountID
+	PayerAccountIDs       []*AccountID
 }
 
 func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) AssessedCustomFee {
@@ -27,7 +27,7 @@ func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) Assesse
 		Amount:                assessedFee.Amount,
 		TokenID:               &tokenID,
 		FeeCollectorAccountId: &accountID,
-		PayeAccountIDs:        payerAccountIds,
+		PayerAccountIDs:       payerAccountIds,
 	}
 }
 
@@ -42,9 +42,9 @@ func (fee *AssessedCustomFee) toProtobuf() *proto.AssessedCustomFee {
 		accountID = fee.FeeCollectorAccountId.toProtobuf()
 	}
 
-	payerAccountIds := make([]*proto.AccountID, len(fee.PayeAccountIDs))
+	payerAccountIds := make([]*proto.AccountID, len(fee.PayerAccountIDs))
 
-	for _, id := range fee.PayeAccountIDs {
+	for _, id := range fee.PayerAccountIDs {
 		payerAccountIds = append(payerAccountIds, id.toProtobuf())
 	}
 
