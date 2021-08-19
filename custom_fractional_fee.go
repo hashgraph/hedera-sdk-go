@@ -7,19 +7,21 @@ import (
 
 type CustomFractionalFee struct {
 	CustomFee
-	Numerator     int64
-	Denominator   int64
-	MinimumAmount int64
-	MaximumAmount int64
+	Numerator        int64
+	Denominator      int64
+	MinimumAmount    int64
+	MaximumAmount    int64
+	AssessmentMethod FeeAssessmentMethod
 }
 
 func customFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee, fee CustomFee) CustomFractionalFee {
 	return CustomFractionalFee{
-		CustomFee:     fee,
-		Numerator:     fractionalFee.FractionalAmount.Numerator,
-		Denominator:   fractionalFee.FractionalAmount.Denominator,
-		MinimumAmount: fractionalFee.MinimumAmount,
-		MaximumAmount: fractionalFee.MaximumAmount,
+		CustomFee:        fee,
+		Numerator:        fractionalFee.FractionalAmount.Numerator,
+		Denominator:      fractionalFee.FractionalAmount.Denominator,
+		MinimumAmount:    fractionalFee.MinimumAmount,
+		MaximumAmount:    fractionalFee.MaximumAmount,
+		AssessmentMethod: FeeAssessmentMethod(fractionalFee.NetOfTransfers),
 	}
 }
 
@@ -46,8 +48,9 @@ func (fee CustomFractionalFee) toProtobuf() *proto.CustomFee {
 					Numerator:   fee.Numerator,
 					Denominator: fee.Denominator,
 				},
-				MinimumAmount: fee.MinimumAmount,
-				MaximumAmount: fee.MaximumAmount,
+				MinimumAmount:  fee.MinimumAmount,
+				MaximumAmount:  fee.MaximumAmount,
+				NetOfTransfers: bool(fee.AssessmentMethod),
 			},
 		},
 		FeeCollectorAccountId: FeeCollectorAccountID,

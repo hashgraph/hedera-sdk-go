@@ -29,6 +29,8 @@ func customFeeFromProtobuf(customFee *proto.CustomFee) Fee {
 		return customFixedFeeFromProtobuf(t.FixedFee, fee)
 	case *proto.CustomFee_FractionalFee:
 		return customFractionalFeeFromProtobuf(t.FractionalFee, fee)
+	case *proto.CustomFee_RoyaltyFee:
+		return customRoyaltyFeeFromProtobuf(t.RoyaltyFee, fee)
 	}
 
 	return nil

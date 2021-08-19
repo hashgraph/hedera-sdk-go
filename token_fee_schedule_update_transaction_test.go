@@ -108,10 +108,11 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 		CustomFee: CustomFee{
 			FeeCollectorAccountID: &env.OperatorID,
 		},
-		Numerator:     1,
-		Denominator:   20,
-		MinimumAmount: 1,
-		MaximumAmount: 10,
+		Numerator:        1,
+		Denominator:      20,
+		MinimumAmount:    1,
+		MaximumAmount:    10,
+		AssessmentMethod: FeeAssessmentMethodExclusive,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
