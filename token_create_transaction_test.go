@@ -255,7 +255,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 
 	newClient := Client{}
 	networkName := NetworkNameMainnet
-	newClient.networkName = &networkName
+	newClient.network.networkName = &networkName
 	tokenID.setNetworkWithClient(&newClient)
 
 	_, err = NewTokenInfoQuery().
@@ -269,7 +269,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 
 	newClient = Client{}
 	networkName = NetworkNameTestnet
-	newClient.networkName = &networkName
+	newClient.network.networkName = &networkName
 	tokenID.setNetworkWithClient(&newClient)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)

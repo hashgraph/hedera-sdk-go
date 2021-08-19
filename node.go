@@ -2,6 +2,9 @@ package hedera
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/hex"
+	"golang.org/x/crypto/sha3"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -14,15 +17,16 @@ import (
 )
 
 type node struct {
-	accountID  AccountID
-	address    string
-	delay      int64
-	lastUsed   int64
-	delayUntil int64
-	useCount   int64
-	channel    *channel
-	waitTime   int64
-	attempts   int64
+	accountID   AccountID
+	address     string
+	delay       int64
+	lastUsed    int64
+	delayUntil  int64
+	useCount    int64
+	channel     *channel
+	waitTime    int64
+	attempts    int64
+	addressBook *nodeAddress
 }
 
 type nodes struct {
@@ -40,6 +44,7 @@ func newNode(accountID AccountID, address string, waitTime int64) node {
 		channel:    nil,
 		waitTime:   waitTime,
 		attempts:   0,
+		addressBook: nil,
 	}
 }
 
@@ -49,6 +54,14 @@ func (node *node) setWaitTime(waitTime int64) {
 	}
 
 	node.waitTime = waitTime
+}
+
+func (node *node) SetAddressBook(addressBook *nodeAddress) {
+	node.addressBook = addressBook
+}
+
+func (node *node) GetAddressBook() *nodeAddress {
+	return node.addressBook
 }
 
 func (node *node) inUse() {
@@ -92,7 +105,28 @@ func (node *node) getChannel() (*channel, error) {
 	parts := strings.SplitN(node.address, ":", 2)
 	security := grpc.WithInsecure()
 	if parts[1] == "443" || parts[1] == "50212" {
-		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true}))
+		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+			VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+				if node.addressBook == nil {
+					return nil
+				}
+
+				for _, cert := range rawCerts {
+					digest := sha3.New384()
+					certHash := make([]byte, digest.Size())
+
+					digest.Write(cert)
+					certHash = digest.Sum(nil)
+
+					if string(node.addressBook.certHash) == hex.EncodeToString(certHash) {
+						return nil
+					}
+				}
+
+				return x509.CertificateInvalidError{}
+			},
+		}))
 	}
 
 	cont, cancel := context.WithTimeout(context.Background(), 10*time.Second)

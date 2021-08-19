@@ -220,3 +220,41 @@ func newTestClient(t *testing.T, token bool) *Client {
 
 	return client
 }
+
+func TestTls(t *testing.T) {
+	var env IntegrationTestEnv
+	var err error
+
+	env.Client = ClientForPreviewnet()
+
+	configOperatorID := os.Getenv("OPERATOR_ID")
+	configOperatorKey := os.Getenv("OPERATOR_KEY")
+
+	if configOperatorID != "" && configOperatorKey != "" {
+		env.OperatorID, err = AccountIDFromString(configOperatorID)
+		assert.NoError(t, err)
+
+		env.OperatorID.setNetworkWithClient(env.Client)
+
+		env.OperatorKey, err = PrivateKeyFromString(configOperatorKey)
+		assert.NoError(t, err)
+
+		env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+	}
+
+	assert.NotNil(t, env.Client.GetOperatorAccountID())
+	assert.NotNil(t, env.Client.GetOperatorPublicKey())
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(NewHbar(30)).
+		SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+}

@@ -23,7 +23,6 @@ type Client struct {
 
 	network               network
 	mirrorNetwork         *mirrorNetwork
-	networkName           *NetworkName
 	autoValidateChecksums bool
 	maxAttempts           *int
 
@@ -118,7 +117,6 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 		maxTransactionFee:     defaultMaxTransactionFee,
 		network:               newNetwork(),
 		mirrorNetwork:         newMirrorNetwork(),
-		networkName:           &name,
 		autoValidateChecksums: false,
 		maxAttempts:           nil,
 		minBackoff:            250 * time.Millisecond,
@@ -127,6 +125,7 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 
 	_ = client.SetNetwork(network)
 	client.SetMirrorNetwork(mirrorNetwork)
+	client.network.networkName = &name
 
 	return &client
 }
@@ -359,11 +358,11 @@ func (client *Client) GetMirrorNetwork() []string {
 }
 
 func (client *Client) SetNetworkName(name NetworkName) {
-	client.networkName = &name
+	client.network.setNetworkName(name)
 }
 
 func (client *Client) GetNetworkName() NetworkName {
-	return *client.networkName
+	return *client.network.getNetworkName()
 }
 
 func (client *Client) SetAutoValidateChecksums(validate bool) {

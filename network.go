@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"io/ioutil"
 	"math"
 	"sort"
 	"time"
@@ -13,6 +14,8 @@ type network struct {
 	maxNodeAttempts        int
 	nodeWaitTime           time.Duration
 	maxNodesPerTransaction *int
+	addressBook            map[AccountID]nodeAddress
+	networkName            *NetworkName
 }
 
 func newNetwork() network {
@@ -23,6 +26,7 @@ func newNetwork() network {
 		maxNodeAttempts:        -1,
 		nodeWaitTime:           250 * time.Millisecond,
 		maxNodesPerTransaction: nil,
+		addressBook:            nil,
 	}
 }
 
@@ -89,6 +93,55 @@ func (network *network) getNodeAccountIDsForExecute() []AccountID {
 	}
 
 	return accountIDs
+}
+
+func (network *network) getNetworkName() *NetworkName {
+	return network.networkName
+}
+
+func (network *network) setNetworkName(net NetworkName) *network {
+	network.networkName = &net
+
+	switch net {
+	case NetworkNameMainnet:
+		network.addressBook = readAddressBookResource("addressbook/mainnet.pb")
+	case NetworkNameTestnet:
+		network.addressBook = readAddressBookResource("addressbook/testnet.pb")
+	case NetworkNamePreviewnet:
+		network.addressBook = readAddressBookResource("addressbook/previewnet.pb")
+	}
+
+	if network.addressBook != nil {
+		for _, nod := range network.nodes {
+			temp := network.addressBook[nod.accountID]
+			nod.addressBook = &temp
+		}
+	}
+
+	return network
+}
+
+func readAddressBookResource(ad string) map[AccountID]nodeAddress {
+	f, err := ioutil.ReadFile(ad)
+	if err != nil {
+		panic(err)
+	}
+
+	nodeAB, err := nodeAddressBookFromBytes(f)
+	if err != nil {
+		panic(err)
+	}
+
+	resultMap := make(map[AccountID]nodeAddress, 0)
+	for _, nodeAd := range nodeAB.nodeAddresses {
+		if nodeAd.accountID == nil {
+			continue
+		}
+
+		resultMap[*nodeAd.accountID] = nodeAd
+	}
+
+	return resultMap
 }
 
 func (network *network) getNumberOfNodesForTransaction() int {
