@@ -42,7 +42,7 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 }
 
 func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

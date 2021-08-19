@@ -55,7 +55,7 @@ func (transaction *SystemUndeleteTransaction) GetFileID() FileID {
 }
 
 func (transaction *SystemUndeleteTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

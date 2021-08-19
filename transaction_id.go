@@ -189,7 +189,10 @@ func (id TransactionID) GetScheduled() bool {
 	return id.scheduled
 }
 
-func (id TransactionID) transactionIDValidateNetworkOnIDs(client *Client) error {
+func (id TransactionID) transactionIDvalidateNetworkOnIDs(client *Client) error {
+	if client == nil {
+		return nil
+	}
 	if !id.AccountID.isZero() && client != nil && client.networkName != nil {
 		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.AccountID.Shard, id.AccountID.Realm, id.AccountID.Account))
 		if err != nil {

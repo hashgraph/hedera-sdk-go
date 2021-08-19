@@ -43,7 +43,7 @@ func (transaction *FileDeleteTransaction) GetFileID() FileID {
 }
 
 func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

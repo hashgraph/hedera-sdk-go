@@ -89,7 +89,7 @@ func (transaction *TokenBurnTransaction) GetSerialNumbers() []int64 {
 }
 
 func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

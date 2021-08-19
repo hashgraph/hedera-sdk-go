@@ -108,7 +108,7 @@ func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 }
 
 func (transaction *TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

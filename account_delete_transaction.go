@@ -65,7 +65,7 @@ func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccoun
 }
 
 func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

@@ -35,7 +35,7 @@ func (query *AccountInfoQuery) GetAccountID() AccountID {
 }
 
 func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

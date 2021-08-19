@@ -91,7 +91,7 @@ func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

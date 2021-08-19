@@ -106,6 +106,9 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 }
 
 func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+	if client == nil {
+		return nil
+	}
 	var err error
 	err = transaction.fileID.Validate(client)
 	if err != nil {

@@ -155,7 +155,7 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 }
 
 func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

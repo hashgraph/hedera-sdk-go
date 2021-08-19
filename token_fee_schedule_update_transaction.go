@@ -63,7 +63,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

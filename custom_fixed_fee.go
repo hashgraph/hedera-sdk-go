@@ -26,6 +26,9 @@ func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) C
 }
 
 func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
+	if client == nil {
+		return nil
+	}
 	if fee.DenominationTokenID != nil {
 		if err := fee.DenominationTokenID.Validate(client); err != nil {
 			return err

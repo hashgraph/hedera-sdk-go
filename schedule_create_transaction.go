@@ -91,7 +91,7 @@ func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransa
 }
 
 func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

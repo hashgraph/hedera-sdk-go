@@ -103,7 +103,7 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 }
 
 func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error

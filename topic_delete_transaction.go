@@ -47,7 +47,7 @@ func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 }
 
 func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
-	if !client.autoValidateChecksums {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	var err error
