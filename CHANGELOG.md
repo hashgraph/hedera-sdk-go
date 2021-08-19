@@ -1,3 +1,14 @@
+## v2.1.14
+
+### Added
+
+ * Support for `CustomRoyaltyFee`
+ * Support for `AssessedCustomFee.payerAccountIds`
+
+### Fixed
+
+ * `nil` dereference issues within `*.validateNetworkIDs()`
+
 ## v2.1.13
 
 ### Added
