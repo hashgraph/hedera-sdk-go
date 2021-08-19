@@ -9,6 +9,26 @@ type CustomRoyaltyFee struct {
 	FallbackFee *CustomFixedFee
 }
 
+func (fee *CustomRoyaltyFee) SetFeeCollectorAccountID(accountID AccountID) *CustomRoyaltyFee {
+	fee.FeeCollectorAccountID = &accountID
+	return fee
+}
+
+func (fee *CustomRoyaltyFee) SetNumerator(numerator int64) *CustomRoyaltyFee {
+	fee.Numerator = numerator
+	return fee
+}
+
+func (fee *CustomRoyaltyFee) SetDenominator(denominator int64) *CustomRoyaltyFee {
+	fee.Denominator = denominator
+	return fee
+}
+
+func (fee *CustomRoyaltyFee) SetFallbackFee(fallbackFee *CustomFixedFee) *CustomRoyaltyFee {
+	fee.FallbackFee = fallbackFee
+	return fee
+}
+
 func customRoyaltyFeeFromProtobuf(royalty *proto.RoyaltyFee, fee CustomFee) CustomRoyaltyFee {
 	var fallback CustomFixedFee
 	if royalty.FallbackFee != nil {
@@ -23,16 +43,17 @@ func customRoyaltyFeeFromProtobuf(royalty *proto.RoyaltyFee, fee CustomFee) Cust
 }
 
 func (fee CustomRoyaltyFee) validateNetworkOnIDs(client *Client) error {
+	if client == nil || !client.autoValidateChecksums || fee.FallbackFee == nil {
+		return nil
+	}
+
 	return fee.FallbackFee.validateNetworkOnIDs(client)
 }
 
 func (fee CustomRoyaltyFee) toProtobuf() *proto.CustomFee {
-	var fallback proto.FixedFee
+	var fallback *proto.FixedFee
 	if fee.FallbackFee != nil {
-		if fee.FallbackFee.DenominationTokenID != nil {
-			fallback.DenominatingTokenId = fee.FallbackFee.DenominationTokenID.toProtobuf()
-		}
-		fallback.Amount = fee.FallbackFee.Amount
+		fallback = fee.FallbackFee.toProtobuf().GetFixedFee()
 	}
 
 	var FeeCollectorAccountID *proto.AccountID
@@ -47,7 +68,7 @@ func (fee CustomRoyaltyFee) toProtobuf() *proto.CustomFee {
 					Numerator:   fee.Numerator,
 					Denominator: fee.Denominator,
 				},
-				FallbackFee: &fallback,
+				FallbackFee: fallback,
 			},
 		},
 		FeeCollectorAccountId: FeeCollectorAccountID,
