@@ -1,3 +1,9 @@
+## v2.1.15
+
+### Fixed
+
+ * `AssessedCustomFee.PayerAccountIDs` was misspelled
+
 ## v2.1.14
 
 ### Added
