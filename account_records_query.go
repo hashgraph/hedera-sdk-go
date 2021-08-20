@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"time"
 )
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
@@ -219,4 +220,40 @@ func (query *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 func (query *AccountRecordsQuery) SetMaxRetry(count int) *AccountRecordsQuery {
 	query.Query.SetMaxRetry(count)
 	return query
+}
+
+func (query *AccountRecordsQuery) SetMaxBackoff(max time.Duration) *AccountRecordsQuery {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	query.maxBackoff = &max
+	return query
+}
+
+func (query *AccountRecordsQuery) GetMaxBackoff() time.Duration {
+	if query.maxBackoff != nil {
+		return *query.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (query *AccountRecordsQuery) SetMinBackoff(min time.Duration) *AccountRecordsQuery {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	query.minBackoff = &min
+	return query
+}
+
+func (query *AccountRecordsQuery) GetMinBackoff() time.Duration {
+	if query.minBackoff != nil {
+		return *query.minBackoff
+	}
+
+	return 250 * time.Millisecond
 }

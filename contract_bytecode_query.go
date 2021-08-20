@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"time"
 )
 
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
@@ -208,4 +209,40 @@ func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *Co
 func (query *ContractBytecodeQuery) SetMaxRetry(count int) *ContractBytecodeQuery {
 	query.Query.SetMaxRetry(count)
 	return query
+}
+
+func (query *ContractBytecodeQuery) SetMaxBackoff(max time.Duration) *ContractBytecodeQuery {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	query.maxBackoff = &max
+	return query
+}
+
+func (query *ContractBytecodeQuery) GetMaxBackoff() time.Duration {
+	if query.maxBackoff != nil {
+		return *query.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (query *ContractBytecodeQuery) SetMinBackoff(min time.Duration) *ContractBytecodeQuery {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	query.minBackoff = &min
+	return query
+}
+
+func (query *ContractBytecodeQuery) GetMinBackoff() time.Duration {
+	if query.minBackoff != nil {
+		return *query.minBackoff
+	}
+
+	return 250 * time.Millisecond
 }

@@ -4,6 +4,7 @@ import (
 	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/pkg/errors"
+	"time"
 )
 
 type Query struct {
@@ -21,6 +22,9 @@ type Query struct {
 	paymentTransactions []*proto.Transaction
 
 	isPaymentRequired bool
+
+	maxBackoff *time.Duration
+	minBackoff *time.Duration
 }
 
 func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {

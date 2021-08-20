@@ -363,3 +363,39 @@ func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey,
 	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }
+
+func (transaction *ContractExecuteTransaction) SetMaxBackoff(max time.Duration) *ContractExecuteTransaction {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	transaction.maxBackoff = &max
+	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) GetMaxBackoff() time.Duration {
+	if transaction.maxBackoff != nil {
+		return *transaction.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (transaction *ContractExecuteTransaction) SetMinBackoff(min time.Duration) *ContractExecuteTransaction {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	transaction.minBackoff = &min
+	return transaction
+}
+
+func (transaction *ContractExecuteTransaction) GetMinBackoff() time.Duration {
+	if transaction.minBackoff != nil {
+		return *transaction.minBackoff
+	}
+
+	return 250 * time.Millisecond
+}

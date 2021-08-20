@@ -34,6 +34,9 @@ type Transaction struct {
 	transactionSigners []TransactionSigner
 
 	freezeError error
+
+	maxBackoff *time.Duration
+	minBackoff *time.Duration
 }
 
 func newTransaction() Transaction {

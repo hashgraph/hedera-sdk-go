@@ -337,3 +337,39 @@ func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, s
 	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }
+
+func (transaction *AccountDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountDeleteTransaction {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	transaction.maxBackoff = &max
+	return transaction
+}
+
+func (transaction *AccountDeleteTransaction) GetMaxBackoff() time.Duration {
+	if transaction.maxBackoff != nil {
+		return *transaction.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (transaction *AccountDeleteTransaction) SetMinBackoff(min time.Duration) *AccountDeleteTransaction {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	transaction.minBackoff = &min
+	return transaction
+}
+
+func (transaction *AccountDeleteTransaction) GetMinBackoff() time.Duration {
+	if transaction.minBackoff != nil {
+		return *transaction.minBackoff
+	}
+
+	return 250 * time.Millisecond
+}

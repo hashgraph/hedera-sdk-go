@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"time"
 )
 
 type TransactionReceiptQuery struct {
@@ -158,6 +159,42 @@ func (query *TransactionReceiptQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *
 func (query *TransactionReceiptQuery) SetMaxRetry(count int) *TransactionReceiptQuery {
 	query.Query.SetMaxRetry(count)
 	return query
+}
+
+func (query *TransactionReceiptQuery) SetMaxBackoff(max time.Duration) *TransactionReceiptQuery {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	query.maxBackoff = &max
+	return query
+}
+
+func (query *TransactionReceiptQuery) GetMaxBackoff() time.Duration {
+	if query.maxBackoff != nil {
+		return *query.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (query *TransactionReceiptQuery) SetMinBackoff(min time.Duration) *TransactionReceiptQuery {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	query.minBackoff = &min
+	return query
+}
+
+func (query *TransactionReceiptQuery) GetMinBackoff() time.Duration {
+	if query.minBackoff != nil {
+		return *query.minBackoff
+	}
+
+	return 250 * time.Millisecond
 }
 
 func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {

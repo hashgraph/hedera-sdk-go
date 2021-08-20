@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"time"
 )
 
 type AccountInfoQuery struct {
@@ -209,4 +210,40 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	}
 
 	return accountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo)
+}
+
+func (query *AccountInfoQuery) SetMaxBackoff(max time.Duration) *AccountInfoQuery {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	query.maxBackoff = &max
+	return query
+}
+
+func (query *AccountInfoQuery) GetMaxBackoff() time.Duration {
+	if query.maxBackoff != nil {
+		return *query.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (query *AccountInfoQuery) SetMinBackoff(min time.Duration) *AccountInfoQuery {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	query.minBackoff = &min
+	return query
+}
+
+func (query *AccountInfoQuery) GetMinBackoff() time.Duration {
+	if query.minBackoff != nil {
+		return *query.minBackoff
+	}
+
+	return 250 * time.Millisecond
 }

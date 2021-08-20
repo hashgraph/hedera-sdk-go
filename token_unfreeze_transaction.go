@@ -345,3 +345,39 @@ func (transaction *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, s
 	transaction.Transaction.AddSignature(publicKey, signature)
 	return transaction
 }
+
+func (transaction *TokenUnfreezeTransaction) SetMaxBackoff(max time.Duration) *TokenUnfreezeTransaction {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	transaction.maxBackoff = &max
+	return transaction
+}
+
+func (transaction *TokenUnfreezeTransaction) GetMaxBackoff() time.Duration {
+	if transaction.maxBackoff != nil {
+		return *transaction.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (transaction *TokenUnfreezeTransaction) SetMinBackoff(min time.Duration) *TokenUnfreezeTransaction {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	transaction.minBackoff = &min
+	return transaction
+}
+
+func (transaction *TokenUnfreezeTransaction) GetMinBackoff() time.Duration {
+	if transaction.minBackoff != nil {
+		return *transaction.minBackoff
+	}
+
+	return 250 * time.Millisecond
+}
