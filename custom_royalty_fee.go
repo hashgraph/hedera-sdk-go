@@ -9,6 +9,15 @@ type CustomRoyaltyFee struct {
 	FallbackFee *CustomFixedFee
 }
 
+func NewCustomRoyaltyFee() *CustomRoyaltyFee {
+	return &CustomRoyaltyFee{
+		CustomFee:   CustomFee{},
+		Numerator:   0,
+		Denominator: 0,
+		FallbackFee: nil,
+	}
+}
+
 func (fee *CustomRoyaltyFee) SetFeeCollectorAccountID(accountID AccountID) *CustomRoyaltyFee {
 	fee.FeeCollectorAccountID = &accountID
 	return fee
@@ -27,6 +36,30 @@ func (fee *CustomRoyaltyFee) SetDenominator(denominator int64) *CustomRoyaltyFee
 func (fee *CustomRoyaltyFee) SetFallbackFee(fallbackFee *CustomFixedFee) *CustomRoyaltyFee {
 	fee.FallbackFee = fallbackFee
 	return fee
+}
+
+func (fee *CustomRoyaltyFee) GetFeeCollectorAccountID() AccountID {
+	if fee.FeeCollectorAccountID != nil {
+		return *fee.FeeCollectorAccountID
+	}
+
+	return AccountID{}
+}
+
+func (fee *CustomRoyaltyFee) GetNumerator() int64 {
+	return fee.Numerator
+}
+
+func (fee *CustomRoyaltyFee) GetDenominator() int64 {
+	return fee.Denominator
+}
+
+func (fee *CustomRoyaltyFee) GetFallbackFee() CustomFixedFee {
+	if fee.FallbackFee != nil {
+		return *fee.FallbackFee
+	}
+
+	return CustomFixedFee{}
 }
 
 func customRoyaltyFeeFromProtobuf(royalty *proto.RoyaltyFee, fee CustomFee) CustomRoyaltyFee {

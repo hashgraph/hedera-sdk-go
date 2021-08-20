@@ -36,8 +36,9 @@ func customFeeFromProtobuf(customFee *proto.CustomFee) Fee {
 	return nil
 }
 
-func (fee *CustomFee) SetFeeCollectorAccountID(id AccountID) {
+func (fee *CustomFee) SetFeeCollectorAccountID(id AccountID) *CustomFee {
 	fee.FeeCollectorAccountID = &id
+	return fee
 }
 
 func (fee *CustomFee) GetFeeCollectorAccountID() AccountID {
