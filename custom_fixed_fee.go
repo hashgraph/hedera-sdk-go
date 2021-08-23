@@ -16,6 +16,14 @@ type CustomFixedFee struct {
 	DenominationTokenID *TokenID
 }
 
+func NewCustomFixedFee() *CustomFixedFee {
+	return &CustomFixedFee{
+		CustomFee:           CustomFee{},
+		Amount:              0,
+		DenominationTokenID: nil,
+	}
+}
+
 func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) CustomFixedFee {
 	id := tokenIDFromProtobuf(fixedFee.DenominatingTokenId)
 	return CustomFixedFee{
@@ -66,6 +74,15 @@ func (fee CustomFixedFee) toProtobuf() *proto.CustomFee {
 	}
 }
 
+func (fee *CustomFixedFee) SetAmount(tinybar int64) *CustomFixedFee {
+	fee.Amount = tinybar
+	return fee
+}
+
+func (fee *CustomFixedFee) GetAmount() Hbar {
+	return NewHbar(float64(fee.Amount))
+}
+
 func (fee *CustomFixedFee) SetHbarAmount(hbar Hbar) {
 	fee.Amount = int64(hbar.As(HbarUnits.Hbar))
 	fee.DenominationTokenID = nil
@@ -77,6 +94,28 @@ func (fee *CustomFixedFee) GetHbarAmount() Hbar {
 
 func (fee *CustomFixedFee) SetDenominatingTokenToSameToken() {
 	fee.DenominationTokenID = &TokenID{0, 0, 0, nil}
+}
+
+func (fee *CustomFixedFee) SetDenominatingTokenID(id TokenID) *CustomFixedFee {
+	fee.DenominationTokenID = &id
+	return fee
+}
+
+func (fee *CustomFixedFee) GetDenominatingTokenID() TokenID {
+	if fee.DenominationTokenID != nil {
+		return *fee.DenominationTokenID
+	}
+
+	return TokenID{}
+}
+
+func (fee *CustomFixedFee) SetFeeCollectorAccountID(id AccountID) *CustomFixedFee {
+	fee.FeeCollectorAccountID = &id
+	return fee
+}
+
+func (fee *CustomFixedFee) GetFeeCollectorAccountID() AccountID {
+	return *fee.FeeCollectorAccountID
 }
 
 func (fee CustomFixedFee) ToBytes() []byte {

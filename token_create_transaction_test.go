@@ -321,21 +321,15 @@ func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetCustomFees([]Fee{
-			CustomFixedFee{
-				CustomFee: CustomFee{
-					FeeCollectorAccountID: &env.OperatorID,
-				},
-				Amount: 10,
-			},
-			CustomFractionalFee{
-				CustomFee: CustomFee{
-					FeeCollectorAccountID: &env.OperatorID,
-				},
-				Numerator:     1,
-				Denominator:   20,
-				MinimumAmount: 1,
-				MaximumAmount: 10,
-			},
+			NewCustomFixedFee().
+				SetFeeCollectorAccountID(env.OperatorID).
+				SetAmount(10),
+			NewCustomFractionalFee().
+				SetFeeCollectorAccountID(env.OperatorID).
+				SetNumerator(1).
+				SetDenominator(20).
+				SetMin(1).
+				SetMax(10),
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
@@ -409,15 +403,12 @@ func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *te
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetCustomFees([]Fee{
-			CustomFractionalFee{
-				CustomFee: CustomFee{
-					FeeCollectorAccountID: &AccountID{},
-				},
-				Numerator:     1,
-				Denominator:   20,
-				MinimumAmount: 1,
-				MaximumAmount: 10,
-			},
+			NewCustomFractionalFee().
+				SetFeeCollectorAccountID(AccountID{}).
+				SetNumerator(1).
+				SetDenominator(20).
+				SetMin(1).
+				SetMax(10),
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
@@ -490,19 +481,15 @@ func TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee(t *testing.T) {
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetCustomFees([]Fee{
-			CustomRoyaltyFee{
-				CustomFee: CustomFee{
-					FeeCollectorAccountID: &env.OperatorID,
-				},
-				Numerator:   1,
-				Denominator: 20,
-				FallbackFee: &CustomFixedFee{
-					CustomFee: CustomFee{
-						FeeCollectorAccountID: &env.OperatorID,
-					},
-					Amount: 10,
-				},
-			},
+			NewCustomRoyaltyFee().
+				SetFeeCollectorAccountID(env.OperatorID).
+				SetNumerator(1).
+				SetDenominator(20).
+				SetFallbackFee(
+					NewCustomFixedFee().
+						SetFeeCollectorAccountID(env.OperatorID).
+						SetAmount(10),
+				),
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)

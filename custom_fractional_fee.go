@@ -14,6 +14,70 @@ type CustomFractionalFee struct {
 	AssessmentMethod FeeAssessmentMethod
 }
 
+func NewCustomFractionalFee() *CustomFractionalFee {
+	return &CustomFractionalFee{
+		CustomFee:        CustomFee{},
+		Numerator:        0,
+		Denominator:      0,
+		MinimumAmount:    0,
+		MaximumAmount:    0,
+		AssessmentMethod: false,
+	}
+}
+
+func (fee *CustomFractionalFee) SetFeeCollectorAccountID(id AccountID) *CustomFractionalFee {
+	fee.FeeCollectorAccountID = &id
+	return fee
+}
+
+func (fee *CustomFractionalFee) SetNumerator(numerator int64) *CustomFractionalFee {
+	fee.Numerator = numerator
+	return fee
+}
+
+func (fee *CustomFractionalFee) SetDenominator(denominator int64) *CustomFractionalFee {
+	fee.Denominator = denominator
+	return fee
+}
+
+func (fee *CustomFractionalFee) SetMin(min int64) *CustomFractionalFee {
+	fee.MinimumAmount = min
+	return fee
+}
+
+func (fee *CustomFractionalFee) SetMax(max int64) *CustomFractionalFee {
+	fee.MaximumAmount = max
+	return fee
+}
+
+func (fee *CustomFractionalFee) GetFeeCollectorAccountID() AccountID {
+	if fee.FeeCollectorAccountID != nil {
+		return *fee.FeeCollectorAccountID
+	}
+
+	return AccountID{}
+}
+
+func (fee *CustomFractionalFee) GetNumerator() int64 {
+	return fee.Numerator
+}
+
+func (fee *CustomFractionalFee) GetDenominator() int64 {
+	return fee.Denominator
+}
+
+func (fee *CustomFractionalFee) GetMin() int64 {
+	return fee.MinimumAmount
+}
+
+func (fee *CustomFractionalFee) GetMax() int64 {
+	return fee.MaximumAmount
+}
+
+func (fee *CustomFractionalFee) GetAssessmentMethod() FeeAssessmentMethod {
+	return fee.AssessmentMethod
+}
+
 func customFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee, fee CustomFee) CustomFractionalFee {
 	return CustomFractionalFee{
 		CustomFee:        fee,
