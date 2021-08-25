@@ -225,6 +225,8 @@ const (
 	StatusInsufficientSenderAccountBalanceForCustomFee       Status = 259
 	StatusSerialNumberLimitReached                           Status = 260
 	StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique    Status = 261
+	StatusNoRemainingAutoAssociations                        Status = 262
+	StatusExistingAutomaticAssociationsExceedGivenLimit      Status = 263
 )
 
 // String() returns a string representation of the status
@@ -670,6 +672,10 @@ func (status Status) String() string {
 		return "SERIAL_NUMBER_LIMIT_REACHED"
 	case StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique:
 		return "CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE"
+	case StatusNoRemainingAutoAssociations:
+		return "NO_REMAINING_AUTO_ASSOCIATIONS"
+	case StatusExistingAutomaticAssociationsExceedGivenLimit:
+		return "EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
