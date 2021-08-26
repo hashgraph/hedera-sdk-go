@@ -7,21 +7,52 @@ import (
 
 type NetworkVersionInfoQuery struct {
 	Query
-	pb *proto.NetworkGetVersionInfoQuery
 }
 
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
-	header := proto.QueryHeader{}
-	query := newQuery(true, &header)
-	pb := proto.NetworkGetVersionInfoQuery{Header: &header}
-	query.pb.Query = &proto.Query_NetworkGetVersionInfo{
-		NetworkGetVersionInfo: &pb,
+	return &NetworkVersionInfoQuery{
+		Query: newQuery(true),
+	}
+}
+
+func (query *NetworkVersionInfoQuery) queryMakeRequest() protoRequest {
+	pb := &proto.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
+			Header: &proto.QueryHeader{},
+		},
+	}
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		pb.NetworkGetVersionInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
+	}
+	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}
+}
+
+func (query *NetworkVersionInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+	pb := &proto.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
+			Header: &proto.QueryHeader{},
+		},
 	}
 
-	return &NetworkVersionInfoQuery{
-		Query: query,
-		pb:    &pb,
+	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	if err != nil {
+		return protoRequest{}, err
 	}
+
+	pb.NetworkGetVersionInfo.Header.Payment = paymentTransaction
+	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+
+	return protoRequest{
+		query: &proto.Query{
+			Query: pb,
+		},
+	}, nil
 }
 
 func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -29,14 +60,12 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+
+	protoReq, err := query.costQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-
-	query.pbHeader.Payment = paymentTransaction
-	query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
 
 	resp, err := execute(
 		client,
@@ -44,7 +73,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		networkVersionInfoQuery_shouldRetry,
-		costQuery_makeRequest,
+		protoReq,
 		costQuery_advanceRequest,
 		costQuery_getNodeAccountID,
 		networkVersionInfoQuery_getMethod,
@@ -68,7 +97,7 @@ func networkVersionInfoQuery_shouldRetry(_ request, response response) execution
 	return query_shouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func networkVersionInfoQuery_mapStatusError(_ request, response response, _ *NetworkName) error {
+func networkVersionInfoQuery_mapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 	}
@@ -128,7 +157,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 			query: &query.Query,
 		},
 		networkVersionInfoQuery_shouldRetry,
-		query_makeRequest,
+		query.queryMakeRequest(),
 		query_advanceRequest,
 		query_getNodeAccountID,
 		networkVersionInfoQuery_getMethod,

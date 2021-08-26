@@ -8,9 +8,6 @@ import (
 )
 
 type Query struct {
-	pb       *proto.Query
-	pbHeader *proto.QueryHeader
-
 	paymentTransactionID        TransactionID
 	nodeIDs                     []AccountID
 	maxQueryPayment             Hbar
@@ -27,10 +24,8 @@ type Query struct {
 	minBackoff *time.Duration
 }
 
-func newQuery(isPaymentRequired bool, queryHeader *proto.QueryHeader) Query {
+func newQuery(isPaymentRequired bool) Query {
 	return Query{
-		pb:                   &proto.Query{},
-		pbHeader:             queryHeader,
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
 		maxRetry:             10,
@@ -100,22 +95,6 @@ func query_shouldRetry(status Status) executionState {
 	}
 
 	return executionStateError
-}
-
-func query_makeRequest(request request) protoRequest {
-	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
-	}
-	request.query.pbHeader.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return protoRequest{
-		query: request.query.pb,
-	}
-}
-
-func costQuery_makeRequest(request request) protoRequest {
-	return protoRequest{
-		query: request.query.pb,
-	}
 }
 
 func query_advanceRequest(request request) {

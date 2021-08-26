@@ -9,15 +9,15 @@ import (
 
 type FileUpdateTransaction struct {
 	Transaction
-	pb     *proto.FileUpdateTransactionBody
-	fileID FileID
+	fileID         FileID
+	keys           *KeyList
+	expirationTime *time.Time
+	contents       []byte
+	memo           string
 }
 
 func NewFileUpdateTransaction() *FileUpdateTransaction {
-	pb := &proto.FileUpdateTransactionBody{}
-
 	transaction := FileUpdateTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
@@ -26,10 +26,16 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 }
 
 func fileUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileUpdateTransaction {
+	keys, _ := keyListFromProtobuf(pb.GetFileUpdate().GetKeys())
+	expiration := timeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
+
 	return FileUpdateTransaction{
-		Transaction: transaction,
-		pb:          pb.GetFileUpdate(),
-		fileID:      fileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
+		Transaction:    transaction,
+		fileID:         fileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
+		keys:           &keys,
+		expirationTime: &expiration,
+		contents:       pb.GetFileUpdate().GetContents(),
+		memo:           pb.GetFileUpdate().GetMemo().Value,
 	}
 }
 
@@ -45,64 +51,58 @@ func (transaction *FileUpdateTransaction) GetFileID() FileID {
 
 func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
-	if transaction.pb.Keys == nil {
-		transaction.pb.Keys = &proto.KeyList{Keys: []*proto.Key{}}
+	if transaction.keys == nil {
+		transaction.keys = &KeyList{keys: []Key{}}
 	}
 	keyList := NewKeyList()
 	keyList.AddAll(keys)
 
-	transaction.pb.Keys = keyList.toProtoKeyList()
+	transaction.keys = keyList
 
 	return transaction
 }
 
 func (transaction *FileUpdateTransaction) GetKeys() KeyList {
-	keys := transaction.pb.GetKeys()
-	if keys != nil {
-		keyList, err := keyListFromProtobuf(keys)
-		if err != nil {
-			return KeyList{}
-		}
-
-		return keyList
-	} else {
-		return KeyList{}
+	if transaction.keys != nil {
+		return *transaction.keys
 	}
+
+	return KeyList{}
 }
 
 func (transaction *FileUpdateTransaction) SetExpirationTime(expiration time.Time) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.ExpirationTime = timeToProtobuf(expiration)
+	transaction.expirationTime = &expiration
 	return transaction
 }
 
 func (transaction *FileUpdateTransaction) GetExpirationTime() time.Time {
-	return timeFromProtobuf(transaction.pb.ExpirationTime)
+	if transaction.expirationTime != nil {
+		return *transaction.expirationTime
+	}
+
+	return time.Time{}
 }
 
 func (transaction *FileUpdateTransaction) SetContents(contents []byte) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Contents = contents
+	transaction.contents = contents
 	return transaction
 }
 
 func (transaction *FileUpdateTransaction) GetContents() []byte {
-	return transaction.pb.Contents
+	return transaction.contents
 }
 
 func (transaction *FileUpdateTransaction) SetFileMemo(memo string) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.pb.Memo = &wrappers.StringValue{Value: memo}
+	transaction.memo = memo
 
 	return transaction
 }
 
 func (transaction *FileUpdateTransaction) GeFileMemo() string {
-	if transaction.pb.Memo != nil {
-		return transaction.pb.Memo.GetValue()
-	}
-
-	return ""
+	return transaction.memo
 }
 
 func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) error {
@@ -118,12 +118,35 @@ func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) e
 	return nil
 }
 
-func (transaction *FileUpdateTransaction) build() *FileUpdateTransaction {
+func (transaction *FileUpdateTransaction) build() *proto.TransactionBody {
+	body := &proto.FileUpdateTransactionBody{
+		Memo: &wrappers.StringValue{Value: transaction.memo},
+	}
 	if !transaction.fileID.isZero() {
-		transaction.pb.FileID = transaction.fileID.toProtobuf()
+		body.FileID = transaction.fileID.toProtobuf()
 	}
 
-	return transaction
+	if transaction.expirationTime != nil {
+		body.ExpirationTime = timeToProtobuf(*transaction.expirationTime)
+	}
+
+	if transaction.keys != nil {
+		body.Keys = transaction.keys.toProtoKeyList()
+	}
+
+	if transaction.contents != nil {
+		body.Contents = transaction.contents
+	}
+
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_FileUpdate{
+			FileUpdate: body,
+		},
+	}
 }
 
 func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
@@ -138,18 +161,30 @@ func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction
 }
 
 func (transaction *FileUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	transaction.build()
+	body := &proto.FileUpdateTransactionBody{
+		Memo: &wrappers.StringValue{Value: transaction.memo},
+	}
+	if !transaction.fileID.isZero() {
+		body.FileID = transaction.fileID.toProtobuf()
+	}
+
+	if transaction.expirationTime != nil {
+		body.ExpirationTime = timeToProtobuf(*transaction.expirationTime)
+	}
+
+	if transaction.keys != nil {
+		body.Keys = transaction.keys.toProtoKeyList()
+	}
+
+	if transaction.contents != nil {
+		body.Contents = transaction.contents
+	}
+
 	return &proto.SchedulableTransactionBody{
-		TransactionFee: transaction.pbBody.GetTransactionFee(),
-		Memo:           transaction.pbBody.GetMemo(),
+		TransactionFee: transaction.transactionFee,
+		Memo:           transaction.Transaction.memo,
 		Data: &proto.SchedulableTransactionBody_FileUpdate{
-			FileUpdate: &proto.FileUpdateTransactionBody{
-				FileID:         transaction.pb.GetFileID(),
-				ExpirationTime: transaction.pb.GetExpirationTime(),
-				Keys:           transaction.pb.GetKeys(),
-				Contents:       transaction.pb.GetContents(),
-				Memo:           transaction.pb.GetMemo(),
-			},
+			FileUpdate: body,
 		},
 	}, nil
 }
@@ -248,7 +283,9 @@ func (transaction *FileUpdateTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		fileUpdateTransaction_getMethod,
@@ -272,16 +309,6 @@ func (transaction *FileUpdateTransaction) Execute(
 	}, nil
 }
 
-func (transaction *FileUpdateTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_FileUpdate{
-		FileUpdate: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *FileUpdateTransaction) Freeze() (*FileUpdateTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -295,17 +322,12 @@ func (transaction *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdat
 	if err != nil {
 		return &FileUpdateTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *FileUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -366,11 +388,32 @@ func (transaction *FileUpdateTransaction) SetMaxRetry(count int) *FileUpdateTran
 }
 
 func (transaction *FileUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileUpdateTransaction {
-	if !transaction.IsFrozen() {
+	transaction.requireOneNodeAccountID()
+
+	if !transaction.isFrozen() {
 		transaction.Freeze()
 	}
 
-	transaction.Transaction.AddSignature(publicKey, signature)
+	if transaction.keyAlreadySigned(publicKey) {
+		return transaction
+	}
+
+	if len(transaction.signedTransactions) == 0 {
+		return transaction
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			publicKey.toSignaturePairProtobuf(signature),
+		)
+	}
+
+	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

@@ -9,15 +9,11 @@ import (
 
 type ScheduleSignTransaction struct {
 	Transaction
-	pb         *proto.ScheduleSignTransactionBody
 	scheduleID ScheduleID
 }
 
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
-	pb := &proto.ScheduleSignTransactionBody{}
-
 	transaction := ScheduleSignTransaction{
-		pb:          pb,
 		Transaction: newTransaction(),
 	}
 
@@ -29,7 +25,6 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleSignTransaction {
 	return ScheduleSignTransaction{
 		Transaction: transaction,
-		pb:          pb.GetScheduleSign(),
 		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}
 }
@@ -58,12 +53,21 @@ func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *ScheduleSignTransaction) build() *ScheduleSignTransaction {
+func (transaction *ScheduleSignTransaction) build() *proto.TransactionBody {
+	body := &proto.ScheduleSignTransactionBody{}
 	if !transaction.scheduleID.isZero() {
-		transaction.pb.ScheduleID = transaction.scheduleID.toProtobuf()
+		body.ScheduleID = transaction.scheduleID.toProtobuf()
 	}
 
-	return transaction
+	return &proto.TransactionBody{
+		TransactionFee:           transaction.transactionFee,
+		Memo:                     transaction.Transaction.memo,
+		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID.toProtobuf(),
+		Data: &proto.TransactionBody_ScheduleSign{
+			ScheduleSign: body,
+		},
+	}
 }
 
 func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
@@ -163,7 +167,9 @@ func (transaction *ScheduleSignTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		transaction_shouldRetry,
-		transaction_makeRequest,
+		transaction_makeRequest(request{
+			transaction: &transaction.Transaction,
+		}),
 		transaction_advanceRequest,
 		transaction_getNodeAccountID,
 		scheduleSignTransaction_getMethod,
@@ -187,16 +193,6 @@ func (transaction *ScheduleSignTransaction) Execute(
 	}, nil
 }
 
-func (transaction *ScheduleSignTransaction) onFreeze(
-	pbBody *proto.TransactionBody,
-) bool {
-	pbBody.Data = &proto.TransactionBody_ScheduleSign{
-		ScheduleSign: transaction.pb,
-	}
-
-	return true
-}
-
 func (transaction *ScheduleSignTransaction) Freeze() (*ScheduleSignTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
@@ -210,17 +206,12 @@ func (transaction *ScheduleSignTransaction) FreezeWith(client *Client) (*Schedul
 	if err != nil {
 		return &ScheduleSignTransaction{}, err
 	}
-	transaction.build()
-
 	if err := transaction.initTransactionID(client); err != nil {
 		return transaction, err
 	}
+	body := transaction.build()
 
-	if !transaction.onFreeze(transaction.pbBody) {
-		return transaction, nil
-	}
-
-	return transaction, transaction_freezeWith(&transaction.Transaction, client)
+	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ScheduleSignTransaction) GetMaxTransactionFee() Hbar {

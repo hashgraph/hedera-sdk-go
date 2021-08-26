@@ -114,7 +114,10 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 		Memo:           pb.Memo,
 	}
 
-	tx := Transaction{pbBody: pbBody}
+	tx := Transaction{
+		transactionFee: pb.GetTransactionFee(),
+		memo:           pb.GetMemo(),
+	}
 
 	switch pb.Data.(type) {
 	case *proto.SchedulableTransactionBody_ContractCall:
