@@ -127,7 +127,6 @@ func transactionRecordQuery_shouldRetry(request request, response response) exec
 		} else {
 			break
 		}
-		return executionStateFinished
 	default:
 		return executionStateError
 	}
