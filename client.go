@@ -26,6 +26,9 @@ type Client struct {
 	networkName           *NetworkName
 	autoValidateChecksums bool
 	maxAttempts           *int
+
+	maxBackoff time.Duration
+	minBackoff time.Duration
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -118,6 +121,8 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 		networkName:           &name,
 		autoValidateChecksums: false,
 		maxAttempts:           nil,
+		minBackoff:            250 * time.Millisecond,
+		maxBackoff:            8 * time.Second,
 	}
 
 	_ = client.SetNetwork(network)
@@ -283,6 +288,32 @@ func (client *Client) SetNetwork(network map[string]AccountID) error {
 
 func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network.network
+}
+
+func (client *Client) SetMaxBackoff(max time.Duration) {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < client.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	client.maxBackoff = max
+}
+
+func (client *Client) GetMaxBackoff() time.Duration {
+	return client.GetMaxBackoff()
+}
+
+func (client *Client) SetMinBackoff(min time.Duration) {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if client.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	client.minBackoff = min
+}
+
+func (client *Client) GetMinBackoff() time.Duration {
+	return client.minBackoff
 }
 
 func (client *Client) SetMaxAttempts(max int) {

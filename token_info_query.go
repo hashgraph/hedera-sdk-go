@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"time"
 )
 
 type TokenInfoQuery struct {
@@ -213,4 +214,40 @@ func (query *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfo
 func (query *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
+}
+
+func (query *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
+	if max.Nanoseconds() < 0 {
+		panic("maxBackoff must be a positive duration")
+	} else if max.Nanoseconds() < query.minBackoff.Nanoseconds() {
+		panic("maxBackoff must be greater than or equal to minBackoff")
+	}
+	query.maxBackoff = &max
+	return query
+}
+
+func (query *TokenInfoQuery) GetMaxBackoff() time.Duration {
+	if query.maxBackoff != nil {
+		return *query.maxBackoff
+	}
+
+	return 8 * time.Second
+}
+
+func (query *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
+	if min.Nanoseconds() < 0 {
+		panic("minBackoff must be a positive duration")
+	} else if query.maxBackoff.Nanoseconds() < min.Nanoseconds() {
+		panic("minBackoff must be less than or equal to maxBackoff")
+	}
+	query.minBackoff = &min
+	return query
+}
+
+func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
+	if query.minBackoff != nil {
+		return *query.minBackoff
+	}
+
+	return 250 * time.Millisecond
 }

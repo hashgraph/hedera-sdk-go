@@ -72,6 +72,8 @@ func execute(
 	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
 ) (intermediateResponse, error) {
 	var maxAttempts int
+	var minBackoff *time.Duration
+	var maxBackoff *time.Duration
 	if client.maxAttempts != nil {
 		maxAttempts = *client.maxAttempts
 	} else {
@@ -82,6 +84,30 @@ func execute(
 			maxAttempts = request.transaction.maxRetry
 		}
 
+	}
+
+	if request.query != nil {
+		if request.query.maxBackoff == nil {
+			maxBackoff = &client.maxBackoff
+		} else {
+			maxBackoff = request.query.maxBackoff
+		}
+		if request.query.minBackoff == nil {
+			minBackoff = &client.minBackoff
+		} else {
+			minBackoff = request.query.minBackoff
+		}
+	} else {
+		if request.transaction.maxBackoff == nil {
+			maxBackoff = &client.maxBackoff
+		} else {
+			maxBackoff = request.transaction.maxBackoff
+		}
+		if request.transaction.minBackoff == nil {
+			minBackoff = &client.minBackoff
+		} else {
+			minBackoff = request.transaction.minBackoff
+		}
 	}
 
 	var attempt int64
@@ -136,7 +162,7 @@ func execute(
 		switch retry {
 		case executionStateRetry:
 			if attempt <= int64(maxAttempts) {
-				delayForAttempt(attempt)
+				delayForAttempt(minBackoff, maxBackoff, attempt)
 				continue
 			} else {
 				errPersistent = mapStatusError(request, resp, client.networkName)
@@ -153,9 +179,9 @@ func execute(
 	return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func delayForAttempt(attempt int64) {
+func delayForAttempt(minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
 	// 0.1s, 0.2s, 0.4s, 0.8s, ...
-	ms := int64(math.Floor(50 * math.Pow(2, float64(attempt))))
+	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
 	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
 
