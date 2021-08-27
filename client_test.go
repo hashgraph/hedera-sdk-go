@@ -84,7 +84,7 @@ func TestUnitClientSetNetwork(t *testing.T) {
 	network["35.199.161.108:50211"] = AccountID{0, 0, 6, nil}
 	network["35.203.82.240:50211"] = AccountID{0, 0, 7, nil}
 
-	err := client.SetNetwork(network)
+	client, err := client.SetNetwork(network)
 	assert.NoError(t, err)
 	assert.Equal(t, 5, len(client.network.network))
 }
@@ -167,7 +167,7 @@ func TestIntegrationClientPingAllBadNetwork(t *testing.T) {
 	tempNet["in-process:name"] = val[0]
 	tempNet[keys[1]] = val[1]
 
-	err := tempClient.SetNetwork(tempNet)
+	tempClient, err := tempClient.SetNetwork(tempNet)
 	assert.NoError(t, err)
 
 	tempClient.PingAll()

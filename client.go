@@ -125,7 +125,7 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 		maxBackoff:            8 * time.Second,
 	}
 
-	_ = client.SetNetwork(network)
+	_, _ = client.SetNetwork(network)
 	client.SetMirrorNetwork(mirrorNetwork)
 
 	return &client
@@ -282,42 +282,49 @@ func (client *Client) Close() error {
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetNetwork(network map[string]AccountID) error {
-	return client.network.SetNetwork(network)
+func (client *Client) SetNetwork(network map[string]AccountID) (*Client, error) {
+	err := client.network.SetNetwork(network)
+	return client, err
 }
 
 func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network.network
 }
 
-func (client *Client) SetMaxBackoff(max time.Duration) {
+func (client *Client) SetMaxBackoff(max time.Duration) *Client {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
 	} else if max.Nanoseconds() < client.minBackoff.Nanoseconds() {
 		panic("maxBackoff must be greater than or equal to minBackoff")
 	}
 	client.maxBackoff = max
+
+	return client
 }
 
 func (client *Client) GetMaxBackoff() time.Duration {
 	return client.GetMaxBackoff()
 }
 
-func (client *Client) SetMinBackoff(min time.Duration) {
+func (client *Client) SetMinBackoff(min time.Duration) *Client {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
 	} else if client.maxBackoff.Nanoseconds() < min.Nanoseconds() {
 		panic("minBackoff must be less than or equal to maxBackoff")
 	}
 	client.minBackoff = min
+
+	return client
 }
 
 func (client *Client) GetMinBackoff() time.Duration {
 	return client.minBackoff
 }
 
-func (client *Client) SetMaxAttempts(max int) {
+func (client *Client) SetMaxAttempts(max int) *Client {
 	client.maxAttempts = &max
+
+	return client
 }
 
 func (client *Client) GetMaxAttempts() int {
@@ -328,46 +335,58 @@ func (client *Client) GetMaxAttempts() int {
 	return *client.maxAttempts
 }
 
-func (client *Client) SetMaxNodeAttempts(max int) {
+func (client *Client) SetMaxNodeAttempts(max int) *Client {
 	client.network.setMaxNodeAttempts(max)
+
+	return client
 }
 
 func (client *Client) GetMaxNodeAttempts() int {
 	return client.network.getMaxNodeAttempts()
 }
 
-func (client *Client) SetNodeWaitTime(nodeWait time.Duration) {
+func (client *Client) SetNodeWaitTime(nodeWait time.Duration) *Client {
 	client.network.setNodeWaitTime(nodeWait)
+
+	return client
 }
 
 func (client *Client) GetNodeWaitTime() time.Duration {
 	return client.network.getNodeWaitTime()
 }
 
-func (client *Client) SetMaxNodesPerTransaction(max int) {
+func (client *Client) SetMaxNodesPerTransaction(max int) *Client {
 	client.network.setMaxNodesPerTransaction(max)
+
+	return client
 }
 
 // SetNetwork replaces all nodes in the Client with a new set of nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
+func (client *Client) SetMirrorNetwork(mirrorNetwork []string) *Client {
 	client.mirrorNetwork.setNetwork(mirrorNetwork)
+
+	return client
 }
 
 func (client *Client) GetMirrorNetwork() []string {
 	return client.mirrorNetwork.network
 }
 
-func (client *Client) SetNetworkName(name NetworkName) {
+func (client *Client) SetNetworkName(name NetworkName) *Client {
 	client.networkName = &name
+
+	return client
 }
 
 func (client *Client) GetNetworkName() NetworkName {
 	return *client.networkName
 }
 
-func (client *Client) SetAutoValidateChecksums(validate bool) {
+func (client *Client) SetAutoValidateChecksums(validate bool) *Client {
 	client.autoValidateChecksums = validate
+
+	return client
 }
 
 func (client *Client) GetAutoValidateChecksums() bool {
