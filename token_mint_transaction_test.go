@@ -346,7 +346,7 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) {
 	nftID.SerialNumber = 3
 
 	_, err = NewTokenNftInfoQuery().
-		ByNftID(nftID).
+		SetNftID(nftID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.Error(t, err)

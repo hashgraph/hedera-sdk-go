@@ -327,7 +327,7 @@ func DisabledTestIntegrationNftTransferTransaction(t *testing.T) {
 	assert.NoError(t, err)
 
 	info, err := NewTokenNftInfoQuery().
-		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[0])).
+		SetNftID(tokenID.Nft(mintReceipt.SerialNumbers[0])).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -335,7 +335,7 @@ func DisabledTestIntegrationNftTransferTransaction(t *testing.T) {
 	assert.Equal(t, accountID.String(), info[0].AccountID.String())
 
 	info, err = NewTokenNftInfoQuery().
-		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[1])).
+		SetNftID(tokenID.Nft(mintReceipt.SerialNumbers[1])).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.NoError(t, err)
