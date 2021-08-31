@@ -21,7 +21,6 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
