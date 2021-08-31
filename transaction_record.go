@@ -10,18 +10,19 @@ import (
 )
 
 type TransactionRecord struct {
-	Receipt            TransactionReceipt
-	TransactionHash    []byte
-	ConsensusTimestamp time.Time
-	TransactionID      TransactionID
-	TransactionMemo    string
-	TransactionFee     Hbar
-	Transfers          []Transfer
-	TokenTransfers     map[TokenID][]TokenTransfer
-	NftTransfers       map[TokenID][]TokenNftTransfer
-	CallResult         *ContractFunctionResult
-	CallResultIsCreate bool
-	AssessedCustomFees []AssessedCustomFee
+	Receipt                    TransactionReceipt
+	TransactionHash            []byte
+	ConsensusTimestamp         time.Time
+	TransactionID              TransactionID
+	TransactionMemo            string
+	TransactionFee             Hbar
+	Transfers                  []Transfer
+	TokenTransfers             map[TokenID][]TokenTransfer
+	NftTransfers               map[TokenID][]TokenNftTransfer
+	CallResult                 *ContractFunctionResult
+	CallResultIsCreate         bool
+	AssessedCustomFees         []AssessedCustomFee
+	AutomaticTokenAssociations []TokenAssociation
 }
 
 func newTransactionRecord(
@@ -92,18 +93,24 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 		assessedCustomFees = append(assessedCustomFees, assessedCustomFeeFromProtobuf(fee))
 	}
 
+	tokenAssociation := make([]TokenAssociation, 0)
+	for _, association := range pb.AutomaticTokenAssociations {
+		tokenAssociation = append(tokenAssociation, tokenAssociationFromProtobuf(association))
+	}
+
 	txRecord := TransactionRecord{
-		Receipt:            transactionReceiptFromProtobuf(pb.Receipt),
-		TransactionHash:    pb.TransactionHash,
-		ConsensusTimestamp: timeFromProtobuf(pb.ConsensusTimestamp),
-		TransactionID:      transactionIDFromProtobuf(pb.TransactionID),
-		TransactionMemo:    pb.Memo,
-		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
-		Transfers:          accountTransfers,
-		TokenTransfers:     tokenTransfers,
-		NftTransfers:       nftTransfers,
-		CallResultIsCreate: true,
-		AssessedCustomFees: assessedCustomFees,
+		Receipt:                    transactionReceiptFromProtobuf(pb.Receipt),
+		TransactionHash:            pb.TransactionHash,
+		ConsensusTimestamp:         timeFromProtobuf(pb.ConsensusTimestamp),
+		TransactionID:              transactionIDFromProtobuf(pb.TransactionID),
+		TransactionMemo:            pb.Memo,
+		TransactionFee:             HbarFromTinybar(int64(pb.TransactionFee)),
+		Transfers:                  accountTransfers,
+		TokenTransfers:             tokenTransfers,
+		NftTransfers:               nftTransfers,
+		CallResultIsCreate:         true,
+		AssessedCustomFees:         assessedCustomFees,
+		AutomaticTokenAssociations: tokenAssociation,
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -166,6 +173,11 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		assessedCustomFees = append(assessedCustomFees, fee.toProtobuf())
 	}
 
+	tokenAssociation := make([]*proto.TokenAssociation, 0)
+	for _, association := range record.AutomaticTokenAssociations {
+		tokenAssociation = append(tokenAssociation, association.toProtobuf())
+	}
+
 	var tRecord = proto.TransactionRecord{
 		Receipt:         record.Receipt.toProtobuf(),
 		TransactionHash: record.TransactionHash,
@@ -173,12 +185,13 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 			Seconds: int64(record.ConsensusTimestamp.Second()),
 			Nanos:   int32(record.ConsensusTimestamp.Nanosecond()),
 		},
-		TransactionID:      record.TransactionID.toProtobuf(),
-		Memo:               record.TransactionMemo,
-		TransactionFee:     uint64(record.TransactionFee.AsTinybar()),
-		TransferList:       &transferList,
-		TokenTransferLists: tokenTransfers,
-		AssessedCustomFees: assessedCustomFees,
+		TransactionID:              record.TransactionID.toProtobuf(),
+		Memo:                       record.TransactionMemo,
+		TransactionFee:             uint64(record.TransactionFee.AsTinybar()),
+		TransferList:               &transferList,
+		TokenTransferLists:         tokenTransfers,
+		AssessedCustomFees:         assessedCustomFees,
+		AutomaticTokenAssociations: tokenAssociation,
 	}
 
 	var err error

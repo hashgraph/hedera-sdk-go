@@ -7,12 +7,13 @@ import (
 )
 
 type TokenRelationship struct {
-	TokenID      TokenID
-	Symbol       string
-	Balance      uint64
-	KycStatus    *bool
-	FreezeStatus *bool
-	Decimals     uint32
+	TokenID              TokenID
+	Symbol               string
+	Balance              uint64
+	KycStatus            *bool
+	FreezeStatus         *bool
+	Decimals             uint32
+	AutomaticAssociation bool
 }
 
 func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationship {
@@ -20,12 +21,13 @@ func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationshi
 		return TokenRelationship{}
 	}
 	return TokenRelationship{
-		TokenID:      tokenIDFromProtobuf(pb.GetTokenId()),
-		Symbol:       pb.Symbol,
-		Balance:      pb.Balance,
-		KycStatus:    kycStatusFromProtobuf(pb.KycStatus),
-		FreezeStatus: freezeStatusFromProtobuf(pb.FreezeStatus),
-		Decimals:     pb.Decimals,
+		TokenID:              tokenIDFromProtobuf(pb.GetTokenId()),
+		Symbol:               pb.Symbol,
+		Balance:              pb.Balance,
+		KycStatus:            kycStatusFromProtobuf(pb.KycStatus),
+		FreezeStatus:         freezeStatusFromProtobuf(pb.FreezeStatus),
+		Decimals:             pb.Decimals,
+		AutomaticAssociation: pb.AutomaticAssociation,
 	}
 }
 
@@ -51,12 +53,13 @@ func (relationship *TokenRelationship) toProtobuf() *proto.TokenRelationship {
 	}
 
 	return &proto.TokenRelationship{
-		TokenId:      relationship.TokenID.toProtobuf(),
-		Symbol:       relationship.Symbol,
-		Balance:      relationship.Balance,
-		KycStatus:    kycStatus,
-		FreezeStatus: freezeStatus,
-		Decimals:     relationship.Decimals,
+		TokenId:              relationship.TokenID.toProtobuf(),
+		Symbol:               relationship.Symbol,
+		Balance:              relationship.Balance,
+		KycStatus:            kycStatus,
+		FreezeStatus:         freezeStatus,
+		Decimals:             relationship.Decimals,
+		AutomaticAssociation: relationship.AutomaticAssociation,
 	}
 }
 

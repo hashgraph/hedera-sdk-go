@@ -374,7 +374,7 @@ func TestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *testing.T
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(2)
+	newBalance := NewHbar(10)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -457,8 +457,8 @@ func TestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *testing.T
 
 	transferTx, err := NewTransferTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		AddTokenTransfer(tokenID, accountID, -10).
-		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), 10).
+		AddTokenTransfer(tokenID, accountID, -1).
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), 1).
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 

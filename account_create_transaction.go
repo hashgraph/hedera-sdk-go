@@ -16,14 +16,15 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
 	Transaction
-	proxyAccountID            AccountID
-	key                       Key
-	initialBalance            uint64
-	receiveRecordThreshold    uint64
-	sendRecordThreshold       uint64
-	autoRenewPeriod           *time.Duration
-	memo                      string
-	receiverSignatureRequired bool
+	proxyAccountID                AccountID
+	key                           Key
+	initialBalance                uint64
+	receiveRecordThreshold        uint64
+	sendRecordThreshold           uint64
+	autoRenewPeriod               *time.Duration
+	memo                          string
+	receiverSignatureRequired     bool
+	maxAutomaticTokenAssociations uint32
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
@@ -82,6 +83,16 @@ func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hb
 
 func (transaction *AccountCreateTransaction) GetInitialBalance() Hbar {
 	return HbarFromTinybar(int64(transaction.initialBalance))
+}
+
+func (transaction *AccountCreateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountCreateTransaction {
+	transaction.requireNotFrozen()
+	transaction.maxAutomaticTokenAssociations = max
+	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
+	return transaction.maxAutomaticTokenAssociations
 }
 
 // SetAutoRenewPeriod sets the time duration for when account is charged to extend its expiration date. When the account
@@ -165,11 +176,12 @@ func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client
 
 func (transaction *AccountCreateTransaction) build() *proto.TransactionBody {
 	body := &proto.CryptoCreateTransactionBody{
-		InitialBalance:         transaction.initialBalance,
-		SendRecordThreshold:    transaction.receiveRecordThreshold,
-		ReceiveRecordThreshold: transaction.sendRecordThreshold,
-		ReceiverSigRequired:    transaction.receiverSignatureRequired,
-		Memo:                   transaction.memo,
+		InitialBalance:                transaction.initialBalance,
+		SendRecordThreshold:           transaction.receiveRecordThreshold,
+		ReceiveRecordThreshold:        transaction.sendRecordThreshold,
+		ReceiverSigRequired:           transaction.receiverSignatureRequired,
+		Memo:                          transaction.memo,
+		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
 	}
 
 	if transaction.key != nil {
