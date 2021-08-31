@@ -303,5 +303,47 @@ func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *test
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+}
+
+func DisabledTestIntegrationTokenBurnTransactionInvalidMetadata(t *testing.T) { // nolint
+	env := NewIntegrationTestEnv(t)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetMaxSupply(20).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	resp, err = NewTokenBurnTransaction().
+		SetAmount(1).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: INVALID_TOKEN_BURN_METADATA", err.Error())
+	}
 }

@@ -95,8 +95,9 @@ func (fee *CustomFixedFee) GetHbarAmount() Hbar {
 	return NewHbar(float64(fee.Amount))
 }
 
-func (fee *CustomFixedFee) SetDenominatingTokenToSameToken() {
+func (fee *CustomFixedFee) SetDenominatingTokenToSameToken() *CustomFixedFee {
 	fee.DenominationTokenID = &TokenID{0, 0, 0, nil}
+	return fee
 }
 
 func (fee *CustomFixedFee) SetDenominatingTokenID(id TokenID) *CustomFixedFee {

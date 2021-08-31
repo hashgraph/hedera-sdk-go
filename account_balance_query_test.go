@@ -124,7 +124,7 @@ func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(10000)).
 		SetQueryPayment(NewHbar(0)).
 		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetAccountID(env.Client.GetOperatorAccountID())
+		SetAccountID(env.OperatorID)
 
 	cost, err := balance.GetCost(env.Client)
 	assert.NoError(t, err)

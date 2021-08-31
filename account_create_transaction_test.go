@@ -7,6 +7,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	tx, err := NewAccountDeleteTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(accountID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		SetTransactionID(TransactionIDGenerate(accountID)).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = tx.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
+}
+
 func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

@@ -352,3 +352,46 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { 
 		Execute(env.Client)
 	assert.Error(t, err)
 }
+
+func DisabledTestIntegrationTokenMintTransactionInvalidMetadata(t *testing.T) { // nolint
+	env := NewIntegrationTestEnv(t)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetMaxSupply(20).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	mint, err := NewTokenMintTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		SetAmount(1).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = mint.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: INVALID_TOKEN_MINT_METADATA", err.Error())
+	}
+}

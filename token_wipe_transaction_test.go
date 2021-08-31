@@ -656,7 +656,7 @@ func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) { /
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	mintReceipt, err := mint.GetReceipt(env.Client)
+	_, err = mint.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	newKey, err := GeneratePrivateKey()
@@ -698,13 +698,18 @@ func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) { /
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
-	resp, err = NewTokenWipeTransaction().
-		SetTokenID(tokenID).
+	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
-		SetSerialNumbers(mintReceipt.SerialNumbers).
-		Execute(env.Client)
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTransactionID(TransactionIDGenerate(accountID)).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	tx = tx.Sign(newKey)
+
+	resp, err = tx.Execute(env.Client)
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
