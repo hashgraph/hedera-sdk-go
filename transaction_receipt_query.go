@@ -92,7 +92,7 @@ func (query *TransactionReceiptQuery) costQueryMakeRequest(client *Client) (prot
 }
 
 func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return Hbar{}, errNoClientProvided
 	}
 

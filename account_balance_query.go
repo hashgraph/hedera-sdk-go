@@ -175,7 +175,7 @@ func accountBalanceQuery_getMethod(_ request, channel *channel) method {
 }
 
 func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return AccountBalance{}, errNoClientProvided
 	}
 

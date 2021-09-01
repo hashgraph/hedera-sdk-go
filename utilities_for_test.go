@@ -221,40 +221,42 @@ func newTestClient(t *testing.T, token bool) *Client {
 	return client
 }
 
-func TestTls(t *testing.T) {
-	var env IntegrationTestEnv
-	var err error
-
-	env.Client = ClientForPreviewnet()
-
-	configOperatorID := os.Getenv("OPERATOR_ID")
-	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-	if configOperatorID != "" && configOperatorKey != "" {
-		env.OperatorID, err = AccountIDFromString(configOperatorID)
-		assert.NoError(t, err)
-
-		env.OperatorID.setNetworkWithClient(env.Client)
-
-		env.OperatorKey, err = PrivateKeyFromString(configOperatorKey)
-		assert.NoError(t, err)
-
-		env.Client.SetOperator(env.OperatorID, env.OperatorKey)
+func TestIntegrationPreviewnetTls(t *testing.T) {
+	var network = map[string]AccountID{
+		"0.previewnet.hedera.com:50212": {Account: 3},
+		"1.previewnet.hedera.com:50212": {Account: 4},
+		"2.previewnet.hedera.com:50212": {Account: 5},
+		"3.previewnet.hedera.com:50212": {Account: 6},
+		"4.previewnet.hedera.com:50212": {Account: 7},
 	}
 
-	assert.NotNil(t, env.Client.GetOperatorAccountID())
-	assert.NotNil(t, env.Client.GetOperatorPublicKey())
+	client := ClientForNetwork(network)
 
-	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	for _, nodeAccountID := range network {
+		_, err := NewAccountBalanceQuery().
+			SetNodeAccountIDs([]AccountID{nodeAccountID}).
+			SetAccountID(nodeAccountID).
+			Execute(client)
+		assert.NoError(t, err)
+	}
+}
 
-	resp, err := NewAccountCreateTransaction().
-		SetKey(newKey.PublicKey()).
-		SetInitialBalance(NewHbar(30)).
-		SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
-		Execute(env.Client)
-	assert.NoError(t, err)
+func TestIntegrationTestnetTls(t *testing.T) {
+	var network = map[string]AccountID{
+		"0.testnet.hedera.com:50212": {Account: 3},
+		"1.testnet.hedera.com:50212": {Account: 4},
+		"2.testnet.hedera.com:50212": {Account: 5},
+		"3.testnet.hedera.com:50212": {Account: 6},
+		"4.testnet.hedera.com:50212": {Account: 7},
+	}
 
-	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	client := ClientForNetwork(network)
+
+	for _, nodeAccountID := range network {
+		_, err := NewAccountBalanceQuery().
+			SetNodeAccountIDs([]AccountID{nodeAccountID}).
+			SetAccountID(nodeAccountID).
+			Execute(client)
+		assert.NoError(t, err)
+	}
 }
