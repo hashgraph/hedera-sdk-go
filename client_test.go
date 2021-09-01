@@ -145,7 +145,7 @@ func TestIntegrationClientPingAllGoodNetwork(t *testing.T) {
 func TestIntegrationClientPingAllBadNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	tempClient := newClient(env.Client.GetNetwork(), env.Client.GetMirrorNetwork(), *env.Client.networkName)
+	tempClient := newClient(env.Client.GetNetwork(), env.Client.GetMirrorNetwork(), *env.Client.network.networkName)
 	tempClient.SetOperator(env.OperatorID, env.OperatorKey)
 
 	tempClient.SetMaxNodeAttempts(1)

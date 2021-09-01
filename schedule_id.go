@@ -32,8 +32,8 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 }
 
 func (id *ScheduleID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+	if !id.isZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 		if err != nil {
 			return err
 		}
@@ -54,8 +54,8 @@ func (id *ScheduleID) Validate(client *Client) error {
 }
 
 func (id *ScheduleID) setNetworkWithClient(client *Client) {
-	if client.networkName != nil {
-		id.setNetwork(*client.networkName)
+	if client.network.networkName != nil {
+		id.setNetwork(*client.network.networkName)
 	}
 }
 
@@ -71,10 +71,10 @@ func (id ScheduleID) String() string {
 }
 
 func (id ScheduleID) ToStringWithChecksum(client Client) (string, error) {
-	if client.networkName == nil {
+	if client.network.networkName == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+	checksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 	if err != nil {
 		return "", err
 	}

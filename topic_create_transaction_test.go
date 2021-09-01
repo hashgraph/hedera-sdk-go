@@ -154,7 +154,7 @@ func TestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
 
 	newClient := Client{}
 	networkName := NetworkNameMainnet
-	newClient.networkName = &networkName
+	newClient.network.networkName = &networkName
 	topicID.setNetworkWithClient(&newClient)
 
 	_, err = NewTopicInfoQuery().

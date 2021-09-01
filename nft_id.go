@@ -38,7 +38,7 @@ func NftIDFromString(s string) (NftID, error) {
 }
 
 func (id *NftID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.networkName != nil {
+	if !id.isZero() && client != nil && client.network.networkName != nil {
 		return id.TokenID.Validate(client)
 	}
 
@@ -46,8 +46,8 @@ func (id *NftID) Validate(client *Client) error {
 }
 
 func (id *NftID) setNetworkWithClient(client *Client) {
-	if client.networkName != nil {
-		id.setNetwork(*client.networkName)
+	if client.network.networkName != nil {
+		id.setNetwork(*client.network.networkName)
 	}
 }
 

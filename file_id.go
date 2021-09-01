@@ -46,8 +46,8 @@ func FileIDFromString(data string) (FileID, error) {
 }
 
 func (id *FileID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+	if !id.isZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
 		if err != nil {
 			return err
 		}
@@ -68,8 +68,8 @@ func (id *FileID) Validate(client *Client) error {
 }
 
 func (id *FileID) setNetworkWithClient(client *Client) {
-	if client.networkName != nil {
-		id.setNetwork(*client.networkName)
+	if client.network.networkName != nil {
+		id.setNetwork(*client.network.networkName)
 	}
 }
 
@@ -100,10 +100,10 @@ func (id FileID) String() string {
 }
 
 func (id FileID) ToStringWithChecksum(client Client) (string, error) {
-	if client.networkName == nil {
+	if client.network.networkName == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+	checksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
 	if err != nil {
 		return "", err
 	}

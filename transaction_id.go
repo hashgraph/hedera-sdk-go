@@ -193,8 +193,8 @@ func (id TransactionID) transactionIDvalidateNetworkOnIDs(client *Client) error 
 	if client == nil {
 		return nil
 	}
-	if !id.AccountID.isZero() && client != nil && client.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.AccountID.Shard, id.AccountID.Realm, id.AccountID.Account))
+	if !id.AccountID.isZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.AccountID.Shard, id.AccountID.Realm, id.AccountID.Account))
 		if err != nil {
 			return err
 		}

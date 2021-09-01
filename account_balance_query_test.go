@@ -9,13 +9,11 @@ import (
 func TestIntegrationAccountBalanceQuery(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	balance, err := NewAccountBalanceQuery().
+	_, err := NewAccountBalanceQuery().
 		SetAccountID(env.OriginalOperatorID).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 	assert.NoError(t, err)
-
-	println(balance.Hbars.String())
 
 	_, err = NewAccountBalanceQuery().
 		SetAccountID(env.OperatorID).

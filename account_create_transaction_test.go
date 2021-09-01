@@ -246,7 +246,7 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 
 	newClient := Client{}
 	networkName := NetworkNameMainnet
-	newClient.networkName = &networkName
+	newClient.network.networkName = &networkName
 	accountID.setNetworkWithClient(&newClient)
 
 	_, err = NewAccountDeleteTransaction().
