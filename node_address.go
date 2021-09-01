@@ -71,8 +71,8 @@ func (nodeAdd *nodeAddress) toProtobuf() *proto.NodeAddress {
 
 func (nodeAdd nodeAddress) String() string {
 	addresses := ""
-	for _, k := range nodeAdd.addresses{
+	for _, k := range nodeAdd.addresses {
 		addresses = addresses + k.String()
 	}
-	return nodeAdd.accountID.String() +  " " + addresses + "\n" + "certHash " + string(nodeAdd.certHash)
+	return nodeAdd.accountID.String() + " " + addresses + "\n" + "certHash " + string(nodeAdd.certHash)
 }

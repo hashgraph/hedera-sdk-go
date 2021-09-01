@@ -35,15 +35,15 @@ type nodes struct {
 
 func newNode(accountID AccountID, address string, waitTime int64) node {
 	return node{
-		accountID:  accountID,
-		address:    address,
-		delay:      250,
-		lastUsed:   time.Now().UTC().UnixNano(),
-		delayUntil: time.Now().UTC().UnixNano(),
-		useCount:   0,
-		channel:    nil,
-		waitTime:   waitTime,
-		attempts:   0,
+		accountID:   accountID,
+		address:     address,
+		delay:       250,
+		lastUsed:    time.Now().UTC().UnixNano(),
+		delayUntil:  time.Now().UTC().UnixNano(),
+		useCount:    0,
+		channel:     nil,
+		waitTime:    waitTime,
+		attempts:    0,
 		addressBook: nil,
 	}
 }

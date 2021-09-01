@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-
 func TestIntegrationFileInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
