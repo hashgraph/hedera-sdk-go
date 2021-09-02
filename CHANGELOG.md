@@ -1,3 +1,19 @@
+## v2.1.16
+
+### Added
+
+ * Support for TLS
+ * Setters which follow the builder pattern to `Custom*Fee`
+ * `Client.[min|max]Backoff()` support
+
+### Deprecated
+
+ * `TokenNftInfoQuery.ByNftID()` - use `TokenNftInfoQuery.SetNftID()` instead
+ * `TokenNftInfoQuery.[By|Set|Get]AccountId()` with no replacement
+ * `TokenNftInfoQuery.[By|Set|Get]TokenId()` with no replacement
+ * `TokenNftInfoQuery.[Set|Get]Start()` with no replacement
+ * `TokenNftInfoQuery.[Set|Get]End()` with no replacement
+
 ## v2.1.15
 
 ### Fixed
