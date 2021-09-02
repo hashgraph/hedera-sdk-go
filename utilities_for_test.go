@@ -39,11 +39,13 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		network["127.0.0.1:50215"] = AccountID{Account: 5}
 
 		env.Client = ClientForNetwork(network)
+	} else if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+		env.Client = ClientForTestnet()
 	} else {
 		env.Client, err = ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
 
 		if err != nil {
-			env.Client = ClientForTestnet()
+			panic(err)
 		}
 	}
 
