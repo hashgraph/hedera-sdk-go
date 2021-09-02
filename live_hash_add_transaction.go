@@ -9,7 +9,7 @@ import (
 
 type LiveHashAddTransaction struct {
 	Transaction
-	accountID AccountID
+	accountID *AccountID
 	hash      []byte
 	keys      *KeyList
 	duration  *time.Duration
@@ -82,23 +82,26 @@ func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
 	return time.Duration(0)
 }
 
-func (transaction *LiveHashAddTransaction) SetAccountID(id AccountID) *LiveHashAddTransaction {
+func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
 	transaction.requireNotFrozen()
-	transaction.accountID = id
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.accountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -141,12 +144,7 @@ func (transaction *LiveHashAddTransaction) constructScheduleProtobuf() (*proto.S
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func liveHashAddTransaction_getMethod(request request, channel *channel) method {
+func _LiveHashAddTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().AddLiveHash,
 	}
@@ -190,10 +188,6 @@ func (transaction *LiveHashAddTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *LiveHashAddTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -234,15 +228,15 @@ func (transaction *LiveHashAddTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		liveHashAddTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_LiveHashAddTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -253,6 +247,9 @@ func (transaction *LiveHashAddTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -279,7 +276,7 @@ func (transaction *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHash
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *LiveHashAddTransaction) GetMaxTransactionFee() Hbar {
@@ -342,10 +339,6 @@ func (transaction *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTr
 func (transaction *LiveHashAddTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashAddTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -365,7 +358,6 @@ func (transaction *LiveHashAddTransaction) AddSignature(publicKey PublicKey, sig
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

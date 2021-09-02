@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
@@ -46,7 +47,7 @@ func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("transaction is immutable; it has at least one signature or has been explicitly frozen"), err.Error())
+		assert.Equal(t, "transaction is immutable; it has at least one signature or has been explicitly frozen", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -99,8 +100,7 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	tx2, err := TransactionFromBytes(updateBytes)
 	assert.NoError(t, err)
 
-	switch newTx := tx2.(type) {
-	case AccountDeleteTransaction:
+	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		assert.NoError(t, err)
 	}

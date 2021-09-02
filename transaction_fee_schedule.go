@@ -2,22 +2,16 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TransactionFeeSchedule struct {
 	RequestType RequestType
-	//Deprecated use Fees
+	// Deprecated use Fees
 	FeeData *FeeData
 	Fees    []*FeeData
-}
-
-func newTransactionFeeSchedule() TransactionFeeSchedule {
-	return TransactionFeeSchedule{
-		RequestType: RequestTypeNone,
-		FeeData:     nil,
-	}
 }
 
 func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSchedule) (TransactionFeeSchedule, error) {
@@ -35,7 +29,7 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 		feeData = append(feeData, &temp)
 	}
 
-	singleFeeData, err := feeDataFromProtobuf(txFeeSchedule.GetFeeData())
+	singleFeeData, err := feeDataFromProtobuf(txFeeSchedule.GetFeeData()) // nolint
 	if err != nil {
 		return TransactionFeeSchedule{}, err
 	}
@@ -76,24 +70,6 @@ func (txFeeSchedule TransactionFeeSchedule) ToBytes() []byte {
 	return data
 }
 
-func transactionFeeScheduleFromBytes(data []byte) (TransactionFeeSchedule, error) {
-	if data == nil {
-		return TransactionFeeSchedule{}, errByteArrayNull
-	}
-	pb := proto.TransactionFeeSchedule{}
-	err := protobuf.Unmarshal(data, &pb)
-	if err != nil {
-		return TransactionFeeSchedule{}, err
-	}
-
-	info, err := transactionFeeScheduleFromProtobuf(&pb)
-	if err != nil {
-		return TransactionFeeSchedule{}, err
-	}
-
-	return info, nil
-}
-
 func (txFeeSchedule TransactionFeeSchedule) String() string {
 	str := ""
 	for _, dat := range txFeeSchedule.Fees {
@@ -102,7 +78,7 @@ func (txFeeSchedule TransactionFeeSchedule) String() string {
 
 	if txFeeSchedule.FeeData != nil {
 		return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), txFeeSchedule.FeeData.String())
-	} else {
-		return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), str)
 	}
+
+	return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), str)
 }

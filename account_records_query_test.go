@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationAccountRecordQueryCanExecute(t *testing.T) {
@@ -163,7 +163,7 @@ func TestIntegrationAccountRecordQuerySetSmallMaxPayment(t *testing.T) {
 
 	recordsQuery, err := records.Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
+		assert.Equal(t, "cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
 
 	assert.Equal(t, 1, len(recordsQuery))
@@ -206,7 +206,7 @@ func TestIntegrationAccountRecordQueryInsufficientFee(t *testing.T) {
 
 	recordsQuery, err := records.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
 
 	assert.Equal(t, 1, len(recordsQuery))
@@ -223,7 +223,7 @@ func TestIntegrationAccountRecordQueryNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID"), err.Error())
+		assert.Equal(t, "exceptional precheck status INVALID_ACCOUNT_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

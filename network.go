@@ -132,7 +132,7 @@ func readAddressBookResource(ad string) map[AccountID]nodeAddress {
 		panic(err)
 	}
 
-	resultMap := make(map[AccountID]nodeAddress, 0)
+	resultMap := make(map[AccountID]nodeAddress)
 	for _, nodeAd := range nodeAB.nodeAddresses {
 		if nodeAd.accountID == nil {
 			continue

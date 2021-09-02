@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
@@ -88,7 +89,7 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token grant kyc transaction failed"))
+	assert.Truef(t, check, "token grant kyc transaction failed")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -341,7 +342,7 @@ func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
-	assert.Equal(t, fmt.Sprintf("exceptional receipt status: TOKEN_HAS_NO_KYC_KEY"), err.Error())
+	assert.Equal(t, "exceptional receipt status: TOKEN_HAS_NO_KYC_KEY", err.Error())
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -357,7 +358,7 @@ func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 			}
 		}
 	}
-	assert.Falsef(t, check, fmt.Sprintf("token grant kyc transaction passed"))
+	assert.Falsef(t, check, "token grant kyc transaction passed")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

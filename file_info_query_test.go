@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationFileInfoQueryCanExecute(t *testing.T) {
@@ -170,7 +170,7 @@ func TestIntegrationFileInfoQuerySetSmallMaxPayment(t *testing.T) {
 
 	_, err = fileInfo.Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of FileInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
+		assert.Equal(t, "cost of FileInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().
@@ -214,7 +214,7 @@ func TestIntegrationFileInfoQueryInsufficientFee(t *testing.T) {
 
 	_, err = fileInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
 
 	resp, err = NewFileDeleteTransaction().
@@ -239,7 +239,7 @@ func TestIntegrationFileInfoQueryNoFileID(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, "exceptional precheck status INVALID_FILE_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

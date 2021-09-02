@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
@@ -186,7 +186,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKe(t *testing.
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprint("exceptional receipt status: TOKEN_HAS_NO_FEE_SCHEDULE_KEY"), err.Error())
+		assert.Equal(t, "exceptional receipt status: TOKEN_HAS_NO_FEE_SCHEDULE_KEY", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)

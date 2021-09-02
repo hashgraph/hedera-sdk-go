@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/wrappers"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -109,9 +110,8 @@ func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) e
 	if client == nil {
 		return nil
 	}
-	var err error
-	err = transaction.fileID.Validate(client)
-	if err != nil {
+
+	if err := transaction.fileID.Validate(client); err != nil {
 		return err
 	}
 
@@ -189,12 +189,7 @@ func (transaction *FileUpdateTransaction) constructScheduleProtobuf() (*proto.Sc
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func fileUpdateTransaction_getMethod(request request, channel *channel) method {
+func _FileUpdateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getFile().UpdateFile,
 	}
@@ -238,10 +233,6 @@ func (transaction *FileUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileUpdateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -282,15 +273,15 @@ func (transaction *FileUpdateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		fileUpdateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_FileUpdateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -301,6 +292,9 @@ func (transaction *FileUpdateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -327,7 +321,7 @@ func (transaction *FileUpdateTransaction) FreezeWith(client *Client) (*FileUpdat
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *FileUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -390,10 +384,6 @@ func (transaction *FileUpdateTransaction) SetMaxRetry(count int) *FileUpdateTran
 func (transaction *FileUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileUpdateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -413,7 +403,6 @@ func (transaction *FileUpdateTransaction) AddSignature(publicKey PublicKey, sign
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

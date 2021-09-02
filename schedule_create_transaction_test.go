@@ -1,13 +1,13 @@
 package hedera
 
 //
-//import (
+// import (
 //	"fmt"
 //	"github.com/stretchr/testify/assert"
 //	"testing"
 //)
 //
-//func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	newKey, err := GeneratePrivateKey()
@@ -63,11 +63,11 @@ package hedera
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
-//		assert.Equal(t, fmt.Sprintf("exceptional receipt status: SCHEDULE_ALREADY_EXECUTED"), err.Error())
+//		assert.Equal(t, "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED", err.Error())
 //	}
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionMultiSign(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionMultiSign(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	keys := make([]PrivateKey, 3)
@@ -148,7 +148,7 @@ package hedera
 //	assert.False(t, info2.ExecutedAt.IsZero())
 //}
 //
-//func DisabledTestIntegrationScheduleDeleteTransactionCanExecute(t *testing.T) {
+// func DisabledTestIntegrationScheduleDeleteTransactionCanExecute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	key, err := GeneratePrivateKey()
@@ -221,7 +221,7 @@ package hedera
 //	assert.False(t, info2.DeletedAt.IsZero())
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionCheckValidGetTransaction(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionCheckValidGetTransaction(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	newKey, err := GeneratePrivateKey()
@@ -283,11 +283,11 @@ package hedera
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
-//		assert.Equal(t, fmt.Sprintf("exceptional receipt status: SCHEDULE_ALREADY_EXECUTED"), err.Error())
+//		assert.Equal(t, "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED", err.Error())
 //	}
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionDuplicateFails(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionDuplicateFails(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	key, err := GeneratePrivateKey()
@@ -334,7 +334,7 @@ package hedera
 //	}
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionWithTransferTransaction(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionWithTransferTransaction(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	key, err := GeneratePrivateKey()
@@ -397,7 +397,7 @@ package hedera
 //	assert.NoError(t, err)
 //}
 //
-//func DisabledTestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
+// func DisabledTestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	keys := make([]PrivateKey, 3)
@@ -554,7 +554,7 @@ package hedera
 //	assert.NoError(t, err)
 //}
 //
-//func DisabledTestIntegrationScheduledTokenNftTransferTransactionSigned(t *testing.T) {
+// func DisabledTestIntegrationScheduledTokenNftTransferTransactionSigned(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	keys := make([]PrivateKey, 3)

@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // FileContentsQuery retrieves the contents of a file.
@@ -33,9 +34,8 @@ func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.fileID.Validate(client)
-	if err != nil {
+
+	if err := query.fileID.Validate(client); err != nil {
 		return err
 	}
 
@@ -72,7 +72,7 @@ func (query *FileContentsQuery) queryMakeRequest() protoRequest {
 func (query *FileContentsQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -109,13 +109,13 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		fileContentsQuery_shouldRetry,
+		_FileContentsQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		fileContentsQuery_getMethod,
-		fileContentsQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_FileContentsQueryGetMethod,
+		_FileContentsQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -126,17 +126,17 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func fileContentsQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode))
+func _FileContentsQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode))
 }
 
-func fileContentsQuery_mapStatusError(_ request, response response) error {
+func _FileContentsQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func fileContentsQuery_getMethod(_ request, channel *channel) method {
+func _FileContentsQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getFile().GetFileContent,
 	}
@@ -186,7 +186,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -196,13 +196,13 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		request{
 			query: &query.Query,
 		},
-		fileContentsQuery_shouldRetry,
+		_FileContentsQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		fileContentsQuery_getMethod,
-		fileContentsQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_FileContentsQueryGetMethod,
+		_FileContentsQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

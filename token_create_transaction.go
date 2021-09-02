@@ -25,8 +25,8 @@ import (
 // updated. If a token is created as immutable, anyone is able to extend the expiry time by paying the fee.
 type TokenCreateTransaction struct {
 	Transaction
-	treasuryAccountID  AccountID
-	autoRenewAccountID AccountID
+	treasuryAccountID  *AccountID
+	autoRenewAccountID *AccountID
 	customFees         []Fee
 	tokenName          string
 	memo               string
@@ -177,14 +177,18 @@ func (transaction *TokenCreateTransaction) GetMaxSupply() int64 {
 }
 
 // The account which will act as a treasury for the token. This account will receive the specified initial supply
-func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasury AccountID) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.treasuryAccountID = treasury
+	transaction.treasuryAccountID = &treasuryAccountID
 	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
-	return transaction.treasuryAccountID
+	if transaction.treasuryAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.treasuryAccountID
 }
 
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
@@ -255,14 +259,12 @@ func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) 
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.treasuryAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.treasuryAccountID.Validate(client); err != nil {
 		return err
 	}
 
-	err = transaction.autoRenewAccountID.Validate(client)
-	if err != nil {
+	if err := transaction.autoRenewAccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -467,21 +469,25 @@ func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time
 
 func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
 	if transaction.expirationTime != nil {
-		return time.Unix(transaction.expirationTime.Unix(), int64(transaction.expirationTime.UnixNano()))
+		return time.Unix(transaction.expirationTime.Unix(), transaction.expirationTime.UnixNano())
 	}
 
 	return time.Time{}
 }
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
-func (transaction *TokenCreateTransaction) SetAutoRenewAccount(id AccountID) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *TokenCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.autoRenewAccountID = id
+	transaction.autoRenewAccountID = &autoRenewAccountID
 	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
-	return transaction.autoRenewAccountID
+	if transaction.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.autoRenewAccountID
 }
 
 // The interval at which the auto-renew account will be charged to extend the token's expiry
@@ -499,12 +505,7 @@ func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
 	return time.Duration(0)
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenCreateTransaction_getMethod(request request, channel *channel) method {
+func _TokenCreateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().CreateToken,
 	}
@@ -548,10 +549,6 @@ func (transaction *TokenCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenCreateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -592,15 +589,15 @@ func (transaction *TokenCreateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenCreateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenCreateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -611,6 +608,9 @@ func (transaction *TokenCreateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -641,7 +641,7 @@ func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCre
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -704,10 +704,6 @@ func (transaction *TokenCreateTransaction) SetMaxRetry(count int) *TokenCreateTr
 func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCreateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -727,7 +723,6 @@ func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, sig
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

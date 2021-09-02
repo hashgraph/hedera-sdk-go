@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
@@ -162,7 +163,7 @@ func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_SIGNATURE"), err.Error())
+		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

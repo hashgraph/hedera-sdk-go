@@ -2,21 +2,15 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type FeeSchedule struct {
 	TransactionFeeSchedules []TransactionFeeSchedule
 	ExpirationTime          *time.Time
-}
-
-func newFeeSchedule() FeeSchedule {
-	return FeeSchedule{
-		TransactionFeeSchedules: nil,
-		ExpirationTime:          nil,
-	}
 }
 
 func feeScheduleFromProtobuf(feeSchedule *proto.FeeSchedule) (FeeSchedule, error) {

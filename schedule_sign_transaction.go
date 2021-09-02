@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -44,9 +45,8 @@ func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client)
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.scheduleID.Validate(client)
-	if err != nil {
+
+	if err := transaction.scheduleID.Validate(client); err != nil {
 		return err
 	}
 
@@ -74,12 +74,7 @@ func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*proto.
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func scheduleSignTransaction_getMethod(request request, channel *channel) method {
+func _ScheduleSignTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getSchedule().SignSchedule,
 	}
@@ -122,10 +117,6 @@ func (transaction *ScheduleSignTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ScheduleSignTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -166,15 +157,15 @@ func (transaction *ScheduleSignTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		scheduleSignTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ScheduleSignTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -185,6 +176,9 @@ func (transaction *ScheduleSignTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -211,7 +205,7 @@ func (transaction *ScheduleSignTransaction) FreezeWith(client *Client) (*Schedul
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ScheduleSignTransaction) GetMaxTransactionFee() Hbar {

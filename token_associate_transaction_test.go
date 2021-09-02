@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
@@ -77,7 +78,7 @@ func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
 			check = true
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token associate transaction didnt work"))
+	assert.Truef(t, check, "token associate transaction didnt work")
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
@@ -172,7 +173,7 @@ func TestIntegrationTokenAssociateTransactionNoTokenID(t *testing.T) {
 			check = true
 		}
 	}
-	assert.Falsef(t, check, fmt.Sprintf("token associate transaction somehow worked"))
+	assert.Falsef(t, check, "token associate transaction somehow worked")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

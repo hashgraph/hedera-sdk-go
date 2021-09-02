@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type NetworkVersionInfoQuery struct {
@@ -40,7 +41,7 @@ func (query *NetworkVersionInfoQuery) costQueryMakeRequest(client *Client) (prot
 		},
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -72,13 +73,13 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		networkVersionInfoQuery_shouldRetry,
+		_NetworkVersionInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		networkVersionInfoQuery_getMethod,
-		networkVersionInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_NetworkVersionInfoQueryGetMethod,
+		_NetworkVersionInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -88,22 +89,21 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetNetworkGetVersionInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func networkVersionInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+func _NetworkVersionInfoQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func networkVersionInfoQuery_mapStatusError(_ request, response response) error {
+func _NetworkVersionInfoQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func networkVersionInfoQuery_getMethod(_ request, channel *channel) method {
+func _NetworkVersionInfoQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getNetwork().GetVersionInfo,
 	}
@@ -146,7 +146,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err := _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return NetworkVersionInfo{}, err
 	}
@@ -156,13 +156,13 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		request{
 			query: &query.Query,
 		},
-		networkVersionInfoQuery_shouldRetry,
+		_NetworkVersionInfoQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		networkVersionInfoQuery_getMethod,
-		networkVersionInfoQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_NetworkVersionInfoQueryGetMethod,
+		_NetworkVersionInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

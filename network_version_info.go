@@ -1,20 +1,13 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type NetworkVersionInfo struct {
 	ProtobufVersion SemanticVersion
 	ServicesVersion SemanticVersion
-}
-
-func newNetworkVersionInfo(hapi SemanticVersion, hedera SemanticVersion) NetworkVersionInfo {
-	return NetworkVersionInfo{
-		ProtobufVersion: hapi,
-		ServicesVersion: hedera,
-	}
 }
 
 func networkVersionInfoFromProtobuf(version *proto.NetworkGetVersionInfoResponse) NetworkVersionInfo {

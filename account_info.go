@@ -3,8 +3,8 @@ package hedera
 import (
 	"time"
 
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 // AccountInfo is info about the account returned from an AccountInfoQuery
@@ -58,21 +58,26 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 		}
 	}
 
-	var proxyAccountID AccountID
+	proxyAccountID := AccountID{}
 	if pb.ProxyAccountID != nil {
-		proxyAccountID = accountIDFromProtobuf(pb.ProxyAccountID)
+		proxyAccountID = *accountIDFromProtobuf(pb.ProxyAccountID)
+	}
+
+	accountID := AccountID{}
+	if pb.AccountID != nil {
+		accountID = *accountIDFromProtobuf(pb.AccountID)
 	}
 
 	return AccountInfo{
-		AccountID:                      accountIDFromProtobuf(pb.AccountID),
+		AccountID:                      accountID,
 		ContractAccountID:              pb.ContractAccountID,
 		IsDeleted:                      pb.Deleted,
 		ProxyAccountID:                 proxyAccountID,
 		ProxyReceived:                  HbarFromTinybar(pb.ProxyReceived),
 		Key:                            pubKey,
 		Balance:                        HbarFromTinybar(int64(pb.Balance)),
-		GenerateSendRecordThreshold:    HbarFromTinybar(int64(pb.GenerateSendRecordThreshold)),
-		GenerateReceiveRecordThreshold: HbarFromTinybar(int64(pb.GenerateReceiveRecordThreshold)),
+		GenerateSendRecordThreshold:    HbarFromTinybar(int64(pb.GenerateSendRecordThreshold)),    // nolint
+		GenerateReceiveRecordThreshold: HbarFromTinybar(int64(pb.GenerateReceiveRecordThreshold)), // nolint
 		ReceiverSigRequired:            pb.ReceiverSigRequired,
 		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 timeFromProtobuf(pb.ExpirationTime),
@@ -84,7 +89,6 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 }
 
 func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
-
 	tokenRelationship := make([]*proto.TokenRelationship, len(info.TokenRelationships))
 
 	for i, relationship := range info.TokenRelationships {

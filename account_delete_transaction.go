@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // AccountDeleteTransaction creates a new account. After the account is created, the AccountID for it is in the receipt,
@@ -15,8 +16,8 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountDeleteTransaction struct {
 	Transaction
-	transferAccountID AccountID
-	deleteAccountID   AccountID
+	transferAccountID *AccountID
+	deleteAccountID   *AccountID
 }
 
 func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
@@ -40,36 +41,43 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 // SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
 func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.deleteAccountID = accountID
+	transaction.deleteAccountID = &accountID
 	return transaction
 }
 
 func (transaction *AccountDeleteTransaction) GetAccountID() AccountID {
-	return transaction.deleteAccountID
+	if transaction.deleteAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.deleteAccountID
 }
 
 // SetTransferAccountID sets the AccountID which will receive all remaining hbars.
 func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.transferAccountID = transferAccountID
+	transaction.transferAccountID = &transferAccountID
 	return transaction
 }
 
 func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccountID AccountID) AccountID {
-	return transaction.transferAccountID
+	if transaction.transferAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.transferAccountID
 }
 
 func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.deleteAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.deleteAccountID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.transferAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.transferAccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -129,12 +137,7 @@ func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func accountDeleteTransaction_getMethod(request request, channel *channel) method {
+func _AccountDeleteTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().CryptoDelete,
 	}
@@ -178,10 +181,6 @@ func (transaction *AccountDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -222,15 +221,15 @@ func (transaction *AccountDeleteTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		accountDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_AccountDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -242,6 +241,9 @@ func (transaction *AccountDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -268,7 +270,7 @@ func (transaction *AccountDeleteTransaction) FreezeWith(client *Client) (*Accoun
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *AccountDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -331,10 +333,6 @@ func (transaction *AccountDeleteTransaction) SetMaxRetry(count int) *AccountDele
 func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountDeleteTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -354,7 +352,6 @@ func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, s
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

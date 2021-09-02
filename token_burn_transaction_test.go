@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
@@ -227,7 +228,7 @@ func TestIntegrationTokenBurnTransactionNoTokenID(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *testing.T) {
+func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)

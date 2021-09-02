@@ -3,13 +3,14 @@ package hedera
 import (
 	"bytes"
 	"crypto/sha512"
+	"fmt"
 
 	"github.com/pkg/errors"
 
 	"time"
 
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.
@@ -57,7 +58,7 @@ func newTransaction() Transaction {
 	}
 }
 
-func TransactionFromBytes(data []byte) (interface{}, error) {
+func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	list := proto.TransactionList{}
 	err := protobuf.Unmarshal(data, &list)
 	if err != nil {
@@ -112,7 +113,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) {
 		}
 
 		if body.GetNodeAccountID() != nil {
-			nodeAccountID = accountIDFromProtobuf(body.GetNodeAccountID())
+			nodeAccountID = *accountIDFromProtobuf(body.GetNodeAccountID())
 		}
 
 		found := false
@@ -240,7 +241,7 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 		for _, sigPair := range transaction.signedTransactions[i].SigMap.SigPair {
 			key, err := PublicKeyFromBytes(sigPair.PubKeyPrefix)
 			if err != nil {
-				return make(map[AccountID]map[*PublicKey][]byte, 0), err
+				return make(map[AccountID]map[*PublicKey][]byte), err
 			}
 			switch sigPair.Signature.(type) {
 			case *proto.SignaturePair_Contract:
@@ -260,7 +261,7 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 	return returnMap, nil
 }
 
-//func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
+// func (transaction *Transaction) AddSignature(publicKey PublicKey, signature []byte) *Transaction {
 //	transaction.requireOneNodeAccountID()
 //
 //	if !transaction.isFrozen() {
@@ -365,7 +366,7 @@ func (transaction *Transaction) requireOneNodeAccountID() {
 	}
 }
 
-func transaction_freezeWith(
+func _TransactionFreezeWith(
 	transaction *Transaction,
 	client *Client,
 	body *proto.TransactionBody,
@@ -419,7 +420,7 @@ func (transaction *Transaction) keyAlreadySigned(
 	return false
 }
 
-func transaction_shouldRetry(_ request, response response) executionState {
+func _TransactionShouldRetry(_ request, response response) executionState {
 	switch Status(response.transaction.NodeTransactionPrecheckCode) {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
@@ -430,7 +431,7 @@ func transaction_shouldRetry(_ request, response response) executionState {
 	return executionStateError
 }
 
-func transaction_makeRequest(request request) protoRequest {
+func _TransactionMakeRequest(request request) protoRequest {
 	index := len(request.transaction.nodeIDs)*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
 	_ = request.transaction.buildTransaction(index)
 
@@ -439,17 +440,17 @@ func transaction_makeRequest(request request) protoRequest {
 	}
 }
 
-func transaction_advanceRequest(request request) {
+func _TransactionAdvanceRequest(request request) {
 	length := len(request.transaction.nodeIDs)
 	currentIndex := request.transaction.nextNodeIndex
 	request.transaction.nextNodeIndex = (currentIndex + 1) % length
 }
 
-func transaction_getNodeAccountID(request request) AccountID {
+func _TransactionGetNodeAccountID(request request) AccountID {
 	return request.transaction.nodeIDs[request.transaction.nextNodeIndex]
 }
 
-func transaction_mapStatusError(
+func _TransactionMapStatusError(
 	request request,
 	response response,
 ) error {
@@ -459,7 +460,7 @@ func transaction_mapStatusError(
 	}
 }
 
-func transaction_mapResponse(request request, _ response, nodeID AccountID, protoRequest protoRequest) (intermediateResponse, error) {
+func _TransactionMapResponse(request request, _ response, nodeID AccountID, protoRequest protoRequest) (intermediateResponse, error) {
 	hash := sha512.New384()
 	_, err := hash.Write(protoRequest.transaction.SignedTransactionBytes)
 	if err != nil {
@@ -479,7 +480,7 @@ func transaction_mapResponse(request request, _ response, nodeID AccountID, prot
 }
 
 func (transaction *Transaction) String() string {
-	return protobuf.MarshalTextString(transaction.signedTransactions[0])
+	return fmt.Sprintf("%+v", transaction.signedTransactions[0])
 }
 
 func (transaction *Transaction) ToBytes() ([]byte, error) {
@@ -498,16 +499,15 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 
 	if lastError != nil {
 		return make([]byte, 0), errors.Wrap(err, "error serializing transaction list")
-	} else {
-		return pbTransactionList, nil
 	}
 
+	return pbTransactionList, nil
 }
 
 func (transaction *Transaction) signTransaction(index int) {
 	if len(transaction.signedTransactions[index].SigMap.SigPair) != 0 {
 		for i, key := range transaction.publicKeys {
-			if transaction.transactionSigners[i] != nil && bytes.Compare(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.keyData) == 0 {
+			if transaction.transactionSigners[i] != nil && bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.keyData) {
 				return
 			}
 		}
@@ -590,9 +590,9 @@ func (transaction *Transaction) SetTransactionMemo(memo string) *Transaction {
 func (transaction *Transaction) GetTransactionValidDuration() time.Duration {
 	if transaction.transactionValidDuration != nil {
 		return *transaction.transactionValidDuration
-	} else {
-		return 0
 	}
+
+	return 0
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
@@ -604,9 +604,9 @@ func (transaction *Transaction) SetTransactionValidDuration(duration time.Durati
 func (transaction *Transaction) GetTransactionID() TransactionID {
 	if len(transaction.transactionIDs) > 0 {
 		return transaction.transactionIDs[transaction.nextTransactionIndex]
-	} else {
-		return TransactionID{}
 	}
+
+	return TransactionID{}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
@@ -618,9 +618,9 @@ func (transaction *Transaction) SetTransactionID(transactionID TransactionID) *T
 func (transaction *Transaction) GetNodeAccountIDs() []AccountID {
 	if transaction.nodeIDs != nil {
 		return transaction.nodeIDs
-	} else {
-		return make([]AccountID, 0)
 	}
+
+	return make([]AccountID, 0)
 }
 
 // SetNodeAccountID sets the node AccountID for this Transaction.

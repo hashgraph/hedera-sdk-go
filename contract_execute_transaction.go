@@ -75,7 +75,7 @@ func (transaction ContractExecuteTransaction) GetPayableAmount() Hbar {
 	return HbarFromTinybar(transaction.amount)
 }
 
-//Sets the function parameters
+// Sets the function parameters
 func (transaction *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
 	transaction.parameters = params
@@ -101,9 +101,8 @@ func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Clie
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.contractID.Validate(client)
-	if err != nil {
+
+	if err := transaction.contractID.Validate(client); err != nil {
 		return err
 	}
 
@@ -163,12 +162,7 @@ func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*pro
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func contractExecuteTransaction_getMethod(request request, channel *channel) method {
+func _ContractExecuteTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getContract().ContractCallMethod,
 	}
@@ -212,10 +206,6 @@ func (transaction *ContractExecuteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractExecuteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -256,15 +246,15 @@ func (transaction *ContractExecuteTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		contractExecuteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ContractExecuteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -275,6 +265,9 @@ func (transaction *ContractExecuteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -301,7 +294,7 @@ func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*Cont
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
@@ -364,10 +357,6 @@ func (transaction *ContractExecuteTransaction) SetMaxRetry(count int) *ContractE
 func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -387,7 +376,6 @@ func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey,
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

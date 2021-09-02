@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type FileInfo struct {
@@ -13,17 +14,6 @@ type FileInfo struct {
 	IsDeleted      bool
 	Keys           KeyList
 	FileMemo       string
-}
-
-func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys KeyList, fileMemo string) FileInfo {
-	return FileInfo{
-		FileID:         fileID,
-		Size:           size,
-		ExpirationTime: expirationTime,
-		IsDeleted:      isDeleted,
-		Keys:           keys,
-		FileMemo:       fileMemo,
-	}
 }
 
 func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {

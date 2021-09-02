@@ -41,9 +41,8 @@ func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) e
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.fileID.Validate(client)
-	if err != nil {
+
+	if err := transaction.fileID.Validate(client); err != nil {
 		return err
 	}
 
@@ -92,12 +91,7 @@ func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*proto.Sc
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func fileDeleteTransaction_getMethod(request request, channel *channel) method {
+func _FileDeleteTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getFile().DeleteFile,
 	}
@@ -141,10 +135,6 @@ func (transaction *FileDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -185,15 +175,15 @@ func (transaction *FileDeleteTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		fileDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_FileDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -204,6 +194,9 @@ func (transaction *FileDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -231,7 +224,7 @@ func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDelet
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -294,10 +287,6 @@ func (transaction *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTran
 func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileDeleteTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -317,7 +306,6 @@ func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, sign
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

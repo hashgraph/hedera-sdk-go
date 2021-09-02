@@ -77,7 +77,7 @@ const (
 	RequestTypeCryptoAccountAutoRenew RequestType = 33
 	// Contract Auto Renew
 	RequestTypeContractAutoRenew RequestType = 34
-	//Get Version
+	// Get Version
 	RequestTypeGetVersionInfo RequestType = 35
 	// Transaction Get Receipt
 	RequestTypeTransactionGetReceipt RequestType = 36
@@ -129,7 +129,7 @@ const (
 )
 
 // String() returns a string representation of the status
-func (requestType RequestType) String() string {
+func (requestType RequestType) String() string { // nolint
 	switch requestType {
 	case RequestTypeNone:
 		return "NONE"

@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
@@ -157,7 +157,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 		SetQueryPayment(HbarFromTinybar(1)).
 		Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_TX_FEE", err.Error())
 	}
 
 	accountID := receipt.AccountID
@@ -182,7 +182,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) {
+func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -301,7 +301,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) {
+func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

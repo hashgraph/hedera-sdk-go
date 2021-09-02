@@ -3,9 +3,9 @@ package hedera
 import (
 	"testing"
 
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/stretchr/testify/assert"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 func TestUnitTransactionSerializationDeserialization(t *testing.T) {
@@ -69,8 +69,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	tx2, err := TransactionFromBytes(updateBytes)
 	assert.NoError(t, err)
 
-	switch newTx := tx2.(type) {
-	case AccountDeleteTransaction:
+	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		assert.NoError(t, err)
 	}
@@ -112,7 +111,7 @@ func TestIntegrationTransactionGetHash(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestTransactionFromBytes(t *testing.T) {
+func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil})
 
 	TransactionBody := proto.TransactionBody{
@@ -251,7 +250,6 @@ func DisabledTestTransactionFromBytes(t *testing.T) {
 
 		_, err = resp.GetReceipt(env.Client)
 		assert.NoError(t, err)
-		break
 	default:
 		panic("Transaction was not a crypto transfer?")
 	}

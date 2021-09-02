@@ -10,7 +10,7 @@ type ContractDeleteTransaction struct {
 	Transaction
 	contractID        ContractID
 	transferContactID ContractID
-	transferAccountID AccountID
+	transferAccountID *AccountID
 }
 
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
@@ -31,7 +31,7 @@ func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	}
 }
 
-//Sets the contract ID which should be deleted.
+// Sets the contract ID which should be deleted.
 func (transaction *ContractDeleteTransaction) SetContractID(id ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.contractID = id
@@ -42,7 +42,7 @@ func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
 	return transaction.contractID
 }
 
-//Sets the contract ID which will receive all remaining hbars.
+// Sets the contract ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) SetTransferContractID(id ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.transferContactID = id
@@ -54,33 +54,36 @@ func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID
 	return transaction.transferContactID
 }
 
-//Sets the account ID which will receive all remaining hbars.
+// Sets the account ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.transferAccountID = accountID
+	transaction.transferAccountID = &accountID
 
 	return transaction
 }
 
 func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
-	return transaction.transferAccountID
+	if transaction.transferAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.transferAccountID
 }
 
 func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.contractID.Validate(client)
-	if err != nil {
+
+	if err := transaction.contractID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.transferContactID.Validate(client)
-	if err != nil {
+
+	if err := transaction.transferContactID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.transferAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.transferAccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -158,12 +161,7 @@ func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func contractDeleteTransaction_getMethod(request request, channel *channel) method {
+func _ContractDeleteTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getContract().DeleteContract,
 	}
@@ -207,10 +205,6 @@ func (transaction *ContractDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -251,15 +245,15 @@ func (transaction *ContractDeleteTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		contractDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ContractDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -270,6 +264,9 @@ func (transaction *ContractDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -296,7 +293,7 @@ func (transaction *ContractDeleteTransaction) FreezeWith(client *Client) (*Contr
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -359,10 +356,6 @@ func (transaction *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDe
 func (transaction *ContractDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractDeleteTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -382,7 +375,6 @@ func (transaction *ContractDeleteTransaction) AddSignature(publicKey PublicKey, 
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

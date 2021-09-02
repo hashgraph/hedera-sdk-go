@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TokenNftTransfer struct {
@@ -11,21 +11,24 @@ type TokenNftTransfer struct {
 	SerialNumber      int64
 }
 
-func newNftTransfer(sender AccountID, receiver AccountID, serial int64) TokenNftTransfer {
-	return TokenNftTransfer{
-		SenderAccountID:   sender,
-		ReceiverAccountID: receiver,
-		SerialNumber:      serial,
-	}
-}
-
 func nftTransferFromProtobuf(pb *proto.NftTransfer) TokenNftTransfer {
 	if pb == nil {
 		return TokenNftTransfer{}
 	}
+
+	senderAccountID := AccountID{}
+	if pb.SenderAccountID != nil {
+		senderAccountID = *accountIDFromProtobuf(pb.SenderAccountID)
+	}
+
+	receiverAccountID := AccountID{}
+	if pb.ReceiverAccountID != nil {
+		receiverAccountID = *accountIDFromProtobuf(pb.ReceiverAccountID)
+	}
+
 	return TokenNftTransfer{
-		SenderAccountID:   accountIDFromProtobuf(pb.SenderAccountID),
-		ReceiverAccountID: accountIDFromProtobuf(pb.ReceiverAccountID),
+		SenderAccountID:   senderAccountID,
+		ReceiverAccountID: receiverAccountID,
 		SerialNumber:      pb.SerialNumber,
 	}
 }

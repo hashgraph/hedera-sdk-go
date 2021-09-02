@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller
@@ -55,13 +56,12 @@ func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.accountID.Validate(client)
-	if err != nil {
+
+	if err := query.accountID.Validate(client); err != nil {
 		return err
 	}
-	err = query.contractID.Validate(client)
-	if err != nil {
+
+	if err := query.contractID.Validate(client); err != nil {
 		return err
 	}
 
@@ -86,7 +86,6 @@ func (query *AccountBalanceQuery) build() *proto.Query_CryptogetAccountBalance {
 	return &proto.Query_CryptogetAccountBalance{
 		CryptogetAccountBalance: &pb,
 	}
-
 }
 
 func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
@@ -110,13 +109,13 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		accountBalanceQuery_shouldRetry,
+		_AccountBalanceQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		accountBalanceQuery_getMethod,
-		accountBalanceQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_AccountBalanceQueryGetMethod,
+		_AccountBalanceQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -143,7 +142,7 @@ func (query *AccountBalanceQuery) queryMakeRequest() protoRequest {
 func (query *AccountBalanceQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -158,17 +157,17 @@ func (query *AccountBalanceQuery) costQueryMakeRequest(client *Client) (protoReq
 	}, nil
 }
 
-func accountBalanceQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
+func _AccountBalanceQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
-func accountBalanceQuery_mapStatusError(_ request, response response) error {
+func _AccountBalanceQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func accountBalanceQuery_getMethod(_ request, channel *channel) method {
+func _AccountBalanceQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getCrypto().CryptoGetBalance,
 	}
@@ -191,13 +190,13 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		request{
 			query: &query.Query,
 		},
-		accountBalanceQuery_shouldRetry,
+		_AccountBalanceQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		accountBalanceQuery_getMethod,
-		accountBalanceQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_AccountBalanceQueryGetMethod,
+		_AccountBalanceQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type ScheduleInfoQuery struct {
@@ -29,9 +30,8 @@ func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.scheduleID.Validate(client)
-	if err != nil {
+
+	if err := query.scheduleID.Validate(client); err != nil {
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (query *ScheduleInfoQuery) queryMakeRequest() protoRequest {
 func (query *ScheduleInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -105,13 +105,13 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		scheduleInfoQuery_shouldRetry,
+		_ScheduleInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		scheduleInfoQuery_getMethod,
-		scheduleInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_ScheduleInfoQueryGetMethod,
+		_ScheduleInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -121,22 +121,21 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetScheduleGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func scheduleInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
+func _ScheduleInfoQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func scheduleInfoQuery_mapStatusError(_ request, response response) error {
+func _ScheduleInfoQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func scheduleInfoQuery_getMethod(_ request, channel *channel) method {
+func _ScheduleInfoQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getSchedule().GetScheduleInfo,
 	}
@@ -182,7 +181,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
@@ -192,13 +191,13 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		scheduleInfoQuery_shouldRetry,
+		_ScheduleInfoQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		scheduleInfoQuery_getMethod,
-		scheduleInfoQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_ScheduleInfoQueryGetMethod,
+		_ScheduleInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -225,7 +224,7 @@ func (query *ScheduleInfoQuery) SetNodeAccountIDs(accountID []AccountID) *Schedu
 	return query
 }
 
-func (query *ScheduleInfoQuery) GetNodeAccountId() []AccountID {
+func (query *ScheduleInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 

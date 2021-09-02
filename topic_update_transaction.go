@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/wrappers"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -11,7 +12,7 @@ import (
 type TopicUpdateTransaction struct {
 	Transaction
 	topicID            TopicID
-	autoRenewAccountID AccountID
+	autoRenewAccountID *AccountID
 	adminKey           Key
 	submitKey          Key
 	memo               string
@@ -135,14 +136,18 @@ func (transaction *TopicUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 // topic. The topic lifetime will be extended up to a maximum of the autoRenewPeriod or however long the topic can be
 // extended using all funds on the account (whichever is the smaller duration/amount). If specified as the default value
 // (0.0.0), the autoRenewAccount will be removed.
-func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(id AccountID) *TopicUpdateTransaction {
+func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(autoRenewAccountID AccountID) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.autoRenewAccountID = id
+	transaction.autoRenewAccountID = &autoRenewAccountID
 	return transaction
 }
 
 func (transaction *TopicUpdateTransaction) GetAutoRenewAccountID() AccountID {
-	return transaction.autoRenewAccountID
+	if transaction.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.autoRenewAccountID
 }
 
 // ClearTopicMemo explicitly clears any memo on the topic by sending an empty string as the memo
@@ -162,8 +167,7 @@ func (transaction *TopicUpdateTransaction) ClearSubmitKey() *TopicUpdateTransact
 
 // ClearAutoRenewAccountID explicitly clears any auto renew account ID on the topic by sending an empty accountID
 func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdateTransaction {
-	transaction.autoRenewAccountID = AccountID{}
-
+	transaction.autoRenewAccountID = &AccountID{}
 	return transaction
 }
 
@@ -171,13 +175,12 @@ func (transaction *TopicUpdateTransaction) validateNetworkOnIDs(client *Client) 
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.topicID.Validate(client)
-	if err != nil {
+
+	if err := transaction.topicID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.autoRenewAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.autoRenewAccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -273,12 +276,7 @@ func (transaction *TopicUpdateTransaction) constructScheduleProtobuf() (*proto.S
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func topicUpdateTransaction_getMethod(request request, channel *channel) method {
+func _TopicUpdateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getTopic().UpdateTopic,
 	}
@@ -322,10 +320,6 @@ func (transaction *TopicUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicUpdateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -366,15 +360,15 @@ func (transaction *TopicUpdateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		topicUpdateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TopicUpdateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -385,6 +379,9 @@ func (transaction *TopicUpdateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -411,7 +408,7 @@ func (transaction *TopicUpdateTransaction) FreezeWith(client *Client) (*TopicUpd
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TopicUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -474,10 +471,6 @@ func (transaction *TopicUpdateTransaction) SetMaxRetry(count int) *TopicUpdateTr
 func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicUpdateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -497,7 +490,6 @@ func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, sig
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

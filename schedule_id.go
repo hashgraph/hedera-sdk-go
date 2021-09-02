@@ -91,13 +91,16 @@ func (id ScheduleID) toProtobuf() *proto.ScheduleID {
 
 // UnmarshalJSON implements the encoding.JSON interface.
 func (id *ScheduleID) UnmarshalJSON(data []byte) error {
-	ScheduleID, err := ScheduleIDFromString(strings.Replace(string(data), "\"", "", 2))
+	scheduleID, err := ScheduleIDFromString(strings.Replace(string(data), "\"", "", 2))
 
 	if err != nil {
 		return err
 	}
 
-	id = &ScheduleID
+	id.Shard = scheduleID.Shard
+	id.Realm = scheduleID.Realm
+	id.Schedule = scheduleID.Schedule
+	id.checksum = scheduleID.checksum
 
 	return nil
 }
@@ -107,19 +110,17 @@ func scheduleIDFromProtobuf(scheduleID *proto.ScheduleID) ScheduleID {
 		return ScheduleID{}
 	}
 
-	id := ScheduleID{
+	return ScheduleID{
 		Shard:    uint64(scheduleID.ShardNum),
 		Realm:    uint64(scheduleID.RealmNum),
 		Schedule: uint64(scheduleID.ScheduleNum),
 	}
-
-	return id
 }
 
 func (id ScheduleID) isZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Schedule == 0
 }
 
-func (id ScheduleID) equals(other ScheduleID) bool {
+func (id ScheduleID) equals(other ScheduleID) bool { // nolint
 	return id.Shard == other.Shard && id.Realm == other.Realm && id.Schedule == other.Schedule
 }

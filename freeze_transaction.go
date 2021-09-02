@@ -25,17 +25,17 @@ func NewFreezeTransaction() *FreezeTransaction {
 }
 
 func freezeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FreezeTransaction {
-	fileId := fileIDFromProtobuf(pb.GetFreeze().GetUpdateFile())
+	fileID := fileIDFromProtobuf(pb.GetFreeze().GetUpdateFile())
 
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
-		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()),
+		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
 		0, time.Now().Nanosecond(), time.Now().Location(),
 	)
 
 	endTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
-		int(pb.GetFreeze().GetEndHour()), int(pb.GetFreeze().GetEndMin()),
+		int(pb.GetFreeze().GetEndHour()), int(pb.GetFreeze().GetEndMin()), // nolint
 		0, time.Now().Nanosecond(), time.Now().Location(),
 	)
 
@@ -43,7 +43,7 @@ func freezeTransactionFromProtobuf(transaction Transaction, pb *proto.Transactio
 		Transaction: transaction,
 		startTime:   startTime,
 		endTime:     endTime,
-		fileID:      &fileId,
+		fileID:      &fileID,
 		fileHash:    pb.GetFreeze().FileHash,
 	}
 }
@@ -144,12 +144,7 @@ func (transaction *FreezeTransaction) constructScheduleProtobuf() (*proto.Schedu
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func freezeTransaction_getMethod(request request, channel *channel) method {
+func _FreezeTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getFreeze().Freeze,
 	}
@@ -193,10 +188,6 @@ func (transaction *FreezeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FreezeTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -237,15 +228,15 @@ func (transaction *FreezeTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		freezeTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_FreezeTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -256,6 +247,9 @@ func (transaction *FreezeTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -278,7 +272,7 @@ func (transaction *FreezeTransaction) FreezeWith(client *Client) (*FreezeTransac
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *FreezeTransaction) GetMaxTransactionFee() Hbar {
@@ -341,10 +335,6 @@ func (transaction *FreezeTransaction) SetMaxRetry(count int) *FreezeTransaction 
 func (transaction *FreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *FreezeTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -364,7 +354,6 @@ func (transaction *FreezeTransaction) AddSignature(publicKey PublicKey, signatur
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

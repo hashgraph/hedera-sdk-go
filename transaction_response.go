@@ -2,7 +2,7 @@ package hedera
 
 type TransactionResponse struct {
 	TransactionID          TransactionID
-	ScheduledTransactionId TransactionID
+	ScheduledTransactionId TransactionID // nolint
 	NodeID                 AccountID
 	Hash                   []byte
 }
@@ -12,7 +12,6 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
-
 }
 
 func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord, error) {

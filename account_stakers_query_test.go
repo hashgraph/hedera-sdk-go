@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationAccountStakersQueryCanExecute(t *testing.T) {
@@ -88,7 +88,7 @@ func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
 
 	_, err = accountStakers.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+		assert.Equal(t, "exceptional precheck status NOT_SUPPORTED", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -103,7 +103,7 @@ func TestIntegrationAccountStakersQueryNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+		assert.Equal(t, "exceptional precheck status NOT_SUPPORTED", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

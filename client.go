@@ -132,11 +132,11 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 
 func ClientForName(name string) (*Client, error) {
 	switch name {
-	case "testnet":
+	case string(NetworkNameTestnet):
 		return ClientForTestnet(), nil
-	case "previewnet":
+	case string(NetworkNamePreviewnet):
 		return ClientForPreviewnet(), nil
-	case "mainnet":
+	case string(NetworkNameMainnet):
 		return ClientForMainnet(), nil
 	default:
 		return &Client{}, fmt.Errorf("%q is not recognized as a valid Hedera network", name)
@@ -186,11 +186,11 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 	case string:
 		if len(net) > 0 {
 			switch net {
-			case "mainnet":
+			case string(NetworkNameMainnet):
 				network = mainnetNodes
-			case "previewnet":
+			case string(NetworkNamePreviewnet):
 				network = previewnetNodes
-			case "testnet":
+			case string(NetworkNameTestnet):
 				network = testnetNodes
 			}
 		}
@@ -213,11 +213,11 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
-			case "mainnet":
+			case string(NetworkNameMainnet):
 				client = newClient(network, mainnetMirror, NetworkNameMainnet)
-			case "previewnet":
+			case string(NetworkNamePreviewnet):
 				client = newClient(network, previewnetMirror, NetworkNamePreviewnet)
-			case "testnet":
+			case string(NetworkNameTestnet):
 				client = newClient(network, testnetMirror, NetworkNameTestnet)
 			}
 		}
@@ -299,7 +299,7 @@ func (client *Client) SetMaxBackoff(max time.Duration) {
 }
 
 func (client *Client) GetMaxBackoff() time.Duration {
-	return client.GetMaxBackoff()
+	return client.maxBackoff
 }
 
 func (client *Client) SetMinBackoff(min time.Duration) {
@@ -405,18 +405,18 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, 
 func (client *Client) GetOperatorAccountID() AccountID {
 	if client.operator != nil {
 		return client.operator.accountID
-	} else {
-		return AccountID{}
 	}
+
+	return AccountID{}
 }
 
 // GetOperatorPublicKey returns the Key for the operator
 func (client *Client) GetOperatorPublicKey() PublicKey {
 	if client.operator != nil {
 		return client.operator.publicKey
-	} else {
-		return PublicKey{}
 	}
+
+	return PublicKey{}
 }
 
 // Ping sends an AccountBalanceQuery to the specified node returning nil if no
@@ -435,6 +435,4 @@ func (client *Client) PingAll() {
 	for _, s := range client.network.network {
 		_ = client.Ping(s)
 	}
-
-	return
 }

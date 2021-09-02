@@ -9,10 +9,11 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
@@ -265,7 +266,10 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	// harden the input
 	input[33] |= 128
 
-	h.Write(input)
+	if _, err := h.Write(input); err != nil {
+		panic(err)
+	}
+
 	digest := h.Sum(nil)
 
 	return digest[0:32], digest[32:]
@@ -274,26 +278,25 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 func deriveLegacyChildKey(parentKey []byte, index int64) []byte {
 	in := make([]uint8, 8)
 
-	if index == int64(0xffffffffff) {
+	switch switchIndex := index; {
+	case switchIndex == int64(0xffffffffff):
 		in = []uint8{0, 0, 0, 0xff, 0xff, 0xff, 0xff, 0xff}
-	} else if index > 0xffffffff {
+	case switchIndex > 0xffffffff:
 		panic(errors.New("derive index is out of range"))
-	} else {
-		if index < 0 {
+	default:
+		if switchIndex < 0 {
 			for i := 0; i < 4; i++ {
 				in[i] = uint8(0xff)
 			}
 		}
 
 		for i := 4; i < len(in); i++ {
-			in[i] = uint8(index)
+			in[i] = uint8(switchIndex)
 		}
 	}
-	password := make([]uint8, len(parentKey))
-	for i, number := range parentKey {
-		password[i] = number
-	}
 
+	password := make([]uint8, len(parentKey))
+	copy(parentKey, password)
 	password = append(password, in...)
 
 	salt := []byte{0xFF}
@@ -408,7 +411,7 @@ func (sk PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
 	}
 
 	signature := sk.Sign(transaction.signedTransactions[0].GetBodyBytes())
-	//transaction.AddSignature(sk.PublicKey(), signature)
+	// transaction.AddSignature(sk.PublicKey(), signature)
 
 	return signature, nil
 }

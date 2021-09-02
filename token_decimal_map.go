@@ -17,7 +17,7 @@ func (tokenDecimals *TokenDecimalMap) Get(tokenID TokenID) uint64 {
 }
 
 func tokenDecimalMapFromProtobuf(pb []*proto.TokenBalance) TokenDecimalMap {
-	decimals := make(map[string]uint64, 0)
+	decimals := make(map[string]uint64)
 
 	for _, tokenDecimal := range pb {
 		decimals[tokenIDFromProtobuf(tokenDecimal.TokenId).String()] = uint64(tokenDecimal.Decimals)
@@ -26,7 +26,7 @@ func tokenDecimalMapFromProtobuf(pb []*proto.TokenBalance) TokenDecimalMap {
 	return TokenDecimalMap{decimals}
 }
 
-func (tokenDecimals TokenDecimalMap) toProtobuf() []*proto.TokenBalance {
+func (tokenDecimals TokenDecimalMap) toProtobuf() []*proto.TokenBalance { // nolint
 	decimals := make([]*proto.TokenBalance, 0)
 
 	for s, t := range tokenDecimals.decimals {

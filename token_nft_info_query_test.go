@@ -1,12 +1,12 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func DisabledTestIntegrationTokenNftGetInfoByNftID(t *testing.T) {
+func DisabledTestIntegrationTokenNftGetInfoByNftID(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)
@@ -58,7 +58,7 @@ func DisabledTestIntegrationTokenNftGetInfoByNftID(t *testing.T) {
 			value = true
 		}
 	}
-	assert.Truef(t, value, fmt.Sprintf("token nft transfer transaction failed"))
+	assert.Truef(t, value, "token nft transfer transaction failed")
 	assert.Equal(t, len(info), 1)
 	assert.Equal(t, info[0].NftID, nftID)
 	assert.Equal(t, info[0].Metadata[0], byte(50))

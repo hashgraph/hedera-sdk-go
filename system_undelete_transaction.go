@@ -53,13 +53,12 @@ func (transaction *SystemUndeleteTransaction) validateNetworkOnIDs(client *Clien
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.contractID.Validate(client)
-	if err != nil {
+
+	if err := transaction.contractID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.fileID.Validate(client)
-	if err != nil {
+
+	if err := transaction.fileID.Validate(client); err != nil {
 		return err
 	}
 
@@ -125,20 +124,15 @@ func (transaction *SystemUndeleteTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func systemUndeleteTransaction_getMethod(request request, channel *channel) method {
+func _SystemUndeleteTransactionGetMethod(request request, channel *channel) method {
 	if channel.getContract() == nil {
 		return method{
 			transaction: channel.getFile().SystemUndelete,
 		}
-	} else {
-		return method{
-			transaction: channel.getContract().SystemUndelete,
-		}
+	}
+
+	return method{
+		transaction: channel.getContract().SystemUndelete,
 	}
 }
 
@@ -180,10 +174,6 @@ func (transaction *SystemUndeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *SystemUndeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -224,15 +214,15 @@ func (transaction *SystemUndeleteTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		systemUndeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_SystemUndeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -243,6 +233,9 @@ func (transaction *SystemUndeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -269,7 +262,7 @@ func (transaction *SystemUndeleteTransaction) FreezeWith(client *Client) (*Syste
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *SystemUndeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -332,10 +325,6 @@ func (transaction *SystemUndeleteTransaction) SetMaxRetry(count int) *SystemUnde
 func (transaction *SystemUndeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *SystemUndeleteTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -355,7 +344,6 @@ func (transaction *SystemUndeleteTransaction) AddSignature(publicKey PublicKey, 
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

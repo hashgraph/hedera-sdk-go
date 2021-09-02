@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type ContractInfo struct {
@@ -18,20 +19,6 @@ type ContractInfo struct {
 	Balance           uint64
 }
 
-func newContractInfo(accountID AccountID, contractID ContractID, contractAccountID string, adminKey Key, expirationTime time.Time,
-	autoRenewPeriod time.Duration, storage uint64, ContractMemo string) ContractInfo {
-	return ContractInfo{
-		AccountID:         accountID,
-		ContractID:        contractID,
-		ContractAccountID: contractAccountID,
-		AdminKey:          adminKey,
-		ExpirationTime:    expirationTime,
-		AutoRenewPeriod:   autoRenewPeriod,
-		Storage:           storage,
-		ContractMemo:      ContractMemo,
-	}
-}
-
 func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
 	if contractInfo == nil {
 		return ContractInfo{}, errParameterNull
@@ -41,8 +28,13 @@ func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_Contra
 		return ContractInfo{}, err
 	}
 
+	accountID := AccountID{}
+	if contractInfo.AccountID != nil {
+		accountID = *accountIDFromProtobuf(contractInfo.AccountID)
+	}
+
 	return ContractInfo{
-		AccountID:         accountIDFromProtobuf(contractInfo.AccountID),
+		AccountID:         accountID,
 		ContractID:        contractIDFromProtobuf(contractInfo.ContractID),
 		ContractAccountID: contractInfo.ContractAccountID,
 		AdminKey:          adminKey,

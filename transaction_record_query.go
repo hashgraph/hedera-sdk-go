@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TransactionRecordQuery struct {
@@ -20,9 +21,8 @@ func (query *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error 
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.transactionID.AccountID.Validate(client)
-	if err != nil {
+
+	if err := query.transactionID.AccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (query *TransactionRecordQuery) queryMakeRequest() protoRequest {
 func (query *TransactionRecordQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -96,13 +96,13 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		transactionRecordQuery_shouldRetry,
+		_TransactionRecordQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		transactionRecordQuery_getMethod,
-		transactionRecordQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_TransactionRecordQueryGetMethod,
+		_TransactionRecordQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -112,20 +112,17 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetTransactionGetRecord().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func transactionRecordQuery_shouldRetry(request request, response response) executionState {
+func _TransactionRecordQueryShouldRetry(request request, response response) executionState {
 	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
 		if response.query.GetTransactionGetRecord().GetHeader().ResponseType == proto.ResponseType_COST_ANSWER {
 			return executionStateFinished
-		} else {
-			break
 		}
 	default:
 		return executionStateError
@@ -141,7 +138,7 @@ func transactionRecordQuery_shouldRetry(request request, response response) exec
 	}
 }
 
-func transactionRecordQuery_mapStatusError(request request, response response) error {
+func _TransactionRecordQueryMapStatusError(request request, response response) error {
 	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
@@ -153,12 +150,12 @@ func transactionRecordQuery_mapStatusError(request request, response response) e
 
 	return ErrHederaReceiptStatus{
 		Status: Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
-		//TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
+		// TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
 		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
 	}
 }
 
-func transactionRecordQuery_getMethod(_ request, channel *channel) method {
+func _TransactionRecordQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getCrypto().GetTxRecordByTxID,
 	}
@@ -274,7 +271,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	}
 
 	for _, nodeID := range query.nodeIDs {
-		transaction, err := query_makePaymentTransaction(
+		transaction, err := _QueryMakePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,
 			client.operator,
@@ -292,18 +289,17 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		request{
 			query: &query.Query,
 		},
-		transactionRecordQuery_shouldRetry,
+		_TransactionRecordQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		transactionRecordQuery_getMethod,
-		transactionRecordQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TransactionRecordQueryGetMethod,
+		_TransactionRecordQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
-		switch precheckErr := err.(type) {
-		case ErrHederaPreCheckStatus:
+		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
 			return TransactionRecord{}, newErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
 		}
 		return TransactionRecord{}, err

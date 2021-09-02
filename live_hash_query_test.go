@@ -3,18 +3,16 @@ package hedera
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationLiveHashQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
-	if err != nil {
-
-	}
+	_hash, _ := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -24,6 +22,7 @@ func TestIntegrationLiveHashQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(1)).
 		Execute(env.Client)
+	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
@@ -50,7 +49,7 @@ func TestIntegrationLiveHashQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+		assert.Equal(t, "exceptional precheck status NOT_SUPPORTED", err.Error())
 	}
 
 	resp2, err = NewLiveHashDeleteTransaction().
@@ -84,10 +83,7 @@ func TestIntegrationLiveHashQueryCanExecute(t *testing.T) {
 func TestIntegrationLiveHashQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
-	if err != nil {
-
-	}
+	_hash, _ := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -97,6 +93,7 @@ func TestIntegrationLiveHashQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(1)).
 		Execute(env.Client)
+	assert.Error(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
@@ -127,7 +124,7 @@ func TestIntegrationLiveHashQueryGetCost(t *testing.T) {
 	_, err = liveHashQ.SetQueryPayment(cost).Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status NOT_SUPPORTED"), err.Error())
+		assert.Equal(t, "exceptional precheck status NOT_SUPPORTED", err.Error())
 	}
 
 	resp2, err = NewLiveHashDeleteTransaction().

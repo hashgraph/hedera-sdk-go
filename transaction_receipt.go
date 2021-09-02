@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TransactionReceipt struct {
@@ -22,43 +22,13 @@ type TransactionReceipt struct {
 	SerialNumbers           []int64
 }
 
-func newTransactionReceipt(
-	status Status, exchangeRate *ExchangeRate,
-	topicID TopicID, fileID FileID,
-	contractID ContractID, accountID AccountID,
-	topicSequenceNumber uint64, topicRunningHash []byte,
-	topicRunningHashVersion uint64, totalSupply uint64, scheduleId ScheduleID,
-	scheduledTransactionID TransactionID, tokenID TokenID, serialNumbers []int64) TransactionReceipt {
-
-	receipt := TransactionReceipt{
-		Status:                  status,
-		ExchangeRate:            exchangeRate,
-		TopicID:                 &topicID,
-		FileID:                  &fileID,
-		ContractID:              &contractID,
-		AccountID:               &accountID,
-		TokenID:                 &tokenID,
-		TopicSequenceNumber:     topicSequenceNumber,
-		TopicRunningHash:        topicRunningHash,
-		TopicRunningHashVersion: topicRunningHashVersion,
-		TotalSupply:             totalSupply,
-		ScheduleID:              &scheduleId,
-		ScheduledTransactionID:  &scheduledTransactionID,
-		SerialNumbers:           serialNumbers,
-	}
-
-	return receipt
-
-}
-
 func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) TransactionReceipt {
 	if protoReceipt == nil {
 		return TransactionReceipt{}
 	}
 	var accountID *AccountID
 	if protoReceipt.AccountID != nil {
-		accountIDValue := accountIDFromProtobuf(protoReceipt.AccountID)
-		accountID = &accountIDValue
+		accountID = accountIDFromProtobuf(protoReceipt.AccountID)
 	}
 
 	var contractID *ContractID

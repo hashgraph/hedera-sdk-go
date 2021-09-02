@@ -25,7 +25,7 @@ import (
 // ready to interact with the tokens.
 type TokenAssociateTransaction struct {
 	Transaction
-	accountID AccountID
+	accountID *AccountID
 	tokens    []TokenID
 }
 
@@ -52,14 +52,18 @@ func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // The account to be associated with the provided tokens
-func (transaction *TokenAssociateTransaction) SetAccountID(id AccountID) *TokenAssociateTransaction {
+func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) *TokenAssociateTransaction {
 	transaction.requireNotFrozen()
-	transaction.accountID = id
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *TokenAssociateTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 // The tokens to be associated with the provided account
@@ -99,16 +103,15 @@ func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Clien
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.accountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.accountID.Validate(client); err != nil {
 		return err
 	}
+
 	for _, tokenID := range transaction.tokens {
-		err = tokenID.Validate(client)
-	}
-	if err != nil {
-		return err
+		if err := tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -174,12 +177,7 @@ func (transaction *TokenAssociateTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenAssociateTransaction_getMethod(request request, channel *channel) method {
+func _TokenAssociateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().AssociateTokens,
 	}
@@ -223,10 +221,6 @@ func (transaction *TokenAssociateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenAssociateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -267,15 +261,15 @@ func (transaction *TokenAssociateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenAssociateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenAssociateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -286,6 +280,9 @@ func (transaction *TokenAssociateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -312,7 +309,7 @@ func (transaction *TokenAssociateTransaction) FreezeWith(client *Client) (*Token
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenAssociateTransaction) GetMaxTransactionFee() Hbar {
@@ -375,10 +372,6 @@ func (transaction *TokenAssociateTransaction) SetMaxRetry(count int) *TokenAssoc
 func (transaction *TokenAssociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenAssociateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -398,7 +391,6 @@ func (transaction *TokenAssociateTransaction) AddSignature(publicKey PublicKey, 
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TransactionReceiptQuery struct {
@@ -21,26 +22,12 @@ func (query *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.transactionID.AccountID.Validate(client)
-	if err != nil {
+
+	if err := query.transactionID.AccountID.Validate(client); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (query *TransactionReceiptQuery) setIncludeDuplicates(duplicates bool) *TransactionReceiptQuery {
-	query.duplicates = &duplicates
-	return query
-}
-
-func (query *TransactionReceiptQuery) getIncludeDuplicates() bool {
-	if query.duplicates != nil {
-		return *query.duplicates
-	}
-
-	return false
 }
 
 func (query *TransactionReceiptQuery) build() *proto.Query_TransactionGetReceipt {
@@ -76,7 +63,7 @@ func (query *TransactionReceiptQuery) queryMakeRequest() protoRequest {
 func (query *TransactionReceiptQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -113,13 +100,13 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		transactionReceiptQuery_shouldRetry,
+		_TransactionReceiptQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		transactionReceiptQuery_getMethod,
-		transactionReceiptQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_TransactionReceiptQueryGetMethod,
+		_TransactionReceiptQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -130,7 +117,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func transactionReceiptQuery_shouldRetry(request request, response response) executionState {
+func _TransactionReceiptQueryShouldRetry(request request, response response) executionState {
 	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
@@ -150,7 +137,7 @@ func transactionReceiptQuery_shouldRetry(request request, response response) exe
 	}
 }
 
-func transactionReceiptQuery_mapStatusError(request request, response response) error {
+func _TransactionReceiptQueryMapStatusError(request request, response response) error {
 	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
@@ -166,7 +153,7 @@ func transactionReceiptQuery_mapStatusError(request request, response response) 
 	}
 }
 
-func transactionReceiptQuery_getMethod(_ request, channel *channel) method {
+func _TransactionReceiptQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getCrypto().GetTransactionReceipts,
 	}
@@ -258,18 +245,17 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		request{
 			query: &query.Query,
 		},
-		transactionReceiptQuery_shouldRetry,
+		_TransactionReceiptQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		transactionReceiptQuery_getMethod,
-		transactionReceiptQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TransactionReceiptQueryGetMethod,
+		_TransactionReceiptQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
-		switch precheckErr := err.(type) {
-		case ErrHederaPreCheckStatus:
+		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
 			return TransactionReceipt{}, newErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
 		}
 		return TransactionReceipt{}, err

@@ -18,7 +18,7 @@ import (
 type TokenGrantKycTransaction struct {
 	Transaction
 	tokenID   TokenID
-	accountID AccountID
+	accountID *AccountID
 }
 
 func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
@@ -50,27 +50,30 @@ func (transaction *TokenGrantKycTransaction) GetTokenID() TokenID {
 }
 
 // The account to be KYCed
-func (transaction *TokenGrantKycTransaction) SetAccountID(id AccountID) *TokenGrantKycTransaction {
+func (transaction *TokenGrantKycTransaction) SetAccountID(accountID AccountID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.accountID = id
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
+
+	if err := transaction.tokenID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.accountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -128,12 +131,7 @@ func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenGrantKycTransaction_getMethod(request request, channel *channel) method {
+func _TokenGrantKycTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().GrantKycToTokenAccount,
 	}
@@ -177,10 +175,6 @@ func (transaction *TokenGrantKycTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenGrantKycTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -221,15 +215,15 @@ func (transaction *TokenGrantKycTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenGrantKycTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenGrantKycTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -240,6 +234,9 @@ func (transaction *TokenGrantKycTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -266,7 +263,7 @@ func (transaction *TokenGrantKycTransaction) FreezeWith(client *Client) (*TokenG
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenGrantKycTransaction) GetMaxTransactionFee() Hbar {
@@ -329,10 +326,6 @@ func (transaction *TokenGrantKycTransaction) SetMaxRetry(count int) *TokenGrantK
 func (transaction *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenGrantKycTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -352,7 +345,6 @@ func (transaction *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, s
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

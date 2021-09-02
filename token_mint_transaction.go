@@ -86,9 +86,8 @@ func (transaction *TokenMintTransaction) validateNetworkOnIDs(client *Client) er
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
+
+	if err := transaction.tokenID.Validate(client); err != nil {
 		return err
 	}
 
@@ -151,12 +150,7 @@ func (transaction *TokenMintTransaction) constructScheduleProtobuf() (*proto.Sch
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenMintTransaction_getMethod(request request, channel *channel) method {
+func _TokenMintTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().MintToken,
 	}
@@ -200,10 +194,6 @@ func (transaction *TokenMintTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenMintTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -243,15 +233,15 @@ func (transaction *TokenMintTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenMintTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenMintTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -262,6 +252,9 @@ func (transaction *TokenMintTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -288,7 +281,7 @@ func (transaction *TokenMintTransaction) FreezeWith(client *Client) (*TokenMintT
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenMintTransaction) GetMaxTransactionFee() Hbar {
@@ -351,10 +344,6 @@ func (transaction *TokenMintTransaction) SetMaxRetry(count int) *TokenMintTransa
 func (transaction *TokenMintTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenMintTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -374,7 +363,6 @@ func (transaction *TokenMintTransaction) AddSignature(publicKey PublicKey, signa
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

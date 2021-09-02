@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TopicInfoQuery struct {
@@ -32,9 +33,8 @@ func (query *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.topicID.Validate(client)
-	if err != nil {
+
+	if err := query.topicID.Validate(client); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (query *TopicInfoQuery) queryMakeRequest() protoRequest {
 func (query *TopicInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -108,13 +108,13 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		topicInfoQuery_shouldRetry,
+		_TopicInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		topicInfoQuery_getMethod,
-		topicInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_TopicInfoQueryGetMethod,
+		_TopicInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -124,22 +124,21 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetConsensusGetTopicInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func topicInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
+func _TopicInfoQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func topicInfoQuery_mapStatusError(_ request, response response) error {
+func _TopicInfoQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func topicInfoQuery_getMethod(_ request, channel *channel) method {
+func _TopicInfoQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getTopic().GetTopicInfo,
 	}
@@ -188,7 +187,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return TopicInfo{}, err
 	}
@@ -198,13 +197,13 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		topicInfoQuery_shouldRetry,
+		_TopicInfoQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		topicInfoQuery_getMethod,
-		topicInfoQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TopicInfoQueryGetMethod,
+		_TopicInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

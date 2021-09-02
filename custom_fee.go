@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type CustomFee struct {
@@ -16,8 +16,7 @@ func customFeeFromProtobuf(customFee *proto.CustomFee) Fee {
 
 	var id *AccountID
 	if customFee.FeeCollectorAccountId != nil {
-		id_ := accountIDFromProtobuf(customFee.FeeCollectorAccountId)
-		id = &id_
+		id = accountIDFromProtobuf(customFee.FeeCollectorAccountId)
 	}
 
 	fee := CustomFee{

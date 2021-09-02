@@ -1,14 +1,14 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type AssessedCustomFee struct {
 	Amount                int64
 	TokenID               *TokenID
-	FeeCollectorAccountId *AccountID
+	FeeCollectorAccountId *AccountID // nolint
 	PayerAccountIDs       []*AccountID
 }
 
@@ -19,14 +19,13 @@ func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) Assesse
 	payerAccountIds := make([]*AccountID, len(assessedFee.EffectivePayerAccountId))
 
 	for _, id := range assessedFee.EffectivePayerAccountId {
-		accountID := accountIDFromProtobuf(id)
-		payerAccountIds = append(payerAccountIds, &accountID)
+		payerAccountIds = append(payerAccountIds, accountIDFromProtobuf(id))
 	}
 
 	return AssessedCustomFee{
 		Amount:                assessedFee.Amount,
 		TokenID:               &tokenID,
-		FeeCollectorAccountId: &accountID,
+		FeeCollectorAccountId: accountID,
 		PayerAccountIDs:       payerAccountIds,
 	}
 }

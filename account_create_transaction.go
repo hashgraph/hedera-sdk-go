@@ -16,7 +16,7 @@ import (
 // with a null key. Future versions of the API will support multiple realms and multiple shards.
 type AccountCreateTransaction struct {
 	Transaction
-	proxyAccountID            AccountID
+	proxyAccountID            *AccountID
 	key                       Key
 	initialBalance            uint64
 	receiveRecordThreshold    uint64
@@ -36,12 +36,6 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
 	transaction.SetMaxTransactionFee(NewHbar(2))
 
-	// Default to maximum values for record thresholds. Without this records would be
-	// auto-created whenever a send or receive transaction takes place for this new account.
-	// This should be an explicit ask.
-	transaction.setReceiveRecordThreshold(MaxHbar)
-	transaction.setSendRecordThreshold(MaxHbar)
-
 	return &transaction
 }
 
@@ -53,8 +47,8 @@ func accountCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 		proxyAccountID:            accountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
 		key:                       key,
 		initialBalance:            pb.GetCryptoCreateAccount().InitialBalance,
-		receiveRecordThreshold:    pb.GetCryptoCreateAccount().GetReceiveRecordThreshold(),
-		sendRecordThreshold:       pb.GetCryptoCreateAccount().GetSendRecordThreshold(),
+		receiveRecordThreshold:    pb.GetCryptoCreateAccount().GetReceiveRecordThreshold(), // nolint
+		sendRecordThreshold:       pb.GetCryptoCreateAccount().GetSendRecordThreshold(),    // nolint
 		autoRenewPeriod:           &renew,
 		memo:                      pb.GetCryptoCreateAccount().GetMemo(),
 		receiverSignatureRequired: pb.GetCryptoCreateAccount().ReceiverSigRequired,
@@ -104,46 +98,22 @@ func (transaction *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration 
 	return time.Duration(0)
 }
 
-// SetSendRecordThreshold sets the threshold amount for which an account record is created for any send/withdraw
-// transaction
-//
-// Deprecated: No longer used by Hedera
-func (transaction *AccountCreateTransaction) setSendRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
-	transaction.requireNotFrozen()
-	transaction.sendRecordThreshold = uint64(recordThreshold.AsTinybar())
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) getSendRecordThreshold() Hbar {
-	return HbarFromTinybar(int64(transaction.sendRecordThreshold))
-}
-
-// SetReceiveRecordThreshold sets the threshold amount for which an account record is created for any receive/deposit
-// transaction
-//
-// Deprecated: No longer used by Hedera
-func (transaction *AccountCreateTransaction) setReceiveRecordThreshold(recordThreshold Hbar) *AccountCreateTransaction {
-	transaction.requireNotFrozen()
-	transaction.receiveRecordThreshold = uint64(recordThreshold.AsTinybar())
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) getReceiveRecordThreshold() Hbar {
-	return HbarFromTinybar(int64(transaction.receiveRecordThreshold))
-}
-
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
 // is an invalid account, or is an account that isn't a node, then this account is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
 func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.proxyAccountID = id
+	transaction.proxyAccountID = &id
 	return transaction
 }
 
 func (transaction *AccountCreateTransaction) GetProxyAccountID() AccountID {
-	return transaction.proxyAccountID
+	if transaction.proxyAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.proxyAccountID
 }
 
 func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *AccountCreateTransaction {
@@ -176,7 +146,7 @@ func (transaction *AccountCreateTransaction) build() *proto.TransactionBody {
 		body.Key = transaction.key.toProtoKey()
 	}
 
-	if !transaction.proxyAccountID.isZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
 	}
 
@@ -250,12 +220,7 @@ func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func accountCreateTransaction_getMethod(request request, channel *channel) method {
+func _AccountCreateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().CreateAccount,
 	}
@@ -299,10 +264,6 @@ func (transaction *AccountCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountCreateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -343,15 +304,15 @@ func (transaction *AccountCreateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		accountCreateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_AccountCreateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -362,6 +323,9 @@ func (transaction *AccountCreateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -388,7 +352,7 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 		return &AccountCreateTransaction{}, err
 	}
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -451,10 +415,6 @@ func (transaction *AccountCreateTransaction) SetMaxRetry(count int) *AccountCrea
 func (transaction *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -474,7 +434,6 @@ func (transaction *AccountCreateTransaction) AddSignature(publicKey PublicKey, s
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

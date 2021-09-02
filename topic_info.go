@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TopicInfo struct {
@@ -40,11 +41,10 @@ func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, erro
 		tempTopicInfo.SubmitKey, err = keyFromProtobuf(submitKey)
 	}
 
-	if ARAccountID := topicInfo.AutoRenewAccount; ARAccountID != nil {
-		ID := accountIDFromProtobuf(ARAccountID)
-
-		tempTopicInfo.AutoRenewAccountID = &ID
+	if autoRenewAccount := topicInfo.AutoRenewAccount; autoRenewAccount != nil {
+		tempTopicInfo.AutoRenewAccountID = accountIDFromProtobuf(autoRenewAccount)
 	}
+
 	return tempTopicInfo, err
 }
 

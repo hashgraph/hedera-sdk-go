@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
@@ -280,7 +281,7 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TOKEN_MAX_SUPPLY_REACHED"), err.Error())
+		assert.Equal(t, "exceptional receipt status: TOKEN_MAX_SUPPLY_REACHED", err.Error())
 	}
 
 	tx, err := NewAccountDeleteTransaction().
@@ -301,7 +302,7 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) {
+func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)

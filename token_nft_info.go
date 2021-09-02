@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TokenNftInfo struct {
@@ -18,9 +19,14 @@ func tokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
 		return TokenNftInfo{}
 	}
 
+	accountID := AccountID{}
+	if pb.AccountID != nil {
+		accountID = *accountIDFromProtobuf(pb.AccountID)
+	}
+
 	return TokenNftInfo{
 		NftID:        nftIDFromProtobuf(pb.NftID),
-		AccountID:    accountIDFromProtobuf(pb.AccountID),
+		AccountID:    accountID,
 		CreationTime: timeFromProtobuf(pb.CreationTime),
 		Metadata:     pb.Metadata,
 	}

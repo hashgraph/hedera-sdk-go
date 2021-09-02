@@ -15,7 +15,7 @@ func (tokenBalances *TokenBalanceMap) Get(tokenID TokenID) uint64 {
 }
 
 func tokenBalanceMapFromProtobuf(pb []*proto.TokenBalance) TokenBalanceMap {
-	balances := make(map[string]uint64, 0)
+	balances := make(map[string]uint64)
 
 	for _, tokenBalance := range pb {
 		balances[tokenIDFromProtobuf(tokenBalance.TokenId).String()] = tokenBalance.Balance
@@ -24,7 +24,7 @@ func tokenBalanceMapFromProtobuf(pb []*proto.TokenBalance) TokenBalanceMap {
 	return TokenBalanceMap{balances}
 }
 
-func (tokenBalances *TokenBalanceMap) toProtobuf() []*proto.TokenBalance {
+func (tokenBalances *TokenBalanceMap) toProtobuf() []*proto.TokenBalance { // nolint
 	decimals := make([]*proto.TokenBalance, 0)
 
 	for s, t := range tokenBalances.balances {

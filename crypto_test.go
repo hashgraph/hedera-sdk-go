@@ -3,8 +3,9 @@ package hedera
 import (
 	"bytes"
 	"crypto/ed25519"
-	"github.com/stretchr/testify/assert"
 	"strings"
+
+	"github.com/stretchr/testify/assert"
 
 	"testing"
 )
@@ -202,11 +203,14 @@ func TestUnitMnemonic3(t *testing.T) {
 
 func TestUnitSigning(t *testing.T) {
 	priKey, err := PrivateKeyFromString(testPrivateKeyStr)
+	assert.NoError(t, err)
+
 	pubKey, err := PublicKeyFromString(testPublicKeyStr)
+	assert.NoError(t, err)
+
 	testSignData := []byte("this is the test data to sign")
 	signature := priKey.Sign(testSignData)
 
-	assert.NoError(t, err)
 	assert.True(t, ed25519.Verify(pubKey.Bytes(), []byte("this is the test data to sign"), signature))
 }
 
@@ -336,5 +340,4 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
 	assert.NoError(t, err)
-
 }

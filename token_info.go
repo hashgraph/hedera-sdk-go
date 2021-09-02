@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TokenInfo struct {
@@ -36,10 +37,8 @@ func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
 	switch pb.Number() {
 	case 1:
 		freezeStatus = true
-		break
 	case 2:
 		freezeStatus = false
-		break
 	default:
 		return nil
 	}
@@ -52,10 +51,8 @@ func kycStatusFromProtobuf(pb proto.TokenKycStatus) *bool {
 	switch pb.Number() {
 	case 1:
 		kycStatus = true
-		break
 	case 2:
 		kycStatus = false
-		break
 	default:
 		return nil
 	}
@@ -72,10 +69,8 @@ func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *proto.TokenFreezeStatus {
 	switch *tokenInfo.DefaultFreezeStatus {
 	case true:
 		freezeStatus = proto.TokenFreezeStatus_Frozen
-		break
 	case false:
 		freezeStatus = proto.TokenFreezeStatus_Unfrozen
-		break
 	default:
 		freezeStatus = proto.TokenFreezeStatus_FreezeNotApplicable
 	}
@@ -93,10 +88,8 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 	switch *tokenInfo.DefaultKycStatus {
 	case true:
 		kycStatus = proto.TokenKycStatus_Granted
-		break
 	case false:
 		kycStatus = proto.TokenKycStatus_Revoked
-		break
 	default:
 		kycStatus = proto.TokenKycStatus_KycNotApplicable
 	}
@@ -144,9 +137,14 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		expirationTime = time.Unix(pb.GetExpiry().Seconds, int64(pb.GetExpiry().Nanos))
 	}
 
-	var accountID AccountID
+	var autoRenewAccountID AccountID
 	if pb.AutoRenewAccount != nil {
-		accountID = accountIDFromProtobuf(pb.AutoRenewAccount)
+		autoRenewAccountID = *accountIDFromProtobuf(pb.AutoRenewAccount)
+	}
+
+	var treasury AccountID
+	if pb.AutoRenewAccount != nil {
+		treasury = *accountIDFromProtobuf(pb.AutoRenewAccount)
 	}
 
 	customFees := make([]Fee, 0)
@@ -162,7 +160,7 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		Symbol:              pb.Symbol,
 		Decimals:            pb.Decimals,
 		TotalSupply:         pb.TotalSupply,
-		Treasury:            accountIDFromProtobuf(pb.Treasury),
+		Treasury:            treasury,
 		AdminKey:            adminKey,
 		KycKey:              kycKey,
 		FreezeKey:           freezeKey,
@@ -172,7 +170,7 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		DefaultKycStatus:    kycStatusFromProtobuf(pb.DefaultKycStatus),
 		Deleted:             pb.Deleted,
 		AutoRenewPeriod:     &autoRenewPeriod,
-		AutoRenewAccountID:  accountID,
+		AutoRenewAccountID:  autoRenewAccountID,
 		ExpirationTime:      &expirationTime,
 		TokenMemo:           pb.Memo,
 		TokenType:           TokenType(pb.TokenType),

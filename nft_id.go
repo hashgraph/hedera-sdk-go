@@ -2,16 +2,16 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"strconv"
 	"strings"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type NftID struct {
 	TokenID      TokenID
 	SerialNumber int64
-	checksum     *string
 }
 
 func NftIDFromString(s string) (NftID, error) {
@@ -43,17 +43,6 @@ func (id *NftID) Validate(client *Client) error {
 	}
 
 	return nil
-}
-
-func (id *NftID) setNetworkWithClient(client *Client) {
-	if client.network.networkName != nil {
-		id.setNetwork(*client.network.networkName)
-	}
-}
-
-func (id *NftID) setNetwork(name NetworkName) {
-	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.TokenID.Shard, id.TokenID.Realm, id.TokenID.Token))
-	id.checksum = &checksum
 }
 
 func (id NftID) String() string {

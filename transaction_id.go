@@ -2,12 +2,13 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/pkg/errors"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -23,7 +24,7 @@ type TransactionID struct {
 // NewTransactionID constructs a new Transaction id struct with the provided AccountID and the valid start time set
 // to the current time - 10 seconds.
 func TransactionIDGenerate(accountID AccountID) TransactionID {
-	allowance := -(time.Duration(rand.Int63n(5*int64(time.Second))) + (8 * time.Second))
+	allowance := -(time.Duration(rand.Int63n(5*int64(time.Second))) + (8 * time.Second)) // nolint
 	validStart := time.Now().UTC().Add(allowance)
 
 	return TransactionID{&accountID, &validStart, false}
@@ -72,16 +73,16 @@ func (id TransactionID) String() string {
 	}
 
 	if id.scheduled {
-		returnString = returnString + "?scheduled"
+		returnString += "?scheduled"
 	}
 
 	return returnString
 }
 
-func TransactionIdFromString(data string) (TransactionID, error) {
+func TransactionIdFromString(data string) (TransactionID, error) { // nolint
 	parts := strings.SplitN(data, "?", 2)
 
-	var accountId *AccountID
+	var accountID *AccountID
 	var validStart *time.Time
 	scheduled := len(parts) == 2 && strings.Compare(parts[1], "scheduled") == 0
 
@@ -92,7 +93,7 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 	}
 
 	temp, err := AccountIDFromString(parts[0])
-	accountId = &temp
+	accountID = &temp
 	if err != nil {
 		return TransactionID{}, err
 	}
@@ -117,7 +118,7 @@ func TransactionIdFromString(data string) (TransactionID, error) {
 	validStart = &temp2
 
 	return TransactionID{
-		AccountID:  accountId,
+		AccountID:  accountID,
 		ValidStart: validStart,
 		scheduled:  scheduled,
 	}, nil
@@ -152,7 +153,7 @@ func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
 
 	var accountID AccountID
 	if pb.AccountID != nil {
-		accountID = accountIDFromProtobuf(pb.AccountID)
+		accountID = *accountIDFromProtobuf(pb.AccountID)
 	}
 
 	return TransactionID{&accountID, &validStart, pb.Scheduled}
@@ -187,25 +188,4 @@ func (id TransactionID) SetScheduled(scheduled bool) TransactionID {
 
 func (id TransactionID) GetScheduled() bool {
 	return id.scheduled
-}
-
-func (id TransactionID) transactionIDvalidateNetworkOnIDs(client *Client) error {
-	if client == nil {
-		return nil
-	}
-	if !id.AccountID.isZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.AccountID.Shard, id.AccountID.Realm, id.AccountID.Account))
-		if err != nil {
-			return err
-		}
-		err = checksumVerify(tempChecksum.status)
-		if err != nil {
-			return err
-		}
-		if tempChecksum.correctChecksum != *id.AccountID.checksum {
-			return errNetworkMismatch
-		}
-	}
-
-	return nil
 }

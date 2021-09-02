@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	protobuf "github.com/golang/protobuf/proto"
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -22,29 +22,6 @@ type TransactionRecord struct {
 	CallResult         *ContractFunctionResult
 	CallResultIsCreate bool
 	AssessedCustomFees []AssessedCustomFee
-}
-
-func newTransactionRecord(
-	receipt TransactionReceipt, transactionHash []byte,
-	consensusTimestamp time.Time, transactionID TransactionID,
-	transactionMemo string, transactionFee Hbar,
-	transfers []Transfer, CallResult *ContractFunctionResult,
-	CallResultIsCreate bool) TransactionRecord {
-
-	record := TransactionRecord{
-		Receipt:            receipt,
-		TransactionHash:    transactionHash,
-		ConsensusTimestamp: consensusTimestamp,
-		TransactionID:      transactionID,
-		TransactionMemo:    transactionMemo,
-		TransactionFee:     transactionFee,
-		Transfers:          transfers,
-		CallResult:         CallResult,
-		CallResultIsCreate: CallResultIsCreate,
-	}
-
-	return record
-
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -68,8 +45,8 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 		return TransactionRecord{}
 	}
 	var accountTransfers = make([]Transfer, len(pb.TransferList.AccountAmounts))
-	var tokenTransfers = make(map[TokenID][]TokenTransfer, 0)
-	var nftTransfers = make(map[TokenID][]TokenNftTransfer, 0)
+	var tokenTransfers = make(map[TokenID][]TokenTransfer)
+	var nftTransfers = make(map[TokenID][]TokenNftTransfer)
 
 	for i, element := range pb.TransferList.AccountAmounts {
 		accountTransfers[i] = transferFromProtobuf(element)
@@ -121,16 +98,16 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 }
 
 func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
-	var ammounts = make([]*proto.AccountAmount, 0)
-	for _, ammount := range record.Transfers {
-		ammounts = append(ammounts, &proto.AccountAmount{
-			AccountID: ammount.AccountID.toProtobuf(),
-			Amount:    ammount.Amount.tinybar,
+	var amounts = make([]*proto.AccountAmount, 0)
+	for _, amount := range record.Transfers {
+		amounts = append(amounts, &proto.AccountAmount{
+			AccountID: amount.AccountID.toProtobuf(),
+			Amount:    amount.Amount.tinybar,
 		})
 	}
 
 	var transferList = proto.TransferList{
-		AccountAmounts: ammounts,
+		AccountAmounts: amounts,
 	}
 
 	var tokenTransfers = make([]*proto.TokenTransferList, 0)

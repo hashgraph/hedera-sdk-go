@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type AccountInfoQuery struct {
@@ -30,9 +31,8 @@ func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.accountID.Validate(client)
-	if err != nil {
+
+	if err := query.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -48,17 +48,17 @@ func (query *AccountInfoQuery) build() *proto.Query_CryptoGetInfo {
 	}
 }
 
-func accountInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
+func _AccountInfoQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func accountInfoQuery_mapStatusError(_ request, response response) error {
+func _AccountInfoQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func accountInfoQuery_getMethod(_ request, channel *channel) method {
+func _AccountInfoQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getCrypto().GetAccountInfo,
 	}
@@ -80,7 +80,7 @@ func (query *AccountInfoQuery) queryMakeRequest() protoRequest {
 func (query *AccountInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -117,13 +117,13 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		accountInfoQuery_shouldRetry,
+		_AccountInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		accountInfoQuery_getMethod,
-		accountInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_AccountInfoQueryGetMethod,
+		_AccountInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -133,9 +133,9 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetCryptoGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+
+	return HbarFromTinybar(cost), nil
 }
 
 // SetNodeAccountIDs sets the node AccountID for this AccountInfoQuery.
@@ -144,13 +144,13 @@ func (query *AccountInfoQuery) SetNodeAccountIDs(accountID []AccountID) *Account
 	return query
 }
 
-//SetQueryPayment sets the Hbar payment to pay the node a fee for handling this query
+// SetQueryPayment sets the Hbar payment to pay the node a fee for handling this query
 func (query *AccountInfoQuery) SetQueryPayment(queryPayment Hbar) *AccountInfoQuery {
 	query.queryPayment = queryPayment
 	return query
 }
 
-//SetMaxQueryPayment sets the maximum payment allowable for this query.
+// SetMaxQueryPayment sets the maximum payment allowable for this query.
 func (query *AccountInfoQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *AccountInfoQuery {
 	query.maxQueryPayment = queryMaxPayment
 	return query
@@ -203,7 +203,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -213,13 +213,13 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		accountInfoQuery_shouldRetry,
+		_AccountInfoQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		accountInfoQuery_getMethod,
-		accountInfoQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_AccountInfoQueryGetMethod,
+		_AccountInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

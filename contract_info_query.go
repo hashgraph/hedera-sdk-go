@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ContractInfoQuery retrieves information about a smart contract instance. This includes the account that it uses, the
@@ -38,9 +39,8 @@ func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.contractID.Validate(client)
-	if err != nil {
+
+	if err := query.contractID.Validate(client); err != nil {
 		return err
 	}
 
@@ -75,7 +75,7 @@ func (query *ContractInfoQuery) queryMakeRequest() protoRequest {
 func (query *ContractInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -112,13 +112,13 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		contractInfoQuery_shouldRetry,
+		_ContractInfoQueryShouldRetry,
 		protoResp,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		contractInfoQuery_getMethod,
-		contractInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_ContractInfoQueryGetMethod,
+		_ContractInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -128,22 +128,22 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetContractGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+
+	return HbarFromTinybar(cost), nil
 }
 
-func contractInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
+func _ContractInfoQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func contractInfoQuery_mapStatusError(_ request, response response) error {
+func _ContractInfoQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func contractInfoQuery_getMethod(_ request, channel *channel) method {
+func _ContractInfoQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getContract().GetContractInfo,
 	}
@@ -191,7 +191,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return ContractInfo{}, err
 	}
@@ -201,13 +201,13 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		contractInfoQuery_shouldRetry,
+		_ContractInfoQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		contractInfoQuery_getMethod,
-		contractInfoQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_ContractInfoQueryGetMethod,
+		_ContractInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

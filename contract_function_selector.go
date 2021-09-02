@@ -270,7 +270,9 @@ func (selector *ContractFunctionSelector) build(function *string) []byte {
 	}
 
 	hash := sha3.NewLegacyKeccak256()
-	hash.Write([]byte(selector.String()))
+	if _, err := hash.Write([]byte(selector.String())); err != nil {
+		panic(err)
+	}
 
 	return hash.Sum(nil)[0:4]
 }

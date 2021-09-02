@@ -3,18 +3,16 @@ package hedera
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationLiveHashAddTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	_hash, err := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
-	if err != nil {
-
-	}
+	_hash, _ := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
@@ -24,6 +22,7 @@ func TestIntegrationLiveHashAddTransactionCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(1)).
 		Execute(env.Client)
+	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)

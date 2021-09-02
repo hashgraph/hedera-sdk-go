@@ -2,10 +2,11 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"math"
 	"regexp"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 // Hbar is a typesafe wrapper around values of HBAR providing foolproof conversions to other denominations.
@@ -56,14 +57,12 @@ func (hbar Hbar) String() string {
 }
 
 func HbarFromString(hbar string) (Hbar, error) {
-	match, err := regexp.Compile(`^((?:\+|\-)?\d+(?:\.\d+)?)(?: (tℏ|μℏ|mℏ|ℏ|kℏ|Mℏ|Gℏ))?$`)
-	if err != nil {
-		return Hbar{}, err
-	}
+	var err error
+	match := regexp.MustCompile(`^((?:\+|\-)?\d+(?:\.\d+)?)(?: (tℏ|μℏ|mℏ|ℏ|kℏ|Mℏ|Gℏ))?$`)
 
 	matchArray := match.FindStringSubmatch(hbar)
 	if len(matchArray) == 0 {
-		return Hbar{}, errors.New("Invalid number and/or symbol.")
+		return Hbar{}, errors.New("invalid number and/or symbol")
 	}
 
 	a, err := strconv.ParseFloat(matchArray[1], 64)

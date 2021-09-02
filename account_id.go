@@ -2,9 +2,10 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"strings"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 // AccountID is the ID for a Hedera account
@@ -124,18 +125,16 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func accountIDFromProtobuf(accountID *proto.AccountID) AccountID {
+func accountIDFromProtobuf(accountID *proto.AccountID) *AccountID {
 	if accountID == nil {
-		return AccountID{}
+		return nil
 	}
 
-	id := AccountID{
+	return &AccountID{
 		Shard:   uint64(accountID.ShardNum),
 		Realm:   uint64(accountID.RealmNum),
 		Account: uint64(accountID.AccountNum),
 	}
-
-	return id
 }
 
 func (id AccountID) isZero() bool {
@@ -165,5 +164,10 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 		return AccountID{}, err
 	}
 
-	return accountIDFromProtobuf(&pb), nil
+	id := accountIDFromProtobuf(&pb)
+	if id == nil {
+		return AccountID{}, err
+	}
+
+	return *id, nil
 }

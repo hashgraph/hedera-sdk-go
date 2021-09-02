@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -107,12 +106,12 @@ func TestClientFromConfigWithOperator(t *testing.T) {
 func TestClientFromConfigWrongType(t *testing.T) {
 	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeMirror))
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("mirrorNetwork is expected to be either string or an array of strings"), err.Error())
+		assert.Equal(t, "mirrorNetwork is expected to be either string or an array of strings", err.Error())
 	}
 
 	_, err = ClientFromConfig([]byte(testClientJSONWrongTypeNetwork))
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("network is expected to be map of string to string, or string"), err.Error())
+		assert.Equal(t, "network is expected to be map of string to string, or string", err.Error())
 	}
 }
 

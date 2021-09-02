@@ -51,10 +51,6 @@ type protoRequest struct {
 	transaction *proto.Transaction
 }
 
-type QueryHeader struct {
-	header *proto.QueryHeader
-}
-
 type request struct {
 	query       *Query
 	transaction *Transaction
@@ -74,16 +70,15 @@ func execute(
 	var maxAttempts int
 	var minBackoff *time.Duration
 	var maxBackoff *time.Duration
+
 	if client.maxAttempts != nil {
 		maxAttempts = *client.maxAttempts
 	} else {
-		maxAttempts = 10
 		if request.query != nil {
 			maxAttempts = request.query.maxRetry
 		} else {
 			maxAttempts = request.transaction.maxRetry
 		}
-
 	}
 
 	if request.query != nil {
@@ -173,7 +168,6 @@ func execute(
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
-
 	}
 
 	return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
@@ -198,7 +192,7 @@ func executableDefaultRetryHandler(err error) bool {
 			return false
 		}
 
-		return RST_STREAM.FindIndex([]byte(grpcErr.Message())) != nil
+		return rstStream.FindIndex([]byte(grpcErr.Message())) != nil
 	default:
 		return false
 	}

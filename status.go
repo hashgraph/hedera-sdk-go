@@ -230,7 +230,7 @@ const (
 )
 
 // String() returns a string representation of the status
-func (status Status) String() string {
+func (status Status) String() string { // nolint
 	switch status {
 	case StatusOk:
 		return "OK"

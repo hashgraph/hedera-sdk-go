@@ -40,7 +40,7 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 	var security grpc.DialOption
 
 	if strings.HasSuffix(node.address, ":50212") || strings.HasSuffix(node.address, ":443") {
-		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
+		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
 		security = grpc.WithInsecure()
 	}

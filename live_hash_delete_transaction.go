@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"errors"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 
 	"time"
@@ -9,7 +10,7 @@ import (
 
 type LiveHashDeleteTransaction struct {
 	Transaction
-	accountID AccountID
+	accountID *AccountID
 	hash      []byte
 }
 
@@ -40,23 +41,26 @@ func (transaction *LiveHashDeleteTransaction) GetHash() []byte {
 	return transaction.hash
 }
 
-func (transaction *LiveHashDeleteTransaction) SetAccountID(id AccountID) *LiveHashDeleteTransaction {
+func (transaction *LiveHashDeleteTransaction) SetAccountID(accountID AccountID) *LiveHashDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.accountID = id
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 func (transaction *LiveHashDeleteTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.accountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -89,12 +93,7 @@ func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() (*prot
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func liveHashDeleteTransaction_getMethod(request request, channel *channel) method {
+func _LiveHashDeleteTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().DeleteLiveHash,
 	}
@@ -138,10 +137,6 @@ func (transaction *LiveHashDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *LiveHashDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -182,15 +177,15 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		liveHashDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_LiveHashDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -201,6 +196,9 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -227,7 +225,7 @@ func (transaction *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveH
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *LiveHashDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -290,10 +288,6 @@ func (transaction *LiveHashDeleteTransaction) SetMaxRetry(count int) *LiveHashDe
 func (transaction *LiveHashDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashDeleteTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -313,7 +307,6 @@ func (transaction *LiveHashDeleteTransaction) AddSignature(publicKey PublicKey, 
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

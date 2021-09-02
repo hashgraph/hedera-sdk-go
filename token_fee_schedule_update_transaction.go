@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -61,9 +62,8 @@ func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(clien
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
+
+	if err := transaction.tokenID.Validate(client); err != nil {
 		return err
 	}
 
@@ -106,12 +106,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) constructScheduleProtobuf(
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenFeeScheduleUpdateTransaction_getMethod(request request, channel *channel) method {
+func _TokenFeeScheduleUpdateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().UpdateTokenFeeSchedule,
 	}
@@ -210,15 +205,15 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenFeeScheduleUpdateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenFeeScheduleUpdateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -229,6 +224,9 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -255,7 +253,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) FreezeWith(client *Client)
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -318,10 +316,6 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxRetry(count int) *To
 func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFeeScheduleUpdateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -341,7 +335,6 @@ func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey Pub
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

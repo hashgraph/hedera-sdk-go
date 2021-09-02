@@ -9,7 +9,7 @@ import (
 // A TopicCreateTransaction is for creating a new Topic on HCS.
 type TopicCreateTransaction struct {
 	Transaction
-	autoRenewAccountID AccountID
+	autoRenewAccountID *AccountID
 	adminKey           Key
 	submitKey          Key
 	memo               string
@@ -29,11 +29,10 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 	// Default to maximum values for record thresholds. Without this records would be
 	// auto-created whenever a send or receive transaction takes place for this new account.
 	// This should be an explicit ask.
-	//transaction.SetReceiveRecordThreshold(MaxHbar)
-	//transaction.SetSendRecordThreshold(MaxHbar)
+	// transaction.SetReceiveRecordThreshold(MaxHbar)
+	// transaction.SetSendRecordThreshold(MaxHbar)
 
 	return &transaction
-
 }
 
 func topicCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicCreateTransaction {
@@ -107,24 +106,27 @@ func (transaction *TopicCreateTransaction) GetAutoRenewPeriod() time.Duration {
 // topic. The topic lifetime will be extended up to a maximum of the autoRenewPeriod or however long the topic can be
 // extended using all funds on the account (whichever is the smaller duration/amount).
 //
-//If specified, there must be an adminKey and the autoRenewAccount must sign this transaction.
-func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(id AccountID) *TopicCreateTransaction {
+// If specified, there must be an adminKey and the autoRenewAccount must sign this transaction.
+func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(autoRenewAccountID AccountID) *TopicCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.autoRenewAccountID = id
+	transaction.autoRenewAccountID = &autoRenewAccountID
 	return transaction
 }
 
 func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
-	return transaction.autoRenewAccountID
+	if transaction.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.autoRenewAccountID
 }
 
 func (transaction *TopicCreateTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.autoRenewAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.autoRenewAccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -204,12 +206,7 @@ func (transaction *TopicCreateTransaction) constructScheduleProtobuf() (*proto.S
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func topicCreateTransaction_getMethod(request request, channel *channel) method {
+func _TopicCreateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getTopic().CreateTopic,
 	}
@@ -253,10 +250,6 @@ func (transaction *TopicCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicCreateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -297,15 +290,15 @@ func (transaction *TopicCreateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		topicCreateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TopicCreateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -316,6 +309,9 @@ func (transaction *TopicCreateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -342,7 +338,7 @@ func (transaction *TopicCreateTransaction) FreezeWith(client *Client) (*TopicCre
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TopicCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -405,10 +401,6 @@ func (transaction *TopicCreateTransaction) SetMaxRetry(count int) *TopicCreateTr
 func (transaction *TopicCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicCreateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -428,7 +420,6 @@ func (transaction *TopicCreateTransaction) AddSignature(publicKey PublicKey, sig
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

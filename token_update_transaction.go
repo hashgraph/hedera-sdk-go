@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/wrappers"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -14,8 +15,8 @@ import (
 type TokenUpdateTransaction struct {
 	Transaction
 	tokenID            TokenID
-	treasuryAccountID  AccountID
-	autoRenewAccountID AccountID
+	treasuryAccountID  *AccountID
+	autoRenewAccountID *AccountID
 	tokenName          string
 	memo               string
 	tokenSymbol        string
@@ -104,14 +105,18 @@ func (transaction *TokenUpdateTransaction) GetTokenName() string {
 // The new Treasury account of the Token. If the provided treasury account is not existing or
 // deleted, the response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token
 // balance held in the previous Treasury Account is transferred to the new one.
-func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(id AccountID) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.treasuryAccountID = id
+	transaction.treasuryAccountID = &treasuryAccountID
 	return transaction
 }
 
 func (transaction *TokenUpdateTransaction) GetTreasuryAccountID() AccountID {
-	return transaction.treasuryAccountID
+	if transaction.treasuryAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.treasuryAccountID
 }
 
 // The new Admin key of the Token. If Token is immutable, transaction will resolve to
@@ -186,14 +191,18 @@ func (transaction *TokenUpdateTransaction) GetFeeScheduleKey() Key {
 
 // The new account which will be automatically charged to renew the token's expiration, at
 // autoRenewPeriod interval.
-func (transaction *TokenUpdateTransaction) SetAutoRenewAccount(id AccountID) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.autoRenewAccountID = id
+	transaction.autoRenewAccountID = &autoRenewAccountID
 	return transaction
 }
 
 func (transaction *TokenUpdateTransaction) GetAutoRenewAccount() AccountID {
-	return transaction.autoRenewAccountID
+	if transaction.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.autoRenewAccountID
 }
 
 // The new interval at which the auto-renew account will be charged to extend the token's expiry.
@@ -243,17 +252,16 @@ func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) 
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
+
+	if err := transaction.tokenID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.treasuryAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.treasuryAccountID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.autoRenewAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.autoRenewAccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -393,12 +401,7 @@ func (transaction *TokenUpdateTransaction) constructScheduleProtobuf() (*proto.S
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenUpdateTransaction_getMethod(request request, channel *channel) method {
+func _TokenUpdateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().UpdateToken,
 	}
@@ -442,10 +445,6 @@ func (transaction *TokenUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenUpdateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -486,15 +485,15 @@ func (transaction *TokenUpdateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenUpdateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenUpdateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -505,6 +504,9 @@ func (transaction *TokenUpdateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -531,7 +533,7 @@ func (transaction *TokenUpdateTransaction) FreezeWith(client *Client) (*TokenUpd
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -594,10 +596,6 @@ func (transaction *TokenUpdateTransaction) SetMaxRetry(count int) *TokenUpdateTr
 func (transaction *TokenUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUpdateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -617,7 +615,6 @@ func (transaction *TokenUpdateTransaction) AddSignature(publicKey PublicKey, sig
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

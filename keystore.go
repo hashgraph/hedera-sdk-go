@@ -11,8 +11,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 
-	"golang.org/x/crypto/pbkdf2"
 	"io"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
 type keystore struct {
@@ -64,7 +65,7 @@ const saltLen uint = 32
 func randomBytes(n uint) ([]byte, error) {
 	// based on https://github.com/gophercon/2016-talks/tree/master/GeorgeTankersley-CryptoForGoDevelopers
 	b := make([]byte, n)
-	_, err := io.ReadFull(rand.Reader, b[:])
+	_, err := io.ReadFull(rand.Reader, b)
 	if err != nil {
 		return nil, err
 	}
@@ -97,9 +98,7 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 
 	h := hmac.New(sha512.New384, key[16:])
 
-	_, err = h.Write(cipherText)
-
-	if err != nil {
+	if _, err = h.Write(cipherText); err != nil {
 		return nil, err
 	}
 

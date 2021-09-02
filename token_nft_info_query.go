@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TokenNftInfoQuery struct {
@@ -26,59 +27,59 @@ func (query *TokenNftInfoQuery) GetNftID() NftID {
 	return query.nftID
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) SetTokenID(id TokenID) *TokenNftInfoQuery {
 	return query
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) GetTokenID() TokenID {
 	return TokenID{}
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) SetAccountID(id AccountID) *TokenNftInfoQuery {
 	return query
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) GetAccountID() AccountID {
 	return AccountID{}
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) SetStart(start int64) *TokenNftInfoQuery {
 	return query
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) GetStart() int64 {
 	return 0
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) SetEnd(end int64) *TokenNftInfoQuery {
 	return query
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) GetEnd() int64 {
 	return 0
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) ByNftID(id NftID) *TokenNftInfoQuery {
 	query.nftID = id
 
 	return query
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) ByTokenID(id TokenID) *TokenNftInfoQuery {
 	return query
 }
 
-//Deprecated
+// Deprecated
 func (query *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
 	return query
 }
@@ -87,9 +88,8 @@ func (query *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.nftID.Validate(client)
-	if err != nil {
+
+	if err := query.nftID.Validate(client); err != nil {
 		return err
 	}
 
@@ -108,7 +108,6 @@ func (query *TokenNftInfoQuery) buildByNft() *proto.Query_TokenGetNftInfo {
 }
 
 func (query *TokenNftInfoQuery) queryMakeRequest() protoRequest {
-
 	pb := query.buildByNft()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TokenGetNftInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
@@ -123,7 +122,7 @@ func (query *TokenNftInfoQuery) queryMakeRequest() protoRequest {
 }
 
 func (query *TokenNftInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -162,13 +161,13 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		tokenNftInfoQuery_shouldRetry,
+		_TokenNftInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		tokenNftInfoQuery_getMethod,
-		tokenNftInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_TokenNftInfoQueryGetMethod,
+		_TokenNftInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 	if err != nil {
 		return Hbar{}, err
@@ -177,56 +176,23 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetTokenGetNftInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func tokenNftInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
+func _TokenNftInfoQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func tokenNftInfoQuery_mapStatusError(_ request, response response) error {
+func _TokenNftInfoQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func tokenNftInfoQuery_getMethod(_ request, channel *channel) method {
+func _TokenNftInfoQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getToken().GetTokenNftInfo,
-	}
-}
-
-func tokenNftInfosQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetTokenGetNftInfos().Header.NodeTransactionPrecheckCode))
-}
-
-func tokenNftInfosQuery_mapStatusError(_ request, response response) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetTokenGetNftInfos().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func tokenNftInfosQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getToken().GetTokenNftInfos,
-	}
-}
-
-func accountNftInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetTokenGetAccountNftInfos().Header.NodeTransactionPrecheckCode))
-}
-
-func accountNftInfoQuery_mapStatusError(_ request, response response) error {
-	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetTokenGetAccountNftInfos().Header.NodeTransactionPrecheckCode),
-	}
-}
-
-func accountNftInfoQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getToken().GetAccountNftInfos,
 	}
 }
 
@@ -271,7 +237,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return []TokenNftInfo{}, err
 	}
@@ -284,13 +250,13 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 
 			query: &query.Query,
 		},
-		tokenNftInfoQuery_shouldRetry,
+		_TokenNftInfoQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		tokenNftInfoQuery_getMethod,
-		tokenNftInfoQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TokenNftInfoQueryGetMethod,
+		_TokenNftInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

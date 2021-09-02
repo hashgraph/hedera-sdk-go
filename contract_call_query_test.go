@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationContractCallQueryCanExecute(t *testing.T) {
@@ -293,7 +293,7 @@ func TestIntegrationContractCallQuerySetSmallMaxPayment(t *testing.T) {
 
 	_, err = callQuery.Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of ContractCallQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
+		assert.Equal(t, "cost of ContractCallQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
 
 	resp, err = NewContractDeleteTransaction().
@@ -367,7 +367,7 @@ func TestIntegrationContractCallQueryInsufficientFee(t *testing.T) {
 
 	_, err = callQuery.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
 
 	resp, err = NewContractDeleteTransaction().
@@ -398,12 +398,12 @@ func TestIntegrationContractCallQueryNoContractID(t *testing.T) {
 	_, err := NewContractCallQuery().
 		SetGas(2000).
 		SetNodeAccountIDs(env.NodeAccountIDs).
-		//test getCost
+		// test getCost
 		SetFunction("getMessage", nil).
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID"), err.Error())
+		assert.Equal(t, "exceptional precheck status INVALID_CONTRACT_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -455,7 +455,7 @@ func TestIntegrationContractCallQueryNoGas(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_GAS"), err.Error())
+		assert.Equal(t, "exceptional precheck status INSUFFICIENT_GAS", err.Error())
 	}
 
 	resp, err = NewContractDeleteTransaction().
@@ -522,11 +522,11 @@ func TestIntegrationContractCallQueryNoFunction(t *testing.T) {
 		SetContractID(contractID).
 		SetGas(2000).
 		SetQueryPayment(NewHbar(1)).
-		//test getCost
+		// test getCost
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status CONTRACT_REVERT_EXECUTED"), err.Error())
+		assert.Equal(t, "exceptional precheck status CONTRACT_REVERT_EXECUTED", err.Error())
 	}
 
 	resp, err = NewContractDeleteTransaction().

@@ -17,11 +17,11 @@ type nodeAddress struct {
 func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) nodeAddress {
 	address := make([]endpoint, 0)
 
-	if len(nodeAd.GetIpAddress()) > 0 {
+	if len(nodeAd.GetIpAddress()) > 0 { // nolint
 		address = append(address, endpointFromProtobuf(
 			&proto.ServiceEndpoint{
-				IpAddressV4: nodeAd.GetIpAddress(),
-				Port:        nodeAd.GetPortno(),
+				IpAddressV4: nodeAd.GetIpAddress(), // nolint
+				Port:        nodeAd.GetPortno(),    // nolint
 			}))
 	}
 
@@ -29,14 +29,9 @@ func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) nodeAddress {
 		address = append(address, endpointFromProtobuf(end))
 	}
 
-	var account AccountID
-	if nodeAd.GetNodeAccountId() != nil {
-		account = accountIDFromProtobuf(nodeAd.GetNodeAccountId())
-	}
-
 	return nodeAddress{
 		publicKey:   nodeAd.GetRSA_PubKey(),
-		accountID:   &account,
+		accountID:   accountIDFromProtobuf(nodeAd.GetNodeAccountId()),
 		nodeID:      nodeAd.GetNodeId(),
 		certHash:    nodeAd.GetNodeCertHash(),
 		addresses:   address,
@@ -72,7 +67,7 @@ func (nodeAdd *nodeAddress) toProtobuf() *proto.NodeAddress {
 func (nodeAdd nodeAddress) String() string {
 	addresses := ""
 	for _, k := range nodeAdd.addresses {
-		addresses = addresses + k.String()
+		addresses += k.String()
 	}
 	return nodeAdd.accountID.String() + " " + addresses + "\n" + "certHash " + string(nodeAdd.certHash)
 }

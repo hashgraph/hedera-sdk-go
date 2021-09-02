@@ -9,7 +9,7 @@ import (
 type ContractCreateTransaction struct {
 	Transaction
 	byteCodeFileID  FileID
-	proxyAccountID  AccountID
+	proxyAccountID  *AccountID
 	adminKey        Key
 	gas             int64
 	initialBalance  int64
@@ -120,24 +120,28 @@ func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration
 // is an invalID account, or is an account that isn't a node, then this account is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
-func (transaction *ContractCreateTransaction) SetProxyAccountID(id AccountID) *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.proxyAccountID = id
+	transaction.proxyAccountID = &proxyAccountID
 	return transaction
 }
 
 func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
-	return transaction.proxyAccountID
+	if transaction.proxyAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.proxyAccountID
 }
 
-//Sets the constructor parameters
+// Sets the constructor parameters
 func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.parameters = params.build(nil)
 	return transaction
 }
 
-//Sets the constructor parameters as their raw bytes.
+// Sets the constructor parameters as their raw bytes.
 func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.parameters = params
@@ -148,7 +152,7 @@ func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte 
 	return transaction.parameters
 }
 
-//Sets the memo to be associated with this contract.
+// Sets the memo to be associated with this contract.
 func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.memo = memo
@@ -163,13 +167,12 @@ func (transaction *ContractCreateTransaction) validateNetworkOnIDs(client *Clien
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.byteCodeFileID.Validate(client)
-	if err != nil {
+
+	if err := transaction.byteCodeFileID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.proxyAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.proxyAccountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -257,12 +260,7 @@ func (transaction *ContractCreateTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func contractCreateTransaction_getMethod(request request, channel *channel) method {
+func _ContractCreateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getContract().CreateContract,
 	}
@@ -306,10 +304,6 @@ func (transaction *ContractCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractCreateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -350,15 +344,15 @@ func (transaction *ContractCreateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		contractCreateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ContractCreateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -369,6 +363,9 @@ func (transaction *ContractCreateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -395,7 +392,7 @@ func (transaction *ContractCreateTransaction) FreezeWith(client *Client) (*Contr
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -458,10 +455,6 @@ func (transaction *ContractCreateTransaction) SetMaxRetry(count int) *ContractCr
 func (transaction *ContractCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractCreateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -481,7 +474,6 @@ func (transaction *ContractCreateTransaction) AddSignature(publicKey PublicKey, 
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

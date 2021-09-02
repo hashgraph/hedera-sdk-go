@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
@@ -76,7 +77,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 			check = true
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token associate transaction didnt work"))
+	assert.Truef(t, check, "token associate transaction didnt work")
 
 	dissociateTx, err := NewTokenDissociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -105,7 +106,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 			check = true
 		}
 	}
-	assert.Falsef(t, check, fmt.Sprintf("token dissociate transaction didnt work"))
+	assert.Falsef(t, check, "token dissociate transaction didnt work")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -285,7 +286,7 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 			check = true
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token dissociate transaction somehow worked"))
+	assert.Truef(t, check, "token dissociate transaction somehow worked")
 
 	_, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -383,7 +384,7 @@ func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 			check = true
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token dissociate transaction somehow worked"))
+	assert.Truef(t, check, "token dissociate transaction somehow worked")
 
 	_, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).

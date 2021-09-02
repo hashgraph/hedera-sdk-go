@@ -31,9 +31,9 @@ func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 }
 
 // SetTopicID sets the topic IDentifier.
-func (transaction *TopicDeleteTransaction) SetTopicID(ID TopicID) *TopicDeleteTransaction {
+func (transaction *TopicDeleteTransaction) SetTopicID(topicID TopicID) *TopicDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.topicID = ID
+	transaction.topicID = topicID
 	return transaction
 }
 
@@ -45,9 +45,8 @@ func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) 
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.topicID.Validate(client)
-	if err != nil {
+
+	if err := transaction.topicID.Validate(client); err != nil {
 		return err
 	}
 
@@ -97,12 +96,7 @@ func (transaction *TopicDeleteTransaction) constructScheduleProtobuf() (*proto.S
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func topicDeleteTransaction_getMethod(request request, channel *channel) method {
+func _TopicDeleteTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getTopic().DeleteTopic,
 	}
@@ -146,10 +140,6 @@ func (transaction *TopicDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -190,15 +180,15 @@ func (transaction *TopicDeleteTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		topicDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TopicDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -209,6 +199,9 @@ func (transaction *TopicDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -235,7 +228,7 @@ func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDel
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicDeleteTransaction.
@@ -282,10 +275,6 @@ func (transaction *TopicDeleteTransaction) SetMaxRetry(count int) *TopicDeleteTr
 func (transaction *TopicDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicDeleteTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -305,7 +294,6 @@ func (transaction *TopicDeleteTransaction) AddSignature(publicKey PublicKey, sig
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

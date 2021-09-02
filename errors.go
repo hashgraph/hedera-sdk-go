@@ -3,10 +3,10 @@ package hedera
 import (
 	"errors"
 	"fmt"
+
 	// "reflect"
 
 	"google.golang.org/grpc/codes"
-	status2 "google.golang.org/grpc/status"
 )
 
 type ErrMaxChunksExceeded struct {
@@ -16,19 +16,18 @@ type ErrMaxChunksExceeded struct {
 
 var errTransactionIsFrozen = errors.New("transaction is immutable; it has at least one signature or has been explicitly frozen")
 var errNoClientOrTransactionID = errors.New("`client` must have an `operator` or `transactionId` must be set")
-var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided or both `nodeId` and `transactionId` must be set")
+var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided or both `nodeId` and `transactionId` must be set") // nolint
 var errClientOperatorSigning = errors.New("`client` must have an `operator` to sign with the operator")
 var errNoClientProvided = errors.New("`client` must be provided and have an operator")
 var errTransactionIsNotFrozen = errors.New("transaction is not frozen")
 var errFailedToDeserializeBytes = errors.New("failed to deserialize bytes")
 var errNoTransactionInBytes = errors.New("no transaction was found in bytes")
 var errTransactionRequiresSingleNodeAccountID = errors.New("`PrivateKey.SignTransaction()` requires `Transaction` to have a single node `AccountID` set")
-var errMaxRetryCountHit = errors.New("max retry count has been hit")
 var errNoTransactions = errors.New("no transactions to execute")
 var errByteArrayNull = errors.New("byte array can't be null")
 var errParameterNull = errors.New("the parameter can't be null")
 var errNetworkMismatch = errors.New("network mismatch; some IDs have different networks set")
-var errNetworkNameMissing = errors.New("Can't derive checksum for ID without knowing which network the ID is for.  Ensure client's network name is set.")
+var errNetworkNameMissing = errors.New("can't derive checksum for ID without knowing which network the ID is for")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID
@@ -91,14 +90,6 @@ type ErrHederaNetwork struct {
 	StatusCode *codes.Code
 }
 
-func newErrHederaNetwork(e error) ErrHederaNetwork {
-	if status, ok := status2.FromError(e); ok == true {
-		statusCode := status.Code()
-		return ErrHederaNetwork{error: e, StatusCode: &statusCode}
-	}
-	return ErrHederaNetwork{error: e}
-}
-
 // Error() implements the Error interface
 func (e ErrHederaNetwork) Error() string {
 	return fmt.Sprintf("transport error occurred while accessing the Hedera network: %s", e.error)
@@ -109,10 +100,6 @@ func (e ErrHederaNetwork) Error() string {
 type ErrHederaPreCheckStatus struct {
 	TxID   TransactionID
 	Status Status
-}
-
-func newErrHederaPreCheckStatus(id TransactionID, status Status) ErrHederaPreCheckStatus {
-	return ErrHederaPreCheckStatus{TxID: id, Status: status}
 }
 
 // Error() implements the Error interface
@@ -148,10 +135,6 @@ type ErrHederaRecordStatus struct {
 	Status Status
 }
 
-func newErrHederaRecordStatus(id TransactionID, status Status) ErrHederaRecordStatus {
-	return ErrHederaRecordStatus{TxID: id, Status: status}
-}
-
 // Error() implements the Error interface
 func (e ErrHederaRecordStatus) Error() string {
 	return fmt.Sprintf("exceptional precheck status %s", e.Status.String())
@@ -163,29 +146,7 @@ type ErrLocalValidation struct {
 	message string
 }
 
-func newErrLocalValidationf(format string, a ...interface{}) ErrLocalValidation {
-	return ErrLocalValidation{fmt.Sprintf(format, a...)}
-}
-
 // Error() implements the Error interface
 func (e ErrLocalValidation) Error() string {
 	return e.message
-}
-
-// Note: an Out of Range error for Hbar units as provided in the other SDKs does not have a clean translation to go.
-// 		 it would require all conversions and hbar constructors to return both the object and error resulting in a worst
-//       api usage experience.
-
-// ErrPingStatus is returned by client.Ping(AccountID) if an error occurs
-type ErrPingStatus struct {
-	error error
-}
-
-func newErrPingStatus(e error) ErrPingStatus {
-	return ErrPingStatus{error: e}
-}
-
-// Error() implements the Error interface
-func (e ErrPingStatus) Error() string {
-	return fmt.Sprintf("error occured during ping")
 }

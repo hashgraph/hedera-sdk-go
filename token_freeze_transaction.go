@@ -19,7 +19,7 @@ import (
 type TokenFreezeTransaction struct {
 	Transaction
 	tokenID   TokenID
-	accountID AccountID
+	accountID *AccountID
 }
 
 func NewTokenFreezeTransaction() *TokenFreezeTransaction {
@@ -52,27 +52,30 @@ func (transaction *TokenFreezeTransaction) GetTokenID() TokenID {
 }
 
 // The account to be frozen
-func (transaction *TokenFreezeTransaction) SetAccountID(id AccountID) *TokenFreezeTransaction {
+func (transaction *TokenFreezeTransaction) SetAccountID(accountID AccountID) *TokenFreezeTransaction {
 	transaction.requireNotFrozen()
-	transaction.accountID = id
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *TokenFreezeTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 func (transaction *TokenFreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
+
+	if err := transaction.tokenID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.accountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -130,12 +133,7 @@ func (transaction *TokenFreezeTransaction) constructScheduleProtobuf() (*proto.S
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenFreezeTransaction_getMethod(request request, channel *channel) method {
+func _TokenFreezeTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().FreezeTokenAccount,
 	}
@@ -179,10 +177,6 @@ func (transaction *TokenFreezeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenFreezeTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -223,15 +217,15 @@ func (transaction *TokenFreezeTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenFreezeTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenFreezeTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -242,6 +236,9 @@ func (transaction *TokenFreezeTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -268,7 +265,7 @@ func (transaction *TokenFreezeTransaction) FreezeWith(client *Client) (*TokenFre
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenFreezeTransaction) GetMaxTransactionFee() Hbar {
@@ -331,10 +328,6 @@ func (transaction *TokenFreezeTransaction) SetMaxRetry(count int) *TokenFreezeTr
 func (transaction *TokenFreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFreezeTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -354,7 +347,6 @@ func (transaction *TokenFreezeTransaction) AddSignature(publicKey PublicKey, sig
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

@@ -1,9 +1,10 @@
 package hedera
 
 import (
+	"time"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type ScheduleInfo struct {
@@ -52,10 +53,20 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		deleted = &time
 	}
 
+	creatorAccountID := AccountID{}
+	if pb.CreatorAccountID != nil {
+		creatorAccountID = *accountIDFromProtobuf(pb.CreatorAccountID)
+	}
+
+	payerAccountID := AccountID{}
+	if pb.PayerAccountID != nil {
+		payerAccountID = *accountIDFromProtobuf(pb.PayerAccountID)
+	}
+
 	return ScheduleInfo{
 		ScheduleID:               scheduleIDFromProtobuf(pb.ScheduleID),
-		CreatorAccountID:         accountIDFromProtobuf(pb.CreatorAccountID),
-		PayerAccountID:           accountIDFromProtobuf(pb.PayerAccountID),
+		CreatorAccountID:         creatorAccountID,
+		PayerAccountID:           payerAccountID,
 		ExecutedAt:               executed,
 		DeletedAt:                deleted,
 		ExpirationTime:           timeFromProtobuf(pb.ExpirationTime),
@@ -68,7 +79,7 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 	}
 }
 
-func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
+func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo { // nolint
 	var adminKey *proto.Key
 	if scheduleInfo.AdminKey != nil {
 		adminKey = scheduleInfo.AdminKey.toProtoKey()
@@ -106,7 +117,7 @@ func (scheduleInfo *ScheduleInfo) toProtobuf() *proto.ScheduleInfo {
 	return info
 }
 
-func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error) {
+func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error) { // nolint
 	pb := scheduleInfo.scheduledTransactionBody
 
 	pbBody := &proto.TransactionBody{

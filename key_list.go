@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -82,14 +83,14 @@ func (kl *KeyList) toProtoKey() *proto.Key {
 				},
 			},
 		}
-	} else {
-		return &proto.Key{
-			Key: &proto.Key_KeyList{
-				KeyList: &proto.KeyList{
-					Keys: keys,
-				},
+	}
+
+	return &proto.Key{
+		Key: &proto.Key_KeyList{
+			KeyList: &proto.KeyList{
+				Keys: keys,
 			},
-		}
+		},
 	}
 }
 
@@ -108,7 +109,7 @@ func keyListFromProtobuf(pb *proto.KeyList) (KeyList, error) {
 	if pb == nil {
 		return KeyList{}, errParameterNull
 	}
-	var keys []Key = make([]Key, len(pb.Keys))
+	var keys = make([]Key, len(pb.Keys))
 
 	for i, pbKey := range pb.Keys {
 		key, err := keyFromProtobuf(pbKey)

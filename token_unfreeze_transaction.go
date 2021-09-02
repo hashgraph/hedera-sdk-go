@@ -19,7 +19,7 @@ import (
 type TokenUnfreezeTransaction struct {
 	Transaction
 	tokenID   TokenID
-	accountID AccountID
+	accountID *AccountID
 }
 
 func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
@@ -51,27 +51,30 @@ func (transaction *TokenUnfreezeTransaction) GetTokenID() TokenID {
 }
 
 // The account to be unfrozen
-func (transaction *TokenUnfreezeTransaction) SetAccountID(id AccountID) *TokenUnfreezeTransaction {
+func (transaction *TokenUnfreezeTransaction) SetAccountID(accountID AccountID) *TokenUnfreezeTransaction {
 	transaction.requireNotFrozen()
-	transaction.accountID = id
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *TokenUnfreezeTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 func (transaction *TokenUnfreezeTransaction) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
+
+	if err := transaction.tokenID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.accountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -129,12 +132,7 @@ func (transaction *TokenUnfreezeTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenUnfreezeTransaction_getMethod(request request, channel *channel) method {
+func _TokenUnfreezeTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().UnfreezeTokenAccount,
 	}
@@ -163,7 +161,7 @@ func (transaction *TokenUnfreezeTransaction) SignWithOperator(
 		return nil, errClientOperatorSigning
 	}
 
-	//if !transaction.IsFrozen() {
+	// if !transaction.IsFrozen() {
 	//	_, err := transaction.FreezeWith(client)
 	//	if err != nil {
 	//		return transaction, err
@@ -178,10 +176,6 @@ func (transaction *TokenUnfreezeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenUnfreezeTransaction {
-	//if !transaction.IsFrozen() {
-	//	transaction.Unfreeze()
-	//}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -211,7 +205,10 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 	}
 
 	if !transaction.IsFrozen() {
-		transaction.UnfreezeWith(client)
+		_, err := transaction.FreezeWith(client)
+		if err != nil {
+			return TransactionResponse{}, err
+		}
 	}
 
 	transactionID := transaction.GetTransactionID()
@@ -228,15 +225,15 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenUnfreezeTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenUnfreezeTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -247,6 +244,9 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -255,11 +255,11 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TokenUnfreezeTransaction) Unfreeze() (*TokenUnfreezeTransaction, error) {
-	return transaction.UnfreezeWith(nil)
+func (transaction *TokenUnfreezeTransaction) Freeze() (*TokenUnfreezeTransaction, error) {
+	return transaction.FreezeWith(nil)
 }
 
-func (transaction *TokenUnfreezeTransaction) UnfreezeWith(client *Client) (*TokenUnfreezeTransaction, error) {
+func (transaction *TokenUnfreezeTransaction) FreezeWith(client *Client) (*TokenUnfreezeTransaction, error) {
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
@@ -273,7 +273,7 @@ func (transaction *TokenUnfreezeTransaction) UnfreezeWith(client *Client) (*Toke
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenUnfreezeTransaction) GetMaxTransactionFee() Hbar {
@@ -336,10 +336,6 @@ func (transaction *TokenUnfreezeTransaction) SetMaxRetry(count int) *TokenUnfree
 func (transaction *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUnfreezeTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Unfreeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -359,7 +355,6 @@ func (transaction *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, s
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

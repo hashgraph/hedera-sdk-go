@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
@@ -88,7 +89,7 @@ func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token freeze transaction failed to freeze"))
+	assert.Truef(t, check, "token freeze transaction failed to freeze")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

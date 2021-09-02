@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type LiveHashQuery struct {
@@ -39,9 +40,8 @@ func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.accountID.Validate(client)
-	if err != nil {
+
+	if err := query.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -82,7 +82,7 @@ func (query *LiveHashQuery) queryMakeRequest() protoRequest {
 func (query *LiveHashQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -119,13 +119,13 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		liveHashQuery_shouldRetry,
+		_LiveHashQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		liveHashQuery_getMethod,
-		liveHashQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_LiveHashQueryGetMethod,
+		_LiveHashQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -136,17 +136,17 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func liveHashQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
+func _LiveHashQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
 }
 
-func liveHashQuery_mapStatusError(_ request, response response) error {
+func _LiveHashQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func liveHashQuery_getMethod(_ request, channel *channel) method {
+func _LiveHashQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getCrypto().GetLiveHash,
 	}
@@ -196,7 +196,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return LiveHash{}, err
 	}
@@ -206,13 +206,13 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		request{
 			query: &query.Query,
 		},
-		liveHashQuery_shouldRetry,
+		_LiveHashQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		liveHashQuery_getMethod,
-		liveHashQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_LiveHashQueryGetMethod,
+		_LiveHashQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

@@ -1,10 +1,11 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
+	"time"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/pkg/errors"
-	"time"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type Query struct {
@@ -45,15 +46,15 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 	return query.nodeIDs
 }
 
-func query_getNodeAccountID(request request) AccountID {
+func _QueryGetNodeAccountID(request request) AccountID {
 	if len(request.query.nodeIDs) > 0 {
 		return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
-	} else {
-		panic("Query node AccountID's not set before executing")
 	}
+
+	panic("Query node AccountID's not set before executing")
 }
 
-func costQuery_getNodeAccountID(request request) AccountID {
+func _CostQueryGetNodeAccountID(request request) AccountID {
 	return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 }
 
@@ -78,15 +79,7 @@ func (query *Query) SetMaxRetry(count int) *Query {
 	return query
 }
 
-func (query *Query) getTransactionID(paymentAmount Hbar) TransactionID {
-	return query.paymentTransactionID
-}
-
-func (query *Query) getIsPaymentRequired() bool {
-	return true
-}
-
-func query_shouldRetry(status Status) executionState {
+func _QueryShouldRetry(status Status) executionState {
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
@@ -97,25 +90,25 @@ func query_shouldRetry(status Status) executionState {
 	return executionStateError
 }
 
-func query_advanceRequest(request request) {
+func _QueryAdvanceRequest(request request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
 	}
 }
 
-func costQuery_advanceRequest(request request) {
+func _CostQueryAdvanceRequest(request request) {
 	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeIDs)
 }
 
-func query_mapResponse(request request, response response, _ AccountID, protoRequest protoRequest) (intermediateResponse, error) {
+func _QueryMapResponse(request request, response response, _ AccountID, protoRequest protoRequest) (intermediateResponse, error) {
 	return intermediateResponse{
 		query: response.query,
 	}, nil
 }
 
-func query_generatePayments(query *Query, client *Client, cost Hbar) error {
+func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
 	for _, nodeID := range query.nodeIDs {
-		transaction, err := query_makePaymentTransaction(
+		transaction, err := _QueryMakePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,
 			client.operator,
@@ -131,7 +124,7 @@ func query_generatePayments(query *Query, client *Client, cost Hbar) error {
 	return nil
 }
 
-func query_makePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
+func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
 	accountAmounts := make([]*proto.AccountAmount, 0)
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
 		AccountID: nodeAccountID.toProtobuf(),

@@ -1,11 +1,12 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
 	"time"
 
-	protobuf "github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 const chunkSize = 1024
@@ -69,11 +70,6 @@ func (transaction *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
 	return transaction.maxChunks
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
 func (transaction *TopicMessageSubmitTransaction) IsFrozen() bool {
 	return transaction.Transaction.isFrozen()
 }
@@ -112,10 +108,6 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicMessageSubmitTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -127,9 +119,8 @@ func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *C
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.topicID.Validate(client)
-	if err != nil {
+
+	if err := transaction.topicID.Validate(client); err != nil {
 		return err
 	}
 
@@ -211,9 +202,9 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 
 	if len(list) > 0 {
 		return list[0], nil
-	} else {
-		return TransactionResponse{}, errNoTransactions
 	}
+
+	return TransactionResponse{}, errNoTransactions
 }
 
 // ExecuteAll executes the all the Transactions with the provided client
@@ -249,15 +240,15 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 			request{
 				transaction: &transaction.Transaction,
 			},
-			transaction_shouldRetry,
-			transaction_makeRequest(request{
+			_TransactionShouldRetry,
+			_TransactionMakeRequest(request{
 				transaction: &transaction.Transaction,
 			}),
-			transaction_advanceRequest,
-			transaction_getNodeAccountID,
-			topicMessageSubmitTransaction_getMethod,
-			transaction_mapStatusError,
-			transaction_mapResponse,
+			_TransactionAdvanceRequest,
+			_TransactionGetNodeAccountID,
+			_TopicMessageSubmitTransactionGetMethod,
+			_TransactionMapStatusError,
+			_TransactionMapResponse,
 		)
 
 		if err != nil {
@@ -278,9 +269,9 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	if len(transaction.nodeIDs) == 0 {
 		if client == nil {
 			return transaction, errNoClientOrTransactionIDOrNodeId
-		} else {
-			transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
 		}
+
+		transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
 	}
 
 	transaction.initFee(client)
@@ -307,9 +298,8 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	transaction.transactionIDs = make([]TransactionID, 0)
 	transaction.transactions = make([]*proto.Transaction, 0)
 	transaction.signedTransactions = make([]*proto.SignedTransaction, 0)
-	switch b := body.Data.(type) {
-	case *proto.TransactionBody_ConsensusSubmitMessage:
-		for i := 0; uint64(i) < chunks; i += 1 {
+	if b, ok := body.Data.(*proto.TransactionBody_ConsensusSubmitMessage); ok {
+		for i := 0; uint64(i) < chunks; i++ {
 			start := i * chunkSize
 			end := start + chunkSize
 
@@ -354,7 +344,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	return transaction, nil
 }
 
-func topicMessageSubmitTransaction_getMethod(request request, channel *channel) method {
+func _TopicMessageSubmitTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getTopic().SubmitMessage,
 	}
@@ -420,10 +410,6 @@ func (transaction *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicM
 func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -443,7 +429,6 @@ func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicK
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

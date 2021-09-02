@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 
 	"time"
 )
@@ -12,15 +12,6 @@ type LiveHash struct {
 	Hash      []byte
 	Keys      KeyList
 	Duration  time.Time
-}
-
-func newLiveHash(accountId AccountID, hash []byte, keys KeyList, duration time.Time) LiveHash {
-	return LiveHash{
-		AccountID: accountId,
-		Hash:      hash,
-		Keys:      keys,
-		Duration:  duration,
-	}
 }
 
 func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
@@ -43,8 +34,13 @@ func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
+	accountID := AccountID{}
+	if hash.AccountId != nil {
+		accountID = *accountIDFromProtobuf(hash.AccountId)
+	}
+
 	return LiveHash{
-		AccountID: accountIDFromProtobuf(hash.GetAccountId()),
+		AccountID: accountID,
 		Hash:      hash.Hash,
 		Keys:      keyList,
 		Duration: time.Date(time.Now().Year(), time.Now().Month(),

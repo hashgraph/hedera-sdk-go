@@ -1,15 +1,15 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
+
+const topicMemo = "go-sdk::topic memo"
 
 func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
-	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
 	txID, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -49,8 +49,6 @@ func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
-
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -86,8 +84,6 @@ func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 
 func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
-	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -125,8 +121,6 @@ func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
-
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -151,7 +145,7 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 	_, err = topicInfo.Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of TopicInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
+		assert.Equal(t, "cost of TopicInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
 
 	_, err = NewTopicDeleteTransaction().
@@ -166,8 +160,6 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 
 func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
-	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -192,7 +184,7 @@ func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 
 	_, err = topicInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
 
 	_, err = NewTopicDeleteTransaction().
@@ -223,8 +215,6 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 
 	thresholdKey := KeyListWithThreshold(2).
 		AddAllPublicKeys(pubKeys)
-
-	topicMemo := "go-sdk::TestConsensusTopicInfoQuery_Execute"
 
 	txID, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -272,7 +262,7 @@ func TestIntegrationTopicInfoQueryNoTopicID(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOPIC_ID"), err.Error())
+		assert.Equal(t, "exceptional precheck status INVALID_TOPIC_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

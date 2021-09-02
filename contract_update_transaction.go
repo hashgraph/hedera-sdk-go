@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/wrappers"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -23,14 +24,11 @@ import (
 type ContractUpdateTransaction struct {
 	Transaction
 	contractID      ContractID
-	proxyAccountID  AccountID
+	proxyAccountID  *AccountID
 	bytecodeFileID  FileID
 	adminKey        Key
-	gas             int64
-	initialBalance  int64
 	autoRenewPeriod *time.Duration
 	expirationTime  *time.Time
-	parameters      []byte
 	memo            string
 }
 
@@ -53,7 +51,7 @@ func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 
 	switch m := pb.GetContractUpdateInstance().GetMemoField().(type) {
 	case *proto.ContractUpdateTransactionBody_Memo:
-		memo = m.Memo
+		memo = m.Memo // nolint
 	case *proto.ContractUpdateTransactionBody_MemoWrapper:
 		memo = m.MemoWrapper.Value
 	}
@@ -109,14 +107,18 @@ func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
 // is an invalID account, or is an account that isn't a node, then this contract is automatically proxy staked to a node
 // chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
 // or if it is not currently running a node, then it will behave as if proxyAccountID was never set.
-func (transaction *ContractUpdateTransaction) SetProxyAccountID(id AccountID) *ContractUpdateTransaction {
+func (transaction *ContractUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.proxyAccountID = id
+	transaction.proxyAccountID = &proxyAccountID
 	return transaction
 }
 
 func (transaction *ContractUpdateTransaction) GetProxyAccountID() AccountID {
-	return transaction.proxyAccountID
+	if transaction.proxyAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.proxyAccountID
 }
 
 // SetAutoRenewPeriod sets the duration for which the contract instance will automatically charge its account to
@@ -155,13 +157,13 @@ func (transaction *ContractUpdateTransaction) GetExpirationTime() time.Time {
 func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.memo = memo
-	//if transaction.pb.GetMemoWrapper() != nil {
+	// if transaction.pb.GetMemoWrapper() != nil {
 	//	transaction.pb.GetMemoWrapper().Value = memo
-	//} else {
+	// } else {
 	//	transaction.pb.MemoField = &proto.ContractUpdateTransactionBody_MemoWrapper{
 	//		MemoWrapper: &wrappers.StringValue{Value: memo},
 	//	}
-	//}
+	// }
 
 	return transaction
 }
@@ -174,17 +176,16 @@ func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(client *Clien
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.contractID.Validate(client)
-	if err != nil {
+
+	if err := transaction.contractID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.proxyAccountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.proxyAccountID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.bytecodeFileID.Validate(client)
-	if err != nil {
+
+	if err := transaction.bytecodeFileID.Validate(client); err != nil {
 		return err
 	}
 
@@ -316,12 +317,7 @@ func (transaction *ContractUpdateTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func contractUpdateTransaction_getMethod(request request, channel *channel) method {
+func _ContractUpdateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getContract().UpdateContract,
 	}
@@ -365,10 +361,6 @@ func (transaction *ContractUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractUpdateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -409,15 +401,15 @@ func (transaction *ContractUpdateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		contractUpdateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ContractUpdateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -428,6 +420,9 @@ func (transaction *ContractUpdateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -454,7 +449,7 @@ func (transaction *ContractUpdateTransaction) FreezeWith(client *Client) (*Contr
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -517,10 +512,6 @@ func (transaction *ContractUpdateTransaction) SetMaxRetry(count int) *ContractUp
 func (transaction *ContractUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractUpdateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -540,7 +531,6 @@ func (transaction *ContractUpdateTransaction) AddSignature(publicKey PublicKey, 
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

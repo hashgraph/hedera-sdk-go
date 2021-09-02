@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TokenInfoQuery struct {
@@ -32,9 +33,8 @@ func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.tokenID.Validate(client)
-	if err != nil {
+
+	if err := query.tokenID.Validate(client); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (query *TokenInfoQuery) queryMakeRequest() protoRequest {
 func (query *TokenInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -108,13 +108,13 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		tokenInfoQuery_shouldRetry,
+		_TokenInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		tokenInfoQuery_getMethod,
-		tokenInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_TokenInfoQueryGetMethod,
+		_TokenInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -124,22 +124,21 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetTokenGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func tokenInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+func _TokenInfoQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func tokenInfoQuery_mapStatusError(_ request, response response) error {
+func _TokenInfoQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func tokenInfoQuery_getMethod(_ request, channel *channel) method {
+func _TokenInfoQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getToken().GetTokenInfo,
 	}
@@ -188,7 +187,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return TokenInfo{}, err
 	}
@@ -198,13 +197,13 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		request{
 			query: &query.Query,
 		},
-		tokenInfoQuery_shouldRetry,
+		_TokenInfoQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		tokenInfoQuery_getMethod,
-		tokenInfoQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TokenInfoQueryGetMethod,
+		_TokenInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

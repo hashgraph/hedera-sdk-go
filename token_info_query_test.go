@@ -2,9 +2,9 @@ package hedera
 
 import (
 	"encoding/base64"
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
@@ -173,7 +173,7 @@ func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 
 	_, err = infoQuery.Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ"), err.Error())
+		assert.Equal(t, "cost of TokenInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -214,7 +214,7 @@ func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 
 	_, err = infoQuery.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -271,7 +271,7 @@ func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_ID"), err.Error())
+		assert.Equal(t, "exceptional precheck status INVALID_TOKEN_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
@@ -33,9 +34,8 @@ func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.contractID.Validate(client)
-	if err != nil {
+
+	if err := query.contractID.Validate(client); err != nil {
 		return err
 	}
 
@@ -67,7 +67,7 @@ func (query *ContractBytecodeQuery) queryMakeRequest() protoRequest {
 func (query *ContractBytecodeQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
 	pb := query.build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return protoRequest{}, err
 	}
@@ -104,13 +104,13 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		request{
 			query: &query.Query,
 		},
-		contractBytecodeQuery_shouldRetry,
+		_ContractBytecodeQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		contractBytecodeQuery_getMethod,
-		contractBytecodeQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_ContractBytecodeQueryGetMethod,
+		_ContractBytecodeQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -121,17 +121,17 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func contractBytecodeQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
+func _ContractBytecodeQueryShouldRetry(_ request, response response) executionState {
+	return _QueryShouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
-func contractBytecodeQuery_mapStatusError(_ request, response response) error {
+func _ContractBytecodeQueryMapStatusError(_ request, response response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func contractBytecodeQuery_getMethod(_ request, channel *channel) method {
+func _ContractBytecodeQueryGetMethod(_ request, channel *channel) method {
 	return method{
 		query: channel.getContract().ContractGetBytecode,
 	}
@@ -179,7 +179,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -189,13 +189,13 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		request{
 			query: &query.Query,
 		},
-		contractBytecodeQuery_shouldRetry,
+		_ContractBytecodeQueryShouldRetry,
 		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		contractBytecodeQuery_getMethod,
-		contractBytecodeQuery_mapStatusError,
-		query_mapResponse,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_ContractBytecodeQueryGetMethod,
+		_ContractBytecodeQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {

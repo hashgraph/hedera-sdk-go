@@ -4,6 +4,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
+	"math"
+	"strings"
+	"time"
+
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -11,9 +15,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
-	"math"
-	"strings"
-	"time"
 )
 
 type node struct {
@@ -65,7 +66,7 @@ func (node *node) GetAddressBook() *nodeAddress {
 }
 
 func (node *node) inUse() {
-	node.useCount += 1
+	node.useCount++
 	node.lastUsed = time.Now().UTC().UnixNano()
 }
 
@@ -86,7 +87,6 @@ func (node *node) decreaseDelay() {
 func (node *node) wait() {
 	delay := node.delayUntil - node.lastUsed
 	time.Sleep(time.Duration(delay) * time.Nanosecond)
-
 }
 
 func (node *node) getChannel() (*channel, error) {
@@ -106,17 +106,20 @@ func (node *node) getChannel() (*channel, error) {
 	security := grpc.WithInsecure()
 	if parts[1] == "443" || parts[1] == "50212" {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // nolint
 			VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 				if node.addressBook == nil {
 					return nil
 				}
 
 				for _, cert := range rawCerts {
+					var certHash []byte
 					digest := sha3.New384()
-					certHash := make([]byte, digest.Size())
 
-					digest.Write(cert)
+					if _, err = digest.Write(cert); err != nil {
+						return err
+					}
+
 					certHash = digest.Sum(nil)
 
 					if string(node.addressBook.certHash) == hex.EncodeToString(certHash) {
@@ -160,8 +163,8 @@ func (nodes nodes) Swap(i, j int) {
 }
 
 func (nodes nodes) Less(i, j int) bool {
-	if nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() {
-		if nodes.nodes[i].useCount < nodes.nodes[j].useCount {
+	if nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() { // nolint
+		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
 			return true
 		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
 			return false
@@ -173,7 +176,7 @@ func (nodes nodes) Less(i, j int) bool {
 	} else if !nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() {
 		return false
 	} else {
-		if nodes.nodes[i].useCount < nodes.nodes[j].useCount {
+		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
 			return true
 		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
 			return false

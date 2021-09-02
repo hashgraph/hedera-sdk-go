@@ -1,10 +1,10 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
@@ -158,14 +158,14 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_ACCOUNT_ID"), err.Error())
+		assert.Equal(t, "exceptional receipt status: INVALID_ACCOUNT_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
 
-//func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
+// func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	newKey, err := GeneratePrivateKey()

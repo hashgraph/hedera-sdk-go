@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TokenTransfer struct {
@@ -21,8 +21,14 @@ func tokenTransferFromProtobuf(pb *proto.AccountAmount) TokenTransfer {
 	if pb == nil {
 		return TokenTransfer{}
 	}
+
+	accountID := AccountID{}
+	if pb.AccountID != nil {
+		accountID = *accountIDFromProtobuf(pb.AccountID)
+	}
+
 	return TokenTransfer{
-		AccountID: accountIDFromProtobuf(pb.AccountID),
+		AccountID: accountID,
 		Amount:    pb.Amount,
 	}
 }

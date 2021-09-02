@@ -186,12 +186,7 @@ func (transaction *FileCreateTransaction) constructScheduleProtobuf() (*proto.Sc
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func fileCreateTransaction_getMethod(request request, channel *channel) method {
+func _FileCreateTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getFile().CreateFile,
 	}
@@ -234,10 +229,6 @@ func (transaction *FileCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileCreateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -278,15 +269,15 @@ func (transaction *FileCreateTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		fileCreateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_FileCreateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -297,6 +288,9 @@ func (transaction *FileCreateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -319,7 +313,7 @@ func (transaction *FileCreateTransaction) FreezeWith(client *Client) (*FileCreat
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *FileCreateTransaction) GetMaxTransactionFee() Hbar {
@@ -382,10 +376,6 @@ func (transaction *FileCreateTransaction) SetMaxRetry(count int) *FileCreateTran
 func (transaction *FileCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileCreateTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -405,7 +395,6 @@ func (transaction *FileCreateTransaction) AddSignature(publicKey PublicKey, sign
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

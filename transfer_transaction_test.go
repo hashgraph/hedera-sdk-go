@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
@@ -78,7 +79,7 @@ func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *test
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing.T) {
+func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 	var err error
 	tx := make([]*TransferTransaction, 500)

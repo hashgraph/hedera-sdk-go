@@ -28,16 +28,16 @@ func NewTransferTransaction() *TransferTransaction {
 func transferTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TransferTransaction {
 	hbarTransfers := make(map[AccountID]Hbar)
 	tokenTransfers := make(map[TokenID]map[AccountID]int64)
-	nftTransfers := make(map[TokenID][]TokenNftTransfer, 0)
+	nftTransfers := make(map[TokenID][]TokenNftTransfer)
 
 	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
 		accountID := accountIDFromProtobuf(aa.AccountID)
 		amount := HbarFromTinybar(aa.Amount)
 
-		if value, ok := hbarTransfers[accountID]; ok {
-			hbarTransfers[accountID] = HbarFromTinybar(amount.AsTinybar() + value.AsTinybar())
+		if value, ok := hbarTransfers[*accountID]; ok {
+			hbarTransfers[*accountID] = HbarFromTinybar(amount.AsTinybar() + value.AsTinybar())
 		} else {
-			hbarTransfers[accountID] = amount
+			hbarTransfers[*accountID] = amount
 		}
 	}
 
@@ -55,10 +55,10 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 		for _, aa := range tokenTransfersList.GetTransfers() {
 			accountID := accountIDFromProtobuf(aa.AccountID)
 
-			if value, ok := currentTokenTransfers[accountID]; ok {
-				currentTokenTransfers[accountID] = aa.Amount + value
+			if value, ok := currentTokenTransfers[*accountID]; ok {
+				currentTokenTransfers[*accountID] = aa.Amount + value
 			} else {
-				currentTokenTransfers[accountID] = aa.Amount
+				currentTokenTransfers[*accountID] = aa.Amount
 			}
 		}
 
@@ -151,7 +151,7 @@ func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender Accou
 	transaction.requireNotFrozen()
 
 	if transaction.nftTransfers == nil {
-		transaction.nftTransfers = make(map[TokenID][]TokenNftTransfer, 0)
+		transaction.nftTransfers = make(map[TokenID][]TokenNftTransfer)
 	}
 
 	if transaction.nftTransfers[nftID.TokenID] == nil {
@@ -174,14 +174,14 @@ func (transaction *TransferTransaction) validateNetworkOnIDs(client *Client) err
 	var err error
 	for tokenID, accountMap := range transaction.tokenTransfers {
 		err = tokenID.Validate(client)
-		for accountID, _ := range accountMap {
+		for accountID := range accountMap {
 			err = accountID.Validate(client)
 		}
 	}
-	for nftID, _ := range transaction.nftTransfers {
+	for nftID := range transaction.nftTransfers {
 		err = nftID.Validate(client)
 	}
-	for accountID, _ := range transaction.hbarTransfers {
+	for accountID := range transaction.hbarTransfers {
 		err = accountID.Validate(client)
 	}
 	if err != nil {
@@ -237,8 +237,7 @@ func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.Sche
 			}
 
 			if len(transaction.nftTransfers) > 0 {
-				t := transaction.nftTransfers[tokenID]
-				if t != nil {
+				if t, ok := transaction.nftTransfers[tokenID]; ok {
 					for _, nftT := range t {
 						nftTransfers = append(nftTransfers, nftT.toProtobuf())
 					}
@@ -262,7 +261,7 @@ func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.Sche
 	}, nil
 }
 
-func transferTransaction_getMethod(request request, channel *channel) method {
+func _TransferTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getCrypto().CryptoTransfer,
 	}
@@ -270,10 +269,6 @@ func transferTransaction_getMethod(request request, channel *channel) method {
 
 func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signature []byte) *TransferTransaction {
 	transaction.requireOneNodeAccountID()
-
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
 
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
@@ -294,7 +289,6 @@ func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signat
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 
@@ -336,10 +330,6 @@ func (transaction *TransferTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TransferTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -380,15 +370,15 @@ func (transaction *TransferTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		transferTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TransferTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -399,6 +389,9 @@ func (transaction *TransferTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -442,8 +435,7 @@ func (transaction *TransferTransaction) build() *proto.TransactionBody {
 			}
 
 			if len(transaction.nftTransfers) > 0 {
-				t := transaction.nftTransfers[tokenID]
-				if t != nil {
+				if t, ok := transaction.nftTransfers[tokenID]; ok {
 					for _, nftT := range t {
 						nftTransfers = append(nftTransfers, nftT.toProtobuf())
 					}
@@ -469,7 +461,7 @@ func (transaction *TransferTransaction) build() *proto.TransactionBody {
 	}
 }
 
-//func (transaction *TransferTransaction) buildHbarTransfers() {
+// func (transaction *TransferTransaction) buildHbarTransfers() {
 //	body := &proto.CryptoTransferTransactionBody{
 //		Transfers: &proto.TransferList{
 //			AccountAmounts: []*proto.AccountAmount{},
@@ -484,7 +476,7 @@ func (transaction *TransferTransaction) build() *proto.TransactionBody {
 //	}
 //}
 
-//func (transaction *TransferTransaction) buildTokenTransfers() {
+// func (transaction *TransferTransaction) buildTokenTransfers() {
 //	if transaction.pb.TokenTransfers == nil {
 //		transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
 //	}
@@ -506,7 +498,7 @@ func (transaction *TransferTransaction) build() *proto.TransactionBody {
 //	}
 //}
 
-//func (transaction *TransferTransaction) buildNftTransfers() {
+// func (transaction *TransferTransaction) buildNftTransfers() {
 //	if transaction.pb.TokenTransfers == nil {
 //		transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
 //	}
@@ -548,7 +540,7 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TransferTransaction) GetMaxTransactionFee() Hbar {

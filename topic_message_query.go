@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var RST_STREAM = regexp.MustCompile("/\brst[^0-9a-zA-Z]stream\b/gi")
+var rstStream = regexp.MustCompile("/\brst[^0-9a-zA-Z]stream\b/gi")
 
 type TopicMessageQuery struct {
 	errorHandler      func(stat status.Status)
@@ -52,9 +52,9 @@ func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQ
 func (query *TopicMessageQuery) GetStartTime() time.Time {
 	if query.startTime != nil {
 		return *query.startTime
-	} else {
-		return time.Time{}
 	}
+
+	return time.Time{}
 }
 
 func (query *TopicMessageQuery) SetEndTime(endTime time.Time) *TopicMessageQuery {
@@ -65,9 +65,9 @@ func (query *TopicMessageQuery) SetEndTime(endTime time.Time) *TopicMessageQuery
 func (query *TopicMessageQuery) GetEndTime() time.Time {
 	if query.endTime != nil {
 		return *query.endTime
-	} else {
-		return time.Time{}
 	}
+
+	return time.Time{}
 }
 
 func (query *TopicMessageQuery) SetLimit(limit uint64) *TopicMessageQuery {
@@ -107,9 +107,8 @@ func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.topicID.Validate(client)
-	if err != nil {
+
+	if err := query.topicID.Validate(client); err != nil {
 		return err
 	}
 
@@ -144,7 +143,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 
 	pb := query.build()
 
-	messages := make(map[string][]*mirror.ConsensusTopicResponse, 0)
+	messages := make(map[string][]*mirror.ConsensusTopicResponse)
 
 	channel, err := client.mirrorNetwork.getNextMirrorNode().getChannel()
 	if err != nil {
@@ -159,13 +158,13 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			if err != nil {
 				handle.Unsubscribe()
 
-				if grpcErr, ok := status.FromError(err); ok {
+				if grpcErr, ok := status.FromError(err); ok { // nolint
 					if query.attempt < query.maxAttempts && query.retryHandler(err) {
 						subClient = nil
 
 						delay := math.Min(250.0*math.Pow(2.0, float64(query.attempt)), 8000)
 						time.Sleep(time.Duration(delay) * time.Millisecond)
-						query.attempt += 1
+						query.attempt++
 					} else {
 						query.errorHandler(*grpcErr)
 						break
@@ -201,7 +200,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			}
 
 			if pb.Limit > 0 {
-				pb.Limit -= 1
+				pb.Limit--
 			}
 
 			if resp.ChunkInfo == nil || resp.ChunkInfo.Total == 1 {
@@ -249,14 +248,8 @@ func defaultRetryHandler(err error) bool {
 			return false
 		}
 
-		return RST_STREAM.FindIndex([]byte(grpcErr.Message())) != nil
+		return rstStream.FindIndex([]byte(grpcErr.Message())) != nil
 	default:
 		return false
-	}
-}
-
-func callErrorHandlerWithGrpcStatus(err error, errorHandler func(stat status.Status)) {
-	if grpcErr, ok := status.FromError(err); errorHandler != nil && ok {
-		errorHandler(*grpcErr)
 	}
 }

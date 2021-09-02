@@ -10,16 +10,6 @@ type ExchangeRate struct {
 	expirationTime *proto.TimestampSeconds
 }
 
-func newExchangeRate(hbars int32, cents int32, expirationTime int64) *ExchangeRate {
-	exchange := ExchangeRate{
-		Hbars:          hbars,
-		cents:          cents,
-		expirationTime: &proto.TimestampSeconds{Seconds: expirationTime},
-	}
-
-	return &exchange
-}
-
 func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
 	if protoExchange == nil {
 		return ExchangeRate{}

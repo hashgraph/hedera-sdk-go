@@ -2,9 +2,10 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"regexp"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 // EntityID is an interface for various IDs of entities (Account, Contract, File, etc)
@@ -39,10 +40,8 @@ func checksumVerify(num int) error {
 }
 
 func checksumParseAddress(ledgerID string, address string) (parseAddressResult, error) {
-	match, err := regexp.Compile(`(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))(?:-([a-z]{5}))?$`)
-	if err != nil {
-		return parseAddressResult{status: 0}, err
-	}
+	var err error
+	match := regexp.MustCompile(`(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))(?:-([a-z]{5}))?$`)
 
 	matchArray := match.FindStringSubmatch(address)
 
@@ -59,13 +58,15 @@ func checksumParseAddress(ledgerID string, address string) (parseAddressResult, 
 	checksum := checkChecksum(ledgerID, ad)
 
 	var status int
-	if matchArray[4] == "" {
+	switch m := matchArray[4]; {
+	case m == "":
 		status = 2
-	} else if checksum == matchArray[4] {
+	case m == checksum:
 		status = 3
-	} else {
+	default:
 		status = 1
 	}
+
 	return parseAddressResult{
 		status:             status,
 		num1:               a[1],

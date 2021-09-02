@@ -2,22 +2,15 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type FeeData struct {
 	NodeData    *FeeComponents
 	NetworkData *FeeComponents
 	ServiceData *FeeComponents
-}
-
-func newFeeData() FeeData {
-	return FeeData{
-		NodeData:    nil,
-		NetworkData: nil,
-		ServiceData: nil,
-	}
 }
 
 func feeDataFromProtobuf(feeData *proto.FeeData) (FeeData, error) {

@@ -2,20 +2,14 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type FeeSchedules struct {
 	current *FeeSchedule
 	next    *FeeSchedule
-}
-
-func newFeeSchedules() FeeSchedules {
-	return FeeSchedules{
-		current: nil,
-		next:    nil,
-	}
 }
 
 func feeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (FeeSchedules, error) {

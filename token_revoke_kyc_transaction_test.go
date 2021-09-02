@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
@@ -88,7 +89,7 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token grant kyc transaction failed"))
+	assert.Truef(t, check, "token grant kyc transaction failed")
 
 	resp, err = NewTokenRevokeKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -114,7 +115,7 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token revoke kyc transaction failed"))
+	assert.Truef(t, check, "token revoke kyc transaction failed")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

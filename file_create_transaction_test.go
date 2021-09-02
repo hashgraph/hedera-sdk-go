@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationFileCreateTransactionCanExecute(t *testing.T) {
@@ -60,7 +60,7 @@ func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: UNAUTHORIZED"), err.Error())
+		assert.Equal(t, "exceptional receipt status: UNAUTHORIZED", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

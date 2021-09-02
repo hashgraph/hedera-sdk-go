@@ -41,7 +41,7 @@ func (contract *ContractFunctionParameters) AddBool(value bool) *ContractFunctio
 
 func (contract *ContractFunctionParameters) AddFunction(address string, selector ContractFunctionSelector) (*ContractFunctionParameters, error) {
 	if len(address) != 40 {
-		return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
+		return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
 	}
 
 	argument := newArgument()
@@ -277,7 +277,7 @@ func (contract *ContractFunctionParameters) AddAddressArray(value []string) (*Co
 
 	for i, v := range value {
 		if len(v) != 40 {
-			return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
+			return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
 		}
 
 		addressBytes, err := hex.DecodeString(v)
@@ -335,7 +335,7 @@ func (contract *ContractFunctionParameters) AddBytes32(value [32]byte) *Contract
 
 func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractFunctionParameters, error) {
 	if len(value) != 40 {
-		return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
+		return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
 	}
 
 	addressBytes, err := hex.DecodeString(value)
@@ -449,7 +449,7 @@ func bytesArray(value [][]byte) []byte {
 	length := uint64(0)
 	for _, s := range value {
 		length += 32 + 32
-		sbytes := []byte(s)
+		sbytes := s
 		if len(sbytes)/32 == 0 {
 			length += 32
 		} else {
@@ -471,7 +471,7 @@ func bytesArray(value [][]byte) []byte {
 	// into the argument list
 	for i, s := range value {
 		// Get the length of the current argument (again)
-		length = 0
+		var length uint64
 		if len(s)/32 == 0 {
 			length = 32
 		} else {
@@ -479,7 +479,7 @@ func bytesArray(value [][]byte) []byte {
 		}
 
 		// Create byte array of correct size
-		// Length of value to the nearest 32 byte boundry +
+		// Length of value to the nearest 32 byte boundary +
 		// 32 bytes to store the length
 		bytes := make([]byte, length+32)
 

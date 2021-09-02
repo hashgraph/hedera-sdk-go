@@ -26,7 +26,7 @@ import (
 type TokenWipeTransaction struct {
 	Transaction
 	tokenID   TokenID
-	accountID AccountID
+	accountID *AccountID
 	amount    uint64
 	serial    []int64
 }
@@ -63,14 +63,18 @@ func (transaction *TokenWipeTransaction) GetTokenID() TokenID {
 }
 
 // The account to be wiped
-func (transaction *TokenWipeTransaction) SetAccountID(id AccountID) *TokenWipeTransaction {
+func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *TokenWipeTransaction {
 	transaction.requireNotFrozen()
-	transaction.accountID = id
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *TokenWipeTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 // The amount of tokens to wipe from the specified account. Amount must be a positive non-zero
@@ -100,13 +104,12 @@ func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) er
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
+
+	if err := transaction.tokenID.Validate(client); err != nil {
 		return err
 	}
-	err = transaction.accountID.Validate(client)
-	if err != nil {
+
+	if err := transaction.accountID.Validate(client); err != nil {
 		return err
 	}
 
@@ -177,12 +180,7 @@ func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*proto.Sch
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenWipeTransaction_getMethod(request request, channel *channel) method {
+func _TokenWipeTransactionGetMethod(request request, channel *channel) method {
 	return method{
 		transaction: channel.getToken().WipeTokenAccount,
 	}
@@ -226,10 +224,6 @@ func (transaction *TokenWipeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenWipeTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
 	if !transaction.keyAlreadySigned(publicKey) {
 		transaction.signWith(publicKey, signer)
 	}
@@ -266,15 +260,15 @@ func (transaction *TokenWipeTransaction) Execute(
 		request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenWipeTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenWipeTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -285,6 +279,9 @@ func (transaction *TokenWipeTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -311,7 +308,7 @@ func (transaction *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeT
 	}
 	body := transaction.build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenWipeTransaction) GetMaxTransactionFee() Hbar {
@@ -374,10 +371,6 @@ func (transaction *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransa
 func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenWipeTransaction {
 	transaction.requireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
 	if transaction.keyAlreadySigned(publicKey) {
 		return transaction
 	}
@@ -397,7 +390,6 @@ func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signa
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 
