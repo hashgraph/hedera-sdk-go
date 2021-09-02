@@ -9,15 +9,16 @@ import (
 
 type AccountUpdateTransaction struct {
 	Transaction
-	accountID                 *AccountID
-	proxyAccountID            *AccountID
-	key                       Key
-	receiveRecordThreshold    uint64
-	sendRecordThreshold       uint64
-	autoRenewPeriod           *time.Duration
-	memo                      string
-	receiverSignatureRequired bool
-	expirationTime            *time.Time
+	accountID                     *AccountID
+	proxyAccountID                *AccountID
+	key                           Key
+	receiveRecordThreshold        uint64
+	sendRecordThreshold           uint64
+	autoRenewPeriod               *time.Duration
+	memo                          string
+	receiverSignatureRequired     bool
+	expirationTime                *time.Time
+	maxAutomaticTokenAssociations uint32
 }
 
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
@@ -99,6 +100,16 @@ func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
 	}
 
 	return *transaction.accountID
+}
+
+func (transaction *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.maxAutomaticTokenAssociations = max
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
+	return transaction.maxAutomaticTokenAssociations
 }
 
 func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
@@ -197,7 +208,8 @@ func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
 		ReceiverSigRequiredField: &proto.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
 			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: transaction.receiverSignatureRequired},
 		},
-		Memo: &wrapperspb.StringValue{Value: transaction.memo},
+		Memo:                          &wrapperspb.StringValue{Value: transaction.memo},
+		MaxAutomaticTokenAssociations: &wrapperspb.UInt32Value{Value: transaction.maxAutomaticTokenAssociations},
 	}
 
 	if transaction.autoRenewPeriod != nil {
@@ -229,6 +241,8 @@ func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
 			CryptoUpdateAccount: body,
 		},
 	}
+
+	body.MaxAutomaticTokenAssociations = &wrapperspb.UInt32Value{Value: transaction.maxAutomaticTokenAssociations}
 
 	return &pb
 }

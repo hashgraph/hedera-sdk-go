@@ -21,7 +21,9 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 		SetKey(newKey).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
+		SetMaxAutomaticTokenAssociations(100).
 		Execute(env.Client)
+
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
