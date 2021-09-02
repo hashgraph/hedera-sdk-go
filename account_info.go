@@ -25,6 +25,7 @@ type AccountInfo struct {
 	TokenRelationships             []*TokenRelationship
 	AccountMemo                    string
 	OwnedNfts                      int64
+	MaxAutomaticTokenAssociations  uint32
 }
 
 func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
@@ -80,6 +81,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 		AutoRenewPeriod:                durationFromProtobuf(pb.AutoRenewPeriod),
 		LiveHashes:                     liveHashes,
 		OwnedNfts:                      pb.OwnedNfts,
+		MaxAutomaticTokenAssociations:  pb.MaxAutomaticTokenAssociations,
 	}, nil
 }
 
@@ -116,6 +118,7 @@ func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 		TokenRelationships:             tokenRelationship,
 		Memo:                           info.AccountMemo,
 		OwnedNfts:                      info.OwnedNfts,
+		MaxAutomaticTokenAssociations:  info.MaxAutomaticTokenAssociations,
 	}
 }
 

@@ -192,3 +192,64 @@ func TestIntegrationTokenAssociateTransactionNoTokenID(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }
+
+func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(20)
+
+	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetMaxAutomaticTokenAssociations(2).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	toke, err := NewTokenCreateTransaction().
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(2).
+		SetTreasuryAccountID(accountID).
+		SetAdminKey(newKey.PublicKey()).
+		SetFreezeKey(newKey.PublicKey()).
+		SetWipeKey(newKey.PublicKey()).
+		SetKycKey(newKey.PublicKey()).
+		SetSupplyKey(newKey.PublicKey()).
+		SetFreezeDefault(false).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	toke.Sign(newKey)
+
+	resp, err = toke.Execute(env.Client)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	assert.NotNil(t, receipt.TokenID)
+
+	record, err := NewTransactionRecordQuery().
+		SetTransactionID(resp.TransactionID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	for _, s := range record.AutomaticTokenAssociations {
+		println(s.AccountID.String(), s.TokenID.String())
+	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
+}
