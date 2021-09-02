@@ -1,3 +1,15 @@
+## v2.2.0-beta.1
+
+### Added
+
+ * Support for automatic token associations
+    * `TransactionRecord.AutomaticTokenAssociations`
+    * `AccountInfo.MaxAutomaticTokenAssociations`
+    * `AccountCreateTransaction.MaxAutomaticTokenAssociations`
+    * `AccountUpdateTransaction.MaxAutomaticTokenAssociations`
+    * `TokenRelationship.AutomaticAssociation`
+    * `TokenAssociation`
+
 ## v2.1.16
 
 ### Added
