@@ -15,25 +15,25 @@ type ContractDeleteTransaction struct {
 
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	transaction := ContractDeleteTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }
 
-func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractDeleteTransaction {
+func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractDeleteTransaction {
 	return ContractDeleteTransaction{
 		Transaction:       transaction,
-		contractID:        contractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
-		transferContactID: contractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
-		transferAccountID: accountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
+		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
+		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
+		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
 	}
 }
 
 // Sets the contract ID which should be deleted.
 func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.contractID = &contractID
 	return transaction
 }
@@ -48,7 +48,7 @@ func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
 
 // Sets the contract ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) SetTransferContractID(transferContactID ContractID) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.transferContactID = &transferContactID
 	return transaction
 }
@@ -63,7 +63,7 @@ func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID
 
 // Sets the account ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID AccountID) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.transferAccountID = &accountID
 
 	return transaction
@@ -77,7 +77,7 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 	return *transaction.transferAccountID
 }
 
-func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *ContractDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -103,30 +103,30 @@ func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *ContractDeleteTransaction) build() *proto.TransactionBody {
+func (transaction *ContractDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ContractDeleteTransactionBody{}
 
-	if !transaction.contractID.isZero() {
-		body.ContractID = transaction.contractID.toProtobuf()
+	if !transaction.contractID._IsZero() {
+		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if !transaction.transferContactID.isZero() {
+	if !transaction.transferContactID._IsZero() {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
-			TransferContractID: transaction.transferContactID.toProtobuf(),
+			TransferContractID: transaction.transferContactID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.transferAccountID.isZero() {
+	if !transaction.transferAccountID._IsZero() {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
-			TransferAccountID: transaction.transferAccountID.toProtobuf(),
+			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
 		}
 	}
 
 	pb := proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_ContractDeleteInstance{
 			ContractDeleteInstance: body,
 		},
@@ -136,32 +136,32 @@ func (transaction *ContractDeleteTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ContractDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.ContractDeleteTransactionBody{}
 
-	if !transaction.contractID.isZero() {
-		body.ContractID = transaction.contractID.toProtobuf()
+	if !transaction.contractID._IsZero() {
+		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if !transaction.transferContactID.isZero() {
+	if !transaction.transferContactID._IsZero() {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
-			TransferContractID: transaction.transferContactID.toProtobuf(),
+			TransferContractID: transaction.transferContactID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.transferAccountID.isZero() {
+	if !transaction.transferAccountID._IsZero() {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
-			TransferAccountID: transaction.transferAccountID.toProtobuf(),
+			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
 		}
 	}
 
@@ -176,12 +176,12 @@ func (transaction *ContractDeleteTransaction) constructScheduleProtobuf() (*prot
 
 func _ContractDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getContract().DeleteContract,
+		transaction: channel._GetContract().DeleteContract,
 	}
 }
 
 func (transaction *ContractDeleteTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -218,8 +218,8 @@ func (transaction *ContractDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractDeleteTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -246,14 +246,14 @@ func (transaction *ContractDeleteTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -296,15 +296,15 @@ func (transaction *ContractDeleteTransaction) FreezeWith(client *Client) (*Contr
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &ContractDeleteTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -315,7 +315,7 @@ func (transaction *ContractDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -326,7 +326,7 @@ func (transaction *ContractDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetTransactionMemo(memo string) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -337,7 +337,7 @@ func (transaction *ContractDeleteTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -348,7 +348,7 @@ func (transaction *ContractDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetTransactionID(transactionID TransactionID) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -356,7 +356,7 @@ func (transaction *ContractDeleteTransaction) SetTransactionID(transactionID Tra
 
 // SetNodeAccountIDs sets the _Node AccountID for this ContractDeleteTransaction.
 func (transaction *ContractDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -367,9 +367,9 @@ func (transaction *ContractDeleteTransaction) SetMaxRetry(count int) *ContractDe
 }
 
 func (transaction *ContractDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractDeleteTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -384,7 +384,7 @@ func (transaction *ContractDeleteTransaction) AddSignature(publicKey PublicKey, 
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

@@ -23,24 +23,24 @@ type TokenGrantKycTransaction struct {
 
 func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	transaction := TokenGrantKycTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }
 
-func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenGrantKycTransaction {
+func _TokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenGrantKycTransaction {
 	return TokenGrantKycTransaction{
 		Transaction: transaction,
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
-		accountID:   accountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
+		tokenID:     _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
+		accountID:   _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
 }
 
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenGrantKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
 	return transaction
 }
@@ -55,7 +55,7 @@ func (transaction *TokenGrantKycTransaction) GetTokenID() TokenID {
 
 // The account to be KYCed
 func (transaction *TokenGrantKycTransaction) SetAccountID(accountID AccountID) *TokenGrantKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
 	return transaction
 }
@@ -68,7 +68,7 @@ func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
 	return *transaction.accountID
 }
 
-func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenGrantKycTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -88,21 +88,21 @@ func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (transaction *TokenGrantKycTransaction) build() *proto.TransactionBody {
+func (transaction *TokenGrantKycTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenGrantKycTransactionBody{}
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if !transaction.tokenID._IsZero() {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if !transaction.accountID._IsZero() {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_TokenGrantKyc{
 			TokenGrantKyc: body,
 		},
@@ -110,24 +110,24 @@ func (transaction *TokenGrantKycTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenGrantKycTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenGrantKycTransactionBody{}
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if !transaction.tokenID._IsZero() {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if !transaction.accountID._IsZero() {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 
 	return &proto.SchedulableTransactionBody{
@@ -141,12 +141,12 @@ func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto
 
 func _TokenGrantKycTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getToken().GrantKycToTokenAccount,
+		transaction: channel._GetToken().GrantKycToTokenAccount,
 	}
 }
 
 func (transaction *TokenGrantKycTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -183,8 +183,8 @@ func (transaction *TokenGrantKycTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenGrantKycTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -211,14 +211,14 @@ func (transaction *TokenGrantKycTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -261,15 +261,15 @@ func (transaction *TokenGrantKycTransaction) FreezeWith(client *Client) (*TokenG
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenGrantKycTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -280,7 +280,7 @@ func (transaction *TokenGrantKycTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetMaxTransactionFee(fee Hbar) *TokenGrantKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -291,7 +291,7 @@ func (transaction *TokenGrantKycTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetTransactionMemo(memo string) *TokenGrantKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -302,7 +302,7 @@ func (transaction *TokenGrantKycTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetTransactionValidDuration(duration time.Duration) *TokenGrantKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -313,7 +313,7 @@ func (transaction *TokenGrantKycTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetTransactionID(transactionID TransactionID) *TokenGrantKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -321,7 +321,7 @@ func (transaction *TokenGrantKycTransaction) SetTransactionID(transactionID Tran
 
 // SetNodeTokenID sets the _Node TokenID for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenGrantKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -332,9 +332,9 @@ func (transaction *TokenGrantKycTransaction) SetMaxRetry(count int) *TokenGrantK
 }
 
 func (transaction *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenGrantKycTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -349,7 +349,7 @@ func (transaction *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, s
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

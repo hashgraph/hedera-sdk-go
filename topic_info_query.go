@@ -15,7 +15,7 @@ type TopicInfoQuery struct {
 //  Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
 	return &TopicInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
@@ -33,7 +33,7 @@ func (query *TopicInfoQuery) GetTopicID() TopicID {
 	return *query.topicID
 }
 
-func (query *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TopicInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -47,12 +47,12 @@ func (query *TopicInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TopicInfoQuery) build() *proto.Query_ConsensusGetTopicInfo {
+func (query *TopicInfoQuery) _Build() *proto.Query_ConsensusGetTopicInfo {
 	body := &proto.ConsensusGetTopicInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.topicID.isZero() {
-		body.TopicID = query.topicID.toProtobuf()
+	if !query.topicID._IsZero() {
+		body.TopicID = query.topicID._ToProtobuf()
 	}
 
 	return &proto.Query_ConsensusGetTopicInfo{
@@ -60,8 +60,8 @@ func (query *TopicInfoQuery) build() *proto.Query_ConsensusGetTopicInfo {
 	}
 }
 
-func (query *TopicInfoQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *TopicInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ConsensusGetTopicInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -74,8 +74,8 @@ func (query *TopicInfoQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *TopicInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *TopicInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -97,19 +97,19 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -146,7 +146,7 @@ func _TopicInfoQueryMapStatusError(_ _Request, response _Response) error {
 
 func _TopicInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getTopic().GetTopicInfo,
+		query: channel._GetTopic().GetTopicInfo,
 	}
 }
 
@@ -157,10 +157,10 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TopicInfo{}, err
 	}
@@ -198,13 +198,13 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_TopicInfoQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TopicInfoQueryGetMethod,
@@ -216,7 +216,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	return topicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo)
+	return _TopicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

@@ -14,35 +14,35 @@ type TokenNftInfo struct {
 	Metadata     []byte
 }
 
-func tokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
+func _TokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
 	if pb == nil {
 		return TokenNftInfo{}
 	}
 
 	accountID := AccountID{}
 	if pb.AccountID != nil {
-		accountID = *accountIDFromProtobuf(pb.AccountID)
+		accountID = *_AccountIDFromProtobuf(pb.AccountID)
 	}
 
 	return TokenNftInfo{
-		NftID:        nftIDFromProtobuf(pb.NftID),
+		NftID:        _NftIDFromProtobuf(pb.NftID),
 		AccountID:    accountID,
-		CreationTime: timeFromProtobuf(pb.CreationTime),
+		CreationTime: _TimeFromProtobuf(pb.CreationTime),
 		Metadata:     pb.Metadata,
 	}
 }
 
-func (tokenNftInfo *TokenNftInfo) toProtobuf() *proto.TokenNftInfo {
+func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *proto.TokenNftInfo {
 	return &proto.TokenNftInfo{
-		NftID:        tokenNftInfo.NftID.toProtobuf(),
-		AccountID:    tokenNftInfo.AccountID.toProtobuf(),
-		CreationTime: timeToProtobuf(tokenNftInfo.CreationTime),
+		NftID:        tokenNftInfo.NftID._ToProtobuf(),
+		AccountID:    tokenNftInfo.AccountID._ToProtobuf(),
+		CreationTime: _TimeToProtobuf(tokenNftInfo.CreationTime),
 		Metadata:     tokenNftInfo.Metadata,
 	}
 }
 
 func (tokenNftInfo *TokenNftInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(tokenNftInfo.toProtobuf())
+	data, err := protobuf.Marshal(tokenNftInfo._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -60,5 +60,5 @@ func TokenNftInfoFromBytes(data []byte) (TokenNftInfo, error) {
 		return TokenNftInfo{}, err
 	}
 
-	return tokenNftInfoFromProtobuf(&pb), nil
+	return _TokenNftInfoFromProtobuf(&pb), nil
 }

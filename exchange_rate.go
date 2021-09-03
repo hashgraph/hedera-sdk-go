@@ -10,7 +10,7 @@ type ExchangeRate struct {
 	expirationTime *proto.TimestampSeconds
 }
 
-func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
+func _ExchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
 	if protoExchange == nil {
 		return ExchangeRate{}
 	}
@@ -26,7 +26,7 @@ func exchangeRateFromProtobuf(protoExchange *proto.ExchangeRate) ExchangeRate {
 	}
 }
 
-func (exchange *ExchangeRate) toProtobuf() *proto.ExchangeRate {
+func (exchange *ExchangeRate) _ToProtobuf() *proto.ExchangeRate {
 	return &proto.ExchangeRate{
 		HbarEquiv:      exchange.Hbars,
 		CentEquiv:      exchange.cents,

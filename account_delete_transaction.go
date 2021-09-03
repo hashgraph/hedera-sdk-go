@@ -20,17 +20,17 @@ type AccountDeleteTransaction struct {
 	deleteAccountID   *AccountID
 }
 
-func accountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
+func _AccountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
 	return AccountDeleteTransaction{
 		Transaction:       transaction,
-		transferAccountID: accountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
-		deleteAccountID:   accountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
+		transferAccountID: _AccountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
+		deleteAccountID:   _AccountIDFromProtobuf(pb.GetCryptoDelete().GetDeleteAccountID()),
 	}
 }
 
 func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	transaction := AccountDeleteTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(2))
@@ -40,7 +40,7 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 
 // SetNodeAccountID sets the _Node AccountID for this AccountCreateTransaction.
 func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.deleteAccountID = &accountID
 	return transaction
 }
@@ -55,7 +55,7 @@ func (transaction *AccountDeleteTransaction) GetAccountID() AccountID {
 
 // SetTransferAccountID sets the AccountID which will receive all remaining hbars.
 func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccountID AccountID) *AccountDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.transferAccountID = &transferAccountID
 	return transaction
 }
@@ -68,7 +68,7 @@ func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccoun
 	return *transaction.transferAccountID
 }
 
-func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *AccountDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -88,22 +88,22 @@ func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (transaction *AccountDeleteTransaction) build() *proto.TransactionBody {
+func (transaction *AccountDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.CryptoDeleteTransactionBody{}
 
-	if !transaction.transferAccountID.isZero() {
-		body.TransferAccountID = transaction.transferAccountID.toProtobuf()
+	if !transaction.transferAccountID._IsZero() {
+		body.TransferAccountID = transaction.transferAccountID._ToProtobuf()
 	}
 
-	if !transaction.deleteAccountID.isZero() {
-		body.DeleteAccountID = transaction.deleteAccountID.toProtobuf()
+	if !transaction.deleteAccountID._IsZero() {
+		body.DeleteAccountID = transaction.deleteAccountID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_CryptoDelete{
 			CryptoDelete: body,
 		},
@@ -111,25 +111,25 @@ func (transaction *AccountDeleteTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.CryptoDeleteTransactionBody{}
 
-	if !transaction.transferAccountID.isZero() {
-		body.TransferAccountID = transaction.transferAccountID.toProtobuf()
+	if !transaction.transferAccountID._IsZero() {
+		body.TransferAccountID = transaction.transferAccountID._ToProtobuf()
 	}
 
-	if !transaction.deleteAccountID.isZero() {
-		body.DeleteAccountID = transaction.deleteAccountID.toProtobuf()
+	if !transaction.deleteAccountID._IsZero() {
+		body.DeleteAccountID = transaction.deleteAccountID._ToProtobuf()
 	}
 
 	return &proto.SchedulableTransactionBody{
@@ -143,12 +143,12 @@ func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto
 
 func _AccountDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getCrypto().CryptoDelete,
+		transaction: channel._GetCrypto().CryptoDelete,
 	}
 }
 
 func (transaction *AccountDeleteTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -185,8 +185,8 @@ func (transaction *AccountDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountDeleteTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -213,14 +213,14 @@ func (transaction *AccountDeleteTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -264,15 +264,15 @@ func (transaction *AccountDeleteTransaction) FreezeWith(client *Client) (*Accoun
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	if err := transaction.initTransactionID(client); err != nil {
+	transaction._InitFee(client)
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &AccountDeleteTransaction{}, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -283,7 +283,7 @@ func (transaction *AccountDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetMaxTransactionFee(fee Hbar) *AccountDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -294,7 +294,7 @@ func (transaction *AccountDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetTransactionMemo(memo string) *AccountDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -305,7 +305,7 @@ func (transaction *AccountDeleteTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *AccountDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -316,7 +316,7 @@ func (transaction *AccountDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetTransactionID(transactionID TransactionID) *AccountDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -324,7 +324,7 @@ func (transaction *AccountDeleteTransaction) SetTransactionID(transactionID Tran
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -335,9 +335,9 @@ func (transaction *AccountDeleteTransaction) SetMaxRetry(count int) *AccountDele
 }
 
 func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountDeleteTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -352,7 +352,7 @@ func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, s
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

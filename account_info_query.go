@@ -13,7 +13,7 @@ type AccountInfoQuery struct {
 
 func NewAccountInfoQuery() *AccountInfoQuery {
 	return &AccountInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
@@ -31,7 +31,7 @@ func (query *AccountInfoQuery) GetAccountID() AccountID {
 	return *query.accountID
 }
 
-func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *AccountInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -45,11 +45,11 @@ func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountInfoQuery) build() *proto.Query_CryptoGetInfo {
+func (query *AccountInfoQuery) _Build() *proto.Query_CryptoGetInfo {
 	return &proto.Query_CryptoGetInfo{
 		CryptoGetInfo: &proto.CryptoGetInfoQuery{
 			Header:    &proto.QueryHeader{},
-			AccountID: query.accountID.toProtobuf(),
+			AccountID: query.accountID._ToProtobuf(),
 		},
 	}
 }
@@ -66,12 +66,12 @@ func _AccountInfoQueryMapStatusError(_ _Request, response _Response) error {
 
 func _AccountInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getCrypto().GetAccountInfo,
+		query: channel._GetCrypto().GetAccountInfo,
 	}
 }
 
-func (query *AccountInfoQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *AccountInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -83,8 +83,8 @@ func (query *AccountInfoQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *AccountInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *AccountInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -106,19 +106,19 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -173,10 +173,10 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -214,13 +214,13 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_AccountInfoQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountInfoQueryGetMethod,
@@ -232,7 +232,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	return accountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo)
+	return _AccountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo)
 }
 
 func (query *AccountInfoQuery) SetMaxBackoff(max time.Duration) *AccountInfoQuery {

@@ -22,7 +22,7 @@ type AccountUpdateTransaction struct {
 
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	transaction := AccountUpdateTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
@@ -31,8 +31,8 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return &transaction
 }
 
-func accountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountUpdateTransaction {
-	key, _ := keyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
+func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountUpdateTransaction {
+	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var sendRecordThreshold uint64
 	var receiveRecordThreshold uint64
 	var receiverSignatureRequired bool
@@ -58,13 +58,13 @@ func accountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 		receiverSignatureRequired = s.ReceiverSigRequiredWrapper.Value // nolint
 	}
 
-	autoRenew := durationFromProtobuf(pb.GetCryptoUpdateAccount().AutoRenewPeriod)
-	expiration := timeFromProtobuf(pb.GetCryptoUpdateAccount().ExpirationTime)
+	autoRenew := _DurationFromProtobuf(pb.GetCryptoUpdateAccount().AutoRenewPeriod)
+	expiration := _TimeFromProtobuf(pb.GetCryptoUpdateAccount().ExpirationTime)
 
 	return AccountUpdateTransaction{
 		Transaction:               transaction,
-		accountID:                 accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
-		proxyAccountID:            accountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID()),
+		accountID:                 _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
+		proxyAccountID:            _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID()),
 		key:                       key,
 		receiveRecordThreshold:    receiveRecordThreshold,
 		sendRecordThreshold:       sendRecordThreshold,
@@ -77,7 +77,7 @@ func accountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 
 // Sets the new key.
 func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.key = key
 	return transaction
 }
@@ -88,7 +88,7 @@ func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
 
 // Sets the account ID which is being updated in this transaction.
 func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
 	return transaction
 }
@@ -102,7 +102,7 @@ func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
 }
 
 func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.receiverSignatureRequired = receiverSignatureRequired
 	return transaction
 }
@@ -113,7 +113,7 @@ func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired() bool
 
 // Sets the ID of the account to which this account is proxy staked.
 func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.proxyAccountID = &proxyAccountID
 	return transaction
 }
@@ -128,7 +128,7 @@ func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
 
 // Sets the duration in which it will automatically extend the expiration period.
 func (transaction *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.autoRenewPeriod = &autoRenewPeriod
 	return transaction
 }
@@ -142,7 +142,7 @@ func (transaction *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration 
 }
 
 func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.expirationTime = &expirationTime
 	return transaction
 }
@@ -156,7 +156,7 @@ func (transaction *AccountUpdateTransaction) GetExpirationTime() time.Time {
 }
 
 func (transaction *AccountUpdateTransaction) SetAccountMemo(memo string) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.memo = memo
 
 	return transaction
@@ -166,7 +166,7 @@ func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
 	return transaction.memo
 }
 
-func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *AccountUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -186,7 +186,7 @@ func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (transaction *AccountUpdateTransaction) build() *proto.TransactionBody {
+func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.CryptoUpdateTransactionBody{
 		SendRecordThresholdField: &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
 			SendRecordThreshold: transaction.sendRecordThreshold,
@@ -201,30 +201,30 @@ func (transaction *AccountUpdateTransaction) build() *proto.TransactionBody {
 	}
 
 	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
 	if transaction.expirationTime != nil {
-		body.ExpirationTime = timeToProtobuf(*transaction.expirationTime)
+		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.accountID.isZero() {
-		body.AccountIDToUpdate = transaction.accountID.toProtobuf()
+	if !transaction.accountID._IsZero() {
+		body.AccountIDToUpdate = transaction.accountID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID.isZero() {
-		body.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	if !transaction.proxyAccountID._IsZero() {
+		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
 	if transaction.key != nil {
-		body.Key = transaction.key.toProtoKey()
+		body.Key = transaction.key._ToProtoKey()
 	}
 
 	pb := proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_CryptoUpdateAccount{
 			CryptoUpdateAccount: body,
 		},
@@ -234,17 +234,17 @@ func (transaction *AccountUpdateTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.CryptoUpdateTransactionBody{
 		SendRecordThresholdField: &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
 			SendRecordThreshold: transaction.sendRecordThreshold,
@@ -259,23 +259,23 @@ func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*proto
 	}
 
 	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
 	if transaction.expirationTime != nil {
-		body.ExpirationTime = timeToProtobuf(*transaction.expirationTime)
+		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.accountID.isZero() {
-		body.AccountIDToUpdate = transaction.accountID.toProtobuf()
+	if !transaction.accountID._IsZero() {
+		body.AccountIDToUpdate = transaction.accountID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID.isZero() {
-		body.ProxyAccountID = transaction.proxyAccountID.toProtobuf()
+	if !transaction.proxyAccountID._IsZero() {
+		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
 	if transaction.key != nil {
-		body.Key = transaction.key.toProtoKey()
+		body.Key = transaction.key._ToProtoKey()
 	}
 
 	return &proto.SchedulableTransactionBody{
@@ -289,12 +289,12 @@ func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*proto
 
 func _AccountUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getCrypto().UpdateAccount,
+		transaction: channel._GetCrypto().UpdateAccount,
 	}
 }
 
 func (transaction *AccountUpdateTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -331,8 +331,8 @@ func (transaction *AccountUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *AccountUpdateTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -359,14 +359,14 @@ func (transaction *AccountUpdateTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -409,15 +409,15 @@ func (transaction *AccountUpdateTransaction) FreezeWith(client *Client) (*Accoun
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	if err := transaction.initTransactionID(client); err != nil {
+	transaction._InitFee(client)
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	err := transaction.validateNetworkOnIDs(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &AccountUpdateTransaction{}, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -428,7 +428,7 @@ func (transaction *AccountUpdateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetMaxTransactionFee(fee Hbar) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -439,7 +439,7 @@ func (transaction *AccountUpdateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetTransactionMemo(memo string) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -450,7 +450,7 @@ func (transaction *AccountUpdateTransaction) GetTransactionValidDuration() time.
 
 // SetTransactionValidDuration sets the valid duration for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -461,7 +461,7 @@ func (transaction *AccountUpdateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetTransactionID(transactionID TransactionID) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -469,7 +469,7 @@ func (transaction *AccountUpdateTransaction) SetTransactionID(transactionID Tran
 
 // SetNodeAccountIDs sets the _Node AccountID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -480,9 +480,9 @@ func (transaction *AccountUpdateTransaction) SetMaxRetry(count int) *AccountUpda
 }
 
 func (transaction *AccountUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountUpdateTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -497,7 +497,7 @@ func (transaction *AccountUpdateTransaction) AddSignature(publicKey PublicKey, s
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

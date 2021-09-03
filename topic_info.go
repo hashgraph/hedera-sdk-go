@@ -18,7 +18,7 @@ type TopicInfo struct {
 	AutoRenewAccountID *AccountID
 }
 
-func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, error) {
+func _TopicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, error) {
 	if topicInfo == nil {
 		return TopicInfo{}, errParameterNull
 	}
@@ -30,25 +30,25 @@ func topicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, erro
 		ExpirationTime: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(),
 			time.Now().Hour(), time.Now().Minute(), int(topicInfo.ExpirationTime.Seconds),
 			int(topicInfo.ExpirationTime.Nanos), time.Now().Location()),
-		AutoRenewPeriod: durationFromProtobuf(topicInfo.AutoRenewPeriod),
+		AutoRenewPeriod: _DurationFromProtobuf(topicInfo.AutoRenewPeriod),
 	}
 
 	if adminKey := topicInfo.AdminKey; adminKey != nil {
-		tempTopicInfo.AdminKey, err = keyFromProtobuf(adminKey)
+		tempTopicInfo.AdminKey, err = _KeyFromProtobuf(adminKey)
 	}
 
 	if submitKey := topicInfo.SubmitKey; submitKey != nil {
-		tempTopicInfo.SubmitKey, err = keyFromProtobuf(submitKey)
+		tempTopicInfo.SubmitKey, err = _KeyFromProtobuf(submitKey)
 	}
 
 	if autoRenewAccount := topicInfo.AutoRenewAccount; autoRenewAccount != nil {
-		tempTopicInfo.AutoRenewAccountID = accountIDFromProtobuf(autoRenewAccount)
+		tempTopicInfo.AutoRenewAccountID = _AccountIDFromProtobuf(autoRenewAccount)
 	}
 
 	return tempTopicInfo, err
 }
 
-func (topicInfo *TopicInfo) toProtobuf() *proto.ConsensusTopicInfo {
+func (topicInfo *TopicInfo) _ToProtobuf() *proto.ConsensusTopicInfo {
 	return &proto.ConsensusTopicInfo{
 		Memo:           topicInfo.TopicMemo,
 		RunningHash:    topicInfo.RunningHash,
@@ -57,15 +57,15 @@ func (topicInfo *TopicInfo) toProtobuf() *proto.ConsensusTopicInfo {
 			Seconds: int64(topicInfo.ExpirationTime.Second()),
 			Nanos:   int32(topicInfo.ExpirationTime.Nanosecond()),
 		},
-		AdminKey:         topicInfo.AdminKey.toProtoKey(),
-		SubmitKey:        topicInfo.SubmitKey.toProtoKey(),
-		AutoRenewPeriod:  durationToProtobuf(topicInfo.AutoRenewPeriod),
-		AutoRenewAccount: topicInfo.AutoRenewAccountID.toProtobuf(),
+		AdminKey:         topicInfo.AdminKey._ToProtoKey(),
+		SubmitKey:        topicInfo.SubmitKey._ToProtoKey(),
+		AutoRenewPeriod:  _DurationToProtobuf(topicInfo.AutoRenewPeriod),
+		AutoRenewAccount: topicInfo.AutoRenewAccountID._ToProtobuf(),
 	}
 }
 
 func (topicInfo TopicInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(topicInfo.toProtobuf())
+	data, err := protobuf.Marshal(topicInfo._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -83,7 +83,7 @@ func TopicInfoFromBytes(data []byte) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	info, err := topicInfoFromProtobuf(&pb)
+	info, err := _TopicInfoFromProtobuf(&pb)
 	if err != nil {
 		return TopicInfo{}, err
 	}

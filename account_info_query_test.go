@@ -13,7 +13,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -68,7 +68,7 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -126,7 +126,7 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -181,7 +181,7 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -239,7 +239,7 @@ func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).

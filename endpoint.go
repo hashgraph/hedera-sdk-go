@@ -11,7 +11,7 @@ type _Endpoint struct {
 	port    int32
 }
 
-func endpointFromProtobuf(serviceEndpoint *proto.ServiceEndpoint) _Endpoint {
+func _EndpointFromProtobuf(serviceEndpoint *proto.ServiceEndpoint) _Endpoint {
 	port := serviceEndpoint.GetPort()
 
 	if port == 0 || port == 50111 {
@@ -19,14 +19,14 @@ func endpointFromProtobuf(serviceEndpoint *proto.ServiceEndpoint) _Endpoint {
 	}
 
 	return _Endpoint{
-		address: ipv4AddressFromProtobuf(serviceEndpoint.GetIpAddressV4()),
+		address: _Ipv4AddressFromProtobuf(serviceEndpoint.GetIpAddressV4()),
 		port:    port,
 	}
 }
 
-func (endpoint *_Endpoint) toProtobuf() *proto.ServiceEndpoint {
+func (endpoint *_Endpoint) _ToProtobuf() *proto.ServiceEndpoint {
 	return &proto.ServiceEndpoint{
-		IpAddressV4: endpoint.address.toProtobuf(),
+		IpAddressV4: endpoint.address._ToProtobuf(),
 		Port:        endpoint.port,
 	}
 }

@@ -50,7 +50,7 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -101,7 +101,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -167,7 +167,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -227,7 +227,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -256,7 +256,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 	newClient := Client{}
 	networkName := NetworkNameMainnet
 	newClient.network.networkName = &networkName
-	tokenID.setNetworkWithClient(&newClient)
+	tokenID._SetNetworkWithClient(&newClient)
 
 	_, err = NewTokenInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -270,7 +270,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 	newClient = Client{}
 	networkName = NetworkNameTestnet
 	newClient.network.networkName = &networkName
-	tokenID.setNetworkWithClient(&newClient)
+	tokenID._SetNetworkWithClient(&newClient)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)

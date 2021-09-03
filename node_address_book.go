@@ -9,11 +9,11 @@ type _NodeAddressBook struct {
 	nodeAddresses []_NodeAddress
 }
 
-func nodeAddressBookFromProtobuf(book *proto.NodeAddressBook) _NodeAddressBook {
+func _NodeAddressBookFromProtobuf(book *proto.NodeAddressBook) _NodeAddressBook {
 	addresses := make([]_NodeAddress, 0)
 
 	for _, k := range book.NodeAddress {
-		addresses = append(addresses, nodeAddressFromProtobuf(k))
+		addresses = append(addresses, _NodeAddressFromProtobuf(k))
 	}
 
 	return _NodeAddressBook{
@@ -21,11 +21,11 @@ func nodeAddressBookFromProtobuf(book *proto.NodeAddressBook) _NodeAddressBook {
 	}
 }
 
-func (book _NodeAddressBook) toProtobuf() *proto.NodeAddressBook {
+func (book _NodeAddressBook) _ToProtobuf() *proto.NodeAddressBook {
 	addresses := make([]*proto.NodeAddress, 0)
 
 	for _, k := range book.nodeAddresses {
-		addresses = append(addresses, k.toProtobuf())
+		addresses = append(addresses, k._ToProtobuf())
 	}
 
 	return &proto.NodeAddressBook{
@@ -34,7 +34,7 @@ func (book _NodeAddressBook) toProtobuf() *proto.NodeAddressBook {
 }
 
 func (book _NodeAddressBook) ToBytes() []byte {
-	data, err := protobuf.Marshal(book.toProtobuf())
+	data, err := protobuf.Marshal(book._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -42,7 +42,7 @@ func (book _NodeAddressBook) ToBytes() []byte {
 	return data
 }
 
-func nodeAddressBookFromBytes(data []byte) (_NodeAddressBook, error) {
+func _NodeAddressBookFromBytes(data []byte) (_NodeAddressBook, error) {
 	if data == nil {
 		return _NodeAddressBook{}, errByteArrayNull
 	}
@@ -52,7 +52,7 @@ func nodeAddressBookFromBytes(data []byte) (_NodeAddressBook, error) {
 		return _NodeAddressBook{}, err
 	}
 
-	derivedBytes := nodeAddressBookFromProtobuf(&pb)
+	derivedBytes := _NodeAddressBookFromProtobuf(&pb)
 
 	return derivedBytes, nil
 }

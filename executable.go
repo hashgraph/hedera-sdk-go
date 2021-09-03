@@ -56,7 +56,7 @@ type _Request struct {
 	transaction *Transaction
 }
 
-func execute(
+func _Execute(
 	client *Client,
 	request _Request,
 	shouldRetry func(_Request, _Response) _ExecutionState,
@@ -117,11 +117,11 @@ func execute(
 			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}
 
-		node.inUse()
+		node._InUse()
 
-		channel, err := node.getChannel()
+		channel, err := node._GetChannel()
 		if err != nil {
-			node.increaseDelay()
+			node._IncreaseDelay()
 			continue
 		}
 
@@ -131,8 +131,8 @@ func execute(
 
 		resp := _Response{}
 
-		if !node.isHealthy() {
-			node.wait()
+		if !node._IsHealthy() {
+			node._Wait()
 		}
 
 		if method.query != nil {
@@ -143,21 +143,21 @@ func execute(
 
 		if err != nil {
 			errPersistent = err
-			if executableDefaultRetryHandler(err) {
-				node.increaseDelay()
+			if _ExecutableDefaultRetryHandler(err) {
+				node._IncreaseDelay()
 				continue
 			}
 			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
 
-		node.decreaseDelay()
+		node._DecreaseDelay()
 
 		retry := shouldRetry(request, resp)
 
 		switch retry {
 		case executionStateRetry:
 			if attempt <= int64(maxAttempts) {
-				delayForAttempt(minBackoff, maxBackoff, attempt)
+				_DelayForAttempt(minBackoff, maxBackoff, attempt)
 				continue
 			} else {
 				errPersistent = mapStatusError(request, resp)
@@ -173,13 +173,13 @@ func execute(
 	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func delayForAttempt(minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
+func _DelayForAttempt(minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
 	// 0.1s, 0.2s, 0.4s, 0.8s, ...
 	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
 	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
 
-func executableDefaultRetryHandler(err error) bool {
+func _ExecutableDefaultRetryHandler(err error) bool {
 	code := status.Code(err)
 
 	switch code {

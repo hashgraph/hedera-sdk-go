@@ -22,33 +22,33 @@ type TransactionReceipt struct {
 	SerialNumbers           []int64
 }
 
-func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) TransactionReceipt {
+func _TransactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) TransactionReceipt {
 	if protoReceipt == nil {
 		return TransactionReceipt{}
 	}
 	var accountID *AccountID
 	if protoReceipt.AccountID != nil {
-		accountID = accountIDFromProtobuf(protoReceipt.AccountID)
+		accountID = _AccountIDFromProtobuf(protoReceipt.AccountID)
 	}
 
 	var contractID *ContractID
 	if protoReceipt.ContractID != nil {
-		contractID = contractIDFromProtobuf(protoReceipt.ContractID)
+		contractID = _ContractIDFromProtobuf(protoReceipt.ContractID)
 	}
 
 	var fileID *FileID
 	if protoReceipt.FileID != nil {
-		fileID = fileIDFromProtobuf(protoReceipt.FileID)
+		fileID = _FileIDFromProtobuf(protoReceipt.FileID)
 	}
 
 	var topicID *TopicID
 	if protoReceipt.TopicID != nil {
-		topicID = topicIDFromProtobuf(protoReceipt.TopicID)
+		topicID = _TopicIDFromProtobuf(protoReceipt.TopicID)
 	}
 
 	var rate *ExchangeRate
 	if protoReceipt.ExchangeRate != nil {
-		exchangeRateValue := exchangeRateFromProtobuf(protoReceipt.ExchangeRate.GetCurrentRate())
+		exchangeRateValue := _ExchangeRateFromProtobuf(protoReceipt.ExchangeRate.GetCurrentRate())
 		rate = &exchangeRateValue
 	}
 
@@ -60,17 +60,17 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 
 	var tokenID *TokenID
 	if protoReceipt.TokenID != nil {
-		tokenID = tokenIDFromProtobuf(protoReceipt.TokenID)
+		tokenID = _TokenIDFromProtobuf(protoReceipt.TokenID)
 	}
 
 	var scheduleID *ScheduleID
 	if protoReceipt.ScheduleID != nil {
-		scheduleID = scheduleIDFromProtobuf(protoReceipt.ScheduleID)
+		scheduleID = _ScheduleIDFromProtobuf(protoReceipt.ScheduleID)
 	}
 
 	var scheduledTransactionID *TransactionID
 	if protoReceipt.ScheduledTransactionID != nil {
-		scheduledTransactionIDValue := transactionIDFromProtobuf(protoReceipt.ScheduledTransactionID)
+		scheduledTransactionIDValue := _TransactionIDFromProtobuf(protoReceipt.ScheduledTransactionID)
 		scheduledTransactionID = &scheduledTransactionIDValue
 	}
 
@@ -92,30 +92,30 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 	}
 }
 
-func (receipt TransactionReceipt) toProtobuf() *proto.TransactionReceipt {
+func (receipt TransactionReceipt) _ToProtobuf() *proto.TransactionReceipt {
 	return &proto.TransactionReceipt{
 		Status:     proto.ResponseCodeEnum(receipt.Status),
-		AccountID:  receipt.AccountID.toProtobuf(),
-		FileID:     receipt.FileID.toProtobuf(),
-		ContractID: receipt.ContractID.toProtobuf(),
+		AccountID:  receipt.AccountID._ToProtobuf(),
+		FileID:     receipt.FileID._ToProtobuf(),
+		ContractID: receipt.ContractID._ToProtobuf(),
 		ExchangeRate: &proto.ExchangeRateSet{
-			CurrentRate: receipt.ExchangeRate.toProtobuf(),
-			NextRate:    receipt.ExchangeRate.toProtobuf(),
+			CurrentRate: receipt.ExchangeRate._ToProtobuf(),
+			NextRate:    receipt.ExchangeRate._ToProtobuf(),
 		},
-		TopicID:                 receipt.TopicID.toProtobuf(),
+		TopicID:                 receipt.TopicID._ToProtobuf(),
 		TopicSequenceNumber:     receipt.TopicSequenceNumber,
 		TopicRunningHash:        receipt.TopicRunningHash,
 		TopicRunningHashVersion: receipt.TopicRunningHashVersion,
-		TokenID:                 receipt.TokenID.toProtobuf(),
+		TokenID:                 receipt.TokenID._ToProtobuf(),
 		NewTotalSupply:          receipt.TotalSupply,
-		ScheduleID:              receipt.ScheduleID.toProtobuf(),
-		ScheduledTransactionID:  receipt.ScheduledTransactionID.toProtobuf(),
+		ScheduleID:              receipt.ScheduleID._ToProtobuf(),
+		ScheduledTransactionID:  receipt.ScheduledTransactionID._ToProtobuf(),
 		SerialNumbers:           receipt.SerialNumbers,
 	}
 }
 
 func (receipt TransactionReceipt) ToBytes() []byte {
-	data, err := protobuf.Marshal(receipt.toProtobuf())
+	data, err := protobuf.Marshal(receipt._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -133,5 +133,5 @@ func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
 		return TransactionReceipt{}, err
 	}
 
-	return transactionReceiptFromProtobuf(&pb), nil
+	return _TransactionReceiptFromProtobuf(&pb), nil
 }

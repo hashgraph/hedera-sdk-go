@@ -17,23 +17,23 @@ type TokenDeleteTransaction struct {
 
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	transaction := TokenDeleteTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }
 
-func tokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDeleteTransaction {
+func _TokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDeleteTransaction {
 	return TokenDeleteTransaction{
 		Transaction: transaction,
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
+		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
 }
 
 // The Token to be deleted
 func (transaction *TokenDeleteTransaction) SetTokenID(tokenID TokenID) *TokenDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
 	return transaction
 }
@@ -46,7 +46,7 @@ func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -60,17 +60,17 @@ func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *TokenDeleteTransaction) build() *proto.TransactionBody {
+func (transaction *TokenDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenDeleteTransactionBody{}
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if !transaction.tokenID._IsZero() {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_TokenDeletion{
 			TokenDeletion: body,
 		},
@@ -78,20 +78,20 @@ func (transaction *TokenDeleteTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenDeleteTransactionBody{}
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if !transaction.tokenID._IsZero() {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
@@ -104,12 +104,12 @@ func (transaction *TokenDeleteTransaction) constructScheduleProtobuf() (*proto.S
 
 func _TokenDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getToken().DeleteToken,
+		transaction: channel._GetToken().DeleteToken,
 	}
 }
 
 func (transaction *TokenDeleteTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -146,8 +146,8 @@ func (transaction *TokenDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenDeleteTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -174,14 +174,14 @@ func (transaction *TokenDeleteTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -224,15 +224,15 @@ func (transaction *TokenDeleteTransaction) FreezeWith(client *Client) (*TokenDel
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenDeleteTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -243,7 +243,7 @@ func (transaction *TokenDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetMaxTransactionFee(fee Hbar) *TokenDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -254,7 +254,7 @@ func (transaction *TokenDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetTransactionMemo(memo string) *TokenDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -265,7 +265,7 @@ func (transaction *TokenDeleteTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -276,7 +276,7 @@ func (transaction *TokenDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetTransactionID(transactionID TransactionID) *TokenDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -284,7 +284,7 @@ func (transaction *TokenDeleteTransaction) SetTransactionID(transactionID Transa
 
 // SetNodeTokenID sets the _Node TokenID for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -295,9 +295,9 @@ func (transaction *TokenDeleteTransaction) SetMaxRetry(count int) *TokenDeleteTr
 }
 
 func (transaction *TokenDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDeleteTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -312,7 +312,7 @@ func (transaction *TokenDeleteTransaction) AddSignature(publicKey PublicKey, sig
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

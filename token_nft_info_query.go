@@ -13,7 +13,7 @@ type TokenNftInfoQuery struct {
 
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	return &TokenNftInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 		nftID: nil,
 	}
 }
@@ -87,7 +87,7 @@ func (query *TokenNftInfoQuery) ByAccountID(id AccountID) *TokenNftInfoQuery {
 	return query
 }
 
-func (query *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TokenNftInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -101,19 +101,19 @@ func (query *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TokenNftInfoQuery) buildByNft() *proto.Query_TokenGetNftInfo {
+func (query *TokenNftInfoQuery) _BuildByNft() *proto.Query_TokenGetNftInfo {
 	body := &proto.TokenGetNftInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	body.NftID = query.nftID.toProtobuf()
+	body.NftID = query.nftID._ToProtobuf()
 
 	return &proto.Query_TokenGetNftInfo{
 		TokenGetNftInfo: body,
 	}
 }
 
-func (query *TokenNftInfoQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.buildByNft()
+func (query *TokenNftInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._BuildByNft()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TokenGetNftInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -126,13 +126,13 @@ func (query *TokenNftInfoQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *TokenNftInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+func (query *TokenNftInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
 		return _ProtoRequest{}, err
 	}
 
-	pb := query.buildByNft()
+	pb := query._BuildByNft()
 	pb.TokenGetNftInfo.Header.Payment = paymentTransaction
 	pb.TokenGetNftInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
@@ -148,20 +148,20 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
 	var resp _IntermediateResponse
-	resp, err = execute(
+	resp, err = _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -197,7 +197,7 @@ func _TokenNftInfoQueryMapStatusError(_ _Request, response _Response) error {
 
 func _TokenNftInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getToken().GetTokenNftInfo,
+		query: channel._GetToken().GetTokenNftInfo,
 	}
 }
 
@@ -207,10 +207,10 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return []TokenNftInfo{}, err
 	}
@@ -249,14 +249,14 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 
 	var resp _IntermediateResponse
 	tokenInfos := make([]TokenNftInfo, 0)
-	resp, err = execute(
+	resp, err = _Execute(
 		client,
 		_Request{
 
 			query: &query.Query,
 		},
 		_TokenNftInfoQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TokenNftInfoQueryGetMethod,
@@ -268,7 +268,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		return []TokenNftInfo{}, err
 	}
 
-	tokenInfos = append(tokenInfos, tokenNftInfoFromProtobuf(resp.query.GetTokenGetNftInfo().GetNft()))
+	tokenInfos = append(tokenInfos, _TokenNftInfoFromProtobuf(resp.query.GetTokenGetNftInfo().GetNft()))
 	return tokenInfos, nil
 }
 

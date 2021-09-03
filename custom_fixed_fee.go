@@ -6,8 +6,8 @@ import (
 )
 
 type Fee interface {
-	toProtobuf() *proto.CustomFee
-	validateNetworkOnIDs(client *Client) error
+	_ToProtobuf() *proto.CustomFee
+	_ValidateNetworkOnIDs(client *Client) error
 }
 
 type CustomFixedFee struct {
@@ -24,15 +24,15 @@ func NewCustomFixedFee() *CustomFixedFee {
 	}
 }
 
-func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) CustomFixedFee {
+func _CustomFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) CustomFixedFee {
 	return CustomFixedFee{
 		CustomFee:           customFee,
 		Amount:              fixedFee.Amount,
-		DenominationTokenID: tokenIDFromProtobuf(fixedFee.DenominatingTokenId),
+		DenominationTokenID: _TokenIDFromProtobuf(fixedFee.DenominatingTokenId),
 	}
 }
 
-func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
+func (fee CustomFixedFee) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil {
 		return nil
 	}
@@ -55,15 +55,15 @@ func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (fee CustomFixedFee) toProtobuf() *proto.CustomFee {
+func (fee CustomFixedFee) _ToProtobuf() *proto.CustomFee {
 	var tokenID *proto.TokenID
 	if fee.DenominationTokenID != nil {
-		tokenID = fee.DenominationTokenID.toProtobuf()
+		tokenID = fee.DenominationTokenID._ToProtobuf()
 	}
 
 	var FeeCollectorAccountID *proto.AccountID
 	if fee.FeeCollectorAccountID != nil {
-		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID.toProtobuf()
+		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID._ToProtobuf()
 	}
 
 	return &proto.CustomFee{
@@ -122,7 +122,7 @@ func (fee *CustomFixedFee) GetFeeCollectorAccountID() AccountID {
 }
 
 func (fee CustomFixedFee) ToBytes() []byte {
-	data, err := protobuf.Marshal(fee.toProtobuf())
+	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}

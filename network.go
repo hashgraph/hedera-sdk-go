@@ -18,7 +18,7 @@ type _Network struct {
 	networkName            *NetworkName
 }
 
-func newNetwork() _Network {
+func _NewNetwork() _Network {
 	return _Network{
 		network:                make(map[string]AccountID),
 		nodes:                  make([]*_Node, 0),
@@ -33,7 +33,7 @@ func newNetwork() _Network {
 func (network *_Network) SetNetwork(net map[string]AccountID) error {
 	for url, id := range network.network {
 		if _, ok := net[url]; !ok {
-			err := network.networkNodes[id].close()
+			err := network.networkNodes[id]._Close()
 			if err != nil {
 				return err
 			}
@@ -44,7 +44,7 @@ func (network *_Network) SetNetwork(net map[string]AccountID) error {
 
 	for url, id := range net {
 		if _, ok := network.network[url]; !ok {
-			node := newNode(id, url, network.nodeWaitTime.Milliseconds())
+			node := _NewNode(id, url, network.nodeWaitTime.Milliseconds())
 			network.networkNodes[id] = &node
 		}
 	}
@@ -61,7 +61,7 @@ func (network *_Network) SetNetwork(net map[string]AccountID) error {
 	return nil
 }
 
-func (network *_Network) getNodeAccountIDsForExecute() []AccountID {
+func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
 	sort.Sort(_Nodes{nodes: network.nodes})
 
 	if network.maxNodeAttempts > 0 {
@@ -73,7 +73,7 @@ func (network *_Network) getNodeAccountIDsForExecute() []AccountID {
 				continue
 			}
 			if nod.attempts >= int64(network.maxNodeAttempts) {
-				err := nod.close()
+				err := nod._Close()
 				if err != nil {
 					panic(err)
 				}
@@ -85,7 +85,7 @@ func (network *_Network) getNodeAccountIDsForExecute() []AccountID {
 		}
 	}
 
-	length := network.getNumberOfNodesForTransaction()
+	length := network._GetNumberOfNodesForTransaction()
 	accountIDs := make([]AccountID, length)
 
 	for i, id := range network.nodes[0:length] {
@@ -95,20 +95,20 @@ func (network *_Network) getNodeAccountIDsForExecute() []AccountID {
 	return accountIDs
 }
 
-func (network *_Network) getNetworkName() *NetworkName {
+func (network *_Network) _GetNetworkName() *NetworkName {
 	return network.networkName
 }
 
-func (network *_Network) setNetworkName(net NetworkName) *_Network {
+func (network *_Network) _SetNetworkName(net NetworkName) *_Network {
 	network.networkName = &net
 
 	switch net {
 	case NetworkNameMainnet:
-		network.addressBook = readAddressBookResource("addressbook/mainnet.pb")
+		network.addressBook = _ReadAddressBookResource("addressbook/mainnet.pb")
 	case NetworkNameTestnet:
-		network.addressBook = readAddressBookResource("addressbook/testnet.pb")
+		network.addressBook = _ReadAddressBookResource("addressbook/testnet.pb")
 	case NetworkNamePreviewnet:
-		network.addressBook = readAddressBookResource("addressbook/previewnet.pb")
+		network.addressBook = _ReadAddressBookResource("addressbook/previewnet.pb")
 	}
 
 	if network.addressBook != nil {
@@ -121,13 +121,13 @@ func (network *_Network) setNetworkName(net NetworkName) *_Network {
 	return network
 }
 
-func readAddressBookResource(ad string) map[AccountID]_NodeAddress {
+func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
 	f, err := ioutil.ReadFile(ad)
 	if err != nil {
 		panic(err)
 	}
 
-	nodeAB, err := nodeAddressBookFromBytes(f)
+	nodeAB, err := _NodeAddressBookFromBytes(f)
 	if err != nil {
 		panic(err)
 	}
@@ -144,10 +144,10 @@ func readAddressBookResource(ad string) map[AccountID]_NodeAddress {
 	return resultMap
 }
 
-func (network *_Network) getNumberOfNodesForTransaction() int {
+func (network *_Network) _GetNumberOfNodesForTransaction() int {
 	count := 0
 	for _, node := range network.nodes {
-		if node.isHealthy() {
+		if node._IsHealthy() {
 			count++
 		}
 	}
@@ -159,28 +159,28 @@ func (network *_Network) getNumberOfNodesForTransaction() int {
 	return (count + 3 - 1) / 3
 }
 
-func (network *_Network) setMaxNodesPerTransaction(max int) {
+func (network *_Network) _SetMaxNodesPerTransaction(max int) {
 	network.maxNodesPerTransaction = &max
 }
 
-func (network *_Network) setMaxNodeAttempts(max int) {
+func (network *_Network) _SetMaxNodeAttempts(max int) {
 	network.maxNodeAttempts = max
 }
 
-func (network *_Network) getMaxNodeAttempts() int {
+func (network *_Network) _GetMaxNodeAttempts() int {
 	return network.maxNodeAttempts
 }
 
-func (network *_Network) setNodeWaitTime(waitTime time.Duration) {
+func (network *_Network) _SetNodeWaitTime(waitTime time.Duration) {
 	network.nodeWaitTime = waitTime
 	for _, nod := range network.nodes {
 		if nod != nil {
-			nod.setWaitTime(waitTime.Milliseconds())
+			nod._SetWaitTime(waitTime.Milliseconds())
 		}
 	}
 }
 
-func (network *_Network) getNodeWaitTime() time.Duration {
+func (network *_Network) _GetNodeWaitTime() time.Duration {
 	return network.nodeWaitTime
 }
 

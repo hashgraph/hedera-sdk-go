@@ -20,7 +20,7 @@ type TopicMessageSubmitTransaction struct {
 
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	transaction := TopicMessageSubmitTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 		maxChunks:   20,
 		message:     make([]byte, 0),
 	}
@@ -29,19 +29,19 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return &transaction
 }
 
-func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
+func _TopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicMessageSubmitTransaction {
 	tx := TopicMessageSubmitTransaction{
 		Transaction: transaction,
 		maxChunks:   20,
 		message:     make([]byte, 0),
-		topicID:     topicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
+		topicID:     _TopicIDFromProtobuf(pb.GetConsensusSubmitMessage().GetTopicID()),
 	}
 
 	return tx
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetTopicID(topicID TopicID) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.topicID = &topicID
 	return transaction
 }
@@ -55,7 +55,7 @@ func (transaction *TopicMessageSubmitTransaction) GetTopicID() TopicID {
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetMessage(message []byte) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.message = message
 	return transaction
 }
@@ -65,7 +65,7 @@ func (transaction *TopicMessageSubmitTransaction) GetMessage() []byte {
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetMaxChunks(maxChunks uint64) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.maxChunks = maxChunks
 	return transaction
 }
@@ -75,7 +75,7 @@ func (transaction *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
 }
 
 func (transaction *TopicMessageSubmitTransaction) IsFrozen() bool {
-	return transaction.Transaction.isFrozen()
+	return transaction.Transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -112,14 +112,14 @@ func (transaction *TopicMessageSubmitTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TopicMessageSubmitTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
 }
 
-func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TopicMessageSubmitTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -133,17 +133,17 @@ func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *C
 	return nil
 }
 
-func (transaction *TopicMessageSubmitTransaction) build() *proto.TransactionBody {
+func (transaction *TopicMessageSubmitTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ConsensusSubmitMessageTransactionBody{}
-	if !transaction.topicID.isZero() {
-		body.TopicID = transaction.topicID.toProtobuf()
+	if !transaction.topicID._IsZero() {
+		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_ConsensusSubmitMessage{
 			ConsensusSubmitMessage: body,
 		},
@@ -151,7 +151,7 @@ func (transaction *TopicMessageSubmitTransaction) build() *proto.TransactionBody
 }
 
 func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
 
@@ -162,22 +162,22 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 		}
 	}
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicMessageSubmitTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.ConsensusSubmitMessageTransactionBody{
 		Message:   transaction.message,
 		ChunkInfo: &proto.ConsensusMessageChunkInfo{},
 	}
 
-	if !transaction.topicID.isZero() {
-		body.TopicID = transaction.topicID.toProtobuf()
+	if !transaction.topicID._IsZero() {
+		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 
 	return &proto.SchedulableTransactionBody{
@@ -230,7 +230,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		accountID = *transactionID.AccountID
 	}
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(accountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(accountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
@@ -241,7 +241,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	list := make([]TransactionResponse, size)
 
 	for i := 0; i < size; i++ {
-		resp, err := execute(
+		resp, err := _Execute(
 			client,
 			_Request{
 				transaction: &transaction.Transaction,
@@ -277,18 +277,18 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
 
-		transaction.nodeIDs = client.network.getNodeAccountIDsForExecute()
+		transaction.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 	}
 
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TopicMessageSubmitTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	chunks := uint64((len(transaction.message) + (chunkSize - 1)) / chunkSize)
 	if chunks > transaction.maxChunks {
@@ -299,7 +299,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	}
 
 	initialTransactionID := transaction.GetTransactionID()
-	nextTransactionID := transactionIDFromProtobuf(initialTransactionID.toProtobuf())
+	nextTransactionID := _TransactionIDFromProtobuf(initialTransactionID._ToProtobuf())
 
 	transaction.transactionIDs = make([]TransactionID, 0)
 	transaction.transactions = make([]*proto.Transaction, 0)
@@ -313,22 +313,22 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 				end = len(transaction.message)
 			}
 
-			transaction.transactionIDs = append(transaction.transactionIDs, transactionIDFromProtobuf(nextTransactionID.toProtobuf()))
+			transaction.transactionIDs = append(transaction.transactionIDs, _TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
 
 			b.ConsensusSubmitMessage.Message = transaction.message[start:end]
 			b.ConsensusSubmitMessage.ChunkInfo = &proto.ConsensusMessageChunkInfo{
-				InitialTransactionID: initialTransactionID.toProtobuf(),
+				InitialTransactionID: initialTransactionID._ToProtobuf(),
 				Total:                int32(chunks),
 				Number:               int32(i) + 1,
 			}
 
-			body.TransactionID = nextTransactionID.toProtobuf()
+			body.TransactionID = nextTransactionID._ToProtobuf()
 			body.Data = &proto.TransactionBody_ConsensusSubmitMessage{
 				ConsensusSubmitMessage: b.ConsensusSubmitMessage,
 			}
 
 			for _, nodeAccountID := range transaction.nodeIDs {
-				body.NodeAccountID = nodeAccountID.toProtobuf()
+				body.NodeAccountID = nodeAccountID._ToProtobuf()
 
 				bodyBytes, err := protobuf.Marshal(body)
 				if err != nil {
@@ -352,7 +352,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 
 func _TopicMessageSubmitTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getTopic().SubmitMessage,
+		transaction: channel._GetTopic().SubmitMessage,
 	}
 }
 
@@ -362,7 +362,7 @@ func (transaction *TopicMessageSubmitTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetMaxTransactionFee(fee Hbar) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -373,7 +373,7 @@ func (transaction *TopicMessageSubmitTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetTransactionMemo(memo string) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -384,7 +384,7 @@ func (transaction *TopicMessageSubmitTransaction) GetTransactionValidDuration() 
 
 // SetTransactionValidDuration sets the valid duration for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetTransactionValidDuration(duration time.Duration) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -395,7 +395,7 @@ func (transaction *TopicMessageSubmitTransaction) GetTransactionID() Transaction
 
 // SetTransactionID sets the TransactionID for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetTransactionID(transactionID TransactionID) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -403,7 +403,7 @@ func (transaction *TopicMessageSubmitTransaction) SetTransactionID(transactionID
 
 // SetNodeAccountID sets the _Node AccountID for this TopicMessageSubmitTransaction.
 func (transaction *TopicMessageSubmitTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicMessageSubmitTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -414,9 +414,9 @@ func (transaction *TopicMessageSubmitTransaction) SetMaxRetry(count int) *TopicM
 }
 
 func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicMessageSubmitTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -431,7 +431,7 @@ func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicK
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

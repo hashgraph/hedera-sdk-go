@@ -12,14 +12,14 @@ type AssessedCustomFee struct {
 	PayerAccountIDs       []*AccountID
 }
 
-func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) AssessedCustomFee {
-	accountID := accountIDFromProtobuf(assessedFee.FeeCollectorAccountId)
-	tokenID := tokenIDFromProtobuf(assessedFee.TokenId)
+func _AssessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) AssessedCustomFee {
+	accountID := _AccountIDFromProtobuf(assessedFee.FeeCollectorAccountId)
+	tokenID := _TokenIDFromProtobuf(assessedFee.TokenId)
 
 	payerAccountIds := make([]*AccountID, len(assessedFee.EffectivePayerAccountId))
 
 	for _, id := range assessedFee.EffectivePayerAccountId {
-		payerAccountIds = append(payerAccountIds, accountIDFromProtobuf(id))
+		payerAccountIds = append(payerAccountIds, _AccountIDFromProtobuf(id))
 	}
 
 	return AssessedCustomFee{
@@ -30,21 +30,21 @@ func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) Assesse
 	}
 }
 
-func (fee *AssessedCustomFee) toProtobuf() *proto.AssessedCustomFee {
+func (fee *AssessedCustomFee) _ToProtobuf() *proto.AssessedCustomFee {
 	var tokenID *proto.TokenID
 	if fee.TokenID != nil {
-		tokenID = fee.TokenID.toProtobuf()
+		tokenID = fee.TokenID._ToProtobuf()
 	}
 
 	var accountID *proto.AccountID
 	if fee.TokenID != nil {
-		accountID = fee.FeeCollectorAccountId.toProtobuf()
+		accountID = fee.FeeCollectorAccountId._ToProtobuf()
 	}
 
 	payerAccountIds := make([]*proto.AccountID, len(fee.PayerAccountIDs))
 
 	for _, id := range fee.PayerAccountIDs {
-		payerAccountIds = append(payerAccountIds, id.toProtobuf())
+		payerAccountIds = append(payerAccountIds, id._ToProtobuf())
 	}
 
 	return &proto.AssessedCustomFee{
@@ -56,7 +56,7 @@ func (fee *AssessedCustomFee) toProtobuf() *proto.AssessedCustomFee {
 }
 
 func (fee *AssessedCustomFee) ToBytes() []byte {
-	data, err := protobuf.Marshal(fee.toProtobuf())
+	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -74,5 +74,5 @@ func AssessedCustomFeeFromBytes(data []byte) (AssessedCustomFee, error) {
 		return AssessedCustomFee{}, err
 	}
 
-	return assessedCustomFeeFromProtobuf(&pb), nil
+	return _AssessedCustomFeeFromProtobuf(&pb), nil
 }

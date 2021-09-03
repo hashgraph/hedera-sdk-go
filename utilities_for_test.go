@@ -58,7 +58,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		env.OperatorID, err = AccountIDFromString(configOperatorID)
 		assert.NoError(t, err)
 
-		env.OperatorID.setNetworkWithClient(env.Client)
+		env.OperatorID._SetNetworkWithClient(env.Client)
 
 		env.OperatorKey, err = PrivateKeyFromString(configOperatorKey)
 		assert.NoError(t, err)
@@ -134,7 +134,7 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 	return nil
 }
 
-func newMockClient() (*Client, error) {
+func _NewMockClient() (*Client, error) {
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 
 	if err != nil {
@@ -144,19 +144,19 @@ func newMockClient() (*Client, error) {
 	var net = make(map[string]AccountID)
 	net["nonexistent-testnet"] = AccountID{Account: 3}
 
-	client := newClient(net, []string{}, "testnet")
+	client := _NewClient(net, []string{}, "testnet")
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
 	return client, nil
 }
 
-func newMockTransaction() (*TransferTransaction, error) {
+func _NewMockTransaction() (*TransferTransaction, error) {
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 	if err != nil {
 		return &TransferTransaction{}, err
 	}
 
-	client, err := newMockClient()
+	client, err := _NewMockClient()
 	if err != nil {
 		return &TransferTransaction{}, err
 	}

@@ -82,7 +82,7 @@ func NewMnemonic(words []string) (Mnemonic, error) {
 		if len(words) == 22 { //nolint
 			return Mnemonic{
 				words: joinedString,
-			}.legacyValidate()
+			}._LegacyValidate()
 		} else if bip39.IsMnemonicValid(joinedString) {
 			return Mnemonic{
 				words: joinedString,
@@ -95,18 +95,18 @@ func NewMnemonic(words []string) (Mnemonic, error) {
 	}
 }
 
-func (m Mnemonic) legacyValidate() (Mnemonic, error) {
+func (m Mnemonic) _LegacyValidate() (Mnemonic, error) {
 	if len(strings.Split(m.words, " ")) != 22 {
 		return Mnemonic{}, fmt.Errorf("not a legacy mnemonic")
 	}
 
-	indices, err := m.indices()
+	indices, err := m._Indices()
 	if err != nil {
 		return Mnemonic{}, err
 	}
 
-	entropy, checksum := m.toLegacyEntropy(indices)
-	newchecksum := crc8(entropy)
+	entropy, checksum := m._ToLegacyEntropy(indices)
+	newchecksum := _Crc8(entropy)
 
 	if checksum != newchecksum {
 		return Mnemonic{}, fmt.Errorf("legacy mnemonic checksum mismatch")
@@ -115,7 +115,7 @@ func (m Mnemonic) legacyValidate() (Mnemonic, error) {
 	return m, nil
 }
 
-func (m Mnemonic) indices() ([]int, error) {
+func (m Mnemonic) _Indices() ([]int, error) {
 	var indices []int
 	var check bool
 	temp := strings.Split(m.words, " ")
@@ -148,16 +148,16 @@ func (m Mnemonic) indices() ([]int, error) {
 }
 
 func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
-	indices, err := m.indices()
+	indices, err := m._Indices()
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
 	var entropy []byte
 	if len(indices) == 22 { // nolint
-		entropy, _ = m.toLegacyEntropy(indices)
+		entropy, _ = m._ToLegacyEntropy(indices)
 	} else if len(indices) == 24 {
-		entropy, err = m.toLegacyEntropy2()
+		entropy, err = m._ToLegacyEntropy2()
 		if err != nil {
 			return PrivateKey{}, err
 		}
@@ -184,8 +184,8 @@ func bytesToBits(dat []uint8) []bool {
 	return bits
 }
 
-func (m Mnemonic) toLegacyEntropy(indices []int) ([]byte, uint8) {
-	data := convertRadix(indices, len(legacy), 256, 33)
+func (m Mnemonic) _ToLegacyEntropy(indices []int) ([]byte, uint8) {
+	data := _ConvertRadix(indices, len(legacy), 256, 33)
 
 	checksum := data[len(data)-1]
 	result := make([]uint8, len(data)-1)
@@ -197,7 +197,7 @@ func (m Mnemonic) toLegacyEntropy(indices []int) ([]byte, uint8) {
 	return result, checksum
 }
 
-func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
+func (m Mnemonic) _ToLegacyEntropy2() ([]byte, error) {
 	indices := strings.Split(m.words, " ")
 	concatBitsLen := len(indices) * 11
 	concatBits := make([]bool, concatBitsLen)
@@ -246,7 +246,7 @@ func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
 	return entropy, nil
 }
 
-func convertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 {
+func _ConvertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 {
 	num := big.NewInt(0)
 
 	for _, element := range nums {
@@ -266,7 +266,7 @@ func convertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 
 	return result
 }
 
-func crc8(data []uint8) uint8 {
+func _Crc8(data []uint8) uint8 {
 	var crc uint8
 	crc = 0xff
 

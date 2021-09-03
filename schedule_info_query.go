@@ -13,7 +13,7 @@ type ScheduleInfoQuery struct {
 
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	return &ScheduleInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
@@ -30,7 +30,7 @@ func (query *ScheduleInfoQuery) GetScheduleID() ScheduleID {
 	return *query.scheduleID
 }
 
-func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ScheduleInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -44,12 +44,12 @@ func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ScheduleInfoQuery) build() *proto.Query_ScheduleGetInfo {
+func (query *ScheduleInfoQuery) _Build() *proto.Query_ScheduleGetInfo {
 	body := &proto.ScheduleGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.scheduleID.isZero() {
-		body.ScheduleID = query.scheduleID.toProtobuf()
+	if !query.scheduleID._IsZero() {
+		body.ScheduleID = query.scheduleID._ToProtobuf()
 	}
 
 	return &proto.Query_ScheduleGetInfo{
@@ -57,8 +57,8 @@ func (query *ScheduleInfoQuery) build() *proto.Query_ScheduleGetInfo {
 	}
 }
 
-func (query *ScheduleInfoQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *ScheduleInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ScheduleGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -71,8 +71,8 @@ func (query *ScheduleInfoQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *ScheduleInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *ScheduleInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -94,19 +94,19 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -143,7 +143,7 @@ func _ScheduleInfoQueryMapStatusError(_ _Request, response _Response) error {
 
 func _ScheduleInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getSchedule().GetScheduleInfo,
+		query: channel._GetSchedule().GetScheduleInfo,
 	}
 }
 
@@ -153,15 +153,15 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
 
-	query.build()
+	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -192,13 +192,13 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		return ScheduleInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_ScheduleInfoQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_ScheduleInfoQueryGetMethod,
@@ -210,7 +210,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		return ScheduleInfo{}, err
 	}
 
-	return scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo), nil
+	return _ScheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

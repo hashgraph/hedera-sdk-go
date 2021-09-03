@@ -27,7 +27,7 @@ type FileCreateTransaction struct {
 // used to construct and execute a File Create Transaction.
 func NewFileCreateTransaction() *FileCreateTransaction {
 	transaction := FileCreateTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	transaction.SetExpirationTime(time.Now().Add(7890000 * time.Second))
@@ -36,9 +36,9 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	return &transaction
 }
 
-func fileCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileCreateTransaction {
-	keys, _ := keyListFromProtobuf(pb.GetFileCreate().GetKeys())
-	expiration := timeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
+func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileCreateTransaction {
+	keys, _ := _KeyListFromProtobuf(pb.GetFileCreate().GetKeys())
+	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
 	return FileCreateTransaction{
 		Transaction:    transaction,
@@ -60,7 +60,7 @@ func fileCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 // expirationTime of the file can be changed using FileUpdateTransaction. The file contents or its keys will not be
 // mutable.
 func (transaction *FileCreateTransaction) SetKeys(keys ...Key) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	if transaction.keys == nil {
 		transaction.keys = &KeyList{keys: []Key{}}
 	}
@@ -85,7 +85,7 @@ func (transaction *FileCreateTransaction) GetKeys() KeyList {
 // by another transaction before that time. If the file is deleted, then its contents will become empty and it will be
 // marked as deleted until it expires, and then it will cease to exist.
 func (transaction *FileCreateTransaction) SetExpirationTime(expiration time.Time) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.expirationTime = &expiration
 	return transaction
 }
@@ -102,7 +102,7 @@ func (transaction *FileCreateTransaction) GetExpirationTime() time.Time {
 // fields in the transaction exceed the max transaction size then FileAppendTransaction can be used to continue
 // uploading the file.
 func (transaction *FileCreateTransaction) SetContents(contents []byte) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.contents = contents
 	return transaction
 }
@@ -112,7 +112,7 @@ func (transaction *FileCreateTransaction) GetContents() []byte {
 }
 
 func (transaction *FileCreateTransaction) SetMemo(memo string) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.memo = memo
 	return transaction
 }
@@ -121,17 +121,17 @@ func (transaction *FileCreateTransaction) GetMemo() string {
 	return transaction.memo
 }
 
-func (transaction *FileCreateTransaction) build() *proto.TransactionBody {
+func (transaction *FileCreateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.FileCreateTransactionBody{
 		Memo: transaction.memo,
 	}
 
 	if transaction.expirationTime != nil {
-		body.ExpirationTime = timeToProtobuf(*transaction.expirationTime)
+		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
 	if transaction.keys != nil {
-		body.Keys = transaction.keys.toProtoKeyList()
+		body.Keys = transaction.keys._ToProtoKeyList()
 	}
 
 	if transaction.contents != nil {
@@ -141,8 +141,8 @@ func (transaction *FileCreateTransaction) build() *proto.TransactionBody {
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_FileCreate{
 			FileCreate: body,
 		},
@@ -150,27 +150,27 @@ func (transaction *FileCreateTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *FileCreateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.FileCreateTransactionBody{
 		Memo: transaction.memo,
 	}
 
 	if transaction.expirationTime != nil {
-		body.ExpirationTime = timeToProtobuf(*transaction.expirationTime)
+		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
 	if transaction.keys != nil {
-		body.Keys = transaction.keys.toProtoKeyList()
+		body.Keys = transaction.keys._ToProtoKeyList()
 	}
 
 	if transaction.contents != nil {
@@ -188,12 +188,12 @@ func (transaction *FileCreateTransaction) constructScheduleProtobuf() (*proto.Sc
 
 func _FileCreateTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getFile().CreateFile,
+		transaction: channel._GetFile().CreateFile,
 	}
 }
 
 func (transaction *FileCreateTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -229,8 +229,8 @@ func (transaction *FileCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileCreateTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -257,14 +257,14 @@ func (transaction *FileCreateTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -307,11 +307,11 @@ func (transaction *FileCreateTransaction) FreezeWith(client *Client) (*FileCreat
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	if err := transaction.initTransactionID(client); err != nil {
+	transaction._InitFee(client)
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -322,7 +322,7 @@ func (transaction *FileCreateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetMaxTransactionFee(fee Hbar) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -333,7 +333,7 @@ func (transaction *FileCreateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionMemo(memo string) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -344,7 +344,7 @@ func (transaction *FileCreateTransaction) GetTransactionValidDuration() time.Dur
 
 // SetTransactionValidDuration sets the valid duration for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionValidDuration(duration time.Duration) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -355,7 +355,7 @@ func (transaction *FileCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetTransactionID(transactionID TransactionID) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -363,7 +363,7 @@ func (transaction *FileCreateTransaction) SetTransactionID(transactionID Transac
 
 // SetNodeAccountID sets the _Node AccountID for this FileCreateTransaction.
 func (transaction *FileCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -374,9 +374,9 @@ func (transaction *FileCreateTransaction) SetMaxRetry(count int) *FileCreateTran
 }
 
 func (transaction *FileCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileCreateTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -391,7 +391,7 @@ func (transaction *FileCreateTransaction) AddSignature(publicKey PublicKey, sign
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

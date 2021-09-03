@@ -29,9 +29,9 @@ type TopicMessageQuery struct {
 func NewTopicMessageQuery() *TopicMessageQuery {
 	return &TopicMessageQuery{
 		maxAttempts:       maxAttempts,
-		errorHandler:      defaultErrorHandler,
-		retryHandler:      defaultRetryHandler,
-		completionHandler: defaultCompletionHandler,
+		errorHandler:      _DefaultErrorHandler,
+		retryHandler:      _DefaultRetryHandler,
+		completionHandler: _DefaultCompletionHandler,
 	}
 }
 
@@ -107,7 +107,7 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 	return query
 }
 
-func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TopicMessageQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -121,18 +121,18 @@ func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TopicMessageQuery) build() *mirror.ConsensusTopicQuery {
+func (query *TopicMessageQuery) _Build() *mirror.ConsensusTopicQuery {
 	body := &mirror.ConsensusTopicQuery{
 		Limit: query.limit,
 	}
-	if !query.topicID.isZero() {
-		body.TopicID = query.topicID.toProtobuf()
+	if query.topicID != nil {
+		body.TopicID = query.topicID._ToProtobuf()
 	}
 	if query.startTime != nil {
-		body.ConsensusStartTime = timeToProtobuf(*query.startTime)
+		body.ConsensusStartTime = _TimeToProtobuf(*query.startTime)
 	}
 	if query.endTime != nil {
-		body.ConsensusStartTime = timeToProtobuf(*query.endTime)
+		body.ConsensusStartTime = _TimeToProtobuf(*query.endTime)
 	}
 
 	return body
@@ -141,17 +141,17 @@ func (query *TopicMessageQuery) build() *mirror.ConsensusTopicQuery {
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	handle := SubscriptionHandle{}
 
-	query.topicID.setNetworkWithClient(client)
-	err := query.validateNetworkOnIDs(client)
+	query.topicID._SetNetworkWithClient(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return SubscriptionHandle{}, err
 	}
 
-	pb := query.build()
+	pb := query._Build()
 
 	messages := make(map[string][]*mirror.ConsensusTopicResponse)
 
-	channel, err := client.mirrorNetwork.getNextMirrorNode().getChannel()
+	channel, err := client.mirrorNetwork._GetNextMirrorNode()._GetChannel()
 	if err != nil {
 		return handle, err
 	}
@@ -202,7 +202,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			}
 
 			if resp.ConsensusTimestamp != nil {
-				pb.ConsensusStartTime = timeToProtobuf(timeFromProtobuf(resp.ConsensusTimestamp).Add(1 * time.Nanosecond))
+				pb.ConsensusStartTime = _TimeToProtobuf(_TimeFromProtobuf(resp.ConsensusTimestamp).Add(1 * time.Nanosecond))
 			}
 
 			if pb.Limit > 0 {
@@ -210,9 +210,9 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			}
 
 			if resp.ChunkInfo == nil || resp.ChunkInfo.Total == 1 {
-				onNext(topicMessageOfSingle(resp))
+				onNext(_TopicMessageOfSingle(resp))
 			} else {
-				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
+				txID := _TransactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
 				message, ok := messages[txID]
 				if !ok {
 					message = make([]*mirror.ConsensusTopicResponse, 0, resp.ChunkInfo.Total)
@@ -224,7 +224,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				if int32(len(message)) == resp.ChunkInfo.Total {
 					delete(messages, txID)
 
-					onNext(topicMessageOfMany(message))
+					onNext(_TopicMessageOfMany(message))
 				}
 			}
 		}
@@ -233,15 +233,15 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 	return handle, nil
 }
 
-func defaultErrorHandler(stat status.Status) {
+func _DefaultErrorHandler(stat status.Status) {
 	println("Failed to subscribe to topic with status", stat.Code().String())
 }
 
-func defaultCompletionHandler() {
+func _DefaultCompletionHandler() {
 	println("Subscription to topic finished")
 }
 
-func defaultRetryHandler(err error) bool {
+func _DefaultRetryHandler(err error) bool {
 	code := status.Code(err)
 
 	switch code {

@@ -20,7 +20,7 @@ type AccountRecordsQuery struct {
 // instead of manually creating an instance of the struct.
 func NewAccountRecordsQuery() *AccountRecordsQuery {
 	return &AccountRecordsQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
@@ -38,7 +38,7 @@ func (query *AccountRecordsQuery) GetAccountID() AccountID {
 	return *query.accountID
 }
 
-func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
+func (query *AccountRecordsQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -52,11 +52,11 @@ func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountRecordsQuery) build() *proto.Query_CryptoGetAccountRecords {
+func (query *AccountRecordsQuery) _Build() *proto.Query_CryptoGetAccountRecords {
 	return &proto.Query_CryptoGetAccountRecords{
 		CryptoGetAccountRecords: &proto.CryptoGetAccountRecordsQuery{
 			Header:    &proto.QueryHeader{},
-			AccountID: query.accountID.toProtobuf(),
+			AccountID: query.accountID._ToProtobuf(),
 		},
 	}
 }
@@ -66,19 +66,19 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -112,12 +112,12 @@ func _AccountRecordsQueryMapStatusError(_ _Request, response _Response) error {
 
 func _AccountRecordsQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getCrypto().GetAccountRecords,
+		query: channel._GetCrypto().GetAccountRecords,
 	}
 }
 
-func (query *AccountRecordsQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *AccountRecordsQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetAccountRecords.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -129,8 +129,8 @@ func (query *AccountRecordsQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *AccountRecordsQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *AccountRecordsQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -153,10 +153,10 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return []TransactionRecord{}, err
 	}
@@ -196,13 +196,13 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		return []TransactionRecord{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_AccountRecordsQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountRecordsQueryGetMethod,
@@ -215,7 +215,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {
-		record := transactionRecordFromProtobuf(element)
+		record := _TransactionRecordFromProtobuf(element)
 		records = append(records, record)
 	}
 

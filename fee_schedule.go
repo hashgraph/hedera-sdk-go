@@ -13,14 +13,14 @@ type FeeSchedule struct {
 	ExpirationTime          *time.Time
 }
 
-func feeScheduleFromProtobuf(feeSchedule *proto.FeeSchedule) (FeeSchedule, error) {
+func _FeeScheduleFromProtobuf(feeSchedule *proto.FeeSchedule) (FeeSchedule, error) {
 	if feeSchedule == nil {
 		return FeeSchedule{}, errParameterNull
 	}
 
 	txFeeSchedules := make([]TransactionFeeSchedule, 0)
 	for _, txFeeSchedule := range feeSchedule.GetTransactionFeeSchedule() {
-		txFeeScheduleFromProto, err := transactionFeeScheduleFromProtobuf(txFeeSchedule)
+		txFeeScheduleFromProto, err := _TransactionFeeScheduleFromProtobuf(txFeeSchedule)
 		if err != nil {
 			return FeeSchedule{}, err
 		}
@@ -38,10 +38,10 @@ func feeScheduleFromProtobuf(feeSchedule *proto.FeeSchedule) (FeeSchedule, error
 	}, nil
 }
 
-func (feeSchedule FeeSchedule) toProtobuf() *proto.FeeSchedule {
+func (feeSchedule FeeSchedule) _ToProtobuf() *proto.FeeSchedule {
 	txFeeSchedules := make([]*proto.TransactionFeeSchedule, 0)
 	for _, txFeeSchedule := range feeSchedule.TransactionFeeSchedules {
-		txFeeSchedules = append(txFeeSchedules, txFeeSchedule.toProtobuf())
+		txFeeSchedules = append(txFeeSchedules, txFeeSchedule._ToProtobuf())
 	}
 
 	var expiry proto.TimestampSeconds
@@ -56,7 +56,7 @@ func (feeSchedule FeeSchedule) toProtobuf() *proto.FeeSchedule {
 }
 
 func (feeSchedule FeeSchedule) ToBytes() []byte {
-	data, err := protobuf.Marshal(feeSchedule.toProtobuf())
+	data, err := protobuf.Marshal(feeSchedule._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -74,7 +74,7 @@ func FeeScheduleFromBytes(data []byte) (FeeSchedule, error) {
 		return FeeSchedule{}, err
 	}
 
-	info, err := feeScheduleFromProtobuf(&pb)
+	info, err := _FeeScheduleFromProtobuf(&pb)
 	if err != nil {
 		return FeeSchedule{}, err
 	}

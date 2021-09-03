@@ -16,7 +16,7 @@ type FileContentsQuery struct {
 // File Get Contents Query.
 func NewFileContentsQuery() *FileContentsQuery {
 	return &FileContentsQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
@@ -34,7 +34,7 @@ func (query *FileContentsQuery) GetFileID() FileID {
 	return *query.fileID
 }
 
-func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
+func (query *FileContentsQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -48,12 +48,12 @@ func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *FileContentsQuery) build() *proto.Query_FileGetContents {
+func (query *FileContentsQuery) _Build() *proto.Query_FileGetContents {
 	body := &proto.FileGetContentsQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.fileID.isZero() {
-		body.FileID = query.fileID.toProtobuf()
+	if !query.fileID._IsZero() {
+		body.FileID = query.fileID._ToProtobuf()
 	}
 
 	return &proto.Query_FileGetContents{
@@ -61,8 +61,8 @@ func (query *FileContentsQuery) build() *proto.Query_FileGetContents {
 	}
 }
 
-func (query *FileContentsQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *FileContentsQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.FileGetContents.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -75,8 +75,8 @@ func (query *FileContentsQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *FileContentsQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *FileContentsQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -98,19 +98,19 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -144,7 +144,7 @@ func _FileContentsQueryMapStatusError(_ _Request, response _Response) error {
 
 func _FileContentsQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getFile().GetFileContent,
+		query: channel._GetFile().GetFileContent,
 	}
 }
 
@@ -154,15 +154,15 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	query.build()
+	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -197,13 +197,13 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_FileContentsQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_FileContentsQueryGetMethod,

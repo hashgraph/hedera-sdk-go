@@ -16,17 +16,17 @@ func (tokenDecimals *TokenDecimalMap) Get(tokenID TokenID) uint64 {
 	}.String()]
 }
 
-func tokenDecimalMapFromProtobuf(pb []*proto.TokenBalance) TokenDecimalMap {
+func _TokenDecimalMapFromProtobuf(pb []*proto.TokenBalance) TokenDecimalMap {
 	decimals := make(map[string]uint64)
 
 	for _, tokenDecimal := range pb {
-		decimals[tokenIDFromProtobuf(tokenDecimal.TokenId).String()] = uint64(tokenDecimal.Decimals)
+		decimals[_TokenIDFromProtobuf(tokenDecimal.TokenId).String()] = uint64(tokenDecimal.Decimals)
 	}
 
 	return TokenDecimalMap{decimals}
 }
 
-func (tokenDecimals TokenDecimalMap) toProtobuf() []*proto.TokenBalance { // nolint
+func (tokenDecimals TokenDecimalMap) _ToProtobuf() []*proto.TokenBalance { // nolint
 	decimals := make([]*proto.TokenBalance, 0)
 
 	for s, t := range tokenDecimals.decimals {
@@ -35,7 +35,7 @@ func (tokenDecimals TokenDecimalMap) toProtobuf() []*proto.TokenBalance { // nol
 			return []*proto.TokenBalance{}
 		}
 		decimals = append(decimals, &proto.TokenBalance{
-			TokenId:  token.toProtobuf(),
+			TokenId:  token._ToProtobuf(),
 			Decimals: uint32(t),
 		})
 	}

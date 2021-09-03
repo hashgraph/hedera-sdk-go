@@ -14,7 +14,7 @@ type LiveHashQuery struct {
 
 func NewLiveHashQuery() *LiveHashQuery {
 	return &LiveHashQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
@@ -40,7 +40,7 @@ func (query *LiveHashQuery) GetGetHash() []byte {
 	return query.hash
 }
 
-func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
+func (query *LiveHashQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -54,12 +54,12 @@ func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *LiveHashQuery) build() *proto.Query_CryptoGetLiveHash {
+func (query *LiveHashQuery) _Build() *proto.Query_CryptoGetLiveHash {
 	body := &proto.CryptoGetLiveHashQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.accountID.isZero() {
-		body.AccountID = query.accountID.toProtobuf()
+	if !query.accountID._IsZero() {
+		body.AccountID = query.accountID._ToProtobuf()
 	}
 
 	if len(query.hash) > 0 {
@@ -71,8 +71,8 @@ func (query *LiveHashQuery) build() *proto.Query_CryptoGetLiveHash {
 	}
 }
 
-func (query *LiveHashQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *LiveHashQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetLiveHash.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -85,8 +85,8 @@ func (query *LiveHashQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *LiveHashQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *LiveHashQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -108,19 +108,19 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -154,7 +154,7 @@ func _LiveHashQueryMapStatusError(_ _Request, response _Response) error {
 
 func _LiveHashQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getCrypto().GetLiveHash,
+		query: channel._GetCrypto().GetLiveHash,
 	}
 }
 
@@ -164,15 +164,15 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return LiveHash{}, err
 	}
 
-	query.build()
+	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -207,13 +207,13 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_LiveHashQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_LiveHashQueryGetMethod,
@@ -225,7 +225,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
+	liveHash, err := _LiveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
 	if err != nil {
 		return LiveHash{}, err
 	}

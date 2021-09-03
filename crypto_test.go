@@ -263,7 +263,7 @@ func TestUnitPrivateKeyKeystore(t *testing.T) {
 	keystore, err := privateKey.Keystore(passphrase)
 	assert.NoError(t, err)
 
-	ksPrivateKey, err := parseKeystore(keystore, passphrase)
+	ksPrivateKey, err := _ParseKeystore(keystore, passphrase)
 	assert.NoError(t, err)
 
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
@@ -314,7 +314,7 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	keys := make([]PrivateKey, 3)
 	pubKeys := make([]PublicKey, 3)

@@ -62,7 +62,7 @@ const dkLen int = 32
 const c int = 262144
 const saltLen uint = 32
 
-func randomBytes(n uint) ([]byte, error) {
+func _RandomBytes(n uint) ([]byte, error) {
 	// based on https://github.com/gophercon/2016-talks/tree/master/GeorgeTankersley-CryptoForGoDevelopers
 	b := make([]byte, n)
 	_, err := io.ReadFull(rand.Reader, b)
@@ -73,15 +73,15 @@ func randomBytes(n uint) ([]byte, error) {
 	return b, nil
 }
 
-func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
-	salt, err := randomBytes(saltLen)
+func _NewKeystore(privateKey []byte, passphrase string) ([]byte, error) {
+	salt, err := _RandomBytes(saltLen)
 	if err != nil {
 		return nil, err
 	}
 
 	key := pbkdf2.Key([]byte(passphrase), salt, c, dkLen, sha256.New)
 
-	iv, err := randomBytes(16)
+	iv, err := _RandomBytes(16)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	return json.Marshal(keystore)
 }
 
-func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) {
+func _ParseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) {
 	keyStore := _Keystore{}
 
 	err := json.Unmarshal(keystoreBytes, &keyStore)
@@ -137,19 +137,19 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 
 	if keyStore.Version != 1 {
 		// todo: change to a switch and handle differently if future _Keystore versions are added
-		return PrivateKey{}, newErrBadKeyf("unsupported _Keystore version: %v", keyStore.Version)
+		return PrivateKey{}, _NewErrBadKeyf("unsupported _Keystore version: %v", keyStore.Version)
 	}
 
 	if keyStore.Crypto.KDF != "pbkdf2" {
-		return PrivateKey{}, newErrBadKeyf("unsupported KDF: %v", keyStore.Crypto.KDF)
+		return PrivateKey{}, _NewErrBadKeyf("unsupported KDF: %v", keyStore.Crypto.KDF)
 	}
 
 	if keyStore.Crypto.Cipher != Aes128Ctr {
-		return PrivateKey{}, newErrBadKeyf("unsupported _Keystore cipher: %v", keyStore.Crypto.Cipher)
+		return PrivateKey{}, _NewErrBadKeyf("unsupported _Keystore cipher: %v", keyStore.Crypto.Cipher)
 	}
 
 	if keyStore.Crypto.KDFParams.PRF != HmacSha256 {
-		return PrivateKey{}, newErrBadKeyf(
+		return PrivateKey{}, _NewErrBadKeyf(
 			"unsupported PRF: %v",
 			keyStore.Crypto.KDFParams.PRF)
 	}
@@ -191,7 +191,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 	verifyMac := h.Sum(nil)
 
 	if subtle.ConstantTimeCompare(mac, verifyMac) == 0 {
-		return PrivateKey{}, newErrBadKeyf("hmac mismatch; passphrase is incorrect")
+		return PrivateKey{}, _NewErrBadKeyf("hmac mismatch; passphrase is incorrect")
 	}
 
 	block, err := aes.NewCipher(key[:16])

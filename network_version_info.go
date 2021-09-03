@@ -10,25 +10,25 @@ type NetworkVersionInfo struct {
 	ServicesVersion SemanticVersion
 }
 
-func networkVersionInfoFromProtobuf(version *proto.NetworkGetVersionInfoResponse) NetworkVersionInfo {
+func _NetworkVersionInfoFromProtobuf(version *proto.NetworkGetVersionInfoResponse) NetworkVersionInfo {
 	if version == nil {
 		return NetworkVersionInfo{}
 	}
 	return NetworkVersionInfo{
-		ProtobufVersion: semanticVersionFromProtobuf(version.HapiProtoVersion),
-		ServicesVersion: semanticVersionFromProtobuf(version.HederaServicesVersion),
+		ProtobufVersion: _SemanticVersionFromProtobuf(version.HapiProtoVersion),
+		ServicesVersion: _SemanticVersionFromProtobuf(version.HederaServicesVersion),
 	}
 }
 
-func (version *NetworkVersionInfo) toProtobuf() *proto.NetworkGetVersionInfoResponse {
+func (version *NetworkVersionInfo) _ToProtobuf() *proto.NetworkGetVersionInfoResponse {
 	return &proto.NetworkGetVersionInfoResponse{
-		HapiProtoVersion:      version.ProtobufVersion.toProtobuf(),
-		HederaServicesVersion: version.ServicesVersion.toProtobuf(),
+		HapiProtoVersion:      version.ProtobufVersion._ToProtobuf(),
+		HederaServicesVersion: version.ServicesVersion._ToProtobuf(),
 	}
 }
 
 func (version *NetworkVersionInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(version.toProtobuf())
+	data, err := protobuf.Marshal(version._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -46,7 +46,7 @@ func NetworkVersionInfoFromBytes(data []byte) (NetworkVersionInfo, error) {
 		return NetworkVersionInfo{}, err
 	}
 
-	info := networkVersionInfoFromProtobuf(&pb)
+	info := _NetworkVersionInfoFromProtobuf(&pb)
 
 	return info, nil
 }

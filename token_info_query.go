@@ -15,7 +15,7 @@ type TokenInfoQuery struct {
 //  Get Topic Info Query.
 func NewTokenInfoQuery() *TokenInfoQuery {
 	return &TokenInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
@@ -33,7 +33,7 @@ func (query *TokenInfoQuery) GetTokenID() TokenID {
 	return *query.tokenID
 }
 
-func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TokenInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -47,12 +47,12 @@ func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TokenInfoQuery) build() *proto.Query_TokenGetInfo {
+func (query *TokenInfoQuery) _Build() *proto.Query_TokenGetInfo {
 	body := &proto.TokenGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.tokenID.isZero() {
-		body.Token = query.tokenID.toProtobuf()
+	if !query.tokenID._IsZero() {
+		body.Token = query.tokenID._ToProtobuf()
 	}
 
 	return &proto.Query_TokenGetInfo{
@@ -60,8 +60,8 @@ func (query *TokenInfoQuery) build() *proto.Query_TokenGetInfo {
 	}
 }
 
-func (query *TokenInfoQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *TokenInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TokenGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -74,8 +74,8 @@ func (query *TokenInfoQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *TokenInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *TokenInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -97,19 +97,19 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -146,7 +146,7 @@ func _TokenInfoQueryMapStatusError(_ _Request, response _Response) error {
 
 func _TokenInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getToken().GetTokenInfo,
+		query: channel._GetToken().GetTokenInfo,
 	}
 }
 
@@ -157,10 +157,10 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TokenInfo{}, err
 	}
@@ -198,13 +198,13 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_TokenInfoQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TokenInfoQueryGetMethod,
@@ -216,7 +216,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
+	info := _TokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
 
 	return info, nil
 }

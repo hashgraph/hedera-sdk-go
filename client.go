@@ -21,8 +21,8 @@ type Client struct {
 
 	operator *_Operator
 
-	network       _Network
-	mirrorNetwork *_MirrorNetwork
+	network               _Network
+	mirrorNetwork         *_MirrorNetwork
 	autoValidateChecksums bool
 	maxAttempts           *int
 
@@ -82,7 +82,7 @@ var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
-	return newClient(network, []string{}, "mainnet")
+	return _NewClient(network, []string{}, "mainnet")
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
@@ -90,7 +90,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return newClient(mainnetNodes, mainnetMirror, NetworkNameMainnet)
+	return _NewClient(mainnetNodes, mainnetMirror, NetworkNameMainnet)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -98,7 +98,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return newClient(testnetNodes, testnetMirror, NetworkNameTestnet)
+	return _NewClient(testnetNodes, testnetMirror, NetworkNameTestnet)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -106,17 +106,17 @@ func ClientForTestnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return newClient(previewnetNodes, previewnetMirror, NetworkNamePreviewnet)
+	return _NewClient(previewnetNodes, previewnetMirror, NetworkNamePreviewnet)
 }
 
 // newClient takes in a map of _Node addresses to their respective IDS (_Network)
 // and returns a Client instance which can be used to
-func newClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
+func _NewClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
 	client := Client{
 		maxQueryPayment:       defaultMaxQueryPayment,
 		maxTransactionFee:     defaultMaxTransactionFee,
-		network:               newNetwork(),
-		mirrorNetwork:         newMirrorNetwork(),
+		network:               _NewNetwork(),
+		mirrorNetwork:         _NewMirrorNetwork(),
 		autoValidateChecksums: false,
 		maxAttempts:           nil,
 		minBackoff:            250 * time.Millisecond,
@@ -150,7 +150,7 @@ type _ConfigOperator struct {
 
 // TODO: Implement complete spec: https://gitlab.com/launchbadge/hedera/sdk/python/-/issues/45
 type _ClientConfig struct {
-	Network       interface{}     `json:"_Network"`
+	Network       interface{}      `json:"_Network"`
 	MirrorNetwork interface{}      `json:"_MirrorNetwork"`
 	Operator      *_ConfigOperator `json:"_Operator"`
 }
@@ -209,16 +209,16 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				return client, errors.New("_MirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
-		client = newClient(network, arr, NetworkNameMainnet)
+		client = _NewClient(network, arr, NetworkNameMainnet)
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
 			case string(NetworkNameMainnet):
-				client = newClient(network, mainnetMirror, NetworkNameMainnet)
+				client = _NewClient(network, mainnetMirror, NetworkNameMainnet)
 			case string(NetworkNamePreviewnet):
-				client = newClient(network, previewnetMirror, NetworkNamePreviewnet)
+				client = _NewClient(network, previewnetMirror, NetworkNamePreviewnet)
 			case string(NetworkNameTestnet):
-				client = newClient(network, testnetMirror, NetworkNameTestnet)
+				client = _NewClient(network, testnetMirror, NetworkNameTestnet)
 			}
 		}
 	default:
@@ -328,29 +328,29 @@ func (client *Client) GetMaxAttempts() int {
 }
 
 func (client *Client) SetMaxNodeAttempts(max int) {
-	client.network.setMaxNodeAttempts(max)
+	client.network._SetMaxNodeAttempts(max)
 }
 
 func (client *Client) GetMaxNodeAttempts() int {
-	return client.network.getMaxNodeAttempts()
+	return client.network._GetMaxNodeAttempts()
 }
 
 func (client *Client) SetNodeWaitTime(nodeWait time.Duration) {
-	client.network.setNodeWaitTime(nodeWait)
+	client.network._SetNodeWaitTime(nodeWait)
 }
 
 func (client *Client) GetNodeWaitTime() time.Duration {
-	return client.network.getNodeWaitTime()
+	return client.network._GetNodeWaitTime()
 }
 
 func (client *Client) SetMaxNodesPerTransaction(max int) {
-	client.network.setMaxNodesPerTransaction(max)
+	client.network._SetMaxNodesPerTransaction(max)
 }
 
 // SetNetwork replaces all _Nodes in the Client with a new set of _Nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
-	client.mirrorNetwork.setNetwork(mirrorNetwork)
+	client.mirrorNetwork._SetNetwork(mirrorNetwork)
 }
 
 func (client *Client) GetMirrorNetwork() []string {
@@ -358,11 +358,11 @@ func (client *Client) GetMirrorNetwork() []string {
 }
 
 func (client *Client) SetNetworkName(name NetworkName) {
-	client.network.setNetworkName(name)
+	client.network._SetNetworkName(name)
 }
 
 func (client *Client) GetNetworkName() NetworkName {
-	return *client.network.getNetworkName()
+	return *client.network._GetNetworkName()
 }
 
 func (client *Client) SetAutoValidateChecksums(validate bool) {

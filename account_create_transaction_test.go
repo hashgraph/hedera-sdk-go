@@ -15,7 +15,7 @@ func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 
 	newBalance := NewHbar(1)
 
-	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -120,7 +120,7 @@ func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey).
@@ -185,7 +185,7 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey).
@@ -203,7 +203,7 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	newClient := Client{}
 	networkName := NetworkNameMainnet
 	newClient.network.networkName = &networkName
-	accountID.setNetworkWithClient(&newClient)
+	accountID._SetNetworkWithClient(&newClient)
 
 	_, err = NewAccountDeleteTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).

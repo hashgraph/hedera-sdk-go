@@ -66,10 +66,10 @@ func (kl *KeyList) String() string {
 	return s
 }
 
-func (kl *KeyList) toProtoKey() *proto.Key {
+func (kl *KeyList) _ToProtoKey() *proto.Key {
 	keys := make([]*proto.Key, len(kl.keys))
 	for i, key := range kl.keys {
-		keys[i] = key.toProtoKey()
+		keys[i] = key._ToProtoKey()
 	}
 
 	if kl.threshold >= 0 {
@@ -94,10 +94,10 @@ func (kl *KeyList) toProtoKey() *proto.Key {
 	}
 }
 
-func (kl *KeyList) toProtoKeyList() *proto.KeyList {
+func (kl *KeyList) _ToProtoKeyList() *proto.KeyList {
 	keys := make([]*proto.Key, len(kl.keys))
 	for i, key := range kl.keys {
-		keys[i] = key.toProtoKey()
+		keys[i] = key._ToProtoKey()
 	}
 
 	return &proto.KeyList{
@@ -105,14 +105,14 @@ func (kl *KeyList) toProtoKeyList() *proto.KeyList {
 	}
 }
 
-func keyListFromProtobuf(pb *proto.KeyList) (KeyList, error) {
+func _KeyListFromProtobuf(pb *proto.KeyList) (KeyList, error) {
 	if pb == nil {
 		return KeyList{}, errParameterNull
 	}
 	var keys = make([]Key, len(pb.Keys))
 
 	for i, pbKey := range pb.Keys {
-		key, err := keyFromProtobuf(pbKey)
+		key, err := _KeyFromProtobuf(pbKey)
 
 		if err != nil {
 			return KeyList{}, err

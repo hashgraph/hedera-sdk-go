@@ -49,7 +49,7 @@ type TokenCreateTransaction struct {
 
 func NewTokenCreateTransaction() *TokenCreateTransaction {
 	transaction := TokenCreateTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
@@ -59,28 +59,28 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	return &transaction
 }
 
-func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
+func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
-		customFees = append(customFees, customFeeFromProtobuf(fee))
+		customFees = append(customFees, _CustomFeeFromProtobuf(fee))
 	}
-	adminKey, _ := keyFromProtobuf(pb.GetTokenCreation().GetAdminKey())
-	kycKey, _ := keyFromProtobuf(pb.GetTokenCreation().GetKycKey())
-	freezeKey, _ := keyFromProtobuf(pb.GetTokenCreation().GetFreezeKey())
-	wipeKey, _ := keyFromProtobuf(pb.GetTokenCreation().GetWipeKey())
-	scheduleKey, _ := keyFromProtobuf(pb.GetTokenCreation().GetFeeScheduleKey())
-	supplyKey, _ := keyFromProtobuf(pb.GetTokenCreation().GetSupplyKey())
+	adminKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetAdminKey())
+	kycKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetKycKey())
+	freezeKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetFreezeKey())
+	wipeKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetWipeKey())
+	scheduleKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetFeeScheduleKey())
+	supplyKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetSupplyKey())
 
 	freezeDefault := pb.GetTokenCreation().GetFreezeDefault()
 
-	expirationTime := timeFromProtobuf(pb.GetTokenCreation().GetExpiry())
-	autoRenew := durationFromProtobuf(pb.GetTokenCreation().GetAutoRenewPeriod())
+	expirationTime := _TimeFromProtobuf(pb.GetTokenCreation().GetExpiry())
+	autoRenew := _DurationFromProtobuf(pb.GetTokenCreation().GetAutoRenewPeriod())
 
 	return TokenCreateTransaction{
 		Transaction:        transaction,
-		treasuryAccountID:  accountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
-		autoRenewAccountID: accountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
+		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenCreation().GetTreasury()),
+		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenCreation().GetAutoRenewAccount()),
 		customFees:         customFees,
 		tokenName:          pb.GetTokenCreation().GetName(),
 		memo:               pb.GetTokenCreation().GetMemo(),
@@ -104,7 +104,7 @@ func tokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 
 // The publicly visible name of the token, specified as a string of only ASCII characters
 func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.tokenName = name
 	return transaction
 }
@@ -115,14 +115,14 @@ func (transaction *TokenCreateTransaction) GetTokenName() string {
 
 // The publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
 func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.tokenSymbol = symbol
 	return transaction
 }
 
 // The publicly visible token memo. It is max 100 bytes.
 func (transaction *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.memo = memo
 	return transaction
 }
@@ -137,7 +137,7 @@ func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
 
 // The number of decimal places a token is divisible by. This field can never be changed!
 func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.decimals = uint32(decimals)
 	return transaction
 }
@@ -147,7 +147,7 @@ func (transaction *TokenCreateTransaction) GetDecimals() uint {
 }
 
 func (transaction *TokenCreateTransaction) SetTokenType(t TokenType) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.tokenType = t
 	return transaction
 }
@@ -157,7 +157,7 @@ func (transaction *TokenCreateTransaction) GetTokenType() TokenType {
 }
 
 func (transaction *TokenCreateTransaction) SetSupplyType(t TokenSupplyType) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.tokenSuppleType = t
 	return transaction
 }
@@ -167,7 +167,7 @@ func (transaction *TokenCreateTransaction) GetSupplyType() TokenSupplyType {
 }
 
 func (transaction *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.maxSupply = maxSupply
 	return transaction
 }
@@ -178,7 +178,7 @@ func (transaction *TokenCreateTransaction) GetMaxSupply() int64 {
 
 // The account which will act as a treasury for the token. This account will receive the specified initial supply
 func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.treasuryAccountID = &treasuryAccountID
 	return transaction
 }
@@ -193,7 +193,7 @@ func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
 
 // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
 func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.adminKey = publicKey
 	return transaction
 }
@@ -204,7 +204,7 @@ func (transaction *TokenCreateTransaction) GetAdminKey() Key {
 
 // The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
 func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.kycKey = publicKey
 	return transaction
 }
@@ -215,7 +215,7 @@ func (transaction *TokenCreateTransaction) GetKycKey() Key {
 
 // The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
 func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.freezeKey = publicKey
 	return transaction
 }
@@ -226,7 +226,7 @@ func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
 
 // The key which can wipe the token balance of an account. If empty, wipe is not possible
 func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.wipeKey = publicKey
 	return transaction
 }
@@ -236,7 +236,7 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 }
 
 func (transaction *TokenCreateTransaction) SetFeeScheduleKey(key Key) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.scheduleKey = key
 	return transaction
 }
@@ -246,7 +246,7 @@ func (transaction *TokenCreateTransaction) GetFeeScheduleKey() Key {
 }
 
 func (transaction *TokenCreateTransaction) SetCustomFees(customFee []Fee) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.customFees = customFee
 	return transaction
 }
@@ -255,7 +255,7 @@ func (transaction *TokenCreateTransaction) GetCustomFees() []Fee {
 	return transaction.customFees
 }
 
-func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -273,7 +273,7 @@ func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) 
 	}
 
 	for _, customFee := range transaction.customFees {
-		if err := customFee.validateNetworkOnIDs(client); err != nil {
+		if err := customFee._ValidateNetworkOnIDs(client); err != nil {
 			return err
 		}
 	}
@@ -281,7 +281,7 @@ func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *TokenCreateTransaction) build() *proto.TransactionBody {
+func (transaction *TokenCreateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenCreateTransactionBody{
 		Name:          transaction.tokenName,
 		Symbol:        transaction.tokenSymbol,
@@ -294,57 +294,57 @@ func (transaction *TokenCreateTransaction) build() *proto.TransactionBody {
 	}
 
 	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
 	if transaction.expirationTime != nil {
-		body.Expiry = timeToProtobuf(*transaction.expirationTime)
+		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.treasuryAccountID.isZero() {
-		body.Treasury = transaction.treasuryAccountID.toProtobuf()
+	if !transaction.treasuryAccountID._IsZero() {
+		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID.isZero() {
-		body.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	if !transaction.autoRenewAccountID._IsZero() {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	if body.CustomFees == nil {
 		body.CustomFees = make([]*proto.CustomFee, 0)
 	}
 	for _, customFee := range transaction.customFees {
-		body.CustomFees = append(body.CustomFees, customFee.toProtobuf())
+		body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
 	}
 
 	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey.toProtoKey()
+		body.AdminKey = transaction.adminKey._ToProtoKey()
 	}
 
 	if transaction.freezeKey != nil {
-		body.FreezeKey = transaction.freezeKey.toProtoKey()
+		body.FreezeKey = transaction.freezeKey._ToProtoKey()
 	}
 
 	if transaction.scheduleKey != nil {
-		body.FeeScheduleKey = transaction.scheduleKey.toProtoKey()
+		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
 	}
 
 	if transaction.kycKey != nil {
-		body.KycKey = transaction.kycKey.toProtoKey()
+		body.KycKey = transaction.kycKey._ToProtoKey()
 	}
 
 	if transaction.wipeKey != nil {
-		body.WipeKey = transaction.wipeKey.toProtoKey()
+		body.WipeKey = transaction.wipeKey._ToProtoKey()
 	}
 
 	if transaction.supplyKey != nil {
-		body.SupplyKey = transaction.supplyKey.toProtoKey()
+		body.SupplyKey = transaction.supplyKey._ToProtoKey()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_TokenCreation{
 			TokenCreation: body,
 		},
@@ -352,17 +352,17 @@ func (transaction *TokenCreateTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenCreateTransactionBody{
 		Name:          transaction.tokenName,
 		Memo:          transaction.memo,
@@ -374,50 +374,50 @@ func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.S
 	}
 
 	if transaction.autoRenewPeriod != nil {
-		body.AutoRenewPeriod = durationToProtobuf(*transaction.autoRenewPeriod)
+		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
 	if transaction.expirationTime != nil {
-		body.Expiry = timeToProtobuf(*transaction.expirationTime)
+		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.treasuryAccountID.isZero() {
-		body.Treasury = transaction.treasuryAccountID.toProtobuf()
+	if !transaction.treasuryAccountID._IsZero() {
+		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID.isZero() {
-		body.AutoRenewAccount = transaction.autoRenewAccountID.toProtobuf()
+	if !transaction.autoRenewAccountID._IsZero() {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	if body.CustomFees == nil {
 		body.CustomFees = make([]*proto.CustomFee, 0)
 	}
 	for _, customFee := range transaction.customFees {
-		body.CustomFees = append(body.CustomFees, customFee.toProtobuf())
+		body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
 	}
 
 	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey.toProtoKey()
+		body.AdminKey = transaction.adminKey._ToProtoKey()
 	}
 
 	if transaction.freezeKey != nil {
-		body.FreezeKey = transaction.freezeKey.toProtoKey()
+		body.FreezeKey = transaction.freezeKey._ToProtoKey()
 	}
 
 	if transaction.scheduleKey != nil {
-		body.FeeScheduleKey = transaction.scheduleKey.toProtoKey()
+		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
 	}
 
 	if transaction.adminKey != nil {
-		body.KycKey = transaction.kycKey.toProtoKey()
+		body.KycKey = transaction.kycKey._ToProtoKey()
 	}
 
 	if transaction.wipeKey != nil {
-		body.WipeKey = transaction.wipeKey.toProtoKey()
+		body.WipeKey = transaction.wipeKey._ToProtoKey()
 	}
 
 	if transaction.supplyKey != nil {
-		body.SupplyKey = transaction.supplyKey.toProtoKey()
+		body.SupplyKey = transaction.supplyKey._ToProtoKey()
 	}
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
@@ -431,7 +431,7 @@ func (transaction *TokenCreateTransaction) constructScheduleProtobuf() (*proto.S
 // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
 // SetInitialBalance sets the initial number of Hbar to put into the token
 func (transaction *TokenCreateTransaction) SetSupplyKey(publicKey Key) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.supplyKey = publicKey
 	return transaction
 }
@@ -442,7 +442,7 @@ func (transaction *TokenCreateTransaction) GetSupplyKey() Key {
 
 // Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible.
 func (transaction *TokenCreateTransaction) SetInitialSupply(initialSupply uint64) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.initialSupply = initialSupply
 	return transaction
 }
@@ -453,7 +453,7 @@ func (transaction *TokenCreateTransaction) GetInitialSupply() uint64 {
 
 // The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
 func (transaction *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.freezeDefault = &freezeDefault
 	return transaction
 }
@@ -464,7 +464,7 @@ func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
 
 // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
 func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time.Time) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.autoRenewPeriod = nil
 	transaction.expirationTime = &expirationTime
 
@@ -481,7 +481,7 @@ func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
 
 // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
 func (transaction *TokenCreateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.autoRenewAccountID = &autoRenewAccountID
 	return transaction
 }
@@ -496,7 +496,7 @@ func (transaction *TokenCreateTransaction) GetAutoRenewAccount() AccountID {
 
 // The interval at which the auto-renew account will be charged to extend the token's expiry
 func (transaction *TokenCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.autoRenewPeriod = &autoRenewPeriod
 	return transaction
 }
@@ -511,12 +511,12 @@ func (transaction *TokenCreateTransaction) GetAutoRenewPeriod() time.Duration {
 
 func _TokenCreateTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getToken().CreateToken,
+		transaction: channel._GetToken().CreateToken,
 	}
 }
 
 func (transaction *TokenCreateTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -553,8 +553,8 @@ func (transaction *TokenCreateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenCreateTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -581,14 +581,14 @@ func (transaction *TokenCreateTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -628,22 +628,22 @@ func (transaction *TokenCreateTransaction) Freeze() (*TokenCreateTransaction, er
 }
 
 func (transaction *TokenCreateTransaction) FreezeWith(client *Client) (*TokenCreateTransaction, error) {
-	if transaction.autoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID().isZero() {
+	if transaction.autoRenewPeriod != nil && client != nil && !client.GetOperatorAccountID()._IsZero() {
 		transaction.SetAutoRenewAccount(client.GetOperatorAccountID())
 	}
 
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenCreateTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -654,7 +654,7 @@ func (transaction *TokenCreateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetMaxTransactionFee(fee Hbar) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -665,7 +665,7 @@ func (transaction *TokenCreateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetTransactionMemo(memo string) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -676,7 +676,7 @@ func (transaction *TokenCreateTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -687,7 +687,7 @@ func (transaction *TokenCreateTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetTransactionID(transactionID TransactionID) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -695,7 +695,7 @@ func (transaction *TokenCreateTransaction) SetTransactionID(transactionID Transa
 
 // SetNodeTokenID sets the _Node TokenID for this TokenCreateTransaction.
 func (transaction *TokenCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenCreateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -706,9 +706,9 @@ func (transaction *TokenCreateTransaction) SetMaxRetry(count int) *TokenCreateTr
 }
 
 func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenCreateTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -723,7 +723,7 @@ func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, sig
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

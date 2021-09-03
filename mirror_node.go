@@ -19,14 +19,14 @@ type _MirrorNode struct {
 	address string
 }
 
-func newMirrorNode(address string) *_MirrorNode {
+func _NewMirrorNode(address string) *_MirrorNode {
 	return &_MirrorNode{
 		address: address,
 		channel: nil,
 	}
 }
 
-func (node *_MirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
+func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -57,7 +57,7 @@ func (node *_MirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 	return node.channel, nil
 }
 
-func (node *_MirrorNode) close() error {
+func (node *_MirrorNode) _Close() error {
 	if node.channel != nil {
 		return node.client.Close()
 	}

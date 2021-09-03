@@ -9,7 +9,7 @@ import (
 )
 
 func TestUnitTransactionSerializationDeserialization(t *testing.T) {
-	transaction, err := newMockTransaction()
+	transaction, err := _NewMockTransaction()
 	assert.NoError(t, err)
 
 	_, err = transaction.Freeze()
@@ -243,7 +243,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey5)
 
 		assert.Equal(t, len(tx.GetNodeAccountIDs()), 1)
-		assert.True(t, tx.GetNodeAccountIDs()[0].equals(AccountID{0, 0, 3, nil}))
+		assert.True(t, tx.GetNodeAccountIDs()[0]._Equals(AccountID{0, 0, 3, nil}))
 
 		resp, err := tx.Execute(env.Client)
 		assert.NoError(t, err)

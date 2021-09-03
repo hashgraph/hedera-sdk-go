@@ -17,13 +17,13 @@ type _Channel struct {
 	client   *grpc.ClientConn
 }
 
-func newChannel(client *grpc.ClientConn) _Channel {
+func _NewChannel(client *grpc.ClientConn) _Channel {
 	return _Channel{
 		client: client,
 	}
 }
 
-func (channel _Channel) getCrypto() proto.CryptoServiceClient {
+func (channel _Channel) _GetCrypto() proto.CryptoServiceClient {
 	if channel.crypto == nil {
 		channel.crypto = proto.NewCryptoServiceClient(channel.client)
 	}
@@ -31,7 +31,7 @@ func (channel _Channel) getCrypto() proto.CryptoServiceClient {
 	return channel.crypto
 }
 
-func (channel _Channel) getFile() proto.FileServiceClient {
+func (channel _Channel) _GetFile() proto.FileServiceClient {
 	if channel.file == nil {
 		channel.file = proto.NewFileServiceClient(channel.client)
 	}
@@ -39,7 +39,7 @@ func (channel _Channel) getFile() proto.FileServiceClient {
 	return channel.file
 }
 
-func (channel _Channel) getContract() proto.SmartContractServiceClient {
+func (channel _Channel) _GetContract() proto.SmartContractServiceClient {
 	if channel.contract == nil {
 		channel.contract = proto.NewSmartContractServiceClient(channel.client)
 	}
@@ -47,7 +47,7 @@ func (channel _Channel) getContract() proto.SmartContractServiceClient {
 	return channel.contract
 }
 
-func (channel _Channel) getTopic() proto.ConsensusServiceClient {
+func (channel _Channel) _GetTopic() proto.ConsensusServiceClient {
 	if channel.topic == nil {
 		channel.topic = proto.NewConsensusServiceClient(channel.client)
 	}
@@ -55,7 +55,7 @@ func (channel _Channel) getTopic() proto.ConsensusServiceClient {
 	return channel.topic
 }
 
-func (channel _Channel) getFreeze() proto.FreezeServiceClient {
+func (channel _Channel) _GetFreeze() proto.FreezeServiceClient {
 	if channel.freeze == nil {
 		channel.freeze = proto.NewFreezeServiceClient(channel.client)
 	}
@@ -63,7 +63,7 @@ func (channel _Channel) getFreeze() proto.FreezeServiceClient {
 	return channel.freeze
 }
 
-func (channel _Channel) getNetwork() proto.NetworkServiceClient {
+func (channel _Channel) _GetNetwork() proto.NetworkServiceClient {
 	if channel.network == nil {
 		channel.network = proto.NewNetworkServiceClient(channel.client)
 	}
@@ -71,7 +71,7 @@ func (channel _Channel) getNetwork() proto.NetworkServiceClient {
 	return channel.network
 }
 
-func (channel _Channel) getToken() proto.TokenServiceClient {
+func (channel _Channel) _GetToken() proto.TokenServiceClient {
 	if channel.token == nil {
 		channel.token = proto.NewTokenServiceClient(channel.client)
 	}
@@ -79,7 +79,7 @@ func (channel _Channel) getToken() proto.TokenServiceClient {
 	return channel.token
 }
 
-func (channel _Channel) getSchedule() proto.ScheduleServiceClient {
+func (channel _Channel) _GetSchedule() proto.ScheduleServiceClient {
 	if channel.schedule == nil {
 		channel.schedule = proto.NewScheduleServiceClient(channel.client)
 	}

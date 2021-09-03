@@ -15,7 +15,7 @@ package hedera
 //
 //	newBalance := NewHbar(1)
 //
-//	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	transactionID := TransactionIDGenerate(env.Client.GetOperatorAccountID())
 //
@@ -229,7 +229,7 @@ package hedera
 //
 //	newBalance := NewHbar(1)
 //
-//	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	transactionID := TransactionIDGenerate(env.Client.GetOperatorAccountID())
 //
@@ -416,7 +416,7 @@ package hedera
 //
 //	newBalance := NewHbar(2)
 //
-//	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	resp, err := NewAccountCreateTransaction().
 //		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -573,7 +573,7 @@ package hedera
 //
 //	newBalance := NewHbar(2)
 //
-//	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	resp, err := NewAccountCreateTransaction().
 //		SetNodeAccountIDs(env.NodeAccountIDs).

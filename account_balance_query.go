@@ -20,7 +20,7 @@ type AccountBalanceQuery struct {
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
 	return &AccountBalanceQuery{
-		Query: newQuery(false),
+		Query: _NewQuery(false),
 	}
 }
 
@@ -58,7 +58,7 @@ func (query *AccountBalanceQuery) GetContractID() ContractID {
 	return *query.contractID
 }
 
-func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
+func (query *AccountBalanceQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -78,18 +78,18 @@ func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountBalanceQuery) build() *proto.Query_CryptogetAccountBalance {
+func (query *AccountBalanceQuery) _Build() *proto.Query_CryptogetAccountBalance {
 	pb := proto.CryptoGetAccountBalanceQuery{Header: &proto.QueryHeader{}}
 
-	if !query.accountID.isZero() {
+	if !query.accountID._IsZero() {
 		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
-			AccountID: query.accountID.toProtobuf(),
+			AccountID: query.accountID._ToProtobuf(),
 		}
 	}
 
-	if !query.contractID.isZero() {
+	if !query.contractID._IsZero() {
 		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
-			ContractID: query.contractID.toProtobuf(),
+			ContractID: query.contractID._ToProtobuf(),
 		}
 	}
 
@@ -102,19 +102,19 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -136,8 +136,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func (query *AccountBalanceQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *AccountBalanceQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptogetAccountBalance.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -149,8 +149,8 @@ func (query *AccountBalanceQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *AccountBalanceQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *AccountBalanceQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -179,7 +179,7 @@ func _AccountBalanceQueryMapStatusError(_ _Request, response _Response) error {
 
 func _AccountBalanceQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getCrypto().CryptoGetBalance,
+		query: channel._GetCrypto().CryptoGetBalance,
 	}
 }
 
@@ -188,20 +188,20 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, errNoClientProvided
 	}
 
-	query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+	query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return AccountBalance{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_AccountBalanceQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountBalanceQueryGetMethod,
@@ -213,7 +213,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, err
 	}
 
-	return accountBalanceFromProtobuf(resp.query.GetCryptogetAccountBalance()), nil
+	return _AccountBalanceFromProtobuf(resp.query.GetCryptogetAccountBalance()), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

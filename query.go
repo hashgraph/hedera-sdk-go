@@ -25,7 +25,7 @@ type Query struct {
 	minBackoff *time.Duration
 }
 
-func newQuery(isPaymentRequired bool) Query {
+func _NewQuery(isPaymentRequired bool) Query {
 	return Query{
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
@@ -127,17 +127,17 @@ func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
 func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *_Operator, cost Hbar) (*proto.Transaction, error) {
 	accountAmounts := make([]*proto.AccountAmount, 0)
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
-		AccountID: nodeAccountID.toProtobuf(),
+		AccountID: nodeAccountID._ToProtobuf(),
 		Amount:    cost.tinybar,
 	})
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
-		AccountID: operator.accountID.toProtobuf(),
+		AccountID: operator.accountID._ToProtobuf(),
 		Amount:    -cost.tinybar,
 	})
 
 	body := proto.TransactionBody{
-		TransactionID:  transactionID.toProtobuf(),
-		NodeAccountID:  nodeAccountID.toProtobuf(),
+		TransactionID:  transactionID._ToProtobuf(),
+		NodeAccountID:  nodeAccountID._ToProtobuf(),
 		TransactionFee: uint64(NewHbar(1).tinybar),
 		TransactionValidDuration: &proto.Duration{
 			Seconds: 120,
@@ -158,7 +158,7 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 
 	signature := operator.signer(bodyBytes)
 	sigPairs := make([]*proto.SignaturePair, 0)
-	sigPairs = append(sigPairs, operator.publicKey.toSignaturePairProtobuf(signature))
+	sigPairs = append(sigPairs, operator.publicKey._ToSignaturePairProtobuf(signature))
 
 	return &proto.Transaction{
 		BodyBytes: bodyBytes,

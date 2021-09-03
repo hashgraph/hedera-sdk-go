@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func idFromString(s string) (shard int, realm int, num int, checksum *string, err error) {
+func _IdFromString(s string) (shard int, realm int, num int, checksum *string, err error) {
 	if strings.Contains(s, "-") {
 		values := strings.SplitN(s, "-", 2)
 
@@ -44,7 +44,7 @@ func idFromString(s string) (shard int, realm int, num int, checksum *string, er
 	return shard, realm, num, checksum, nil
 }
 
-func idFromSolidityAddress(s string) (uint64, uint64, uint64, error) {
+func _IdFromSolidityAddress(s string) (uint64, uint64, uint64, error) {
 	bytes, err := hex.DecodeString(s)
 	if err != nil {
 		return 0, 0, 0, err
@@ -57,7 +57,7 @@ func idFromSolidityAddress(s string) (uint64, uint64, uint64, error) {
 	return uint64(binary.BigEndian.Uint32(bytes[0:4])), binary.BigEndian.Uint64(bytes[4:12]), binary.BigEndian.Uint64(bytes[12:20]), nil
 }
 
-func idToSolidityAddress(shard uint64, realm uint64, num uint64) string {
+func _IdToSolidityAddress(shard uint64, realm uint64, num uint64) string {
 	bytes := make([]byte, 20)
 	binary.BigEndian.PutUint32(bytes[0:4], uint32(shard))
 	binary.BigEndian.PutUint64(bytes[4:12], realm)

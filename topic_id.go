@@ -17,7 +17,7 @@ type TopicID struct {
 
 // TopicIDFromString constructs a TopicID from a string formatted as `Shard.Realm.Topic` (for example "0.0.3")
 func TopicIDFromString(data string) (TopicID, error) {
-	shard, realm, num, checksum, err := idFromString(data)
+	shard, realm, num, checksum, err := _IdFromString(data)
 	if err != nil {
 		return TopicID{}, err
 	}
@@ -31,12 +31,12 @@ func TopicIDFromString(data string) (TopicID, error) {
 }
 
 func (id *TopicID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
+	if !id._IsZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
 		if err != nil {
 			return err
 		}
-		err = checksumVerify(tempChecksum.status)
+		err = _ChecksumVerify(tempChecksum.status)
 		if err != nil {
 			return err
 		}
@@ -52,17 +52,17 @@ func (id *TopicID) Validate(client *Client) error {
 	return nil
 }
 
-func (id *TopicID) setNetworkWithClient(client *Client) {
+func (id *TopicID) _SetNetworkWithClient(client *Client) {
 	if client.network.networkName != nil {
-		id.setNetwork(*client.network.networkName)
+		id._SetNetwork(*client.network.networkName)
 	}
 }
 
-func (id *TopicID) setNetwork(name NetworkName) {
-	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
+func (id *TopicID) _SetNetwork(name NetworkName) {
+	checksum := _CheckChecksum(name._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
 	id.checksum = &checksum
 }
-func (id TopicID) isZero() bool {
+func (id TopicID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Topic == 0
 }
 
@@ -75,14 +75,14 @@ func (id TopicID) ToStringWithChecksum(client Client) (string, error) {
 	if client.network.networkName == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
+	checksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, checksum.correctChecksum), nil
 }
 
-func (id TopicID) toProtobuf() *proto.TopicID {
+func (id TopicID) _ToProtobuf() *proto.TopicID {
 	return &proto.TopicID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
@@ -90,7 +90,7 @@ func (id TopicID) toProtobuf() *proto.TopicID {
 	}
 }
 
-func topicIDFromProtobuf(topicID *proto.TopicID) *TopicID {
+func _TopicIDFromProtobuf(topicID *proto.TopicID) *TopicID {
 	if topicID == nil {
 		return nil
 	}
@@ -103,7 +103,7 @@ func topicIDFromProtobuf(topicID *proto.TopicID) *TopicID {
 }
 
 func (id TopicID) ToBytes() []byte {
-	data, err := protobuf.Marshal(id.toProtobuf())
+	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -121,5 +121,5 @@ func TopicIDFromBytes(data []byte) (TopicID, error) {
 		return TopicID{}, err
 	}
 
-	return *topicIDFromProtobuf(&pb), nil
+	return *_TopicIDFromProtobuf(&pb), nil
 }

@@ -10,7 +10,7 @@ type _MirrorNetwork struct {
 	index        uint
 }
 
-func newMirrorNetwork() *_MirrorNetwork {
+func _NewMirrorNetwork() *_MirrorNetwork {
 	return &_MirrorNetwork{
 		networkNodes: make(map[string]*_MirrorNode),
 		network:      make([]string, 0),
@@ -18,7 +18,7 @@ func newMirrorNetwork() *_MirrorNetwork {
 	}
 }
 
-func contains(arr []string, str string) bool {
+func _Contains(arr []string, str string) bool {
 	for _, a := range arr {
 		if a == str {
 			return true
@@ -27,10 +27,10 @@ func contains(arr []string, str string) bool {
 	return false
 }
 
-func (network *_MirrorNetwork) setNetwork(newNetwork []string) {
+func (network *_MirrorNetwork) _SetNetwork(newNetwork []string) {
 	for _, n := range network.network {
-		if !contains(newNetwork, n) {
-			_ = network.networkNodes[n].close()
+		if !_Contains(newNetwork, n) {
+			_ = network.networkNodes[n]._Close()
 			delete(network.networkNodes, n)
 		}
 	}
@@ -39,7 +39,7 @@ func (network *_MirrorNetwork) setNetwork(newNetwork []string) {
 
 	for _, url := range newNetwork {
 		if _, ok := network.networkNodes[url]; !ok {
-			network.networkNodes[url] = newMirrorNode(url)
+			network.networkNodes[url] = _NewMirrorNode(url)
 		}
 	}
 
@@ -52,7 +52,7 @@ func (network *_MirrorNetwork) setNetwork(newNetwork []string) {
 	}
 }
 
-func (network *_MirrorNetwork) getNextMirrorNode() *_MirrorNode {
+func (network *_MirrorNetwork) _GetNextMirrorNode() *_MirrorNode {
 	node := network.networkNodes[network.network[network.index]]
 	network.index = (network.index + 1) % uint(len(network.network))
 	return node

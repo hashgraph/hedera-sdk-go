@@ -14,11 +14,11 @@ type _NodeAddress struct {
 	stake       int64
 }
 
-func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) _NodeAddress {
+func _NodeAddressFromProtobuf(nodeAd *proto.NodeAddress) _NodeAddress {
 	address := make([]_Endpoint, 0)
 
 	if len(nodeAd.GetIpAddress()) > 0 { // nolint
-		address = append(address, endpointFromProtobuf(
+		address = append(address, _EndpointFromProtobuf(
 			&proto.ServiceEndpoint{
 				IpAddressV4: nodeAd.GetIpAddress(), // nolint
 				Port:        nodeAd.GetPortno(),    // nolint
@@ -26,12 +26,12 @@ func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) _NodeAddress {
 	}
 
 	for _, end := range nodeAd.GetServiceEndpoint() {
-		address = append(address, endpointFromProtobuf(end))
+		address = append(address, _EndpointFromProtobuf(end))
 	}
 
 	return _NodeAddress{
 		publicKey:   nodeAd.GetRSA_PubKey(),
-		accountID:   accountIDFromProtobuf(nodeAd.GetNodeAccountId()),
+		accountID:   _AccountIDFromProtobuf(nodeAd.GetNodeAccountId()),
 		nodeID:      nodeAd.GetNodeId(),
 		certHash:    nodeAd.GetNodeCertHash(),
 		addresses:   address,
@@ -40,7 +40,7 @@ func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) _NodeAddress {
 	}
 }
 
-func (nodeAdd *_NodeAddress) toProtobuf() *proto.NodeAddress {
+func (nodeAdd *_NodeAddress) _ToProtobuf() *proto.NodeAddress {
 	build := &proto.NodeAddress{
 		RSA_PubKey:      nodeAdd.publicKey,
 		NodeId:          nodeAdd.nodeID,
@@ -52,12 +52,12 @@ func (nodeAdd *_NodeAddress) toProtobuf() *proto.NodeAddress {
 	}
 
 	if nodeAdd.accountID != nil {
-		build.NodeAccountId = nodeAdd.accountID.toProtobuf()
+		build.NodeAccountId = nodeAdd.accountID._ToProtobuf()
 	}
 
 	serviceEndpoint := make([]*proto.ServiceEndpoint, 0)
 	for _, k := range nodeAdd.addresses {
-		serviceEndpoint = append(serviceEndpoint, k.toProtobuf())
+		serviceEndpoint = append(serviceEndpoint, k._ToProtobuf())
 	}
 	build.ServiceEndpoint = serviceEndpoint
 

@@ -17,20 +17,20 @@ type LiveHashAddTransaction struct {
 
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	transaction := LiveHashAddTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }
 
-func liveHashAddTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) LiveHashAddTransaction {
-	keys, _ := keyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
-	duration := durationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
+func _LiveHashAddTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) LiveHashAddTransaction {
+	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
+	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
 	return LiveHashAddTransaction{
 		Transaction: transaction,
-		accountID:   accountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
+		accountID:   _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:        pb.GetCryptoAddLiveHash().LiveHash.Hash,
 		keys:        &keys,
 		duration:    &duration,
@@ -38,7 +38,7 @@ func liveHashAddTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 }
 
 func (transaction *LiveHashAddTransaction) SetHash(hash []byte) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.hash = hash
 	return transaction
 }
@@ -48,7 +48,7 @@ func (transaction *LiveHashAddTransaction) GetHash() []byte {
 }
 
 func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	if transaction.keys == nil {
 		transaction.keys = &KeyList{keys: []Key{}}
 	}
@@ -69,7 +69,7 @@ func (transaction *LiveHashAddTransaction) GetKeys() KeyList {
 }
 
 func (transaction *LiveHashAddTransaction) SetDuration(duration time.Duration) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.duration = &duration
 	return transaction
 }
@@ -83,7 +83,7 @@ func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
 }
 
 func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
 	return transaction
 }
@@ -96,7 +96,7 @@ func (transaction *LiveHashAddTransaction) GetAccountID() AccountID {
 	return *transaction.accountID
 }
 
-func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *LiveHashAddTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -110,21 +110,21 @@ func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *LiveHashAddTransaction) build() *proto.TransactionBody {
+func (transaction *LiveHashAddTransaction) _Build() *proto.TransactionBody {
 	body := &proto.CryptoAddLiveHashTransactionBody{
 		LiveHash: &proto.LiveHash{},
 	}
 
-	if !transaction.accountID.isZero() {
-		body.LiveHash.AccountId = transaction.accountID.toProtobuf()
+	if !transaction.accountID._IsZero() {
+		body.LiveHash.AccountId = transaction.accountID._ToProtobuf()
 	}
 
 	if transaction.duration != nil {
-		body.LiveHash.Duration = durationToProtobuf(*transaction.duration)
+		body.LiveHash.Duration = _DurationToProtobuf(*transaction.duration)
 	}
 
 	if transaction.keys != nil {
-		body.LiveHash.Keys = transaction.keys.toProtoKeyList()
+		body.LiveHash.Keys = transaction.keys._ToProtoKeyList()
 	}
 
 	if transaction.hash != nil {
@@ -134,26 +134,26 @@ func (transaction *LiveHashAddTransaction) build() *proto.TransactionBody {
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_CryptoAddLiveHash{
 			CryptoAddLiveHash: body,
 		},
 	}
 }
 
-func (transaction *LiveHashAddTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *LiveHashAddTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
 func _LiveHashAddTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getCrypto().AddLiveHash,
+		transaction: channel._GetCrypto().AddLiveHash,
 	}
 }
 
 func (transaction *LiveHashAddTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -190,8 +190,8 @@ func (transaction *LiveHashAddTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *LiveHashAddTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -218,14 +218,14 @@ func (transaction *LiveHashAddTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -268,15 +268,15 @@ func (transaction *LiveHashAddTransaction) FreezeWith(client *Client) (*LiveHash
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &LiveHashAddTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -287,7 +287,7 @@ func (transaction *LiveHashAddTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -298,7 +298,7 @@ func (transaction *LiveHashAddTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionMemo(memo string) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -309,7 +309,7 @@ func (transaction *LiveHashAddTransaction) GetTransactionValidDuration() time.Du
 
 // SetTransactionValidDuration sets the valid duration for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionValidDuration(duration time.Duration) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -320,7 +320,7 @@ func (transaction *LiveHashAddTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetTransactionID(transactionID TransactionID) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -328,7 +328,7 @@ func (transaction *LiveHashAddTransaction) SetTransactionID(transactionID Transa
 
 // SetNodeAccountID sets the _Node AccountID for this LiveHashAddTransaction.
 func (transaction *LiveHashAddTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashAddTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -339,9 +339,9 @@ func (transaction *LiveHashAddTransaction) SetMaxRetry(count int) *LiveHashAddTr
 }
 
 func (transaction *LiveHashAddTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashAddTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -356,7 +356,7 @@ func (transaction *LiveHashAddTransaction) AddSignature(publicKey PublicKey, sig
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

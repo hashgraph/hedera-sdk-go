@@ -12,11 +12,11 @@ type NetworkVersionInfoQuery struct {
 
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	return &NetworkVersionInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
-func (query *NetworkVersionInfoQuery) queryMakeRequest() _ProtoRequest {
+func (query *NetworkVersionInfoQuery) _QueryMakeRequest() _ProtoRequest {
 	pb := &proto.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
 			Header: &proto.QueryHeader{},
@@ -34,7 +34,7 @@ func (query *NetworkVersionInfoQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *NetworkVersionInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+func (query *NetworkVersionInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := &proto.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
 			Header: &proto.QueryHeader{},
@@ -61,14 +61,14 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -105,7 +105,7 @@ func _NetworkVersionInfoQueryMapStatusError(_ _Request, response _Response) erro
 
 func _NetworkVersionInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getNetwork().GetVersionInfo,
+		query: channel._GetNetwork().GetVersionInfo,
 	}
 }
 
@@ -115,7 +115,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
@@ -151,13 +151,13 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		return NetworkVersionInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_NetworkVersionInfoQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_NetworkVersionInfoQueryGetMethod,
@@ -169,7 +169,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		return NetworkVersionInfo{}, err
 	}
 
-	return networkVersionInfoFromProtobuf(resp.query.GetNetworkGetVersionInfo()), err
+	return _NetworkVersionInfoFromProtobuf(resp.query.GetNetworkGetVersionInfo()), err
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

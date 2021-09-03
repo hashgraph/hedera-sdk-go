@@ -14,31 +14,31 @@ type TokenDissociateTransaction struct {
 
 func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	transaction := TokenDissociateTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }
 
-func tokenDissociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDissociateTransaction {
+func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
-		if tokenID := tokenIDFromProtobuf(token); tokenID != nil {
+		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
 			tokens = append(tokens, *tokenID)
 		}
 	}
 
 	return TokenDissociateTransaction{
 		Transaction: transaction,
-		accountID:   accountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
+		accountID:   _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
 		tokens:      tokens,
 	}
 }
 
 // The account to be dissociated with the provided tokens
 func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
 	return transaction
 }
@@ -53,7 +53,7 @@ func (transaction *TokenDissociateTransaction) GetAccountID() AccountID {
 
 // The tokens to be dissociated with the provided account
 func (transaction *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.tokens = make([]TokenID, len(ids))
 
 	for i, tokenID := range ids {
@@ -64,7 +64,7 @@ func (transaction *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *Toke
 }
 
 func (transaction *TokenDissociateTransaction) AddTokenID(id TokenID) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	if transaction.tokens == nil {
 		transaction.tokens = make([]TokenID, 0)
 	}
@@ -84,7 +84,7 @@ func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
 	return tokenIDs
 }
 
-func (transaction *TokenDissociateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenDissociateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -104,10 +104,10 @@ func (transaction *TokenDissociateTransaction) validateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *TokenDissociateTransaction) build() *proto.TransactionBody {
+func (transaction *TokenDissociateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenDissociateTransactionBody{}
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if !transaction.accountID._IsZero() {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 
 	if len(transaction.tokens) > 0 {
@@ -115,15 +115,15 @@ func (transaction *TokenDissociateTransaction) build() *proto.TransactionBody {
 			if body.Tokens == nil {
 				body.Tokens = make([]*proto.TokenID, 0)
 			}
-			body.Tokens = append(body.Tokens, tokenID.toProtobuf())
+			body.Tokens = append(body.Tokens, tokenID._ToProtobuf())
 		}
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_TokenDissociate{
 			TokenDissociate: body,
 		},
@@ -131,20 +131,20 @@ func (transaction *TokenDissociateTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenDissociateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenDissociateTransactionBody{}
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if !transaction.accountID._IsZero() {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 
 	if len(transaction.tokens) > 0 {
@@ -152,7 +152,7 @@ func (transaction *TokenDissociateTransaction) constructScheduleProtobuf() (*pro
 			if body.Tokens == nil {
 				body.Tokens = make([]*proto.TokenID, 0)
 			}
-			body.Tokens = append(body.Tokens, tokenID.toProtobuf())
+			body.Tokens = append(body.Tokens, tokenID._ToProtobuf())
 		}
 	}
 
@@ -167,12 +167,12 @@ func (transaction *TokenDissociateTransaction) constructScheduleProtobuf() (*pro
 
 func _TokenDissociateTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel.getToken().DissociateTokens,
+		transaction: channel._GetToken().DissociateTokens,
 	}
 }
 
 func (transaction *TokenDissociateTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -209,8 +209,8 @@ func (transaction *TokenDissociateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenDissociateTransaction {
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -237,14 +237,14 @@ func (transaction *TokenDissociateTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			transaction: &transaction.Transaction,
@@ -287,15 +287,15 @@ func (transaction *TokenDissociateTransaction) FreezeWith(client *Client) (*Toke
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenDissociateTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
@@ -306,7 +306,7 @@ func (transaction *TokenDissociateTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -317,7 +317,7 @@ func (transaction *TokenDissociateTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetTransactionMemo(memo string) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -328,7 +328,7 @@ func (transaction *TokenDissociateTransaction) GetTransactionValidDuration() tim
 
 // SetTransactionValidDuration sets the valid duration for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -339,7 +339,7 @@ func (transaction *TokenDissociateTransaction) GetTransactionID() TransactionID 
 
 // SetTransactionID sets the TransactionID for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetTransactionID(transactionID TransactionID) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
@@ -347,7 +347,7 @@ func (transaction *TokenDissociateTransaction) SetTransactionID(transactionID Tr
 
 // SetNodeTokenID sets the _Node TokenID for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDissociateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -358,9 +358,9 @@ func (transaction *TokenDissociateTransaction) SetMaxRetry(count int) *TokenDiss
 }
 
 func (transaction *TokenDissociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDissociateTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -375,7 +375,7 @@ func (transaction *TokenDissociateTransaction) AddSignature(publicKey PublicKey,
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 

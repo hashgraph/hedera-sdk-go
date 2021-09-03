@@ -45,7 +45,7 @@ func (unit HbarUnit) String() string {
 	return string(unit)
 }
 
-func (unit HbarUnit) numberOfTinybar() int64 {
+func (unit HbarUnit) _NumberOfTinybar() int64 {
 	switch unit {
 	case HbarUnits.Tinybar:
 		return 1

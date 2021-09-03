@@ -11,19 +11,19 @@ type TokenNftTransfer struct {
 	SerialNumber      int64
 }
 
-func nftTransferFromProtobuf(pb *proto.NftTransfer) TokenNftTransfer {
+func _NftTransferFromProtobuf(pb *proto.NftTransfer) TokenNftTransfer {
 	if pb == nil {
 		return TokenNftTransfer{}
 	}
 
 	senderAccountID := AccountID{}
 	if pb.SenderAccountID != nil {
-		senderAccountID = *accountIDFromProtobuf(pb.SenderAccountID)
+		senderAccountID = *_AccountIDFromProtobuf(pb.SenderAccountID)
 	}
 
 	receiverAccountID := AccountID{}
 	if pb.ReceiverAccountID != nil {
-		receiverAccountID = *accountIDFromProtobuf(pb.ReceiverAccountID)
+		receiverAccountID = *_AccountIDFromProtobuf(pb.ReceiverAccountID)
 	}
 
 	return TokenNftTransfer{
@@ -33,16 +33,16 @@ func nftTransferFromProtobuf(pb *proto.NftTransfer) TokenNftTransfer {
 	}
 }
 
-func (transfer *TokenNftTransfer) toProtobuf() *proto.NftTransfer {
+func (transfer *TokenNftTransfer) _ToProtobuf() *proto.NftTransfer {
 	return &proto.NftTransfer{
-		SenderAccountID:   transfer.SenderAccountID.toProtobuf(),
-		ReceiverAccountID: transfer.ReceiverAccountID.toProtobuf(),
+		SenderAccountID:   transfer.SenderAccountID._ToProtobuf(),
+		ReceiverAccountID: transfer.ReceiverAccountID._ToProtobuf(),
 		SerialNumber:      transfer.SerialNumber,
 	}
 }
 
 func (transfer TokenNftTransfer) ToBytes() []byte {
-	data, err := protobuf.Marshal(transfer.toProtobuf())
+	data, err := protobuf.Marshal(transfer._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -60,5 +60,5 @@ func NftTransferFromBytes(data []byte) (TokenNftTransfer, error) {
 		return TokenNftTransfer{}, err
 	}
 
-	return nftTransferFromProtobuf(&pb), nil
+	return _NftTransferFromProtobuf(&pb), nil
 }

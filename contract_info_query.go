@@ -16,7 +16,7 @@ type ContractInfoQuery struct {
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
 // Contract Get Info Query.
 func NewContractInfoQuery() *ContractInfoQuery {
-	query := newQuery(true)
+	query := _NewQuery(true)
 
 	query.SetMaxQueryPayment(NewHbar(2))
 
@@ -39,7 +39,7 @@ func (query *ContractInfoQuery) GetContractID() ContractID {
 	return *query.contractID
 }
 
-func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ContractInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -53,10 +53,10 @@ func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractInfoQuery) build() *proto.Query_ContractGetInfo {
+func (query *ContractInfoQuery) _Build() *proto.Query_ContractGetInfo {
 	body := &proto.ContractGetInfoQuery{Header: &proto.QueryHeader{}}
-	if !query.contractID.isZero() {
-		body.ContractID = query.contractID.toProtobuf()
+	if !query.contractID._IsZero() {
+		body.ContractID = query.contractID._ToProtobuf()
 	}
 
 	return &proto.Query_ContractGetInfo{
@@ -64,8 +64,8 @@ func (query *ContractInfoQuery) build() *proto.Query_ContractGetInfo {
 	}
 }
 
-func (query *ContractInfoQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *ContractInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -78,8 +78,8 @@ func (query *ContractInfoQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *ContractInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *ContractInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -101,19 +101,19 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoResp, err := query.costQueryMakeRequest(client)
+	protoResp, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -151,7 +151,7 @@ func _ContractInfoQueryMapStatusError(_ _Request, response _Response) error {
 
 func _ContractInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getContract().GetContractInfo,
+		query: channel._GetContract().GetContractInfo,
 	}
 }
 
@@ -161,10 +161,10 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return ContractInfo{}, err
 	}
@@ -202,13 +202,13 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_ContractInfoQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_ContractInfoQueryGetMethod,
@@ -220,7 +220,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	info, err := contractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)
+	info, err := _ContractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)
 	if err != nil {
 		return ContractInfo{}, err
 	}

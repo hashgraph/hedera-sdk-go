@@ -14,11 +14,11 @@ type TransactionReceiptQuery struct {
 
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	return &TransactionReceiptQuery{
-		Query: newQuery(false),
+		Query: _NewQuery(false),
 	}
 }
 
-func (query *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TransactionReceiptQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -30,12 +30,12 @@ func (query *TransactionReceiptQuery) validateNetworkOnIDs(client *Client) error
 	return nil
 }
 
-func (query *TransactionReceiptQuery) build() *proto.Query_TransactionGetReceipt {
+func (query *TransactionReceiptQuery) _Build() *proto.Query_TransactionGetReceipt {
 	body := &proto.TransactionGetReceiptQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.transactionID.AccountID.isZero() {
-		body.TransactionID = query.transactionID.toProtobuf()
+	if !query.transactionID.AccountID._IsZero() {
+		body.TransactionID = query.transactionID._ToProtobuf()
 	}
 	if query.duplicates != nil {
 		body.IncludeDuplicates = *query.duplicates
@@ -46,8 +46,8 @@ func (query *TransactionReceiptQuery) build() *proto.Query_TransactionGetReceipt
 	}
 }
 
-func (query *TransactionReceiptQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *TransactionReceiptQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TransactionGetReceipt.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -60,8 +60,8 @@ func (query *TransactionReceiptQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *TransactionReceiptQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *TransactionReceiptQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -83,19 +83,19 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -149,13 +149,13 @@ func _TransactionReceiptQueryMapStatusError(request _Request, response _Response
 
 	return ErrHederaReceiptStatus{
 		Status:  Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
-		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
+		Receipt: _TransactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
 	}
 }
 
 func _TransactionReceiptQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getCrypto().GetTransactionReceipts,
+		query: channel._GetCrypto().GetTransactionReceipts,
 	}
 }
 
@@ -234,23 +234,23 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TransactionReceipt{}, err
 	}
 
-	query.build()
+	query._Build()
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_TransactionReceiptQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TransactionReceiptQueryGetMethod,
@@ -260,10 +260,10 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 	if err != nil {
 		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
-			return TransactionReceipt{}, newErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
+			return TransactionReceipt{}, _NewErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
 		}
 		return TransactionReceipt{}, err
 	}
 
-	return transactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
+	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
 }

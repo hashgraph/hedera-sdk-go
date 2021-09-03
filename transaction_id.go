@@ -68,7 +68,7 @@ func (id TransactionID) String() string {
 	var pb *proto.Timestamp
 	var returnString string
 	if id.AccountID != nil && id.ValidStart != nil {
-		pb = timeToProtobuf(*id.ValidStart)
+		pb = _TimeToProtobuf(*id.ValidStart)
 		returnString = id.AccountID.String() + "@" + strconv.FormatInt(pb.Seconds, 10) + "." + fmt.Sprint(pb.Nanos)
 	}
 
@@ -124,15 +124,15 @@ func TransactionIdFromString(data string) (TransactionID, error) { // nolint
 	}, nil
 }
 
-func (id TransactionID) toProtobuf() *proto.TransactionID {
+func (id TransactionID) _ToProtobuf() *proto.TransactionID {
 	var validStart *proto.Timestamp
 	if id.ValidStart != nil {
-		validStart = timeToProtobuf(*id.ValidStart)
+		validStart = _TimeToProtobuf(*id.ValidStart)
 	}
 
 	var accountID *proto.AccountID
 	if id.AccountID != nil {
-		accountID = id.AccountID.toProtobuf()
+		accountID = id.AccountID._ToProtobuf()
 	}
 
 	return &proto.TransactionID{
@@ -142,25 +142,25 @@ func (id TransactionID) toProtobuf() *proto.TransactionID {
 	}
 }
 
-func transactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
+func _TransactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
 	if pb == nil {
 		return TransactionID{}
 	}
 	var validStart time.Time
 	if pb.TransactionValidStart != nil {
-		validStart = timeFromProtobuf(pb.TransactionValidStart)
+		validStart = _TimeFromProtobuf(pb.TransactionValidStart)
 	}
 
 	var accountID AccountID
 	if pb.AccountID != nil {
-		accountID = *accountIDFromProtobuf(pb.AccountID)
+		accountID = *_AccountIDFromProtobuf(pb.AccountID)
 	}
 
 	return TransactionID{&accountID, &validStart, pb.Scheduled}
 }
 
 func (id TransactionID) ToBytes() []byte {
-	data, err := protobuf.Marshal(id.toProtobuf())
+	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -178,7 +178,7 @@ func TransactionIDFromBytes(data []byte) (TransactionID, error) {
 		return TransactionID{}, err
 	}
 
-	return transactionIDFromProtobuf(&pb), nil
+	return _TransactionIDFromProtobuf(&pb), nil
 }
 
 func (id TransactionID) SetScheduled(scheduled bool) TransactionID {

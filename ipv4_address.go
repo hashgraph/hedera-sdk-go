@@ -5,7 +5,7 @@ type _IPv4Address struct {
 	host    _IPv4AddressPart
 }
 
-func ipv4AddressFromProtobuf(byte []byte) _IPv4Address {
+func _Ipv4AddressFromProtobuf(byte []byte) _IPv4Address {
 	return _IPv4Address{
 		network: _IPv4AddressPart{
 			left:  byte[0],
@@ -18,7 +18,7 @@ func ipv4AddressFromProtobuf(byte []byte) _IPv4Address {
 	}
 }
 
-func (ip *_IPv4Address) toProtobuf() []byte {
+func (ip *_IPv4Address) _ToProtobuf() []byte {
 	return []byte{ip.network.left, ip.network.right, ip.host.left, ip.host.right}
 }
 

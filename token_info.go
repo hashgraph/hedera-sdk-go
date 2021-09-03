@@ -32,7 +32,7 @@ type TokenInfo struct {
 	CustomFees          []Fee
 }
 
-func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
+func _FreezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
 	var freezeStatus bool
 	switch pb.Number() {
 	case 1:
@@ -46,7 +46,7 @@ func freezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
 	return &freezeStatus
 }
 
-func kycStatusFromProtobuf(pb proto.TokenKycStatus) *bool {
+func _KycStatusFromProtobuf(pb proto.TokenKycStatus) *bool {
 	var kycStatus bool
 	switch pb.Number() {
 	case 1:
@@ -97,34 +97,34 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 	return &kycStatus
 }
 
-func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
+func _TokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 	if pb == nil {
 		return TokenInfo{}
 	}
 
 	var adminKey Key
 	if pb.AdminKey != nil {
-		adminKey, _ = keyFromProtobuf(pb.AdminKey)
+		adminKey, _ = _KeyFromProtobuf(pb.AdminKey)
 	}
 
 	var kycKey Key
 	if pb.KycKey != nil {
-		kycKey, _ = keyFromProtobuf(pb.KycKey)
+		kycKey, _ = _KeyFromProtobuf(pb.KycKey)
 	}
 
 	var freezeKey Key
 	if pb.FreezeKey != nil {
-		freezeKey, _ = keyFromProtobuf(pb.FreezeKey)
+		freezeKey, _ = _KeyFromProtobuf(pb.FreezeKey)
 	}
 
 	var wipeKey Key
 	if pb.WipeKey != nil {
-		wipeKey, _ = keyFromProtobuf(pb.WipeKey)
+		wipeKey, _ = _KeyFromProtobuf(pb.WipeKey)
 	}
 
 	var supplyKey Key
 	if pb.SupplyKey != nil {
-		supplyKey, _ = keyFromProtobuf(pb.SupplyKey)
+		supplyKey, _ = _KeyFromProtobuf(pb.SupplyKey)
 	}
 
 	var autoRenewPeriod time.Duration
@@ -139,24 +139,24 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 
 	var autoRenewAccountID AccountID
 	if pb.AutoRenewAccount != nil {
-		autoRenewAccountID = *accountIDFromProtobuf(pb.AutoRenewAccount)
+		autoRenewAccountID = *_AccountIDFromProtobuf(pb.AutoRenewAccount)
 	}
 
 	var treasury AccountID
 	if pb.AutoRenewAccount != nil {
-		treasury = *accountIDFromProtobuf(pb.AutoRenewAccount)
+		treasury = *_AccountIDFromProtobuf(pb.AutoRenewAccount)
 	}
 
 	customFees := make([]Fee, 0)
 	if pb.CustomFees != nil {
 		for _, custom := range pb.CustomFees {
-			customFees = append(customFees, customFeeFromProtobuf(custom))
+			customFees = append(customFees, _CustomFeeFromProtobuf(custom))
 		}
 	}
 
 	tokenID := TokenID{}
 	if pb.TokenId != nil {
-		tokenID = *tokenIDFromProtobuf(pb.TokenId)
+		tokenID = *_TokenIDFromProtobuf(pb.TokenId)
 	}
 
 	return TokenInfo{
@@ -171,8 +171,8 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		FreezeKey:           freezeKey,
 		WipeKey:             wipeKey,
 		SupplyKey:           supplyKey,
-		DefaultFreezeStatus: freezeStatusFromProtobuf(pb.DefaultFreezeStatus),
-		DefaultKycStatus:    kycStatusFromProtobuf(pb.DefaultKycStatus),
+		DefaultFreezeStatus: _FreezeStatusFromProtobuf(pb.DefaultFreezeStatus),
+		DefaultKycStatus:    _KycStatusFromProtobuf(pb.DefaultKycStatus),
 		Deleted:             pb.Deleted,
 		AutoRenewPeriod:     &autoRenewPeriod,
 		AutoRenewAccountID:  autoRenewAccountID,
@@ -185,56 +185,56 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 	}
 }
 
-func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
+func (tokenInfo *TokenInfo) _ToProtobuf() *proto.TokenInfo {
 	var adminKey *proto.Key
 	if tokenInfo.AdminKey != nil {
-		adminKey = tokenInfo.AdminKey.toProtoKey()
+		adminKey = tokenInfo.AdminKey._ToProtoKey()
 	}
 
 	var kycKey *proto.Key
 	if tokenInfo.KycKey != nil {
-		kycKey = tokenInfo.KycKey.toProtoKey()
+		kycKey = tokenInfo.KycKey._ToProtoKey()
 	}
 
 	var freezeKey *proto.Key
 	if tokenInfo.FreezeKey != nil {
-		freezeKey = tokenInfo.FreezeKey.toProtoKey()
+		freezeKey = tokenInfo.FreezeKey._ToProtoKey()
 	}
 
 	var wipeKey *proto.Key
 	if tokenInfo.WipeKey != nil {
-		wipeKey = tokenInfo.WipeKey.toProtoKey()
+		wipeKey = tokenInfo.WipeKey._ToProtoKey()
 	}
 
 	var supplyKey *proto.Key
 	if tokenInfo.SupplyKey != nil {
-		supplyKey = tokenInfo.SupplyKey.toProtoKey()
+		supplyKey = tokenInfo.SupplyKey._ToProtoKey()
 	}
 
 	var autoRenewPeriod *proto.Duration
 	if tokenInfo.AutoRenewPeriod != nil {
-		autoRenewPeriod = durationToProtobuf(*tokenInfo.AutoRenewPeriod)
+		autoRenewPeriod = _DurationToProtobuf(*tokenInfo.AutoRenewPeriod)
 	}
 
 	var expirationTime *proto.Timestamp
 	if tokenInfo.ExpirationTime != nil {
-		expirationTime = timeToProtobuf(*tokenInfo.ExpirationTime)
+		expirationTime = _TimeToProtobuf(*tokenInfo.ExpirationTime)
 	}
 
 	customFees := make([]*proto.CustomFee, 0)
 	if tokenInfo.CustomFees != nil {
 		for _, customFee := range tokenInfo.CustomFees {
-			customFees = append(customFees, customFee.toProtobuf())
+			customFees = append(customFees, customFee._ToProtobuf())
 		}
 	}
 
 	return &proto.TokenInfo{
-		TokenId:             tokenInfo.TokenID.toProtobuf(),
+		TokenId:             tokenInfo.TokenID._ToProtobuf(),
 		Name:                tokenInfo.Name,
 		Symbol:              tokenInfo.Symbol,
 		Decimals:            tokenInfo.Decimals,
 		TotalSupply:         tokenInfo.TotalSupply,
-		Treasury:            tokenInfo.Treasury.toProtobuf(),
+		Treasury:            tokenInfo.Treasury._ToProtobuf(),
 		AdminKey:            adminKey,
 		KycKey:              kycKey,
 		FreezeKey:           freezeKey,
@@ -243,7 +243,7 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 		DefaultFreezeStatus: *tokenInfo.FreezeStatusToProtobuf(),
 		DefaultKycStatus:    *tokenInfo.KycStatusToProtobuf(),
 		Deleted:             tokenInfo.Deleted,
-		AutoRenewAccount:    tokenInfo.AutoRenewAccountID.toProtobuf(),
+		AutoRenewAccount:    tokenInfo.AutoRenewAccountID._ToProtobuf(),
 		AutoRenewPeriod:     autoRenewPeriod,
 		Expiry:              expirationTime,
 		Memo:                tokenInfo.TokenMemo,
@@ -255,7 +255,7 @@ func (tokenInfo *TokenInfo) toProtobuf() *proto.TokenInfo {
 }
 
 func (tokenInfo TokenInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(tokenInfo.toProtobuf())
+	data, err := protobuf.Marshal(tokenInfo._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -273,5 +273,5 @@ func TokenInfoFromBytes(data []byte) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	return tokenInfoFromProtobuf(&pb), nil
+	return _TokenInfoFromProtobuf(&pb), nil
 }

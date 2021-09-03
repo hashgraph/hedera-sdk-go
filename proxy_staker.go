@@ -9,9 +9,9 @@ type ProxyStaker struct {
 	Amount    Hbar
 }
 
-func (staker *ProxyStaker) toProtobuf() *proto.ProxyStaker { // nolint
+func (staker *ProxyStaker) _ToProtobuf() *proto.ProxyStaker { // nolint
 	return &proto.ProxyStaker{
-		AccountID: staker.AccountID.toProtobuf(),
+		AccountID: staker.AccountID._ToProtobuf(),
 		Amount:    staker.Amount.tinybar,
 	}
 }

@@ -9,14 +9,14 @@ type CustomFee struct {
 	FeeCollectorAccountID *AccountID
 }
 
-func customFeeFromProtobuf(customFee *proto.CustomFee) Fee {
+func _CustomFeeFromProtobuf(customFee *proto.CustomFee) Fee {
 	if customFee == nil {
 		return nil
 	}
 
 	var id *AccountID
 	if customFee.FeeCollectorAccountId != nil {
-		id = accountIDFromProtobuf(customFee.FeeCollectorAccountId)
+		id = _AccountIDFromProtobuf(customFee.FeeCollectorAccountId)
 	}
 
 	fee := CustomFee{
@@ -25,11 +25,11 @@ func customFeeFromProtobuf(customFee *proto.CustomFee) Fee {
 
 	switch t := customFee.Fee.(type) {
 	case *proto.CustomFee_FixedFee:
-		return customFixedFeeFromProtobuf(t.FixedFee, fee)
+		return _CustomFixedFeeFromProtobuf(t.FixedFee, fee)
 	case *proto.CustomFee_FractionalFee:
-		return customFractionalFeeFromProtobuf(t.FractionalFee, fee)
+		return _CustomFractionalFeeFromProtobuf(t.FractionalFee, fee)
 	case *proto.CustomFee_RoyaltyFee:
-		return customRoyaltyFeeFromProtobuf(t.RoyaltyFee, fee)
+		return _CustomRoyaltyFeeFromProtobuf(t.RoyaltyFee, fee)
 	}
 
 	return nil
@@ -54,5 +54,5 @@ func CustomFeeFromBytes(data []byte) (Fee, error) {
 		return nil, err
 	}
 
-	return customFeeFromProtobuf(&pb), nil
+	return _CustomFeeFromProtobuf(&pb), nil
 }

@@ -89,7 +89,7 @@ func TestIntegrationFileCreateTransactionNetwork(t *testing.T) {
 	newClient := Client{}
 	networkName := NetworkNameMainnet
 	newClient.network.networkName = &networkName
-	fileID.setNetworkWithClient(&newClient)
+	fileID._SetNetworkWithClient(&newClient)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).

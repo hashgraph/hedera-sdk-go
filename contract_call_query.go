@@ -25,7 +25,7 @@ type ContractCallQuery struct {
 // NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
 // Contract Call Local Query.
 func NewContractCallQuery() *ContractCallQuery {
-	query := newQuery(true)
+	query := _NewQuery(true)
 	query.SetMaxQueryPayment(NewHbar(2))
 
 	return &ContractCallQuery{
@@ -70,7 +70,7 @@ func (query *ContractCallQuery) SetFunction(name string, params *ContractFunctio
 		params = NewContractFunctionParameters()
 	}
 
-	query.functionParameters = params.build(&name)
+	query.functionParameters = params._Build(&name)
 	return query
 }
 
@@ -83,7 +83,7 @@ func (query *ContractCallQuery) GetFunctionParameters() []byte {
 	return query.functionParameters
 }
 
-func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ContractCallQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
@@ -97,14 +97,14 @@ func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractCallQuery) build() *proto.Query_ContractCallLocal {
+func (query *ContractCallQuery) _Build() *proto.Query_ContractCallLocal {
 	body := &proto.ContractCallLocalQuery{
 		Header:        &proto.QueryHeader{},
 		Gas:           int64(query.gas),
 		MaxResultSize: int64(query.maxResultSize),
 	}
-	if !query.contractID.isZero() {
-		body.ContractID = query.contractID.toProtobuf()
+	if !query.contractID._IsZero() {
+		body.ContractID = query.contractID._ToProtobuf()
 	}
 	if len(query.functionParameters) > 0 {
 		body.FunctionParameters = query.functionParameters
@@ -115,8 +115,8 @@ func (query *ContractCallQuery) build() *proto.Query_ContractCallLocal {
 	}
 }
 
-func (query *ContractCallQuery) queryMakeRequest() _ProtoRequest {
-	pb := query.build()
+func (query *ContractCallQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractCallLocal.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -128,8 +128,8 @@ func (query *ContractCallQuery) queryMakeRequest() _ProtoRequest {
 	}
 }
 
-func (query *ContractCallQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query.build()
+func (query *ContractCallQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
@@ -151,19 +151,19 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
@@ -197,7 +197,7 @@ func _ContractCallQueryMapStatusError(_ _Request, response _Response) error {
 
 func _ContractCallQueryGetMethod(_ _Request, channel *_Channel) _Method {
 	return _Method{
-		query: channel.getContract().ContractCallLocalMethod,
+		query: channel._GetContract().ContractCallLocalMethod,
 	}
 }
 
@@ -207,10 +207,10 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}
@@ -248,13 +248,13 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		return ContractFunctionResult{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
 		_Request{
 			query: &query.Query,
 		},
 		_ContractCallQueryShouldRetry,
-		query.queryMakeRequest(),
+		query._QueryMakeRequest(),
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_ContractCallQueryGetMethod,
@@ -266,9 +266,9 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		return ContractFunctionResult{}, err
 	}
 
-	result := contractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult)
+	result := _ContractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult)
 	if result.ContractID != nil {
-		result.ContractID.setNetworkWithClient(client)
+		result.ContractID._SetNetworkWithClient(client)
 	}
 
 	return result, nil

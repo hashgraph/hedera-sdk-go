@@ -14,7 +14,7 @@ type TransactionFeeSchedule struct {
 	Fees    []*FeeData
 }
 
-func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSchedule) (TransactionFeeSchedule, error) {
+func _TransactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSchedule) (TransactionFeeSchedule, error) {
 	if txFeeSchedule == nil {
 		return TransactionFeeSchedule{}, errParameterNull
 	}
@@ -22,14 +22,14 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 	feeData := make([]*FeeData, 0)
 
 	for _, data := range txFeeSchedule.GetFees() {
-		temp, err := feeDataFromProtobuf(data)
+		temp, err := _FeeDataFromProtobuf(data)
 		if err != nil {
 			return TransactionFeeSchedule{}, err
 		}
 		feeData = append(feeData, &temp)
 	}
 
-	singleFeeData, err := feeDataFromProtobuf(txFeeSchedule.GetFeeData()) // nolint
+	singleFeeData, err := _FeeDataFromProtobuf(txFeeSchedule.GetFeeData()) // nolint
 	if err != nil {
 		return TransactionFeeSchedule{}, err
 	}
@@ -41,17 +41,17 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 	}, nil
 }
 
-func (txFeeSchedule TransactionFeeSchedule) toProtobuf() *proto.TransactionFeeSchedule {
+func (txFeeSchedule TransactionFeeSchedule) _ToProtobuf() *proto.TransactionFeeSchedule {
 	feeData := make([]*proto.FeeData, 0)
 	if txFeeSchedule.Fees != nil {
 		for _, data := range txFeeSchedule.Fees {
-			feeData = append(feeData, data.toProtobuf())
+			feeData = append(feeData, data._ToProtobuf())
 		}
 	}
 
 	var singleFee *proto.FeeData
 	if txFeeSchedule.FeeData != nil {
-		singleFee = txFeeSchedule.FeeData.toProtobuf()
+		singleFee = txFeeSchedule.FeeData._ToProtobuf()
 	}
 
 	return &proto.TransactionFeeSchedule{
@@ -62,7 +62,7 @@ func (txFeeSchedule TransactionFeeSchedule) toProtobuf() *proto.TransactionFeeSc
 }
 
 func (txFeeSchedule TransactionFeeSchedule) ToBytes() []byte {
-	data, err := protobuf.Marshal(txFeeSchedule.toProtobuf())
+	data, err := protobuf.Marshal(txFeeSchedule._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}

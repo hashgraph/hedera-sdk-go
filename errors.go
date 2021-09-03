@@ -53,7 +53,7 @@ type ErrMaxQueryPaymentExceeded struct {
 	query string
 }
 
-// func newErrorMaxQueryPaymentExceeded(transaction *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
+// func _NewErrorMaxQueryPaymentExceeded(transaction *QueryBuilder, queryCost Hbar, maxQueryPayment Hbar) ErrMaxQueryPaymentExceeded {
 // 	return ErrMaxQueryPaymentExceeded{
 // 		QueryCost:       queryCost,
 // 		MaxQueryPayment: maxQueryPayment,
@@ -74,7 +74,7 @@ type ErrBadKey struct {
 	message string
 }
 
-func newErrBadKeyf(format string, a ...interface{}) ErrBadKey {
+func _NewErrBadKeyf(format string, a ...interface{}) ErrBadKey {
 	return ErrBadKey{fmt.Sprintf(format, a...)}
 }
 
@@ -107,7 +107,7 @@ func (e ErrHederaPreCheckStatus) Error() string {
 	if e.TxID.AccountID == nil {
 		return fmt.Sprintf("exceptional precheck status %s", e.Status.String())
 	}
-	if e.TxID.AccountID.isZero() {
+	if e.TxID.AccountID._IsZero() {
 		return fmt.Sprintf("exceptional precheck status %s", e.Status.String())
 	}
 	return fmt.Sprintf("exceptional precheck status %s received for transaction %v", e.Status.String(), e.TxID)
@@ -120,7 +120,7 @@ type ErrHederaReceiptStatus struct {
 	Receipt TransactionReceipt
 }
 
-func newErrHederaReceiptStatus(id TransactionID, status Status) ErrHederaReceiptStatus {
+func _NewErrHederaReceiptStatus(id TransactionID, status Status) ErrHederaReceiptStatus {
 	return ErrHederaReceiptStatus{TxID: id, Status: status}
 }
 

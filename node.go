@@ -34,7 +34,7 @@ type _Nodes struct {
 	nodes []*_Node
 }
 
-func newNode(accountID AccountID, address string, waitTime int64) _Node {
+func _NewNode(accountID AccountID, address string, waitTime int64) _Node {
 	return _Node{
 		accountID:   accountID,
 		address:     address,
@@ -49,7 +49,7 @@ func newNode(accountID AccountID, address string, waitTime int64) _Node {
 	}
 }
 
-func (node *_Node) setWaitTime(waitTime int64) {
+func (node *_Node) _SetWaitTime(waitTime int64) {
 	if node.delay == node.waitTime {
 		node.delay = node.waitTime
 	}
@@ -65,31 +65,31 @@ func (node *_Node) GetAddressBook() *_NodeAddress {
 	return node.addressBook
 }
 
-func (node *_Node) inUse() {
+func (node *_Node) _InUse() {
 	node.useCount++
 	node.lastUsed = time.Now().UTC().UnixNano()
 }
 
-func (node *_Node) isHealthy() bool {
+func (node *_Node) _IsHealthy() bool {
 	return node.delayUntil <= time.Now().UTC().UnixNano()
 }
 
-func (node *_Node) increaseDelay() {
+func (node *_Node) _IncreaseDelay() {
 	node.attempts++
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
 	node.delayUntil = (node.delay * 100000) + time.Now().UTC().UnixNano()
 }
 
-func (node *_Node) decreaseDelay() {
+func (node *_Node) _DecreaseDelay() {
 	node.delay = int64(math.Max(float64(node.delay)/2, 250))
 }
 
-func (node *_Node) wait() {
+func (node *_Node) _Wait() {
 	delay := node.delayUntil - node.lastUsed
 	time.Sleep(time.Duration(delay) * time.Nanosecond)
 }
 
-func (node *_Node) getChannel() (*_Channel, error) {
+func (node *_Node) _GetChannel() (*_Channel, error) {
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -139,13 +139,13 @@ func (node *_Node) getChannel() (*_Channel, error) {
 		return nil, status.Error(codes.ResourceExhausted, "dial timeout of 10sec exceeded")
 	}
 
-	ch := newChannel(conn)
+	ch := _NewChannel(conn)
 	node.channel = &ch
 
 	return node.channel, nil
 }
 
-func (node *_Node) close() error {
+func (node *_Node) _Close() error {
 	if node.channel != nil {
 		err := node.channel.client.Close()
 		node.channel = nil
@@ -163,7 +163,7 @@ func (nodes _Nodes) Swap(i, j int) {
 }
 
 func (nodes _Nodes) Less(i, j int) bool {
-	if nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() { // nolint
+	if nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() { // nolint
 		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
 			return true
 		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
@@ -171,9 +171,9 @@ func (nodes _Nodes) Less(i, j int) bool {
 		} else {
 			return nodes.nodes[i].lastUsed < nodes.nodes[j].lastUsed
 		}
-	} else if nodes.nodes[i].isHealthy() && !nodes.nodes[j].isHealthy() {
+	} else if nodes.nodes[i]._IsHealthy() && !nodes.nodes[j]._IsHealthy() {
 		return true
-	} else if !nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() {
+	} else if !nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() {
 		return false
 	} else {
 		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
