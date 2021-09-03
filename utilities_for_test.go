@@ -40,15 +40,16 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		network["127.0.0.1:50215"] = AccountID{Account: 5}
 
 		env.Client = ClientForNetwork(network)
-	} else if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+	} else if os.Getenv("HEDERA_NETWORK") == "testnet" {
 		env.Client = ClientForTestnet()
-	} else {
+	} else if os.Getenv("CONFIG_FILE") != "" {
 		env.Client, err = ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
-
 		if err != nil {
 			panic(err)
 		}
-	}
+	} else {
+        panic("Failed to construct client from environment variables")
+    }
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")
