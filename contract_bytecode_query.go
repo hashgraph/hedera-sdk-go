@@ -21,7 +21,7 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 }
 
 // SetContractID sets the contract for which the bytecode is requested
-func (query *ContractBytecodeQuery) SetSetContractID(contractID ContractID) *ContractBytecodeQuery {
+func (query *ContractBytecodeQuery) SetContractID(contractID ContractID) *ContractBytecodeQuery {
 	query.contractID = &contractID
 	return query
 }

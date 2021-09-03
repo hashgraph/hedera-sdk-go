@@ -25,11 +25,10 @@ func NewCustomFixedFee() *CustomFixedFee {
 }
 
 func customFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) CustomFixedFee {
-	id := tokenIDFromProtobuf(fixedFee.DenominatingTokenId)
 	return CustomFixedFee{
 		CustomFee:           customFee,
 		Amount:              fixedFee.Amount,
-		DenominationTokenID: &id,
+		DenominationTokenID: tokenIDFromProtobuf(fixedFee.DenominatingTokenId),
 	}
 }
 
@@ -43,7 +42,6 @@ func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 				return err
 			}
 		}
-
 	}
 
 	if fee.FeeCollectorAccountID != nil {
@@ -52,7 +50,6 @@ func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 				return err
 			}
 		}
-
 	}
 
 	return nil

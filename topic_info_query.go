@@ -20,7 +20,7 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
-func (query *TopicInfoQuery) SetSetTopicID(topicID TopicID) *TopicInfoQuery {
+func (query *TopicInfoQuery) SetTopicID(topicID TopicID) *TopicInfoQuery {
 	query.topicID = &topicID
 	return query
 }

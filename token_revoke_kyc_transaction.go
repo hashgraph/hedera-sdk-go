@@ -39,9 +39,9 @@ func tokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
-func (transaction *TokenRevokeKycTransaction) SetTokenID(id TokenID) *TokenRevokeKycTransaction {
+func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *TokenRevokeKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

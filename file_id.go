@@ -123,18 +123,16 @@ func (id FileID) toProtobuf() *proto.FileID {
 	}
 }
 
-func fileIDFromProtobuf(fileID *proto.FileID) FileID {
+func fileIDFromProtobuf(fileID *proto.FileID) *FileID {
 	if fileID == nil {
-		return FileID{}
+		return nil
 	}
 
-	id := FileID{
+	return &FileID{
 		Shard: uint64(fileID.ShardNum),
 		Realm: uint64(fileID.RealmNum),
 		File:  uint64(fileID.FileNum),
 	}
-
-	return id
 }
 
 func (id FileID) ToBytes() []byte {
@@ -156,5 +154,5 @@ func FileIDFromBytes(data []byte) (FileID, error) {
 		return FileID{}, err
 	}
 
-	return fileIDFromProtobuf(&pb), nil
+	return *fileIDFromProtobuf(&pb), nil
 }

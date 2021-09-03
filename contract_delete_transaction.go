@@ -32,9 +32,9 @@ func contractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // Sets the contract ID which should be deleted.
-func (transaction *ContractDeleteTransaction) SetContractID(id ContractID) *ContractDeleteTransaction {
+func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.contractID = id
+	transaction.contractID = &contractID
 	return transaction
 }
 
@@ -47,10 +47,9 @@ func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
 }
 
 // Sets the contract ID which will receive all remaining hbars.
-func (transaction *ContractDeleteTransaction) SetTransferContractID(id ContractID) *ContractDeleteTransaction {
+func (transaction *ContractDeleteTransaction) SetTransferContractID(transferContactID ContractID) *ContractDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.transferContactID = id
-
+	transaction.transferContactID = &transferContactID
 	return transaction
 }
 

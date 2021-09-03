@@ -14,18 +14,16 @@ type TokenID struct {
 	checksum *string
 }
 
-func tokenIDFromProtobuf(tokenID *proto.TokenID) TokenID {
+func tokenIDFromProtobuf(tokenID *proto.TokenID) *TokenID {
 	if tokenID == nil {
-		return TokenID{}
+		return nil
 	}
 
-	id := TokenID{
+	return &TokenID{
 		Shard: uint64(tokenID.ShardNum),
 		Realm: uint64(tokenID.RealmNum),
 		Token: uint64(tokenID.TokenNum),
 	}
-
-	return id
 }
 
 func (id *TokenID) toProtobuf() *proto.TokenID {
@@ -70,7 +68,7 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 		return TokenID{}, err
 	}
 
-	return tokenIDFromProtobuf(&pb), nil
+	return *tokenIDFromProtobuf(&pb), nil
 }
 
 func (id *TokenID) Nft(serial int64) NftID {

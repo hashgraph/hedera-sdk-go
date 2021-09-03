@@ -39,9 +39,9 @@ func tokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 }
 
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
-func (transaction *TokenGrantKycTransaction) SetTokenID(id TokenID) *TokenGrantKycTransaction {
+func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

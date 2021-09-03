@@ -25,7 +25,7 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 }
 
 // SetAccountID sets the Account ID for which the stakers should be retrieved
-func (query *AccountStakersQuery) SetSetAccountID(accountID AccountID) *AccountStakersQuery {
+func (query *AccountStakersQuery) SetAccountID(accountID AccountID) *AccountStakersQuery {
 	query.accountID = &accountID
 	return query
 }

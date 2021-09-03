@@ -17,13 +17,17 @@ func NewFileInfoQuery() *FileInfoQuery {
 	}
 }
 
-func (query *FileInfoQuery) SetSetFileID(fileID FileID) *FileInfoQuery {
+func (query *FileInfoQuery) SetFileID(fileID FileID) *FileInfoQuery {
 	query.fileID = &fileID
 	return query
 }
 
-func (query *FileInfoQuery) GetFileID(id FileID) FileID {
-	return query.fileID
+func (query *FileInfoQuery) GetFileID() FileID {
+	if query.fileID == nil {
+		return FileID{}
+	}
+
+	return *query.fileID
 }
 
 func (query *FileInfoQuery) validateNetworkOnIDs(client *Client) error {

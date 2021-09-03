@@ -38,9 +38,9 @@ func TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *
 }
 
 // The account to be associated with the provided tokens
-func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(id TokenID) *TokenFeeScheduleUpdateTransaction {
+func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(tokenID TokenID) *TokenFeeScheduleUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

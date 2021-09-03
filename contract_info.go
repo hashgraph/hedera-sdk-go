@@ -33,9 +33,14 @@ func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_Contra
 		accountID = *accountIDFromProtobuf(contractInfo.AccountID)
 	}
 
+	contractID := ContractID{}
+	if contractInfo.ContractID != nil {
+		contractID = *contractIDFromProtobuf(contractInfo.ContractID)
+	}
+
 	return ContractInfo{
 		AccountID:         accountID,
-		ContractID:        contractIDFromProtobuf(contractInfo.ContractID),
+		ContractID:        contractID,
 		ContractAccountID: contractInfo.ContractAccountID,
 		AdminKey:          adminKey,
 		ExpirationTime:    timeFromProtobuf(contractInfo.ExpirationTime),

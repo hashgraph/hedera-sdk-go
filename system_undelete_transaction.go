@@ -29,19 +29,23 @@ func systemUndeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	}
 }
 
-func (transaction *SystemUndeleteTransaction) SetContractID(id ContractID) *SystemUndeleteTransaction {
+func (transaction *SystemUndeleteTransaction) SetContractID(contractID ContractID) *SystemUndeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.contractID = id
+	transaction.contractID = &contractID
 	return transaction
 }
 
-func (transaction *SystemUndeleteTransaction) GetContract() ContractID {
-	return transaction.contractID
+func (transaction *SystemUndeleteTransaction) GetContractID() ContractID {
+	if transaction.contractID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.contractID
 }
 
-func (transaction *SystemUndeleteTransaction) SetFileID(id FileID) *SystemUndeleteTransaction {
+func (transaction *SystemUndeleteTransaction) SetFileID(fileID FileID) *SystemUndeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.fileID = id
+	transaction.fileID = &fileID
 	return transaction
 }
 

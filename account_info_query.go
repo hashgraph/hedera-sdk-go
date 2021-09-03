@@ -18,7 +18,7 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 }
 
 // SetAccountID sets the AccountID for this AccountInfoQuery.
-func (query *AccountInfoQuery) SetSetAccountID(accountID AccountID) *AccountInfoQuery {
+func (query *AccountInfoQuery) SetAccountID(accountID AccountID) *AccountInfoQuery {
 	query.accountID = &accountID
 	return query
 }

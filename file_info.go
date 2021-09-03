@@ -29,8 +29,13 @@ func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInf
 		}
 	}
 
+	fileID := FileID{}
+	if fileInfo.FileID != nil {
+		fileID = *fileIDFromProtobuf(fileInfo.FileID)
+	}
+
 	return FileInfo{
-		FileID:         fileIDFromProtobuf(fileInfo.FileID),
+		FileID:         fileID,
 		Size:           fileInfo.Size,
 		ExpirationTime: timeFromProtobuf(fileInfo.ExpirationTime),
 		IsDeleted:      fileInfo.Deleted,

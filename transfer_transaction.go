@@ -42,37 +42,37 @@ func transferTransactionFromProtobuf(transaction Transaction, pb *proto.Transact
 	}
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
-		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token)
+		if tokenID := tokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
+			var currentTokenTransfers map[AccountID]int64
 
-		var currentTokenTransfers map[AccountID]int64
-
-		if value, ok := tokenTransfers[tokenID]; ok {
-			currentTokenTransfers = value
-		} else {
-			currentTokenTransfers = make(map[AccountID]int64)
-		}
-
-		for _, aa := range tokenTransfersList.GetTransfers() {
-			accountID := accountIDFromProtobuf(aa.AccountID)
-
-			if value, ok := currentTokenTransfers[*accountID]; ok {
-				currentTokenTransfers[*accountID] = aa.Amount + value
+			if value, ok := tokenTransfers[*tokenID]; ok {
+				currentTokenTransfers = value
 			} else {
-				currentTokenTransfers[*accountID] = aa.Amount
+				currentTokenTransfers = make(map[AccountID]int64)
 			}
-		}
 
-		tokenTransfers[tokenID] = currentTokenTransfers
+			for _, aa := range tokenTransfersList.GetTransfers() {
+				if accountID := accountIDFromProtobuf(aa.AccountID); accountID != nil {
+					if value, ok := currentTokenTransfers[*accountID]; ok {
+						currentTokenTransfers[*accountID] = aa.Amount + value
+					} else {
+						currentTokenTransfers[*accountID] = aa.Amount
+					}
+				}
+			}
+
+			tokenTransfers[*tokenID] = currentTokenTransfers
+		}
 	}
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
-		tokenID := tokenIDFromProtobuf(tokenTransfersList.Token)
-
-		for _, aa := range tokenTransfersList.GetNftTransfers() {
-			if nftTransfers[tokenID] == nil {
-				nftTransfers[tokenID] = make([]TokenNftTransfer, 0)
+		if tokenID := tokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
+			for _, aa := range tokenTransfersList.GetNftTransfers() {
+				if nftTransfers[*tokenID] == nil {
+					nftTransfers[*tokenID] = make([]TokenNftTransfer, 0)
+				}
+				nftTransfers[*tokenID] = append(nftTransfers[*tokenID], nftTransferFromProtobuf(aa))
 			}
-			nftTransfers[tokenID] = append(nftTransfers[tokenID], nftTransferFromProtobuf(aa))
 		}
 	}
 

@@ -90,18 +90,16 @@ func (id TopicID) toProtobuf() *proto.TopicID {
 	}
 }
 
-func topicIDFromProtobuf(topicID *proto.TopicID) TopicID {
+func topicIDFromProtobuf(topicID *proto.TopicID) *TopicID {
 	if topicID == nil {
-		return TopicID{}
+		return nil
 	}
 
-	id := TopicID{
+	return &TopicID{
 		Shard: uint64(topicID.ShardNum),
 		Realm: uint64(topicID.RealmNum),
 		Topic: uint64(topicID.TopicNum),
 	}
-
-	return id
 }
 
 func (id TopicID) ToBytes() []byte {
@@ -123,5 +121,5 @@ func TopicIDFromBytes(data []byte) (TopicID, error) {
 		return TopicID{}, err
 	}
 
-	return topicIDFromProtobuf(&pb), nil
+	return *topicIDFromProtobuf(&pb), nil
 }

@@ -137,7 +137,6 @@ func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client
 				return err
 			}
 		}
-
 	}
 
 	return nil

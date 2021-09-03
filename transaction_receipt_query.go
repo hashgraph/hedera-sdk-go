@@ -159,7 +159,7 @@ func _TransactionReceiptQueryGetMethod(_ request, channel *channel) method {
 	}
 }
 
-func (query *TransactionReceiptQuery) SetSetTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
+func (query *TransactionReceiptQuery) SetTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
 	query.transactionID = &transactionID
 	return query
 }

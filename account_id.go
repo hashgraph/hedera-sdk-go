@@ -164,10 +164,5 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 		return AccountID{}, err
 	}
 
-	id := accountIDFromProtobuf(&pb)
-	if id == nil {
-		return AccountID{}, err
-	}
-
-	return *id, nil
+	return *accountIDFromProtobuf(&pb), nil
 }

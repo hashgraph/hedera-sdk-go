@@ -43,14 +43,18 @@ func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.T
 }
 
 // SetContractID sets the contract instance to call.
-func (transaction *ContractExecuteTransaction) SetContractID(id ContractID) *ContractExecuteTransaction {
+func (transaction *ContractExecuteTransaction) SetContractID(contractID ContractID) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
-	transaction.contractID = id
+	transaction.contractID = &contractID
 	return transaction
 }
 
-func (transaction ContractExecuteTransaction) GetContractID() ContractID {
-	return transaction.contractID
+func (transaction *ContractExecuteTransaction) GetContractID() ContractID {
+	if transaction.contractID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.contractID
 }
 
 // SetGas sets the maximum amount of gas to use for the call.

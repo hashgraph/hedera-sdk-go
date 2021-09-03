@@ -14,11 +14,11 @@ type TokenNftInfoQuery struct {
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	return &TokenNftInfoQuery{
 		Query: newQuery(true),
-		nftID: NftID{},
+		nftID: nil,
 	}
 }
 
-func (query *TokenNftInfoQuery) SetSetNftID(nftID NftID) *TokenNftInfoQuery {
+func (query *TokenNftInfoQuery) SetNftID(nftID NftID) *TokenNftInfoQuery {
 	query.nftID = &nftID
 	return query
 }
@@ -73,8 +73,7 @@ func (query *TokenNftInfoQuery) GetEnd() int64 {
 
 // Deprecated
 func (query *TokenNftInfoQuery) ByNftID(id NftID) *TokenNftInfoQuery {
-	query.nftID = id
-
+	query.nftID = &id
 	return query
 }
 

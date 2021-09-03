@@ -40,9 +40,9 @@ func fileUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	}
 }
 
-func (transaction *FileUpdateTransaction) SetFileID(id FileID) *FileUpdateTransaction {
+func (transaction *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.fileID = id
+	transaction.fileID = &fileID
 	return transaction
 }
 

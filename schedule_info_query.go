@@ -17,13 +17,17 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	}
 }
 
-func (query *ScheduleInfoQuery) SetSetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
+func (query *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
 	query.scheduleID = &scheduleID
 	return query
 }
 
-func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
-	return query.scheduleID
+func (query *ScheduleInfoQuery) GetScheduleID() ScheduleID {
+	if query.scheduleID == nil {
+		return ScheduleID{}
+	}
+
+	return *query.scheduleID
 }
 
 func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {

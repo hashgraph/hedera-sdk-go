@@ -52,9 +52,9 @@ func topicUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 }
 
 // SetTopicID sets the topic to be updated.
-func (transaction *TopicUpdateTransaction) SetTopicID(id TopicID) *TopicUpdateTransaction {
+func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.topicID = id
+	transaction.topicID = &topicID
 	return transaction
 }
 

@@ -40,9 +40,9 @@ func tokenMintTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 
 // The token for which to mint tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
-func (transaction *TokenMintTransaction) SetTokenID(id TokenID) *TokenMintTransaction {
+func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

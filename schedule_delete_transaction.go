@@ -27,9 +27,9 @@ func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	}
 }
 
-func (transaction *ScheduleDeleteTransaction) SetScheduleID(id ScheduleID) *ScheduleDeleteTransaction {
+func (transaction *ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.scheduleID = id
+	transaction.scheduleID = &scheduleID
 	return transaction
 }
 
@@ -57,7 +57,7 @@ func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Clien
 
 func (transaction *ScheduleDeleteTransaction) build() *proto.TransactionBody {
 	body := &proto.ScheduleDeleteTransactionBody{}
-	if !transaction.scheduleID.isZero() {
+	if transaction.scheduleID != nil {
 		body.ScheduleID = transaction.scheduleID.toProtobuf()
 	}
 

@@ -34,7 +34,7 @@ func NewContractCallQuery() *ContractCallQuery {
 }
 
 // SetContractID sets the contract instance to call
-func (query *ContractCallQuery) SetSetContractID(contractID ContractID) *ContractCallQuery {
+func (query *ContractCallQuery) SetContractID(contractID ContractID) *ContractCallQuery {
 	query.contractID = &contractID
 	return query
 }

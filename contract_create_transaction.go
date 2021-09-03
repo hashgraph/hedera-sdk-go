@@ -46,9 +46,9 @@ func contractCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 	}
 }
 
-func (transaction *ContractCreateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) SetBytecodeFileID(byteCodeFileID FileID) *ContractCreateTransaction {
 	transaction.requireNotFrozen()
-	transaction.byteCodeFileID = bytecodeFileID
+	transaction.byteCodeFileID = &byteCodeFileID
 	return transaction
 }
 

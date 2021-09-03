@@ -40,9 +40,9 @@ func tokenBurnTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 
 // The token for which to burn tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
-func (transaction *TokenBurnTransaction) SetTokenID(id TokenID) *TokenBurnTransaction {
+func (transaction *TokenBurnTransaction) SetTokenID(tokenID TokenID) *TokenBurnTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

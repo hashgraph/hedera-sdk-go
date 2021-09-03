@@ -106,18 +106,16 @@ func (id ContractID) toProtobuf() *proto.ContractID {
 	}
 }
 
-func contractIDFromProtobuf(contractID *proto.ContractID) ContractID {
+func contractIDFromProtobuf(contractID *proto.ContractID) *ContractID {
 	if contractID == nil {
-		return ContractID{}
+		return nil
 	}
 
-	id := ContractID{
+	return &ContractID{
 		Shard:    uint64(contractID.ShardNum),
 		Realm:    uint64(contractID.RealmNum),
 		Contract: uint64(contractID.ContractNum),
 	}
-
-	return id
 }
 
 func (id ContractID) isZero() bool {
@@ -144,5 +142,5 @@ func ContractIDFromBytes(data []byte) (ContractID, error) {
 		return ContractID{}, err
 	}
 
-	return contractIDFromProtobuf(&pb), nil
+	return *contractIDFromProtobuf(&pb), nil
 }

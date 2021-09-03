@@ -10,8 +10,8 @@ import (
 // and faster reply than AccountInfoQuery, which returns the balance plus additional information.
 type AccountBalanceQuery struct {
 	Query
-	accountID  AccountID
-	contractID ContractID
+	accountID  *AccountID
+	contractID *ContractID
 }
 
 // NewAccountBalanceQuery creates an AccountBalanceQuery query which can be used to construct and execute
@@ -28,7 +28,7 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
-func (query *AccountBalanceQuery) SetSetAccountID(accountID AccountID) *AccountBalanceQuery {
+func (query *AccountBalanceQuery) SetAccountID(accountID AccountID) *AccountBalanceQuery {
 	query.accountID = &accountID
 	return query
 }
@@ -45,7 +45,7 @@ func (query *AccountBalanceQuery) GetAccountID() AccountID {
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
-func (query *AccountBalanceQuery) SetSetContractID(contractID ContractID) *AccountBalanceQuery {
+func (query *AccountBalanceQuery) SetContractID(contractID ContractID) *AccountBalanceQuery {
 	query.contractID = &contractID
 	return query
 }

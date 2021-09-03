@@ -21,13 +21,17 @@ func NewFileContentsQuery() *FileContentsQuery {
 }
 
 // SetFileID sets the FileID of the file whose contents are requested.
-func (query *FileContentsQuery) SetSetFileID(fileID FileID) *FileContentsQuery {
+func (query *FileContentsQuery) SetFileID(fileID FileID) *FileContentsQuery {
 	query.fileID = &fileID
 	return query
 }
 
-func (query *FileContentsQuery) GetFileID(id FileID) FileID {
-	return query.fileID
+func (query *FileContentsQuery) GetFileID() FileID {
+	if query.fileID == nil {
+		return FileID{}
+	}
+
+	return *query.fileID
 }
 
 func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {

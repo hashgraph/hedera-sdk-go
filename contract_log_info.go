@@ -14,8 +14,14 @@ func contractLogInfoFromProtobuf(pb *proto.ContractLoginfo) ContractLogInfo {
 	if pb == nil {
 		return ContractLogInfo{}
 	}
+
+	contractID := ContractID{}
+	if pb.ContractID != nil {
+		contractID = *contractIDFromProtobuf(pb.ContractID)
+	}
+
 	return ContractLogInfo{
-		ContractID: contractIDFromProtobuf(pb.ContractID),
+		ContractID: contractID,
 		Bloom:      pb.Bloom,
 		Topics:     pb.Topic,
 		Data:       pb.Data,

@@ -21,8 +21,14 @@ func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationshi
 	if pb == nil {
 		return TokenRelationship{}
 	}
+
+	tokenID := TokenID{}
+	if pb.TokenId != nil {
+		tokenID = *tokenIDFromProtobuf(pb.TokenId)
+	}
+
 	return TokenRelationship{
-		TokenID:              tokenIDFromProtobuf(pb.GetTokenId()),
+		TokenID:              tokenID,
 		Symbol:               pb.Symbol,
 		Balance:              pb.Balance,
 		KycStatus:            kycStatusFromProtobuf(pb.KycStatus),

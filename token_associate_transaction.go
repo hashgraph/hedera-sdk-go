@@ -41,7 +41,9 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 func tokenAssociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenAssociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenAssociate().Tokens {
-		tokens = append(tokens, tokenIDFromProtobuf(token))
+		if tokenID := tokenIDFromProtobuf(token); tokenID != nil {
+			tokens = append(tokens, *tokenID)
+		}
 	}
 
 	return TokenAssociateTransaction{
@@ -111,12 +113,9 @@ func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Clien
 	}
 
 	for _, tokenID := range transaction.tokens {
-		if tokenID != nil {
-			if err := tokenID.Validate(client); err != nil {
-				return err
-			}
+		if err := tokenID.Validate(client); err != nil {
+			return err
 		}
-
 	}
 
 	return nil

@@ -20,7 +20,7 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
-func (query *TokenInfoQuery) SetSetTokenID(tokenID TokenID) *TokenInfoQuery {
+func (query *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
 	query.tokenID = &tokenID
 	return query
 }

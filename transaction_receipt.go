@@ -33,20 +33,17 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 
 	var contractID *ContractID
 	if protoReceipt.ContractID != nil {
-		contractIDValue := contractIDFromProtobuf(protoReceipt.ContractID)
-		contractID = &contractIDValue
+		contractID = contractIDFromProtobuf(protoReceipt.ContractID)
 	}
 
 	var fileID *FileID
 	if protoReceipt.FileID != nil {
-		fileIDValue := fileIDFromProtobuf(protoReceipt.FileID)
-		fileID = &fileIDValue
+		fileID = fileIDFromProtobuf(protoReceipt.FileID)
 	}
 
 	var topicID *TopicID
 	if protoReceipt.TopicID != nil {
-		topicIDValue := topicIDFromProtobuf(protoReceipt.TopicID)
-		topicID = &topicIDValue
+		topicID = topicIDFromProtobuf(protoReceipt.TopicID)
 	}
 
 	var rate *ExchangeRate
@@ -63,14 +60,12 @@ func transactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tran
 
 	var tokenID *TokenID
 	if protoReceipt.TokenID != nil {
-		id := tokenIDFromProtobuf(protoReceipt.TokenID)
-		tokenID = &id
+		tokenID = tokenIDFromProtobuf(protoReceipt.TokenID)
 	}
 
 	var scheduleID *ScheduleID
 	if protoReceipt.ScheduleID != nil {
-		scheduleIDValue := scheduleIDFromProtobuf(protoReceipt.ScheduleID)
-		scheduleID = &scheduleIDValue
+		scheduleID = scheduleIDFromProtobuf(protoReceipt.ScheduleID)
 	}
 
 	var scheduledTransactionID *TransactionID

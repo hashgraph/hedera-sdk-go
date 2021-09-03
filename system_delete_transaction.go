@@ -50,19 +50,23 @@ func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
 	return 0
 }
 
-func (transaction *SystemDeleteTransaction) SetContractID(id ContractID) *SystemDeleteTransaction {
+func (transaction *SystemDeleteTransaction) SetContractID(contractID ContractID) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.contractID = id
+	transaction.contractID = &contractID
 	return transaction
 }
 
-func (transaction *SystemDeleteTransaction) GetContract() ContractID {
-	return transaction.contractID
+func (transaction *SystemDeleteTransaction) GetContractID() ContractID {
+	if transaction.contractID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.contractID
 }
 
-func (transaction *SystemDeleteTransaction) SetFileID(id FileID) *SystemDeleteTransaction {
+func (transaction *SystemDeleteTransaction) SetFileID(fileID FileID) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.fileID = id
+	transaction.fileID = &fileID
 	return transaction
 }
 

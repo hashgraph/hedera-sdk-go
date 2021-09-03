@@ -22,8 +22,9 @@ func accountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse) Accou
 	if pb.TokenBalances != nil {
 		tokens = make(map[TokenID]uint64, len(pb.TokenBalances))
 		for _, token := range pb.TokenBalances {
-			t := tokenIDFromProtobuf(token.TokenId)
-			tokens[t] = token.Balance
+			if t := tokenIDFromProtobuf(token.TokenId); t != nil {
+				tokens[*t] = token.Balance
+			}
 		}
 	}
 

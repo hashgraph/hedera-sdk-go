@@ -27,9 +27,9 @@ func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 	}
 }
 
-func (transaction *FileDeleteTransaction) SetFileID(id FileID) *FileDeleteTransaction {
+func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.fileID = id
+	transaction.fileID = &fileID
 	return transaction
 }
 

@@ -18,7 +18,7 @@ func NewLiveHashQuery() *LiveHashQuery {
 	}
 }
 
-func (query *LiveHashQuery) SetSetAccountID(accountID AccountID) *LiveHashQuery {
+func (query *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
 	query.accountID = &accountID
 	return query
 }

@@ -26,7 +26,7 @@ func NewContractInfoQuery() *ContractInfoQuery {
 }
 
 // SetContractID sets the contract for which information is requested
-func (query *ContractInfoQuery) SetSetContractID(contractID ContractID) *ContractInfoQuery {
+func (query *ContractInfoQuery) SetContractID(contractID ContractID) *ContractInfoQuery {
 	query.contractID = &contractID
 	return query
 }

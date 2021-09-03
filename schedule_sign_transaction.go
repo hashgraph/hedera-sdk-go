@@ -10,7 +10,7 @@ import (
 
 type ScheduleSignTransaction struct {
 	Transaction
-	scheduleID ScheduleID
+	scheduleID *ScheduleID
 }
 
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
@@ -30,10 +30,9 @@ func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 	}
 }
 
-func (transaction *ScheduleSignTransaction) SetScheduleID(id ScheduleID) *ScheduleSignTransaction {
+func (transaction *ScheduleSignTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleSignTransaction {
 	transaction.requireNotFrozen()
-	transaction.scheduleID = id
-
+	transaction.scheduleID = &scheduleID
 	return transaction
 }
 

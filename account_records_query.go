@@ -25,7 +25,7 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 }
 
 // SetAccountID sets the account ID for which the records should be retrieved.
-func (query *AccountRecordsQuery) SetSetAccountID(accountID AccountID) *AccountRecordsQuery {
+func (query *AccountRecordsQuery) SetAccountID(accountID AccountID) *AccountRecordsQuery {
 	query.accountID = &accountID
 	return query
 }

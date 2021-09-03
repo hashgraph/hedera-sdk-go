@@ -33,7 +33,7 @@ func topicDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 // SetTopicID sets the topic IDentifier.
 func (transaction *TopicDeleteTransaction) SetTopicID(topicID TopicID) *TopicDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.topicID = topicID
+	transaction.topicID = &topicID
 	return transaction
 }
 

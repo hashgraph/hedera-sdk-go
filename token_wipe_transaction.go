@@ -52,9 +52,9 @@ func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 
 // The token for which the account will be wiped. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
-func (transaction *TokenWipeTransaction) SetTokenID(id TokenID) *TokenWipeTransaction {
+func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

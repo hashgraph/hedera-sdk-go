@@ -24,7 +24,7 @@ func assessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) Assesse
 
 	return AssessedCustomFee{
 		Amount:                assessedFee.Amount,
-		TokenID:               &tokenID,
+		TokenID:               tokenID,
 		FeeCollectorAccountId: accountID,
 		PayerAccountIDs:       payerAccountIds,
 	}

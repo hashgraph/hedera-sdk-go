@@ -54,13 +54,15 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 
 	for _, tokenTransfer := range pb.TokenTransferLists {
 		for _, nftTransfer := range tokenTransfer.NftTransfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token)
-			nftTransfers[token] = append(nftTransfers[token], nftTransferFromProtobuf(nftTransfer))
+			if token := tokenIDFromProtobuf(tokenTransfer.Token); token != nil {
+				nftTransfers[*token] = append(nftTransfers[*token], nftTransferFromProtobuf(nftTransfer))
+			}
 		}
 
 		for _, accountAmount := range tokenTransfer.Transfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token)
-			tokenTransfers[token] = append(tokenTransfers[token], tokenTransferFromProtobuf(accountAmount))
+			if token := tokenIDFromProtobuf(tokenTransfer.Token); token != nil {
+				tokenTransfers[*token] = append(tokenTransfers[*token], tokenTransferFromProtobuf(accountAmount))
+			}
 		}
 	}
 

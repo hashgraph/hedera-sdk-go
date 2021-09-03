@@ -39,14 +39,8 @@ func NftIDFromString(s string) (NftID, error) {
 
 func (id *NftID) Validate(client *Client) error {
 	if !id.isZero() && client != nil && client.network.networkName != nil {
-
-		if id.TokenID != nil {
-			if id.TokenID != nil {
-				if err := id.TokenID.Validate(client); err != nil {
-					return err
-				}
-			}
-
+		if err := id.TokenID.Validate(client); err != nil {
+			return err
 		}
 
 		return nil
@@ -78,8 +72,14 @@ func nftIDFromProtobuf(pb *proto.NftID) NftID {
 	if pb == nil {
 		return NftID{}
 	}
+
+	tokenID := TokenID{}
+	if pb.TokenID != nil {
+		tokenID = *tokenIDFromProtobuf(pb.TokenID)
+	}
+
 	return NftID{
-		TokenID:      tokenIDFromProtobuf(pb.TokenID),
+		TokenID:      tokenID,
 		SerialNumber: pb.SerialNumber,
 	}
 }

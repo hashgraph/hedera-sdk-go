@@ -34,7 +34,7 @@ func tokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 // The Token to be deleted
 func (transaction *TokenDeleteTransaction) SetTokenID(tokenID TokenID) *TokenDeleteTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = tokenID
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

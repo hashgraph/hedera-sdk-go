@@ -15,7 +15,7 @@ type TopicMessageSubmitTransaction struct {
 	Transaction
 	maxChunks uint64
 	message   []byte
-	topicID   TopicID
+	topicID   *TopicID
 }
 
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
@@ -40,9 +40,9 @@ func topicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *prot
 	return tx
 }
 
-func (transaction *TopicMessageSubmitTransaction) SetTopicID(id TopicID) *TopicMessageSubmitTransaction {
+func (transaction *TopicMessageSubmitTransaction) SetTopicID(topicID TopicID) *TopicMessageSubmitTransaction {
 	transaction.requireNotFrozen()
-	transaction.topicID = id
+	transaction.topicID = &topicID
 	return transaction
 }
 

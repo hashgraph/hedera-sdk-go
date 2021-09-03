@@ -113,8 +113,7 @@ func contractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) Contra
 	}
 
 	if pb.ContractID != nil {
-		contractID := contractIDFromProtobuf(pb.ContractID)
-		result.ContractID = &contractID
+		result.ContractID = contractIDFromProtobuf(pb.ContractID)
 	}
 
 	return result

@@ -154,8 +154,13 @@ func tokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		}
 	}
 
+	tokenID := TokenID{}
+	if pb.TokenId != nil {
+		tokenID = *tokenIDFromProtobuf(pb.TokenId)
+	}
+
 	return TokenInfo{
-		TokenID:             tokenIDFromProtobuf(pb.TokenId),
+		TokenID:             tokenID,
 		Name:                pb.Name,
 		Symbol:              pb.Symbol,
 		Decimals:            pb.Decimals,

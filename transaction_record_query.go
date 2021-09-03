@@ -161,7 +161,7 @@ func _TransactionRecordQueryGetMethod(_ request, channel *channel) method {
 	}
 }
 
-func (query *TransactionRecordQuery) SetSetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
+func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
 	query.transactionID = &transactionID
 	return query
 }

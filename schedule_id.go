@@ -105,12 +105,12 @@ func (id *ScheduleID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func scheduleIDFromProtobuf(scheduleID *proto.ScheduleID) ScheduleID {
+func scheduleIDFromProtobuf(scheduleID *proto.ScheduleID) *ScheduleID {
 	if scheduleID == nil {
-		return ScheduleID{}
+		return nil
 	}
 
-	return ScheduleID{
+	return &ScheduleID{
 		Shard:    uint64(scheduleID.ShardNum),
 		Realm:    uint64(scheduleID.RealmNum),
 		Schedule: uint64(scheduleID.ScheduleNum),

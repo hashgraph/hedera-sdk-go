@@ -70,9 +70,9 @@ func tokenUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Trans
 }
 
 // The Token to be updated
-func (transaction *TokenUpdateTransaction) SetTokenID(id TokenID) *TokenUpdateTransaction {
+func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

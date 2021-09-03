@@ -69,7 +69,7 @@ func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
-func (transaction *ContractUpdateTransaction) SetSetContractID(contractID ContractID) *ContractUpdateTransaction {
+func (transaction *ContractUpdateTransaction) SetContractID(contractID ContractID) *ContractUpdateTransaction {
 	transaction.contractID = &contractID
 	return transaction
 }
@@ -84,9 +84,9 @@ func (transaction *ContractUpdateTransaction) GetContractID() ContractID {
 
 // SetBytecodeFileID sets the file ID of file containing the smart contract byte code. A copy will be made and held by
 // the contract instance, and have the same expiration time as the instance.
-func (transaction *ContractUpdateTransaction) SetBytecodeFileID(id FileID) *ContractUpdateTransaction {
+func (transaction *ContractUpdateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
-	transaction.bytecodeFileID = id
+	transaction.bytecodeFileID = &bytecodeFileID
 	return transaction
 }
 

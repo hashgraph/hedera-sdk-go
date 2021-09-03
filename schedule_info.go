@@ -63,8 +63,13 @@ func scheduleInfoFromProtobuf(pb *proto.ScheduleInfo) ScheduleInfo {
 		payerAccountID = *accountIDFromProtobuf(pb.PayerAccountID)
 	}
 
+	scheduleID := ScheduleID{}
+	if pb.ScheduleID != nil {
+		scheduleID = *scheduleIDFromProtobuf(pb.ScheduleID)
+	}
+
 	return ScheduleInfo{
-		ScheduleID:               scheduleIDFromProtobuf(pb.ScheduleID),
+		ScheduleID:               scheduleID,
 		CreatorAccountID:         creatorAccountID,
 		PayerAccountID:           payerAccountID,
 		ExecutedAt:               executed,

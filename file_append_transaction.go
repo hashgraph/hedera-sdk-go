@@ -41,9 +41,9 @@ func fileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.Transa
 }
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
-func (transaction *FileAppendTransaction) SetFileID(id FileID) *FileAppendTransaction {
+func (transaction *FileAppendTransaction) SetFileID(fileID FileID) *FileAppendTransaction {
 	transaction.requireNotFrozen()
-	transaction.fileID = id
+	transaction.fileID = &fileID
 	return transaction
 }
 

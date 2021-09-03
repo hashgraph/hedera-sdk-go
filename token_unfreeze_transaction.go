@@ -40,9 +40,9 @@ func tokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *proto.Tra
 }
 
 // The token for which this account will be unfrozen. If token does not exist, transaction results in INVALID_TOKEN_ID
-func (transaction *TokenUnfreezeTransaction) SetTokenID(id TokenID) *TokenUnfreezeTransaction {
+func (transaction *TokenUnfreezeTransaction) SetTokenID(tokenID TokenID) *TokenUnfreezeTransaction {
 	transaction.requireNotFrozen()
-	transaction.tokenID = id
+	transaction.tokenID = &tokenID
 	return transaction
 }
 

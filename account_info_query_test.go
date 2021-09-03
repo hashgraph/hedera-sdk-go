@@ -174,7 +174,7 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestIntegrationAccountInfoQuerySetSetBigMaxPayment(t *testing.T) {
+func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()

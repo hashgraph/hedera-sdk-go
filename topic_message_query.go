@@ -35,7 +35,7 @@ func NewTopicMessageQuery() *TopicMessageQuery {
 	}
 }
 
-func (query *TopicMessageQuery) SetSetTopicID(topicID TopicID) *TopicMessageQuery {
+func (query *TopicMessageQuery) SetTopicID(topicID TopicID) *TopicMessageQuery {
 	query.topicID = &topicID
 	return query
 }
