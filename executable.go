@@ -15,15 +15,15 @@ import (
 
 const maxAttempts = 10
 
-type executionState uint32
+type _ExecutionState uint32
 
 const (
-	executionStateRetry    executionState = 0
-	executionStateFinished executionState = 1
-	executionStateError    executionState = 2
+	executionStateRetry    _ExecutionState = 0
+	executionStateFinished _ExecutionState = 1
+	executionStateError    _ExecutionState = 2
 )
 
-type method struct {
+type _Method struct {
 	query func(
 		context.Context,
 		*proto.Query,
@@ -36,37 +36,37 @@ type method struct {
 	) (*proto.TransactionResponse, error)
 }
 
-type response struct {
+type _Response struct {
 	query       *proto.Response
 	transaction *proto.TransactionResponse
 }
 
-type intermediateResponse struct {
+type _IntermediateResponse struct {
 	query       *proto.Response
 	transaction TransactionResponse
 }
 
-type protoRequest struct {
+type _ProtoRequest struct {
 	query       *proto.Query
 	transaction *proto.Transaction
 }
 
-type request struct {
+type _Request struct {
 	query       *Query
 	transaction *Transaction
 }
 
 func execute(
 	client *Client,
-	request request,
-	shouldRetry func(request, response) executionState,
-	protoReq protoRequest,
-	advanceRequest func(request),
-	getNodeAccountID func(request) AccountID,
-	getMethod func(request, *channel) method,
-	mapStatusError func(request, response) error,
-	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
-) (intermediateResponse, error) {
+	request _Request,
+	shouldRetry func(_Request, _Response) _ExecutionState,
+	protoReq _ProtoRequest,
+	advanceRequest func(_Request),
+	getNodeAccountID func(_Request) AccountID,
+	getMethod func(_Request, *_Channel) _Method,
+	mapStatusError func(_Request, _Response) error,
+	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
+) (_IntermediateResponse, error) {
 	var maxAttempts int
 	var minBackoff *time.Duration
 	var maxBackoff *time.Duration
@@ -114,7 +114,7 @@ func execute(
 
 		node, ok := client.network.networkNodes[nodeAccountID]
 		if !ok {
-			return intermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}
 
 		node.inUse()
@@ -129,7 +129,7 @@ func execute(
 
 		advanceRequest(request)
 
-		resp := response{}
+		resp := _Response{}
 
 		if !node.isHealthy() {
 			node.wait()
@@ -147,7 +147,7 @@ func execute(
 				node.increaseDelay()
 				continue
 			}
-			return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
 
 		node.decreaseDelay()
@@ -164,13 +164,13 @@ func execute(
 				break
 			}
 		case executionStateError:
-			return intermediateResponse{}, mapStatusError(request, resp)
+			return _IntermediateResponse{}, mapStatusError(request, resp)
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
 	}
 
-	return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
 func delayForAttempt(minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {

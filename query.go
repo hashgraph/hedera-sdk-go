@@ -46,15 +46,15 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 	return query.nodeIDs
 }
 
-func _QueryGetNodeAccountID(request request) AccountID {
+func _QueryGetNodeAccountID(request _Request) AccountID {
 	if len(request.query.nodeIDs) > 0 {
 		return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 	}
 
-	panic("Query node AccountID's not set before executing")
+	panic("Query _Node AccountID's not set before executing")
 }
 
-func _CostQueryGetNodeAccountID(request request) AccountID {
+func _CostQueryGetNodeAccountID(request _Request) AccountID {
 	return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
 }
 
@@ -79,7 +79,7 @@ func (query *Query) SetMaxRetry(count int) *Query {
 	return query
 }
 
-func _QueryShouldRetry(status Status) executionState {
+func _QueryShouldRetry(status Status) _ExecutionState {
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
@@ -90,18 +90,18 @@ func _QueryShouldRetry(status Status) executionState {
 	return executionStateError
 }
 
-func _QueryAdvanceRequest(request request) {
+func _QueryAdvanceRequest(request _Request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
 	}
 }
 
-func _CostQueryAdvanceRequest(request request) {
+func _CostQueryAdvanceRequest(request _Request) {
 	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeIDs)
 }
 
-func _QueryMapResponse(request request, response response, _ AccountID, protoRequest protoRequest) (intermediateResponse, error) {
-	return intermediateResponse{
+func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
+	return _IntermediateResponse{
 		query: response.query,
 	}, nil
 }
@@ -124,7 +124,7 @@ func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
 	return nil
 }
 
-func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *operator, cost Hbar) (*proto.Transaction, error) {
+func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *_Operator, cost Hbar) (*proto.Transaction, error) {
 	accountAmounts := make([]*proto.AccountAmount, 0)
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
 		AccountID: nodeAccountID.toProtobuf(),

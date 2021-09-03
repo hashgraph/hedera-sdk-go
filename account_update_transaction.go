@@ -287,8 +287,8 @@ func (transaction *AccountUpdateTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-func _AccountUpdateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _AccountUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getCrypto().UpdateAccount,
 	}
 }
@@ -307,8 +307,8 @@ func (transaction *AccountUpdateTransaction) Sign(
 func (transaction *AccountUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountUpdateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -368,11 +368,11 @@ func (transaction *AccountUpdateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -467,7 +467,7 @@ func (transaction *AccountUpdateTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-// SetNodeAccountIDs sets the node AccountID for this AccountUpdateTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

@@ -13,7 +13,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
-// TransactionID is the id used to identify a Transaction on the Hedera network. It consists of an AccountID and a
+// TransactionID is the id used to identify a Transaction on the Hedera _Network. It consists of an AccountID and a
 // a valid start time.
 type TransactionID struct {
 	AccountID  *AccountID
@@ -36,7 +36,7 @@ func NewTransactionIDWithValidStart(accountID AccountID, validStart time.Time) T
 	return TransactionID{&accountID, &validStart, false}
 }
 
-// GetReceipt queries the network for a receipt corresponding to the TransactionID's transaction. If the status of the
+// GetReceipt queries the _Network for a receipt corresponding to the TransactionID's transaction. If the status of the
 // receipt is exceptional an ErrHederaReceiptStatus will be returned alongside the receipt, otherwise only the receipt
 // will be returned.
 func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
@@ -45,7 +45,7 @@ func (id TransactionID) GetReceipt(client *Client) (TransactionReceipt, error) {
 		Execute(client)
 }
 
-// GetRecord queries the network for a record corresponding to the TransactionID's transaction. If the status of the
+// GetRecord queries the _Network for a record corresponding to the TransactionID's transaction. If the status of the
 // record's receipt is exceptional an ErrHederaRecordStatus will be returned alongside the record, otherwise, only the
 // record will be returned. If consensus has not been reached, this function will return a HederaReceiptError with a
 // status of StatusBusy.

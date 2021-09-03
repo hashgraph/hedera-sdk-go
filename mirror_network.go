@@ -4,15 +4,15 @@ import (
 	"math/rand"
 )
 
-type mirrorNetwork struct {
-	networkNodes map[string]*mirrorNode
+type _MirrorNetwork struct {
+	networkNodes map[string]*_MirrorNode
 	network      []string
 	index        uint
 }
 
-func newMirrorNetwork() *mirrorNetwork {
-	return &mirrorNetwork{
-		networkNodes: make(map[string]*mirrorNode),
+func newMirrorNetwork() *_MirrorNetwork {
+	return &_MirrorNetwork{
+		networkNodes: make(map[string]*_MirrorNode),
 		network:      make([]string, 0),
 		index:        0,
 	}
@@ -27,7 +27,7 @@ func contains(arr []string, str string) bool {
 	return false
 }
 
-func (network *mirrorNetwork) setNetwork(newNetwork []string) {
+func (network *_MirrorNetwork) setNetwork(newNetwork []string) {
 	for _, n := range network.network {
 		if !contains(newNetwork, n) {
 			_ = network.networkNodes[n].close()
@@ -52,7 +52,7 @@ func (network *mirrorNetwork) setNetwork(newNetwork []string) {
 	}
 }
 
-func (network *mirrorNetwork) getNextMirrorNode() *mirrorNode {
+func (network *_MirrorNetwork) getNextMirrorNode() *_MirrorNode {
 	node := network.networkNodes[network.network[network.index]]
 	network.index = (network.index + 1) % uint(len(network.network))
 	return node

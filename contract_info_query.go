@@ -64,32 +64,32 @@ func (query *ContractInfoQuery) build() *proto.Query_ContractGetInfo {
 	}
 }
 
-func (query *ContractInfoQuery) queryMakeRequest() protoRequest {
+func (query *ContractInfoQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ContractGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *ContractInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *ContractInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ContractGetInfo.Header.Payment = paymentTransaction
 	pb.ContractGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -115,7 +115,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ContractInfoQueryShouldRetry,
@@ -139,18 +139,18 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractInfoQueryShouldRetry(_ request, response response) executionState {
+func _ContractInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _ContractInfoQueryMapStatusError(_ request, response response) error {
+func _ContractInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ContractInfoQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _ContractInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getContract().GetContractInfo,
 	}
 }
@@ -204,7 +204,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ContractInfoQueryShouldRetry,
@@ -240,7 +240,7 @@ func (query *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInf
 	return query
 }
 
-// SetNodeAccountIDs sets the node AccountID for this ContractInfoQuery.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractInfoQuery.
 func (query *ContractInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ContractInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

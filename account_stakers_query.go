@@ -61,31 +61,31 @@ func (query *AccountStakersQuery) build() *proto.Query_CryptoGetProxyStakers {
 	}
 }
 
-func (query *AccountStakersQuery) queryMakeRequest() protoRequest {
+func (query *AccountStakersQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetProxyStakers.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *AccountStakersQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *AccountStakersQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.CryptoGetProxyStakers.Header.Payment = paymentTransaction
 	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -111,7 +111,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_AccountStakersQueryShouldRetry,
@@ -131,18 +131,18 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountStakersQueryShouldRetry(_ request, response response) executionState {
+func _AccountStakersQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
-func _AccountStakersQueryMapStatusError(_ request, response response) error {
+func _AccountStakersQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _AccountStakersQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _AccountStakersQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getCrypto().GetStakersByAccountID,
 	}
 }
@@ -198,7 +198,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_AccountStakersQueryShouldRetry,
@@ -216,7 +216,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	var stakers = make([]Transfer, len(resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker))
 
-	// TODO: This is wrong, this method shold return `[]ProxyStaker` not `[]Transfer`
+	// TODO: This is wrong, this _Method shold return `[]ProxyStaker` not `[]Transfer`
 	for i, element := range resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
 		id := accountIDFromProtobuf(element.AccountID)
 		accountID := AccountID{}
@@ -246,7 +246,7 @@ func (query *AccountStakersQuery) SetQueryPayment(paymentAmount Hbar) *AccountSt
 	return query
 }
 
-// SetNodeAccountIDs sets the node AccountID for this AccountStakersQuery.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountStakersQuery.
 func (query *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *AccountStakersQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

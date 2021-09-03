@@ -12,7 +12,7 @@ import (
 // If this function stores information, it is charged gas to store it. There is a fee in hbars to maintain that storage
 // until the expiration time, and that fee is added as part of the transaction fee.
 //
-// For a cheaper but more limited method to call functions, see ContractCallQuery.
+// For a cheaper but more limited _Method to call functions, see ContractCallQuery.
 type ContractExecuteTransaction struct {
 	Transaction
 	contractID *ContractID
@@ -168,8 +168,8 @@ func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*pro
 	}, nil
 }
 
-func _ContractExecuteTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _ContractExecuteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getContract().ContractCallMethod,
 	}
 }
@@ -188,8 +188,8 @@ func (transaction *ContractExecuteTransaction) Sign(
 func (transaction *ContractExecuteTransaction) SignWithOperator(
 	client *Client,
 ) (*ContractExecuteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -249,11 +249,11 @@ func (transaction *ContractExecuteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -348,7 +348,7 @@ func (transaction *ContractExecuteTransaction) SetTransactionID(transactionID Tr
 	return transaction
 }
 
-// SetNodeAccountIDs sets the node AccountID for this ContractExecuteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

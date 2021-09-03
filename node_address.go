@@ -4,18 +4,18 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
-type nodeAddress struct {
+type _NodeAddress struct {
 	publicKey   string
 	accountID   *AccountID
 	nodeID      int64
 	certHash    []byte
-	addresses   []endpoint
+	addresses   []_Endpoint
 	description string
 	stake       int64
 }
 
-func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) nodeAddress {
-	address := make([]endpoint, 0)
+func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) _NodeAddress {
+	address := make([]_Endpoint, 0)
 
 	if len(nodeAd.GetIpAddress()) > 0 { // nolint
 		address = append(address, endpointFromProtobuf(
@@ -29,7 +29,7 @@ func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) nodeAddress {
 		address = append(address, endpointFromProtobuf(end))
 	}
 
-	return nodeAddress{
+	return _NodeAddress{
 		publicKey:   nodeAd.GetRSA_PubKey(),
 		accountID:   accountIDFromProtobuf(nodeAd.GetNodeAccountId()),
 		nodeID:      nodeAd.GetNodeId(),
@@ -40,7 +40,7 @@ func nodeAddressFromProtobuf(nodeAd *proto.NodeAddress) nodeAddress {
 	}
 }
 
-func (nodeAdd *nodeAddress) toProtobuf() *proto.NodeAddress {
+func (nodeAdd *_NodeAddress) toProtobuf() *proto.NodeAddress {
 	build := &proto.NodeAddress{
 		RSA_PubKey:      nodeAdd.publicKey,
 		NodeId:          nodeAdd.nodeID,
@@ -64,7 +64,7 @@ func (nodeAdd *nodeAddress) toProtobuf() *proto.NodeAddress {
 	return build
 }
 
-func (nodeAdd nodeAddress) String() string {
+func (nodeAdd _NodeAddress) String() string {
 	addresses := ""
 	for _, k := range nodeAdd.addresses {
 		addresses += k.String()

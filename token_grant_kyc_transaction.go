@@ -139,8 +139,8 @@ func (transaction *TokenGrantKycTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-func _TokenGrantKycTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TokenGrantKycTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getToken().GrantKycToTokenAccount,
 	}
 }
@@ -159,8 +159,8 @@ func (transaction *TokenGrantKycTransaction) Sign(
 func (transaction *TokenGrantKycTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenGrantKycTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -220,11 +220,11 @@ func (transaction *TokenGrantKycTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -319,7 +319,7 @@ func (transaction *TokenGrantKycTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenGrantKycTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenGrantKycTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

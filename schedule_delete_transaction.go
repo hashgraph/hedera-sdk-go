@@ -98,8 +98,8 @@ func (transaction *ScheduleDeleteTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-func _ScheduleDeleteTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _ScheduleDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getSchedule().DeleteSchedule,
 	}
 }
@@ -118,8 +118,8 @@ func (transaction *ScheduleDeleteTransaction) Sign(
 func (transaction *ScheduleDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -179,11 +179,11 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -278,7 +278,7 @@ func (transaction *ScheduleDeleteTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this ScheduleDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

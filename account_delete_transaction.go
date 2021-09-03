@@ -38,7 +38,7 @@ func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	return &transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this AccountCreateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this AccountCreateTransaction.
 func (transaction *AccountDeleteTransaction) SetAccountID(accountID AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.deleteAccountID = &accountID
@@ -141,8 +141,8 @@ func (transaction *AccountDeleteTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-func _AccountDeleteTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _AccountDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getCrypto().CryptoDelete,
 	}
 }
@@ -161,8 +161,8 @@ func (transaction *AccountDeleteTransaction) Sign(
 func (transaction *AccountDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -222,11 +222,11 @@ func (transaction *AccountDeleteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -322,7 +322,7 @@ func (transaction *AccountDeleteTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-// SetNodeAccountIDs sets the node AccountID for this AccountDeleteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountDeleteTransaction.
 func (transaction *AccountDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

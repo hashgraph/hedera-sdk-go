@@ -171,18 +171,18 @@ func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.
 	}, nil
 }
 
-func _SystemDeleteTransactionGetMethod(request request, channel *channel) method {
+func _SystemDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	// switch os := runtime.GOOS; os {
 	// case "darwin":
 	//	fmt.Println("OS X.")
 	//}
 	if channel.getContract() == nil {
-		return method{
+		return _Method{
 			transaction: channel.getFile().SystemDelete,
 		}
 	}
 
-	return method{
+	return _Method{
 		transaction: channel.getContract().SystemDelete,
 	}
 }
@@ -201,8 +201,8 @@ func (transaction *SystemDeleteTransaction) Sign(
 func (transaction *SystemDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*SystemDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -266,11 +266,11 @@ func (transaction *SystemDeleteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -365,7 +365,7 @@ func (transaction *SystemDeleteTransaction) SetTransactionID(transactionID Trans
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this SystemDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

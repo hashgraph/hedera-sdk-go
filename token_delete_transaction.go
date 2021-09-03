@@ -102,8 +102,8 @@ func (transaction *TokenDeleteTransaction) constructScheduleProtobuf() (*proto.S
 	}, nil
 }
 
-func _TokenDeleteTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TokenDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getToken().DeleteToken,
 	}
 }
@@ -122,8 +122,8 @@ func (transaction *TokenDeleteTransaction) Sign(
 func (transaction *TokenDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -183,11 +183,11 @@ func (transaction *TokenDeleteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -282,7 +282,7 @@ func (transaction *TokenDeleteTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenDeleteTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenDeleteTransaction.
 func (transaction *TokenDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

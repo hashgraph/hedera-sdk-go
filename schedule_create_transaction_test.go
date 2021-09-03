@@ -340,13 +340,13 @@ package hedera
 //	key, err := GeneratePrivateKey()
 //	assert.NoError(t, err)
 //
-//	response, err := NewAccountCreateTransaction().
+//	_Response, err := NewAccountCreateTransaction().
 //		SetKey(key).
 //		SetInitialBalance(NewHbar(2)).
 //		Execute(env.Client)
 //	assert.NoError(t, err)
 //
-//	receipt, err := response.GetReceipt(env.Client)
+//	receipt, err := _Response.GetReceipt(env.Client)
 //	assert.NoError(t, err)
 //
 //	accountID := *receipt.AccountID
@@ -364,10 +364,10 @@ package hedera
 //		SetAdminKey(env.Client.GetOperatorPublicKey()).
 //		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
 //
-//	response, err = scheduleTx.Execute(env.Client)
+//	_Response, err = scheduleTx.Execute(env.Client)
 //	assert.NoError(t, err)
 //
-//	receipt, err = response.GetReceipt(env.Client)
+//	receipt, err = _Response.GetReceipt(env.Client)
 //	assert.NoError(t, err)
 //
 //	scheduleID := *receipt.ScheduleID
@@ -380,10 +380,10 @@ package hedera
 //
 //	scheduleSignTx.Sign(key)
 //
-//	response, err = scheduleSignTx.Execute(env.Client)
+//	_Response, err = scheduleSignTx.Execute(env.Client)
 //	assert.NoError(t, err)
 //
-//	_, err = response.GetReceipt(env.Client)
+//	_, err = _Response.GetReceipt(env.Client)
 //	assert.NoError(t, err)
 //
 //	info, err := NewScheduleInfoQuery().

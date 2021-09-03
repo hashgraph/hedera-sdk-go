@@ -112,9 +112,9 @@ func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
 }
 
 // SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,
-// is an invalID account, or is an account that isn't a node, then this contract is automatically proxy staked to a node
-// chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
-// or if it is not currently running a node, then it will behave as if proxyAccountID was never set.
+// is an invalID account, or is an account that isn't a _Node, then this contract is automatically proxy staked to a _Node
+// chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
+// or if it is not currently running a _Node, then it will behave as if proxyAccountID was never set.
 func (transaction *ContractUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.proxyAccountID = &proxyAccountID
@@ -331,8 +331,8 @@ func (transaction *ContractUpdateTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-func _ContractUpdateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _ContractUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getContract().UpdateContract,
 	}
 }
@@ -351,8 +351,8 @@ func (transaction *ContractUpdateTransaction) Sign(
 func (transaction *ContractUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*ContractUpdateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -412,11 +412,11 @@ func (transaction *ContractUpdateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -511,7 +511,7 @@ func (transaction *ContractUpdateTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this ContractUpdateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this ContractUpdateTransaction.
 func (transaction *ContractUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

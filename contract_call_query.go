@@ -9,11 +9,11 @@ import (
 // ContractCallQuery calls a function of the given smart contract instance, giving it ContractFunctionParameters as its
 // inputs. It will consume the entire given amount of gas.
 //
-// This is performed locally on the particular node that the client is communicating with. It cannot change the state of
+// This is performed locally on the particular _Node that the client is communicating with. It cannot change the state of
 // the contract instance (and so, cannot spend anything from the instance's Hedera account). It will not have a
 // consensus timestamp. It cannot generate a record or a receipt. This is useful for calling getter functions, which
 // purely read the state and don't change it. It is faster and cheaper than a ContractExecuteTransaction, because it is
-// purely local to a single  node.
+// purely local to a single  _Node.
 type ContractCallQuery struct {
 	Query
 	contractID         *ContractID
@@ -115,31 +115,31 @@ func (query *ContractCallQuery) build() *proto.Query_ContractCallLocal {
 	}
 }
 
-func (query *ContractCallQuery) queryMakeRequest() protoRequest {
+func (query *ContractCallQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractCallLocal.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *ContractCallQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *ContractCallQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ContractCallLocal.Header.Payment = paymentTransaction
 	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -165,7 +165,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ContractCallQueryShouldRetry,
@@ -185,18 +185,18 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractCallQueryShouldRetry(_ request, response response) executionState {
+func _ContractCallQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
 }
 
-func _ContractCallQueryMapStatusError(_ request, response response) error {
+func _ContractCallQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ContractCallQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _ContractCallQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getContract().ContractCallLocalMethod,
 	}
 }
@@ -250,7 +250,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ContractCallQueryShouldRetry,
@@ -286,7 +286,7 @@ func (query *ContractCallQuery) SetQueryPayment(paymentAmount Hbar) *ContractCal
 	return query
 }
 
-// SetNodeAccountIDs sets the node AccountID for this ContractCallQuery.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractCallQuery.
 func (query *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *ContractCallQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

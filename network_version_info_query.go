@@ -16,7 +16,7 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	}
 }
 
-func (query *NetworkVersionInfoQuery) queryMakeRequest() protoRequest {
+func (query *NetworkVersionInfoQuery) queryMakeRequest() _ProtoRequest {
 	pb := &proto.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
 			Header: &proto.QueryHeader{},
@@ -27,14 +27,14 @@ func (query *NetworkVersionInfoQuery) queryMakeRequest() protoRequest {
 	}
 	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *NetworkVersionInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *NetworkVersionInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := &proto.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
 			Header: &proto.QueryHeader{},
@@ -43,13 +43,13 @@ func (query *NetworkVersionInfoQuery) costQueryMakeRequest(client *Client) (prot
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.NetworkGetVersionInfo.Header.Payment = paymentTransaction
 	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -70,7 +70,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_NetworkVersionInfoQueryShouldRetry,
@@ -93,18 +93,18 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _NetworkVersionInfoQueryShouldRetry(_ request, response response) executionState {
+func _NetworkVersionInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _NetworkVersionInfoQueryMapStatusError(_ request, response response) error {
+func _NetworkVersionInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _NetworkVersionInfoQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _NetworkVersionInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getNetwork().GetVersionInfo,
 	}
 }
@@ -153,7 +153,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_NetworkVersionInfoQueryShouldRetry,

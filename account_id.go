@@ -44,7 +44,7 @@ func (id *AccountID) setNetwork(name NetworkName) {
 }
 
 // AccountIDFromSolidityAddress constructs an AccountID from a string
-// representation of a solidity address
+// representation of a _Solidity address
 func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 	shard, realm, account, err := idFromSolidityAddress(s)
 	if err != nil {
@@ -99,7 +99,7 @@ func (id AccountID) ToStringWithChecksum(client Client) (string, error) {
 }
 
 // ToSolidityAddress returns the string representation of the AccountID as a
-// solidity address.
+// _Solidity address.
 func (id AccountID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.Account)
 }

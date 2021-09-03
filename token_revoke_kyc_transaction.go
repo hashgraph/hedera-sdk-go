@@ -139,8 +139,8 @@ func (transaction *TokenRevokeKycTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-func _TokenRevokeKycTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TokenRevokeKycTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getToken().RevokeKycFromTokenAccount,
 	}
 }
@@ -159,8 +159,8 @@ func (transaction *TokenRevokeKycTransaction) Sign(
 func (transaction *TokenRevokeKycTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenRevokeKycTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -220,11 +220,11 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -319,7 +319,7 @@ func (transaction *TokenRevokeKycTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenRevokeKycTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenRevokeKycTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

@@ -140,8 +140,8 @@ func (transaction *TokenUnfreezeTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-func _TokenUnfreezeTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TokenUnfreezeTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getToken().UnfreezeTokenAccount,
 	}
 }
@@ -160,8 +160,8 @@ func (transaction *TokenUnfreezeTransaction) Sign(
 func (transaction *TokenUnfreezeTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenUnfreezeTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -230,11 +230,11 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -329,7 +329,7 @@ func (transaction *TokenUnfreezeTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenUnfreezeTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUnfreezeTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

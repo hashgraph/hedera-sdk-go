@@ -13,20 +13,20 @@ import (
 	"google.golang.org/grpc"
 )
 
-type mirrorNode struct {
+type _MirrorNode struct {
 	channel *mirror.ConsensusServiceClient
 	client  *grpc.ClientConn
 	address string
 }
 
-func newMirrorNode(address string) *mirrorNode {
-	return &mirrorNode{
+func newMirrorNode(address string) *_MirrorNode {
+	return &_MirrorNode{
 		address: address,
 		channel: nil,
 	}
 }
 
-func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
+func (node *_MirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -57,7 +57,7 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 	return node.channel, nil
 }
 
-func (node *mirrorNode) close() error {
+func (node *_MirrorNode) close() error {
 	if node.channel != nil {
 		return node.client.Close()
 	}

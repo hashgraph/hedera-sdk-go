@@ -95,8 +95,8 @@ func (transaction *LiveHashDeleteTransaction) constructScheduleProtobuf() (*prot
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
-func _LiveHashDeleteTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _LiveHashDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getCrypto().DeleteLiveHash,
 	}
 }
@@ -115,8 +115,8 @@ func (transaction *LiveHashDeleteTransaction) Sign(
 func (transaction *LiveHashDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*LiveHashDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -176,11 +176,11 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -275,7 +275,7 @@ func (transaction *LiveHashDeleteTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this LiveHashDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *LiveHashDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

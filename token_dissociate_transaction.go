@@ -165,8 +165,8 @@ func (transaction *TokenDissociateTransaction) constructScheduleProtobuf() (*pro
 	}, nil
 }
 
-func _TokenDissociateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TokenDissociateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getToken().DissociateTokens,
 	}
 }
@@ -185,8 +185,8 @@ func (transaction *TokenDissociateTransaction) Sign(
 func (transaction *TokenDissociateTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenDissociateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -246,11 +246,11 @@ func (transaction *TokenDissociateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -345,7 +345,7 @@ func (transaction *TokenDissociateTransaction) SetTransactionID(transactionID Tr
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenDissociateTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenDissociateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

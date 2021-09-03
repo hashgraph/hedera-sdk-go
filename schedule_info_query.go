@@ -57,32 +57,32 @@ func (query *ScheduleInfoQuery) build() *proto.Query_ScheduleGetInfo {
 	}
 }
 
-func (query *ScheduleInfoQuery) queryMakeRequest() protoRequest {
+func (query *ScheduleInfoQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ScheduleGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ScheduleGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *ScheduleInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *ScheduleInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ScheduleGetInfo.Header.Payment = paymentTransaction
 	pb.ScheduleGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -108,7 +108,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ScheduleInfoQueryShouldRetry,
@@ -131,18 +131,18 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ScheduleInfoQueryShouldRetry(_ request, response response) executionState {
+func _ScheduleInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _ScheduleInfoQueryMapStatusError(_ request, response response) error {
+func _ScheduleInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ScheduleInfoQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _ScheduleInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getSchedule().GetScheduleInfo,
 	}
 }
@@ -194,7 +194,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ScheduleInfoQueryShouldRetry,

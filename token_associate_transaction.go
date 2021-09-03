@@ -181,8 +181,8 @@ func (transaction *TokenAssociateTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-func _TokenAssociateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TokenAssociateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getToken().AssociateTokens,
 	}
 }
@@ -201,8 +201,8 @@ func (transaction *TokenAssociateTransaction) Sign(
 func (transaction *TokenAssociateTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenAssociateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -262,11 +262,11 @@ func (transaction *TokenAssociateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -361,7 +361,7 @@ func (transaction *TokenAssociateTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenAssociateTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenAssociateTransaction.
 func (transaction *TokenAssociateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenAssociateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

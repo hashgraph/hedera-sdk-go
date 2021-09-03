@@ -261,8 +261,8 @@ func (transaction *TransferTransaction) constructScheduleProtobuf() (*proto.Sche
 	}, nil
 }
 
-func _TransferTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TransferTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getCrypto().CryptoTransfer,
 	}
 }
@@ -306,8 +306,8 @@ func (transaction *TransferTransaction) Sign(
 func (transaction *TransferTransaction) SignWithOperator(
 	client *Client,
 ) (*TransferTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -367,11 +367,11 @@ func (transaction *TransferTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -588,7 +588,7 @@ func (transaction *TransferTransaction) SetTransactionID(transactionID Transacti
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenUpdateTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenUpdateTransaction.
 func (transaction *TransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *TransferTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

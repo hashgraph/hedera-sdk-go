@@ -236,7 +236,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	receipt, err = resp2.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+		assert.Equal(t, fmt.Sprintf("Invalid _Node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 	}
 
 	tx, err := NewAccountDeleteTransaction().

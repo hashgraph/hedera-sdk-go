@@ -99,9 +99,9 @@ func (transaction *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration 
 }
 
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
-// is an invalid account, or is an account that isn't a node, then this account is automatically proxy staked to a node
-// chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
-// or if it is not currently running a node, then it will behave as if proxyAccountID was not set.
+// is an invalid account, or is an account that isn't a _Node, then this account is automatically proxy staked to a _Node
+// chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
+// or if it is not currently running a _Node, then it will behave as if proxyAccountID was not set.
 func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.proxyAccountID = &id
@@ -229,8 +229,8 @@ func (transaction *AccountCreateTransaction) constructScheduleProtobuf() (*proto
 	}, nil
 }
 
-func _AccountCreateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _AccountCreateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getCrypto().CreateAccount,
 	}
 }
@@ -249,8 +249,8 @@ func (transaction *AccountCreateTransaction) Sign(
 func (transaction *AccountCreateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountCreateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -310,11 +310,11 @@ func (transaction *AccountCreateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -409,7 +409,7 @@ func (transaction *AccountCreateTransaction) SetTransactionID(transactionID Tran
 	return transaction
 }
 
-// SetNodeAccountIDs sets the node AccountID for this AccountCreateTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *AccountCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

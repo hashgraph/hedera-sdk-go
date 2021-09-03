@@ -151,12 +151,12 @@ func PrivateKeyFromString(s string) (PrivateKey, error) {
 	return PrivateKeyFromBytes(bytes)
 }
 
-// PrivateKeyFromKeystore recovers an PrivateKey from an encrypted keystore encoded as a byte slice.
+// PrivateKeyFromKeystore recovers an PrivateKey from an encrypted _Keystore encoded as a byte slice.
 func PrivateKeyFromKeystore(ks []byte, passphrase string) (PrivateKey, error) {
 	return parseKeystore(ks, passphrase)
 }
 
-// PrivateKeyReadKeystore recovers an PrivateKey from an encrypted keystore file.
+// PrivateKeyReadKeystore recovers an PrivateKey from an encrypted _Keystore file.
 func PrivateKeyReadKeystore(source io.Reader, passphrase string) (PrivateKey, error) {
 	keystoreBytes, err := ioutil.ReadAll(source)
 	if err != nil {
@@ -326,12 +326,12 @@ func (sk PrivateKey) Bytes() []byte {
 	return sk.keyData[0:32]
 }
 
-// Keystore returns an encrypted keystore containing the PrivateKey.
+// Keystore returns an encrypted _Keystore containing the PrivateKey.
 func (sk PrivateKey) Keystore(passphrase string) ([]byte, error) {
 	return newKeystore(sk.keyData, passphrase)
 }
 
-// WriteKeystore writes an encrypted keystore containing the PrivateKey to the provided destination.
+// WriteKeystore writes an encrypted _Keystore containing the PrivateKey to the provided destination.
 func (sk PrivateKey) WriteKeystore(destination io.Writer, passphrase string) error {
 	keystore, err := sk.Keystore(passphrase)
 	if err != nil {

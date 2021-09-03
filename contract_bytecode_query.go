@@ -57,31 +57,31 @@ func (query *ContractBytecodeQuery) build() *proto.Query_ContractGetBytecode {
 	}
 }
 
-func (query *ContractBytecodeQuery) queryMakeRequest() protoRequest {
+func (query *ContractBytecodeQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractGetBytecode.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ContractGetBytecode.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *ContractBytecodeQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *ContractBytecodeQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ContractGetBytecode.Header.Payment = paymentTransaction
 	pb.ContractGetBytecode.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -107,7 +107,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ContractBytecodeQueryShouldRetry,
@@ -127,18 +127,18 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractBytecodeQueryShouldRetry(_ request, response response) executionState {
+func _ContractBytecodeQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
-func _ContractBytecodeQueryMapStatusError(_ request, response response) error {
+func _ContractBytecodeQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ContractBytecodeQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _ContractBytecodeQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getContract().ContractGetBytecode,
 	}
 }
@@ -192,7 +192,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_ContractBytecodeQueryShouldRetry,
@@ -223,7 +223,7 @@ func (query *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *Contrac
 	return query
 }
 
-// SetNodeAccountIDs sets the node AccountID for this ContractBytecodeQuery.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractBytecodeQuery.
 func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *ContractBytecodeQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

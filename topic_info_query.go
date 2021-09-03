@@ -60,32 +60,32 @@ func (query *TopicInfoQuery) build() *proto.Query_ConsensusGetTopicInfo {
 	}
 }
 
-func (query *TopicInfoQuery) queryMakeRequest() protoRequest {
+func (query *TopicInfoQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ConsensusGetTopicInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ConsensusGetTopicInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *TopicInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *TopicInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ConsensusGetTopicInfo.Header.Payment = paymentTransaction
 	pb.ConsensusGetTopicInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -111,7 +111,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_TopicInfoQueryShouldRetry,
@@ -134,18 +134,18 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TopicInfoQueryShouldRetry(_ request, response response) executionState {
+func _TopicInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _TopicInfoQueryMapStatusError(_ request, response response) error {
+func _TopicInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _TopicInfoQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _TopicInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getTopic().GetTopicInfo,
 	}
 }
@@ -200,7 +200,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_TopicInfoQueryShouldRetry,

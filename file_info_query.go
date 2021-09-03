@@ -57,32 +57,32 @@ func (query *FileInfoQuery) build() *proto.Query_FileGetInfo {
 	}
 }
 
-func (query *FileInfoQuery) queryMakeRequest() protoRequest {
+func (query *FileInfoQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.FileGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.FileGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *FileInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *FileInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.FileGetInfo.Header.Payment = paymentTransaction
 	pb.FileGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -108,7 +108,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_FileInfoQueryShouldRetry,
@@ -131,18 +131,18 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _FileInfoQueryShouldRetry(_ request, response response) executionState {
+func _FileInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _FileInfoQueryMapStatusError(_ request, response response) error {
+func _FileInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _FileInfoQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _FileInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getFile().GetFileInfo,
 	}
 }
@@ -197,7 +197,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	}
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_FileInfoQueryShouldRetry,

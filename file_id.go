@@ -7,7 +7,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-// A FileID is the ID for a file on the network.
+// A FileID is the ID for a file on the _Network.
 type FileID struct {
 	Shard    uint64
 	Realm    uint64
@@ -15,12 +15,12 @@ type FileID struct {
 	checksum *string
 }
 
-// FileIDForAddressBook returns the public node address book for the current network.
+// FileIDForAddressBook returns the public _Node address book for the current _Network.
 func FileIDForAddressBook() FileID {
 	return FileID{File: 102}
 }
 
-// FileIDForFeeSchedule returns the current fee schedule for the network.
+// FileIDForFeeSchedule returns the current fee schedule for the _Network.
 func FileIDForFeeSchedule() FileID {
 	return FileID{File: 111}
 }

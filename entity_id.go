@@ -13,7 +13,7 @@ type EntityID interface {
 	isEntityID()
 }
 
-type parseAddressResult struct {
+type _ParseAddressResult struct {
 	status             int
 	num1               int64
 	num2               int64
@@ -39,7 +39,7 @@ func checksumVerify(num int) error {
 	}
 }
 
-func checksumParseAddress(ledgerID string, address string) (parseAddressResult, error) {
+func checksumParseAddress(ledgerID string, address string) (_ParseAddressResult, error) {
 	var err error
 	match := regexp.MustCompile(`(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))(?:-([a-z]{5}))?$`)
 
@@ -49,7 +49,7 @@ func checksumParseAddress(ledgerID string, address string) (parseAddressResult, 
 	for i := 1; i < len(matchArray)-1; i++ {
 		a[i], err = strconv.ParseInt(matchArray[i], 10, 64)
 		if err != nil {
-			return parseAddressResult{status: 0}, err
+			return _ParseAddressResult{status: 0}, err
 		}
 	}
 
@@ -67,7 +67,7 @@ func checksumParseAddress(ledgerID string, address string) (parseAddressResult, 
 		status = 1
 	}
 
-	return parseAddressResult{
+	return _ParseAddressResult{
 		status:             status,
 		num1:               a[1],
 		num2:               a[2],

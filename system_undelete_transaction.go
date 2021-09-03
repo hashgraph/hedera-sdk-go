@@ -136,14 +136,14 @@ func (transaction *SystemUndeleteTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-func _SystemUndeleteTransactionGetMethod(request request, channel *channel) method {
+func _SystemUndeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
 	if channel.getContract() == nil {
-		return method{
+		return _Method{
 			transaction: channel.getFile().SystemUndelete,
 		}
 	}
 
-	return method{
+	return _Method{
 		transaction: channel.getContract().SystemUndelete,
 	}
 }
@@ -162,8 +162,8 @@ func (transaction *SystemUndeleteTransaction) Sign(
 func (transaction *SystemUndeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*SystemUndeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -223,11 +223,11 @@ func (transaction *SystemUndeleteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -322,7 +322,7 @@ func (transaction *SystemUndeleteTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this SystemUndeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemUndeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

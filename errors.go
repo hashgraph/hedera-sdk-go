@@ -15,26 +15,26 @@ type ErrMaxChunksExceeded struct {
 }
 
 var errTransactionIsFrozen = errors.New("transaction is immutable; it has at least one signature or has been explicitly frozen")
-var errNoClientOrTransactionID = errors.New("`client` must have an `operator` or `transactionId` must be set")
+var errNoClientOrTransactionID = errors.New("`client` must have an `_Operator` or `transactionId` must be set")
 var errNoClientOrTransactionIDOrNodeId = errors.New("`client` must be provided or both `nodeId` and `transactionId` must be set") // nolint
-var errClientOperatorSigning = errors.New("`client` must have an `operator` to sign with the operator")
-var errNoClientProvided = errors.New("`client` must be provided and have an operator")
+var errClientOperatorSigning = errors.New("`client` must have an `_Operator` to sign with the _Operator")
+var errNoClientProvided = errors.New("`client` must be provided and have an _Operator")
 var errTransactionIsNotFrozen = errors.New("transaction is not frozen")
 var errFailedToDeserializeBytes = errors.New("failed to deserialize bytes")
 var errNoTransactionInBytes = errors.New("no transaction was found in bytes")
-var errTransactionRequiresSingleNodeAccountID = errors.New("`PrivateKey.SignTransaction()` requires `Transaction` to have a single node `AccountID` set")
+var errTransactionRequiresSingleNodeAccountID = errors.New("`PrivateKey.SignTransaction()` requires `Transaction` to have a single _Node `AccountID` set")
 var errNoTransactions = errors.New("no transactions to execute")
 var errByteArrayNull = errors.New("byte array can't be null")
 var errParameterNull = errors.New("the parameter can't be null")
-var errNetworkMismatch = errors.New("network mismatch; some IDs have different networks set")
-var errNetworkNameMissing = errors.New("can't derive checksum for ID without knowing which network the ID is for")
+var errNetworkMismatch = errors.New("_Network mismatch; some IDs have different networks set")
+var errNetworkNameMissing = errors.New("can't derive checksum for ID without knowing which _Network the ID is for")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID
 }
 
 func (err ErrInvalidNodeAccountIDSet) Error() string {
-	return fmt.Sprintf("Invalid node AccountID was set for transaction: %v", err.NodeAccountID.String())
+	return fmt.Sprintf("Invalid _Node AccountID was set for transaction: %v", err.NodeAccountID.String())
 }
 
 func (err ErrMaxChunksExceeded) Error() string {
@@ -83,7 +83,7 @@ func (e ErrBadKey) Error() string {
 	return e.message
 }
 
-// ErrHederaNetwork is returned in cases where the Hedera network cannot be reached or a network-side error occurs.
+// ErrHederaNetwork is returned in cases where the Hedera _Network cannot be reached or a _Network-side error occurs.
 type ErrHederaNetwork struct {
 	error error
 	// GRPC Status Code
@@ -92,11 +92,11 @@ type ErrHederaNetwork struct {
 
 // Error() implements the Error interface
 func (e ErrHederaNetwork) Error() string {
-	return fmt.Sprintf("transport error occurred while accessing the Hedera network: %s", e.error)
+	return fmt.Sprintf("transport error occurred while accessing the Hedera _Network: %s", e.error)
 }
 
 // ErrHederaPreCheckStatus is returned by Transaction.Execute and QueryBuilder.Execute if an exceptional status is
-// returned during network side validation of the sent transaction.
+// returned during _Network side validation of the sent transaction.
 type ErrHederaPreCheckStatus struct {
 	TxID   TransactionID
 	Status Status

@@ -79,8 +79,8 @@ func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*proto.
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
-func _ScheduleSignTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _ScheduleSignTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getSchedule().SignSchedule,
 	}
 }
@@ -99,8 +99,8 @@ func (transaction *ScheduleSignTransaction) Sign(
 func (transaction *ScheduleSignTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleSignTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -159,11 +159,11 @@ func (transaction *ScheduleSignTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -258,7 +258,7 @@ func (transaction *ScheduleSignTransaction) SetTransactionID(transactionID Trans
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this ScheduleSignTransaction.
+// SetNodeAccountID sets the _Node AccountID for this ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleSignTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

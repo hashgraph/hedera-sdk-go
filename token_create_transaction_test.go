@@ -264,7 +264,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "_Network mismatch; some IDs have different networks set", err.Error())
 	}
 
 	newClient = Client{}

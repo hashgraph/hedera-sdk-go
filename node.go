@@ -17,25 +17,25 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type node struct {
+type _Node struct {
 	accountID   AccountID
 	address     string
 	delay       int64
 	lastUsed    int64
 	delayUntil  int64
 	useCount    int64
-	channel     *channel
+	channel     *_Channel
 	waitTime    int64
 	attempts    int64
-	addressBook *nodeAddress
+	addressBook *_NodeAddress
 }
 
-type nodes struct {
-	nodes []*node
+type _Nodes struct {
+	nodes []*_Node
 }
 
-func newNode(accountID AccountID, address string, waitTime int64) node {
-	return node{
+func newNode(accountID AccountID, address string, waitTime int64) _Node {
+	return _Node{
 		accountID:   accountID,
 		address:     address,
 		delay:       250,
@@ -49,7 +49,7 @@ func newNode(accountID AccountID, address string, waitTime int64) node {
 	}
 }
 
-func (node *node) setWaitTime(waitTime int64) {
+func (node *_Node) setWaitTime(waitTime int64) {
 	if node.delay == node.waitTime {
 		node.delay = node.waitTime
 	}
@@ -57,39 +57,39 @@ func (node *node) setWaitTime(waitTime int64) {
 	node.waitTime = waitTime
 }
 
-func (node *node) SetAddressBook(addressBook *nodeAddress) {
+func (node *_Node) SetAddressBook(addressBook *_NodeAddress) {
 	node.addressBook = addressBook
 }
 
-func (node *node) GetAddressBook() *nodeAddress {
+func (node *_Node) GetAddressBook() *_NodeAddress {
 	return node.addressBook
 }
 
-func (node *node) inUse() {
+func (node *_Node) inUse() {
 	node.useCount++
 	node.lastUsed = time.Now().UTC().UnixNano()
 }
 
-func (node *node) isHealthy() bool {
+func (node *_Node) isHealthy() bool {
 	return node.delayUntil <= time.Now().UTC().UnixNano()
 }
 
-func (node *node) increaseDelay() {
+func (node *_Node) increaseDelay() {
 	node.attempts++
 	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
 	node.delayUntil = (node.delay * 100000) + time.Now().UTC().UnixNano()
 }
 
-func (node *node) decreaseDelay() {
+func (node *_Node) decreaseDelay() {
 	node.delay = int64(math.Max(float64(node.delay)/2, 250))
 }
 
-func (node *node) wait() {
+func (node *_Node) wait() {
 	delay := node.delayUntil - node.lastUsed
 	time.Sleep(time.Duration(delay) * time.Nanosecond)
 }
 
-func (node *node) getChannel() (*channel, error) {
+func (node *_Node) getChannel() (*_Channel, error) {
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -145,7 +145,7 @@ func (node *node) getChannel() (*channel, error) {
 	return node.channel, nil
 }
 
-func (node *node) close() error {
+func (node *_Node) close() error {
 	if node.channel != nil {
 		err := node.channel.client.Close()
 		node.channel = nil
@@ -155,14 +155,14 @@ func (node *node) close() error {
 	return nil
 }
 
-func (nodes nodes) Len() int {
+func (nodes _Nodes) Len() int {
 	return len(nodes.nodes)
 }
-func (nodes nodes) Swap(i, j int) {
+func (nodes _Nodes) Swap(i, j int) {
 	nodes.nodes[i], nodes.nodes[j] = nodes.nodes[j], nodes.nodes[i]
 }
 
-func (nodes nodes) Less(i, j int) bool {
+func (nodes _Nodes) Less(i, j int) bool {
 	if nodes.nodes[i].isHealthy() && nodes.nodes[j].isHealthy() { // nolint
 		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
 			return true

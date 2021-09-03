@@ -107,7 +107,7 @@ func (transaction *TokenUpdateTransaction) GetTokenName() string {
 }
 
 // The new Treasury account of the Token. If the provided treasury account is not existing or
-// deleted, the response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token
+// deleted, the _Response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token
 // balance held in the previous Treasury Account is transferred to the new one.
 func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
@@ -411,8 +411,8 @@ func (transaction *TokenUpdateTransaction) constructScheduleProtobuf() (*proto.S
 	}, nil
 }
 
-func _TokenUpdateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _TokenUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getToken().UpdateToken,
 	}
 }
@@ -431,8 +431,8 @@ func (transaction *TokenUpdateTransaction) Sign(
 func (transaction *TokenUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenUpdateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -492,11 +492,11 @@ func (transaction *TokenUpdateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -591,7 +591,7 @@ func (transaction *TokenUpdateTransaction) SetTransactionID(transactionID Transa
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenUpdateTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenUpdateTransaction.
 func (transaction *TokenUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

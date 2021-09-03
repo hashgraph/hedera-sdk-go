@@ -63,7 +63,7 @@ func (id *ContractID) setNetwork(name NetworkName) {
 	id.checksum = &checksum
 }
 
-// ContractIDFromSolidityAddress constructs a ContractID from a string representation of a solidity address
+// ContractIDFromSolidityAddress constructs a ContractID from a string representation of a _Solidity address
 func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 	shard, realm, contract, err := idFromSolidityAddress(s)
 	if err != nil {
@@ -93,7 +93,7 @@ func (id ContractID) ToStringWithChecksum(client Client) (string, error) {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, checksum.correctChecksum), nil
 }
 
-// ToSolidityAddress returns the string representation of the ContractID as a solidity address.
+// ToSolidityAddress returns the string representation of the ContractID as a _Solidity address.
 func (id ContractID) ToSolidityAddress() string {
 	return idToSolidityAddress(id.Shard, id.Realm, id.Contract)
 }

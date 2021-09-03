@@ -46,32 +46,32 @@ func (query *TransactionReceiptQuery) build() *proto.Query_TransactionGetReceipt
 	}
 }
 
-func (query *TransactionReceiptQuery) queryMakeRequest() protoRequest {
+func (query *TransactionReceiptQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TransactionGetReceipt.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.TransactionGetReceipt.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *TransactionReceiptQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *TransactionReceiptQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query.build()
 
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.TransactionGetReceipt.Header.Payment = paymentTransaction
 	pb.TransactionGetReceipt.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -97,7 +97,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_TransactionReceiptQueryShouldRetry,
@@ -117,7 +117,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TransactionReceiptQueryShouldRetry(request request, response response) executionState {
+func _TransactionReceiptQueryShouldRetry(request _Request, response _Response) _ExecutionState {
 	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
@@ -137,7 +137,7 @@ func _TransactionReceiptQueryShouldRetry(request request, response response) exe
 	}
 }
 
-func _TransactionReceiptQueryMapStatusError(request request, response response) error {
+func _TransactionReceiptQueryMapStatusError(request _Request, response _Response) error {
 	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
@@ -153,8 +153,8 @@ func _TransactionReceiptQueryMapStatusError(request request, response response) 
 	}
 }
 
-func _TransactionReceiptQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _TransactionReceiptQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getCrypto().GetTransactionReceipts,
 	}
 }
@@ -246,7 +246,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_TransactionReceiptQueryShouldRetry,

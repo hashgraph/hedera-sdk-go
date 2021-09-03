@@ -112,31 +112,31 @@ func (query *TokenNftInfoQuery) buildByNft() *proto.Query_TokenGetNftInfo {
 	}
 }
 
-func (query *TokenNftInfoQuery) queryMakeRequest() protoRequest {
+func (query *TokenNftInfoQuery) queryMakeRequest() _ProtoRequest {
 	pb := query.buildByNft()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TokenGetNftInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.TokenGetNftInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *TokenNftInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *TokenNftInfoQuery) costQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb := query.buildByNft()
 	pb.TokenGetNftInfo.Header.Payment = paymentTransaction
 	pb.TokenGetNftInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -160,10 +160,10 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	var resp intermediateResponse
+	var resp _IntermediateResponse
 	resp, err = execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
 		_TokenNftInfoQueryShouldRetry,
@@ -185,18 +185,18 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenNftInfoQueryShouldRetry(_ request, response response) executionState {
+func _TokenNftInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
 	return _QueryShouldRetry(Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _TokenNftInfoQueryMapStatusError(_ request, response response) error {
+func _TokenNftInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _TokenNftInfoQueryGetMethod(_ request, channel *channel) method {
-	return method{
+func _TokenNftInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
 		query: channel.getToken().GetTokenNftInfo,
 	}
 }
@@ -247,11 +247,11 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		return []TokenNftInfo{}, err
 	}
 
-	var resp intermediateResponse
+	var resp _IntermediateResponse
 	tokenInfos := make([]TokenNftInfo, 0)
 	resp, err = execute(
 		client,
-		request{
+		_Request{
 
 			query: &query.Query,
 		},

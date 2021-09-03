@@ -97,8 +97,8 @@ func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*proto.Sc
 	}, nil
 }
 
-func _FileDeleteTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _FileDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getFile().DeleteFile,
 	}
 }
@@ -117,8 +117,8 @@ func (transaction *FileDeleteTransaction) Sign(
 func (transaction *FileDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*FileDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -178,11 +178,11 @@ func (transaction *FileDeleteTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -278,7 +278,7 @@ func (transaction *FileDeleteTransaction) SetTransactionID(transactionID Transac
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this FileDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

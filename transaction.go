@@ -362,7 +362,7 @@ func (transaction *Transaction) requireNotFrozen() {
 
 func (transaction *Transaction) requireOneNodeAccountID() {
 	if len(transaction.nodeIDs) != 1 {
-		panic("Transaction has more than one node ID set")
+		panic("Transaction has more than one _Node ID set")
 	}
 }
 
@@ -420,7 +420,7 @@ func (transaction *Transaction) keyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(_ request, response response) executionState {
+func _TransactionShouldRetry(_ _Request, response _Response) _ExecutionState {
 	switch Status(response.transaction.NodeTransactionPrecheckCode) {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
@@ -431,28 +431,28 @@ func _TransactionShouldRetry(_ request, response response) executionState {
 	return executionStateError
 }
 
-func _TransactionMakeRequest(request request) protoRequest {
+func _TransactionMakeRequest(request _Request) _ProtoRequest {
 	index := len(request.transaction.nodeIDs)*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
 	_ = request.transaction.buildTransaction(index)
 
-	return protoRequest{
+	return _ProtoRequest{
 		transaction: request.transaction.transactions[index],
 	}
 }
 
-func _TransactionAdvanceRequest(request request) {
+func _TransactionAdvanceRequest(request _Request) {
 	length := len(request.transaction.nodeIDs)
 	currentIndex := request.transaction.nextNodeIndex
 	request.transaction.nextNodeIndex = (currentIndex + 1) % length
 }
 
-func _TransactionGetNodeAccountID(request request) AccountID {
+func _TransactionGetNodeAccountID(request _Request) AccountID {
 	return request.transaction.nodeIDs[request.transaction.nextNodeIndex]
 }
 
 func _TransactionMapStatusError(
-	request request,
-	response response,
+	request _Request,
+	response _Response,
 ) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.transaction.NodeTransactionPrecheckCode),
@@ -460,17 +460,17 @@ func _TransactionMapStatusError(
 	}
 }
 
-func _TransactionMapResponse(request request, _ response, nodeID AccountID, protoRequest protoRequest) (intermediateResponse, error) {
+func _TransactionMapResponse(request _Request, _ _Response, nodeID AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
 	hash := sha512.New384()
 	_, err := hash.Write(protoRequest.transaction.SignedTransactionBytes)
 	if err != nil {
-		return intermediateResponse{}, err
+		return _IntermediateResponse{}, err
 	}
 
 	index := request.transaction.nextTransactionIndex
 	request.transaction.nextTransactionIndex = (index + 1) % len(request.transaction.transactionIDs)
 
-	return intermediateResponse{
+	return _IntermediateResponse{
 		transaction: TransactionResponse{
 			NodeID:        nodeID,
 			TransactionID: request.transaction.transactionIDs[index],
@@ -623,7 +623,7 @@ func (transaction *Transaction) GetNodeAccountIDs() []AccountID {
 	return make([]AccountID, 0)
 }
 
-// SetNodeAccountID sets the node AccountID for this Transaction.
+// SetNodeAccountID sets the _Node AccountID for this Transaction.
 func (transaction *Transaction) SetNodeAccountIDs(nodeID []AccountID) *Transaction {
 	if transaction.nodeIDs == nil {
 		transaction.nodeIDs = make([]AccountID, 0)

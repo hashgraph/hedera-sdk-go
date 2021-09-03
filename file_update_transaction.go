@@ -195,8 +195,8 @@ func (transaction *FileUpdateTransaction) constructScheduleProtobuf() (*proto.Sc
 	}, nil
 }
 
-func _FileUpdateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _FileUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getFile().UpdateFile,
 	}
 }
@@ -215,8 +215,8 @@ func (transaction *FileUpdateTransaction) Sign(
 func (transaction *FileUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*FileUpdateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -276,11 +276,11 @@ func (transaction *FileUpdateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -375,7 +375,7 @@ func (transaction *FileUpdateTransaction) SetTransactionID(transactionID Transac
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this FileUpdateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FileUpdateTransaction.
 func (transaction *FileUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileUpdateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

@@ -141,8 +141,8 @@ func (transaction *ScheduleCreateTransaction) build() *proto.TransactionBody {
 func (transaction *ScheduleCreateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleCreateTransaction`")
 }
-func _ScheduleCreateTransactionGetMethod(request request, channel *channel) method {
-	return method{
+func _ScheduleCreateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
 		transaction: channel.getSchedule().CreateSchedule,
 	}
 }
@@ -161,8 +161,8 @@ func (transaction *ScheduleCreateTransaction) Sign(
 func (transaction *ScheduleCreateTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleCreateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -221,11 +221,11 @@ func (transaction *ScheduleCreateTransaction) Execute(
 
 	resp, err := execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(request{
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
 		_TransactionAdvanceRequest,
@@ -323,7 +323,7 @@ func (transaction *ScheduleCreateTransaction) SetTransactionID(transactionID Tra
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this ScheduleCreateTransaction.
+// SetNodeAccountID sets the _Node AccountID for this ScheduleCreateTransaction.
 func (transaction *ScheduleCreateTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleCreateTransaction {
 	transaction.requireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
