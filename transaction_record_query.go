@@ -33,7 +33,8 @@ func (query *TransactionRecordQuery) _Build() *proto.Query_TransactionGetRecord 
 	body := &proto.TransactionGetRecordQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.transactionID.AccountID._IsZero() {
+
+	if query.transactionID.AccountID != nil {
 		body.TransactionID = query.transactionID._ToProtobuf()
 	}
 

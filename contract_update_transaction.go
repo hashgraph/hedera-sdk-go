@@ -221,15 +221,15 @@ func (transaction *ContractUpdateTransaction) _Build() *proto.TransactionBody {
 		body.AdminKey = transaction.adminKey._ToProtoKey()
 	}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
-	if !transaction.bytecodeFileID._IsZero() {
+	if transaction.bytecodeFileID != nil {
 		body.FileID = transaction.bytecodeFileID._ToProtobuf()
 	}
 
@@ -278,15 +278,15 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*pro
 		body.AdminKey = transaction.adminKey._ToProtoKey()
 	}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
-	if !transaction.bytecodeFileID._IsZero() {
+	if transaction.bytecodeFileID != nil {
 		body.FileID = transaction.bytecodeFileID._ToProtobuf()
 	}
 
@@ -302,15 +302,15 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*pro
 		body.AdminKey = transaction.adminKey._ToProtoKey()
 	}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
-	if !transaction.bytecodeFileID._IsZero() {
+	if transaction.bytecodeFileID != nil {
 		body.FileID = transaction.bytecodeFileID._ToProtobuf()
 	}
 

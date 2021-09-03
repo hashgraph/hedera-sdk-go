@@ -106,7 +106,7 @@ func (transaction *TokenDissociateTransaction) _ValidateNetworkOnIDs(client *Cli
 
 func (transaction *TokenDissociateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenDissociateTransactionBody{}
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
@@ -143,7 +143,7 @@ func (transaction *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransa
 
 func (transaction *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenDissociateTransactionBody{}
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 

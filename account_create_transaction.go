@@ -212,7 +212,7 @@ func (transaction *AccountCreateTransaction) _ConstructScheduleProtobuf() (*prot
 		body.Key = transaction.key._ToProtoKey()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 

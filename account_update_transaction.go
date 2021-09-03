@@ -208,11 +208,11 @@ func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
 		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.AccountIDToUpdate = transaction.accountID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
@@ -266,11 +266,11 @@ func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*prot
 		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.AccountIDToUpdate = transaction.accountID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 

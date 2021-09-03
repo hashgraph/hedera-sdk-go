@@ -95,7 +95,7 @@ func (transaction *FreezeTransaction) _Build() *proto.TransactionBody {
 		FileHash:  transaction.fileHash,
 	}
 
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.UpdateFile = transaction.fileID._ToProtobuf()
 	}
 
@@ -130,7 +130,7 @@ func (transaction *FreezeTransaction) _ConstructScheduleProtobuf() (*proto.Sched
 		FileHash:  transaction.fileHash,
 	}
 
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.UpdateFile = transaction.fileID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{

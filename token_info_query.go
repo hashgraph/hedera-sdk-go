@@ -51,7 +51,7 @@ func (query *TokenInfoQuery) _Build() *proto.Query_TokenGetInfo {
 	body := &proto.TokenGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.tokenID._IsZero() {
+	if query.tokenID != nil {
 		body.Token = query.tokenID._ToProtobuf()
 	}
 

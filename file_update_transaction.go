@@ -128,7 +128,7 @@ func (transaction *FileUpdateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.FileUpdateTransactionBody{
 		Memo: &wrappers.StringValue{Value: transaction.memo},
 	}
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 
@@ -170,7 +170,7 @@ func (transaction *FileUpdateTransaction) _ConstructScheduleProtobuf() (*proto.S
 	body := &proto.FileUpdateTransactionBody{
 		Memo: &wrappers.StringValue{Value: transaction.memo},
 	}
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 

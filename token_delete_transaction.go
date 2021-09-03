@@ -62,7 +62,7 @@ func (transaction *TokenDeleteTransaction) _ValidateNetworkOnIDs(client *Client)
 
 func (transaction *TokenDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenDeleteTransactionBody{}
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
@@ -90,7 +90,7 @@ func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 
 func (transaction *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenDeleteTransactionBody{}
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{

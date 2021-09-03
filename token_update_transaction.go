@@ -285,7 +285,7 @@ func (transaction *TokenUpdateTransaction) _Build() *proto.TransactionBody {
 		Memo:   &wrappers.StringValue{Value: transaction.memo},
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
@@ -297,11 +297,11 @@ func (transaction *TokenUpdateTransaction) _Build() *proto.TransactionBody {
 		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.treasuryAccountID._IsZero() {
+	if transaction.treasuryAccountID != nil {
 		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
@@ -358,7 +358,7 @@ func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*proto.
 		Memo:   &wrappers.StringValue{Value: transaction.memo},
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
@@ -370,11 +370,11 @@ func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*proto.
 		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.treasuryAccountID._IsZero() {
+	if transaction.treasuryAccountID != nil {
 		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 

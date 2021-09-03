@@ -133,11 +133,11 @@ func (transaction *TokenWipeTransaction) _Build() *proto.TransactionBody {
 		body.SerialNumbers = transaction.serial
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
@@ -172,11 +172,11 @@ func (transaction *TokenWipeTransaction) _ConstructScheduleProtobuf() (*proto.Sc
 		body.SerialNumbers = transaction.serial
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{

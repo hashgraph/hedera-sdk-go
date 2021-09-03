@@ -203,11 +203,11 @@ func (transaction *ContractCreateTransaction) _Build() *proto.TransactionBody {
 		body.AdminKey = transaction.adminKey._ToProtoKey()
 	}
 
-	if !transaction.byteCodeFileID._IsZero() {
+	if transaction.byteCodeFileID != nil {
 		body.FileID = transaction.byteCodeFileID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
@@ -251,11 +251,11 @@ func (transaction *ContractCreateTransaction) _ConstructScheduleProtobuf() (*pro
 		body.AdminKey = transaction.adminKey._ToProtoKey()
 	}
 
-	if !transaction.byteCodeFileID._IsZero() {
+	if transaction.byteCodeFileID != nil {
 		body.FileID = transaction.byteCodeFileID._ToProtobuf()
 	}
 
-	if !transaction.proxyAccountID._IsZero() {
+	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 

@@ -58,7 +58,7 @@ func (query *LiveHashQuery) _Build() *proto.Query_CryptoGetLiveHash {
 	body := &proto.CryptoGetLiveHashQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.accountID._IsZero() {
+	if query.accountID != nil {
 		body.AccountID = query.accountID._ToProtobuf()
 	}
 

@@ -135,7 +135,7 @@ func (transaction *TopicMessageSubmitTransaction) _ValidateNetworkOnIDs(client *
 
 func (transaction *TopicMessageSubmitTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ConsensusSubmitMessageTransactionBody{}
-	if !transaction.topicID._IsZero() {
+	if transaction.topicID != nil {
 		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 
@@ -176,7 +176,7 @@ func (transaction *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (
 		ChunkInfo: &proto.ConsensusMessageChunkInfo{},
 	}
 
-	if !transaction.topicID._IsZero() {
+	if transaction.topicID != nil {
 		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 

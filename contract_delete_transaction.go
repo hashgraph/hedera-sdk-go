@@ -106,17 +106,17 @@ func (transaction *ContractDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 func (transaction *ContractDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ContractDeleteTransactionBody{}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if !transaction.transferContactID._IsZero() {
+	if transaction.transferContactID != nil {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
 			TransferContractID: transaction.transferContactID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.transferAccountID._IsZero() {
+	if transaction.transferAccountID != nil {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
 			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
 		}
@@ -149,17 +149,17 @@ func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransac
 func (transaction *ContractDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.ContractDeleteTransactionBody{}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if !transaction.transferContactID._IsZero() {
+	if transaction.transferContactID != nil {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
 			TransferContractID: transaction.transferContactID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.transferAccountID._IsZero() {
+	if transaction.transferAccountID != nil {
 		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
 			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
 		}

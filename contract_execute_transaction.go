@@ -122,7 +122,7 @@ func (transaction *ContractExecuteTransaction) _Build() *proto.TransactionBody {
 		FunctionParameters: transaction.parameters,
 	}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
@@ -155,7 +155,7 @@ func (transaction *ContractExecuteTransaction) _ConstructScheduleProtobuf() (*pr
 		FunctionParameters: transaction.parameters,
 	}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 

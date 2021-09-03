@@ -48,7 +48,7 @@ func (query *ScheduleInfoQuery) _Build() *proto.Query_ScheduleGetInfo {
 	body := &proto.ScheduleGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.scheduleID._IsZero() {
+	if query.scheduleID != nil {
 		body.ScheduleID = query.scheduleID._ToProtobuf()
 	}
 

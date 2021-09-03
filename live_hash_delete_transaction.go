@@ -72,7 +72,7 @@ func (transaction *LiveHashDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 func (transaction *LiveHashDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.CryptoDeleteLiveHashTransactionBody{}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.AccountOfLiveHash = transaction.accountID._ToProtobuf()
 	}
 

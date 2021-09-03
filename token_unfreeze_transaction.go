@@ -91,11 +91,11 @@ func (transaction *TokenUnfreezeTransaction) _ValidateNetworkOnIDs(client *Clien
 
 func (transaction *TokenUnfreezeTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenUnfreezeAccountTransactionBody{}
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
@@ -123,11 +123,11 @@ func (transaction *TokenUnfreezeTransaction) Schedule() (*ScheduleCreateTransact
 
 func (transaction *TokenUnfreezeTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenUnfreezeAccountTransactionBody{}
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 

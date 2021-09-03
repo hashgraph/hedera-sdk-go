@@ -57,7 +57,7 @@ func (transaction *FileDeleteTransaction) _ValidateNetworkOnIDs(client *Client) 
 
 func (transaction *FileDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.FileDeleteTransactionBody{}
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 
@@ -85,7 +85,7 @@ func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction
 
 func (transaction *FileDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.FileDeleteTransactionBody{}
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{

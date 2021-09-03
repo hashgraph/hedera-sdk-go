@@ -79,13 +79,13 @@ func (transaction *SystemUndeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 
 func (transaction *SystemUndeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.SystemUndeleteTransactionBody{}
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.Id = &proto.SystemUndeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.Id = &proto.SystemUndeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}
@@ -115,13 +115,13 @@ func (transaction *SystemUndeleteTransaction) Schedule() (*ScheduleCreateTransac
 
 func (transaction *SystemUndeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.SystemUndeleteTransactionBody{}
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.Id = &proto.SystemUndeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.Id = &proto.SystemUndeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}

@@ -115,7 +115,7 @@ func (transaction *ScheduleCreateTransaction) _Build() *proto.TransactionBody {
 		Memo: transaction.memo,
 	}
 
-	if !transaction.payerAccountID._IsZero() {
+	if transaction.payerAccountID != nil {
 		body.PayerAccountID = transaction.payerAccountID._ToProtobuf()
 	}
 

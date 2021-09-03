@@ -107,13 +107,13 @@ func (transaction *SystemDeleteTransaction) _Build() *proto.TransactionBody {
 		}
 	}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}
@@ -150,13 +150,13 @@ func (transaction *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*proto
 		}
 	}
 
-	if !transaction.contractID._IsZero() {
+	if transaction.contractID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}

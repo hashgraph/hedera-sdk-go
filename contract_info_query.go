@@ -55,7 +55,7 @@ func (query *ContractInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 
 func (query *ContractInfoQuery) _Build() *proto.Query_ContractGetInfo {
 	body := &proto.ContractGetInfoQuery{Header: &proto.QueryHeader{}}
-	if !query.contractID._IsZero() {
+	if query.contractID != nil {
 		body.ContractID = query.contractID._ToProtobuf()
 	}
 

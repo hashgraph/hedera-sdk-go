@@ -103,7 +103,7 @@ func (query *ContractCallQuery) _Build() *proto.Query_ContractCallLocal {
 		Gas:           int64(query.gas),
 		MaxResultSize: int64(query.maxResultSize),
 	}
-	if !query.contractID._IsZero() {
+	if query.contractID != nil {
 		body.ContractID = query.contractID._ToProtobuf()
 	}
 	if len(query.functionParameters) > 0 {

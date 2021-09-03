@@ -144,7 +144,7 @@ func (transaction *TopicCreateTransaction) _Build() *proto.TransactionBody {
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
@@ -187,7 +187,7 @@ func (transaction *TopicCreateTransaction) _ConstructScheduleProtobuf() (*proto.
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 

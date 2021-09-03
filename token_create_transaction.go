@@ -301,11 +301,11 @@ func (transaction *TokenCreateTransaction) _Build() *proto.TransactionBody {
 		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.treasuryAccountID._IsZero() {
+	if transaction.treasuryAccountID != nil {
 		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
@@ -381,11 +381,11 @@ func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*proto.
 		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
-	if !transaction.treasuryAccountID._IsZero() {
+	if transaction.treasuryAccountID != nil {
 		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 

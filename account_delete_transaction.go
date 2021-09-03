@@ -91,11 +91,11 @@ func (transaction *AccountDeleteTransaction) _ValidateNetworkOnIDs(client *Clien
 func (transaction *AccountDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.CryptoDeleteTransactionBody{}
 
-	if !transaction.transferAccountID._IsZero() {
+	if transaction.transferAccountID != nil {
 		body.TransferAccountID = transaction.transferAccountID._ToProtobuf()
 	}
 
-	if !transaction.deleteAccountID._IsZero() {
+	if transaction.deleteAccountID != nil {
 		body.DeleteAccountID = transaction.deleteAccountID._ToProtobuf()
 	}
 
@@ -124,11 +124,11 @@ func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransact
 func (transaction *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.CryptoDeleteTransactionBody{}
 
-	if !transaction.transferAccountID._IsZero() {
+	if transaction.transferAccountID != nil {
 		body.TransferAccountID = transaction.transferAccountID._ToProtobuf()
 	}
 
-	if !transaction.deleteAccountID._IsZero() {
+	if transaction.deleteAccountID != nil {
 		body.DeleteAccountID = transaction.deleteAccountID._ToProtobuf()
 	}
 

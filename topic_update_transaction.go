@@ -200,11 +200,11 @@ func (transaction *TopicUpdateTransaction) _Build() *proto.TransactionBody {
 		Memo: &wrappers.StringValue{Value: transaction.memo},
 	}
 
-	if !transaction.topicID._IsZero() {
+	if transaction.topicID != nil {
 		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
@@ -251,11 +251,11 @@ func (transaction *TopicUpdateTransaction) _ConstructScheduleProtobuf() (*proto.
 		Memo: &wrappers.StringValue{Value: transaction.memo},
 	}
 
-	if !transaction.topicID._IsZero() {
+	if transaction.topicID != nil {
 		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 
-	if !transaction.autoRenewAccountID._IsZero() {
+	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 

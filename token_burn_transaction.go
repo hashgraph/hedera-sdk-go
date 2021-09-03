@@ -110,7 +110,7 @@ func (transaction *TokenBurnTransaction) _Build() *proto.TransactionBody {
 		Amount: transaction.amount,
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
@@ -145,7 +145,7 @@ func (transaction *TokenBurnTransaction) _ConstructScheduleProtobuf() (*proto.Sc
 		Amount: transaction.amount,
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 

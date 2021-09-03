@@ -85,7 +85,7 @@ func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransac
 
 func (transaction *ScheduleDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.ScheduleDeleteTransactionBody{}
-	if !transaction.scheduleID._IsZero() {
+	if transaction.scheduleID != nil {
 		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 

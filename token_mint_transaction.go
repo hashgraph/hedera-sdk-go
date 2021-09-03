@@ -109,7 +109,7 @@ func (transaction *TokenMintTransaction) _Build() *proto.TransactionBody {
 		body.Metadata = transaction.meta
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
@@ -144,7 +144,7 @@ func (transaction *TokenMintTransaction) _ConstructScheduleProtobuf() (*proto.Sc
 		body.Metadata = transaction.meta
 	}
 
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{

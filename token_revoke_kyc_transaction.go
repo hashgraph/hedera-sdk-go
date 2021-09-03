@@ -90,11 +90,11 @@ func (transaction *TokenRevokeKycTransaction) _ValidateNetworkOnIDs(client *Clie
 
 func (transaction *TokenRevokeKycTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenRevokeKycTransactionBody{}
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
@@ -122,11 +122,11 @@ func (transaction *TokenRevokeKycTransaction) Schedule() (*ScheduleCreateTransac
 
 func (transaction *TokenRevokeKycTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenRevokeKycTransactionBody{}
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 

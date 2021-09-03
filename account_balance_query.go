@@ -81,13 +81,13 @@ func (query *AccountBalanceQuery) _ValidateNetworkOnIDs(client *Client) error {
 func (query *AccountBalanceQuery) _Build() *proto.Query_CryptogetAccountBalance {
 	pb := proto.CryptoGetAccountBalanceQuery{Header: &proto.QueryHeader{}}
 
-	if !query.accountID._IsZero() {
+	if query.accountID != nil {
 		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
 			AccountID: query.accountID._ToProtobuf(),
 		}
 	}
 
-	if !query.contractID._IsZero() {
+	if query.contractID != nil {
 		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
 			ContractID: query.contractID._ToProtobuf(),
 		}

@@ -60,7 +60,7 @@ func (transaction *ScheduleSignTransaction) _ValidateNetworkOnIDs(client *Client
 
 func (transaction *ScheduleSignTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ScheduleSignTransactionBody{}
-	if !transaction.scheduleID._IsZero() {
+	if transaction.scheduleID != nil {
 		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 

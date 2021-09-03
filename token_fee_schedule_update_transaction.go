@@ -84,7 +84,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) _ValidateNetworkOnIDs(clie
 
 func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenFeeScheduleUpdateTransactionBody{}
-	if !transaction.tokenID._IsZero() {
+	if transaction.tokenID != nil {
 		body.TokenId = transaction.tokenID._ToProtobuf()
 	}
 

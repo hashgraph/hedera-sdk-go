@@ -82,7 +82,7 @@ func (transaction *FileAppendTransaction) _ValidateNetworkOnIDs(client *Client) 
 
 func (transaction *FileAppendTransaction) _Build() *proto.TransactionBody {
 	body := &proto.FileAppendTransactionBody{}
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 
@@ -121,7 +121,7 @@ func (transaction *FileAppendTransaction) _ConstructScheduleProtobuf() (*proto.S
 		Contents: transaction.contents,
 	}
 
-	if !transaction.fileID._IsZero() {
+	if transaction.fileID != nil {
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 

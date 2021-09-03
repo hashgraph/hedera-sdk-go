@@ -123,7 +123,7 @@ func (transaction *TokenAssociateTransaction) _ValidateNetworkOnIDs(client *Clie
 
 func (transaction *TokenAssociateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenAssociateTransactionBody{}
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
@@ -160,7 +160,7 @@ func (transaction *TokenAssociateTransaction) Schedule() (*ScheduleCreateTransac
 
 func (transaction *TokenAssociateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenAssociateTransactionBody{}
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 

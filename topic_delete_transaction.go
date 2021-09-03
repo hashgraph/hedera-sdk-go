@@ -61,7 +61,7 @@ func (transaction *TopicDeleteTransaction) _ValidateNetworkOnIDs(client *Client)
 
 func (transaction *TopicDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ConsensusDeleteTopicTransactionBody{}
-	if !transaction.topicID._IsZero() {
+	if transaction.topicID != nil {
 		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 
@@ -89,7 +89,7 @@ func (transaction *TopicDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 
 func (transaction *TopicDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.ConsensusDeleteTopicTransactionBody{}
-	if !transaction.topicID._IsZero() {
+	if transaction.topicID != nil {
 		body.TopicID = transaction.topicID._ToProtobuf()
 	}
 

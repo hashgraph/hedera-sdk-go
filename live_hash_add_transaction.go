@@ -115,7 +115,7 @@ func (transaction *LiveHashAddTransaction) _Build() *proto.TransactionBody {
 		LiveHash: &proto.LiveHash{},
 	}
 
-	if !transaction.accountID._IsZero() {
+	if transaction.accountID != nil {
 		body.LiveHash.AccountId = transaction.accountID._ToProtobuf()
 	}
 
