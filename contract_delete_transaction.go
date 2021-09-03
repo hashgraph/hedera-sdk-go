@@ -8,8 +8,8 @@ import (
 
 type ContractDeleteTransaction struct {
 	Transaction
-	contractID        ContractID
-	transferContactID ContractID
+	contractID        *ContractID
+	transferContactID *ContractID
 	transferAccountID *AccountID
 }
 
@@ -39,7 +39,11 @@ func (transaction *ContractDeleteTransaction) SetContractID(id ContractID) *Cont
 }
 
 func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
-	return transaction.contractID
+	if transaction.contractID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.contractID
 }
 
 // Sets the contract ID which will receive all remaining hbars.
@@ -51,7 +55,11 @@ func (transaction *ContractDeleteTransaction) SetTransferContractID(id ContractI
 }
 
 func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID {
-	return transaction.transferContactID
+	if transaction.transferContactID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.transferContactID
 }
 
 // Sets the account ID which will receive all remaining hbars.
@@ -75,16 +83,22 @@ func (transaction *ContractDeleteTransaction) validateNetworkOnIDs(client *Clien
 		return nil
 	}
 
-	if err := transaction.contractID.Validate(client); err != nil {
-		return err
+	if transaction.contractID != nil {
+		if err := transaction.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.transferContactID.Validate(client); err != nil {
-		return err
+	if transaction.transferContactID != nil {
+		if err := transaction.transferContactID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.transferAccountID.Validate(client); err != nil {
-		return err
+	if transaction.transferAccountID != nil {
+		if err := transaction.transferAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -8,7 +8,7 @@ import (
 
 type AccountInfoQuery struct {
 	Query
-	accountID AccountID
+	accountID *AccountID
 }
 
 func NewAccountInfoQuery() *AccountInfoQuery {
@@ -18,13 +18,17 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 }
 
 // SetAccountID sets the AccountID for this AccountInfoQuery.
-func (query *AccountInfoQuery) SetAccountID(id AccountID) *AccountInfoQuery {
-	query.accountID = id
+func (query *AccountInfoQuery) SetSetAccountID(accountID AccountID) *AccountInfoQuery {
+	query.accountID = &accountID
 	return query
 }
 
 func (query *AccountInfoQuery) GetAccountID() AccountID {
-	return query.accountID
+	if query.accountID == nil {
+		return AccountID{}
+	}
+
+	return *query.accountID
 }
 
 func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
@@ -32,8 +36,10 @@ func (query *AccountInfoQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.accountID.Validate(client); err != nil {
-		return err
+	if query.accountID != nil {
+		if err := query.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

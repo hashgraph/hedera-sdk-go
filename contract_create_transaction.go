@@ -8,7 +8,7 @@ import (
 
 type ContractCreateTransaction struct {
 	Transaction
-	byteCodeFileID  FileID
+	byteCodeFileID  *FileID
 	proxyAccountID  *AccountID
 	adminKey        Key
 	gas             int64
@@ -53,7 +53,11 @@ func (transaction *ContractCreateTransaction) SetBytecodeFileID(bytecodeFileID F
 }
 
 func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
-	return transaction.byteCodeFileID
+	if transaction.byteCodeFileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.byteCodeFileID
 }
 
 /**
@@ -168,12 +172,16 @@ func (transaction *ContractCreateTransaction) validateNetworkOnIDs(client *Clien
 		return nil
 	}
 
-	if err := transaction.byteCodeFileID.Validate(client); err != nil {
-		return err
+	if transaction.byteCodeFileID != nil {
+		if err := transaction.byteCodeFileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.proxyAccountID.Validate(client); err != nil {
-		return err
+	if transaction.proxyAccountID != nil {
+		if err := transaction.proxyAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

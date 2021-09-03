@@ -8,7 +8,7 @@ import (
 
 type ScheduleInfoQuery struct {
 	Query
-	scheduleID ScheduleID
+	scheduleID *ScheduleID
 }
 
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
@@ -17,8 +17,8 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	}
 }
 
-func (query *ScheduleInfoQuery) SetScheduleID(id ScheduleID) *ScheduleInfoQuery {
-	query.scheduleID = id
+func (query *ScheduleInfoQuery) SetSetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
+	query.scheduleID = &scheduleID
 	return query
 }
 
@@ -31,8 +31,10 @@ func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.scheduleID.Validate(client); err != nil {
-		return err
+	if query.scheduleID != nil {
+		if err := query.scheduleID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

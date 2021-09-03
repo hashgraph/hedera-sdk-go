@@ -39,7 +39,17 @@ func NftIDFromString(s string) (NftID, error) {
 
 func (id *NftID) Validate(client *Client) error {
 	if !id.isZero() && client != nil && client.network.networkName != nil {
-		return id.TokenID.Validate(client)
+
+		if id.TokenID != nil {
+			if id.TokenID != nil {
+				if err := id.TokenID.Validate(client); err != nil {
+					return err
+				}
+			}
+
+		}
+
+		return nil
 	}
 
 	return nil

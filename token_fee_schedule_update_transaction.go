@@ -10,7 +10,7 @@ import (
 
 type TokenFeeScheduleUpdateTransaction struct {
 	Transaction
-	tokenID    TokenID
+	tokenID    *TokenID
 	customFees []Fee
 }
 
@@ -45,7 +45,11 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(id TokenID) *To
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Fee) *TokenFeeScheduleUpdateTransaction {
@@ -63,8 +67,10 @@ func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(clien
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	for _, customFee := range transaction.customFees {

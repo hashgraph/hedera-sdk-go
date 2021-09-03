@@ -14,7 +14,7 @@ import (
 // other field in that case will cause the transaction status to resolve to TOKEN_IS_IMMUTABlE.
 type TokenUpdateTransaction struct {
 	Transaction
-	tokenID            TokenID
+	tokenID            *TokenID
 	treasuryAccountID  *AccountID
 	autoRenewAccountID *AccountID
 	tokenName          string
@@ -77,7 +77,11 @@ func (transaction *TokenUpdateTransaction) SetTokenID(id TokenID) *TokenUpdateTr
 }
 
 func (transaction *TokenUpdateTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The new Symbol of the Token. Must be UTF-8 capitalized alphabetical string identifying the token.
@@ -253,16 +257,22 @@ func (transaction *TokenUpdateTransaction) validateNetworkOnIDs(client *Client) 
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.treasuryAccountID.Validate(client); err != nil {
-		return err
+	if transaction.treasuryAccountID != nil {
+		if err := transaction.treasuryAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.autoRenewAccountID.Validate(client); err != nil {
-		return err
+	if transaction.autoRenewAccountID != nil {
+		if err := transaction.autoRenewAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

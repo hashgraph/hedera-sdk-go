@@ -8,7 +8,7 @@ import (
 
 type TransactionReceiptQuery struct {
 	Query
-	transactionID TransactionID
+	transactionID *TransactionID
 	duplicates    *bool
 }
 
@@ -159,13 +159,17 @@ func _TransactionReceiptQueryGetMethod(_ request, channel *channel) method {
 	}
 }
 
-func (query *TransactionReceiptQuery) SetTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
-	query.transactionID = transactionID
+func (query *TransactionReceiptQuery) SetSetTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
+	query.transactionID = &transactionID
 	return query
 }
 
 func (query *TransactionReceiptQuery) GetTransactionID() TransactionID {
-	return query.transactionID
+	if query.transactionID == nil {
+		return TransactionID{}
+	}
+
+	return *query.transactionID
 }
 
 func (query *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionReceiptQuery {

@@ -12,7 +12,7 @@ import (
 // other field in that case will cause the transaction status to resolve to TOKEN_IS_IMMUTABlE.
 type TokenDeleteTransaction struct {
 	Transaction
-	tokenID TokenID
+	tokenID *TokenID
 }
 
 func NewTokenDeleteTransaction() *TokenDeleteTransaction {
@@ -39,7 +39,11 @@ func (transaction *TokenDeleteTransaction) SetTokenID(tokenID TokenID) *TokenDel
 }
 
 func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) error {
@@ -47,8 +51,10 @@ func (transaction *TokenDeleteTransaction) validateNetworkOnIDs(client *Client) 
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

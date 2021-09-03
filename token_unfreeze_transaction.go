@@ -18,7 +18,7 @@ import (
 // operation is idempotent.
 type TokenUnfreezeTransaction struct {
 	Transaction
-	tokenID   TokenID
+	tokenID   *TokenID
 	accountID *AccountID
 }
 
@@ -47,7 +47,11 @@ func (transaction *TokenUnfreezeTransaction) SetTokenID(id TokenID) *TokenUnfree
 }
 
 func (transaction *TokenUnfreezeTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The account to be unfrozen
@@ -70,12 +74,16 @@ func (transaction *TokenUnfreezeTransaction) validateNetworkOnIDs(client *Client
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.accountID.Validate(client); err != nil {
-		return err
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -8,7 +8,7 @@ import (
 
 type TokenNftInfoQuery struct {
 	Query
-	nftID NftID
+	nftID *NftID
 }
 
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
@@ -18,13 +18,17 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	}
 }
 
-func (query *TokenNftInfoQuery) SetNftID(id NftID) *TokenNftInfoQuery {
-	query.nftID = id
+func (query *TokenNftInfoQuery) SetSetNftID(nftID NftID) *TokenNftInfoQuery {
+	query.nftID = &nftID
 	return query
 }
 
 func (query *TokenNftInfoQuery) GetNftID() NftID {
-	return query.nftID
+	if query.nftID == nil {
+		return NftID{}
+	}
+
+	return *query.nftID
 }
 
 // Deprecated
@@ -89,8 +93,10 @@ func (query *TokenNftInfoQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.nftID.Validate(client); err != nil {
-		return err
+	if query.nftID != nil {
+		if err := query.nftID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

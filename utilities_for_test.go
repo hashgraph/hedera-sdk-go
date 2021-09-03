@@ -48,8 +48,8 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 			panic(err)
 		}
 	} else {
-        panic("Failed to construct client from environment variables")
-    }
+		panic("Failed to construct client from environment variables")
+	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
 	configOperatorKey := os.Getenv("OPERATOR_KEY")

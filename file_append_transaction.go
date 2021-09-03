@@ -15,7 +15,7 @@ type FileAppendTransaction struct {
 	Transaction
 	maxChunks uint64
 	contents  []byte
-	fileID    FileID
+	fileID    *FileID
 }
 
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
@@ -48,7 +48,11 @@ func (transaction *FileAppendTransaction) SetFileID(id FileID) *FileAppendTransa
 }
 
 func (transaction *FileAppendTransaction) GetFileID() FileID {
-	return transaction.fileID
+	if transaction.fileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.fileID
 }
 
 // SetContents sets the bytes to append to the contents of the file.
@@ -67,8 +71,10 @@ func (transaction *FileAppendTransaction) validateNetworkOnIDs(client *Client) e
 		return nil
 	}
 
-	if err := transaction.fileID.Validate(client); err != nil {
-		return err
+	if transaction.fileID != nil {
+		if err := transaction.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

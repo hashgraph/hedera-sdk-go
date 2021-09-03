@@ -8,8 +8,8 @@ import (
 
 type SystemDeleteTransaction struct {
 	Transaction
-	contractID     ContractID
-	fileID         FileID
+	contractID     *ContractID
+	fileID         *FileID
 	expirationTime *time.Time
 }
 
@@ -67,7 +67,11 @@ func (transaction *SystemDeleteTransaction) SetFileID(id FileID) *SystemDeleteTr
 }
 
 func (transaction *SystemDeleteTransaction) GetFileID() FileID {
-	return transaction.fileID
+	if transaction.fileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.fileID
 }
 
 func (transaction *SystemDeleteTransaction) validateNetworkOnIDs(client *Client) error {
@@ -75,12 +79,16 @@ func (transaction *SystemDeleteTransaction) validateNetworkOnIDs(client *Client)
 		return nil
 	}
 
-	if err := transaction.contractID.Validate(client); err != nil {
-		return err
+	if transaction.contractID != nil {
+		if err := transaction.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.fileID.Validate(client); err != nil {
-		return err
+	if transaction.fileID != nil {
+		if err := transaction.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

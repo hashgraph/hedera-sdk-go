@@ -104,14 +104,19 @@ func (transaction *TokenAssociateTransaction) validateNetworkOnIDs(client *Clien
 		return nil
 	}
 
-	if err := transaction.accountID.Validate(client); err != nil {
-		return err
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	for _, tokenID := range transaction.tokens {
-		if err := tokenID.Validate(client); err != nil {
-			return err
+		if tokenID != nil {
+			if err := tokenID.Validate(client); err != nil {
+				return err
+			}
 		}
+
 	}
 
 	return nil

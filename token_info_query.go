@@ -8,7 +8,7 @@ import (
 
 type TokenInfoQuery struct {
 	Query
-	tokenID TokenID
+	tokenID *TokenID
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
@@ -20,13 +20,17 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
-func (query *TokenInfoQuery) SetTokenID(id TokenID) *TokenInfoQuery {
-	query.tokenID = id
+func (query *TokenInfoQuery) SetSetTokenID(tokenID TokenID) *TokenInfoQuery {
+	query.tokenID = &tokenID
 	return query
 }
 
 func (query *TokenInfoQuery) GetTokenID() TokenID {
-	return query.tokenID
+	if query.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *query.tokenID
 }
 
 func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
@@ -34,8 +38,10 @@ func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.tokenID.Validate(client); err != nil {
-		return err
+	if query.tokenID != nil {
+		if err := query.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

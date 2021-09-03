@@ -15,7 +15,7 @@ import (
 // to burn 100.55 tokens, one must provide amount of 10055.
 type TokenBurnTransaction struct {
 	Transaction
-	tokenID TokenID
+	tokenID *TokenID
 	amount  uint64
 	serial  []int64
 }
@@ -47,7 +47,11 @@ func (transaction *TokenBurnTransaction) SetTokenID(id TokenID) *TokenBurnTransa
 }
 
 func (transaction *TokenBurnTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The amount to burn from the Treasury Account. Amount must be a positive non-zero number, not
@@ -92,8 +96,10 @@ func (transaction *TokenBurnTransaction) validateNetworkOnIDs(client *Client) er
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

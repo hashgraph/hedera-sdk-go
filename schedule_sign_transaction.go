@@ -38,7 +38,11 @@ func (transaction *ScheduleSignTransaction) SetScheduleID(id ScheduleID) *Schedu
 }
 
 func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
-	return transaction.scheduleID
+	if transaction.scheduleID == nil {
+		return ScheduleID{}
+	}
+
+	return *transaction.scheduleID
 }
 
 func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
@@ -46,8 +50,10 @@ func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client)
 		return nil
 	}
 
-	if err := transaction.scheduleID.Validate(client); err != nil {
-		return err
+	if transaction.scheduleID != nil {
+		if err := transaction.scheduleID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -25,7 +25,7 @@ import (
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
 	Transaction
-	tokenID   TokenID
+	tokenID   *TokenID
 	accountID *AccountID
 	amount    uint64
 	serial    []int64
@@ -59,7 +59,11 @@ func (transaction *TokenWipeTransaction) SetTokenID(id TokenID) *TokenWipeTransa
 }
 
 func (transaction *TokenWipeTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The account to be wiped
@@ -105,12 +109,16 @@ func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) er
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.accountID.Validate(client); err != nil {
-		return err
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

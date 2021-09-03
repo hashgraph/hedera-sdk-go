@@ -101,8 +101,10 @@ func (transaction *ScheduleCreateTransaction) validateNetworkOnIDs(client *Clien
 		return nil
 	}
 
-	if err := transaction.payerAccountID.Validate(client); err != nil {
-		return err
+	if transaction.payerAccountID != nil {
+		if err := transaction.payerAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

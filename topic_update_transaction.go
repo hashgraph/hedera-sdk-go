@@ -11,7 +11,7 @@ import (
 // *TopicUpdateTransaction updates all fields on a Topic that are set in the transaction.
 type TopicUpdateTransaction struct {
 	Transaction
-	topicID            TopicID
+	topicID            *TopicID
 	autoRenewAccountID *AccountID
 	adminKey           Key
 	submitKey          Key
@@ -59,7 +59,11 @@ func (transaction *TopicUpdateTransaction) SetTopicID(id TopicID) *TopicUpdateTr
 }
 
 func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
-	return transaction.topicID
+	if transaction.topicID == nil {
+		return TopicID{}
+	}
+
+	return *transaction.topicID
 }
 
 // SetAdminKey sets the key required to update/delete the topic. If unset, the key will not be changed.
@@ -176,12 +180,16 @@ func (transaction *TopicUpdateTransaction) validateNetworkOnIDs(client *Client) 
 		return nil
 	}
 
-	if err := transaction.topicID.Validate(client); err != nil {
-		return err
+	if transaction.topicID != nil {
+		if err := transaction.topicID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.autoRenewAccountID.Validate(client); err != nil {
-		return err
+	if transaction.autoRenewAccountID != nil {
+		if err := transaction.autoRenewAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

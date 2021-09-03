@@ -8,7 +8,7 @@ import (
 
 type FileInfoQuery struct {
 	Query
-	fileID FileID
+	fileID *FileID
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
@@ -17,8 +17,8 @@ func NewFileInfoQuery() *FileInfoQuery {
 	}
 }
 
-func (query *FileInfoQuery) SetFileID(id FileID) *FileInfoQuery {
-	query.fileID = id
+func (query *FileInfoQuery) SetSetFileID(fileID FileID) *FileInfoQuery {
+	query.fileID = &fileID
 	return query
 }
 
@@ -31,8 +31,10 @@ func (query *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.fileID.Validate(client); err != nil {
-		return err
+	if query.fileID != nil {
+		if err := query.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

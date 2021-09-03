@@ -130,7 +130,17 @@ func (transaction *AccountCreateTransaction) validateNetworkOnIDs(client *Client
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	return transaction.proxyAccountID.Validate(client)
+
+	if transaction.proxyAccountID != nil {
+		if transaction.proxyAccountID != nil {
+			if err := transaction.proxyAccountID.Validate(client); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
 }
 
 func (transaction *AccountCreateTransaction) build() *proto.TransactionBody {

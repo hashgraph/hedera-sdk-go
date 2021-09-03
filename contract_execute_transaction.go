@@ -15,7 +15,7 @@ import (
 // For a cheaper but more limited method to call functions, see ContractCallQuery.
 type ContractExecuteTransaction struct {
 	Transaction
-	contractID ContractID
+	contractID *ContractID
 	gas        int64
 	amount     int64
 	parameters []byte
@@ -102,8 +102,10 @@ func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Clie
 		return nil
 	}
 
-	if err := transaction.contractID.Validate(client); err != nil {
-		return err
+	if transaction.contractID != nil {
+		if err := transaction.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

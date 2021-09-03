@@ -101,8 +101,10 @@ func (transaction *LiveHashAddTransaction) validateNetworkOnIDs(client *Client) 
 		return nil
 	}
 
-	if err := transaction.accountID.Validate(client); err != nil {
-		return err
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

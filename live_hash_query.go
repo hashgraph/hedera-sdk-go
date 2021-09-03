@@ -8,7 +8,7 @@ import (
 
 type LiveHashQuery struct {
 	Query
-	accountID AccountID
+	accountID *AccountID
 	hash      []byte
 }
 
@@ -18,13 +18,17 @@ func NewLiveHashQuery() *LiveHashQuery {
 	}
 }
 
-func (query *LiveHashQuery) SetAccountID(id AccountID) *LiveHashQuery {
-	query.accountID = id
+func (query *LiveHashQuery) SetSetAccountID(accountID AccountID) *LiveHashQuery {
+	query.accountID = &accountID
 	return query
 }
 
 func (query *LiveHashQuery) GetAccountID() AccountID {
-	return query.accountID
+	if query.accountID == nil {
+		return AccountID{}
+	}
+
+	return *query.accountID
 }
 
 func (query *LiveHashQuery) SetHash(hash []byte) *LiveHashQuery {
@@ -41,8 +45,10 @@ func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.accountID.Validate(client); err != nil {
-		return err
+	if query.accountID != nil {
+		if err := query.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

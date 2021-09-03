@@ -10,7 +10,7 @@ import (
 
 type FileUpdateTransaction struct {
 	Transaction
-	fileID         FileID
+	fileID         *FileID
 	keys           *KeyList
 	expirationTime *time.Time
 	contents       []byte
@@ -47,7 +47,11 @@ func (transaction *FileUpdateTransaction) SetFileID(id FileID) *FileUpdateTransa
 }
 
 func (transaction *FileUpdateTransaction) GetFileID() FileID {
-	return transaction.fileID
+	if transaction.fileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.fileID
 }
 
 func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
@@ -111,8 +115,10 @@ func (transaction *FileUpdateTransaction) validateNetworkOnIDs(client *Client) e
 		return nil
 	}
 
-	if err := transaction.fileID.Validate(client); err != nil {
-		return err
+	if transaction.fileID != nil {
+		if err := transaction.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

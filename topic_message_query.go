@@ -20,7 +20,7 @@ type TopicMessageQuery struct {
 	retryHandler      func(err error) bool
 	attempt           uint64
 	maxAttempts       uint64
-	topicID           TopicID
+	topicID           *TopicID
 	startTime         *time.Time
 	endTime           *time.Time
 	limit             uint64
@@ -35,13 +35,17 @@ func NewTopicMessageQuery() *TopicMessageQuery {
 	}
 }
 
-func (query *TopicMessageQuery) SetTopicID(id TopicID) *TopicMessageQuery {
-	query.topicID = id
+func (query *TopicMessageQuery) SetSetTopicID(topicID TopicID) *TopicMessageQuery {
+	query.topicID = &topicID
 	return query
 }
 
 func (query *TopicMessageQuery) GetTopicID() TopicID {
-	return query.topicID
+	if query.topicID == nil {
+		return TopicID{}
+	}
+
+	return *query.topicID
 }
 
 func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQuery {
@@ -108,8 +112,10 @@ func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.topicID.Validate(client); err != nil {
-		return err
+	if query.topicID != nil {
+		if err := query.topicID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

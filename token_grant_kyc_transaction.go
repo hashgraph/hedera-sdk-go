@@ -17,7 +17,7 @@ import (
 // Once executed the Account is marked as KYC Granted.
 type TokenGrantKycTransaction struct {
 	Transaction
-	tokenID   TokenID
+	tokenID   *TokenID
 	accountID *AccountID
 }
 
@@ -46,7 +46,11 @@ func (transaction *TokenGrantKycTransaction) SetTokenID(id TokenID) *TokenGrantK
 }
 
 func (transaction *TokenGrantKycTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The account to be KYCed
@@ -69,12 +73,16 @@ func (transaction *TokenGrantKycTransaction) validateNetworkOnIDs(client *Client
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.accountID.Validate(client); err != nil {
-		return err
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

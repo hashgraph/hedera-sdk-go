@@ -38,15 +38,21 @@ func (fee CustomFixedFee) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 	if fee.DenominationTokenID != nil {
-		if err := fee.DenominationTokenID.Validate(client); err != nil {
-			return err
+		if fee.DenominationTokenID != nil {
+			if err := fee.DenominationTokenID.Validate(client); err != nil {
+				return err
+			}
 		}
+
 	}
 
 	if fee.FeeCollectorAccountID != nil {
-		if err := fee.FeeCollectorAccountID.Validate(client); err != nil {
-			return err
+		if fee.FeeCollectorAccountID != nil {
+			if err := fee.FeeCollectorAccountID.Validate(client); err != nil {
+				return err
+			}
 		}
+
 	}
 
 	return nil

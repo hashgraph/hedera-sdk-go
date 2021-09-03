@@ -23,9 +23,9 @@ import (
 // bytecode will be immutable.
 type ContractUpdateTransaction struct {
 	Transaction
-	contractID      ContractID
+	contractID      *ContractID
 	proxyAccountID  *AccountID
-	bytecodeFileID  FileID
+	bytecodeFileID  *FileID
 	adminKey        Key
 	autoRenewPeriod *time.Duration
 	expirationTime  *time.Time
@@ -69,13 +69,17 @@ func contractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.Tr
 }
 
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
-func (transaction *ContractUpdateTransaction) SetContractID(id ContractID) *ContractUpdateTransaction {
-	transaction.contractID = id
+func (transaction *ContractUpdateTransaction) SetSetContractID(contractID ContractID) *ContractUpdateTransaction {
+	transaction.contractID = &contractID
 	return transaction
 }
 
 func (transaction *ContractUpdateTransaction) GetContractID() ContractID {
-	return transaction.contractID
+	if transaction.contractID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.contractID
 }
 
 // SetBytecodeFileID sets the file ID of file containing the smart contract byte code. A copy will be made and held by
@@ -87,7 +91,11 @@ func (transaction *ContractUpdateTransaction) SetBytecodeFileID(id FileID) *Cont
 }
 
 func (transaction *ContractUpdateTransaction) GetBytecodeFileID() FileID {
-	return transaction.bytecodeFileID
+	if transaction.bytecodeFileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.bytecodeFileID
 }
 
 // SetAdminKey sets the key which can be used to arbitrarily modify the state of the instance by signing a
@@ -177,16 +185,22 @@ func (transaction *ContractUpdateTransaction) validateNetworkOnIDs(client *Clien
 		return nil
 	}
 
-	if err := transaction.contractID.Validate(client); err != nil {
-		return err
+	if transaction.contractID != nil {
+		if err := transaction.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.proxyAccountID.Validate(client); err != nil {
-		return err
+	if transaction.proxyAccountID != nil {
+		if err := transaction.proxyAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.bytecodeFileID.Validate(client); err != nil {
-		return err
+	if transaction.bytecodeFileID != nil {
+		if err := transaction.bytecodeFileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

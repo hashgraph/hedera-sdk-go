@@ -10,7 +10,7 @@ import (
 // it, that were above the threshold, during the last 25 hours.
 type AccountRecordsQuery struct {
 	Query
-	accountID AccountID
+	accountID *AccountID
 }
 
 // NewAccountRecordsQuery creates an AccountRecordsQuery query which can be used to construct and execute
@@ -25,13 +25,17 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 }
 
 // SetAccountID sets the account ID for which the records should be retrieved.
-func (query *AccountRecordsQuery) SetAccountID(id AccountID) *AccountRecordsQuery {
-	query.accountID = id
+func (query *AccountRecordsQuery) SetSetAccountID(accountID AccountID) *AccountRecordsQuery {
+	query.accountID = &accountID
 	return query
 }
 
 func (query *AccountRecordsQuery) GetAccountID() AccountID {
-	return query.accountID
+	if query.accountID == nil {
+		return AccountID{}
+	}
+
+	return *query.accountID
 }
 
 func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
@@ -39,8 +43,10 @@ func (query *AccountRecordsQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.accountID.Validate(client); err != nil {
-		return err
+	if query.accountID != nil {
+		if err := query.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

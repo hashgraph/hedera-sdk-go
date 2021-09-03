@@ -73,12 +73,16 @@ func (transaction *AccountDeleteTransaction) validateNetworkOnIDs(client *Client
 		return nil
 	}
 
-	if err := transaction.deleteAccountID.Validate(client); err != nil {
-		return err
+	if transaction.deleteAccountID != nil {
+		if err := transaction.deleteAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.transferAccountID.Validate(client); err != nil {
-		return err
+	if transaction.transferAccountID != nil {
+		if err := transaction.transferAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

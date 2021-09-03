@@ -47,7 +47,11 @@ func (transaction *TopicMessageSubmitTransaction) SetTopicID(id TopicID) *TopicM
 }
 
 func (transaction *TopicMessageSubmitTransaction) GetTopicID() TopicID {
-	return transaction.topicID
+	if transaction.topicID == nil {
+		return TopicID{}
+	}
+
+	return *transaction.topicID
 }
 
 func (transaction *TopicMessageSubmitTransaction) SetMessage(message []byte) *TopicMessageSubmitTransaction {
@@ -120,8 +124,10 @@ func (transaction *TopicMessageSubmitTransaction) validateNetworkOnIDs(client *C
 		return nil
 	}
 
-	if err := transaction.topicID.Validate(client); err != nil {
-		return err
+	if transaction.topicID != nil {
+		if err := transaction.topicID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

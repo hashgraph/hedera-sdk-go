@@ -10,7 +10,7 @@ import (
 // currently staked will be given. This is not yet implemented, but will be in a future version of the API.
 type AccountStakersQuery struct {
 	Query
-	accountID AccountID
+	accountID *AccountID
 }
 
 // NewAccountStakersQuery creates an AccountStakersQuery query which can be used to construct and execute
@@ -25,13 +25,17 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 }
 
 // SetAccountID sets the Account ID for which the stakers should be retrieved
-func (query *AccountStakersQuery) SetAccountID(id AccountID) *AccountStakersQuery {
-	query.accountID = id
+func (query *AccountStakersQuery) SetSetAccountID(accountID AccountID) *AccountStakersQuery {
+	query.accountID = &accountID
 	return query
 }
 
 func (query *AccountStakersQuery) GetAccountID() AccountID {
-	return query.accountID
+	if query.accountID == nil {
+		return AccountID{}
+	}
+
+	return *query.accountID
 }
 
 func (query *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
@@ -39,8 +43,10 @@ func (query *AccountStakersQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.accountID.Validate(client); err != nil {
-		return err
+	if query.accountID != nil {
+		if err := query.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

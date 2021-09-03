@@ -171,12 +171,16 @@ func (transaction *AccountUpdateTransaction) validateNetworkOnIDs(client *Client
 		return nil
 	}
 
-	if err := transaction.accountID.Validate(client); err != nil {
-		return err
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.proxyAccountID.Validate(client); err != nil {
-		return err
+	if transaction.proxyAccountID != nil {
+		if err := transaction.proxyAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

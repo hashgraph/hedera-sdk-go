@@ -9,7 +9,7 @@ import (
 // A ConsensusTopicDeleteTransaction is for deleting a topic on HCS.
 type TopicDeleteTransaction struct {
 	Transaction
-	topicID TopicID
+	topicID *TopicID
 }
 
 // NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction transaction which can be used to construct
@@ -38,7 +38,11 @@ func (transaction *TopicDeleteTransaction) SetTopicID(topicID TopicID) *TopicDel
 }
 
 func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
-	return transaction.topicID
+	if transaction.topicID == nil {
+		return TopicID{}
+	}
+
+	return *transaction.topicID
 }
 
 func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) error {
@@ -46,8 +50,10 @@ func (transaction *TopicDeleteTransaction) validateNetworkOnIDs(client *Client) 
 		return nil
 	}
 
-	if err := transaction.topicID.Validate(client); err != nil {
-		return err
+	if transaction.topicID != nil {
+		if err := transaction.topicID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

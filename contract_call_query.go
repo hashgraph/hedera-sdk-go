@@ -16,7 +16,7 @@ import (
 // purely local to a single  node.
 type ContractCallQuery struct {
 	Query
-	contractID         ContractID
+	contractID         *ContractID
 	gas                uint64
 	maxResultSize      uint64
 	functionParameters []byte
@@ -34,13 +34,17 @@ func NewContractCallQuery() *ContractCallQuery {
 }
 
 // SetContractID sets the contract instance to call
-func (query *ContractCallQuery) SetContractID(id ContractID) *ContractCallQuery {
-	query.contractID = id
+func (query *ContractCallQuery) SetSetContractID(contractID ContractID) *ContractCallQuery {
+	query.contractID = &contractID
 	return query
 }
 
 func (query *ContractCallQuery) GetContractID() ContractID {
-	return query.contractID
+	if query.contractID == nil {
+		return ContractID{}
+	}
+
+	return *query.contractID
 }
 
 // SetGas sets the amount of gas to use for the call. All of the gas offered will be charged for.
@@ -84,8 +88,10 @@ func (query *ContractCallQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.contractID.Validate(client); err != nil {
-		return err
+	if query.contractID != nil {
+		if err := query.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

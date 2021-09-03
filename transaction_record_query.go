@@ -8,7 +8,7 @@ import (
 
 type TransactionRecordQuery struct {
 	Query
-	transactionID TransactionID
+	transactionID *TransactionID
 }
 
 func NewTransactionRecordQuery() *TransactionRecordQuery {
@@ -161,13 +161,17 @@ func _TransactionRecordQueryGetMethod(_ request, channel *channel) method {
 	}
 }
 
-func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
-	query.transactionID = transactionID
+func (query *TransactionRecordQuery) SetSetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
+	query.transactionID = &transactionID
 	return query
 }
 
 func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
-	return query.transactionID
+	if query.transactionID == nil {
+		return TransactionID{}
+	}
+
+	return *query.transactionID
 }
 
 func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {

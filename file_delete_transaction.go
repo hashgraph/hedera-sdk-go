@@ -8,7 +8,7 @@ import (
 
 type FileDeleteTransaction struct {
 	Transaction
-	fileID FileID
+	fileID *FileID
 }
 
 func NewFileDeleteTransaction() *FileDeleteTransaction {
@@ -34,7 +34,11 @@ func (transaction *FileDeleteTransaction) SetFileID(id FileID) *FileDeleteTransa
 }
 
 func (transaction *FileDeleteTransaction) GetFileID() FileID {
-	return transaction.fileID
+	if transaction.fileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.fileID
 }
 
 func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
@@ -42,8 +46,10 @@ func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) e
 		return nil
 	}
 
-	if err := transaction.fileID.Validate(client); err != nil {
-		return err
+	if transaction.fileID != nil {
+		if err := transaction.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

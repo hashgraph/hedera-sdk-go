@@ -15,7 +15,7 @@ import (
 // to mint 100.55 tokens, one must provide amount of 10055.
 type TokenMintTransaction struct {
 	Transaction
-	tokenID TokenID
+	tokenID *TokenID
 	amount  uint64
 	meta    [][]byte
 }
@@ -47,7 +47,11 @@ func (transaction *TokenMintTransaction) SetTokenID(id TokenID) *TokenMintTransa
 }
 
 func (transaction *TokenMintTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The amount to mint from the Treasury Account. Amount must be a positive non-zero number, not
@@ -87,8 +91,10 @@ func (transaction *TokenMintTransaction) validateNetworkOnIDs(client *Client) er
 		return nil
 	}
 
-	if err := transaction.tokenID.Validate(client); err != nil {
-		return err
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

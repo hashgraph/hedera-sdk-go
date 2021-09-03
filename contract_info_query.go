@@ -10,7 +10,7 @@ import (
 // file containing its bytecode, and the time when it will expire.
 type ContractInfoQuery struct {
 	Query
-	contractID ContractID
+	contractID *ContractID
 }
 
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
@@ -26,13 +26,17 @@ func NewContractInfoQuery() *ContractInfoQuery {
 }
 
 // SetContractID sets the contract for which information is requested
-func (query *ContractInfoQuery) SetContractID(id ContractID) *ContractInfoQuery {
-	query.contractID = id
+func (query *ContractInfoQuery) SetSetContractID(contractID ContractID) *ContractInfoQuery {
+	query.contractID = &contractID
 	return query
 }
 
 func (query *ContractInfoQuery) GetContractID() ContractID {
-	return query.contractID
+	if query.contractID == nil {
+		return ContractID{}
+	}
+
+	return *query.contractID
 }
 
 func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
@@ -40,8 +44,10 @@ func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.contractID.Validate(client); err != nil {
-		return err
+	if query.contractID != nil {
+		if err := query.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

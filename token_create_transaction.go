@@ -260,12 +260,16 @@ func (transaction *TokenCreateTransaction) validateNetworkOnIDs(client *Client) 
 		return nil
 	}
 
-	if err := transaction.treasuryAccountID.Validate(client); err != nil {
-		return err
+	if transaction.treasuryAccountID != nil {
+		if err := transaction.treasuryAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := transaction.autoRenewAccountID.Validate(client); err != nil {
-		return err
+	if transaction.autoRenewAccountID != nil {
+		if err := transaction.autoRenewAccountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	for _, customFee := range transaction.customFees {

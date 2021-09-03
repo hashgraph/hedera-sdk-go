@@ -9,7 +9,7 @@ import (
 // FileContentsQuery retrieves the contents of a file.
 type FileContentsQuery struct {
 	Query
-	fileID FileID
+	fileID *FileID
 }
 
 // NewFileContentsQuery creates a FileContentsQuery query which can be used to construct and execute a
@@ -21,8 +21,8 @@ func NewFileContentsQuery() *FileContentsQuery {
 }
 
 // SetFileID sets the FileID of the file whose contents are requested.
-func (query *FileContentsQuery) SetFileID(id FileID) *FileContentsQuery {
-	query.fileID = id
+func (query *FileContentsQuery) SetSetFileID(fileID FileID) *FileContentsQuery {
+	query.fileID = &fileID
 	return query
 }
 
@@ -35,8 +35,10 @@ func (query *FileContentsQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.fileID.Validate(client); err != nil {
-		return err
+	if query.fileID != nil {
+		if err := query.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -9,7 +9,7 @@ import (
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
 type ContractBytecodeQuery struct {
 	Query
-	contractID ContractID
+	contractID *ContractID
 }
 
 // NewContractBytecodeQuery creates a ContractBytecodeQuery query which can be used to construct and execute a
@@ -21,13 +21,17 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 }
 
 // SetContractID sets the contract for which the bytecode is requested
-func (query *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
-	query.contractID = id
+func (query *ContractBytecodeQuery) SetSetContractID(contractID ContractID) *ContractBytecodeQuery {
+	query.contractID = &contractID
 	return query
 }
 
 func (query *ContractBytecodeQuery) GetContractID() ContractID {
-	return query.contractID
+	if query.contractID == nil {
+		return ContractID{}
+	}
+
+	return *query.contractID
 }
 
 func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
@@ -35,8 +39,10 @@ func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.contractID.Validate(client); err != nil {
-		return err
+	if query.contractID != nil {
+		if err := query.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

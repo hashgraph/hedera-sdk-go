@@ -8,7 +8,7 @@ import (
 
 type ScheduleDeleteTransaction struct {
 	Transaction
-	scheduleID ScheduleID
+	scheduleID *ScheduleID
 }
 
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
@@ -34,7 +34,11 @@ func (transaction *ScheduleDeleteTransaction) SetScheduleID(id ScheduleID) *Sche
 }
 
 func (transaction *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
-	return transaction.scheduleID
+	if transaction.scheduleID == nil {
+		return ScheduleID{}
+	}
+
+	return *transaction.scheduleID
 }
 
 func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error {
@@ -42,8 +46,10 @@ func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Clien
 		return nil
 	}
 
-	if err := transaction.scheduleID.Validate(client); err != nil {
-		return err
+	if transaction.scheduleID != nil {
+		if err := transaction.scheduleID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil

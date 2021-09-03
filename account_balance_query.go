@@ -28,28 +28,34 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
-func (query *AccountBalanceQuery) SetAccountID(id AccountID) *AccountBalanceQuery {
-	query.accountID = id
-
+func (query *AccountBalanceQuery) SetSetAccountID(accountID AccountID) *AccountBalanceQuery {
+	query.accountID = &accountID
 	return query
 }
 
 func (query *AccountBalanceQuery) GetAccountID() AccountID {
-	return query.accountID
+	if query.accountID == nil {
+		return AccountID{}
+	}
+
+	return *query.accountID
 }
 
 // SetContractID sets the ContractID for which you wish to query the balance.
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
 // it will be overwritten by this method.
-func (query *AccountBalanceQuery) SetContractID(id ContractID) *AccountBalanceQuery {
-	query.contractID = id
-
+func (query *AccountBalanceQuery) SetSetContractID(contractID ContractID) *AccountBalanceQuery {
+	query.contractID = &contractID
 	return query
 }
 
 func (query *AccountBalanceQuery) GetContractID() ContractID {
-	return query.contractID
+	if query.contractID == nil {
+		return ContractID{}
+	}
+
+	return *query.contractID
 }
 
 func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
@@ -57,12 +63,16 @@ func (query *AccountBalanceQuery) validateNetworkOnIDs(client *Client) error {
 		return nil
 	}
 
-	if err := query.accountID.Validate(client); err != nil {
-		return err
+	if query.accountID != nil {
+		if err := query.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
-	if err := query.contractID.Validate(client); err != nil {
-		return err
+	if query.contractID != nil {
+		if err := query.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
