@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -16,6 +17,9 @@ type NftID struct {
 
 func NftIDFromString(s string) (NftID, error) {
 	split := strings.Split(s, "@")
+	if len(split) < 2 {
+		panic(errors.New("wrong NftID format"))
+	}
 	shard, realm, num, checksum, err := _IdFromString(split[1])
 	if err != nil {
 		return NftID{}, err

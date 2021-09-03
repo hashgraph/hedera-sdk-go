@@ -34,6 +34,37 @@ func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitTokenCreateTransactionValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	tokenCreate := NewTokenCreateTransaction().
+		SetAutoRenewAccount(accountID).
+		SetTreasuryAccountID(accountID)
+
+	err = tokenCreate._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTokenCreateTransactionValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	tokenCreate := NewTokenCreateTransaction().
+		SetAutoRenewAccount(accountID).
+		SetTreasuryAccountID(accountID)
+
+	err = tokenCreate._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
@@ -264,7 +295,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "_Network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
 	}
 
 	newClient = Client{}

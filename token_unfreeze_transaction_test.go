@@ -135,6 +135,41 @@ func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitTokenUnfreezeTransactionValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	tokenUnfreeze := NewTokenUnfreezeTransaction().
+		SetTokenID(tokenID).
+		SetAccountID(accountID)
+
+	err = tokenUnfreeze._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTokenUnfreezeTransactionValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	tokenUnfreeze := NewTokenUnfreezeTransaction().
+		SetTokenID(tokenID).
+		SetAccountID(accountID)
+
+	err = tokenUnfreeze._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationTokenUnfreezeTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

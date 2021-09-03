@@ -52,6 +52,43 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitTokenUpdateTransactionValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	tokenUpdate := NewTokenUpdateTransaction().
+		SetTokenID(tokenID).
+		SetAutoRenewAccount(accountID).
+		SetTreasuryAccountID(accountID)
+
+	err = tokenUpdate._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTokenUpdateTransactionValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	tokenUpdate := NewTokenUpdateTransaction().
+		SetTokenID(tokenID).
+		SetAutoRenewAccount(accountID).
+		SetTreasuryAccountID(accountID)
+
+	err = tokenUpdate._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
