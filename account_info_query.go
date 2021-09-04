@@ -46,12 +46,17 @@ func (query *AccountInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 }
 
 func (query *AccountInfoQuery) _Build() *proto.Query_CryptoGetInfo {
-	return &proto.Query_CryptoGetInfo{
+	pb := proto.Query_CryptoGetInfo{
 		CryptoGetInfo: &proto.CryptoGetInfoQuery{
-			Header:    &proto.QueryHeader{},
-			AccountID: query.accountID._ToProtobuf(),
+			Header: &proto.QueryHeader{},
 		},
 	}
+
+	if query.accountID != nil {
+		pb.CryptoGetInfo.AccountID = query.accountID._ToProtobuf()
+	}
+
+	return &pb
 }
 
 func _AccountInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {

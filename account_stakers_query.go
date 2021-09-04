@@ -53,12 +53,17 @@ func (query *AccountStakersQuery) _ValidateNetworkOnIDs(client *Client) error {
 }
 
 func (query *AccountStakersQuery) _Build() *proto.Query_CryptoGetProxyStakers {
-	return &proto.Query_CryptoGetProxyStakers{
+	pb := proto.Query_CryptoGetProxyStakers{
 		CryptoGetProxyStakers: &proto.CryptoGetStakersQuery{
-			Header:    &proto.QueryHeader{},
-			AccountID: query.accountID._ToProtobuf(),
+			Header: &proto.QueryHeader{},
 		},
 	}
+
+	if query.accountID != nil {
+		pb.CryptoGetProxyStakers.AccountID = query.accountID._ToProtobuf()
+	}
+
+	return &pb
 }
 
 func (query *AccountStakersQuery) _QueryMakeRequest() _ProtoRequest {

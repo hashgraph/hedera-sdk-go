@@ -98,21 +98,23 @@ func (query *ContractCallQuery) _ValidateNetworkOnIDs(client *Client) error {
 }
 
 func (query *ContractCallQuery) _Build() *proto.Query_ContractCallLocal {
-	body := &proto.ContractCallLocalQuery{
-		Header:        &proto.QueryHeader{},
-		Gas:           int64(query.gas),
-		MaxResultSize: int64(query.maxResultSize),
-	}
-	if query.contractID != nil {
-		body.ContractID = query.contractID._ToProtobuf()
-	}
-	if len(query.functionParameters) > 0 {
-		body.FunctionParameters = query.functionParameters
+	pb := proto.Query_ContractCallLocal{
+		ContractCallLocal: &proto.ContractCallLocalQuery{
+			Header:        &proto.QueryHeader{},
+			Gas:           int64(query.gas),
+			MaxResultSize: int64(query.maxResultSize),
+		},
 	}
 
-	return &proto.Query_ContractCallLocal{
-		ContractCallLocal: body,
+	if query.contractID != nil {
+		pb.ContractCallLocal.ContractID = query.contractID._ToProtobuf()
 	}
+
+	if len(query.functionParameters) > 0 {
+		pb.ContractCallLocal.FunctionParameters = query.functionParameters
+	}
+
+	return &pb
 }
 
 func (query *ContractCallQuery) _QueryMakeRequest() _ProtoRequest {

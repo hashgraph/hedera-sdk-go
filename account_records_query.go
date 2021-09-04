@@ -53,12 +53,17 @@ func (query *AccountRecordsQuery) _ValidateNetworkOnIDs(client *Client) error {
 }
 
 func (query *AccountRecordsQuery) _Build() *proto.Query_CryptoGetAccountRecords {
-	return &proto.Query_CryptoGetAccountRecords{
+	pb := proto.Query_CryptoGetAccountRecords{
 		CryptoGetAccountRecords: &proto.CryptoGetAccountRecordsQuery{
-			Header:    &proto.QueryHeader{},
-			AccountID: query.accountID._ToProtobuf(),
+			Header: &proto.QueryHeader{},
 		},
 	}
+
+	if query.accountID != nil {
+		pb.CryptoGetAccountRecords.AccountID = query.accountID._ToProtobuf()
+	}
+
+	return &pb
 }
 
 func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {

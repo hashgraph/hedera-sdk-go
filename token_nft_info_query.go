@@ -105,7 +105,10 @@ func (query *TokenNftInfoQuery) _BuildByNft() *proto.Query_TokenGetNftInfo {
 	body := &proto.TokenGetNftInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	body.NftID = query.nftID._ToProtobuf()
+
+	if query.nftID != nil {
+		body.NftID = query.nftID._ToProtobuf()
+	}
 
 	return &proto.Query_TokenGetNftInfo{
 		TokenGetNftInfo: body,

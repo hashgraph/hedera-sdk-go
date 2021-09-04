@@ -54,14 +54,17 @@ func (query *ContractInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 }
 
 func (query *ContractInfoQuery) _Build() *proto.Query_ContractGetInfo {
-	body := &proto.ContractGetInfoQuery{Header: &proto.QueryHeader{}}
-	if query.contractID != nil {
-		body.ContractID = query.contractID._ToProtobuf()
+	pb := proto.Query_ContractGetInfo{
+		ContractGetInfo: &proto.ContractGetInfoQuery{
+			Header: &proto.QueryHeader{},
+		},
 	}
 
-	return &proto.Query_ContractGetInfo{
-		ContractGetInfo: body,
+	if query.contractID != nil {
+		pb.ContractGetInfo.ContractID = query.contractID._ToProtobuf()
 	}
+
+	return &pb
 }
 
 func (query *ContractInfoQuery) _QueryMakeRequest() _ProtoRequest {

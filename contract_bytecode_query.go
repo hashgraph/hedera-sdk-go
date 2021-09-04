@@ -49,12 +49,17 @@ func (query *ContractBytecodeQuery) _ValidateNetworkOnIDs(client *Client) error 
 }
 
 func (query *ContractBytecodeQuery) _Build() *proto.Query_ContractGetBytecode {
-	return &proto.Query_ContractGetBytecode{
+	pb := proto.Query_ContractGetBytecode{
 		ContractGetBytecode: &proto.ContractGetBytecodeQuery{
-			Header:     &proto.QueryHeader{},
-			ContractID: query.contractID._ToProtobuf(),
+			Header: &proto.QueryHeader{},
 		},
 	}
+
+	if query.contractID != nil {
+		pb.ContractGetBytecode.ContractID = query.contractID._ToProtobuf()
+	}
+
+	return &pb
 }
 
 func (query *ContractBytecodeQuery) _QueryMakeRequest() _ProtoRequest {

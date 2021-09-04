@@ -48,6 +48,7 @@ func (query *FileInfoQuery) _Build() *proto.Query_FileGetInfo {
 	body := &proto.FileGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
+
 	if query.fileID != nil {
 		body.FileID = query.fileID._ToProtobuf()
 	}

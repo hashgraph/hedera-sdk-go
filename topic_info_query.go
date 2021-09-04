@@ -51,6 +51,7 @@ func (query *TopicInfoQuery) _Build() *proto.Query_ConsensusGetTopicInfo {
 	body := &proto.ConsensusGetTopicInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
+
 	if query.topicID != nil {
 		body.TopicID = query.topicID._ToProtobuf()
 	}

@@ -52,6 +52,7 @@ func (query *FileContentsQuery) _Build() *proto.Query_FileGetContents {
 	body := &proto.FileGetContentsQuery{
 		Header: &proto.QueryHeader{},
 	}
+
 	if query.fileID != nil {
 		body.FileID = query.fileID._ToProtobuf()
 	}

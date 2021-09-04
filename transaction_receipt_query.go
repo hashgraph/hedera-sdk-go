@@ -34,9 +34,11 @@ func (query *TransactionReceiptQuery) _Build() *proto.Query_TransactionGetReceip
 	body := &proto.TransactionGetReceiptQuery{
 		Header: &proto.QueryHeader{},
 	}
+
 	if query.transactionID.AccountID != nil {
 		body.TransactionID = query.transactionID._ToProtobuf()
 	}
+
 	if query.duplicates != nil {
 		body.IncludeDuplicates = *query.duplicates
 	}
