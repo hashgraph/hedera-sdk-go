@@ -84,7 +84,7 @@ func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = scheduleSignTx.Execute(env.Client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)

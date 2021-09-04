@@ -93,7 +93,7 @@ func TestIntegrationLiveHashQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(NewHbar(1)).
 		Execute(env.Client)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
