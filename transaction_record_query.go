@@ -1,40 +1,41 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TransactionRecordQuery struct {
 	Query
-	transactionID TransactionID
+	transactionID *TransactionID
 }
 
 func NewTransactionRecordQuery() *TransactionRecordQuery {
 	return &TransactionRecordQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
-func (query *TransactionRecordQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TransactionRecordQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.transactionID.AccountID.Validate(client)
-	if err != nil {
+
+	if err := query.transactionID.AccountID.Validate(client); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (query *TransactionRecordQuery) build() *proto.Query_TransactionGetRecord {
+func (query *TransactionRecordQuery) _Build() *proto.Query_TransactionGetRecord {
 	body := &proto.TransactionGetRecordQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.transactionID.AccountID.isZero() {
-		body.TransactionID = query.transactionID.toProtobuf()
+
+	if query.transactionID.AccountID != nil {
+		body.TransactionID = query.transactionID._ToProtobuf()
 	}
 
 	return &proto.Query_TransactionGetRecord{
@@ -42,32 +43,32 @@ func (query *TransactionRecordQuery) build() *proto.Query_TransactionGetRecord {
 	}
 }
 
-func (query *TransactionRecordQuery) queryMakeRequest() protoRequest {
-	pb := query.build()
+func (query *TransactionRecordQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TransactionGetRecord.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.TransactionGetRecord.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *TransactionRecordQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	pb := query.build()
+func (query *TransactionRecordQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.TransactionGetRecord.Header.Payment = paymentTransaction
 	pb.TransactionGetRecord.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -79,30 +80,30 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		transactionRecordQuery_shouldRetry,
+		_TransactionRecordQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		transactionRecordQuery_getMethod,
-		transactionRecordQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_TransactionRecordQueryGetMethod,
+		_TransactionRecordQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -112,20 +113,17 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetTransactionGetRecord().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func transactionRecordQuery_shouldRetry(request request, response response) executionState {
+func _TransactionRecordQueryShouldRetry(request _Request, response _Response) _ExecutionState {
 	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
 		if response.query.GetTransactionGetRecord().GetHeader().ResponseType == proto.ResponseType_COST_ANSWER {
 			return executionStateFinished
-		} else {
-			break
 		}
 	default:
 		return executionStateError
@@ -141,7 +139,7 @@ func transactionRecordQuery_shouldRetry(request request, response response) exec
 	}
 }
 
-func transactionRecordQuery_mapStatusError(request request, response response) error {
+func _TransactionRecordQueryMapStatusError(request _Request, response _Response) error {
 	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
@@ -153,24 +151,28 @@ func transactionRecordQuery_mapStatusError(request request, response response) e
 
 	return ErrHederaReceiptStatus{
 		Status: Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
-		//TxID:    transactionIDFromProtobuf(request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
-		Receipt: transactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
+		// TxID:    _TransactionIDFromProtobuf(_Request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
+		Receipt: _TransactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
 	}
 }
 
-func transactionRecordQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getCrypto().GetTxRecordByTxID,
+func _TransactionRecordQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetCrypto().GetTxRecordByTxID,
 	}
 }
 
 func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
-	query.transactionID = transactionID
+	query.transactionID = &transactionID
 	return query
 }
 
 func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
-	return query.transactionID
+	if query.transactionID == nil {
+		return TransactionID{}
+	}
+
+	return *query.transactionID
 }
 
 func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
@@ -235,15 +237,15 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TransactionRecord{}, err
 	}
 
-	query.build()
+	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.GetOperatorAccountID())
 
@@ -274,7 +276,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	}
 
 	for _, nodeID := range query.nodeIDs {
-		transaction, err := query_makePaymentTransaction(
+		transaction, err := _QueryMakePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,
 			client.operator,
@@ -287,50 +289,49 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		query.paymentTransactions = append(query.paymentTransactions, transaction)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		transactionRecordQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		transactionRecordQuery_getMethod,
-		transactionRecordQuery_mapStatusError,
-		query_mapResponse,
+		_TransactionRecordQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TransactionRecordQueryGetMethod,
+		_TransactionRecordQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
-		switch precheckErr := err.(type) {
-		case ErrHederaPreCheckStatus:
-			return TransactionRecord{}, newErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
+		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
+			return TransactionRecord{}, _NewErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
 		}
 		return TransactionRecord{}, err
 	}
 
-	record := transactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord)
-	record.TransactionID.AccountID.setNetworkWithClient(client)
+	record := _TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord)
+	record.TransactionID.AccountID._SetNetworkWithClient(client)
 	if record.Receipt.TokenID != nil {
-		record.Receipt.TokenID.setNetworkWithClient(client)
+		record.Receipt.TokenID._SetNetworkWithClient(client)
 	}
 	if record.Receipt.TopicID != nil {
-		record.Receipt.TopicID.setNetworkWithClient(client)
+		record.Receipt.TopicID._SetNetworkWithClient(client)
 	}
 	if record.Receipt.FileID != nil {
-		record.Receipt.FileID.setNetworkWithClient(client)
+		record.Receipt.FileID._SetNetworkWithClient(client)
 	}
 	if record.Receipt.ContractID != nil {
-		record.Receipt.ContractID.setNetworkWithClient(client)
+		record.Receipt.ContractID._SetNetworkWithClient(client)
 	}
 	if record.Receipt.ScheduleID != nil {
-		record.Receipt.ScheduleID.setNetworkWithClient(client)
+		record.Receipt.ScheduleID._SetNetworkWithClient(client)
 	}
 	if record.Receipt.AccountID != nil {
-		record.Receipt.AccountID.setNetworkWithClient(client)
+		record.Receipt.AccountID._SetNetworkWithClient(client)
 	}
 	if record.Receipt.ScheduledTransactionID != nil {
-		record.Receipt.ScheduledTransactionID.AccountID.setNetworkWithClient(client)
+		record.Receipt.ScheduledTransactionID.AccountID._SetNetworkWithClient(client)
 	}
 
 	return record, nil

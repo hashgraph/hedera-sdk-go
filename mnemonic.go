@@ -3,10 +3,11 @@ package hedera
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/tyler-smith/go-bip39"
 	"math/big"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/tyler-smith/go-bip39"
 )
 
 type Mnemonic struct {
@@ -78,10 +79,10 @@ func NewMnemonic(words []string) (Mnemonic, error) {
 	joinedString := strings.Join(words, " ")
 
 	if len(words) == 24 || len(words) == 12 || len(words) == 22 {
-		if len(words) == 22 {
+		if len(words) == 22 { //nolint
 			return Mnemonic{
 				words: joinedString,
-			}.legacyValidate()
+			}._LegacyValidate()
 		} else if bip39.IsMnemonicValid(joinedString) {
 			return Mnemonic{
 				words: joinedString,
@@ -94,18 +95,18 @@ func NewMnemonic(words []string) (Mnemonic, error) {
 	}
 }
 
-func (m Mnemonic) legacyValidate() (Mnemonic, error) {
+func (m Mnemonic) _LegacyValidate() (Mnemonic, error) {
 	if len(strings.Split(m.words, " ")) != 22 {
 		return Mnemonic{}, fmt.Errorf("not a legacy mnemonic")
 	}
 
-	indices, err := m.indices()
+	indices, err := m._Indices()
 	if err != nil {
 		return Mnemonic{}, err
 	}
 
-	entropy, checksum := m.toLegacyEntropy(indices)
-	newchecksum := crc8(entropy)
+	entropy, checksum := m._ToLegacyEntropy(indices)
+	newchecksum := _Crc8(entropy)
 
 	if checksum != newchecksum {
 		return Mnemonic{}, fmt.Errorf("legacy mnemonic checksum mismatch")
@@ -114,17 +115,17 @@ func (m Mnemonic) legacyValidate() (Mnemonic, error) {
 	return m, nil
 }
 
-func (m Mnemonic) indices() ([]int, error) {
+func (m Mnemonic) _Indices() ([]int, error) {
 	var indices []int
 	var check bool
 	temp := strings.Split(m.words, " ")
-	if len(temp) == 22 {
+	if len(temp) == 22 { // nolint
 		for _, mnemonicString := range strings.Split(m.words, " ") {
 			check = false
 			for i, stringCheck := range legacy {
 				if mnemonicString == stringCheck {
 					check = true
-					indices = append(indices, int(i))
+					indices = append(indices, i)
 				}
 			}
 			if !check {
@@ -134,7 +135,7 @@ func (m Mnemonic) indices() ([]int, error) {
 	} else if len(temp) == 24 {
 		for _, mnemonicString := range strings.Split(m.words, " ") {
 			t, check := bip39.GetWordIndex(mnemonicString)
-			if check != true {
+			if !check {
 				return make([]int, 0), bip39.ErrInvalidMnemonic
 			}
 			indices = append(indices, t)
@@ -147,21 +148,21 @@ func (m Mnemonic) indices() ([]int, error) {
 }
 
 func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
-	indices, err := m.indices()
+	indices, err := m._Indices()
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
 	var entropy []byte
-	if len(indices) == 22 {
-		entropy, _ = m.toLegacyEntropy(indices)
+	if len(indices) == 22 { // nolint
+		entropy, _ = m._ToLegacyEntropy(indices)
 	} else if len(indices) == 24 {
-		entropy, err = m.toLegacyEntropy2()
+		entropy, err = m._ToLegacyEntropy2()
 		if err != nil {
 			return PrivateKey{}, err
 		}
 	} else {
-		return PrivateKey{}, errors.New("Not a legacy key.")
+		return PrivateKey{}, errors.New("not a legacy key")
 	}
 
 	return PrivateKeyFromBytes(entropy)
@@ -170,7 +171,7 @@ func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
 func bytesToBits(dat []uint8) []bool {
 	bits := make([]bool, len(dat)*8)
 
-	for i, _ := range bits {
+	for i := range bits {
 		bits[i] = false
 	}
 
@@ -183,8 +184,8 @@ func bytesToBits(dat []uint8) []bool {
 	return bits
 }
 
-func (m Mnemonic) toLegacyEntropy(indices []int) ([]byte, uint8) {
-	data := convertRadix(indices, len(legacy), 256, 33)
+func (m Mnemonic) _ToLegacyEntropy(indices []int) ([]byte, uint8) {
+	data := _ConvertRadix(indices, len(legacy), 256, 33)
 
 	checksum := data[len(data)-1]
 	result := make([]uint8, len(data)-1)
@@ -196,18 +197,18 @@ func (m Mnemonic) toLegacyEntropy(indices []int) ([]byte, uint8) {
 	return result, checksum
 }
 
-func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
+func (m Mnemonic) _ToLegacyEntropy2() ([]byte, error) {
 	indices := strings.Split(m.words, " ")
 	concatBitsLen := len(indices) * 11
 	concatBits := make([]bool, concatBitsLen)
 
-	for i, _ := range concatBits {
+	for i := range concatBits {
 		concatBits[i] = false
 	}
 
 	for index, word := range indices {
 		nds, check := bip39.GetWordIndex(word)
-		if check != true {
+		if !check {
 			return make([]byte, 0), bip39.ErrInvalidMnemonic
 		}
 
@@ -230,7 +231,10 @@ func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
 	}
 
 	hash := sha256.New()
-	hash.Write(entropy)
+	if _, err := hash.Write(entropy); err != nil {
+		return nil, err
+	}
+
 	hashbits := bytesToBits(hash.Sum(nil))
 
 	for i := 0; i < checksumBitsLen; i++ {
@@ -242,7 +246,7 @@ func (m Mnemonic) toLegacyEntropy2() ([]byte, error) {
 	return entropy, nil
 }
 
-func convertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 {
+func _ConvertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 {
 	num := big.NewInt(0)
 
 	for _, element := range nums {
@@ -262,7 +266,7 @@ func convertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 
 	return result
 }
 
-func crc8(data []uint8) uint8 {
+func _Crc8(data []uint8) uint8 {
 	var crc uint8
 	crc = 0xff
 

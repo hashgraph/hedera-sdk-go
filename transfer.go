@@ -7,20 +7,26 @@ type Transfer struct {
 	Amount    Hbar
 }
 
-func transferFromProtobuf(pb *proto.AccountAmount) Transfer {
+func _TransferFromProtobuf(pb *proto.AccountAmount) Transfer {
 	if pb == nil {
 		return Transfer{}
 	}
+
+	accountID := AccountID{}
+	if pb.AccountID != nil {
+		accountID = *_AccountIDFromProtobuf(pb.AccountID)
+	}
+
 	return Transfer{
-		AccountID: accountIDFromProtobuf(pb.AccountID),
+		AccountID: accountID,
 		Amount:    HbarFromTinybar(pb.Amount),
 	}
 }
 
-func (transfer Transfer) toProtobuf() *proto.TransferList {
+func (transfer Transfer) _ToProtobuf() *proto.TransferList { // nolint
 	var ammounts = make([]*proto.AccountAmount, 0)
 	ammounts = append(ammounts, &proto.AccountAmount{
-		AccountID: transfer.AccountID.toProtobuf(),
+		AccountID: transfer.AccountID._ToProtobuf(),
 		Amount:    transfer.Amount.AsTinybar(),
 	})
 

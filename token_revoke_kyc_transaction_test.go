@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
@@ -14,7 +15,7 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -88,7 +89,7 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token grant kyc transaction failed"))
+	assert.Truef(t, check, "token grant kyc transaction failed")
 
 	resp, err = NewTokenRevokeKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -114,7 +115,7 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token revoke kyc transaction failed"))
+	assert.Truef(t, check, "token revoke kyc transaction failed")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -142,7 +143,7 @@ func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -237,7 +238,7 @@ func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).

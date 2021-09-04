@@ -3,8 +3,8 @@ package hedera
 import (
 	"time"
 
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 // AccountInfo is info about the account returned from an AccountInfoQuery
@@ -27,12 +27,12 @@ type AccountInfo struct {
 	OwnedNfts                      int64
 }
 
-func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
+func _AccountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
 	if pb == nil {
 		return AccountInfo{}, errParameterNull
 	}
 
-	pubKey, err := keyFromProtobuf(pb.Key)
+	pubKey, err := _KeyFromProtobuf(pb.Key)
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -41,7 +41,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 
 	if pb.TokenRelationships != nil {
 		for i, relationship := range pb.TokenRelationships {
-			singleRelationship := tokenRelationshipFromProtobuf(relationship)
+			singleRelationship := _TokenRelationshipFromProtobuf(relationship)
 			tokenRelationship[i] = &singleRelationship
 		}
 	}
@@ -50,7 +50,7 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 
 	if pb.LiveHashes != nil {
 		for i, liveHash := range pb.LiveHashes {
-			singleRelationship, err := liveHashFromProtobuf(liveHash)
+			singleRelationship, err := _LiveHashFromProtobuf(liveHash)
 			if err != nil {
 				return AccountInfo{}, err
 			}
@@ -58,60 +58,64 @@ func accountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Accou
 		}
 	}
 
-	var proxyAccountID AccountID
+	proxyAccountID := AccountID{}
 	if pb.ProxyAccountID != nil {
-		proxyAccountID = accountIDFromProtobuf(pb.ProxyAccountID)
+		proxyAccountID = *_AccountIDFromProtobuf(pb.ProxyAccountID)
+	}
+
+	accountID := AccountID{}
+	if pb.AccountID != nil {
+		accountID = *_AccountIDFromProtobuf(pb.AccountID)
 	}
 
 	return AccountInfo{
-		AccountID:                      accountIDFromProtobuf(pb.AccountID),
+		AccountID:                      accountID,
 		ContractAccountID:              pb.ContractAccountID,
 		IsDeleted:                      pb.Deleted,
 		ProxyAccountID:                 proxyAccountID,
 		ProxyReceived:                  HbarFromTinybar(pb.ProxyReceived),
 		Key:                            pubKey,
 		Balance:                        HbarFromTinybar(int64(pb.Balance)),
-		GenerateSendRecordThreshold:    HbarFromTinybar(int64(pb.GenerateSendRecordThreshold)),
-		GenerateReceiveRecordThreshold: HbarFromTinybar(int64(pb.GenerateReceiveRecordThreshold)),
+		GenerateSendRecordThreshold:    HbarFromTinybar(int64(pb.GenerateSendRecordThreshold)),    // nolint
+		GenerateReceiveRecordThreshold: HbarFromTinybar(int64(pb.GenerateReceiveRecordThreshold)), // nolint
 		ReceiverSigRequired:            pb.ReceiverSigRequired,
 		TokenRelationships:             tokenRelationship,
-		ExpirationTime:                 timeFromProtobuf(pb.ExpirationTime),
+		ExpirationTime:                 _TimeFromProtobuf(pb.ExpirationTime),
 		AccountMemo:                    pb.Memo,
-		AutoRenewPeriod:                durationFromProtobuf(pb.AutoRenewPeriod),
+		AutoRenewPeriod:                _DurationFromProtobuf(pb.AutoRenewPeriod),
 		LiveHashes:                     liveHashes,
 		OwnedNfts:                      pb.OwnedNfts,
 	}, nil
 }
 
-func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
-
+func (info AccountInfo) _ToProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 	tokenRelationship := make([]*proto.TokenRelationship, len(info.TokenRelationships))
 
 	for i, relationship := range info.TokenRelationships {
-		singleRelationship := relationship.toProtobuf()
+		singleRelationship := relationship._ToProtobuf()
 		tokenRelationship[i] = singleRelationship
 	}
 
 	liveHashes := make([]*proto.LiveHash, len(info.LiveHashes))
 
 	for i, liveHash := range info.LiveHashes {
-		singleRelationship := liveHash.toProtobuf()
+		singleRelationship := liveHash._ToProtobuf()
 		liveHashes[i] = singleRelationship
 	}
 
 	return &proto.CryptoGetInfoResponse_AccountInfo{
-		AccountID:                      info.AccountID.toProtobuf(),
+		AccountID:                      info.AccountID._ToProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
 		Deleted:                        info.IsDeleted,
-		ProxyAccountID:                 info.ProxyAccountID.toProtobuf(),
+		ProxyAccountID:                 info.ProxyAccountID._ToProtobuf(),
 		ProxyReceived:                  info.ProxyReceived.tinybar,
-		Key:                            info.Key.toProtoKey(),
+		Key:                            info.Key._ToProtoKey(),
 		Balance:                        uint64(info.Balance.tinybar),
 		GenerateSendRecordThreshold:    uint64(info.GenerateSendRecordThreshold.tinybar),
 		GenerateReceiveRecordThreshold: uint64(info.GenerateReceiveRecordThreshold.tinybar),
 		ReceiverSigRequired:            info.ReceiverSigRequired,
-		ExpirationTime:                 timeToProtobuf(info.ExpirationTime),
-		AutoRenewPeriod:                durationToProtobuf(info.AutoRenewPeriod),
+		ExpirationTime:                 _TimeToProtobuf(info.ExpirationTime),
+		AutoRenewPeriod:                _DurationToProtobuf(info.AutoRenewPeriod),
 		LiveHashes:                     liveHashes,
 		TokenRelationships:             tokenRelationship,
 		Memo:                           info.AccountMemo,
@@ -120,7 +124,7 @@ func (info AccountInfo) toProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 }
 
 func (info AccountInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(info.toProtobuf())
+	data, err := protobuf.Marshal(info._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -138,7 +142,7 @@ func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	info, err := accountInfoFromProtobuf(&pb)
+	info, err := _AccountInfoFromProtobuf(&pb)
 	if err != nil {
 		return AccountInfo{}, err
 	}

@@ -11,23 +11,24 @@ import (
 	"encoding/hex"
 	"encoding/json"
 
-	"golang.org/x/crypto/pbkdf2"
 	"io"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
-type keystore struct {
-	Version uint8      `json:"version"`
-	Crypto  cryptoData `json:"crypto"`
+type _Keystore struct {
+	Version uint8       `json:"version"`
+	Crypto  _CryptoData `json:"crypto"`
 }
 
 // internal struct used for cipher parameters
-type cipherParams struct {
+type _CipherParams struct {
 	// hex-encoded initialization vector
 	IV string `json:"iv"`
 }
 
 // internal struct used for kdf parameters
-type kdfParams struct {
+type _KdfParams struct {
 	// derived key length
 	DKLength int `json:"dklength"`
 	// hex-encoded salt
@@ -38,17 +39,17 @@ type kdfParams struct {
 	PRF string `json:"prf"`
 }
 
-// internal type used in keystore to represent the crypto data
-type cryptoData struct {
+// internal type used in _Keystore to represent the crypto data
+type _CryptoData struct {
 	// hex-encoded ciphertext
-	CipherText   string       `json:"ciphertext"`
-	CipherParams cipherParams `json:"cipherparams"`
+	CipherText   string        `json:"ciphertext"`
+	CipherParams _CipherParams `json:"cipherparams"`
 	// Cipher being used
 	Cipher string `json:"cipher"`
 	// key derivation function being used
 	KDF string `json:"kdf"`
 	// parameters for key derivation function
-	KDFParams kdfParams `json:"kdfparams"`
+	KDFParams _KdfParams `json:"kdfparams"`
 	// hex-encoded HMAC-SHA384
 	Mac string `json:"mac"`
 }
@@ -61,10 +62,10 @@ const dkLen int = 32
 const c int = 262144
 const saltLen uint = 32
 
-func randomBytes(n uint) ([]byte, error) {
+func _RandomBytes(n uint) ([]byte, error) {
 	// based on https://github.com/gophercon/2016-talks/tree/master/GeorgeTankersley-CryptoForGoDevelopers
 	b := make([]byte, n)
-	_, err := io.ReadFull(rand.Reader, b[:])
+	_, err := io.ReadFull(rand.Reader, b)
 	if err != nil {
 		return nil, err
 	}
@@ -72,15 +73,15 @@ func randomBytes(n uint) ([]byte, error) {
 	return b, nil
 }
 
-func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
-	salt, err := randomBytes(saltLen)
+func _NewKeystore(privateKey []byte, passphrase string) ([]byte, error) {
+	salt, err := _RandomBytes(saltLen)
 	if err != nil {
 		return nil, err
 	}
 
 	key := pbkdf2.Key([]byte(passphrase), salt, c, dkLen, sha256.New)
 
-	iv, err := randomBytes(16)
+	iv, err := _RandomBytes(16)
 	if err != nil {
 		return nil, err
 	}
@@ -97,24 +98,22 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 
 	h := hmac.New(sha512.New384, key[16:])
 
-	_, err = h.Write(cipherText)
-
-	if err != nil {
+	if _, err = h.Write(cipherText); err != nil {
 		return nil, err
 	}
 
 	mac := h.Sum(nil)
 
-	keystore := keystore{
+	keystore := _Keystore{
 		Version: 1,
-		Crypto: cryptoData{
+		Crypto: _CryptoData{
 			CipherText: hex.EncodeToString(cipherText),
-			CipherParams: cipherParams{
+			CipherParams: _CipherParams{
 				IV: hex.EncodeToString(iv),
 			},
 			Cipher: Aes128Ctr,
 			KDF:    "pbkdf2",
-			KDFParams: kdfParams{
+			KDFParams: _KdfParams{
 				DKLength: dkLen,
 				Salt:     hex.EncodeToString(salt),
 				Count:    c,
@@ -127,8 +126,8 @@ func newKeystore(privateKey []byte, passphrase string) ([]byte, error) {
 	return json.Marshal(keystore)
 }
 
-func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) {
-	keyStore := keystore{}
+func _ParseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) {
+	keyStore := _Keystore{}
 
 	err := json.Unmarshal(keystoreBytes, &keyStore)
 
@@ -137,20 +136,20 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 	}
 
 	if keyStore.Version != 1 {
-		// todo: change to a switch and handle differently if future keystore versions are added
-		return PrivateKey{}, newErrBadKeyf("unsupported keystore version: %v", keyStore.Version)
+		// todo: change to a switch and handle differently if future _Keystore versions are added
+		return PrivateKey{}, _NewErrBadKeyf("unsupported _Keystore version: %v", keyStore.Version)
 	}
 
 	if keyStore.Crypto.KDF != "pbkdf2" {
-		return PrivateKey{}, newErrBadKeyf("unsupported KDF: %v", keyStore.Crypto.KDF)
+		return PrivateKey{}, _NewErrBadKeyf("unsupported KDF: %v", keyStore.Crypto.KDF)
 	}
 
 	if keyStore.Crypto.Cipher != Aes128Ctr {
-		return PrivateKey{}, newErrBadKeyf("unsupported keystore cipher: %v", keyStore.Crypto.Cipher)
+		return PrivateKey{}, _NewErrBadKeyf("unsupported _Keystore cipher: %v", keyStore.Crypto.Cipher)
 	}
 
 	if keyStore.Crypto.KDFParams.PRF != HmacSha256 {
-		return PrivateKey{}, newErrBadKeyf(
+		return PrivateKey{}, _NewErrBadKeyf(
 			"unsupported PRF: %v",
 			keyStore.Crypto.KDFParams.PRF)
 	}
@@ -192,7 +191,7 @@ func parseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error) 
 	verifyMac := h.Sum(nil)
 
 	if subtle.ConstantTimeCompare(mac, verifyMac) == 0 {
-		return PrivateKey{}, newErrBadKeyf("hmac mismatch; passphrase is incorrect")
+		return PrivateKey{}, _NewErrBadKeyf("hmac mismatch; passphrase is incorrect")
 	}
 
 	block, err := aes.NewCipher(key[:16])

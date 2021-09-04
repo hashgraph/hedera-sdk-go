@@ -2,10 +2,11 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"math"
 	"regexp"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 // Hbar is a typesafe wrapper around values of HBAR providing foolproof conversions to other denominations.
@@ -24,7 +25,7 @@ var ZeroHbar = Hbar{0}
 
 // HbarFrom creates a representation of Hbar in tinybar on the unit provided
 func HbarFrom(bars float64, unit HbarUnit) Hbar {
-	return HbarFromTinybar(int64(bars * float64(unit.numberOfTinybar())))
+	return HbarFromTinybar(int64(bars * float64(unit._NumberOfTinybar())))
 }
 
 // HbarFromTinybar creates a representation of Hbar in tinybars
@@ -43,7 +44,7 @@ func (hbar Hbar) AsTinybar() int64 {
 }
 
 func (hbar Hbar) As(unit HbarUnit) float64 {
-	return float64(hbar.tinybar) / float64(unit.numberOfTinybar())
+	return float64(hbar.tinybar) / float64(unit._NumberOfTinybar())
 }
 
 func (hbar Hbar) String() string {
@@ -52,18 +53,16 @@ func (hbar Hbar) String() string {
 		return fmt.Sprintf("%v %s", hbar.tinybar, HbarUnits.Tinybar.Symbol())
 	}
 
-	return fmt.Sprintf("%v %s", float64(hbar.tinybar)/float64(HbarUnits.Hbar.numberOfTinybar()), HbarUnits.Hbar.Symbol())
+	return fmt.Sprintf("%v %s", float64(hbar.tinybar)/float64(HbarUnits.Hbar._NumberOfTinybar()), HbarUnits.Hbar.Symbol())
 }
 
 func HbarFromString(hbar string) (Hbar, error) {
-	match, err := regexp.Compile(`^((?:\+|\-)?\d+(?:\.\d+)?)(?: (tℏ|μℏ|mℏ|ℏ|kℏ|Mℏ|Gℏ))?$`)
-	if err != nil {
-		return Hbar{}, err
-	}
+	var err error
+	match := regexp.MustCompile(`^((?:\+|\-)?\d+(?:\.\d+)?)(?: (tℏ|μℏ|mℏ|ℏ|kℏ|Mℏ|Gℏ))?$`)
 
 	matchArray := match.FindStringSubmatch(hbar)
 	if len(matchArray) == 0 {
-		return Hbar{}, errors.New("Invalid number and/or symbol.")
+		return Hbar{}, errors.New("invalid number and/or symbol")
 	}
 
 	a, err := strconv.ParseFloat(matchArray[1], 64)
@@ -71,10 +70,10 @@ func HbarFromString(hbar string) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	return HbarFrom(a, hbarUnitFromString(matchArray[2])), nil
+	return HbarFrom(a, _HbarUnitFromString(matchArray[2])), nil
 }
 
-func hbarUnitFromString(symbol string) HbarUnit {
+func _HbarUnitFromString(symbol string) HbarUnit {
 	switch symbol {
 	case HbarUnits.Tinybar.Symbol():
 		return HbarUnits.Tinybar
@@ -94,7 +93,7 @@ func hbarUnitFromString(symbol string) HbarUnit {
 }
 
 func (hbar Hbar) ToString(unit HbarUnit) string {
-	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit.numberOfTinybar()), unit.Symbol())
+	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit._NumberOfTinybar()), unit.Symbol())
 }
 
 func (hbar Hbar) Negated() Hbar {

@@ -1,12 +1,13 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUnitHbarFromTinybar(t *testing.T) {
-	tinybar := HbarUnits.Hbar.numberOfTinybar()
+	tinybar := HbarUnits.Hbar._NumberOfTinybar()
 
 	hbar := HbarFromTinybar(tinybar)
 
@@ -26,7 +27,7 @@ func TestUnitHbarFromTinybar(t *testing.T) {
 }
 
 func TestHbarUnit(t *testing.T) {
-	tinybar := HbarUnits.Kilobar.numberOfTinybar()
+	tinybar := HbarUnits.Kilobar._NumberOfTinybar()
 
 	hbar := HbarFromTinybar(tinybar)
 
@@ -34,7 +35,7 @@ func TestHbarUnit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, hbar2.tinybar, hbar.tinybar)
 
-	tinybar = HbarUnits.Gigabar.numberOfTinybar()
+	tinybar = HbarUnits.Gigabar._NumberOfTinybar()
 
 	hbar = HbarFromTinybar(tinybar)
 
@@ -42,7 +43,7 @@ func TestHbarUnit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, hbar2.tinybar, hbar.tinybar)
 
-	tinybar = HbarUnits.Microbar.numberOfTinybar()
+	tinybar = HbarUnits.Microbar._NumberOfTinybar()
 
 	hbar = HbarFromTinybar(tinybar)
 

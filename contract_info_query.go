@@ -1,21 +1,22 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ContractInfoQuery retrieves information about a smart contract instance. This includes the account that it uses, the
 // file containing its bytecode, and the time when it will expire.
 type ContractInfoQuery struct {
 	Query
-	contractID ContractID
+	contractID *ContractID
 }
 
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
 // Contract Get Info Query.
 func NewContractInfoQuery() *ContractInfoQuery {
-	query := newQuery(true)
+	query := _NewQuery(true)
 
 	query.SetMaxQueryPayment(NewHbar(2))
 
@@ -25,65 +26,73 @@ func NewContractInfoQuery() *ContractInfoQuery {
 }
 
 // SetContractID sets the contract for which information is requested
-func (query *ContractInfoQuery) SetContractID(id ContractID) *ContractInfoQuery {
-	query.contractID = id
+func (query *ContractInfoQuery) SetContractID(contractID ContractID) *ContractInfoQuery {
+	query.contractID = &contractID
 	return query
 }
 
 func (query *ContractInfoQuery) GetContractID() ContractID {
-	return query.contractID
+	if query.contractID == nil {
+		return ContractID{}
+	}
+
+	return *query.contractID
 }
 
-func (query *ContractInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ContractInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.contractID.Validate(client)
-	if err != nil {
-		return err
+
+	if query.contractID != nil {
+		if err := query.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (query *ContractInfoQuery) build() *proto.Query_ContractGetInfo {
-	body := &proto.ContractGetInfoQuery{Header: &proto.QueryHeader{}}
-	if !query.contractID.isZero() {
-		body.ContractID = query.contractID.toProtobuf()
+func (query *ContractInfoQuery) _Build() *proto.Query_ContractGetInfo {
+	pb := proto.Query_ContractGetInfo{
+		ContractGetInfo: &proto.ContractGetInfoQuery{
+			Header: &proto.QueryHeader{},
+		},
 	}
 
-	return &proto.Query_ContractGetInfo{
-		ContractGetInfo: body,
+	if query.contractID != nil {
+		pb.ContractGetInfo.ContractID = query.contractID._ToProtobuf()
 	}
+
+	return &pb
 }
 
-func (query *ContractInfoQuery) queryMakeRequest() protoRequest {
-	pb := query.build()
+func (query *ContractInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ContractGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *ContractInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	pb := query.build()
+func (query *ContractInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ContractGetInfo.Header.Payment = paymentTransaction
 	pb.ContractGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -95,30 +104,30 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoResp, err := query.costQueryMakeRequest(client)
+	protoResp, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		contractInfoQuery_shouldRetry,
+		_ContractInfoQueryShouldRetry,
 		protoResp,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		contractInfoQuery_getMethod,
-		contractInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_ContractInfoQueryGetMethod,
+		_ContractInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -128,24 +137,24 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetContractGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+
+	return HbarFromTinybar(cost), nil
 }
 
-func contractInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
+func _ContractInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func contractInfoQuery_mapStatusError(_ request, response response) error {
+func _ContractInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func contractInfoQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getContract().GetContractInfo,
+func _ContractInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetContract().GetContractInfo,
 	}
 }
 
@@ -155,10 +164,10 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return ContractInfo{}, err
 	}
@@ -191,30 +200,30 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return ContractInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		contractInfoQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		contractInfoQuery_getMethod,
-		contractInfoQuery_mapStatusError,
-		query_mapResponse,
+		_ContractInfoQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_ContractInfoQueryGetMethod,
+		_ContractInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
 		return ContractInfo{}, err
 	}
 
-	info, err := contractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)
+	info, err := _ContractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)
 	if err != nil {
 		return ContractInfo{}, err
 	}
@@ -234,7 +243,7 @@ func (query *ContractInfoQuery) SetQueryPayment(paymentAmount Hbar) *ContractInf
 	return query
 }
 
-// SetNodeAccountIDs sets the node AccountID for this ContractInfoQuery.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractInfoQuery.
 func (query *ContractInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ContractInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query

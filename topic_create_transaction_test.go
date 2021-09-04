@@ -1,14 +1,13 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
-	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -51,8 +50,6 @@ func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 
 func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
-	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
 	keys := make([]PrivateKey, 2)
 	pubKeys := make([]PublicKey, 2)
@@ -117,8 +114,6 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
-
 	resp, err := NewTopicCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
@@ -135,8 +130,6 @@ func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 func TestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 	env.Client.SetAutoValidateChecksums(true)
-
-	topicMemo := "go-sdk::TestConsensusTopicCreateTransaction_Execute"
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -155,7 +148,7 @@ func TestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
 	newClient := Client{}
 	networkName := NetworkNameMainnet
 	newClient.network.networkName = &networkName
-	topicID.setNetworkWithClient(&newClient)
+	topicID._SetNetworkWithClient(&newClient)
 
 	_, err = NewTopicInfoQuery().
 		SetTopicID(topicID).

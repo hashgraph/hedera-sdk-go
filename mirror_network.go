@@ -4,21 +4,21 @@ import (
 	"math/rand"
 )
 
-type mirrorNetwork struct {
-	networkNodes map[string]*mirrorNode
+type _MirrorNetwork struct {
+	networkNodes map[string]*_MirrorNode
 	network      []string
 	index        uint
 }
 
-func newMirrorNetwork() *mirrorNetwork {
-	return &mirrorNetwork{
-		networkNodes: make(map[string]*mirrorNode),
+func _NewMirrorNetwork() *_MirrorNetwork {
+	return &_MirrorNetwork{
+		networkNodes: make(map[string]*_MirrorNode),
 		network:      make([]string, 0),
 		index:        0,
 	}
 }
 
-func contains(arr []string, str string) bool {
+func _Contains(arr []string, str string) bool {
 	for _, a := range arr {
 		if a == str {
 			return true
@@ -27,10 +27,10 @@ func contains(arr []string, str string) bool {
 	return false
 }
 
-func (network *mirrorNetwork) setNetwork(newNetwork []string) {
+func (network *_MirrorNetwork) _SetNetwork(newNetwork []string) {
 	for _, n := range network.network {
-		if !contains(newNetwork, n) {
-			_ = network.networkNodes[n].close()
+		if !_Contains(newNetwork, n) {
+			_ = network.networkNodes[n]._Close()
 			delete(network.networkNodes, n)
 		}
 	}
@@ -39,7 +39,7 @@ func (network *mirrorNetwork) setNetwork(newNetwork []string) {
 
 	for _, url := range newNetwork {
 		if _, ok := network.networkNodes[url]; !ok {
-			network.networkNodes[url] = newMirrorNode(url)
+			network.networkNodes[url] = _NewMirrorNode(url)
 		}
 	}
 
@@ -52,7 +52,7 @@ func (network *mirrorNetwork) setNetwork(newNetwork []string) {
 	}
 }
 
-func (network *mirrorNetwork) getNextMirrorNode() *mirrorNode {
+func (network *_MirrorNetwork) _GetNextMirrorNode() *_MirrorNode {
 	node := network.networkNodes[network.network[network.index]]
 	network.index = (network.index + 1) % uint(len(network.network))
 	return node

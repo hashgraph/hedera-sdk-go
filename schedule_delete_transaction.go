@@ -8,59 +8,64 @@ import (
 
 type ScheduleDeleteTransaction struct {
 	Transaction
-	scheduleID ScheduleID
+	scheduleID *ScheduleID
 }
 
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	transaction := ScheduleDeleteTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }
 
-func scheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleDeleteTransaction {
+func _ScheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleDeleteTransaction {
 	return ScheduleDeleteTransaction{
 		Transaction: transaction,
-		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
+		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
 	}
 }
 
-func (transaction *ScheduleDeleteTransaction) SetScheduleID(id ScheduleID) *ScheduleDeleteTransaction {
-	transaction.requireNotFrozen()
-	transaction.scheduleID = id
+func (transaction *ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleDeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.scheduleID = &scheduleID
 	return transaction
 }
 
 func (transaction *ScheduleDeleteTransaction) GetScheduleID() ScheduleID {
-	return transaction.scheduleID
+	if transaction.scheduleID == nil {
+		return ScheduleID{}
+	}
+
+	return *transaction.scheduleID
 }
 
-func (transaction *ScheduleDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *ScheduleDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.scheduleID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.scheduleID != nil {
+		if err := transaction.scheduleID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (transaction *ScheduleDeleteTransaction) build() *proto.TransactionBody {
+func (transaction *ScheduleDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ScheduleDeleteTransactionBody{}
-	if !transaction.scheduleID.isZero() {
-		body.ScheduleID = transaction.scheduleID.toProtobuf()
+	if transaction.scheduleID != nil {
+		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_ScheduleDelete{
 			ScheduleDelete: body,
 		},
@@ -68,20 +73,20 @@ func (transaction *ScheduleDeleteTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ScheduleDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ScheduleDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.ScheduleDeleteTransactionBody{}
-	if !transaction.scheduleID.isZero() {
-		body.ScheduleID = transaction.scheduleID.toProtobuf()
+	if transaction.scheduleID != nil {
+		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 
 	return &proto.SchedulableTransactionBody{
@@ -93,19 +98,14 @@ func (transaction *ScheduleDeleteTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func scheduleDeleteTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getSchedule().DeleteSchedule,
+func _ScheduleDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetSchedule().DeleteSchedule,
 	}
 }
 
 func (transaction *ScheduleDeleteTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -118,8 +118,8 @@ func (transaction *ScheduleDeleteTransaction) Sign(
 func (transaction *ScheduleDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -142,12 +142,8 @@ func (transaction *ScheduleDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ScheduleDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -174,27 +170,27 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		scheduleDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ScheduleDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -205,6 +201,9 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -221,17 +220,17 @@ func (transaction *ScheduleDeleteTransaction) FreezeWith(client *Client) (*Sched
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &ScheduleDeleteTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ScheduleDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -240,7 +239,7 @@ func (transaction *ScheduleDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -251,7 +250,7 @@ func (transaction *ScheduleDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) SetTransactionMemo(memo string) *ScheduleDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -262,7 +261,7 @@ func (transaction *ScheduleDeleteTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *ScheduleDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -273,15 +272,15 @@ func (transaction *ScheduleDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) SetTransactionID(transactionID TransactionID) *ScheduleDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this ScheduleDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

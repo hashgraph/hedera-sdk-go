@@ -14,7 +14,7 @@ func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -84,6 +84,7 @@ func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = scheduleSignTx.Execute(env.Client)
+	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)

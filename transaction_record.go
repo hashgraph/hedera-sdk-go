@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	protobuf "github.com/golang/protobuf/proto"
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
@@ -24,29 +24,6 @@ type TransactionRecord struct {
 	AssessedCustomFees []AssessedCustomFee
 }
 
-func newTransactionRecord(
-	receipt TransactionReceipt, transactionHash []byte,
-	consensusTimestamp time.Time, transactionID TransactionID,
-	transactionMemo string, transactionFee Hbar,
-	transfers []Transfer, CallResult *ContractFunctionResult,
-	CallResultIsCreate bool) TransactionRecord {
-
-	record := TransactionRecord{
-		Receipt:            receipt,
-		TransactionHash:    transactionHash,
-		ConsensusTimestamp: consensusTimestamp,
-		TransactionID:      transactionID,
-		TransactionMemo:    transactionMemo,
-		TransactionFee:     transactionFee,
-		Transfers:          transfers,
-		CallResult:         CallResult,
-		CallResultIsCreate: CallResultIsCreate,
-	}
-
-	return record
-
-}
-
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
 	if record.CallResult == nil || record.CallResultIsCreate {
 		return ContractFunctionResult{}, fmt.Errorf("record does not contain a contract execute result")
@@ -63,40 +40,42 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 	return *record.CallResult, nil
 }
 
-func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecord {
+func _TransactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecord {
 	if pb == nil {
 		return TransactionRecord{}
 	}
 	var accountTransfers = make([]Transfer, len(pb.TransferList.AccountAmounts))
-	var tokenTransfers = make(map[TokenID][]TokenTransfer, 0)
-	var nftTransfers = make(map[TokenID][]TokenNftTransfer, 0)
+	var tokenTransfers = make(map[TokenID][]TokenTransfer)
+	var nftTransfers = make(map[TokenID][]TokenNftTransfer)
 
 	for i, element := range pb.TransferList.AccountAmounts {
-		accountTransfers[i] = transferFromProtobuf(element)
+		accountTransfers[i] = _TransferFromProtobuf(element)
 	}
 
 	for _, tokenTransfer := range pb.TokenTransferLists {
 		for _, nftTransfer := range tokenTransfer.NftTransfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token)
-			nftTransfers[token] = append(nftTransfers[token], nftTransferFromProtobuf(nftTransfer))
+			if token := _TokenIDFromProtobuf(tokenTransfer.Token); token != nil {
+				nftTransfers[*token] = append(nftTransfers[*token], _NftTransferFromProtobuf(nftTransfer))
+			}
 		}
 
 		for _, accountAmount := range tokenTransfer.Transfers {
-			token := tokenIDFromProtobuf(tokenTransfer.Token)
-			tokenTransfers[token] = append(tokenTransfers[token], tokenTransferFromProtobuf(accountAmount))
+			if token := _TokenIDFromProtobuf(tokenTransfer.Token); token != nil {
+				tokenTransfers[*token] = append(tokenTransfers[*token], _TokenTransferFromProtobuf(accountAmount))
+			}
 		}
 	}
 
 	assessedCustomFees := make([]AssessedCustomFee, 0)
 	for _, fee := range pb.AssessedCustomFees {
-		assessedCustomFees = append(assessedCustomFees, assessedCustomFeeFromProtobuf(fee))
+		assessedCustomFees = append(assessedCustomFees, _AssessedCustomFeeFromProtobuf(fee))
 	}
 
 	txRecord := TransactionRecord{
-		Receipt:            transactionReceiptFromProtobuf(pb.Receipt),
+		Receipt:            _TransactionReceiptFromProtobuf(pb.Receipt),
 		TransactionHash:    pb.TransactionHash,
-		ConsensusTimestamp: timeFromProtobuf(pb.ConsensusTimestamp),
-		TransactionID:      transactionIDFromProtobuf(pb.TransactionID),
+		ConsensusTimestamp: _TimeFromProtobuf(pb.ConsensusTimestamp),
+		TransactionID:      _TransactionIDFromProtobuf(pb.TransactionID),
 		TransactionMemo:    pb.Memo,
 		TransactionFee:     HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:          accountTransfers,
@@ -107,11 +86,11 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 	}
 
 	if pb.GetContractCreateResult() != nil {
-		result := contractFunctionResultFromProtobuf(pb.GetContractCreateResult())
+		result := _ContractFunctionResultFromProtobuf(pb.GetContractCreateResult())
 
 		txRecord.CallResult = &result
 	} else if pb.GetContractCallResult() != nil {
-		result := contractFunctionResultFromProtobuf(pb.GetContractCallResult())
+		result := _ContractFunctionResultFromProtobuf(pb.GetContractCallResult())
 
 		txRecord.CallResult = &result
 		txRecord.CallResultIsCreate = false
@@ -120,17 +99,17 @@ func transactionRecordFromProtobuf(pb *proto.TransactionRecord) TransactionRecor
 	return txRecord
 }
 
-func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
-	var ammounts = make([]*proto.AccountAmount, 0)
-	for _, ammount := range record.Transfers {
-		ammounts = append(ammounts, &proto.AccountAmount{
-			AccountID: ammount.AccountID.toProtobuf(),
-			Amount:    ammount.Amount.tinybar,
+func (record TransactionRecord) _ToProtobuf() (*proto.TransactionRecord, error) {
+	var amounts = make([]*proto.AccountAmount, 0)
+	for _, amount := range record.Transfers {
+		amounts = append(amounts, &proto.AccountAmount{
+			AccountID: amount.AccountID._ToProtobuf(),
+			Amount:    amount.Amount.tinybar,
 		})
 	}
 
 	var transferList = proto.TransferList{
-		AccountAmounts: ammounts,
+		AccountAmounts: amounts,
 	}
 
 	var tokenTransfers = make([]*proto.TokenTransferList, 0)
@@ -139,11 +118,11 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		tokenTemp := make([]*proto.AccountAmount, 0)
 
 		for _, accountAmount := range tokenTransfer {
-			tokenTemp = append(tokenTemp, accountAmount.toProtobuf())
+			tokenTemp = append(tokenTemp, accountAmount._ToProtobuf())
 		}
 
 		tokenTransfers = append(tokenTransfers, &proto.TokenTransferList{
-			Token:     tokenID.toProtobuf(),
+			Token:     tokenID._ToProtobuf(),
 			Transfers: tokenTemp,
 		})
 	}
@@ -152,28 +131,28 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		nftTemp := make([]*proto.NftTransfer, 0)
 
 		for _, nftTransfer := range nftTransfers {
-			nftTemp = append(nftTemp, nftTransfer.toProtobuf())
+			nftTemp = append(nftTemp, nftTransfer._ToProtobuf())
 		}
 
 		tokenTransfers = append(tokenTransfers, &proto.TokenTransferList{
-			Token:        tokenID.toProtobuf(),
+			Token:        tokenID._ToProtobuf(),
 			NftTransfers: nftTemp,
 		})
 	}
 
 	assessedCustomFees := make([]*proto.AssessedCustomFee, 0)
 	for _, fee := range record.AssessedCustomFees {
-		assessedCustomFees = append(assessedCustomFees, fee.toProtobuf())
+		assessedCustomFees = append(assessedCustomFees, fee._ToProtobuf())
 	}
 
 	var tRecord = proto.TransactionRecord{
-		Receipt:         record.Receipt.toProtobuf(),
+		Receipt:         record.Receipt._ToProtobuf(),
 		TransactionHash: record.TransactionHash,
 		ConsensusTimestamp: &proto.Timestamp{
 			Seconds: int64(record.ConsensusTimestamp.Second()),
 			Nanos:   int32(record.ConsensusTimestamp.Nanosecond()),
 		},
-		TransactionID:      record.TransactionID.toProtobuf(),
+		TransactionID:      record.TransactionID._ToProtobuf(),
 		Memo:               record.TransactionMemo,
 		TransactionFee:     uint64(record.TransactionFee.AsTinybar()),
 		TransferList:       &transferList,
@@ -190,7 +169,7 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		}
 
 		tRecord.Body = &proto.TransactionRecord_ContractCreateResult{
-			ContractCreateResult: choice.toProtobuf(),
+			ContractCreateResult: choice._ToProtobuf(),
 		}
 	} else {
 		var choice, err = record.GetContractExecuteResult()
@@ -200,7 +179,7 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 		}
 
 		tRecord.Body = &proto.TransactionRecord_ContractCallResult{
-			ContractCallResult: choice.toProtobuf(),
+			ContractCallResult: choice._ToProtobuf(),
 		}
 	}
 
@@ -208,7 +187,7 @@ func (record TransactionRecord) toProtobuf() (*proto.TransactionRecord, error) {
 }
 
 func (record TransactionRecord) ToBytes() []byte {
-	rec, err := record.toProtobuf()
+	rec, err := record._ToProtobuf()
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -230,5 +209,5 @@ func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
 		return TransactionRecord{}, err
 	}
 
-	return transactionRecordFromProtobuf(&pb), nil
+	return _TransactionRecordFromProtobuf(&pb), nil
 }

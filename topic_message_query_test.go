@@ -2,13 +2,13 @@ package hedera
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
+// nolint
 const bigContents = `
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur aliquam augue sem, ut mattis dui laoreet a. Curabitur consequat est euismod, scelerisque metus et, tristique dui. Nulla commodo mauris ut faucibus ultricies. Quisque venenatis nisl nec augue tempus, at efficitur elit eleifend. Duis pharetra felis metus, sed dapibus urna vehicula id. Duis non venenatis turpis, sit amet ornare orci. Donec non interdum quam. Sed finibus nunc et risus finibus, non sagittis lorem cursus. Proin pellentesque tempor aliquam. Sed congue nisl in enim bibendum, condimentum vehicula nisi feugiat.
 
@@ -162,7 +162,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_TOPIC_ID"), err.Error())
+		assert.Equal(t, "exceptional receipt status: INVALID_TOPIC_ID", err.Error())
 	}
 
 	for {
@@ -226,7 +226,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("no transactions to execute"), err.Error())
+		assert.Equal(t, "no transactions to execute", err.Error())
 	}
 
 	for {

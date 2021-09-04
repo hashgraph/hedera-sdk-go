@@ -2,25 +2,19 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TransactionFeeSchedule struct {
 	RequestType RequestType
-	//Deprecated use Fees
+	// Deprecated use Fees
 	FeeData *FeeData
 	Fees    []*FeeData
 }
 
-func newTransactionFeeSchedule() TransactionFeeSchedule {
-	return TransactionFeeSchedule{
-		RequestType: RequestTypeNone,
-		FeeData:     nil,
-	}
-}
-
-func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSchedule) (TransactionFeeSchedule, error) {
+func _TransactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSchedule) (TransactionFeeSchedule, error) {
 	if txFeeSchedule == nil {
 		return TransactionFeeSchedule{}, errParameterNull
 	}
@@ -28,14 +22,14 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 	feeData := make([]*FeeData, 0)
 
 	for _, data := range txFeeSchedule.GetFees() {
-		temp, err := feeDataFromProtobuf(data)
+		temp, err := _FeeDataFromProtobuf(data)
 		if err != nil {
 			return TransactionFeeSchedule{}, err
 		}
 		feeData = append(feeData, &temp)
 	}
 
-	singleFeeData, err := feeDataFromProtobuf(txFeeSchedule.GetFeeData())
+	singleFeeData, err := _FeeDataFromProtobuf(txFeeSchedule.GetFeeData()) // nolint
 	if err != nil {
 		return TransactionFeeSchedule{}, err
 	}
@@ -47,17 +41,17 @@ func transactionFeeScheduleFromProtobuf(txFeeSchedule *proto.TransactionFeeSched
 	}, nil
 }
 
-func (txFeeSchedule TransactionFeeSchedule) toProtobuf() *proto.TransactionFeeSchedule {
+func (txFeeSchedule TransactionFeeSchedule) _ToProtobuf() *proto.TransactionFeeSchedule {
 	feeData := make([]*proto.FeeData, 0)
 	if txFeeSchedule.Fees != nil {
 		for _, data := range txFeeSchedule.Fees {
-			feeData = append(feeData, data.toProtobuf())
+			feeData = append(feeData, data._ToProtobuf())
 		}
 	}
 
 	var singleFee *proto.FeeData
 	if txFeeSchedule.FeeData != nil {
-		singleFee = txFeeSchedule.FeeData.toProtobuf()
+		singleFee = txFeeSchedule.FeeData._ToProtobuf()
 	}
 
 	return &proto.TransactionFeeSchedule{
@@ -68,30 +62,12 @@ func (txFeeSchedule TransactionFeeSchedule) toProtobuf() *proto.TransactionFeeSc
 }
 
 func (txFeeSchedule TransactionFeeSchedule) ToBytes() []byte {
-	data, err := protobuf.Marshal(txFeeSchedule.toProtobuf())
+	data, err := protobuf.Marshal(txFeeSchedule._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
 
 	return data
-}
-
-func transactionFeeScheduleFromBytes(data []byte) (TransactionFeeSchedule, error) {
-	if data == nil {
-		return TransactionFeeSchedule{}, errByteArrayNull
-	}
-	pb := proto.TransactionFeeSchedule{}
-	err := protobuf.Unmarshal(data, &pb)
-	if err != nil {
-		return TransactionFeeSchedule{}, err
-	}
-
-	info, err := transactionFeeScheduleFromProtobuf(&pb)
-	if err != nil {
-		return TransactionFeeSchedule{}, err
-	}
-
-	return info, nil
 }
 
 func (txFeeSchedule TransactionFeeSchedule) String() string {
@@ -102,7 +78,7 @@ func (txFeeSchedule TransactionFeeSchedule) String() string {
 
 	if txFeeSchedule.FeeData != nil {
 		return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), txFeeSchedule.FeeData.String())
-	} else {
-		return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), str)
 	}
+
+	return fmt.Sprintf("RequestType: %s, Feedata: %s", txFeeSchedule.RequestType.String(), str)
 }

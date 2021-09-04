@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type FeeSchedules struct {
@@ -11,14 +12,7 @@ type FeeSchedules struct {
 	next    *FeeSchedule
 }
 
-func newFeeSchedules() FeeSchedules {
-	return FeeSchedules{
-		current: nil,
-		next:    nil,
-	}
-}
-
-func feeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (FeeSchedules, error) {
+func _FeeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (FeeSchedules, error) {
 	if feeSchedules == nil {
 		return FeeSchedules{}, errParameterNull
 	}
@@ -26,7 +20,7 @@ func feeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (Fe
 	var current FeeSchedule
 	var err error
 	if feeSchedules.CurrentFeeSchedule != nil {
-		current, err = feeScheduleFromProtobuf(feeSchedules.GetCurrentFeeSchedule())
+		current, err = _FeeScheduleFromProtobuf(feeSchedules.GetCurrentFeeSchedule())
 		if err != nil {
 			return FeeSchedules{}, err
 		}
@@ -34,7 +28,7 @@ func feeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (Fe
 
 	var next FeeSchedule
 	if feeSchedules.NextFeeSchedule != nil {
-		next, err = feeScheduleFromProtobuf(feeSchedules.GetNextFeeSchedule())
+		next, err = _FeeScheduleFromProtobuf(feeSchedules.GetNextFeeSchedule())
 		if err != nil {
 			return FeeSchedules{}, err
 		}
@@ -46,15 +40,15 @@ func feeSchedulesFromProtobuf(feeSchedules *proto.CurrentAndNextFeeSchedule) (Fe
 	}, nil
 }
 
-func (feeSchedules FeeSchedules) toProtobuf() *proto.CurrentAndNextFeeSchedule {
+func (feeSchedules FeeSchedules) _ToProtobuf() *proto.CurrentAndNextFeeSchedule {
 	var current *proto.FeeSchedule
 	if feeSchedules.current != nil {
-		current = feeSchedules.current.toProtobuf()
+		current = feeSchedules.current._ToProtobuf()
 	}
 
 	var next *proto.FeeSchedule
 	if feeSchedules.next != nil {
-		next = feeSchedules.next.toProtobuf()
+		next = feeSchedules.next._ToProtobuf()
 	}
 
 	return &proto.CurrentAndNextFeeSchedule{
@@ -64,7 +58,7 @@ func (feeSchedules FeeSchedules) toProtobuf() *proto.CurrentAndNextFeeSchedule {
 }
 
 func (feeSchedules FeeSchedules) ToBytes() []byte {
-	data, err := protobuf.Marshal(feeSchedules.toProtobuf())
+	data, err := protobuf.Marshal(feeSchedules._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -82,7 +76,7 @@ func FeeSchedulesFromBytes(data []byte) (FeeSchedules, error) {
 		return FeeSchedules{}, err
 	}
 
-	info, err := feeSchedulesFromProtobuf(&pb)
+	info, err := _FeeSchedulesFromProtobuf(&pb)
 	if err != nil {
 		return FeeSchedules{}, err
 	}

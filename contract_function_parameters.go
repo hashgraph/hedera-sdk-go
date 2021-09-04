@@ -25,7 +25,7 @@ func NewContractFunctionParameters() *ContractFunctionParameters {
 }
 
 func (contract *ContractFunctionParameters) AddBool(value bool) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	if value {
 		argument.value[31] = 1
@@ -41,10 +41,10 @@ func (contract *ContractFunctionParameters) AddBool(value bool) *ContractFunctio
 
 func (contract *ContractFunctionParameters) AddFunction(address string, selector ContractFunctionSelector) (*ContractFunctionParameters, error) {
 	if len(address) != 40 {
-		return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
+		return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
 	}
 
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = false
 
 	addressBytes, err := hex.DecodeString(address)
@@ -55,7 +55,7 @@ func (contract *ContractFunctionParameters) AddFunction(address string, selector
 	bytes := make([]byte, 12)
 	bytes = append(bytes, addressBytes[0:20]...)
 
-	function := selector.build(nil)
+	function := selector._Build(nil)
 
 	bytes = append(bytes, function[0:4]...)
 	argument.value = bytes
@@ -66,7 +66,7 @@ func (contract *ContractFunctionParameters) AddFunction(address string, selector
 }
 
 func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	argument.value[31] = uint8(value)
 
@@ -77,7 +77,7 @@ func (contract *ContractFunctionParameters) AddInt8(value int8) *ContractFunctio
 }
 
 func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	binary.BigEndian.PutUint32(argument.value[28:32], uint32(value))
 
@@ -88,7 +88,7 @@ func (contract *ContractFunctionParameters) AddInt32(value int32) *ContractFunct
 }
 
 func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(value))
 
@@ -99,7 +99,7 @@ func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunct
 }
 
 func (contract *ContractFunctionParameters) AddInt256(value []byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	argument.value = value
 
@@ -110,7 +110,7 @@ func (contract *ContractFunctionParameters) AddInt256(value []byte) *ContractFun
 }
 
 func (contract *ContractFunctionParameters) AddUint8(value uint8) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	argument.value[31] = value
 
@@ -121,7 +121,7 @@ func (contract *ContractFunctionParameters) AddUint8(value uint8) *ContractFunct
 }
 
 func (contract *ContractFunctionParameters) AddUint32(value uint32) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	binary.BigEndian.PutUint32(argument.value[28:32], value)
 
@@ -132,7 +132,7 @@ func (contract *ContractFunctionParameters) AddUint32(value uint32) *ContractFun
 }
 
 func (contract *ContractFunctionParameters) AddUint64(value uint64) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	binary.BigEndian.PutUint64(argument.value[24:32], value)
 
@@ -143,7 +143,7 @@ func (contract *ContractFunctionParameters) AddUint64(value uint64) *ContractFun
 }
 
 func (contract *ContractFunctionParameters) AddUint256(value []byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	argument.value = value
 
@@ -154,7 +154,7 @@ func (contract *ContractFunctionParameters) AddUint256(value []byte) *ContractFu
 }
 
 func (contract *ContractFunctionParameters) AddInt32Array(value []int32) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -173,7 +173,7 @@ func (contract *ContractFunctionParameters) AddInt32Array(value []int32) *Contra
 }
 
 func (contract *ContractFunctionParameters) AddInt64Array(value []int64) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -192,7 +192,7 @@ func (contract *ContractFunctionParameters) AddInt64Array(value []int64) *Contra
 }
 
 func (contract *ContractFunctionParameters) AddInt256Array(value [][32]byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -211,7 +211,7 @@ func (contract *ContractFunctionParameters) AddInt256Array(value [][32]byte) *Co
 }
 
 func (contract *ContractFunctionParameters) AddUint32Array(value []uint32) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -230,7 +230,7 @@ func (contract *ContractFunctionParameters) AddUint32Array(value []uint32) *Cont
 }
 
 func (contract *ContractFunctionParameters) AddUint64Array(value []uint64) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -249,7 +249,7 @@ func (contract *ContractFunctionParameters) AddUint64Array(value []uint64) *Cont
 }
 
 func (contract *ContractFunctionParameters) AddUint256Array(value [][32]byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -268,7 +268,7 @@ func (contract *ContractFunctionParameters) AddUint256Array(value [][32]byte) *C
 }
 
 func (contract *ContractFunctionParameters) AddAddressArray(value []string) (*ContractFunctionParameters, error) {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -277,7 +277,7 @@ func (contract *ContractFunctionParameters) AddAddressArray(value []string) (*Co
 
 	for i, v := range value {
 		if len(v) != 40 {
-			return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
+			return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
 		}
 
 		addressBytes, err := hex.DecodeString(v)
@@ -296,7 +296,7 @@ func (contract *ContractFunctionParameters) AddAddressArray(value []string) (*Co
 }
 
 func (contract *ContractFunctionParameters) AddString(value string) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	bytes := []byte(value)
@@ -310,7 +310,7 @@ func (contract *ContractFunctionParameters) AddString(value string) *ContractFun
 }
 
 func (contract *ContractFunctionParameters) AddBytes(value []byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	binary.BigEndian.PutUint64(argument.value[24:32], uint64(len(value)))
@@ -323,7 +323,7 @@ func (contract *ContractFunctionParameters) AddBytes(value []byte) *ContractFunc
 }
 
 func (contract *ContractFunctionParameters) AddBytes32(value [32]byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	argument.value = value[:]
 
@@ -335,7 +335,7 @@ func (contract *ContractFunctionParameters) AddBytes32(value [32]byte) *Contract
 
 func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractFunctionParameters, error) {
 	if len(value) != 40 {
-		return contract, errors.Unwrap(fmt.Errorf("Address is required to be 40 characters"))
+		return contract, errors.Unwrap(fmt.Errorf("address is required to be 40 characters"))
 	}
 
 	addressBytes, err := hex.DecodeString(value)
@@ -343,7 +343,7 @@ func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractF
 		return contract, err
 	}
 
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = false
 
 	bytes := make([]byte, 12)
@@ -357,7 +357,7 @@ func (contract *ContractFunctionParameters) AddAddress(value string) (*ContractF
 }
 
 func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 
 	argument.dynamic = true
 	argument.value = bytesArray(value)
@@ -368,7 +368,7 @@ func (contract *ContractFunctionParameters) AddBytesArray(value [][]byte) *Contr
 }
 
 func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	result := make([]byte, len(value)+32)
@@ -387,7 +387,7 @@ func (contract *ContractFunctionParameters) AddBytes32Array(value [][]byte) *Con
 }
 
 func (contract *ContractFunctionParameters) AddStringArray(value []string) *ContractFunctionParameters {
-	argument := newArgument()
+	argument := _NewArgument()
 	argument.dynamic = true
 
 	var bytes [][]byte
@@ -401,7 +401,7 @@ func (contract *ContractFunctionParameters) AddStringArray(value []string) *Cont
 	return contract
 }
 
-func (contract *ContractFunctionParameters) build(functionName *string) []byte {
+func (contract *ContractFunctionParameters) _Build(functionName *string) []byte {
 	length := uint64(0)
 
 	functionOffset := uint64(0)
@@ -418,7 +418,7 @@ func (contract *ContractFunctionParameters) build(functionName *string) []byte {
 
 	result := make([]byte, length+functionOffset)
 	if functionName != nil {
-		copy(result[0:4], contract.function.build(functionName))
+		copy(result[0:4], contract.function._Build(functionName))
 	}
 
 	offset := uint64(len(contract.arguments) * 32)
@@ -437,7 +437,7 @@ func (contract *ContractFunctionParameters) build(functionName *string) []byte {
 	return result
 }
 
-func newArgument() Argument {
+func _NewArgument() Argument {
 	return Argument{
 		value:   make([]byte, 32),
 		dynamic: false,
@@ -449,7 +449,7 @@ func bytesArray(value [][]byte) []byte {
 	length := uint64(0)
 	for _, s := range value {
 		length += 32 + 32
-		sbytes := []byte(s)
+		sbytes := s
 		if len(sbytes)/32 == 0 {
 			length += 32
 		} else {
@@ -471,7 +471,7 @@ func bytesArray(value [][]byte) []byte {
 	// into the argument list
 	for i, s := range value {
 		// Get the length of the current argument (again)
-		length = 0
+		var length uint64
 		if len(s)/32 == 0 {
 			length = 32
 		} else {
@@ -479,7 +479,7 @@ func bytesArray(value [][]byte) []byte {
 		}
 
 		// Create byte array of correct size
-		// Length of value to the nearest 32 byte boundry +
+		// Length of value to the nearest 32 byte boundary +
 		// 32 bytes to store the length
 		bytes := make([]byte, length+32)
 

@@ -25,26 +25,26 @@ import (
 // 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 type TokenWipeTransaction struct {
 	Transaction
-	tokenID   TokenID
-	accountID AccountID
+	tokenID   *TokenID
+	accountID *AccountID
 	amount    uint64
 	serial    []int64
 }
 
 func NewTokenWipeTransaction() *TokenWipeTransaction {
 	transaction := TokenWipeTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }
 
-func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenWipeTransaction {
+func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenWipeTransaction {
 	return TokenWipeTransaction{
 		Transaction: transaction,
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
-		accountID:   accountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
+		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
+		accountID:   _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),
 		amount:      pb.GetTokenWipe().Amount,
 		serial:      pb.GetTokenWipe().GetSerialNumbers(),
 	}
@@ -52,32 +52,40 @@ func tokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 
 // The token for which the account will be wiped. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
-func (transaction *TokenWipeTransaction) SetTokenID(id TokenID) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
-	transaction.tokenID = id
+func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeTransaction {
+	transaction._RequireNotFrozen()
+	transaction.tokenID = &tokenID
 	return transaction
 }
 
 func (transaction *TokenWipeTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The account to be wiped
-func (transaction *TokenWipeTransaction) SetAccountID(id AccountID) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
-	transaction.accountID = id
+func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *TokenWipeTransaction {
+	transaction._RequireNotFrozen()
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *TokenWipeTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
 // The amount of tokens to wipe from the specified account. Amount must be a positive non-zero
 // number in the lowest denomination possible, not bigger than the token balance of the account
 // (0; balance]
 func (transaction *TokenWipeTransaction) SetAmount(amount uint64) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.amount = amount
 	return transaction
 }
@@ -91,29 +99,32 @@ func (transaction *TokenWipeTransaction) GetSerialNumbers() []int64 {
 }
 
 func (transaction *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.serial = serial
 	return transaction
 }
 
-func (transaction *TokenWipeTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenWipeTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
-	err = transaction.accountID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (transaction *TokenWipeTransaction) build() *proto.TransactionBody {
+func (transaction *TokenWipeTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenWipeAccountTransactionBody{
 		Amount: transaction.amount,
 	}
@@ -122,19 +133,19 @@ func (transaction *TokenWipeTransaction) build() *proto.TransactionBody {
 		body.SerialNumbers = transaction.serial
 	}
 
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if transaction.tokenID != nil {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if transaction.accountID != nil {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_TokenWipe{
 			TokenWipe: body,
 		},
@@ -142,17 +153,17 @@ func (transaction *TokenWipeTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenWipeTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenWipeAccountTransactionBody{
 		Amount: transaction.amount,
 	}
@@ -161,12 +172,12 @@ func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*proto.Sch
 		body.SerialNumbers = transaction.serial
 	}
 
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if transaction.tokenID != nil {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if transaction.accountID != nil {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
@@ -177,19 +188,14 @@ func (transaction *TokenWipeTransaction) constructScheduleProtobuf() (*proto.Sch
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenWipeTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getToken().WipeTokenAccount,
+func _TokenWipeTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetToken().WipeTokenAccount,
 	}
 }
 
 func (transaction *TokenWipeTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -202,8 +208,8 @@ func (transaction *TokenWipeTransaction) Sign(
 func (transaction *TokenWipeTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenWipeTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -226,12 +232,8 @@ func (transaction *TokenWipeTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenWipeTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -254,27 +256,27 @@ func (transaction *TokenWipeTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenWipeTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenWipeTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -285,6 +287,9 @@ func (transaction *TokenWipeTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -301,17 +306,17 @@ func (transaction *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeT
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenWipeTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenWipeTransaction) GetMaxTransactionFee() Hbar {
@@ -320,7 +325,7 @@ func (transaction *TokenWipeTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetMaxTransactionFee(fee Hbar) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -331,7 +336,7 @@ func (transaction *TokenWipeTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionMemo(memo string) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -342,7 +347,7 @@ func (transaction *TokenWipeTransaction) GetTransactionValidDuration() time.Dura
 
 // SetTransactionValidDuration sets the valid duration for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionValidDuration(duration time.Duration) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -353,15 +358,15 @@ func (transaction *TokenWipeTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetTransactionID(transactionID TransactionID) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenWipeTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenWipeTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -372,13 +377,9 @@ func (transaction *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransa
 }
 
 func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenWipeTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -393,11 +394,10 @@ func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signa
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

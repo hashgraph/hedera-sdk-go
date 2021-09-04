@@ -14,7 +14,7 @@ type AccountBalance struct {
 	TokenDecimals TokenDecimalMap
 }
 
-func accountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse) AccountBalance {
+func _AccountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse) AccountBalance {
 	if pb == nil {
 		return AccountBalance{}
 	}
@@ -22,15 +22,16 @@ func accountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse) Accou
 	if pb.TokenBalances != nil {
 		tokens = make(map[TokenID]uint64, len(pb.TokenBalances))
 		for _, token := range pb.TokenBalances {
-			t := tokenIDFromProtobuf(token.TokenId)
-			tokens[t] = token.Balance
+			if t := _TokenIDFromProtobuf(token.TokenId); t != nil {
+				tokens[*t] = token.Balance
+			}
 		}
 	}
 
 	return AccountBalance{
 		Hbars:         HbarFromTinybar(int64(pb.Balance)),
 		Token:         tokens,
-		Tokens:        tokenBalanceMapFromProtobuf(pb.TokenBalances),
-		TokenDecimals: tokenDecimalMapFromProtobuf(pb.TokenBalances),
+		Tokens:        _TokenBalanceMapFromProtobuf(pb.TokenBalances),
+		TokenDecimals: _TokenDecimalMapFromProtobuf(pb.TokenBalances),
 	}
 }

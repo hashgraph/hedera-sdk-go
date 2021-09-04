@@ -8,59 +8,64 @@ import (
 
 type FileDeleteTransaction struct {
 	Transaction
-	fileID FileID
+	fileID *FileID
 }
 
 func NewFileDeleteTransaction() *FileDeleteTransaction {
 	transaction := FileDeleteTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }
 
-func fileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileDeleteTransaction {
+func _FileDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileDeleteTransaction {
 	return FileDeleteTransaction{
 		Transaction: transaction,
-		fileID:      fileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
+		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
 }
 
-func (transaction *FileDeleteTransaction) SetFileID(id FileID) *FileDeleteTransaction {
-	transaction.requireNotFrozen()
-	transaction.fileID = id
+func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.fileID = &fileID
 	return transaction
 }
 
 func (transaction *FileDeleteTransaction) GetFileID() FileID {
-	return transaction.fileID
+	if transaction.fileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.fileID
 }
 
-func (transaction *FileDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *FileDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.fileID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.fileID != nil {
+		if err := transaction.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (transaction *FileDeleteTransaction) build() *proto.TransactionBody {
+func (transaction *FileDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.FileDeleteTransactionBody{}
-	if !transaction.fileID.isZero() {
-		body.FileID = transaction.fileID.toProtobuf()
+	if transaction.fileID != nil {
+		body.FileID = transaction.fileID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_FileDelete{
 			FileDelete: body,
 		},
@@ -68,20 +73,20 @@ func (transaction *FileDeleteTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *FileDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *FileDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.FileDeleteTransactionBody{}
-	if !transaction.fileID.isZero() {
-		body.FileID = transaction.fileID.toProtobuf()
+	if transaction.fileID != nil {
+		body.FileID = transaction.fileID._ToProtobuf()
 	}
 	return &proto.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
@@ -92,19 +97,14 @@ func (transaction *FileDeleteTransaction) constructScheduleProtobuf() (*proto.Sc
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func fileDeleteTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getFile().DeleteFile,
+func _FileDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetFile().DeleteFile,
 	}
 }
 
 func (transaction *FileDeleteTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -117,8 +117,8 @@ func (transaction *FileDeleteTransaction) Sign(
 func (transaction *FileDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*FileDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -141,12 +141,8 @@ func (transaction *FileDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *FileDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -173,27 +169,27 @@ func (transaction *FileDeleteTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		fileDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_FileDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -204,6 +200,9 @@ func (transaction *FileDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -221,17 +220,17 @@ func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDelet
 		return transaction, nil
 	}
 
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &FileDeleteTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -240,7 +239,7 @@ func (transaction *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetMaxTransactionFee(fee Hbar) *FileDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -251,7 +250,7 @@ func (transaction *FileDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetTransactionMemo(memo string) *FileDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -262,7 +261,7 @@ func (transaction *FileDeleteTransaction) GetTransactionValidDuration() time.Dur
 
 // SetTransactionValidDuration sets the valid duration for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *FileDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -273,15 +272,15 @@ func (transaction *FileDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetTransactionID(transactionID TransactionID) *FileDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this FileDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -292,13 +291,9 @@ func (transaction *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTran
 }
 
 func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileDeleteTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -313,11 +308,10 @@ func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, sign
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

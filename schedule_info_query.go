@@ -1,49 +1,56 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type ScheduleInfoQuery struct {
 	Query
-	scheduleID ScheduleID
+	scheduleID *ScheduleID
 }
 
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	return &ScheduleInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
-func (query *ScheduleInfoQuery) SetScheduleID(id ScheduleID) *ScheduleInfoQuery {
-	query.scheduleID = id
+func (query *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
+	query.scheduleID = &scheduleID
 	return query
 }
 
-func (query *ScheduleInfoQuery) GetScheduleID(id ScheduleID) ScheduleID {
-	return query.scheduleID
+func (query *ScheduleInfoQuery) GetScheduleID() ScheduleID {
+	if query.scheduleID == nil {
+		return ScheduleID{}
+	}
+
+	return *query.scheduleID
 }
 
-func (query *ScheduleInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ScheduleInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.scheduleID.Validate(client)
-	if err != nil {
-		return err
+
+	if query.scheduleID != nil {
+		if err := query.scheduleID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (query *ScheduleInfoQuery) build() *proto.Query_ScheduleGetInfo {
+func (query *ScheduleInfoQuery) _Build() *proto.Query_ScheduleGetInfo {
 	body := &proto.ScheduleGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.scheduleID.isZero() {
-		body.ScheduleID = query.scheduleID.toProtobuf()
+
+	if query.scheduleID != nil {
+		body.ScheduleID = query.scheduleID._ToProtobuf()
 	}
 
 	return &proto.Query_ScheduleGetInfo{
@@ -51,32 +58,32 @@ func (query *ScheduleInfoQuery) build() *proto.Query_ScheduleGetInfo {
 	}
 }
 
-func (query *ScheduleInfoQuery) queryMakeRequest() protoRequest {
-	pb := query.build()
+func (query *ScheduleInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ScheduleGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ScheduleGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *ScheduleInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	pb := query.build()
+func (query *ScheduleInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ScheduleGetInfo.Header.Payment = paymentTransaction
 	pb.ScheduleGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -88,30 +95,30 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		scheduleInfoQuery_shouldRetry,
+		_ScheduleInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		scheduleInfoQuery_getMethod,
-		scheduleInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_ScheduleInfoQueryGetMethod,
+		_ScheduleInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -121,24 +128,23 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetScheduleGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func scheduleInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
+func _ScheduleInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func scheduleInfoQuery_mapStatusError(_ request, response response) error {
+func _ScheduleInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func scheduleInfoQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getSchedule().GetScheduleInfo,
+func _ScheduleInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetSchedule().GetScheduleInfo,
 	}
 }
 
@@ -148,15 +154,15 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
 
-	query.build()
+	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -182,30 +188,30 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		scheduleInfoQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		scheduleInfoQuery_getMethod,
-		scheduleInfoQuery_mapStatusError,
-		query_mapResponse,
+		_ScheduleInfoQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_ScheduleInfoQueryGetMethod,
+		_ScheduleInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
 
-	return scheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo), nil
+	return _ScheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
@@ -225,7 +231,7 @@ func (query *ScheduleInfoQuery) SetNodeAccountIDs(accountID []AccountID) *Schedu
 	return query
 }
 
-func (query *ScheduleInfoQuery) GetNodeAccountId() []AccountID {
+func (query *ScheduleInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 

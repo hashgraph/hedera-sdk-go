@@ -2,21 +2,21 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"strconv"
 	"strings"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type NftID struct {
 	TokenID      TokenID
 	SerialNumber int64
-	checksum     *string
 }
 
 func NftIDFromString(s string) (NftID, error) {
 	split := strings.Split(s, "@")
-	shard, realm, num, checksum, err := idFromString(split[1])
+	shard, realm, num, checksum, err := _IdFromString(split[1])
 	if err != nil {
 		return NftID{}, err
 	}
@@ -38,22 +38,15 @@ func NftIDFromString(s string) (NftID, error) {
 }
 
 func (id *NftID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.network.networkName != nil {
-		return id.TokenID.Validate(client)
+	if !id._IsZero() && client != nil && client.network.networkName != nil {
+		if err := id.TokenID.Validate(client); err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	return nil
-}
-
-func (id *NftID) setNetworkWithClient(client *Client) {
-	if client.network.networkName != nil {
-		id.setNetwork(*client.network.networkName)
-	}
-}
-
-func (id *NftID) setNetwork(name NetworkName) {
-	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.TokenID.Shard, id.TokenID.Realm, id.TokenID.Token))
-	id.checksum = &checksum
 }
 
 func (id NftID) String() string {
@@ -68,29 +61,35 @@ func (id NftID) ToStringWithChecksum(client Client) (string, error) {
 	return fmt.Sprintf("%d@%s", id.SerialNumber, token), nil
 }
 
-func (id NftID) toProtobuf() *proto.NftID {
+func (id NftID) _ToProtobuf() *proto.NftID {
 	return &proto.NftID{
-		TokenID:      id.TokenID.toProtobuf(),
+		TokenID:      id.TokenID._ToProtobuf(),
 		SerialNumber: id.SerialNumber,
 	}
 }
 
-func nftIDFromProtobuf(pb *proto.NftID) NftID {
+func _NftIDFromProtobuf(pb *proto.NftID) NftID {
 	if pb == nil {
 		return NftID{}
 	}
+
+	tokenID := TokenID{}
+	if pb.TokenID != nil {
+		tokenID = *_TokenIDFromProtobuf(pb.TokenID)
+	}
+
 	return NftID{
-		TokenID:      tokenIDFromProtobuf(pb.TokenID),
+		TokenID:      tokenID,
 		SerialNumber: pb.SerialNumber,
 	}
 }
 
-func (id NftID) isZero() bool {
-	return id.TokenID.isZero() && id.SerialNumber == 0
+func (id NftID) _IsZero() bool {
+	return id.TokenID._IsZero() && id.SerialNumber == 0
 }
 
 func (id NftID) ToBytes() []byte {
-	data, err := protobuf.Marshal(id.toProtobuf())
+	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -105,5 +104,5 @@ func NftIDFromBytes(data []byte) (NftID, error) {
 		return NftID{}, err
 	}
 
-	return nftIDFromProtobuf(&pb), nil
+	return _NftIDFromProtobuf(&pb), nil
 }

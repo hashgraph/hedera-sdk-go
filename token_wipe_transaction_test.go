@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
@@ -14,7 +15,7 @@ func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -150,7 +151,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -185,10 +186,10 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	nodeId := resp.NodeID
+	nodeID := resp.NodeID
 
 	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
@@ -203,7 +204,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
@@ -213,7 +214,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
 		AddTokenTransfer(tokenID, accountID, 10).
 		Execute(env.Client)
@@ -223,7 +224,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp2, err := NewTokenWipeTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetTokenID(tokenID).
 		SetAccountID(accountID).
 		Execute(env.Client)
@@ -235,7 +236,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	receipt, err = resp2.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("Invalid node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
+		assert.Equal(t, fmt.Sprintf("Invalid _Node AccountID was set for transaction: %s", resp2.NodeID), err.Error())
 	}
 
 	tx, err := NewAccountDeleteTransaction().
@@ -252,7 +253,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -267,7 +268,7 @@ func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -361,7 +362,7 @@ func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -376,7 +377,7 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -411,10 +412,10 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	nodeId := resp.NodeID
+	nodeID := resp.NodeID
 
 	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
@@ -429,7 +430,7 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
@@ -439,7 +440,7 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
 		AddTokenTransfer(tokenID, accountID, 10).
 		Execute(env.Client)
@@ -449,7 +450,7 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp2, err := NewTokenWipeTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetTokenID(tokenID).
 		SetAmount(10).
 		Execute(env.Client)
@@ -472,7 +473,7 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -487,7 +488,7 @@ func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -611,19 +612,19 @@ func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES"), err.Error())
+		assert.Equal(t, "exceptional receipt status: TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) {
+func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).

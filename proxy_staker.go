@@ -6,26 +6,12 @@ import (
 
 type ProxyStaker struct {
 	AccountID AccountID
-	amount    Hbar
+	Amount    Hbar
 }
 
-func newProxyStaker(accountId AccountID, amount int64) ProxyStaker {
-	return ProxyStaker{
-		AccountID: accountId,
-		amount:    HbarFromTinybar(amount),
-	}
-}
-
-func fromProtobuf(staker *proto.ProxyStaker) ProxyStaker {
-	return ProxyStaker{
-		AccountID: accountIDFromProtobuf(staker.AccountID),
-		amount:    HbarFromTinybar(staker.Amount),
-	}
-}
-
-func (staker *ProxyStaker) toProtobuf() *proto.ProxyStaker {
+func (staker *ProxyStaker) _ToProtobuf() *proto.ProxyStaker { // nolint
 	return &proto.ProxyStaker{
-		AccountID: staker.AccountID.toProtobuf(),
-		Amount:    staker.amount.tinybar,
+		AccountID: staker.AccountID._ToProtobuf(),
+		Amount:    staker.Amount.tinybar,
 	}
 }

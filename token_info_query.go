@@ -1,52 +1,58 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TokenInfoQuery struct {
 	Query
-	tokenID TokenID
+	tokenID *TokenID
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTokenInfoQuery() *TokenInfoQuery {
 	return &TokenInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
-func (query *TokenInfoQuery) SetTokenID(id TokenID) *TokenInfoQuery {
-	query.tokenID = id
+func (query *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
+	query.tokenID = &tokenID
 	return query
 }
 
 func (query *TokenInfoQuery) GetTokenID() TokenID {
-	return query.tokenID
+	if query.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *query.tokenID
 }
 
-func (query *TokenInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TokenInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.tokenID.Validate(client)
-	if err != nil {
-		return err
+
+	if query.tokenID != nil {
+		if err := query.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (query *TokenInfoQuery) build() *proto.Query_TokenGetInfo {
+func (query *TokenInfoQuery) _Build() *proto.Query_TokenGetInfo {
 	body := &proto.TokenGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.tokenID.isZero() {
-		body.Token = query.tokenID.toProtobuf()
+	if query.tokenID != nil {
+		body.Token = query.tokenID._ToProtobuf()
 	}
 
 	return &proto.Query_TokenGetInfo{
@@ -54,32 +60,32 @@ func (query *TokenInfoQuery) build() *proto.Query_TokenGetInfo {
 	}
 }
 
-func (query *TokenInfoQuery) queryMakeRequest() protoRequest {
-	pb := query.build()
+func (query *TokenInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TokenGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.TokenGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *TokenInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	pb := query.build()
+func (query *TokenInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.TokenGetInfo.Header.Payment = paymentTransaction
 	pb.TokenGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -91,30 +97,30 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		tokenInfoQuery_shouldRetry,
+		_TokenInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		tokenInfoQuery_getMethod,
-		tokenInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_TokenInfoQueryGetMethod,
+		_TokenInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -124,24 +130,23 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetTokenGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func tokenInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+func _TokenInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func tokenInfoQuery_mapStatusError(_ request, response response) error {
+func _TokenInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func tokenInfoQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getToken().GetTokenInfo,
+func _TokenInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetToken().GetTokenInfo,
 	}
 }
 
@@ -152,10 +157,10 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TokenInfo{}, err
 	}
@@ -188,30 +193,30 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return TokenInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		tokenInfoQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		tokenInfoQuery_getMethod,
-		tokenInfoQuery_mapStatusError,
-		query_mapResponse,
+		_TokenInfoQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TokenInfoQueryGetMethod,
+		_TokenInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
 		return TokenInfo{}, err
 	}
 
-	info := tokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
+	info := _TokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
 
 	return info, nil
 }

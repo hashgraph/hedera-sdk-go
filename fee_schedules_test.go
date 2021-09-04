@@ -1,11 +1,12 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func DisabledTestIntegrationFeeSchedulesFromBytes(t *testing.T) {
+func DisabledTestIntegrationFeeSchedulesFromBytes(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	feeSchedulesBytes, err := NewFileContentsQuery().

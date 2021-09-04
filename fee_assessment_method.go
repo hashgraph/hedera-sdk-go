@@ -8,7 +8,7 @@ const (
 )
 
 func (assessment FeeAssessmentMethod) String() string {
-	if assessment == true {
+	if assessment {
 		return "FeeAssessmentMethodExclusive"
 	}
 

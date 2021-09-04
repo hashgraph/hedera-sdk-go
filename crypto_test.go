@@ -3,8 +3,9 @@ package hedera
 import (
 	"bytes"
 	"crypto/ed25519"
-	"github.com/stretchr/testify/assert"
 	"strings"
+
+	"github.com/stretchr/testify/assert"
 
 	"testing"
 )
@@ -202,11 +203,14 @@ func TestUnitMnemonic3(t *testing.T) {
 
 func TestUnitSigning(t *testing.T) {
 	priKey, err := PrivateKeyFromString(testPrivateKeyStr)
+	assert.NoError(t, err)
+
 	pubKey, err := PublicKeyFromString(testPublicKeyStr)
+	assert.NoError(t, err)
+
 	testSignData := []byte("this is the test data to sign")
 	signature := priKey.Sign(testSignData)
 
-	assert.NoError(t, err)
 	assert.True(t, ed25519.Verify(pubKey.Bytes(), []byte("this is the test data to sign"), signature))
 }
 
@@ -259,7 +263,7 @@ func TestUnitPrivateKeyKeystore(t *testing.T) {
 	keystore, err := privateKey.Keystore(passphrase)
 	assert.NoError(t, err)
 
-	ksPrivateKey, err := parseKeystore(keystore, passphrase)
+	ksPrivateKey, err := _ParseKeystore(keystore, passphrase)
 	assert.NoError(t, err)
 
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
@@ -310,7 +314,7 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	keys := make([]PrivateKey, 3)
 	pubKeys := make([]PublicKey, 3)
@@ -336,5 +340,4 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
 	assert.NoError(t, err)
-
 }

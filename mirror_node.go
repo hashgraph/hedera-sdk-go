@@ -13,20 +13,20 @@ import (
 	"google.golang.org/grpc"
 )
 
-type mirrorNode struct {
+type _MirrorNode struct {
 	channel *mirror.ConsensusServiceClient
 	client  *grpc.ClientConn
 	address string
 }
 
-func newMirrorNode(address string) *mirrorNode {
-	return &mirrorNode{
+func _NewMirrorNode(address string) *_MirrorNode {
+	return &_MirrorNode{
 		address: address,
 		channel: nil,
 	}
 }
 
-func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
+func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
 	if node.channel != nil {
 		return node.channel, nil
 	}
@@ -40,7 +40,7 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 	var security grpc.DialOption
 
 	if strings.HasSuffix(node.address, ":50212") || strings.HasSuffix(node.address, ":443") {
-		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
+		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
 		security = grpc.WithInsecure()
 	}
@@ -57,7 +57,7 @@ func (node *mirrorNode) getChannel() (*mirror.ConsensusServiceClient, error) {
 	return node.channel, nil
 }
 
-func (node *mirrorNode) close() error {
+func (node *_MirrorNode) _Close() error {
 	if node.channel != nil {
 		return node.client.Close()
 	}

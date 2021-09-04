@@ -1,10 +1,10 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
@@ -50,7 +50,7 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -101,7 +101,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -110,7 +110,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
@@ -121,7 +121,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -167,7 +167,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -176,7 +176,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenCreate, err := NewTokenCreateTransaction().
@@ -201,7 +201,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	assert.NotNil(t, receipt.TokenID)
@@ -227,7 +227,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(pubKeys[0]).
@@ -236,7 +236,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
@@ -248,7 +248,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -256,7 +256,7 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 	newClient := Client{}
 	networkName := NetworkNameMainnet
 	newClient.network.networkName = &networkName
-	tokenID.setNetworkWithClient(&newClient)
+	tokenID._SetNetworkWithClient(&newClient)
 
 	_, err = NewTokenInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -264,19 +264,19 @@ func TestIntegrationTokenCreateTransactionNetwork(t *testing.T) {
 		Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprint("network mismatch; some IDs have different networks set"), err.Error())
+		assert.Equal(t, "_Network mismatch; some IDs have different networks set", err.Error())
 	}
 
 	newClient = Client{}
 	networkName = NetworkNameTestnet
 	newClient.network.networkName = &networkName
-	tokenID.setNetworkWithClient(&newClient)
+	tokenID._SetNetworkWithClient(&newClient)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) {
+func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewTokenCreateTransaction().
@@ -382,7 +382,7 @@ func TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero(t *testi
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprint("exceptional receipt status: FRACTION_DIVIDES_BY_ZERO"), err.Error())
+		assert.Equal(t, "exceptional receipt status: FRACTION_DIVIDES_BY_ZERO", err.Error())
 	}
 }
 
@@ -417,7 +417,7 @@ func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *te
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprint("exceptional receipt status: INVALID_CUSTOM_FEE_COLLECTOR"), err.Error())
+		assert.Equal(t, "exceptional receipt status: INVALID_CUSTOM_FEE_COLLECTOR", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
@@ -458,7 +458,7 @@ func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprint("exceptional receipt status: FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT"), err.Error())
+		assert.Equal(t, "exceptional receipt status: FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)

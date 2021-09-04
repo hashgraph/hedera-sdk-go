@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type FileInfo struct {
@@ -15,56 +16,50 @@ type FileInfo struct {
 	FileMemo       string
 }
 
-func newFileInfo(fileID FileID, size int64, expirationTime time.Time, isDeleted bool, keys KeyList, fileMemo string) FileInfo {
-	return FileInfo{
-		FileID:         fileID,
-		Size:           size,
-		ExpirationTime: expirationTime,
-		IsDeleted:      isDeleted,
-		Keys:           keys,
-		FileMemo:       fileMemo,
-	}
-}
-
-func fileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {
+func _FileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {
 	if fileInfo == nil {
 		return FileInfo{}, errParameterNull
 	}
 	var keys KeyList
 	var err error
 	if fileInfo.Keys != nil {
-		keys, err = keyListFromProtobuf(fileInfo.Keys)
+		keys, err = _KeyListFromProtobuf(fileInfo.Keys)
 		if err != nil {
 			return FileInfo{}, err
 		}
 	}
 
+	fileID := FileID{}
+	if fileInfo.FileID != nil {
+		fileID = *_FileIDFromProtobuf(fileInfo.FileID)
+	}
+
 	return FileInfo{
-		FileID:         fileIDFromProtobuf(fileInfo.FileID),
+		FileID:         fileID,
 		Size:           fileInfo.Size,
-		ExpirationTime: timeFromProtobuf(fileInfo.ExpirationTime),
+		ExpirationTime: _TimeFromProtobuf(fileInfo.ExpirationTime),
 		IsDeleted:      fileInfo.Deleted,
 		Keys:           keys,
 		FileMemo:       fileInfo.Memo,
 	}, nil
 }
 
-func (fileInfo *FileInfo) toProtobuf() *proto.FileGetInfoResponse_FileInfo {
+func (fileInfo *FileInfo) _ToProtobuf() *proto.FileGetInfoResponse_FileInfo {
 	return &proto.FileGetInfoResponse_FileInfo{
-		FileID: fileInfo.FileID.toProtobuf(),
+		FileID: fileInfo.FileID._ToProtobuf(),
 		Size:   fileInfo.Size,
 		ExpirationTime: &proto.Timestamp{
 			Seconds: int64(fileInfo.ExpirationTime.Second()),
 			Nanos:   int32(fileInfo.ExpirationTime.Nanosecond()),
 		},
 		Deleted: fileInfo.IsDeleted,
-		Keys:    fileInfo.Keys.toProtoKeyList(),
+		Keys:    fileInfo.Keys._ToProtoKeyList(),
 		Memo:    fileInfo.FileMemo,
 	}
 }
 
 func (fileInfo FileInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(fileInfo.toProtobuf())
+	data, err := protobuf.Marshal(fileInfo._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -82,7 +77,7 @@ func FileInfoFromBytes(data []byte) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	info, err := fileInfoFromProtobuf(&pb)
+	info, err := _FileInfoFromProtobuf(&pb)
 	if err != nil {
 		return FileInfo{}, err
 	}

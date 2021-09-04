@@ -12,10 +12,10 @@ import (
 // If this function stores information, it is charged gas to store it. There is a fee in hbars to maintain that storage
 // until the expiration time, and that fee is added as part of the transaction fee.
 //
-// For a cheaper but more limited method to call functions, see ContractCallQuery.
+// For a cheaper but more limited _Method to call functions, see ContractCallQuery.
 type ContractExecuteTransaction struct {
 	Transaction
-	contractID ContractID
+	contractID *ContractID
 	gas        int64
 	amount     int64
 	parameters []byte
@@ -25,17 +25,17 @@ type ContractExecuteTransaction struct {
 // used to construct and execute a Contract Call Transaction.
 func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	transaction := ContractExecuteTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }
 
-func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractExecuteTransaction {
+func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractExecuteTransaction {
 	return ContractExecuteTransaction{
 		Transaction: transaction,
-		contractID:  contractIDFromProtobuf(pb.GetContractCall().GetContractID()),
+		contractID:  _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
 		gas:         pb.GetContractCall().GetGas(),
 		amount:      pb.GetContractCall().GetAmount(),
 		parameters:  pb.GetContractCall().GetFunctionParameters(),
@@ -43,19 +43,23 @@ func contractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.T
 }
 
 // SetContractID sets the contract instance to call.
-func (transaction *ContractExecuteTransaction) SetContractID(id ContractID) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
-	transaction.contractID = id
+func (transaction *ContractExecuteTransaction) SetContractID(contractID ContractID) *ContractExecuteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.contractID = &contractID
 	return transaction
 }
 
-func (transaction ContractExecuteTransaction) GetContractID() ContractID {
-	return transaction.contractID
+func (transaction *ContractExecuteTransaction) GetContractID() ContractID {
+	if transaction.contractID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.contractID
 }
 
 // SetGas sets the maximum amount of gas to use for the call.
 func (transaction *ContractExecuteTransaction) SetGas(gas uint64) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.gas = int64(gas)
 	return transaction
 }
@@ -66,7 +70,7 @@ func (transaction *ContractExecuteTransaction) GetGas() uint64 {
 
 // SetPayableAmount sets the amount of Hbar sent (the function must be payable if this is nonzero)
 func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.amount = amount.AsTinybar()
 	return transaction
 }
@@ -75,9 +79,9 @@ func (transaction ContractExecuteTransaction) GetPayableAmount() Hbar {
 	return HbarFromTinybar(transaction.amount)
 }
 
-//Sets the function parameters
+// Sets the function parameters
 func (transaction *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.parameters = params
 	return transaction
 }
@@ -88,44 +92,45 @@ func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 
 // SetFunction sets which function to call, and the ContractFunctionParams to pass to the function
 func (transaction *ContractExecuteTransaction) SetFunction(name string, params *ContractFunctionParameters) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	if params == nil {
 		params = NewContractFunctionParameters()
 	}
 
-	transaction.parameters = params.build(&name)
+	transaction.parameters = params._Build(&name)
 	return transaction
 }
 
-func (transaction *ContractExecuteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *ContractExecuteTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.contractID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.contractID != nil {
+		if err := transaction.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (transaction *ContractExecuteTransaction) build() *proto.TransactionBody {
+func (transaction *ContractExecuteTransaction) _Build() *proto.TransactionBody {
 	body := proto.ContractCallTransactionBody{
 		Gas:                transaction.gas,
 		Amount:             transaction.amount,
 		FunctionParameters: transaction.parameters,
 	}
 
-	if !transaction.contractID.isZero() {
-		body.ContractID = transaction.contractID.toProtobuf()
+	if transaction.contractID != nil {
+		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_ContractCall{
 			ContractCall: &body,
 		},
@@ -133,25 +138,25 @@ func (transaction *ContractExecuteTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ContractExecuteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := proto.ContractCallTransactionBody{
 		Gas:                transaction.gas,
 		Amount:             transaction.amount,
 		FunctionParameters: transaction.parameters,
 	}
 
-	if !transaction.contractID.isZero() {
-		body.ContractID = transaction.contractID.toProtobuf()
+	if transaction.contractID != nil {
+		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
 	return &proto.SchedulableTransactionBody{
@@ -163,19 +168,14 @@ func (transaction *ContractExecuteTransaction) constructScheduleProtobuf() (*pro
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func contractExecuteTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getContract().ContractCallMethod,
+func _ContractExecuteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetContract().ContractCallMethod,
 	}
 }
 
 func (transaction *ContractExecuteTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -188,8 +188,8 @@ func (transaction *ContractExecuteTransaction) Sign(
 func (transaction *ContractExecuteTransaction) SignWithOperator(
 	client *Client,
 ) (*ContractExecuteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -212,12 +212,8 @@ func (transaction *ContractExecuteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ContractExecuteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -244,27 +240,27 @@ func (transaction *ContractExecuteTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		contractExecuteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ContractExecuteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -275,6 +271,9 @@ func (transaction *ContractExecuteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -291,17 +290,17 @@ func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*Cont
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &ContractExecuteTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
@@ -310,7 +309,7 @@ func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetMaxTransactionFee(fee Hbar) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -321,7 +320,7 @@ func (transaction *ContractExecuteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetTransactionMemo(memo string) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -332,7 +331,7 @@ func (transaction *ContractExecuteTransaction) GetTransactionValidDuration() tim
 
 // SetTransactionValidDuration sets the valid duration for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetTransactionValidDuration(duration time.Duration) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -343,15 +342,15 @@ func (transaction *ContractExecuteTransaction) GetTransactionID() TransactionID 
 
 // SetTransactionID sets the TransactionID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetTransactionID(transactionID TransactionID) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeAccountIDs sets the node AccountID for this ContractExecuteTransaction.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []AccountID) *ContractExecuteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -362,13 +361,9 @@ func (transaction *ContractExecuteTransaction) SetMaxRetry(count int) *ContractE
 }
 
 func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -383,11 +378,10 @@ func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey,
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

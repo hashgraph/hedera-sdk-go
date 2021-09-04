@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
@@ -63,7 +63,7 @@ func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INVALID_FILE_ID"), err.Error())
+		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

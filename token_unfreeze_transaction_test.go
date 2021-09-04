@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
@@ -14,7 +15,7 @@ func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -88,7 +89,7 @@ func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token freeze transaction failed to freeze"))
+	assert.Truef(t, check, "token freeze transaction failed to freeze")
 
 	resp, err = NewTokenUnfreezeTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -114,7 +115,7 @@ func TestIntegrationTokenUnfreezeTransactionCanExecute(t *testing.T) {
 			}
 		}
 	}
-	assert.Truef(t, check, fmt.Sprintf("token unfreeze transaction failed"))
+	assert.Truef(t, check, "token unfreeze transaction failed")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -142,7 +143,7 @@ func TestIntegrationTokenUnfreezeTransactionNoTokenID(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -237,7 +238,7 @@ func TestIntegrationTokenUnfreezeTransactionNoAccountID(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).

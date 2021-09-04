@@ -10,21 +10,27 @@ type ContractLogInfo struct {
 	Data       []byte
 }
 
-func contractLogInfoFromProtobuf(pb *proto.ContractLoginfo) ContractLogInfo {
+func _ContractLogInfoFromProtobuf(pb *proto.ContractLoginfo) ContractLogInfo {
 	if pb == nil {
 		return ContractLogInfo{}
 	}
+
+	contractID := ContractID{}
+	if pb.ContractID != nil {
+		contractID = *_ContractIDFromProtobuf(pb.ContractID)
+	}
+
 	return ContractLogInfo{
-		ContractID: contractIDFromProtobuf(pb.ContractID),
+		ContractID: contractID,
 		Bloom:      pb.Bloom,
 		Topics:     pb.Topic,
 		Data:       pb.Data,
 	}
 }
 
-func (logInfo ContractLogInfo) toProtobuf() *proto.ContractLoginfo {
+func (logInfo ContractLogInfo) _ToProtobuf() *proto.ContractLoginfo {
 	return &proto.ContractLoginfo{
-		ContractID: logInfo.ContractID.toProtobuf(),
+		ContractID: logInfo.ContractID._ToProtobuf(),
 		Bloom:      logInfo.Bloom,
 		Topic:      logInfo.Topics,
 		Data:       logInfo.Data,

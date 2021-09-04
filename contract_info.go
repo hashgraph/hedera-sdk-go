@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type ContractInfo struct {
@@ -18,50 +19,46 @@ type ContractInfo struct {
 	Balance           uint64
 }
 
-func newContractInfo(accountID AccountID, contractID ContractID, contractAccountID string, adminKey Key, expirationTime time.Time,
-	autoRenewPeriod time.Duration, storage uint64, ContractMemo string) ContractInfo {
-	return ContractInfo{
-		AccountID:         accountID,
-		ContractID:        contractID,
-		ContractAccountID: contractAccountID,
-		AdminKey:          adminKey,
-		ExpirationTime:    expirationTime,
-		AutoRenewPeriod:   autoRenewPeriod,
-		Storage:           storage,
-		ContractMemo:      ContractMemo,
-	}
-}
-
-func contractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
+func _ContractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
 	if contractInfo == nil {
 		return ContractInfo{}, errParameterNull
 	}
-	adminKey, err := keyFromProtobuf(contractInfo.GetAdminKey())
+	adminKey, err := _KeyFromProtobuf(contractInfo.GetAdminKey())
 	if err != nil {
 		return ContractInfo{}, err
 	}
 
+	accountID := AccountID{}
+	if contractInfo.AccountID != nil {
+		accountID = *_AccountIDFromProtobuf(contractInfo.AccountID)
+	}
+
+	contractID := ContractID{}
+	if contractInfo.ContractID != nil {
+		contractID = *_ContractIDFromProtobuf(contractInfo.ContractID)
+	}
+
 	return ContractInfo{
-		AccountID:         accountIDFromProtobuf(contractInfo.AccountID),
-		ContractID:        contractIDFromProtobuf(contractInfo.ContractID),
+		AccountID:         accountID,
+		ContractID:        contractID,
 		ContractAccountID: contractInfo.ContractAccountID,
 		AdminKey:          adminKey,
-		ExpirationTime:    timeFromProtobuf(contractInfo.ExpirationTime),
-		AutoRenewPeriod:   durationFromProtobuf(contractInfo.AutoRenewPeriod),
+		ExpirationTime:    _TimeFromProtobuf(contractInfo.ExpirationTime),
+		AutoRenewPeriod:   _DurationFromProtobuf(contractInfo.AutoRenewPeriod),
 		Storage:           uint64(contractInfo.Storage),
 		ContractMemo:      contractInfo.Memo,
 		Balance:           contractInfo.Balance,
 	}, nil
 }
 
-func (contractInfo *ContractInfo) toProtobuf() *proto.ContractGetInfoResponse_ContractInfo {
+func (contractInfo *ContractInfo) _ToProtobuf() *proto.ContractGetInfoResponse_ContractInfo {
 	return &proto.ContractGetInfoResponse_ContractInfo{
-		ContractID:        contractInfo.ContractID.toProtobuf(),
-		AccountID:         contractInfo.AccountID.toProtobuf(),
+		ContractID:        contractInfo.ContractID._ToProtobuf(),
+		AccountID:         contractInfo.AccountID._ToProtobuf(),
 		ContractAccountID: contractInfo.ContractAccountID,
-		AdminKey:          contractInfo.AdminKey.toProtoKey(),
-		ExpirationTime:    timeToProtobuf(contractInfo.ExpirationTime),
-		AutoRenewPeriod:   durationToProtobuf(contractInfo.AutoRenewPeriod),
+		AdminKey:          contractInfo.AdminKey._ToProtoKey(),
+		ExpirationTime:    _TimeToProtobuf(contractInfo.ExpirationTime),
+		AutoRenewPeriod:   _DurationToProtobuf(contractInfo.AutoRenewPeriod),
 		Storage:           int64(contractInfo.Storage),
 		Memo:              contractInfo.ContractMemo,
 		Balance:           contractInfo.Balance,
@@ -69,7 +66,7 @@ func (contractInfo *ContractInfo) toProtobuf() *proto.ContractGetInfoResponse_Co
 }
 
 func (contractInfo ContractInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(contractInfo.toProtobuf())
+	data, err := protobuf.Marshal(contractInfo._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -87,7 +84,7 @@ func ContractInfoFromBytes(data []byte) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	info, err := contractInfoFromProtobuf(&pb)
+	info, err := _ContractInfoFromProtobuf(&pb)
 	if err != nil {
 		return ContractInfo{}, err
 	}

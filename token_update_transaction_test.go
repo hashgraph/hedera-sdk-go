@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
@@ -45,7 +46,7 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.NoError(t, err)
-	assert.Equalf(t, "A", info.Symbol, fmt.Sprintf("token failed to update"))
+	assert.Equalf(t, "A", info.Symbol, "token failed to update")
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)
@@ -67,7 +68,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -76,7 +77,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
@@ -95,7 +96,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -114,7 +115,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	_, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().

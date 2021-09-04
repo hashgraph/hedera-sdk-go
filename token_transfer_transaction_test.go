@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
@@ -14,7 +15,7 @@ func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -96,7 +97,7 @@ func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
 			value = relation.Balance
 		}
 	}
-	assert.Equalf(t, uint64(999990), value, fmt.Sprintf("token transfer transaction failed"))
+	assert.Equalf(t, uint64(999990), value, "token transfer transaction failed")
 
 	resp, err = NewTokenWipeTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -135,7 +136,7 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -171,10 +172,10 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 
 	tokenID := *receipt.TokenID
 
-	nodeId := resp.NodeID
+	nodeID := resp.NodeID
 
 	transaction, err := NewTokenAssociateTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
@@ -189,7 +190,7 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
@@ -199,7 +200,7 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp2, err := NewTransferTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
 		Execute(env.Client)
 	assert.Error(t, err)
@@ -208,7 +209,7 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 	}
 
 	resp, err = NewTokenWipeTransaction().
-		SetNodeAccountIDs([]AccountID{nodeId}).
+		SetNodeAccountIDs([]AccountID{nodeID}).
 		SetTokenID(tokenID).
 		SetAccountID(accountID).
 		SetAmount(10).
@@ -236,7 +237,7 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationNftTransferTransaction(t *testing.T) {
+func DisabledTestIntegrationNftTransferTransaction(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -244,7 +245,7 @@ func DisabledTestIntegrationNftTransferTransaction(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -470,7 +471,7 @@ func TestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *testing.T
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH"), err.Error())
+		assert.Equal(t, "exceptional receipt status: CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH", err.Error())
 	}
 }
 

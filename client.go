@@ -19,10 +19,10 @@ type Client struct {
 	maxTransactionFee Hbar
 	maxQueryPayment   Hbar
 
-	operator *operator
+	operator *_Operator
 
-	network               network
-	mirrorNetwork         *mirrorNetwork
+	network               _Network
+	mirrorNetwork         *_MirrorNetwork
 	autoValidateChecksums bool
 	maxAttempts           *int
 
@@ -33,7 +33,7 @@ type Client struct {
 // TransactionSigner is a closure or function that defines how transactions will be signed
 type TransactionSigner func(message []byte) []byte
 
-type operator struct {
+type _Operator struct {
 	accountID  AccountID
 	privateKey *PrivateKey
 	publicKey  PublicKey
@@ -82,41 +82,41 @@ var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
-	return newClient(network, []string{}, "mainnet")
+	return _NewClient(network, []string{}, "mainnet")
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
 // Hedera mainnet.
-// Most users will want to set an operator account with .SetOperator so
+// Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return newClient(mainnetNodes, mainnetMirror, NetworkNameMainnet)
+	return _NewClient(mainnetNodes, mainnetMirror, NetworkNameMainnet)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
 // Hedera testnet.
-// Most users will want to set an operator account with .SetOperator so
+// Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return newClient(testnetNodes, testnetMirror, NetworkNameTestnet)
+	return _NewClient(testnetNodes, testnetMirror, NetworkNameTestnet)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
 // Hedera previewnet.
-// Most users will want to set an operator account with .SetOperator so
+// Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return newClient(previewnetNodes, previewnetMirror, NetworkNamePreviewnet)
+	return _NewClient(previewnetNodes, previewnetMirror, NetworkNamePreviewnet)
 }
 
-// newClient takes in a map of node addresses to their respective IDS (network)
+// newClient takes in a map of _Node addresses to their respective IDS (_Network)
 // and returns a Client instance which can be used to
-func newClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
+func _NewClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
 	client := Client{
 		maxQueryPayment:       defaultMaxQueryPayment,
 		maxTransactionFee:     defaultMaxTransactionFee,
-		network:               newNetwork(),
-		mirrorNetwork:         newMirrorNetwork(),
+		network:               _NewNetwork(),
+		mirrorNetwork:         _NewMirrorNetwork(),
 		autoValidateChecksums: false,
 		maxAttempts:           nil,
 		minBackoff:            250 * time.Millisecond,
@@ -132,33 +132,33 @@ func newClient(network map[string]AccountID, mirrorNetwork []string, name Networ
 
 func ClientForName(name string) (*Client, error) {
 	switch name {
-	case "testnet":
+	case string(NetworkNameTestnet):
 		return ClientForTestnet(), nil
-	case "previewnet":
+	case string(NetworkNamePreviewnet):
 		return ClientForPreviewnet(), nil
-	case "mainnet":
+	case string(NetworkNameMainnet):
 		return ClientForMainnet(), nil
 	default:
-		return &Client{}, fmt.Errorf("%q is not recognized as a valid Hedera network", name)
+		return &Client{}, fmt.Errorf("%q is not recognized as a valid Hedera _Network", name)
 	}
 }
 
-type configOperator struct {
+type _ConfigOperator struct {
 	AccountID  string `json:"accountId"`
 	PrivateKey string `json:"privateKey"`
 }
 
 // TODO: Implement complete spec: https://gitlab.com/launchbadge/hedera/sdk/python/-/issues/45
-type clientConfig struct {
-	Network       interface{}     `json:"network"`
-	MirrorNetwork interface{}     `json:"mirrorNetwork"`
-	Operator      *configOperator `json:"operator"`
+type _ClientConfig struct {
+	Network       interface{}      `json:"_Network"`
+	MirrorNetwork interface{}      `json:"_MirrorNetwork"`
+	Operator      *_ConfigOperator `json:"_Operator"`
 }
 
 // ClientFromConfig takes in the byte slice representation of a JSON string or
 // document and returns Client based on the configuration.
 func ClientFromConfig(jsonBytes []byte) (*Client, error) {
-	var clientConfig clientConfig
+	var clientConfig _ClientConfig
 	var client *Client
 
 	err := json.Unmarshal(jsonBytes, &clientConfig)
@@ -180,22 +180,22 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 
 				network[url] = accountID
 			default:
-				return client, errors.New("network is expected to be map of string to string, or string")
+				return client, errors.New("_Network is expected to be map of string to string, or string")
 			}
 		}
 	case string:
 		if len(net) > 0 {
 			switch net {
-			case "mainnet":
+			case string(NetworkNameMainnet):
 				network = mainnetNodes
-			case "previewnet":
+			case string(NetworkNamePreviewnet):
 				network = previewnetNodes
-			case "testnet":
+			case string(NetworkNameTestnet):
 				network = testnetNodes
 			}
 		}
 	default:
-		return client, errors.New("network is expected to be map of string to string, or string")
+		return client, errors.New("_Network is expected to be map of string to string, or string")
 	}
 
 	switch mirror := clientConfig.MirrorNetwork.(type) {
@@ -206,26 +206,26 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 			case string:
 				arr[i] = str
 			default:
-				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
+				return client, errors.New("_MirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
-		client = newClient(network, arr, NetworkNameMainnet)
+		client = _NewClient(network, arr, NetworkNameMainnet)
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
-			case "mainnet":
-				client = newClient(network, mainnetMirror, NetworkNameMainnet)
-			case "previewnet":
-				client = newClient(network, previewnetMirror, NetworkNamePreviewnet)
-			case "testnet":
-				client = newClient(network, testnetMirror, NetworkNameTestnet)
+			case string(NetworkNameMainnet):
+				client = _NewClient(network, mainnetMirror, NetworkNameMainnet)
+			case string(NetworkNamePreviewnet):
+				client = _NewClient(network, previewnetMirror, NetworkNamePreviewnet)
+			case string(NetworkNameTestnet):
+				client = _NewClient(network, testnetMirror, NetworkNameTestnet)
 			}
 		}
 	default:
-		return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
+		return client, errors.New("_MirrorNetwork is expected to be either string or an array of strings")
 	}
 
-	// if the operator is not provided, finish here
+	// if the _Operator is not provided, finish here
 	if clientConfig.Operator == nil {
 		return client, nil
 	}
@@ -240,7 +240,7 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 		return client, err
 	}
 
-	operator := operator{
+	operator := _Operator{
 		accountID:  operatorID,
 		privateKey: &operatorKey,
 		publicKey:  operatorKey.PublicKey(),
@@ -272,14 +272,14 @@ func ClientFromConfigFile(filename string) (*Client, error) {
 	return ClientFromConfig(configBytes)
 }
 
-// Close is used to disconnect the Client from the network
+// Close is used to disconnect the Client from the _Network
 func (client *Client) Close() error {
 	client.network.Close()
 
 	return nil
 }
 
-// SetNetwork replaces all nodes in the Client with a new set of nodes.
+// SetNetwork replaces all _Nodes in the Client with a new set of _Nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetNetwork(network map[string]AccountID) error {
 	return client.network.SetNetwork(network)
@@ -299,7 +299,7 @@ func (client *Client) SetMaxBackoff(max time.Duration) {
 }
 
 func (client *Client) GetMaxBackoff() time.Duration {
-	return client.GetMaxBackoff()
+	return client.maxBackoff
 }
 
 func (client *Client) SetMinBackoff(min time.Duration) {
@@ -328,29 +328,29 @@ func (client *Client) GetMaxAttempts() int {
 }
 
 func (client *Client) SetMaxNodeAttempts(max int) {
-	client.network.setMaxNodeAttempts(max)
+	client.network._SetMaxNodeAttempts(max)
 }
 
 func (client *Client) GetMaxNodeAttempts() int {
-	return client.network.getMaxNodeAttempts()
+	return client.network._GetMaxNodeAttempts()
 }
 
 func (client *Client) SetNodeWaitTime(nodeWait time.Duration) {
-	client.network.setNodeWaitTime(nodeWait)
+	client.network._SetNodeWaitTime(nodeWait)
 }
 
 func (client *Client) GetNodeWaitTime() time.Duration {
-	return client.network.getNodeWaitTime()
+	return client.network._GetNodeWaitTime()
 }
 
 func (client *Client) SetMaxNodesPerTransaction(max int) {
-	client.network.setMaxNodesPerTransaction(max)
+	client.network._SetMaxNodesPerTransaction(max)
 }
 
-// SetNetwork replaces all nodes in the Client with a new set of nodes.
+// SetNetwork replaces all _Nodes in the Client with a new set of _Nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
-	client.mirrorNetwork.setNetwork(mirrorNetwork)
+	client.mirrorNetwork._SetNetwork(mirrorNetwork)
 }
 
 func (client *Client) GetMirrorNetwork() []string {
@@ -358,11 +358,11 @@ func (client *Client) GetMirrorNetwork() []string {
 }
 
 func (client *Client) SetNetworkName(name NetworkName) {
-	client.network.setNetworkName(name)
+	client.network._SetNetworkName(name)
 }
 
 func (client *Client) GetNetworkName() NetworkName {
-	return *client.network.getNetworkName()
+	return *client.network._GetNetworkName()
 }
 
 func (client *Client) SetAutoValidateChecksums(validate bool) {
@@ -377,7 +377,7 @@ func (client *Client) GetAutoValidateChecksums() bool {
 // transactions and queries built with the client and the associated key
 // with which to automatically sign transactions.
 func (client *Client) SetOperator(accountID AccountID, privateKey PrivateKey) *Client {
-	client.operator = &operator{
+	client.operator = &_Operator{
 		accountID:  accountID,
 		privateKey: &privateKey,
 		publicKey:  privateKey.PublicKey(),
@@ -391,7 +391,7 @@ func (client *Client) SetOperator(accountID AccountID, privateKey PrivateKey) *C
 // transactions and queries built with the client, the account's PublicKey
 // and a callback that will be invoked when a transaction needs to be signed.
 func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, signer TransactionSigner) *Client {
-	client.operator = &operator{
+	client.operator = &_Operator{
 		accountID:  accountID,
 		privateKey: nil,
 		publicKey:  publicKey,
@@ -401,26 +401,26 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, 
 	return client
 }
 
-// GetOperatorAccountID returns the ID for the operator
+// GetOperatorAccountID returns the ID for the _Operator
 func (client *Client) GetOperatorAccountID() AccountID {
 	if client.operator != nil {
 		return client.operator.accountID
-	} else {
-		return AccountID{}
 	}
+
+	return AccountID{}
 }
 
-// GetOperatorPublicKey returns the Key for the operator
+// GetOperatorPublicKey returns the Key for the _Operator
 func (client *Client) GetOperatorPublicKey() PublicKey {
 	if client.operator != nil {
 		return client.operator.publicKey
-	} else {
-		return PublicKey{}
 	}
+
+	return PublicKey{}
 }
 
-// Ping sends an AccountBalanceQuery to the specified node returning nil if no
-// problems occur. Otherwise, an error representing the status of the node will
+// Ping sends an AccountBalanceQuery to the specified _Node returning nil if no
+// problems occur. Otherwise, an error representing the status of the _Node will
 // be returned.
 func (client *Client) Ping(nodeID AccountID) error {
 	_, err := NewAccountBalanceQuery().
@@ -435,6 +435,4 @@ func (client *Client) PingAll() {
 	for _, s := range client.network.network {
 		_ = client.Ping(s)
 	}
-
-	return
 }

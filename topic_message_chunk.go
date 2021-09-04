@@ -13,9 +13,9 @@ type TopicMessageChunk struct {
 	SequenceNumber     uint64
 }
 
-func newTopicMessageChunk(resp *mirror.ConsensusTopicResponse) TopicMessageChunk {
+func _NewTopicMessageChunk(resp *mirror.ConsensusTopicResponse) TopicMessageChunk {
 	return TopicMessageChunk{
-		ConsensusTimestamp: timeFromProtobuf(resp.ConsensusTimestamp),
+		ConsensusTimestamp: _TimeFromProtobuf(resp.ConsensusTimestamp),
 		ContentSize:        uint64(len(resp.Message)),
 		RunningHash:        resp.RunningHash,
 		SequenceNumber:     resp.SequenceNumber,

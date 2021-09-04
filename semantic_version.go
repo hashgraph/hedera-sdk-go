@@ -12,17 +12,7 @@ type SemanticVersion struct {
 	Build string
 }
 
-func newSemanticVersion(major uint32, minor uint32, patch uint32, pre string, build string) SemanticVersion {
-	return SemanticVersion{
-		Major: major,
-		Minor: minor,
-		Patch: patch,
-		Pre:   pre,
-		Build: build,
-	}
-}
-
-func semanticVersionFromProtobuf(version *proto.SemanticVersion) SemanticVersion {
+func _SemanticVersionFromProtobuf(version *proto.SemanticVersion) SemanticVersion {
 	if version == nil {
 		return SemanticVersion{}
 	}
@@ -35,7 +25,7 @@ func semanticVersionFromProtobuf(version *proto.SemanticVersion) SemanticVersion
 	}
 }
 
-func (version *SemanticVersion) toProtobuf() *proto.SemanticVersion {
+func (version *SemanticVersion) _ToProtobuf() *proto.SemanticVersion {
 	return &proto.SemanticVersion{
 		Major: int32(version.Major),
 		Minor: int32(version.Minor),

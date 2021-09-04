@@ -1,20 +1,21 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type ScheduleSignTransaction struct {
 	Transaction
-	scheduleID ScheduleID
+	scheduleID *ScheduleID
 }
 
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	transaction := ScheduleSignTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(5))
@@ -22,71 +23,70 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	return &transaction
 }
 
-func scheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleSignTransaction {
+func _ScheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleSignTransaction {
 	return ScheduleSignTransaction{
 		Transaction: transaction,
-		scheduleID:  scheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
+		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}
 }
 
-func (transaction *ScheduleSignTransaction) SetScheduleID(id ScheduleID) *ScheduleSignTransaction {
-	transaction.requireNotFrozen()
-	transaction.scheduleID = id
-
+func (transaction *ScheduleSignTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleSignTransaction {
+	transaction._RequireNotFrozen()
+	transaction.scheduleID = &scheduleID
 	return transaction
 }
 
 func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
-	return transaction.scheduleID
+	if transaction.scheduleID == nil {
+		return ScheduleID{}
+	}
+
+	return *transaction.scheduleID
 }
 
-func (transaction *ScheduleSignTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *ScheduleSignTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.scheduleID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.scheduleID != nil {
+		if err := transaction.scheduleID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (transaction *ScheduleSignTransaction) build() *proto.TransactionBody {
+func (transaction *ScheduleSignTransaction) _Build() *proto.TransactionBody {
 	body := &proto.ScheduleSignTransactionBody{}
-	if !transaction.scheduleID.isZero() {
-		body.ScheduleID = transaction.scheduleID.toProtobuf()
+	if transaction.scheduleID != nil {
+		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_ScheduleSign{
 			ScheduleSign: body,
 		},
 	}
 }
 
-func (transaction *ScheduleSignTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ScheduleSignTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func scheduleSignTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getSchedule().SignSchedule,
+func _ScheduleSignTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetSchedule().SignSchedule,
 	}
 }
 
 func (transaction *ScheduleSignTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -99,8 +99,8 @@ func (transaction *ScheduleSignTransaction) Sign(
 func (transaction *ScheduleSignTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleSignTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -122,12 +122,8 @@ func (transaction *ScheduleSignTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *ScheduleSignTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -154,27 +150,27 @@ func (transaction *ScheduleSignTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		scheduleSignTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_ScheduleSignTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -185,6 +181,9 @@ func (transaction *ScheduleSignTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -201,17 +200,17 @@ func (transaction *ScheduleSignTransaction) FreezeWith(client *Client) (*Schedul
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &ScheduleSignTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *ScheduleSignTransaction) GetMaxTransactionFee() Hbar {
@@ -220,7 +219,7 @@ func (transaction *ScheduleSignTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleSignTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -231,7 +230,7 @@ func (transaction *ScheduleSignTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) SetTransactionMemo(memo string) *ScheduleSignTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -242,7 +241,7 @@ func (transaction *ScheduleSignTransaction) GetTransactionValidDuration() time.D
 
 // SetTransactionValidDuration sets the valid duration for this ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) SetTransactionValidDuration(duration time.Duration) *ScheduleSignTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -253,15 +252,15 @@ func (transaction *ScheduleSignTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) SetTransactionID(transactionID TransactionID) *ScheduleSignTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this ScheduleSignTransaction.
+// SetNodeAccountID sets the _Node AccountID for this ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) SetNodeAccountIDs(nodeID []AccountID) *ScheduleSignTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }

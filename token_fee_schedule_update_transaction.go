@@ -1,21 +1,22 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type TokenFeeScheduleUpdateTransaction struct {
 	Transaction
-	tokenID    TokenID
+	tokenID    *TokenID
 	customFees []Fee
 }
 
 func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 	transaction := TokenFeeScheduleUpdateTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
 
@@ -26,29 +27,33 @@ func TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {
-		customFees = append(customFees, customFeeFromProtobuf(fee))
+		customFees = append(customFees, _CustomFeeFromProtobuf(fee))
 	}
 
 	return TokenFeeScheduleUpdateTransaction{
 		Transaction: transaction,
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
+		tokenID:     _TokenIDFromProtobuf(pb.GetTokenFeeScheduleUpdate().TokenId),
 		customFees:  customFees,
 	}
 }
 
 // The account to be associated with the provided tokens
-func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(id TokenID) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
-	transaction.tokenID = id
+func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(tokenID TokenID) *TokenFeeScheduleUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.tokenID = &tokenID
 	return transaction
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Fee) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.customFees = fees
 	return transaction
 }
@@ -57,18 +62,19 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
 	return transaction.customFees
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenFeeScheduleUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	for _, customFee := range transaction.customFees {
-		if err := customFee.validateNetworkOnIDs(client); err != nil {
+		if err := customFee._ValidateNetworkOnIDs(client); err != nil {
 			return err
 		}
 	}
@@ -76,10 +82,10 @@ func (transaction *TokenFeeScheduleUpdateTransaction) validateNetworkOnIDs(clien
 	return nil
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) build() *proto.TransactionBody {
+func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenFeeScheduleUpdateTransactionBody{}
-	if !transaction.tokenID.isZero() {
-		body.TokenId = transaction.tokenID.toProtobuf()
+	if transaction.tokenID != nil {
+		body.TokenId = transaction.tokenID._ToProtobuf()
 	}
 
 	if len(transaction.customFees) > 0 {
@@ -87,38 +93,33 @@ func (transaction *TokenFeeScheduleUpdateTransaction) build() *proto.Transaction
 			if body.CustomFees == nil {
 				body.CustomFees = make([]*proto.CustomFee, 0)
 			}
-			body.CustomFees = append(body.CustomFees, customFee.toProtobuf())
+			body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
 		}
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_TokenFeeScheduleUpdate{
 			TokenFeeScheduleUpdate: body,
 		},
 	}
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenFeeScheduleUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenFeeScheduleUpdateTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getToken().UpdateTokenFeeSchedule,
+func _TokenFeeScheduleUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetToken().UpdateTokenFeeSchedule,
 	}
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -131,8 +132,8 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Sign(
 func (transaction *TokenFeeScheduleUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenFeeScheduleUpdateTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -161,7 +162,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SignWith(
 		transaction.transactions = make([]*proto.Transaction, 0)
 	}
 
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -170,7 +171,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SignWith(
 
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 
@@ -198,27 +199,27 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenFeeScheduleUpdateTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenFeeScheduleUpdateTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -229,6 +230,9 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -245,17 +249,17 @@ func (transaction *TokenFeeScheduleUpdateTransaction) FreezeWith(client *Client)
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenFeeScheduleUpdateTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxTransactionFee() Hbar {
@@ -264,7 +268,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxTransactionFee() Hba
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenFeeScheduleUpdateTransaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -275,7 +279,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionMemo() strin
 
 // SetTransactionMemo sets the memo for this TokenFeeScheduleUpdateTransaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionMemo(memo string) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -286,7 +290,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionValidDuratio
 
 // SetTransactionValidDuration sets the valid duration for this TokenFeeScheduleUpdateTransaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -297,15 +301,15 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionID() Transac
 
 // SetTransactionID sets the TransactionID for this TokenFeeScheduleUpdateTransaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionID(transactionID TransactionID) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenFeeScheduleUpdateTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenFeeScheduleUpdateTransaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -316,13 +320,9 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxRetry(count int) *To
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFeeScheduleUpdateTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -337,11 +337,10 @@ func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey Pub
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

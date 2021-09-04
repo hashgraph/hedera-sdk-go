@@ -2,17 +2,18 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"regexp"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 // EntityID is an interface for various IDs of entities (Account, Contract, File, etc)
 type EntityID interface {
-	isEntityID()
+	_IsEntityID()
 }
 
-type parseAddressResult struct {
+type _ParseAddressResult struct {
 	status             int
 	num1               int64
 	num2               int64
@@ -23,7 +24,7 @@ type parseAddressResult struct {
 	withChecksumFormat string
 }
 
-func checksumVerify(num int) error {
+func _ChecksumVerify(num int) error {
 	switch num {
 	case 0:
 		return errors.New("Invalid ID: format should look like 0.0.123 or 0.0.123-laujm")
@@ -38,11 +39,9 @@ func checksumVerify(num int) error {
 	}
 }
 
-func checksumParseAddress(ledgerID string, address string) (parseAddressResult, error) {
-	match, err := regexp.Compile(`(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))(?:-([a-z]{5}))?$`)
-	if err != nil {
-		return parseAddressResult{status: 0}, err
-	}
+func _ChecksumParseAddress(ledgerID string, address string) (_ParseAddressResult, error) {
+	var err error
+	match := regexp.MustCompile(`(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))(?:-([a-z]{5}))?$`)
 
 	matchArray := match.FindStringSubmatch(address)
 
@@ -50,23 +49,25 @@ func checksumParseAddress(ledgerID string, address string) (parseAddressResult, 
 	for i := 1; i < len(matchArray)-1; i++ {
 		a[i], err = strconv.ParseInt(matchArray[i], 10, 64)
 		if err != nil {
-			return parseAddressResult{status: 0}, err
+			return _ParseAddressResult{status: 0}, err
 		}
 	}
 
 	ad := fmt.Sprintf("%s.%s.%s", matchArray[1], matchArray[2], matchArray[3])
 
-	checksum := checkChecksum(ledgerID, ad)
+	checksum := _CheckChecksum(ledgerID, ad)
 
 	var status int
-	if matchArray[4] == "" {
+	switch m := matchArray[4]; {
+	case m == "":
 		status = 2
-	} else if checksum == matchArray[4] {
+	case m == checksum:
 		status = 3
-	} else {
+	default:
 		status = 1
 	}
-	return parseAddressResult{
+
+	return _ParseAddressResult{
 		status:             status,
 		num1:               a[1],
 		num2:               a[2],
@@ -78,7 +79,7 @@ func checksumParseAddress(ledgerID string, address string) (parseAddressResult, 
 	}, nil
 }
 
-func checkChecksum(ledgerID string, address string) string {
+func _CheckChecksum(ledgerID string, address string) string {
 	answer := ""
 	digits := make([]int, 0)
 	s0 := 0
@@ -139,7 +140,7 @@ func checkChecksum(ledgerID string, address string) string {
 	return answer
 }
 
-func (id AccountID) isEntityID() {}
+func (id AccountID) _IsEntityID() {}
 
-// func (id FileID) isEntityID()     {}
-// func (id ContractID) isEntityID() {}
+// func (id FileID) _IsEntityID()     {}
+// func (id ContractID) _IsEntityID() {}

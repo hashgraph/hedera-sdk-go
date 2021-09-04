@@ -15,15 +15,15 @@ import (
 
 const maxAttempts = 10
 
-type executionState uint32
+type _ExecutionState uint32
 
 const (
-	executionStateRetry    executionState = 0
-	executionStateFinished executionState = 1
-	executionStateError    executionState = 2
+	executionStateRetry    _ExecutionState = 0
+	executionStateFinished _ExecutionState = 1
+	executionStateError    _ExecutionState = 2
 )
 
-type method struct {
+type _Method struct {
 	query func(
 		context.Context,
 		*proto.Query,
@@ -36,54 +36,49 @@ type method struct {
 	) (*proto.TransactionResponse, error)
 }
 
-type response struct {
+type _Response struct {
 	query       *proto.Response
 	transaction *proto.TransactionResponse
 }
 
-type intermediateResponse struct {
+type _IntermediateResponse struct {
 	query       *proto.Response
 	transaction TransactionResponse
 }
 
-type protoRequest struct {
+type _ProtoRequest struct {
 	query       *proto.Query
 	transaction *proto.Transaction
 }
 
-type QueryHeader struct {
-	header *proto.QueryHeader
-}
-
-type request struct {
+type _Request struct {
 	query       *Query
 	transaction *Transaction
 }
 
-func execute(
+func _Execute(
 	client *Client,
-	request request,
-	shouldRetry func(request, response) executionState,
-	protoReq protoRequest,
-	advanceRequest func(request),
-	getNodeAccountID func(request) AccountID,
-	getMethod func(request, *channel) method,
-	mapStatusError func(request, response) error,
-	mapResponse func(request, response, AccountID, protoRequest) (intermediateResponse, error),
-) (intermediateResponse, error) {
+	request _Request,
+	shouldRetry func(_Request, _Response) _ExecutionState,
+	protoReq _ProtoRequest,
+	advanceRequest func(_Request),
+	getNodeAccountID func(_Request) AccountID,
+	getMethod func(_Request, *_Channel) _Method,
+	mapStatusError func(_Request, _Response) error,
+	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
+) (_IntermediateResponse, error) {
 	var maxAttempts int
 	var minBackoff *time.Duration
 	var maxBackoff *time.Duration
+
 	if client.maxAttempts != nil {
 		maxAttempts = *client.maxAttempts
 	} else {
-		maxAttempts = 10
 		if request.query != nil {
 			maxAttempts = request.query.maxRetry
 		} else {
 			maxAttempts = request.transaction.maxRetry
 		}
-
 	}
 
 	if request.query != nil {
@@ -119,14 +114,14 @@ func execute(
 
 		node, ok := client.network.networkNodes[nodeAccountID]
 		if !ok {
-			return intermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}
 
-		node.inUse()
+		node._InUse()
 
-		channel, err := node.getChannel()
+		channel, err := node._GetChannel()
 		if err != nil {
-			node.increaseDelay()
+			node._IncreaseDelay()
 			continue
 		}
 
@@ -134,10 +129,10 @@ func execute(
 
 		advanceRequest(request)
 
-		resp := response{}
+		resp := _Response{}
 
-		if !node.isHealthy() {
-			node.wait()
+		if !node._IsHealthy() {
+			node._Wait()
 		}
 
 		if method.query != nil {
@@ -148,44 +143,43 @@ func execute(
 
 		if err != nil {
 			errPersistent = err
-			if executableDefaultRetryHandler(err) {
-				node.increaseDelay()
+			if _ExecutableDefaultRetryHandler(err) {
+				node._IncreaseDelay()
 				continue
 			}
-			return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
 
-		node.decreaseDelay()
+		node._DecreaseDelay()
 
 		retry := shouldRetry(request, resp)
 
 		switch retry {
 		case executionStateRetry:
 			if attempt <= int64(maxAttempts) {
-				delayForAttempt(minBackoff, maxBackoff, attempt)
+				_DelayForAttempt(minBackoff, maxBackoff, attempt)
 				continue
 			} else {
 				errPersistent = mapStatusError(request, resp)
 				break
 			}
 		case executionStateError:
-			return intermediateResponse{}, mapStatusError(request, resp)
+			return _IntermediateResponse{}, mapStatusError(request, resp)
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
-
 	}
 
-	return intermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func delayForAttempt(minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
+func _DelayForAttempt(minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
 	// 0.1s, 0.2s, 0.4s, 0.8s, ...
 	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
 	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
 
-func executableDefaultRetryHandler(err error) bool {
+func _ExecutableDefaultRetryHandler(err error) bool {
 	code := status.Code(err)
 
 	switch code {
@@ -198,7 +192,7 @@ func executableDefaultRetryHandler(err error) bool {
 			return false
 		}
 
-		return RST_STREAM.FindIndex([]byte(grpcErr.Message())) != nil
+		return rstStream.FindIndex([]byte(grpcErr.Message())) != nil
 	default:
 		return false
 	}

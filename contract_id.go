@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 // ContractID is the ID for a Hedera smart contract
@@ -16,7 +17,7 @@ type ContractID struct {
 
 // ContractIDFromString constructs a ContractID from a string formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func ContractIDFromString(data string) (ContractID, error) {
-	shard, realm, num, checksum, err := idFromString(data)
+	shard, realm, num, checksum, err := _IdFromString(data)
 	if err != nil {
 		return ContractID{}, err
 	}
@@ -30,12 +31,12 @@ func ContractIDFromString(data string) (ContractID, error) {
 }
 
 func (id *ContractID) Validate(client *Client) error {
-	if !id.isZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	if !id._IsZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
 		if err != nil {
 			return err
 		}
-		err = checksumVerify(tempChecksum.status)
+		err = _ChecksumVerify(tempChecksum.status)
 		if err != nil {
 			return err
 		}
@@ -51,20 +52,20 @@ func (id *ContractID) Validate(client *Client) error {
 	return nil
 }
 
-func (id *ContractID) setNetworkWithClient(client *Client) {
+func (id *ContractID) _SetNetworkWithClient(client *Client) {
 	if client.network.networkName != nil {
-		id.setNetwork(*client.network.networkName)
+		id._SetNetwork(*client.network.networkName)
 	}
 }
 
-func (id *ContractID) setNetwork(name NetworkName) {
-	checksum := checkChecksum(name.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+func (id *ContractID) _SetNetwork(name NetworkName) {
+	checksum := _CheckChecksum(name._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
 	id.checksum = &checksum
 }
 
-// ContractIDFromSolidityAddress constructs a ContractID from a string representation of a solidity address
+// ContractIDFromSolidityAddress constructs a ContractID from a string representation of a _Solidity address
 func ContractIDFromSolidityAddress(s string) (ContractID, error) {
-	shard, realm, contract, err := idFromSolidityAddress(s)
+	shard, realm, contract, err := _IdFromSolidityAddress(s)
 	if err != nil {
 		return ContractID{}, err
 	}
@@ -85,19 +86,19 @@ func (id ContractID) ToStringWithChecksum(client Client) (string, error) {
 	if client.network.networkName == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := checksumParseAddress(client.network.networkName.ledgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	checksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, checksum.correctChecksum), nil
 }
 
-// ToSolidityAddress returns the string representation of the ContractID as a solidity address.
+// ToSolidityAddress returns the string representation of the ContractID as a _Solidity address.
 func (id ContractID) ToSolidityAddress() string {
-	return idToSolidityAddress(id.Shard, id.Realm, id.Contract)
+	return _IdToSolidityAddress(id.Shard, id.Realm, id.Contract)
 }
 
-func (id ContractID) toProtobuf() *proto.ContractID {
+func (id ContractID) _ToProtobuf() *proto.ContractID {
 	return &proto.ContractID{
 		ShardNum:    int64(id.Shard),
 		RealmNum:    int64(id.Realm),
@@ -105,30 +106,28 @@ func (id ContractID) toProtobuf() *proto.ContractID {
 	}
 }
 
-func contractIDFromProtobuf(contractID *proto.ContractID) ContractID {
+func _ContractIDFromProtobuf(contractID *proto.ContractID) *ContractID {
 	if contractID == nil {
-		return ContractID{}
+		return nil
 	}
 
-	id := ContractID{
+	return &ContractID{
 		Shard:    uint64(contractID.ShardNum),
 		Realm:    uint64(contractID.RealmNum),
 		Contract: uint64(contractID.ContractNum),
 	}
-
-	return id
 }
 
-func (id ContractID) isZero() bool {
+func (id ContractID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Contract == 0
 }
 
-func (id ContractID) toProtoKey() *proto.Key {
-	return &proto.Key{Key: &proto.Key_ContractID{ContractID: id.toProtobuf()}}
+func (id ContractID) _ToProtoKey() *proto.Key {
+	return &proto.Key{Key: &proto.Key_ContractID{ContractID: id._ToProtobuf()}}
 }
 
 func (id ContractID) ToBytes() []byte {
-	data, err := protobuf.Marshal(id.toProtobuf())
+	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -143,5 +142,5 @@ func ContractIDFromBytes(data []byte) (ContractID, error) {
 		return ContractID{}, err
 	}
 
-	return contractIDFromProtobuf(&pb), nil
+	return *_ContractIDFromProtobuf(&pb), nil
 }

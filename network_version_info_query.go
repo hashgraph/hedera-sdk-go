@@ -1,8 +1,9 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type NetworkVersionInfoQuery struct {
@@ -11,11 +12,11 @@ type NetworkVersionInfoQuery struct {
 
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	return &NetworkVersionInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
-func (query *NetworkVersionInfoQuery) queryMakeRequest() protoRequest {
+func (query *NetworkVersionInfoQuery) _QueryMakeRequest() _ProtoRequest {
 	pb := &proto.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
 			Header: &proto.QueryHeader{},
@@ -26,29 +27,29 @@ func (query *NetworkVersionInfoQuery) queryMakeRequest() protoRequest {
 	}
 	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *NetworkVersionInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
+func (query *NetworkVersionInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := &proto.Query_NetworkGetVersionInfo{
 		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
 			Header: &proto.QueryHeader{},
 		},
 	}
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.NetworkGetVersionInfo.Header.Payment = paymentTransaction
 	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -60,25 +61,25 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		networkVersionInfoQuery_shouldRetry,
+		_NetworkVersionInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		networkVersionInfoQuery_getMethod,
-		networkVersionInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_NetworkVersionInfoQueryGetMethod,
+		_NetworkVersionInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -88,24 +89,23 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetNetworkGetVersionInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func networkVersionInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+func _NetworkVersionInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func networkVersionInfoQuery_mapStatusError(_ request, response response) error {
+func _NetworkVersionInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func networkVersionInfoQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getNetwork().GetVersionInfo,
+func _NetworkVersionInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetNetwork().GetVersionInfo,
 	}
 }
 
@@ -115,7 +115,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
@@ -146,30 +146,30 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		cost = actualCost
 	}
 
-	err := query_generatePayments(&query.Query, client, cost)
+	err := _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return NetworkVersionInfo{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		networkVersionInfoQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		networkVersionInfoQuery_getMethod,
-		networkVersionInfoQuery_mapStatusError,
-		query_mapResponse,
+		_NetworkVersionInfoQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_NetworkVersionInfoQueryGetMethod,
+		_NetworkVersionInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
 		return NetworkVersionInfo{}, err
 	}
 
-	return networkVersionInfoFromProtobuf(resp.query.GetNetworkGetVersionInfo()), err
+	return _NetworkVersionInfoFromProtobuf(resp.query.GetNetworkGetVersionInfo()), err
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

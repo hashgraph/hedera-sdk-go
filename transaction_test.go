@@ -3,13 +3,13 @@ package hedera
 import (
 	"testing"
 
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/stretchr/testify/assert"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 func TestUnitTransactionSerializationDeserialization(t *testing.T) {
-	transaction, err := newMockTransaction()
+	transaction, err := _NewMockTransaction()
 	assert.NoError(t, err)
 
 	_, err = transaction.Freeze()
@@ -69,8 +69,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	tx2, err := TransactionFromBytes(updateBytes)
 	assert.NoError(t, err)
 
-	switch newTx := tx2.(type) {
-	case AccountDeleteTransaction:
+	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
 		assert.NoError(t, err)
 	}
@@ -112,7 +111,7 @@ func TestIntegrationTransactionGetHash(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestTransactionFromBytes(t *testing.T) {
+func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil})
 
 	TransactionBody := proto.TransactionBody{
@@ -244,14 +243,13 @@ func DisabledTestTransactionFromBytes(t *testing.T) {
 		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey5)
 
 		assert.Equal(t, len(tx.GetNodeAccountIDs()), 1)
-		assert.True(t, tx.GetNodeAccountIDs()[0].equals(AccountID{0, 0, 3, nil}))
+		assert.True(t, tx.GetNodeAccountIDs()[0]._Equals(AccountID{0, 0, 3, nil}))
 
 		resp, err := tx.Execute(env.Client)
 		assert.NoError(t, err)
 
 		_, err = resp.GetReceipt(env.Client)
 		assert.NoError(t, err)
-		break
 	default:
 		panic("Transaction was not a crypto transfer?")
 	}

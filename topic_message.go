@@ -15,9 +15,9 @@ type TopicMessage struct {
 	TransactionID      *TransactionID
 }
 
-func topicMessageOfSingle(resp *mirror.ConsensusTopicResponse) TopicMessage {
+func _TopicMessageOfSingle(resp *mirror.ConsensusTopicResponse) TopicMessage {
 	return TopicMessage{
-		ConsensusTimestamp: timeFromProtobuf(resp.ConsensusTimestamp),
+		ConsensusTimestamp: _TimeFromProtobuf(resp.ConsensusTimestamp),
 		Contents:           resp.Message,
 		RunningHash:        resp.RunningHash,
 		SequenceNumber:     resp.SequenceNumber,
@@ -26,7 +26,7 @@ func topicMessageOfSingle(resp *mirror.ConsensusTopicResponse) TopicMessage {
 	}
 }
 
-func topicMessageOfMany(message []*mirror.ConsensusTopicResponse) TopicMessage {
+func _TopicMessageOfMany(message []*mirror.ConsensusTopicResponse) TopicMessage {
 	length := len(message)
 	size := uint64(0)
 	chunks := make([]TopicMessageChunk, length)
@@ -35,11 +35,11 @@ func topicMessageOfMany(message []*mirror.ConsensusTopicResponse) TopicMessage {
 
 	for _, m := range message {
 		if transactionID == nil {
-			value := transactionIDFromProtobuf(m.ChunkInfo.InitialTransactionID)
+			value := _TransactionIDFromProtobuf(m.ChunkInfo.InitialTransactionID)
 			transactionID = &value
 		}
 
-		chunks[m.ChunkInfo.Number-1] = newTopicMessageChunk(m)
+		chunks[m.ChunkInfo.Number-1] = _NewTopicMessageChunk(m)
 		messages[m.ChunkInfo.Number-1] = m.Message
 		size += uint64(len(m.Message))
 	}
@@ -51,7 +51,7 @@ func topicMessageOfMany(message []*mirror.ConsensusTopicResponse) TopicMessage {
 	}
 
 	return TopicMessage{
-		ConsensusTimestamp: timeFromProtobuf(message[length-1].ConsensusTimestamp),
+		ConsensusTimestamp: _TimeFromProtobuf(message[length-1].ConsensusTimestamp),
 		RunningHash:        message[length-1].RunningHash,
 		SequenceNumber:     message[length-1].SequenceNumber,
 		Contents:           finalMessage,

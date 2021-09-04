@@ -1,9 +1,10 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TokenNftInfo struct {
@@ -13,30 +14,35 @@ type TokenNftInfo struct {
 	Metadata     []byte
 }
 
-func tokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
+func _TokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
 	if pb == nil {
 		return TokenNftInfo{}
 	}
 
+	accountID := AccountID{}
+	if pb.AccountID != nil {
+		accountID = *_AccountIDFromProtobuf(pb.AccountID)
+	}
+
 	return TokenNftInfo{
-		NftID:        nftIDFromProtobuf(pb.NftID),
-		AccountID:    accountIDFromProtobuf(pb.AccountID),
-		CreationTime: timeFromProtobuf(pb.CreationTime),
+		NftID:        _NftIDFromProtobuf(pb.NftID),
+		AccountID:    accountID,
+		CreationTime: _TimeFromProtobuf(pb.CreationTime),
 		Metadata:     pb.Metadata,
 	}
 }
 
-func (tokenNftInfo *TokenNftInfo) toProtobuf() *proto.TokenNftInfo {
+func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *proto.TokenNftInfo {
 	return &proto.TokenNftInfo{
-		NftID:        tokenNftInfo.NftID.toProtobuf(),
-		AccountID:    tokenNftInfo.AccountID.toProtobuf(),
-		CreationTime: timeToProtobuf(tokenNftInfo.CreationTime),
+		NftID:        tokenNftInfo.NftID._ToProtobuf(),
+		AccountID:    tokenNftInfo.AccountID._ToProtobuf(),
+		CreationTime: _TimeToProtobuf(tokenNftInfo.CreationTime),
 		Metadata:     tokenNftInfo.Metadata,
 	}
 }
 
 func (tokenNftInfo *TokenNftInfo) ToBytes() []byte {
-	data, err := protobuf.Marshal(tokenNftInfo.toProtobuf())
+	data, err := protobuf.Marshal(tokenNftInfo._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -54,5 +60,5 @@ func TokenNftInfoFromBytes(data []byte) (TokenNftInfo, error) {
 		return TokenNftInfo{}, err
 	}
 
-	return tokenNftInfoFromProtobuf(&pb), nil
+	return _TokenNftInfoFromProtobuf(&pb), nil
 }

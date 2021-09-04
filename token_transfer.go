@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TokenTransfer struct {
@@ -17,25 +17,31 @@ func NewTokenTransfer(accountID AccountID, amount int64) TokenTransfer {
 	}
 }
 
-func tokenTransferFromProtobuf(pb *proto.AccountAmount) TokenTransfer {
+func _TokenTransferFromProtobuf(pb *proto.AccountAmount) TokenTransfer {
 	if pb == nil {
 		return TokenTransfer{}
 	}
+
+	accountID := AccountID{}
+	if pb.AccountID != nil {
+		accountID = *_AccountIDFromProtobuf(pb.AccountID)
+	}
+
 	return TokenTransfer{
-		AccountID: accountIDFromProtobuf(pb.AccountID),
+		AccountID: accountID,
 		Amount:    pb.Amount,
 	}
 }
 
-func (transfer *TokenTransfer) toProtobuf() *proto.AccountAmount {
+func (transfer *TokenTransfer) _ToProtobuf() *proto.AccountAmount {
 	return &proto.AccountAmount{
-		AccountID: transfer.AccountID.toProtobuf(),
+		AccountID: transfer.AccountID._ToProtobuf(),
 		Amount:    transfer.Amount,
 	}
 }
 
 func (transfer TokenTransfer) ToBytes() []byte {
-	data, err := protobuf.Marshal(transfer.toProtobuf())
+	data, err := protobuf.Marshal(transfer._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -53,5 +59,5 @@ func TokenTransferFromBytes(data []byte) (TokenTransfer, error) {
 		return TokenTransfer{}, err
 	}
 
-	return tokenTransferFromProtobuf(&pb), nil
+	return _TokenTransferFromProtobuf(&pb), nil
 }

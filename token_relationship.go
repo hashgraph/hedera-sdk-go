@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"errors"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type TokenRelationship struct {
@@ -16,22 +17,28 @@ type TokenRelationship struct {
 	AutomaticAssociation bool
 }
 
-func tokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationship {
+func _TokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationship {
 	if pb == nil {
 		return TokenRelationship{}
 	}
+
+	tokenID := TokenID{}
+	if pb.TokenId != nil {
+		tokenID = *_TokenIDFromProtobuf(pb.TokenId)
+	}
+
 	return TokenRelationship{
-		TokenID:              tokenIDFromProtobuf(pb.GetTokenId()),
+		TokenID:              tokenID,
 		Symbol:               pb.Symbol,
 		Balance:              pb.Balance,
-		KycStatus:            kycStatusFromProtobuf(pb.KycStatus),
-		FreezeStatus:         freezeStatusFromProtobuf(pb.FreezeStatus),
+		KycStatus:            _KycStatusFromProtobuf(pb.KycStatus),
+		FreezeStatus:         _FreezeStatusFromProtobuf(pb.FreezeStatus),
 		Decimals:             pb.Decimals,
 		AutomaticAssociation: pb.AutomaticAssociation,
 	}
 }
 
-func (relationship *TokenRelationship) toProtobuf() *proto.TokenRelationship {
+func (relationship *TokenRelationship) _ToProtobuf() *proto.TokenRelationship {
 	var freezeStatus proto.TokenFreezeStatus
 	switch *relationship.FreezeStatus {
 	case true:
@@ -53,7 +60,7 @@ func (relationship *TokenRelationship) toProtobuf() *proto.TokenRelationship {
 	}
 
 	return &proto.TokenRelationship{
-		TokenId:              relationship.TokenID.toProtobuf(),
+		TokenId:              relationship.TokenID._ToProtobuf(),
 		Symbol:               relationship.Symbol,
 		Balance:              relationship.Balance,
 		KycStatus:            kycStatus,
@@ -64,7 +71,7 @@ func (relationship *TokenRelationship) toProtobuf() *proto.TokenRelationship {
 }
 
 func (relationship TokenRelationship) ToBytes() []byte {
-	data, err := protobuf.Marshal(relationship.toProtobuf())
+	data, err := protobuf.Marshal(relationship._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -82,5 +89,5 @@ func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
 		return TokenRelationship{}, err
 	}
 
-	return tokenRelationshipFromProtobuf(&pb), nil
+	return _TokenRelationshipFromProtobuf(&pb), nil
 }

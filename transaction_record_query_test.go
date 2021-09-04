@@ -1,9 +1,9 @@
 package hedera
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
@@ -14,7 +14,7 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -71,7 +71,7 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -129,7 +129,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -157,7 +157,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 		SetQueryPayment(HbarFromTinybar(1)).
 		Execute(env.Client)
 	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional receipt status: INSUFFICIENT_TX_FEE"), err.Error())
+		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_TX_FEE", err.Error())
 	}
 
 	accountID := receipt.AccountID
@@ -182,7 +182,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) {
+func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -190,7 +190,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -301,7 +301,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) {
+func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
@@ -309,7 +309,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) {
 
 	newBalance := NewHbar(2)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).

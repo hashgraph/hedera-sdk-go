@@ -45,13 +45,13 @@ const (
 	RequestTypeContractGetInfo RequestType = 17
 	// Smart Contract, get the byte code
 	RequestTypeContractGetBytecode RequestType = 18
-	// Smart Contract, get by solidity ID
+	// Smart Contract, get by _Solidity ID
 	RequestTypeGetBySolidityID RequestType = 19
 	// Smart Contract, get by key
 	RequestTypeGetByKey RequestType = 20
 	// Get a live hash from a crypto account
 	RequestTypeCryptoGetLiveHash RequestType = 21
-	// Crypto, get the stakers for the node
+	// Crypto, get the stakers for the _Node
 	RequestTypeCryptoGetStakers RequestType = 22
 	// File Operations get file contents
 	RequestTypeFileGetContents RequestType = 23
@@ -77,7 +77,7 @@ const (
 	RequestTypeCryptoAccountAutoRenew RequestType = 33
 	// Contract Auto Renew
 	RequestTypeContractAutoRenew RequestType = 34
-	//Get Version
+	// Get Version
 	RequestTypeGetVersionInfo RequestType = 35
 	// Transaction Get Receipt
 	RequestTypeTransactionGetReceipt RequestType = 36
@@ -129,7 +129,7 @@ const (
 )
 
 // String() returns a string representation of the status
-func (requestType RequestType) String() string {
+func (requestType RequestType) String() string { // nolint
 	switch requestType {
 	case RequestTypeNone:
 		return "NONE"

@@ -17,7 +17,7 @@ func TestUnitDecryptKeyStore(t *testing.T) {
 	privateKey, err := PrivateKeyFromString(testKeystoreKeyString)
 	assert.NoError(t, err)
 
-	ksPrivateKey, err := parseKeystore([]byte(testKeystore), passphrase)
+	ksPrivateKey, err := _ParseKeystore([]byte(testKeystore), passphrase)
 	assert.NoError(t, err)
 
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
@@ -27,10 +27,10 @@ func TestUnitEncryptAndDecryptKeyStore(t *testing.T) {
 	privateKey, err := PrivateKeyFromString(testPrivateKeyStr)
 	assert.NoError(t, err)
 
-	keyStore, err := newKeystore(privateKey.Bytes(), passphrase)
+	keyStore, err := _NewKeystore(privateKey.Bytes(), passphrase)
 	assert.NoError(t, err)
 
-	ksPrivateKey, err := parseKeystore(keyStore, passphrase)
+	ksPrivateKey, err := _ParseKeystore(keyStore, passphrase)
 	assert.NoError(t, err)
 
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)

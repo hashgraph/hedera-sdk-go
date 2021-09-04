@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 
 	"time"
 )
@@ -14,37 +14,33 @@ type LiveHash struct {
 	Duration  time.Time
 }
 
-func newLiveHash(accountId AccountID, hash []byte, keys KeyList, duration time.Time) LiveHash {
-	return LiveHash{
-		AccountID: accountId,
-		Hash:      hash,
-		Keys:      keys,
-		Duration:  duration,
-	}
-}
-
-func (liveHash *LiveHash) toProtobuf() *proto.LiveHash {
+func (liveHash *LiveHash) _ToProtobuf() *proto.LiveHash {
 	return &proto.LiveHash{
-		AccountId: liveHash.AccountID.toProtobuf(),
+		AccountId: liveHash.AccountID._ToProtobuf(),
 		Hash:      liveHash.Hash,
-		Keys:      liveHash.Keys.toProtoKeyList(),
+		Keys:      liveHash.Keys._ToProtoKeyList(),
 		Duration: &proto.Duration{
 			Seconds: int64(liveHash.Duration.Second()),
 		},
 	}
 }
 
-func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
+func _LiveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
 	if hash == nil {
 		return LiveHash{}, errParameterNull
 	}
-	keyList, err := keyListFromProtobuf(hash.Keys)
+	keyList, err := _KeyListFromProtobuf(hash.Keys)
 	if err != nil {
 		return LiveHash{}, err
 	}
 
+	accountID := AccountID{}
+	if hash.AccountId != nil {
+		accountID = *_AccountIDFromProtobuf(hash.AccountId)
+	}
+
 	return LiveHash{
-		AccountID: accountIDFromProtobuf(hash.GetAccountId()),
+		AccountID: accountID,
 		Hash:      hash.Hash,
 		Keys:      keyList,
 		Duration: time.Date(time.Now().Year(), time.Now().Month(),
@@ -54,7 +50,7 @@ func liveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
 }
 
 func (liveHash LiveHash) ToBytes() []byte {
-	data, err := protobuf.Marshal(liveHash.toProtobuf())
+	data, err := protobuf.Marshal(liveHash._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -72,7 +68,7 @@ func LiveHashFromBytes(data []byte) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := liveHashFromProtobuf(&pb)
+	liveHash, err := _LiveHashFromProtobuf(&pb)
 	if err != nil {
 		return LiveHash{}, err
 	}

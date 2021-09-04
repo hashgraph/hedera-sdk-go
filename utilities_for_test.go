@@ -1,10 +1,11 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var mockPrivateKey string = "302e020100300506032b6570042204203b054fade7a2b0869c6bd4a63b7017cbae7855d12acc357bea718e2c3e805962"
@@ -30,7 +31,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	var env IntegrationTestEnv
 	var err error
 
-	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+	if os.Getenv("HEDERA_NETWORK") == "previewnet" { // nolint
 		env.Client = ClientForPreviewnet()
 	} else if os.Getenv("HEDERA_NETWORK") == "localhost" {
 		network := make(map[string]AccountID)
@@ -39,14 +40,15 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		network["127.0.0.1:50215"] = AccountID{Account: 5}
 
 		env.Client = ClientForNetwork(network)
-	} else if os.Getenv("HEDERA_NETWORK") == "previewnet" {
+	} else if os.Getenv("HEDERA_NETWORK") == "testnet" {
 		env.Client = ClientForTestnet()
-	} else {
+	} else if os.Getenv("CONFIG_FILE") != "" {
 		env.Client, err = ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
-
 		if err != nil {
 			panic(err)
 		}
+	} else {
+		panic("Failed to construct client from environment variables")
 	}
 
 	configOperatorID := os.Getenv("OPERATOR_ID")
@@ -56,7 +58,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		env.OperatorID, err = AccountIDFromString(configOperatorID)
 		assert.NoError(t, err)
 
-		env.OperatorID.setNetworkWithClient(env.Client)
+		env.OperatorID._SetNetworkWithClient(env.Client)
 
 		env.OperatorKey, err = PrivateKeyFromString(configOperatorKey)
 		assert.NoError(t, err)
@@ -132,7 +134,7 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 	return nil
 }
 
-func newMockClient() (*Client, error) {
+func _NewMockClient() (*Client, error) {
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 
 	if err != nil {
@@ -142,19 +144,19 @@ func newMockClient() (*Client, error) {
 	var net = make(map[string]AccountID)
 	net["nonexistent-testnet"] = AccountID{Account: 3}
 
-	client := newClient(net, []string{}, "testnet")
+	client := _NewClient(net, []string{}, "testnet")
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
 	return client, nil
 }
 
-func newMockTransaction() (*TransferTransaction, error) {
+func _NewMockTransaction() (*TransferTransaction, error) {
 	privateKey, err := PrivateKeyFromString(mockPrivateKey)
 	if err != nil {
 		return &TransferTransaction{}, err
 	}
 
-	client, err := newMockClient()
+	client, err := _NewMockClient()
 	if err != nil {
 		return &TransferTransaction{}, err
 	}
@@ -163,7 +165,7 @@ func newMockTransaction() (*TransferTransaction, error) {
 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
 		SetTransactionID(testTransactionID).
-		SetNodeAccountIDs([]AccountID{AccountID{0, 0, 4, nil}}).
+		SetNodeAccountIDs([]AccountID{{0, 0, 4, nil}}).
 		FreezeWith(client)
 	if err != nil {
 		return &TransferTransaction{}, err
@@ -172,55 +174,6 @@ func newMockTransaction() (*TransferTransaction, error) {
 	tx.Sign(privateKey)
 
 	return tx, nil
-}
-
-func newTestClient(t *testing.T, token bool) *Client {
-	var client *Client
-	var err error
-
-	if os.Getenv("HEDERA_NETWORK") == "previewnet" {
-		client = ClientForPreviewnet()
-	} else {
-		client, err = ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
-
-		if err != nil {
-			client = ClientForTestnet()
-		}
-
-	}
-
-	configOperatorID := os.Getenv("OPERATOR_ID")
-	configOperatorKey := os.Getenv("OPERATOR_KEY")
-
-	if configOperatorID != "" && configOperatorKey != "" {
-		operatorAccountID, err := AccountIDFromString(configOperatorID)
-		assert.NoError(t, err)
-
-		operatorKey, err := PrivateKeyFromString(configOperatorKey)
-		assert.NoError(t, err)
-
-		client.SetOperator(operatorAccountID, operatorKey)
-	}
-
-	if token {
-		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
-
-		resp, err := NewAccountCreateTransaction().
-			SetKey(newKey.PublicKey()).
-			SetInitialBalance(NewHbar(20)).
-			Execute(client)
-		assert.NoError(t, err)
-
-		receipt, err := resp.GetReceipt(client)
-		assert.NoError(t, err)
-
-		client.SetOperator(*receipt.AccountID, newKey)
-
-		time.Sleep(2000)
-	}
-
-	return client
 }
 
 func TestIntegrationPreviewnetTls(t *testing.T) {

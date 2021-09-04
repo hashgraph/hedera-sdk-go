@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var RST_STREAM = regexp.MustCompile("/\brst[^0-9a-zA-Z]stream\b/gi")
+var rstStream = regexp.MustCompile("/\brst[^0-9a-zA-Z]stream\b/gi")
 
 type TopicMessageQuery struct {
 	errorHandler      func(stat status.Status)
@@ -20,7 +20,7 @@ type TopicMessageQuery struct {
 	retryHandler      func(err error) bool
 	attempt           uint64
 	maxAttempts       uint64
-	topicID           TopicID
+	topicID           *TopicID
 	startTime         *time.Time
 	endTime           *time.Time
 	limit             uint64
@@ -29,19 +29,23 @@ type TopicMessageQuery struct {
 func NewTopicMessageQuery() *TopicMessageQuery {
 	return &TopicMessageQuery{
 		maxAttempts:       maxAttempts,
-		errorHandler:      defaultErrorHandler,
-		retryHandler:      defaultRetryHandler,
-		completionHandler: defaultCompletionHandler,
+		errorHandler:      _DefaultErrorHandler,
+		retryHandler:      _DefaultRetryHandler,
+		completionHandler: _DefaultCompletionHandler,
 	}
 }
 
-func (query *TopicMessageQuery) SetTopicID(id TopicID) *TopicMessageQuery {
-	query.topicID = id
+func (query *TopicMessageQuery) SetTopicID(topicID TopicID) *TopicMessageQuery {
+	query.topicID = &topicID
 	return query
 }
 
 func (query *TopicMessageQuery) GetTopicID() TopicID {
-	return query.topicID
+	if query.topicID == nil {
+		return TopicID{}
+	}
+
+	return *query.topicID
 }
 
 func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQuery {
@@ -52,9 +56,9 @@ func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQ
 func (query *TopicMessageQuery) GetStartTime() time.Time {
 	if query.startTime != nil {
 		return *query.startTime
-	} else {
-		return time.Time{}
 	}
+
+	return time.Time{}
 }
 
 func (query *TopicMessageQuery) SetEndTime(endTime time.Time) *TopicMessageQuery {
@@ -65,9 +69,9 @@ func (query *TopicMessageQuery) SetEndTime(endTime time.Time) *TopicMessageQuery
 func (query *TopicMessageQuery) GetEndTime() time.Time {
 	if query.endTime != nil {
 		return *query.endTime
-	} else {
-		return time.Time{}
 	}
+
+	return time.Time{}
 }
 
 func (query *TopicMessageQuery) SetLimit(limit uint64) *TopicMessageQuery {
@@ -103,31 +107,32 @@ func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) boo
 	return query
 }
 
-func (query *TopicMessageQuery) validateNetworkOnIDs(client *Client) error {
+func (query *TopicMessageQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.topicID.Validate(client)
-	if err != nil {
-		return err
+
+	if query.topicID != nil {
+		if err := query.topicID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (query *TopicMessageQuery) build() *mirror.ConsensusTopicQuery {
+func (query *TopicMessageQuery) _Build() *mirror.ConsensusTopicQuery {
 	body := &mirror.ConsensusTopicQuery{
 		Limit: query.limit,
 	}
-	if !query.topicID.isZero() {
-		body.TopicID = query.topicID.toProtobuf()
+	if query.topicID != nil {
+		body.TopicID = query.topicID._ToProtobuf()
 	}
 	if query.startTime != nil {
-		body.ConsensusStartTime = timeToProtobuf(*query.startTime)
+		body.ConsensusStartTime = _TimeToProtobuf(*query.startTime)
 	}
 	if query.endTime != nil {
-		body.ConsensusStartTime = timeToProtobuf(*query.endTime)
+		body.ConsensusStartTime = _TimeToProtobuf(*query.endTime)
 	}
 
 	return body
@@ -136,17 +141,17 @@ func (query *TopicMessageQuery) build() *mirror.ConsensusTopicQuery {
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	handle := SubscriptionHandle{}
 
-	query.topicID.setNetworkWithClient(client)
-	err := query.validateNetworkOnIDs(client)
+	query.topicID._SetNetworkWithClient(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return SubscriptionHandle{}, err
 	}
 
-	pb := query.build()
+	pb := query._Build()
 
-	messages := make(map[string][]*mirror.ConsensusTopicResponse, 0)
+	messages := make(map[string][]*mirror.ConsensusTopicResponse)
 
-	channel, err := client.mirrorNetwork.getNextMirrorNode().getChannel()
+	channel, err := client.mirrorNetwork._GetNextMirrorNode()._GetChannel()
 	if err != nil {
 		return handle, err
 	}
@@ -159,13 +164,13 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			if err != nil {
 				handle.Unsubscribe()
 
-				if grpcErr, ok := status.FromError(err); ok {
+				if grpcErr, ok := status.FromError(err); ok { // nolint
 					if query.attempt < query.maxAttempts && query.retryHandler(err) {
 						subClient = nil
 
 						delay := math.Min(250.0*math.Pow(2.0, float64(query.attempt)), 8000)
 						time.Sleep(time.Duration(delay) * time.Millisecond)
-						query.attempt += 1
+						query.attempt++
 					} else {
 						query.errorHandler(*grpcErr)
 						break
@@ -197,17 +202,17 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 			}
 
 			if resp.ConsensusTimestamp != nil {
-				pb.ConsensusStartTime = timeToProtobuf(timeFromProtobuf(resp.ConsensusTimestamp).Add(1 * time.Nanosecond))
+				pb.ConsensusStartTime = _TimeToProtobuf(_TimeFromProtobuf(resp.ConsensusTimestamp).Add(1 * time.Nanosecond))
 			}
 
 			if pb.Limit > 0 {
-				pb.Limit -= 1
+				pb.Limit--
 			}
 
 			if resp.ChunkInfo == nil || resp.ChunkInfo.Total == 1 {
-				onNext(topicMessageOfSingle(resp))
+				onNext(_TopicMessageOfSingle(resp))
 			} else {
-				txID := transactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
+				txID := _TransactionIDFromProtobuf(resp.ChunkInfo.InitialTransactionID).String()
 				message, ok := messages[txID]
 				if !ok {
 					message = make([]*mirror.ConsensusTopicResponse, 0, resp.ChunkInfo.Total)
@@ -219,7 +224,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 				if int32(len(message)) == resp.ChunkInfo.Total {
 					delete(messages, txID)
 
-					onNext(topicMessageOfMany(message))
+					onNext(_TopicMessageOfMany(message))
 				}
 			}
 		}
@@ -228,15 +233,15 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 	return handle, nil
 }
 
-func defaultErrorHandler(stat status.Status) {
+func _DefaultErrorHandler(stat status.Status) {
 	println("Failed to subscribe to topic with status", stat.Code().String())
 }
 
-func defaultCompletionHandler() {
+func _DefaultCompletionHandler() {
 	println("Subscription to topic finished")
 }
 
-func defaultRetryHandler(err error) bool {
+func _DefaultRetryHandler(err error) bool {
 	code := status.Code(err)
 
 	switch code {
@@ -249,14 +254,8 @@ func defaultRetryHandler(err error) bool {
 			return false
 		}
 
-		return RST_STREAM.FindIndex([]byte(grpcErr.Message())) != nil
+		return rstStream.FindIndex([]byte(grpcErr.Message())) != nil
 	default:
 		return false
-	}
-}
-
-func callErrorHandlerWithGrpcStatus(err error, errorHandler func(stat status.Status)) {
-	if grpcErr, ok := status.FromError(err); errorHandler != nil && ok {
-		errorHandler(*grpcErr)
 	}
 }

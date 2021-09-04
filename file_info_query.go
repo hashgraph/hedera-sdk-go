@@ -1,50 +1,56 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type FileInfoQuery struct {
 	Query
-	fileID FileID
+	fileID *FileID
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
-
 	return &FileInfoQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
-func (query *FileInfoQuery) SetFileID(id FileID) *FileInfoQuery {
-	query.fileID = id
+func (query *FileInfoQuery) SetFileID(fileID FileID) *FileInfoQuery {
+	query.fileID = &fileID
 	return query
 }
 
-func (query *FileInfoQuery) GetFileID(id FileID) FileID {
-	return query.fileID
+func (query *FileInfoQuery) GetFileID() FileID {
+	if query.fileID == nil {
+		return FileID{}
+	}
+
+	return *query.fileID
 }
 
-func (query *FileInfoQuery) validateNetworkOnIDs(client *Client) error {
+func (query *FileInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.fileID.Validate(client)
-	if err != nil {
-		return err
+
+	if query.fileID != nil {
+		if err := query.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (query *FileInfoQuery) build() *proto.Query_FileGetInfo {
+func (query *FileInfoQuery) _Build() *proto.Query_FileGetInfo {
 	body := &proto.FileGetInfoQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.fileID.isZero() {
-		body.FileID = query.fileID.toProtobuf()
+
+	if query.fileID != nil {
+		body.FileID = query.fileID._ToProtobuf()
 	}
 
 	return &proto.Query_FileGetInfo{
@@ -52,32 +58,32 @@ func (query *FileInfoQuery) build() *proto.Query_FileGetInfo {
 	}
 }
 
-func (query *FileInfoQuery) queryMakeRequest() protoRequest {
-	pb := query.build()
+func (query *FileInfoQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.FileGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.FileGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *FileInfoQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	pb := query.build()
+func (query *FileInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.FileGetInfo.Header.Payment = paymentTransaction
 	pb.FileGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -89,30 +95,30 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		fileInfoQuery_shouldRetry,
+		_FileInfoQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		fileInfoQuery_getMethod,
-		fileInfoQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_FileInfoQueryGetMethod,
+		_FileInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -122,24 +128,23 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	cost := int64(resp.query.GetFileGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
-	} else {
-		return HbarFromTinybar(cost), nil
 	}
+	return HbarFromTinybar(cost), nil
 }
 
-func fileInfoQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
+func _FileInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func fileInfoQuery_mapStatusError(_ request, response response) error {
+func _FileInfoQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func fileInfoQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getFile().GetFileInfo,
+func _FileInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetFile().GetFileInfo,
 	}
 }
 
@@ -149,15 +154,15 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return FileInfo{}, err
 	}
 
-	query.build()
+	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -187,29 +192,29 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return FileInfo{}, err
 	}
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		fileInfoQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		fileInfoQuery_getMethod,
-		fileInfoQuery_mapStatusError,
-		query_mapResponse,
+		_FileInfoQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_FileInfoQueryGetMethod,
+		_FileInfoQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
 		return FileInfo{}, err
 	}
 
-	info, err := fileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)
+	info, err := _FileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)
 	if err != nil {
 		return FileInfo{}, err
 	}
@@ -234,7 +239,7 @@ func (query *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQu
 	return query
 }
 
-func (query *FileInfoQuery) GetNodeAccountId() []AccountID {
+func (query *FileInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 

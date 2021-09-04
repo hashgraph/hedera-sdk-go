@@ -62,10 +62,10 @@ func (fee *CustomRoyaltyFee) GetFallbackFee() CustomFixedFee {
 	return CustomFixedFee{}
 }
 
-func customRoyaltyFeeFromProtobuf(royalty *proto.RoyaltyFee, fee CustomFee) CustomRoyaltyFee {
+func _CustomRoyaltyFeeFromProtobuf(royalty *proto.RoyaltyFee, fee CustomFee) CustomRoyaltyFee {
 	var fallback CustomFixedFee
 	if royalty.FallbackFee != nil {
-		fallback = customFixedFeeFromProtobuf(royalty.FallbackFee, fee)
+		fallback = _CustomFixedFeeFromProtobuf(royalty.FallbackFee, fee)
 	}
 	return CustomRoyaltyFee{
 		CustomFee:   fee,
@@ -75,23 +75,23 @@ func customRoyaltyFeeFromProtobuf(royalty *proto.RoyaltyFee, fee CustomFee) Cust
 	}
 }
 
-func (fee CustomRoyaltyFee) validateNetworkOnIDs(client *Client) error {
+func (fee CustomRoyaltyFee) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums || fee.FallbackFee == nil {
 		return nil
 	}
 
-	return fee.FallbackFee.validateNetworkOnIDs(client)
+	return fee.FallbackFee._ValidateNetworkOnIDs(client)
 }
 
-func (fee CustomRoyaltyFee) toProtobuf() *proto.CustomFee {
+func (fee CustomRoyaltyFee) _ToProtobuf() *proto.CustomFee {
 	var fallback *proto.FixedFee
 	if fee.FallbackFee != nil {
-		fallback = fee.FallbackFee.toProtobuf().GetFixedFee()
+		fallback = fee.FallbackFee._ToProtobuf().GetFixedFee()
 	}
 
 	var FeeCollectorAccountID *proto.AccountID
 	if fee.FeeCollectorAccountID != nil {
-		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID.toProtobuf()
+		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID._ToProtobuf()
 	}
 
 	return &proto.CustomFee{

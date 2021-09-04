@@ -1,31 +1,31 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
-type nodeAddressBook struct {
-	nodeAddresses []nodeAddress
+type _NodeAddressBook struct {
+	nodeAddresses []_NodeAddress
 }
 
-func nodeAddressBookFromProtobuf(book *proto.NodeAddressBook) nodeAddressBook {
-	addresses := make([]nodeAddress, 0)
+func _NodeAddressBookFromProtobuf(book *proto.NodeAddressBook) _NodeAddressBook {
+	addresses := make([]_NodeAddress, 0)
 
 	for _, k := range book.NodeAddress {
-		addresses = append(addresses, nodeAddressFromProtobuf(k))
+		addresses = append(addresses, _NodeAddressFromProtobuf(k))
 	}
 
-	return nodeAddressBook{
+	return _NodeAddressBook{
 		nodeAddresses: addresses,
 	}
 }
 
-func (book nodeAddressBook) toProtobuf() *proto.NodeAddressBook {
+func (book _NodeAddressBook) _ToProtobuf() *proto.NodeAddressBook {
 	addresses := make([]*proto.NodeAddress, 0)
 
 	for _, k := range book.nodeAddresses {
-		addresses = append(addresses, k.toProtobuf())
+		addresses = append(addresses, k._ToProtobuf())
 	}
 
 	return &proto.NodeAddressBook{
@@ -33,8 +33,8 @@ func (book nodeAddressBook) toProtobuf() *proto.NodeAddressBook {
 	}
 }
 
-func (book nodeAddressBook) ToBytes() []byte {
-	data, err := protobuf.Marshal(book.toProtobuf())
+func (book _NodeAddressBook) ToBytes() []byte {
+	data, err := protobuf.Marshal(book._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -42,17 +42,17 @@ func (book nodeAddressBook) ToBytes() []byte {
 	return data
 }
 
-func nodeAddressBookFromBytes(data []byte) (nodeAddressBook, error) {
+func _NodeAddressBookFromBytes(data []byte) (_NodeAddressBook, error) {
 	if data == nil {
-		return nodeAddressBook{}, errByteArrayNull
+		return _NodeAddressBook{}, errByteArrayNull
 	}
 	pb := proto.NodeAddressBook{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
-		return nodeAddressBook{}, err
+		return _NodeAddressBook{}, err
 	}
 
-	derivedBytes := nodeAddressBookFromProtobuf(&pb)
+	derivedBytes := _NodeAddressBookFromProtobuf(&pb)
 
 	return derivedBytes, nil
 }

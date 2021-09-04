@@ -8,21 +8,21 @@ import (
 
 type SystemDeleteTransaction struct {
 	Transaction
-	contractID     ContractID
-	fileID         FileID
+	contractID     *ContractID
+	fileID         *FileID
 	expirationTime *time.Time
 }
 
 func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	transaction := SystemDeleteTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }
 
-func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemDeleteTransaction {
+func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemDeleteTransaction {
 	expiration := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		time.Now().Hour(), time.Now().Minute(),
@@ -30,14 +30,14 @@ func systemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 	)
 	return SystemDeleteTransaction{
 		Transaction:    transaction,
-		contractID:     contractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
-		fileID:         fileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
+		contractID:     _ContractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
+		fileID:         _FileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),
 		expirationTime: &expiration,
 	}
 }
 
 func (transaction *SystemDeleteTransaction) SetExpirationTime(expiration time.Time) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.expirationTime = &expiration
 	return transaction
 }
@@ -50,44 +50,55 @@ func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
 	return 0
 }
 
-func (transaction *SystemDeleteTransaction) SetContractID(id ContractID) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
-	transaction.contractID = id
+func (transaction *SystemDeleteTransaction) SetContractID(contractID ContractID) *SystemDeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.contractID = &contractID
 	return transaction
 }
 
-func (transaction *SystemDeleteTransaction) GetContract() ContractID {
-	return transaction.contractID
+func (transaction *SystemDeleteTransaction) GetContractID() ContractID {
+	if transaction.contractID == nil {
+		return ContractID{}
+	}
+
+	return *transaction.contractID
 }
 
-func (transaction *SystemDeleteTransaction) SetFileID(id FileID) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
-	transaction.fileID = id
+func (transaction *SystemDeleteTransaction) SetFileID(fileID FileID) *SystemDeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.fileID = &fileID
 	return transaction
 }
 
 func (transaction *SystemDeleteTransaction) GetFileID() FileID {
-	return transaction.fileID
+	if transaction.fileID == nil {
+		return FileID{}
+	}
+
+	return *transaction.fileID
 }
 
-func (transaction *SystemDeleteTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *SystemDeleteTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.contractID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.contractID != nil {
+		if err := transaction.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
-	err = transaction.fileID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.fileID != nil {
+		if err := transaction.fileID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (transaction *SystemDeleteTransaction) build() *proto.TransactionBody {
+func (transaction *SystemDeleteTransaction) _Build() *proto.TransactionBody {
 	body := &proto.SystemDeleteTransactionBody{}
 
 	if transaction.expirationTime != nil {
@@ -96,23 +107,23 @@ func (transaction *SystemDeleteTransaction) build() *proto.TransactionBody {
 		}
 	}
 
-	if !transaction.contractID.isZero() {
+	if transaction.contractID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
-			ContractID: transaction.contractID.toProtobuf(),
+			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.fileID.isZero() {
+	if transaction.fileID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_FileID{
-			FileID: transaction.fileID.toProtobuf(),
+			FileID: transaction.fileID._ToProtobuf(),
 		}
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_SystemDelete{
 			SystemDelete: body,
 		},
@@ -120,17 +131,17 @@ func (transaction *SystemDeleteTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.SystemDeleteTransactionBody{}
 
 	if transaction.expirationTime != nil {
@@ -139,15 +150,15 @@ func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.
 		}
 	}
 
-	if !transaction.contractID.isZero() {
+	if transaction.contractID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
-			ContractID: transaction.contractID.toProtobuf(),
+			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
-	if !transaction.fileID.isZero() {
+	if transaction.fileID != nil {
 		body.Id = &proto.SystemDeleteTransactionBody_FileID{
-			FileID: transaction.fileID.toProtobuf(),
+			FileID: transaction.fileID._ToProtobuf(),
 		}
 	}
 
@@ -158,32 +169,26 @@ func (transaction *SystemDeleteTransaction) constructScheduleProtobuf() (*proto.
 			SystemDelete: body,
 		},
 	}, nil
-
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func systemDeleteTransaction_getMethod(request request, channel *channel) method {
-	//switch os := runtime.GOOS; os {
-	//case "darwin":
+func _SystemDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	// switch os := runtime.GOOS; os {
+	// case "darwin":
 	//	fmt.Println("OS X.")
 	//}
-	if channel.getContract() == nil {
-		return method{
-			transaction: channel.getFile().SystemDelete,
+	if channel._GetContract() == nil {
+		return _Method{
+			transaction: channel._GetFile().SystemDelete,
 		}
-	} else {
-		return method{
-			transaction: channel.getContract().SystemDelete,
-		}
+	}
+
+	return _Method{
+		transaction: channel._GetContract().SystemDelete,
 	}
 }
 
 func (transaction *SystemDeleteTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -196,8 +201,8 @@ func (transaction *SystemDeleteTransaction) Sign(
 func (transaction *SystemDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*SystemDeleteTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -220,12 +225,8 @@ func (transaction *SystemDeleteTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *SystemDeleteTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -256,27 +257,27 @@ func (transaction *SystemDeleteTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		systemDeleteTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_SystemDeleteTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -287,6 +288,9 @@ func (transaction *SystemDeleteTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -303,17 +307,17 @@ func (transaction *SystemDeleteTransaction) FreezeWith(client *Client) (*SystemD
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &SystemDeleteTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *SystemDeleteTransaction) GetMaxTransactionFee() Hbar {
@@ -322,7 +326,7 @@ func (transaction *SystemDeleteTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetMaxTransactionFee(fee Hbar) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -333,7 +337,7 @@ func (transaction *SystemDeleteTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionMemo(memo string) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -344,7 +348,7 @@ func (transaction *SystemDeleteTransaction) GetTransactionValidDuration() time.D
 
 // SetTransactionValidDuration sets the valid duration for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionValidDuration(duration time.Duration) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -355,15 +359,15 @@ func (transaction *SystemDeleteTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetTransactionID(transactionID TransactionID) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeAccountID sets the node AccountID for this SystemDeleteTransaction.
+// SetNodeAccountID sets the _Node AccountID for this SystemDeleteTransaction.
 func (transaction *SystemDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) *SystemDeleteTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -374,13 +378,9 @@ func (transaction *SystemDeleteTransaction) SetMaxRetry(count int) *SystemDelete
 }
 
 func (transaction *SystemDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *SystemDeleteTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -395,11 +395,10 @@ func (transaction *SystemDeleteTransaction) AddSignature(publicKey PublicKey, si
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

@@ -1,14 +1,15 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
+
+const oldTopicMemo = "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
 func TestIntegrationTopicUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
-	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -76,8 +77,6 @@ func TestIntegrationTopicUpdateTransactionCanExecute(t *testing.T) {
 func TestIntegrationTopicUpdateTransactionNoMemo(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
-
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -128,8 +127,6 @@ func TestIntegrationTopicUpdateTransactionNoMemo(t *testing.T) {
 
 func TestIntegrationTopicUpdateTransactionNoTopicID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
-	oldTopicMemo := "go-sdk::TestConsensusTopicUpdateTransaction_Execute::initial"
 
 	resp, err := NewTopicCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).

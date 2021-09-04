@@ -2,10 +2,12 @@ package hedera
 
 import (
 	"fmt"
-	protobuf "github.com/golang/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
+// nolint
 type FeeComponents struct {
 	Min                        int64
 	Max                        int64
@@ -20,7 +22,7 @@ type FeeComponents struct {
 	ResponseDiscByte           int64
 }
 
-func feeComponentsFromProtobuf(feeComponents *proto.FeeComponents) (FeeComponents, error) {
+func _FeeComponentsFromProtobuf(feeComponents *proto.FeeComponents) (FeeComponents, error) {
 	if feeComponents == nil {
 		return FeeComponents{}, errParameterNull
 	}
@@ -40,7 +42,7 @@ func feeComponentsFromProtobuf(feeComponents *proto.FeeComponents) (FeeComponent
 	}, nil
 }
 
-func (feeComponents FeeComponents) toProtobuf() *proto.FeeComponents {
+func (feeComponents FeeComponents) _ToProtobuf() *proto.FeeComponents {
 	return &proto.FeeComponents{
 		Min:      feeComponents.Min,
 		Max:      feeComponents.Max,
@@ -57,7 +59,7 @@ func (feeComponents FeeComponents) toProtobuf() *proto.FeeComponents {
 }
 
 func (feeComponents FeeComponents) ToBytes() []byte {
-	data, err := protobuf.Marshal(feeComponents.toProtobuf())
+	data, err := protobuf.Marshal(feeComponents._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -75,7 +77,7 @@ func FeeComponentsFromBytes(data []byte) (FeeComponents, error) {
 		return FeeComponents{}, err
 	}
 
-	info, err := feeComponentsFromProtobuf(&pb)
+	info, err := _FeeComponentsFromProtobuf(&pb)
 	if err != nil {
 		return FeeComponents{}, err
 	}

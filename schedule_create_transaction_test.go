@@ -1,13 +1,13 @@
 package hedera
 
 //
-//import (
+// import (
 //	"fmt"
 //	"github.com/stretchr/testify/assert"
 //	"testing"
 //)
 //
-//func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	newKey, err := GeneratePrivateKey()
@@ -15,7 +15,7 @@ package hedera
 //
 //	newBalance := NewHbar(1)
 //
-//	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	transactionID := TransactionIDGenerate(env.Client.GetOperatorAccountID())
 //
@@ -63,11 +63,11 @@ package hedera
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
-//		assert.Equal(t, fmt.Sprintf("exceptional receipt status: SCHEDULE_ALREADY_EXECUTED"), err.Error())
+//		assert.Equal(t, "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED", err.Error())
 //	}
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionMultiSign(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionMultiSign(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	keys := make([]PrivateKey, 3)
@@ -148,7 +148,7 @@ package hedera
 //	assert.False(t, info2.ExecutedAt.IsZero())
 //}
 //
-//func DisabledTestIntegrationScheduleDeleteTransactionCanExecute(t *testing.T) {
+// func DisabledTestIntegrationScheduleDeleteTransactionCanExecute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	key, err := GeneratePrivateKey()
@@ -221,7 +221,7 @@ package hedera
 //	assert.False(t, info2.DeletedAt.IsZero())
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionCheckValidGetTransaction(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionCheckValidGetTransaction(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	newKey, err := GeneratePrivateKey()
@@ -229,7 +229,7 @@ package hedera
 //
 //	newBalance := NewHbar(1)
 //
-//	assert.Equal(t, HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	transactionID := TransactionIDGenerate(env.Client.GetOperatorAccountID())
 //
@@ -283,11 +283,11 @@ package hedera
 //	_, err = resp.GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
-//		assert.Equal(t, fmt.Sprintf("exceptional receipt status: SCHEDULE_ALREADY_EXECUTED"), err.Error())
+//		assert.Equal(t, "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED", err.Error())
 //	}
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionDuplicateFails(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionDuplicateFails(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	key, err := GeneratePrivateKey()
@@ -334,19 +334,19 @@ package hedera
 //	}
 //}
 //
-//func DisabledTestIntegrationScheduleCreateTransactionWithTransferTransaction(t *testing.T) {
+// func DisabledTestIntegrationScheduleCreateTransactionWithTransferTransaction(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	key, err := GeneratePrivateKey()
 //	assert.NoError(t, err)
 //
-//	response, err := NewAccountCreateTransaction().
+//	_Response, err := NewAccountCreateTransaction().
 //		SetKey(key).
 //		SetInitialBalance(NewHbar(2)).
 //		Execute(env.Client)
 //	assert.NoError(t, err)
 //
-//	receipt, err := response.GetReceipt(env.Client)
+//	receipt, err := _Response.GetReceipt(env.Client)
 //	assert.NoError(t, err)
 //
 //	accountID := *receipt.AccountID
@@ -364,10 +364,10 @@ package hedera
 //		SetAdminKey(env.Client.GetOperatorPublicKey()).
 //		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
 //
-//	response, err = scheduleTx.Execute(env.Client)
+//	_Response, err = scheduleTx.Execute(env.Client)
 //	assert.NoError(t, err)
 //
-//	receipt, err = response.GetReceipt(env.Client)
+//	receipt, err = _Response.GetReceipt(env.Client)
 //	assert.NoError(t, err)
 //
 //	scheduleID := *receipt.ScheduleID
@@ -380,10 +380,10 @@ package hedera
 //
 //	scheduleSignTx.Sign(key)
 //
-//	response, err = scheduleSignTx.Execute(env.Client)
+//	_Response, err = scheduleSignTx.Execute(env.Client)
 //	assert.NoError(t, err)
 //
-//	_, err = response.GetReceipt(env.Client)
+//	_, err = _Response.GetReceipt(env.Client)
 //	assert.NoError(t, err)
 //
 //	info, err := NewScheduleInfoQuery().
@@ -397,7 +397,7 @@ package hedera
 //	assert.NoError(t, err)
 //}
 //
-//func DisabledTestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
+// func DisabledTestIntegrationScheduledTokenNftTransferTransaction(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	keys := make([]PrivateKey, 3)
@@ -416,7 +416,7 @@ package hedera
 //
 //	newBalance := NewHbar(2)
 //
-//	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	resp, err := NewAccountCreateTransaction().
 //		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -554,7 +554,7 @@ package hedera
 //	assert.NoError(t, err)
 //}
 //
-//func DisabledTestIntegrationScheduledTokenNftTransferTransactionSigned(t *testing.T) {
+// func DisabledTestIntegrationScheduledTokenNftTransferTransactionSigned(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
 //	keys := make([]PrivateKey, 3)
@@ -573,7 +573,7 @@ package hedera
 //
 //	newBalance := NewHbar(2)
 //
-//	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+//	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 //
 //	resp, err := NewAccountCreateTransaction().
 //		SetNodeAccountIDs(env.NodeAccountIDs).

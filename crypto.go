@@ -9,10 +9,11 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
@@ -25,11 +26,11 @@ const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
 type Key interface {
-	toProtoKey() *proto.Key
+	_ToProtoKey() *proto.Key
 	String() string
 }
 
-func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
+func _KeyFromProtobuf(pbKey *proto.Key) (Key, error) {
 	if pbKey == nil {
 		return PublicKey{}, errParameterNull
 	}
@@ -39,7 +40,7 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 
 	case *proto.Key_ThresholdKey:
 		threshold := int(key.ThresholdKey.GetThreshold())
-		keys, err := keyListFromProtobuf(key.ThresholdKey.GetKeys())
+		keys, err := _KeyListFromProtobuf(key.ThresholdKey.GetKeys())
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +49,7 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 		return &keys, nil
 
 	case *proto.Key_KeyList:
-		keys, err := keyListFromProtobuf(key.KeyList)
+		keys, err := _KeyListFromProtobuf(key.KeyList)
 		if err != nil {
 			return nil, err
 		}
@@ -56,10 +57,10 @@ func keyFromProtobuf(pbKey *proto.Key) (Key, error) {
 		return &keys, nil
 
 	case *proto.Key_ContractID:
-		return contractIDFromProtobuf(key.ContractID), nil
+		return _ContractIDFromProtobuf(key.ContractID), nil
 
 	default:
-		return nil, newErrBadKeyf("key type not implemented: %v", key)
+		return nil, _NewErrBadKeyf("key type not implemented: %v", key)
 	}
 }
 
@@ -90,7 +91,7 @@ func GeneratePrivateKey() (PrivateKey, error) {
 func PrivateKeyFromBytes(bytes []byte) (PrivateKey, error) {
 	length := len(bytes)
 	if length != 32 && length != 64 {
-		return PrivateKey{}, newErrBadKeyf("invalid private key length: %v bytes", len(bytes))
+		return PrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(bytes))
 	}
 
 	return PrivateKey{
@@ -121,7 +122,7 @@ func PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (PrivateKey, e
 
 	// note the index is for derivation, not the index of the slice
 	for _, index := range []uint32{44, 3030, 0, 0} {
-		keyBytes, chainCode = deriveChildKey(keyBytes, chainCode, index)
+		keyBytes, chainCode = _DeriveChildKey(keyBytes, chainCode, index)
 	}
 
 	privateKey, err := PrivateKeyFromBytes(keyBytes)
@@ -139,7 +140,7 @@ func PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (PrivateKey, e
 func PrivateKeyFromString(s string) (PrivateKey, error) {
 	sLen := len(s)
 	if sLen != 64 && sLen != 96 && sLen != 128 {
-		return PrivateKey{}, newErrBadKeyf("invalid private key string with length %v", len(s))
+		return PrivateKey{}, _NewErrBadKeyf("invalid private key string with length %v", len(s))
 	}
 
 	bytes, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix))
@@ -150,12 +151,12 @@ func PrivateKeyFromString(s string) (PrivateKey, error) {
 	return PrivateKeyFromBytes(bytes)
 }
 
-// PrivateKeyFromKeystore recovers an PrivateKey from an encrypted keystore encoded as a byte slice.
+// PrivateKeyFromKeystore recovers an PrivateKey from an encrypted _Keystore encoded as a byte slice.
 func PrivateKeyFromKeystore(ks []byte, passphrase string) (PrivateKey, error) {
-	return parseKeystore(ks, passphrase)
+	return _ParseKeystore(ks, passphrase)
 }
 
-// PrivateKeyReadKeystore recovers an PrivateKey from an encrypted keystore file.
+// PrivateKeyReadKeystore recovers an PrivateKey from an encrypted _Keystore file.
 func PrivateKeyReadKeystore(source io.Reader, passphrase string) (PrivateKey, error) {
 	keystoreBytes, err := ioutil.ReadAll(source)
 	if err != nil {
@@ -185,13 +186,13 @@ func PrivateKeyFromPem(bytes []byte, passphrase string) (PrivateKey, error) {
 		bytes = rest
 		if len(bytes) == 0 {
 			// no key was found
-			return PrivateKey{}, newErrBadKeyf("pem file did not contain a private key")
+			return PrivateKey{}, _NewErrBadKeyf("pem file did not contain a private key")
 		}
 	}
 
 	if pk == nil {
 		// no key was found
-		return PrivateKey{}, newErrBadKeyf("no PEM data is found")
+		return PrivateKey{}, _NewErrBadKeyf("no PEM data is found")
 	}
 
 	if len(passphrase) == 0 {
@@ -223,7 +224,7 @@ func PrivateKeyReadPem(source io.Reader, passphrase string) (PrivateKey, error) 
 func PublicKeyFromString(s string) (PublicKey, error) {
 	sLen := len(s)
 	if sLen != 64 && sLen != 88 {
-		return PublicKey{}, newErrBadKeyf("invalid public key '%v' string with length %v", s, sLen)
+		return PublicKey{}, _NewErrBadKeyf("invalid public key '%v' string with length %v", s, sLen)
 	}
 
 	keyStr := strings.TrimPrefix(strings.ToLower(s), ed25519PubKeyPrefix)
@@ -241,7 +242,7 @@ func PublicKeyFromBytes(bytes []byte) (PublicKey, error) {
 		return PublicKey{}, errByteArrayNull
 	}
 	if len(bytes) != ed25519.PublicKeySize {
-		return PublicKey{}, newErrBadKeyf("invalid public key length: %v bytes", len(bytes))
+		return PublicKey{}, _NewErrBadKeyf("invalid public key length: %v bytes", len(bytes))
 	}
 
 	return PublicKey{
@@ -250,12 +251,12 @@ func PublicKeyFromBytes(bytes []byte) (PublicKey, error) {
 }
 
 // SLIP-10/BIP-32 Child Key derivation
-func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
+func _DeriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
 	h := hmac.New(sha512.New, chainCode)
 
 	input := make([]byte, 37)
 
-	// 0x00 + parentKey + index(BE)
+	// 0x00 + parentKey + _Index(BE)
 	input[0] = 0
 
 	copy(input[1:37], parentKey)
@@ -265,35 +266,37 @@ func deriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, [
 	// harden the input
 	input[33] |= 128
 
-	h.Write(input)
+	if _, err := h.Write(input); err != nil {
+		panic(err)
+	}
+
 	digest := h.Sum(nil)
 
 	return digest[0:32], digest[32:]
 }
 
-func deriveLegacyChildKey(parentKey []byte, index int64) []byte {
+func _DeriveLegacyChildKey(parentKey []byte, index int64) []byte {
 	in := make([]uint8, 8)
 
-	if index == int64(0xffffffffff) {
+	switch switchIndex := index; {
+	case switchIndex == int64(0xffffffffff):
 		in = []uint8{0, 0, 0, 0xff, 0xff, 0xff, 0xff, 0xff}
-	} else if index > 0xffffffff {
+	case switchIndex > 0xffffffff:
 		panic(errors.New("derive index is out of range"))
-	} else {
-		if index < 0 {
+	default:
+		if switchIndex < 0 {
 			for i := 0; i < 4; i++ {
 				in[i] = uint8(0xff)
 			}
 		}
 
 		for i := 4; i < len(in); i++ {
-			in[i] = uint8(index)
+			in[i] = uint8(switchIndex)
 		}
 	}
-	password := make([]uint8, len(parentKey))
-	for i, number := range parentKey {
-		password[i] = number
-	}
 
+	password := make([]uint8, len(parentKey))
+	copy(password, parentKey)
 	password = append(password, in...)
 
 	salt := []byte{0xFF}
@@ -323,12 +326,12 @@ func (sk PrivateKey) Bytes() []byte {
 	return sk.keyData[0:32]
 }
 
-// Keystore returns an encrypted keystore containing the PrivateKey.
+// Keystore returns an encrypted _Keystore containing the PrivateKey.
 func (sk PrivateKey) Keystore(passphrase string) ([]byte, error) {
-	return newKeystore(sk.keyData, passphrase)
+	return _NewKeystore(sk.keyData, passphrase)
 }
 
-// WriteKeystore writes an encrypted keystore containing the PrivateKey to the provided destination.
+// WriteKeystore writes an encrypted _Keystore containing the PrivateKey to the provided destination.
 func (sk PrivateKey) WriteKeystore(destination io.Writer, passphrase string) error {
 	keystore, err := sk.Keystore(passphrase)
 	if err != nil {
@@ -356,10 +359,10 @@ func (sk PrivateKey) SupportsDerivation() bool {
 // This will fail if the key does not support derivation which can be checked by calling SupportsDerivation()
 func (sk PrivateKey) Derive(index uint32) (PrivateKey, error) {
 	if !sk.SupportsDerivation() {
-		return PrivateKey{}, newErrBadKeyf("child key cannot be derived from this key")
+		return PrivateKey{}, _NewErrBadKeyf("child key cannot be derived from this key")
 	}
 
-	derivedKeyBytes, chainCode := deriveChildKey(sk.Bytes(), sk.chainCode, index)
+	derivedKeyBytes, chainCode := _DeriveChildKey(sk.Bytes(), sk.chainCode, index)
 
 	derivedKey, err := PrivateKeyFromBytes(derivedKeyBytes)
 
@@ -373,7 +376,7 @@ func (sk PrivateKey) Derive(index uint32) (PrivateKey, error) {
 }
 
 func (sk PrivateKey) LegacyDerive(index int64) (PrivateKey, error) {
-	keyData := deriveLegacyChildKey(sk.Bytes(), index)
+	keyData := _DeriveLegacyChildKey(sk.Bytes(), index)
 
 	return PrivateKeyFromBytes(keyData)
 }
@@ -383,15 +386,15 @@ func (pk PublicKey) Bytes() []byte {
 	return pk.keyData
 }
 
-func (sk PrivateKey) toProtoKey() *proto.Key {
-	return sk.PublicKey().toProtoKey()
+func (sk PrivateKey) _ToProtoKey() *proto.Key {
+	return sk.PublicKey()._ToProtoKey()
 }
 
-func (pk PublicKey) toProtoKey() *proto.Key {
+func (pk PublicKey) _ToProtoKey() *proto.Key {
 	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
 }
 
-func (pk PublicKey) toSignaturePairProtobuf(signature []byte) *proto.SignaturePair {
+func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *proto.SignaturePair {
 	return &proto.SignaturePair{
 		PubKeyPrefix: pk.keyData,
 		Signature: &proto.SignaturePair_Ed25519{
@@ -401,14 +404,14 @@ func (pk PublicKey) toSignaturePairProtobuf(signature []byte) *proto.SignaturePa
 }
 
 func (sk PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
 	if len(transaction.signedTransactions) == 0 {
 		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
 	}
 
 	signature := sk.Sign(transaction.signedTransactions[0].GetBodyBytes())
-	//transaction.AddSignature(sk.PublicKey(), signature)
+	// transaction.AddSignature(sk.PublicKey(), signature)
 
 	return signature, nil
 }
@@ -422,7 +425,7 @@ func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
 		return false
 	}
 
-	_ = transaction.buildAllTransactions()
+	_ = transaction._BuildAllTransactions()
 
 	for _, transaction := range transaction.signedTransactions {
 		found := false

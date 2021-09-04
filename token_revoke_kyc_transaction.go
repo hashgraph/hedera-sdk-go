@@ -17,81 +17,92 @@ import (
 // Once executed the Account is marked as KYC Revoked
 type TokenRevokeKycTransaction struct {
 	Transaction
-	tokenID   TokenID
-	accountID AccountID
+	tokenID   *TokenID
+	accountID *AccountID
 }
 
 func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 	transaction := TokenRevokeKycTransaction{
-		Transaction: newTransaction(),
+		Transaction: _NewTransaction(),
 	}
 	transaction.SetMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }
 
-func tokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenRevokeKycTransaction {
+func _TokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenRevokeKycTransaction {
 	return TokenRevokeKycTransaction{
 		Transaction: transaction,
-		tokenID:     tokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
-		accountID:   accountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),
+		tokenID:     _TokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
+		accountID:   _AccountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),
 	}
 }
 
 // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
-func (transaction *TokenRevokeKycTransaction) SetTokenID(id TokenID) *TokenRevokeKycTransaction {
-	transaction.requireNotFrozen()
-	transaction.tokenID = id
+func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *TokenRevokeKycTransaction {
+	transaction._RequireNotFrozen()
+	transaction.tokenID = &tokenID
 	return transaction
 }
 
 func (transaction *TokenRevokeKycTransaction) GetTokenID() TokenID {
-	return transaction.tokenID
+	if transaction.tokenID == nil {
+		return TokenID{}
+	}
+
+	return *transaction.tokenID
 }
 
 // The account to be KYC Revoked
-func (transaction *TokenRevokeKycTransaction) SetAccountID(id AccountID) *TokenRevokeKycTransaction {
-	transaction.requireNotFrozen()
-	transaction.accountID = id
+func (transaction *TokenRevokeKycTransaction) SetAccountID(accountID AccountID) *TokenRevokeKycTransaction {
+	transaction._RequireNotFrozen()
+	transaction.accountID = &accountID
 	return transaction
 }
 
 func (transaction *TokenRevokeKycTransaction) GetAccountID() AccountID {
-	return transaction.accountID
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
 }
 
-func (transaction *TokenRevokeKycTransaction) validateNetworkOnIDs(client *Client) error {
+func (transaction *TokenRevokeKycTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = transaction.tokenID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.tokenID != nil {
+		if err := transaction.tokenID.Validate(client); err != nil {
+			return err
+		}
 	}
-	err = transaction.accountID.Validate(client)
-	if err != nil {
-		return err
+
+	if transaction.accountID != nil {
+		if err := transaction.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (transaction *TokenRevokeKycTransaction) build() *proto.TransactionBody {
+func (transaction *TokenRevokeKycTransaction) _Build() *proto.TransactionBody {
 	body := &proto.TokenRevokeKycTransactionBody{}
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if transaction.tokenID != nil {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if transaction.accountID != nil {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 
 	return &proto.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
-		TransactionValidDuration: durationToProtobuf(transaction.GetTransactionValidDuration()),
-		TransactionID:            transaction.transactionID.toProtobuf(),
+		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+		TransactionID:            transaction.transactionID._ToProtobuf(),
 		Data: &proto.TransactionBody_TokenRevokeKyc{
 			TokenRevokeKyc: body,
 		},
@@ -99,24 +110,24 @@ func (transaction *TokenRevokeKycTransaction) build() *proto.TransactionBody {
 }
 
 func (transaction *TokenRevokeKycTransaction) Schedule() (*ScheduleCreateTransaction, error) {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
-	scheduled, err := transaction.constructScheduleProtobuf()
+	scheduled, err := transaction._ConstructScheduleProtobuf()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewScheduleCreateTransaction().setSchedulableTransactionBody(scheduled), nil
+	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenRevokeKycTransaction) constructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenRevokeKycTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.TokenRevokeKycTransactionBody{}
-	if !transaction.tokenID.isZero() {
-		body.Token = transaction.tokenID.toProtobuf()
+	if transaction.tokenID != nil {
+		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	if !transaction.accountID.isZero() {
-		body.Account = transaction.accountID.toProtobuf()
+	if transaction.accountID != nil {
+		body.Account = transaction.accountID._ToProtobuf()
 	}
 
 	return &proto.SchedulableTransactionBody{
@@ -128,19 +139,14 @@ func (transaction *TokenRevokeKycTransaction) constructScheduleProtobuf() (*prot
 	}, nil
 }
 
-//
-// The following methods must be copy-pasted/overriden at the bottom of **every** _transaction.go file
-// We override the embedded fluent setter methods to return the outer type
-//
-
-func tokenRevokeKycTransaction_getMethod(request request, channel *channel) method {
-	return method{
-		transaction: channel.getToken().RevokeKycFromTokenAccount,
+func _TokenRevokeKycTransactionGetMethod(request _Request, channel *_Channel) _Method {
+	return _Method{
+		transaction: channel._GetToken().RevokeKycFromTokenAccount,
 	}
 }
 
 func (transaction *TokenRevokeKycTransaction) IsFrozen() bool {
-	return transaction.isFrozen()
+	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
@@ -153,8 +159,8 @@ func (transaction *TokenRevokeKycTransaction) Sign(
 func (transaction *TokenRevokeKycTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenRevokeKycTransaction, error) {
-	// If the transaction is not signed by the operator, we need
-	// to sign the transaction with the operator
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
 
 	if client == nil {
 		return nil, errNoClientProvided
@@ -177,12 +183,8 @@ func (transaction *TokenRevokeKycTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenRevokeKycTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	}
-
-	if !transaction.keyAlreadySigned(publicKey) {
-		transaction.signWith(publicKey, signer)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -209,27 +211,27 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 
 	transactionID := transaction.GetTransactionID()
 
-	if !client.GetOperatorAccountID().isZero() && client.GetOperatorAccountID().equals(*transactionID.AccountID) {
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
 			client.GetOperatorPublicKey(),
 			client.operator.signer,
 		)
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			transaction: &transaction.Transaction,
 		},
-		transaction_shouldRetry,
-		transaction_makeRequest(request{
+		_TransactionShouldRetry,
+		_TransactionMakeRequest(_Request{
 			transaction: &transaction.Transaction,
 		}),
-		transaction_advanceRequest,
-		transaction_getNodeAccountID,
-		tokenRevokeKycTransaction_getMethod,
-		transaction_mapStatusError,
-		transaction_mapResponse,
+		_TransactionAdvanceRequest,
+		_TransactionGetNodeAccountID,
+		_TokenRevokeKycTransactionGetMethod,
+		_TransactionMapStatusError,
+		_TransactionMapResponse,
 	)
 
 	if err != nil {
@@ -240,6 +242,9 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 	}
 
 	hash, err := transaction.GetTransactionHash()
+	if err != nil {
+		return TransactionResponse{}, err
+	}
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
@@ -256,17 +261,17 @@ func (transaction *TokenRevokeKycTransaction) FreezeWith(client *Client) (*Token
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
-	transaction.initFee(client)
-	err := transaction.validateNetworkOnIDs(client)
+	transaction._InitFee(client)
+	err := transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TokenRevokeKycTransaction{}, err
 	}
-	if err := transaction.initTransactionID(client); err != nil {
+	if err := transaction._InitTransactionID(client); err != nil {
 		return transaction, err
 	}
-	body := transaction.build()
+	body := transaction._Build()
 
-	return transaction, transaction_freezeWith(&transaction.Transaction, client, body)
+	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
 func (transaction *TokenRevokeKycTransaction) GetMaxTransactionFee() Hbar {
@@ -275,7 +280,7 @@ func (transaction *TokenRevokeKycTransaction) GetMaxTransactionFee() Hbar {
 
 // SetMaxTransactionFee sets the max transaction fee for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetMaxTransactionFee(fee Hbar) *TokenRevokeKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
@@ -286,7 +291,7 @@ func (transaction *TokenRevokeKycTransaction) GetTransactionMemo() string {
 
 // SetTransactionMemo sets the memo for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetTransactionMemo(memo string) *TokenRevokeKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
@@ -297,7 +302,7 @@ func (transaction *TokenRevokeKycTransaction) GetTransactionValidDuration() time
 
 // SetTransactionValidDuration sets the valid duration for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetTransactionValidDuration(duration time.Duration) *TokenRevokeKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
@@ -308,15 +313,15 @@ func (transaction *TokenRevokeKycTransaction) GetTransactionID() TransactionID {
 
 // SetTransactionID sets the TransactionID for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetTransactionID(transactionID TransactionID) *TokenRevokeKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeTokenID sets the node TokenID for this TokenRevokeKycTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TokenRevokeKycTransaction.
 func (transaction *TokenRevokeKycTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenRevokeKycTransaction {
-	transaction.requireNotFrozen()
+	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
@@ -327,13 +332,9 @@ func (transaction *TokenRevokeKycTransaction) SetMaxRetry(count int) *TokenRevok
 }
 
 func (transaction *TokenRevokeKycTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenRevokeKycTransaction {
-	transaction.requireOneNodeAccountID()
+	transaction._RequireOneNodeAccountID()
 
-	if !transaction.isFrozen() {
-		transaction.Freeze()
-	}
-
-	if transaction.keyAlreadySigned(publicKey) {
+	if transaction._KeyAlreadySigned(publicKey) {
 		return transaction
 	}
 
@@ -348,11 +349,10 @@ func (transaction *TokenRevokeKycTransaction) AddSignature(publicKey PublicKey, 
 	for index := 0; index < len(transaction.signedTransactions); index++ {
 		transaction.signedTransactions[index].SigMap.SigPair = append(
 			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey.toSignaturePairProtobuf(signature),
+			publicKey._ToSignaturePairProtobuf(signature),
 		)
 	}
 
-	//transaction.signedTransactions[0].SigMap.SigPair = append(transaction.signedTransactions[0].SigMap.SigPair, publicKey.toSignaturePairProtobuf(signature))
 	return transaction
 }
 

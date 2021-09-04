@@ -1,8 +1,8 @@
 package hedera
 
 import (
-	protobuf "github.com/golang/protobuf/proto"
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 type CustomFractionalFee struct {
@@ -78,7 +78,7 @@ func (fee *CustomFractionalFee) GetAssessmentMethod() FeeAssessmentMethod {
 	return fee.AssessmentMethod
 }
 
-func customFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee, fee CustomFee) CustomFractionalFee {
+func _CustomFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee, fee CustomFee) CustomFractionalFee {
 	return CustomFractionalFee{
 		CustomFee:        fee,
 		Numerator:        fractionalFee.FractionalAmount.Numerator,
@@ -89,23 +89,26 @@ func customFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee, fee Cus
 	}
 }
 
-func (fee CustomFractionalFee) validateNetworkOnIDs(client *Client) error {
+func (fee CustomFractionalFee) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil {
 		return nil
 	}
+
 	if fee.FeeCollectorAccountID != nil {
-		if err := fee.FeeCollectorAccountID.Validate(client); err != nil {
-			return err
+		if fee.FeeCollectorAccountID != nil {
+			if err := fee.FeeCollectorAccountID.Validate(client); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (fee CustomFractionalFee) toProtobuf() *proto.CustomFee {
+func (fee CustomFractionalFee) _ToProtobuf() *proto.CustomFee {
 	var FeeCollectorAccountID *proto.AccountID
 	if fee.FeeCollectorAccountID != nil {
-		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID.toProtobuf()
+		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID._ToProtobuf()
 	}
 
 	return &proto.CustomFee{
@@ -125,7 +128,7 @@ func (fee CustomFractionalFee) toProtobuf() *proto.CustomFee {
 }
 
 func (fee CustomFractionalFee) ToBytes() []byte {
-	data, err := protobuf.Marshal(fee.toProtobuf())
+	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
 	}

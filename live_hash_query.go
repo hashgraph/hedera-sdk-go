@@ -1,29 +1,34 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 type LiveHashQuery struct {
 	Query
-	accountID AccountID
+	accountID *AccountID
 	hash      []byte
 }
 
 func NewLiveHashQuery() *LiveHashQuery {
 	return &LiveHashQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
-func (query *LiveHashQuery) SetAccountID(id AccountID) *LiveHashQuery {
-	query.accountID = id
+func (query *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
+	query.accountID = &accountID
 	return query
 }
 
 func (query *LiveHashQuery) GetAccountID() AccountID {
-	return query.accountID
+	if query.accountID == nil {
+		return AccountID{}
+	}
+
+	return *query.accountID
 }
 
 func (query *LiveHashQuery) SetHash(hash []byte) *LiveHashQuery {
@@ -35,25 +40,26 @@ func (query *LiveHashQuery) GetGetHash() []byte {
 	return query.hash
 }
 
-func (query *LiveHashQuery) validateNetworkOnIDs(client *Client) error {
+func (query *LiveHashQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.accountID.Validate(client)
-	if err != nil {
-		return err
+
+	if query.accountID != nil {
+		if err := query.accountID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (query *LiveHashQuery) build() *proto.Query_CryptoGetLiveHash {
+func (query *LiveHashQuery) _Build() *proto.Query_CryptoGetLiveHash {
 	body := &proto.CryptoGetLiveHashQuery{
 		Header: &proto.QueryHeader{},
 	}
-	if !query.accountID.isZero() {
-		body.AccountID = query.accountID.toProtobuf()
+	if query.accountID != nil {
+		body.AccountID = query.accountID._ToProtobuf()
 	}
 
 	if len(query.hash) > 0 {
@@ -65,32 +71,32 @@ func (query *LiveHashQuery) build() *proto.Query_CryptoGetLiveHash {
 	}
 }
 
-func (query *LiveHashQuery) queryMakeRequest() protoRequest {
-	pb := query.build()
+func (query *LiveHashQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetLiveHash.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.CryptoGetLiveHash.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *LiveHashQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	pb := query.build()
+func (query *LiveHashQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.CryptoGetLiveHash.Header.Payment = paymentTransaction
 	pb.CryptoGetLiveHash.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -102,30 +108,30 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		liveHashQuery_shouldRetry,
+		_LiveHashQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		liveHashQuery_getMethod,
-		liveHashQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_LiveHashQueryGetMethod,
+		_LiveHashQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -136,19 +142,19 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func liveHashQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
+func _LiveHashQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
 }
 
-func liveHashQuery_mapStatusError(_ request, response response) error {
+func _LiveHashQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func liveHashQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getCrypto().GetLiveHash,
+func _LiveHashQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetCrypto().GetLiveHash,
 	}
 }
 
@@ -158,15 +164,15 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return LiveHash{}, err
 	}
 
-	query.build()
+	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -196,30 +202,30 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return LiveHash{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		liveHashQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		liveHashQuery_getMethod,
-		liveHashQuery_mapStatusError,
-		query_mapResponse,
+		_LiveHashQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_LiveHashQueryGetMethod,
+		_LiveHashQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := liveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
+	liveHash, err := _LiveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
 	if err != nil {
 		return LiveHash{}, err
 	}

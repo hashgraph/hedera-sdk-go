@@ -1,81 +1,92 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // ContractBytecodeQuery retrieves the bytecode for a smart contract instance
 type ContractBytecodeQuery struct {
 	Query
-	contractID ContractID
+	contractID *ContractID
 }
 
 // NewContractBytecodeQuery creates a ContractBytecodeQuery query which can be used to construct and execute a
 // Contract Get Bytecode Query.
 func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	return &ContractBytecodeQuery{
-		Query: newQuery(true),
+		Query: _NewQuery(true),
 	}
 }
 
 // SetContractID sets the contract for which the bytecode is requested
-func (query *ContractBytecodeQuery) SetContractID(id ContractID) *ContractBytecodeQuery {
-	query.contractID = id
+func (query *ContractBytecodeQuery) SetContractID(contractID ContractID) *ContractBytecodeQuery {
+	query.contractID = &contractID
 	return query
 }
 
 func (query *ContractBytecodeQuery) GetContractID() ContractID {
-	return query.contractID
+	if query.contractID == nil {
+		return ContractID{}
+	}
+
+	return *query.contractID
 }
 
-func (query *ContractBytecodeQuery) validateNetworkOnIDs(client *Client) error {
+func (query *ContractBytecodeQuery) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
-	var err error
-	err = query.contractID.Validate(client)
-	if err != nil {
-		return err
+
+	if query.contractID != nil {
+		if err := query.contractID.Validate(client); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (query *ContractBytecodeQuery) build() *proto.Query_ContractGetBytecode {
-	return &proto.Query_ContractGetBytecode{
+func (query *ContractBytecodeQuery) _Build() *proto.Query_ContractGetBytecode {
+	pb := proto.Query_ContractGetBytecode{
 		ContractGetBytecode: &proto.ContractGetBytecodeQuery{
-			Header:     &proto.QueryHeader{},
-			ContractID: query.contractID.toProtobuf(),
+			Header: &proto.QueryHeader{},
 		},
 	}
+
+	if query.contractID != nil {
+		pb.ContractGetBytecode.ContractID = query.contractID._ToProtobuf()
+	}
+
+	return &pb
 }
 
-func (query *ContractBytecodeQuery) queryMakeRequest() protoRequest {
-	pb := query.build()
+func (query *ContractBytecodeQuery) _QueryMakeRequest() _ProtoRequest {
+	pb := query._Build()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractGetBytecode.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
 	pb.ContractGetBytecode.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
 	}
 }
 
-func (query *ContractBytecodeQuery) costQueryMakeRequest(client *Client) (protoRequest, error) {
-	pb := query.build()
+func (query *ContractBytecodeQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
+	pb := query._Build()
 
-	paymentTransaction, err := query_makePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 	if err != nil {
-		return protoRequest{}, err
+		return _ProtoRequest{}, err
 	}
 
 	pb.ContractGetBytecode.Header.Payment = paymentTransaction
 	pb.ContractGetBytecode.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
-	return protoRequest{
+	return _ProtoRequest{
 		query: &proto.Query{
 			Query: pb,
 		},
@@ -87,30 +98,30 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network.getNodeAccountIDsForExecute()
+	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query.costQueryMakeRequest(client)
+	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		contractBytecodeQuery_shouldRetry,
+		_ContractBytecodeQueryShouldRetry,
 		protoReq,
-		costQuery_advanceRequest,
-		costQuery_getNodeAccountID,
-		contractBytecodeQuery_getMethod,
-		contractBytecodeQuery_mapStatusError,
-		query_mapResponse,
+		_CostQueryAdvanceRequest,
+		_CostQueryGetNodeAccountID,
+		_ContractBytecodeQueryGetMethod,
+		_ContractBytecodeQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -121,19 +132,19 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func contractBytecodeQuery_shouldRetry(_ request, response response) executionState {
-	return query_shouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
+func _ContractBytecodeQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
-func contractBytecodeQuery_mapStatusError(_ request, response response) error {
+func _ContractBytecodeQueryMapStatusError(_ _Request, response _Response) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func contractBytecodeQuery_getMethod(_ request, channel *channel) method {
-	return method{
-		query: channel.getContract().ContractGetBytecode,
+func _ContractBytecodeQueryGetMethod(_ _Request, channel *_Channel) _Method {
+	return _Method{
+		query: channel._GetContract().ContractGetBytecode,
 	}
 }
 
@@ -143,10 +154,10 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network.getNodeAccountIDsForExecute())
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
-	err := query.validateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -179,23 +190,23 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	err = query_generatePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	resp, err := execute(
+	resp, err := _Execute(
 		client,
-		request{
+		_Request{
 			query: &query.Query,
 		},
-		contractBytecodeQuery_shouldRetry,
-		query.queryMakeRequest(),
-		query_advanceRequest,
-		query_getNodeAccountID,
-		contractBytecodeQuery_getMethod,
-		contractBytecodeQuery_mapStatusError,
-		query_mapResponse,
+		_ContractBytecodeQueryShouldRetry,
+		query._QueryMakeRequest(),
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_ContractBytecodeQueryGetMethod,
+		_ContractBytecodeQueryMapStatusError,
+		_QueryMapResponse,
 	)
 
 	if err != nil {
@@ -217,7 +228,7 @@ func (query *ContractBytecodeQuery) SetQueryPayment(paymentAmount Hbar) *Contrac
 	return query
 }
 
-// SetNodeAccountIDs sets the node AccountID for this ContractBytecodeQuery.
+// SetNodeAccountIDs sets the _Node AccountID for this ContractBytecodeQuery.
 func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *ContractBytecodeQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
