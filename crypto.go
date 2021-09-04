@@ -296,7 +296,7 @@ func _DeriveLegacyChildKey(parentKey []byte, index int64) []byte {
 	}
 
 	password := make([]uint8, len(parentKey))
-	copy(parentKey, password)
+	copy(password, parentKey)
 	password = append(password, in...)
 
 	salt := []byte{0xFF}
