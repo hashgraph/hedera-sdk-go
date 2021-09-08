@@ -473,7 +473,7 @@ func (transaction *TokenCreateTransaction) SetExpirationTime(expirationTime time
 
 func (transaction *TokenCreateTransaction) GetExpirationTime() time.Time {
 	if transaction.expirationTime != nil {
-		return time.Unix(transaction.expirationTime.Unix(), transaction.expirationTime.UnixNano())
+		return *transaction.expirationTime
 	}
 
 	return time.Time{}
