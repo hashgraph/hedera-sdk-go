@@ -196,7 +196,7 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 //		SetAccountID(accountID).
 //		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 //		SetExpirationTime(time.Now().Add(time.Hour * 24 * 120)).
-//		SetTransactionID(TransactionIDGenerate(accountID)).
+//		SetPaymentTransactionID(TransactionIDGenerate(accountID)).
 //		SetKey(newKey2.PublicKey()).
 //		FreezeWith(env.Client)
 //	assert.NoError(t, err)

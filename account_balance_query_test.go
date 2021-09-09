@@ -21,6 +21,15 @@ func TestIntegrationAccountBalanceQuery(t *testing.T) {
 		Execute(env.Client)
 	assert.NoError(t, err)
 
+	freeze, err := NewAccountBalanceQuery().
+		SetAccountID(env.OperatorID).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	_, err = freeze.Execute(env.Client)
+	assert.NoError(t, err)
+
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }

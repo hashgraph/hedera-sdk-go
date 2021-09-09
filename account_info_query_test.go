@@ -301,3 +301,60 @@ func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
+
+func TestIntegrationAccountInfoQueryFreeze(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	keys := make([]PrivateKey, 2)
+	pubKeys := make([]PublicKey, 2)
+
+	for i := range keys {
+		newKey, err := GeneratePrivateKey()
+		assert.NoError(t, err)
+
+		keys[i] = newKey
+		pubKeys[i] = newKey.PublicKey()
+	}
+
+	keyList := NewKeyList().AddAllPublicKeys(pubKeys)
+
+	newBalance := NewHbar(2)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(keyList).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+	assert.NoError(t, err)
+
+	env.Client.SetOperator(accountID, keys[0])
+
+	infoFreeze, err := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	_, err = infoFreeze.Execute(env.Client)
+	if err != nil {
+		assert.Equal(t, "exceptional precheck status INVALID_SIGNATURE", err.Error())
+	}
+
+	infoFreeze, err = NewAccountInfoQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	infoFreeze.Sign(keys[1])
+
+	_, err = infoFreeze.Execute(env.Client)
+	assert.NoError(t, err)
+}

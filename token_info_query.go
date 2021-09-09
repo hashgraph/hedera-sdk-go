@@ -3,6 +3,8 @@ package hedera
 import (
 	"time"
 
+	protobuf "google.golang.org/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -62,6 +64,7 @@ func (query *TokenInfoQuery) _Build() *proto.Query_TokenGetInfo {
 
 func (query *TokenInfoQuery) _QueryMakeRequest() _ProtoRequest {
 	pb := query._Build()
+	_ = query._BuildAllPaymentTransactions()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TokenGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -77,12 +80,19 @@ func (query *TokenInfoQuery) _QueryMakeRequest() _ProtoRequest {
 func (query *TokenInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query._Build()
 
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionIDGenerate(client.GetOperatorAccountID()), AccountID{}, Hbar{})
 	if err != nil {
 		return _ProtoRequest{}, err
 	}
 
-	pb.TokenGetInfo.Header.Payment = paymentTransaction
+	paymentBytes, err := protobuf.Marshal(paymentTransaction)
+	if err != nil {
+		return _ProtoRequest{}, err
+	}
+
+	pb.TokenGetInfo.Header.Payment = &proto.Transaction{
+		SignedTransactionBytes: paymentBytes,
+	}
 	pb.TokenGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
@@ -97,7 +107,9 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	}
 
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -157,15 +169,13 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
+		query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 	}
 
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TokenInfo{}, err
 	}
-
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -193,9 +203,22 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		cost = actualCost
 	}
 
-	err = _QueryGeneratePayments(&query.Query, client, cost)
-	if err != nil {
-		return TokenInfo{}, err
+	query.actualCost = cost
+
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return TokenInfo{}, err
+		}
+	}
+
+	transactionID := query.paymentTransactionID
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		query.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
 	}
 
 	resp, err := _Execute(
@@ -277,4 +300,94 @@ func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *TokenInfoQuery) IsFrozen() bool {
+	return query._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (query *TokenInfoQuery) Sign(
+	privateKey PrivateKey,
+) *TokenInfoQuery {
+	return query.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (query *TokenInfoQuery) SignWithOperator(
+	client *Client,
+) (*TokenInfoQuery, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return query, err
+		}
+	}
+	return query.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (query *TokenInfoQuery) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TokenInfoQuery {
+	if !query._KeyAlreadySigned(publicKey) {
+		query._SignWith(publicKey, signer)
+	}
+
+	return query
+}
+
+func (query *TokenInfoQuery) Freeze() (*TokenInfoQuery, error) {
+	return query.FreezeWith(nil)
+}
+
+func (query *TokenInfoQuery) FreezeWith(client *Client) (*TokenInfoQuery, error) {
+	if query.IsFrozen() {
+		return query, nil
+	}
+	if query.actualCost.AsTinybar() == 0 {
+		if query.queryPayment.tinybar != 0 {
+			query.actualCost = query.queryPayment
+		} else {
+			if query.maxQueryPayment.tinybar == 0 {
+				query.actualCost = client.maxQueryPayment
+			} else {
+				query.actualCost = query.maxQueryPayment
+			}
+
+			actualCost, err := query.GetCost(client)
+			if err != nil {
+				return &TokenInfoQuery{}, err
+			}
+
+			if query.actualCost.tinybar < actualCost.tinybar {
+				return &TokenInfoQuery{}, ErrMaxQueryPaymentExceeded{
+					QueryCost:       actualCost,
+					MaxQueryPayment: query.actualCost,
+					query:           "TokenInfoQuery",
+				}
+			}
+
+			query.actualCost = actualCost
+		}
+	}
+	err := query._ValidateNetworkOnIDs(client)
+	if err != nil {
+		return &TokenInfoQuery{}, err
+	}
+	if err = query._InitPaymentTransactionID(client); err != nil {
+		return query, err
+	}
+
+	return query, _QueryGeneratePayments(&query.Query, query.actualCost)
 }

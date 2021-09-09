@@ -3,6 +3,8 @@ package hedera
 import (
 	"time"
 
+	protobuf "google.golang.org/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -99,10 +101,12 @@ func (query *AccountBalanceQuery) _Build() *proto.Query_CryptogetAccountBalance 
 }
 
 func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
-	if client == nil || client.operator == nil {
+	if client == nil {
 		return Hbar{}, errNoClientProvided
 	}
-	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	}
 
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -138,6 +142,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 
 func (query *AccountBalanceQuery) _QueryMakeRequest() _ProtoRequest {
 	pb := query._Build()
+	_ = query._BuildAllPaymentTransactions()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptogetAccountBalance.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -152,12 +157,19 @@ func (query *AccountBalanceQuery) _QueryMakeRequest() _ProtoRequest {
 func (query *AccountBalanceQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query._Build()
 
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionIDGenerate(client.GetOperatorAccountID()), AccountID{}, Hbar{})
 	if err != nil {
 		return _ProtoRequest{}, err
 	}
 
-	pb.CryptogetAccountBalance.Header.Payment = paymentTransaction
+	paymentBytes, err := protobuf.Marshal(paymentTransaction)
+	if err != nil {
+		return _ProtoRequest{}, err
+	}
+
+	pb.CryptogetAccountBalance.Header.Payment = &proto.Transaction{
+		SignedTransactionBytes: paymentBytes,
+	}
 	pb.CryptogetAccountBalance.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
@@ -188,11 +200,20 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, errNoClientProvided
 	}
 
-	query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	}
 
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return AccountBalance{}, err
+	}
+
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return AccountBalance{}, err
+		}
 	}
 
 	resp, err := _Execute(
@@ -273,4 +294,65 @@ func (query *AccountBalanceQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountBalanceQuery) IsFrozen() bool {
+	return query._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (query *AccountBalanceQuery) Sign(
+	privateKey PrivateKey,
+) *AccountBalanceQuery {
+	return query.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (query *AccountBalanceQuery) SignWithOperator(
+	client *Client,
+) (*AccountBalanceQuery, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return query, err
+		}
+	}
+	return query.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (query *AccountBalanceQuery) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *AccountBalanceQuery {
+	if !query._KeyAlreadySigned(publicKey) {
+		query._SignWith(publicKey, signer)
+	}
+
+	return query
+}
+
+func (query *AccountBalanceQuery) Freeze() (*AccountBalanceQuery, error) {
+	return query.FreezeWith(nil)
+}
+
+func (query *AccountBalanceQuery) FreezeWith(client *Client) (*AccountBalanceQuery, error) {
+	if query.IsFrozen() {
+		return query, nil
+	}
+	err := query._ValidateNetworkOnIDs(client)
+	if err != nil {
+		return &AccountBalanceQuery{}, err
+	}
+
+	return query, nil
 }

@@ -3,6 +3,8 @@ package hedera
 import (
 	"time"
 
+	protobuf "google.golang.org/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -50,6 +52,7 @@ func (query *TransactionReceiptQuery) _Build() *proto.Query_TransactionGetReceip
 
 func (query *TransactionReceiptQuery) _QueryMakeRequest() _ProtoRequest {
 	pb := query._Build()
+	_ = query._BuildAllPaymentTransactions()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TransactionGetReceipt.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -65,12 +68,18 @@ func (query *TransactionReceiptQuery) _QueryMakeRequest() _ProtoRequest {
 func (query *TransactionReceiptQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query._Build()
 
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionIDGenerate(client.GetOperatorAccountID()), AccountID{}, Hbar{})
+	if err != nil {
+		return _ProtoRequest{}, err
+	}
+	paymentBytes, err := protobuf.Marshal(paymentTransaction)
 	if err != nil {
 		return _ProtoRequest{}, err
 	}
 
-	pb.TransactionGetReceipt.Header.Payment = paymentTransaction
+	pb.TransactionGetReceipt.Header.Payment = &proto.Transaction{
+		SignedTransactionBytes: paymentBytes,
+	}
 	pb.TransactionGetReceipt.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
@@ -85,7 +94,9 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
+	}
 
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -244,7 +255,39 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		return TransactionReceipt{}, err
 	}
 
-	query._Build()
+	var cost Hbar
+	if query.queryPayment.tinybar != 0 {
+		cost = query.queryPayment
+	} else {
+		if query.maxQueryPayment.tinybar == 0 {
+			cost = client.maxQueryPayment
+		} else {
+			cost = query.maxQueryPayment
+		}
+
+		actualCost, err := query.GetCost(client)
+		if err != nil {
+			return TransactionReceipt{}, err
+		}
+
+		if cost.tinybar < actualCost.tinybar {
+			return TransactionReceipt{}, ErrMaxQueryPaymentExceeded{
+				QueryCost:       actualCost,
+				MaxQueryPayment: cost,
+				query:           "TransactionReceiptQuery",
+			}
+		}
+
+		cost = actualCost
+	}
+
+	query.actualCost = cost
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return TransactionReceipt{}, err
+		}
+	}
 
 	resp, err := _Execute(
 		client,
@@ -268,4 +311,65 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	}
 
 	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
+}
+
+func (query *TransactionReceiptQuery) IsFrozen() bool {
+	return query._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (query *TransactionReceiptQuery) Sign(
+	privateKey PrivateKey,
+) *TransactionReceiptQuery {
+	return query.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (query *TransactionReceiptQuery) SignWithOperator(
+	client *Client,
+) (*TransactionReceiptQuery, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return query, err
+		}
+	}
+	return query.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (query *TransactionReceiptQuery) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *TransactionReceiptQuery {
+	if !query._KeyAlreadySigned(publicKey) {
+		query._SignWith(publicKey, signer)
+	}
+
+	return query
+}
+
+func (query *TransactionReceiptQuery) Freeze() (*TransactionReceiptQuery, error) {
+	return query.FreezeWith(nil)
+}
+
+func (query *TransactionReceiptQuery) FreezeWith(client *Client) (*TransactionReceiptQuery, error) {
+	if query.IsFrozen() {
+		return query, nil
+	}
+	err := query._ValidateNetworkOnIDs(client)
+	if err != nil {
+		return &TransactionReceiptQuery{}, err
+	}
+
+	return query, nil
 }

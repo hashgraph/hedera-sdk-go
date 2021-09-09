@@ -3,6 +3,8 @@ package hedera
 import (
 	"time"
 
+	protobuf "google.golang.org/protobuf/proto"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
@@ -64,6 +66,7 @@ func (query *FileContentsQuery) _Build() *proto.Query_FileGetContents {
 
 func (query *FileContentsQuery) _QueryMakeRequest() _ProtoRequest {
 	pb := query._Build()
+	_ = query._BuildAllPaymentTransactions()
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.FileGetContents.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
@@ -79,12 +82,19 @@ func (query *FileContentsQuery) _QueryMakeRequest() _ProtoRequest {
 func (query *FileContentsQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
 	pb := query._Build()
 
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionIDGenerate(client.GetOperatorAccountID()), AccountID{}, Hbar{})
 	if err != nil {
 		return _ProtoRequest{}, err
 	}
 
-	pb.FileGetContents.Header.Payment = paymentTransaction
+	paymentBytes, err := protobuf.Marshal(paymentTransaction)
+	if err != nil {
+		return _ProtoRequest{}, err
+	}
+
+	pb.FileGetContents.Header.Payment = &proto.Transaction{
+		SignedTransactionBytes: paymentBytes,
+	}
 	pb.FileGetContents.Header.ResponseType = proto.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
@@ -99,7 +109,9 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	}
 
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -151,21 +163,17 @@ func _FileContentsQueryGetMethod(_ _Request, channel *_Channel) _Method {
 
 func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	if client == nil || client.operator == nil {
-		return make([]byte, 0), errNoClientProvided
+		return []byte{}, errNoClientProvided
 	}
 
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
+		query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
 	}
 
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return []byte{}, err
 	}
-
-	query._Build()
-
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -193,9 +201,22 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
-	err = _QueryGeneratePayments(&query.Query, client, cost)
-	if err != nil {
-		return []byte{}, err
+	query.actualCost = cost
+
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return []byte{}, err
+		}
+	}
+
+	transactionID := query.paymentTransactionID
+
+	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+		query.SignWith(
+			client.GetOperatorPublicKey(),
+			client.operator.signer,
+		)
 	}
 
 	resp, err := _Execute(
@@ -275,4 +296,94 @@ func (query *FileContentsQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *FileContentsQuery) IsFrozen() bool {
+	return query._IsFrozen()
+}
+
+// Sign uses the provided privateKey to sign the transaction.
+func (query *FileContentsQuery) Sign(
+	privateKey PrivateKey,
+) *FileContentsQuery {
+	return query.SignWith(privateKey.PublicKey(), privateKey.Sign)
+}
+
+func (query *FileContentsQuery) SignWithOperator(
+	client *Client,
+) (*FileContentsQuery, error) {
+	// If the transaction is not signed by the _Operator, we need
+	// to sign the transaction with the _Operator
+
+	if client == nil {
+		return nil, errNoClientProvided
+	} else if client.operator == nil {
+		return nil, errClientOperatorSigning
+	}
+
+	if !query.IsFrozen() {
+		_, err := query.FreezeWith(client)
+		if err != nil {
+			return query, err
+		}
+	}
+	return query.SignWith(client.operator.publicKey, client.operator.signer), nil
+}
+
+// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
+// with the publicKey as the map key.
+func (query *FileContentsQuery) SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) *FileContentsQuery {
+	if !query._KeyAlreadySigned(publicKey) {
+		query._SignWith(publicKey, signer)
+	}
+
+	return query
+}
+
+func (query *FileContentsQuery) Freeze() (*FileContentsQuery, error) {
+	return query.FreezeWith(nil)
+}
+
+func (query *FileContentsQuery) FreezeWith(client *Client) (*FileContentsQuery, error) {
+	if query.IsFrozen() {
+		return query, nil
+	}
+	if query.actualCost.AsTinybar() == 0 {
+		if query.queryPayment.tinybar != 0 {
+			query.actualCost = query.queryPayment
+		} else {
+			if query.maxQueryPayment.tinybar == 0 {
+				query.actualCost = client.maxQueryPayment
+			} else {
+				query.actualCost = query.maxQueryPayment
+			}
+
+			actualCost, err := query.GetCost(client)
+			if err != nil {
+				return &FileContentsQuery{}, err
+			}
+
+			if query.actualCost.tinybar < actualCost.tinybar {
+				return &FileContentsQuery{}, ErrMaxQueryPaymentExceeded{
+					QueryCost:       actualCost,
+					MaxQueryPayment: query.actualCost,
+					query:           "FileContentsQuery",
+				}
+			}
+
+			query.actualCost = actualCost
+		}
+	}
+	err := query._ValidateNetworkOnIDs(client)
+	if err != nil {
+		return &FileContentsQuery{}, err
+	}
+	if err := query._InitPaymentTransactionID(client); err != nil {
+		return query, err
+	}
+
+	return query, _QueryGeneratePayments(&query.Query, query.actualCost)
 }

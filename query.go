@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
@@ -13,11 +14,16 @@ type Query struct {
 	nodeIDs                     []AccountID
 	maxQueryPayment             Hbar
 	queryPayment                Hbar
+	actualCost                  Hbar
 	nextPaymentTransactionIndex int
-	nextTransactionIndex        int
 	maxRetry                    int
 
-	paymentTransactions []*proto.Transaction
+	paymentTransactions       []*proto.Transaction
+	signedPaymentTransactions []*proto.SignedTransaction
+	paymentTransactionIDs     []TransactionID
+
+	publicKeys         []PublicKey
+	transactionSigners []TransactionSigner
 
 	isPaymentRequired bool
 
@@ -27,13 +33,17 @@ type Query struct {
 
 func _NewQuery(isPaymentRequired bool) Query {
 	return Query{
-		paymentTransactionID: TransactionID{},
-		nextTransactionIndex: 0,
-		maxRetry:             10,
-		paymentTransactions:  make([]*proto.Transaction, 0),
-		isPaymentRequired:    isPaymentRequired,
-		maxQueryPayment:      NewHbar(0),
-		queryPayment:         NewHbar(0),
+		paymentTransactionID:        TransactionID{},
+		nextPaymentTransactionIndex: 0,
+		maxRetry:                    10,
+		actualCost:                  Hbar{},
+		paymentTransactions:         make([]*proto.Transaction, 0),
+		signedPaymentTransactions:   make([]*proto.SignedTransaction, 0),
+		paymentTransactionIDs:       make([]TransactionID, 0),
+		nodeIDs:                     make([]AccountID, 0),
+		isPaymentRequired:           isPaymentRequired,
+		maxQueryPayment:             NewHbar(0),
+		queryPayment:                NewHbar(0),
 	}
 }
 
@@ -106,32 +116,31 @@ func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoR
 	}, nil
 }
 
-func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
+func _QueryGeneratePayments(query *Query, cost Hbar) error {
 	for _, nodeID := range query.nodeIDs {
 		transaction, err := _QueryMakePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,
-			client.operator,
 			cost,
 		)
 		if err != nil {
 			return err
 		}
 
-		query.paymentTransactions = append(query.paymentTransactions, transaction)
+		query.signedPaymentTransactions = append(query.signedPaymentTransactions, transaction)
 	}
 
 	return nil
 }
 
-func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, operator *_Operator, cost Hbar) (*proto.Transaction, error) {
+func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID AccountID, cost Hbar) (*proto.SignedTransaction, error) {
 	accountAmounts := make([]*proto.AccountAmount, 0)
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
 		AccountID: nodeAccountID._ToProtobuf(),
 		Amount:    cost.tinybar,
 	})
 	accountAmounts = append(accountAmounts, &proto.AccountAmount{
-		AccountID: operator.accountID._ToProtobuf(),
+		AccountID: transactionID.AccountID._ToProtobuf(),
 		Amount:    -cost.tinybar,
 	})
 
@@ -156,14 +165,111 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 		return nil, errors.Wrap(err, "error serializing query body")
 	}
 
-	signature := operator.signer(bodyBytes)
-	sigPairs := make([]*proto.SignaturePair, 0)
-	sigPairs = append(sigPairs, operator.publicKey._ToSignaturePairProtobuf(signature))
-
-	return &proto.Transaction{
+	tx := &proto.SignedTransaction{
 		BodyBytes: bodyBytes,
 		SigMap: &proto.SignatureMap{
-			SigPair: sigPairs,
+			SigPair: make([]*proto.SignaturePair, 0),
 		},
-	}, nil
+	}
+
+	return tx, nil
+}
+
+func (query *Query) _IsFrozen() bool {
+	return len(query.signedPaymentTransactions) > 0
+}
+
+func (query *Query) _SignWith(
+	publicKey PublicKey,
+	signer TransactionSigner,
+) {
+	query.publicKeys = append(query.publicKeys, publicKey)
+	query.transactionSigners = append(query.transactionSigners, signer)
+}
+
+func (query *Query) _KeyAlreadySigned(
+	pk PublicKey,
+) bool {
+	for _, key := range query.publicKeys {
+		if key.String() == pk.String() {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (query *Query) _InitPaymentTransactionID(client *Client) error {
+	if len(query.paymentTransactionIDs) == 0 {
+		if client != nil {
+			if client.operator != nil {
+				query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+			} else {
+				return errNoClientOrTransactionID
+			}
+		} else {
+			return errNoClientOrTransactionID
+		}
+	}
+
+	return nil
+}
+
+func (query *Query) _BuildAllPaymentTransactions() error {
+	for i := 0; i < len(query.signedPaymentTransactions); i++ {
+		err := query._BuildPaymentTransaction(i)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (query *Query) _BuildPaymentTransaction(index int) error {
+	if len(query.paymentTransactions) < index {
+		for i := len(query.paymentTransactions); i < index; i++ {
+			query.paymentTransactions = append(query.paymentTransactions, nil)
+		}
+	} else if len(query.paymentTransactions) > index &&
+		query.paymentTransactions[index] != nil &&
+		query.paymentTransactions[index].SignedTransactionBytes != nil {
+		return nil
+	}
+
+	query._SignPaymentTransaction(index)
+
+	data, err := protobuf.Marshal(query.signedPaymentTransactions[index])
+	if err != nil {
+		return errors.Wrap(err, "failed to serialize transactions for building")
+	}
+
+	query.paymentTransactions = append(query.paymentTransactions, &proto.Transaction{
+		SignedTransactionBytes: data,
+	})
+
+	return nil
+}
+
+func (query *Query) _SignPaymentTransaction(index int) {
+	if len(query.signedPaymentTransactions[index].SigMap.SigPair) != 0 {
+		for i, key := range query.publicKeys {
+			if query.transactionSigners[i] != nil && bytes.Equal(query.signedPaymentTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.keyData) {
+				return
+			}
+		}
+	}
+
+	bodyBytes := query.signedPaymentTransactions[index].GetBodyBytes()
+
+	for i := 0; i < len(query.publicKeys); i++ {
+		publicKey := query.publicKeys[i]
+		signer := query.transactionSigners[i]
+
+		if signer == nil {
+			continue
+		}
+
+		query.signedPaymentTransactions[index].SigMap.SigPair = append(query.signedPaymentTransactions[index].SigMap.SigPair, publicKey._ToSignaturePairProtobuf(signer(bodyBytes)))
+	}
 }

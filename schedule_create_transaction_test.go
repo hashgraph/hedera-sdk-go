@@ -20,7 +20,7 @@ package hedera
 //	transactionID := TransactionIDGenerate(env.Client.GetOperatorAccountID())
 //
 //	tx := NewAccountCreateTransaction().
-//		SetTransactionID(transactionID).
+//		SetPaymentTransactionID(transactionID).
 //		SetKey(newKey.PublicKey()).
 //		SetNodeAccountIDs(env.NodeAccountIDs).
 //		SetMaxTransactionFee(NewHbar(2)).
@@ -99,7 +99,7 @@ package hedera
 //	newAccountID := *transactionReceipt.AccountID
 //
 //	transferTx := NewTransferTransaction().
-//		SetTransactionID(transactionID).
+//		SetPaymentTransactionID(transactionID).
 //		AddHbarTransfer(newAccountID, HbarFrom(-1, HbarUnits.Hbar)).
 //		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
 //
@@ -170,7 +170,7 @@ package hedera
 //	newAccountID := *transactionReceipt.AccountID
 //
 //	transferTx := NewTransferTransaction().
-//		SetTransactionID(transactionID).
+//		SetPaymentTransactionID(transactionID).
 //		AddHbarTransfer(newAccountID, HbarFrom(-1, HbarUnits.Hbar)).
 //		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
 //
@@ -234,7 +234,7 @@ package hedera
 //	transactionID := TransactionIDGenerate(env.Client.GetOperatorAccountID())
 //
 //	tx := NewAccountCreateTransaction().
-//		SetTransactionID(transactionID).
+//		SetPaymentTransactionID(transactionID).
 //		SetKey(newKey.PublicKey()).
 //		SetNodeAccountIDs(env.NodeAccountIDs).
 //		SetMaxTransactionFee(NewHbar(2)).
@@ -309,7 +309,7 @@ package hedera
 //	newAccountID := *transactionReceipt.AccountID
 //
 //	transferTx := NewTransferTransaction().
-//		SetTransactionID(transactionID).
+//		SetPaymentTransactionID(transactionID).
 //		AddHbarTransfer(newAccountID, HbarFrom(-1, HbarUnits.Hbar)).
 //		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
 //
@@ -362,7 +362,7 @@ package hedera
 //		SetNodeAccountIDs(env.NodeAccountIDs).
 //		SetPayerAccountID(env.Client.GetOperatorAccountID()).
 //		SetAdminKey(env.Client.GetOperatorPublicKey()).
-//		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
+//		SetPaymentTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
 //
 //	_Response, err = scheduleTx.Execute(env.Client)
 //	assert.NoError(t, err)
@@ -502,7 +502,7 @@ package hedera
 //		SetNodeAccountIDs(env.NodeAccountIDs).
 //		SetPayerAccountID(accountID).
 //		SetAdminKey(env.OperatorKey).
-//		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
+//		SetPaymentTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
 //
 //	resp, err = scheduleTx.Execute(env.Client)
 //	assert.NoError(t, err)
@@ -659,7 +659,7 @@ package hedera
 //		SetNodeAccountIDs(env.NodeAccountIDs).
 //		SetPayerAccountID(accountID).
 //		SetAdminKey(env.OperatorKey).
-//		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID())).
+//		SetPaymentTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID())).
 //		FreezeWith(env.Client)
 //	assert.NoError(t, err)
 //
