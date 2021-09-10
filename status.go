@@ -205,7 +205,7 @@ const (
 	StatusCustomFeeMustBePositive                            Status = 239
 	StatusTokenHasNoFeeScheduleKey                           Status = 240
 	StatusCustomFeeOutsideNumericRange                       Status = 241
-	StatusInvalidCustomFractionalFeesSum                     Status = 242
+	StatusRoyaltyFractionCannotExceedOne                     Status = 242
 	StatusFractionalFeeMaxAmountLessThanMinAmount            Status = 243
 	StatusCustomScheduleAlreadyHasNoFees                     Status = 244
 	StatusCustomFeeDenominationMustBeFungibleCommon          Status = 245
@@ -632,8 +632,8 @@ func (status Status) String() string { // nolint
 		return "TOKEN_HAS_NO_FEE_SCHEDULE_KEY"
 	case StatusCustomFeeOutsideNumericRange:
 		return "CUSTOM_FEE_OUTSIDE_NUMERIC_RANGE"
-	case StatusInvalidCustomFractionalFeesSum:
-		return "INVALID_CUSTOM_FRACTIONAL_FEES_SUM"
+	case StatusRoyaltyFractionCannotExceedOne:
+		return "ROYALTY_FRACTION_CANNOT_EXCEED_ONE"
 	case StatusFractionalFeeMaxAmountLessThanMinAmount:
 		return "FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT"
 	case StatusCustomScheduleAlreadyHasNoFees:

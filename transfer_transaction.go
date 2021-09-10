@@ -227,7 +227,6 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*proto.Sch
 
 		for tokenID, tokenTransfers := range transaction.tokenTransfers {
 			transfers := make([]*proto.AccountAmount, 0)
-			nftTransfers := make([]*proto.NftTransfer, 0)
 
 			for accountID, amount := range tokenTransfers {
 				transfers = append(transfers, &proto.AccountAmount{
@@ -236,17 +235,27 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*proto.Sch
 				})
 			}
 
-			if len(transaction.nftTransfers) > 0 {
-				if t, ok := transaction.nftTransfers[tokenID]; ok {
-					for _, nftT := range t {
-						nftTransfers = append(nftTransfers, nftT._ToProtobuf())
-					}
-				}
+			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
+				Token:     tokenID._ToProtobuf(),
+				Transfers: transfers,
+			})
+		}
+	}
+
+	if len(transaction.nftTransfers) > 0 {
+		if body.TokenTransfers == nil {
+			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
+		}
+
+		for tokenID, nftTransfer := range transaction.nftTransfers {
+			nftTransfers := make([]*proto.NftTransfer, 0)
+
+			for _, nftT := range nftTransfer {
+				nftTransfers = append(nftTransfers, nftT._ToProtobuf())
 			}
 
 			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
 				Token:        tokenID._ToProtobuf(),
-				Transfers:    transfers,
 				NftTransfers: nftTransfers,
 			})
 		}
@@ -425,7 +434,6 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 
 		for tokenID, tokenTransfers := range transaction.tokenTransfers {
 			transfers := make([]*proto.AccountAmount, 0)
-			nftTransfers := make([]*proto.NftTransfer, 0)
 
 			for accountID, amount := range tokenTransfers {
 				transfers = append(transfers, &proto.AccountAmount{
@@ -434,17 +442,27 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 				})
 			}
 
-			if len(transaction.nftTransfers) > 0 {
-				if t, ok := transaction.nftTransfers[tokenID]; ok {
-					for _, nftT := range t {
-						nftTransfers = append(nftTransfers, nftT._ToProtobuf())
-					}
-				}
+			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
+				Token:     tokenID._ToProtobuf(),
+				Transfers: transfers,
+			})
+		}
+	}
+
+	if len(transaction.nftTransfers) > 0 {
+		if body.TokenTransfers == nil {
+			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
+		}
+
+		for tokenID, nftTransfer := range transaction.nftTransfers {
+			nftTransfers := make([]*proto.NftTransfer, 0)
+
+			for _, nftT := range nftTransfer {
+				nftTransfers = append(nftTransfers, nftT._ToProtobuf())
 			}
 
 			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
 				Token:        tokenID._ToProtobuf(),
-				Transfers:    transfers,
 				NftTransfers: nftTransfers,
 			})
 		}
@@ -460,62 +478,6 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 		},
 	}
 }
-
-// func (transaction *TransferTransaction) _BuildHbarTransfers() {
-//	body := &proto.CryptoTransferTransactionBody{
-//		Transfers: &proto.TransferList{
-//			AccountAmounts: []*proto.AccountAmount{},
-//		},
-//	}
-//	body.Transfers.AccountAmounts = make([]*proto.AccountAmount, 0)
-//	for accountID, amount := range transaction.hbarTransfers {
-//		body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &proto.AccountAmount{
-//			AccountID: accountID._ToProtobuf(),
-//			Amount:    amount.AsTinybar(),
-//		})
-//	}
-//}
-
-// func (transaction *TransferTransaction) _BuildTokenTransfers() {
-//	if transaction.pb.TokenTransfers == nil {
-//		transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
-//	}
-//
-//	for tokenID, tokenTransfers := range transaction.tokenTransfers {
-//		transfers := make([]*proto.AccountAmount, 0)
-//
-//		for accountID, amount := range tokenTransfers {
-//			transfers = append(transfers, &proto.AccountAmount{
-//				AccountID: accountID._ToProtobuf(),
-//				Amount:    amount,
-//			})
-//		}
-//
-//		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
-//			Token:     tokenID._ToProtobuf(),
-//			Transfers: transfers,
-//		})
-//	}
-//}
-
-// func (transaction *TransferTransaction) _BuildNftTransfers() {
-//	if transaction.pb.TokenTransfers == nil {
-//		transaction.pb.TokenTransfers = make([]*proto.TokenTransferList, 0)
-//	}
-//
-//	for tokenID, nftTransfers := range transaction.nftTransfers {
-//		transfers := make([]*proto.NftTransfer, 0)
-//
-//		for _, nftTransfer := range nftTransfers {
-//			transfers = append(transfers, nftTransfer._ToProtobuf())
-//		}
-//
-//		transaction.pb.TokenTransfers = append(transaction.pb.TokenTransfers, &proto.TokenTransferList{
-//			Token:        tokenID._ToProtobuf(),
-//			NftTransfers: transfers,
-//		})
-//	}
-//}
 
 func (transaction *TransferTransaction) Freeze() (*TransferTransaction, error) {
 	return transaction.FreezeWith(nil)

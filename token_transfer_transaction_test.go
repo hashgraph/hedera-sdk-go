@@ -433,7 +433,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *t
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetDecimals(3).
-		SetInitialSupply(1000000).
+		SetInitialSupply(1000000100000000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
@@ -458,7 +458,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *t
 			FeeCollectorAccountID: &env.OperatorID,
 		},
 		Amount:              100000000,
-		DenominationTokenID: &tokenID,
+		DenominationTokenID: nil,
 	}
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
@@ -718,6 +718,555 @@ func TestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *testing.T)
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -5).
 		AddTokenTransfer(tokenID, accountID, 5).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transferTx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+}
+
+func TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleCommon(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetMaxSupply(5).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
+		AddTokenTransfer(tokenID, accountID, 10).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON", err.Error())
+	}
+
+	resp, err = NewTokenWipeTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		SetAccountID(accountID).
+		SetAmount(10).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: FAIL_INVALID", err.Error())
+	}
+
+	tx, err := NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = tx.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, &tokenID)
+	assert.NoError(t, err)
+}
+
+func DisabledTestIntegrationNftAccountStillOwnsNfts(t *testing.T) { // nolint
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenType(TokenTypeNonFungibleUnique).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetMaxSupply(5).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+	metaData := [][]byte{{50}, {50}}
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	mint, err := NewTokenMintTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetTokenID(tokenID).
+		SetMetadatas(metaData).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	mintReceipt, err := mint.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[0]), env.OperatorID, accountID).
+		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	info, err := NewTokenNftInfoQuery().
+		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[0])).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, accountID.String(), info[0].AccountID.String())
+
+	info, err = NewTokenNftInfoQuery().
+		ByNftID(tokenID.Nft(mintReceipt.SerialNumbers[1])).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	assert.Equal(t, accountID.String(), info[0].AccountID.String())
+
+	tx, err := NewAccountDeleteTransaction().
+		SetAccountID(accountID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = tx.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+}
+
+func TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(10).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenFeeScheduleUpdateTransaction().
+		SetTokenID(tokenID).
+		SetCustomFees([]Fee{NewCustomFixedFee().
+			SetFeeCollectorAccountID(accountID).
+			SetAmount(1).
+			SetDenominatingTokenToSameToken()}).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR", err.Error())
+	}
+}
+
+func DisabledTestIntegrationTokenFeeScheduleUpdateCustomFeeChargingExceededMax(t *testing.T) { // nolint
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	resp, err = NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID2 := *receipt.AccountID
+
+	resp, err = NewAccountCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	accountID3 := *receipt.AccountID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(10).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(10).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID2 := *receipt.TokenID
+
+	resp, err = NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(10).
+		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+		SetAdminKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+		SetWipeKey(env.Client.GetOperatorPublicKey()).
+		SetKycKey(env.Client.GetOperatorPublicKey()).
+		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+		SetFreezeDefault(false).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tokenID3 := *receipt.TokenID
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transaction, err = NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID2).
+		SetTokenIDs(tokenID2).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transaction, err = NewTokenAssociateTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID3).
+		SetTokenIDs(tokenID3).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = transaction.
+		Sign(newKey).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	customFee := NewCustomFixedFee().SetDenominatingTokenToSameToken().SetAmount(1).SetFeeCollectorAccountID(accountID)
+
+	feeArray := make([]Fee, 0)
+
+	for i := 0; i < 10; i++ {
+		feeArray = append(feeArray, customFee)
+	}
+
+	resp, err = NewTokenFeeScheduleUpdateTransaction().
+		SetTokenID(tokenID).
+		SetCustomFees(feeArray).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	customFee2 := NewCustomFixedFee().SetDenominatingTokenToSameToken().SetAmount(1).SetFeeCollectorAccountID(accountID2)
+
+	feeArray2 := make([]Fee, 0)
+
+	for i := 0; i < 10; i++ {
+		feeArray2 = append(feeArray2, customFee2)
+	}
+
+	resp, err = NewTokenFeeScheduleUpdateTransaction().
+		SetTokenID(tokenID2).
+		SetCustomFees(feeArray2).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	customFee3 := NewCustomFixedFee().SetDenominatingTokenToSameToken().SetAmount(1).SetFeeCollectorAccountID(accountID3)
+
+	feeArray3 := make([]Fee, 0)
+
+	for i := 0; i < 10; i++ {
+		feeArray3 = append(feeArray3, customFee3)
+	}
+
+	resp, err = NewTokenFeeScheduleUpdateTransaction().
+		SetTokenID(tokenID3).
+		SetCustomFees(feeArray3).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTokenID(tokenID).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID2).
+		SetTokenID(tokenID2).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	resp, err = NewTokenGrantKycTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID3).
+		SetTokenID(tokenID3).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	transferTx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		AddTokenTransfer(tokenID3, env.Client.GetOperatorAccountID(), -1).
+		AddTokenTransfer(tokenID, accountID, 1).
+		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -1).
+		AddTokenTransfer(tokenID2, accountID2, 1).
+		AddTokenTransfer(tokenID2, env.Client.GetOperatorAccountID(), -1).
+		AddTokenTransfer(tokenID3, accountID3, 1).
 		FreezeWith(env.Client)
 	assert.NoError(t, err)
 
