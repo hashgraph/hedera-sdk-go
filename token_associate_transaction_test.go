@@ -87,6 +87,41 @@ func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitTokenAssociateTransactionValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	tokenAssociate := NewTokenAssociateTransaction().
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID)
+
+	err = tokenAssociate._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTokenAssociateTransactionValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	tokenAssociate := NewTokenAssociateTransaction().
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID)
+
+	err = tokenAssociate._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationTokenAssociateTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

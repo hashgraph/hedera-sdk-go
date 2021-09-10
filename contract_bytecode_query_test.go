@@ -75,6 +75,35 @@ func TestIntegrationContractBytecodeQueryCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitContractBytecodeQueryValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	contractID, err := ContractIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	contractBytecode := NewContractBytecodeQuery().
+		SetContractID(contractID)
+
+	err = contractBytecode._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitContractBytecodeQueryValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	contractID, err := ContractIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	contractBytecode := NewContractBytecodeQuery().
+		SetContractID(contractID)
+
+	err = contractBytecode._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationContractBytecodeQueryGetCostExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

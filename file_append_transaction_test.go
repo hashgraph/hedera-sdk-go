@@ -55,6 +55,35 @@ func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitFileAppendTransactionValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	fileID, err := FileIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	fileAppend := NewFileAppendTransaction().
+		SetFileID(fileID)
+
+	err = fileAppend._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitFileAppendTransactionValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	fileID, err := FileIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	fileAppend := NewFileAppendTransaction().
+		SetFileID(fileID)
+
+	err = fileAppend._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

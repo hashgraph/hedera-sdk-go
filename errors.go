@@ -26,7 +26,7 @@ var errTransactionRequiresSingleNodeAccountID = errors.New("`PrivateKey.SignTran
 var errNoTransactions = errors.New("no transactions to execute")
 var errByteArrayNull = errors.New("byte array can't be null")
 var errParameterNull = errors.New("the parameter can't be null")
-var errNetworkMismatch = errors.New("_Network mismatch; some IDs have different networks set")
+var errNetworkMismatch = errors.New("network mismatch; some IDs have different networks set")
 var errNetworkNameMissing = errors.New("can't derive checksum for ID without knowing which _Network the ID is for")
 
 type ErrInvalidNodeAccountIDSet struct {

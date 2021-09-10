@@ -61,6 +61,35 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitTokenInfoQueryValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	tokenInfo := NewTokenInfoQuery().
+		SetTokenID(tokenID)
+
+	err = tokenInfo._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTokenInfoQueryValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	tokenInfo := NewTokenInfoQuery().
+		SetTokenID(tokenID)
+
+	err = tokenInfo._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

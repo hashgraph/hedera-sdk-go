@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIntegrationAccountBalanceQuery(t *testing.T) {
+func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewAccountBalanceQuery().
@@ -23,6 +23,35 @@ func TestIntegrationAccountBalanceQuery(t *testing.T) {
 
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
+}
+
+func TestUnitAccountBalanceQueryValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	balanceQuery := NewAccountBalanceQuery().
+		SetAccountID(accountID)
+
+	err = balanceQuery._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitAccountBalanceQueryValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	balanceQuery := NewAccountBalanceQuery().
+		SetAccountID(accountID)
+
+	err = balanceQuery._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
 }
 
 func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {

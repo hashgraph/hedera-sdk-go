@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func DisabledTestIntegrationTokenNftGetInfoByNftID(t *testing.T) { // nolint
+func DisabledTestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)
@@ -62,4 +62,33 @@ func DisabledTestIntegrationTokenNftGetInfoByNftID(t *testing.T) { // nolint
 	assert.Equal(t, len(info), 1)
 	assert.Equal(t, info[0].NftID, nftID)
 	assert.Equal(t, info[0].Metadata[0], byte(50))
+}
+
+func TestUnitTokenNftGetInfoByNftIDValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	nftID, err := NftIDFromString("2@0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	nftInfo := NewTokenNftInfoQuery().
+		SetNftID(nftID)
+
+	err = nftInfo._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	nftID, err := NftIDFromString("2@0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	nftInfo := NewTokenNftInfoQuery().
+		SetNftID(nftID)
+
+	err = nftInfo._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
 }

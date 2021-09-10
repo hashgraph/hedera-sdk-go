@@ -63,6 +63,37 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitTransactionRecordQueryValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	transactionID := TransactionIDGenerate(accountID)
+	assert.NoError(t, err)
+
+	recordQuery := NewTransactionRecordQuery().
+		SetTransactionID(transactionID)
+
+	err = recordQuery._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTransactionRecordQueryValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkykd")
+	transactionID := TransactionIDGenerate(accountID)
+	assert.NoError(t, err)
+
+	recordQuery := NewTransactionRecordQuery().
+		SetTransactionID(transactionID)
+
+	err = recordQuery._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

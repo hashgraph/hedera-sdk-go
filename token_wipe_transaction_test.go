@@ -143,6 +143,41 @@ func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUnitTokenWipeTransactionValidate(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
+	assert.NoError(t, err)
+
+	tokenWipe := NewTokenWipeTransaction().
+		SetTokenID(tokenID).
+		SetAccountID(accountID)
+
+	err = tokenWipe._ValidateNetworkOnIDs(client)
+	assert.NoError(t, err)
+}
+
+func TestUnitTokenWipeTransactionValidateWrong(t *testing.T) {
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	accountID, err := AccountIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
+	assert.NoError(t, err)
+
+	tokenWipe := NewTokenWipeTransaction().
+		SetTokenID(tokenID).
+		SetAccountID(accountID)
+
+	err = tokenWipe._ValidateNetworkOnIDs(client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+	}
+}
+
 func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
