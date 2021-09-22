@@ -237,7 +237,7 @@ func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
 
 	newBalance := NewHbar(20)
 
-	assert.Equal(t, 2*HbarUnits.Hbar.numberOfTinybar(), newBalance.tinybar)
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
@@ -271,6 +271,7 @@ func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
 	toke.Sign(newKey)
 
 	resp, err = toke.Execute(env.Client)
+	assert.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
 	assert.NoError(t, err)
