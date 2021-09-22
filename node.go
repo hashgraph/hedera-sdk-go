@@ -1,14 +1,16 @@
 package hedera
 
 import (
+	"bytes"
+	"crypto/sha512"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
+	"encoding/pem"
 	"math"
 	"strings"
 	"time"
 
-	"golang.org/x/crypto/sha3"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -109,14 +111,24 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 			InsecureSkipVerify: true, // nolint
 			VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 				if node.addressBook == nil {
+					println("skipping certificate check since no cert hash was found")
 					return nil
 				}
 
 				for _, cert := range rawCerts {
 					var certHash []byte
-					digest := sha3.New384()
 
-					if _, err = digest.Write(cert); err != nil {
+					block := &pem.Block{
+						Type:  "CERTIFICATE",
+						Bytes: cert,
+					}
+
+					var encodedBuf bytes.Buffer
+
+					_ = pem.Encode(&encodedBuf, block)
+					digest := sha512.New384()
+
+					if _, err = digest.Write(encodedBuf.Bytes()); err != nil {
 						return err
 					}
 
