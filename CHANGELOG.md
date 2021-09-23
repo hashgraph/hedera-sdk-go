@@ -1,3 +1,24 @@
+## v2.2.0
+
+### Added
+
+ * Support for automatic token associations
+    * `TransactionRecord.AutomaticTokenAssociations`
+    * `AccountInfo.MaxAutomaticTokenAssociations`
+    * `AccountCreateTransaction.MaxAutomaticTokenAssociations`
+    * `AccountUpdateTransaction.MaxAutomaticTokenAssociations`
+    * `TokenRelationship.AutomaticAssociation`
+    * `TokenAssociation`
+ * `Transaction*` helper methods - should make it easier to use the result of `TransactionFromBytes()`
+
+### Fixed
+
+ * TLS now properly confirms certificate hashes
+ * `TokenUpdateTransaction.GetExpirationTime()` returns the correct time
+ * Several `*.Get*()` methods required a parameter similiar to `*.Set*()`  
+   This has been changed completely instead of deprecated because we treated this as hard bug
+ * Several `nil` dereference issues related to to/from protobuf conversions
+
 ## v2.2.0-beta.1
 
 ### Added

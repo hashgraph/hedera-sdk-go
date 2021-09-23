@@ -235,7 +235,7 @@ func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
-	newBalance := NewHbar(20)
+	newBalance := NewHbar(2)
 
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
