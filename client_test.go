@@ -7,7 +7,7 @@ import (
 )
 
 const testClientJSON string = `{
-    "_Network": {
+    "network": {
 		"35.237.200.180:50211": "0.0.3",
 		"35.186.191.247:50211": "0.0.4",
 		"35.192.2.25:50211": "0.0.5",
@@ -19,11 +19,11 @@ const testClientJSON string = `{
 		"35.240.118.96:50211": "0.0.11",
 		"35.204.86.32:50211": "0.0.12"
     },
-    "_MirrorNetwork": "testnet"
+    "mirrorNetwork": "testnet"
 }`
 
 const testClientJSONWithOperator string = `{
-    "_Network": {
+    "network": {
 		"35.237.200.180:50211": "0.0.3",
 		"35.186.191.247:50211": "0.0.4",
 		"35.192.2.25:50211": "0.0.5",
@@ -35,29 +35,29 @@ const testClientJSONWithOperator string = `{
 		"35.240.118.96:50211": "0.0.11",
 		"35.204.86.32:50211": "0.0.12"
     },
-    "_Operator": {
+    "operator": {
         "accountId": "0.0.3",
         "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
     },
-    "_MirrorNetwork": "testnet"
+    "mirrorNetwork": "testnet"
 }`
 
 const testClientJSONWrongTypeMirror string = `{
-    "_Network": "testnet",
-    "_Operator": {
+    "network": "testnet",
+    "operator": {
         "accountId": "0.0.3",
         "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
     },
- 	"_MirrorNetwork": 5
+ 	"mirrorNetwork": 5
 }`
 
 const testClientJSONWrongTypeNetwork string = `{
-    "_Network": 1,
-    "_Operator": {
+    "network": 1,
+    "operator": {
         "accountId": "0.0.3",
         "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
     },
- 	"_MirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
+ 	"mirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
 }`
 
 func TestUnitClientFromConfig(t *testing.T) {
@@ -106,12 +106,12 @@ func TestClientFromConfigWithOperator(t *testing.T) {
 func TestClientFromConfigWrongType(t *testing.T) {
 	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeMirror))
 	if err != nil {
-		assert.Equal(t, "_MirrorNetwork is expected to be either string or an array of strings", err.Error())
+		assert.Equal(t, "mirrorNetwork is expected to be either string or an array of strings", err.Error())
 	}
 
 	_, err = ClientFromConfig([]byte(testClientJSONWrongTypeNetwork))
 	if err != nil {
-		assert.Equal(t, "_Network is expected to be map of string to string, or string", err.Error())
+		assert.Equal(t, "network is expected to be map of string to string, or string", err.Error())
 	}
 }
 

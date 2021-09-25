@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"math"
 	"sort"
@@ -70,7 +71,7 @@ func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
 			if network.nodes[i] != nil {
 				nod = network.nodes[i]
 			} else {
-				continue
+				panic(errors.New("null pointer exception, node can't be nil"))
 			}
 			if nod.attempts >= int64(network.maxNodeAttempts) {
 				err := nod._Close()
@@ -86,10 +87,10 @@ func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
 	}
 
 	length := network._GetNumberOfNodesForTransaction()
-	accountIDs := make([]AccountID, length)
+	accountIDs := make([]AccountID, 0)
 
-	for i, id := range network.nodes[0:length] {
-		accountIDs[i] = id.accountID
+	for i := 0; i < length; i++ {
+		accountIDs = append(accountIDs, network.nodes[i].accountID)
 	}
 
 	return accountIDs
@@ -145,18 +146,11 @@ func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
 }
 
 func (network *_Network) _GetNumberOfNodesForTransaction() int {
-	count := 0
-	for _, node := range network.nodes {
-		if node._IsHealthy() {
-			count++
-		}
-	}
-
 	if network.maxNodesPerTransaction != nil {
-		return int(math.Min(float64(*network.maxNodesPerTransaction), float64(count)))
+		return int(math.Min(float64(*network.maxNodesPerTransaction), float64(len(network.nodes))))
 	}
 
-	return (count + 3 - 1) / 3
+	return (len(network.nodes) + 3 - 1) / 3
 }
 
 func (network *_Network) _SetMaxNodesPerTransaction(max int) {

@@ -72,6 +72,9 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	newKey, err := GeneratePrivateKey()
 	assert.NoError(t, err)
 
+	env.Client.SetMaxNodeAttempts(1)
+	env.Client.PingAll()
+
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(NewHbar(30)).
