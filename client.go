@@ -150,9 +150,9 @@ type _ConfigOperator struct {
 
 // TODO: Implement complete spec: https://gitlab.com/launchbadge/hedera/sdk/python/-/issues/45
 type _ClientConfig struct {
-	Network       interface{}      `json:"_Network"`
-	MirrorNetwork interface{}      `json:"_MirrorNetwork"`
-	Operator      *_ConfigOperator `json:"_Operator"`
+	Network       interface{}      `json:"network"`
+	MirrorNetwork interface{}      `json:"mirrorNetwork"`
+	Operator      *_ConfigOperator `json:"operator"`
 }
 
 // ClientFromConfig takes in the byte slice representation of a JSON string or
@@ -180,7 +180,7 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 
 				network[url] = accountID
 			default:
-				return client, errors.New("_Network is expected to be map of string to string, or string")
+				return client, errors.New("network is expected to be map of string to string, or string")
 			}
 		}
 	case string:
@@ -195,7 +195,7 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 			}
 		}
 	default:
-		return client, errors.New("_Network is expected to be map of string to string, or string")
+		return client, errors.New("network is expected to be map of string to string, or string")
 	}
 
 	switch mirror := clientConfig.MirrorNetwork.(type) {
@@ -206,7 +206,7 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 			case string:
 				arr[i] = str
 			default:
-				return client, errors.New("_MirrorNetwork is expected to be either string or an array of strings")
+				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
 		client = _NewClient(network, arr, NetworkNameMainnet)
@@ -222,7 +222,7 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 			}
 		}
 	default:
-		return client, errors.New("_MirrorNetwork is expected to be either string or an array of strings")
+		return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 	}
 
 	// if the _Operator is not provided, finish here
