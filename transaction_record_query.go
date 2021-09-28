@@ -310,29 +310,5 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	record := _TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord)
-	record.TransactionID.AccountID._SetNetworkWithClient(client)
-	if record.Receipt.TokenID != nil {
-		record.Receipt.TokenID._SetNetworkWithClient(client)
-	}
-	if record.Receipt.TopicID != nil {
-		record.Receipt.TopicID._SetNetworkWithClient(client)
-	}
-	if record.Receipt.FileID != nil {
-		record.Receipt.FileID._SetNetworkWithClient(client)
-	}
-	if record.Receipt.ContractID != nil {
-		record.Receipt.ContractID._SetNetworkWithClient(client)
-	}
-	if record.Receipt.ScheduleID != nil {
-		record.Receipt.ScheduleID._SetNetworkWithClient(client)
-	}
-	if record.Receipt.AccountID != nil {
-		record.Receipt.AccountID._SetNetworkWithClient(client)
-	}
-	if record.Receipt.ScheduledTransactionID != nil {
-		record.Receipt.ScheduledTransactionID.AccountID._SetNetworkWithClient(client)
-	}
-
-	return record, nil
+	return _TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord), nil
 }

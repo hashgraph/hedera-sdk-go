@@ -155,37 +155,3 @@ func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
-
-func TestIntegrationTopicCreateTransactionNetwork(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
-	env.Client.SetAutoValidateChecksums(true)
-
-	resp, err := NewTopicCreateTransaction().
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetSubmitKey(env.Client.GetOperatorPublicKey()).
-		SetTopicMemo(topicMemo).
-		Execute(env.Client)
-	assert.NoError(t, err)
-
-	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
-
-	topicID := *receipt.TopicID
-	assert.NotNil(t, topicID)
-
-	newClient := Client{}
-	networkName := NetworkNameMainnet
-	newClient.network.networkName = &networkName
-	topicID._SetNetworkWithClient(&newClient)
-
-	_, err = NewTopicInfoQuery().
-		SetTopicID(topicID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetQueryPayment(NewHbar(1)).
-		Execute(env.Client)
-	assert.Error(t, err)
-
-	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
-}

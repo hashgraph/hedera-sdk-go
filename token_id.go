@@ -116,17 +116,6 @@ func (id *TokenID) Validate(client *Client) error {
 	return nil
 }
 
-func (id *TokenID) _SetNetworkWithClient(client *Client) {
-	if client.network.networkName != nil {
-		id._SetNetwork(*client.network.networkName)
-	}
-}
-
-func (id *TokenID) _SetNetwork(name NetworkName) {
-	checksum := _CheckChecksum(name._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
-	id.checksum = &checksum
-}
-
 func (id TokenID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Token == 0
 }

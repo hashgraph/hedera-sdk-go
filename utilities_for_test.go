@@ -58,8 +58,6 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		env.OperatorID, err = AccountIDFromString(configOperatorID)
 		assert.NoError(t, err)
 
-		env.OperatorID._SetNetworkWithClient(env.Client)
-
 		env.OperatorKey, err = PrivateKeyFromString(configOperatorKey)
 		assert.NoError(t, err)
 

@@ -141,7 +141,6 @@ func (query *TopicMessageQuery) _Build() *mirror.ConsensusTopicQuery {
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	handle := SubscriptionHandle{}
 
-	query.topicID._SetNetworkWithClient(client)
 	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return SubscriptionHandle{}, err

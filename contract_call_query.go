@@ -268,12 +268,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		return ContractFunctionResult{}, err
 	}
 
-	result := _ContractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult)
-	if result.ContractID != nil {
-		result.ContractID._SetNetworkWithClient(client)
-	}
-
-	return result, nil
+	return _ContractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

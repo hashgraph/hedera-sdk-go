@@ -68,17 +68,6 @@ func (id *FileID) Validate(client *Client) error {
 	return nil
 }
 
-func (id *FileID) _SetNetworkWithClient(client *Client) {
-	if client.network.networkName != nil {
-		id._SetNetwork(*client.network.networkName)
-	}
-}
-
-func (id *FileID) _SetNetwork(name NetworkName) {
-	checksum := _CheckChecksum(name._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
-	id.checksum = &checksum
-}
-
 func FileIDFromSolidityAddress(s string) (FileID, error) {
 	shard, realm, file, err := _IdFromSolidityAddress(s)
 	if err != nil {

@@ -52,17 +52,6 @@ func (id *ContractID) Validate(client *Client) error {
 	return nil
 }
 
-func (id *ContractID) _SetNetworkWithClient(client *Client) {
-	if client.network.networkName != nil {
-		id._SetNetwork(*client.network.networkName)
-	}
-}
-
-func (id *ContractID) _SetNetwork(name NetworkName) {
-	checksum := _CheckChecksum(name._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
-	id.checksum = &checksum
-}
-
 // ContractIDFromSolidityAddress constructs a ContractID from a string representation of a _Solidity address
 func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 	shard, realm, contract, err := _IdFromSolidityAddress(s)

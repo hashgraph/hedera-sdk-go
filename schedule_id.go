@@ -53,17 +53,6 @@ func (id *ScheduleID) Validate(client *Client) error {
 	return nil
 }
 
-func (id *ScheduleID) _SetNetworkWithClient(client *Client) {
-	if client.network.networkName != nil {
-		id._SetNetwork(*client.network.networkName)
-	}
-}
-
-func (id *ScheduleID) _SetNetwork(name NetworkName) {
-	checksum := _CheckChecksum(name._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
-	id.checksum = &checksum
-}
-
 // String returns the string representation of an ScheduleID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id ScheduleID) String() string {

@@ -32,17 +32,6 @@ func AccountIDFromString(data string) (AccountID, error) {
 	}, nil
 }
 
-func (id *AccountID) _SetNetworkWithClient(client *Client) {
-	if client.network.networkName != nil {
-		id._SetNetwork(*client.network.networkName)
-	}
-}
-
-func (id *AccountID) _SetNetwork(name NetworkName) {
-	checksum := _CheckChecksum(name._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
-	id.checksum = &checksum
-}
-
 // AccountIDFromSolidityAddress constructs an AccountID from a string
 // representation of a _Solidity address
 func AccountIDFromSolidityAddress(s string) (AccountID, error) {
@@ -87,7 +76,7 @@ func (id AccountID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 }
 
-func (id AccountID) ToStringWithChecksum(client Client) (string, error) {
+func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
 	if client.network.networkName == nil {
 		return "", errNetworkNameMissing
 	}

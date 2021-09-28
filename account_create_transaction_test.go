@@ -273,10 +273,10 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
-	newClient := Client{}
-	networkName := NetworkNameMainnet
-	newClient.network.networkName = &networkName
-	accountID._SetNetworkWithClient(&newClient)
+	accountIDString, err := accountID.ToStringWithChecksum(ClientForMainnet())
+	assert.NoError(t, err)
+	accountID, err = AccountIDFromString(accountIDString)
+	assert.NoError(t, err)
 
 	_, err = NewAccountDeleteTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
