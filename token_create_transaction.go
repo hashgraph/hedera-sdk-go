@@ -32,7 +32,7 @@ type TokenCreateTransaction struct {
 	memo               string
 	tokenSymbol        string
 	decimals           uint32
-	tokenSuppleType    TokenSupplyType
+	tokenSupplyType    TokenSupplyType
 	tokenType          TokenType
 	maxSupply          int64
 	adminKey           Key
@@ -86,7 +86,7 @@ func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 		memo:               pb.GetTokenCreation().GetMemo(),
 		tokenSymbol:        pb.GetTokenCreation().GetSymbol(),
 		decimals:           pb.GetTokenCreation().GetDecimals(),
-		tokenSuppleType:    TokenSupplyType(pb.GetTokenCreation().GetSupplyType()),
+		tokenSupplyType:    TokenSupplyType(pb.GetTokenCreation().GetSupplyType()),
 		tokenType:          TokenType(pb.GetTokenCreation().GetTokenType()),
 		maxSupply:          pb.GetTokenCreation().GetMaxSupply(),
 		adminKey:           adminKey,
@@ -156,14 +156,14 @@ func (transaction *TokenCreateTransaction) GetTokenType() TokenType {
 	return transaction.tokenType
 }
 
-func (transaction *TokenCreateTransaction) SetSupplyType(t TokenSupplyType) *TokenCreateTransaction {
+func (transaction *TokenCreateTransaction) SetSupplyType(tokenSupply TokenSupplyType) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
-	transaction.tokenSuppleType = t
+	transaction.tokenSupplyType = tokenSupply
 	return transaction
 }
 
 func (transaction *TokenCreateTransaction) GetSupplyType() TokenSupplyType {
-	return transaction.tokenSuppleType
+	return transaction.tokenSupplyType
 }
 
 func (transaction *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenCreateTransaction {
@@ -288,7 +288,7 @@ func (transaction *TokenCreateTransaction) _Build() *proto.TransactionBody {
 		Memo:          transaction.memo,
 		Decimals:      transaction.decimals,
 		TokenType:     proto.TokenType(transaction.tokenType),
-		SupplyType:    proto.TokenSupplyType(transaction.tokenSuppleType),
+		SupplyType:    proto.TokenSupplyType(transaction.tokenSupplyType),
 		MaxSupply:     transaction.maxSupply,
 		InitialSupply: transaction.initialSupply,
 	}
@@ -368,7 +368,7 @@ func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*proto.
 		Memo:          transaction.memo,
 		Decimals:      transaction.decimals,
 		TokenType:     proto.TokenType(transaction.tokenType),
-		SupplyType:    proto.TokenSupplyType(transaction.tokenSuppleType),
+		SupplyType:    proto.TokenSupplyType(transaction.tokenSupplyType),
 		MaxSupply:     transaction.maxSupply,
 		InitialSupply: transaction.initialSupply,
 	}
