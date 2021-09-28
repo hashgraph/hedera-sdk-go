@@ -29,6 +29,7 @@ type TokenInfo struct {
 	TokenType           TokenType
 	SupplyType          TokenSupplyType
 	MaxSupply           int64
+	FeeScheduleKey      Key
 	CustomFees          []Fee
 }
 
@@ -127,6 +128,11 @@ func _TokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		supplyKey, _ = _KeyFromProtobuf(pb.SupplyKey)
 	}
 
+	var feeScheduleKey Key
+	if pb.FeeScheduleKey != nil {
+		feeScheduleKey, _ = _KeyFromProtobuf(pb.FeeScheduleKey)
+	}
+
 	var autoRenewPeriod time.Duration
 	if pb.AutoRenewPeriod != nil {
 		autoRenewPeriod = time.Duration(pb.GetAutoRenewPeriod().Seconds * time.Second.Nanoseconds())
@@ -181,6 +187,7 @@ func _TokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		TokenType:           TokenType(pb.TokenType),
 		SupplyType:          TokenSupplyType(pb.SupplyType),
 		MaxSupply:           pb.MaxSupply,
+		FeeScheduleKey:      feeScheduleKey,
 		CustomFees:          customFees,
 	}
 }
@@ -209,6 +216,11 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *proto.TokenInfo {
 	var supplyKey *proto.Key
 	if tokenInfo.SupplyKey != nil {
 		supplyKey = tokenInfo.SupplyKey._ToProtoKey()
+	}
+
+	var feeScheduleKey *proto.Key
+	if tokenInfo.FeeScheduleKey != nil {
+		feeScheduleKey = tokenInfo.FeeScheduleKey._ToProtoKey()
 	}
 
 	var autoRenewPeriod *proto.Duration
@@ -250,6 +262,7 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *proto.TokenInfo {
 		TokenType:           proto.TokenType(tokenInfo.TokenType),
 		SupplyType:          proto.TokenSupplyType(tokenInfo.SupplyType),
 		MaxSupply:           tokenInfo.MaxSupply,
+		FeeScheduleKey:      feeScheduleKey,
 		CustomFees:          customFees,
 	}
 }
