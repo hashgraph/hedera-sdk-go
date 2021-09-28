@@ -1,11 +1,12 @@
 package hedera
 
 import (
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"math"
 	"sort"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type _Network struct {
