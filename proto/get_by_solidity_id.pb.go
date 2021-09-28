@@ -20,14 +20,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Get the IDs in the format used by transactions, given the ID in the format used by Solidity. If the Solidity ID is for a smart contract instance, then both the ContractID and associated AccountID will be returned.
+//*
+// Get the IDs in the format used by transactions, given the ID in the format used by Solidity. If
+// the Solidity ID is for a smart contract instance, then both the ContractID and associated
+// AccountID will be returned.
 type GetBySolidityIDQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header     *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`         // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	SolidityID string       `protobuf:"bytes,2,opt,name=solidityID,proto3" json:"solidityID,omitempty"` // The ID in the format used by Solidity
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The ID in the format used by Solidity
+	SolidityID string `protobuf:"bytes,2,opt,name=solidityID,proto3" json:"solidityID,omitempty"`
 }
 
 func (x *GetBySolidityIDQuery) Reset() {
@@ -76,16 +84,27 @@ func (x *GetBySolidityIDQuery) GetSolidityID() string {
 	return ""
 }
 
+//*
 // Response when the client sends the node GetBySolidityIDQuery
 type GetBySolidityIDResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header     *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`         // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	AccountID  *AccountID      `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`   //  The Account ID for the cryptocurrency account
-	FileID     *FileID         `protobuf:"bytes,3,opt,name=fileID,proto3" json:"fileID,omitempty"`         // The file Id for the file
-	ContractID *ContractID     `protobuf:"bytes,4,opt,name=contractID,proto3" json:"contractID,omitempty"` // A smart contract ID for the instance (if this is included, then the associated accountID will also be included)
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The Account ID for the cryptocurrency account
+	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	//*
+	// The file Id for the file
+	FileID *FileID `protobuf:"bytes,3,opt,name=fileID,proto3" json:"fileID,omitempty"`
+	//*
+	// A smart contract ID for the instance (if this is included, then the associated accountID will
+	// also be included)
+	ContractID *ContractID `protobuf:"bytes,4,opt,name=contractID,proto3" json:"contractID,omitempty"`
 }
 
 func (x *GetBySolidityIDResponse) Reset() {

@@ -20,15 +20,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // See [ConsensusService.getTopicInfo()](#proto.ConsensusService)
 type ConsensusGetTopicInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//*
 	// Standard info sent from client to node, including the signed payment, and what kind of response is requested
 	// (cost, state proof, both, or neither).
 	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
 	// The Topic for which information is being requested
 	TopicID *TopicID `protobuf:"bytes,2,opt,name=topicID,proto3" json:"topicID,omitempty"`
 }
@@ -79,16 +82,22 @@ func (x *ConsensusGetTopicInfoQuery) GetTopicID() *TopicID {
 	return nil
 }
 
+//*
 // Retrieve the parameters of and state of a consensus topic.
 type ConsensusGetTopicInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//*
 	// Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither.
-	Header    *ResponseHeader     `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	TopicID   *TopicID            `protobuf:"bytes,2,opt,name=topicID,proto3" json:"topicID,omitempty"`     // Topic identifier.
-	TopicInfo *ConsensusTopicInfo `protobuf:"bytes,5,opt,name=topicInfo,proto3" json:"topicInfo,omitempty"` // Current state of the topic
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// Topic identifier.
+	TopicID *TopicID `protobuf:"bytes,2,opt,name=topicID,proto3" json:"topicID,omitempty"`
+	//*
+	// Current state of the topic
+	TopicInfo *ConsensusTopicInfo `protobuf:"bytes,5,opt,name=topicInfo,proto3" json:"topicInfo,omitempty"`
 }
 
 func (x *ConsensusGetTopicInfoResponse) Reset() {

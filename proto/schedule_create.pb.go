@@ -20,15 +20,64 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
+// Create a new <i>schedule entity</i> (or simply, <i>schedule</i>) in the network's action queue.
+// Upon <tt>SUCCESS</tt>, the receipt contains the `ScheduleID` of the created schedule. A schedule
+// entity includes a <tt>scheduledTransactionBody</tt> to be executed when the schedule has
+// collected enough signing Ed25519 keys to satisfy the scheduled transaction's signing
+// requirements. Upon `SUCCESS`, the receipt also includes the <tt>scheduledTransactionID</tt> to
+// use to query for the record of the scheduled transaction's execution (if it occurs).
+//
+// The expiration time of a schedule is always 30 minutes; it remains in state and can be queried
+// using <tt>GetScheduleInfo</tt> until expiration, no matter if the scheduled transaction has
+// executed or marked deleted.
+//
+// If the <tt>adminKey</tt> field is omitted, the resulting schedule is immutable. If the
+// <tt>adminKey</tt> is set, the <tt>ScheduleDelete</tt> transaction can be used to mark it as
+// deleted. The creator may also specify an optional <tt>memo</tt> whose UTF-8 encoding is at most
+// 100 bytes and does not include the zero byte is also supported.
+//
+// When a scheduled transaction whose schedule has collected enough signing keys is executed, the
+// network only charges its payer the service fee, and not the node and network fees. If the
+// optional <tt>payerAccountID</tt> is set, the network charges this account. Otherwise it charges
+// the payer of the originating <tt>ScheduleCreate</tt>.
+//
+// Two <tt>ScheduleCreate</tt> transactions are <i>identical</i> if they are equal in all their
+// fields other than <tt>payerAccountID</tt>.  (Here "equal" should be understood in the sense of
+// gRPC object equality in the network software runtime. In particular, a gRPC object with <a
+// href="https://developers.google.com/protocol-buffers/docs/proto3#unknowns">unknown fields</a> is
+// not equal to a gRPC object without unknown fields, even if they agree on all known fields.)
+//
+// A <tt>ScheduleCreate</tt> transaction that attempts to re-create an identical schedule already in
+// state will receive a receipt with status <tt>IDENTICAL_SCHEDULE_ALREADY_CREATED</tt>; the receipt
+// will include the <tt>ScheduleID</tt> of the extant schedule, which may be used in a subsequent
+// <tt>ScheduleSign</tt> transaction. (The receipt will also include the <tt>TransactionID</tt> to
+// use in querying for the receipt or record of the scheduled transaction.)
+//
+// Other notable response codes include, <tt>INVALID_ACCOUNT_ID</tt>,
+// <tt>UNSCHEDULABLE_TRANSACTION</tt>, <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt>,
+// <tt>INVALID_SIGNATURE</tt>. For more information please see the section of this documentation on
+// the <tt>ResponseCode</tt> enum.
 type ScheduleCreateTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ScheduledTransactionBody *SchedulableTransactionBody `protobuf:"bytes,1,opt,name=scheduledTransactionBody,proto3" json:"scheduledTransactionBody,omitempty"` // The scheduled transaction
-	Memo                     string                      `protobuf:"bytes,2,opt,name=memo,proto3" json:"memo,omitempty"`                                         // An optional memo with a UTF-8 encoding of no more than 100 bytes which does not contain the zero byte
-	AdminKey                 *Key                        `protobuf:"bytes,3,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                                 // An optional Hedera key which can be used to sign a ScheduleDelete and remove the schedule
-	PayerAccountID           *AccountID                  `protobuf:"bytes,4,opt,name=payerAccountID,proto3" json:"payerAccountID,omitempty"`                     // An optional id of the account to be charged the service fee for the scheduled transaction at the consensus time that it executes (if ever); defaults to the ScheduleCreate payer if not given
+	//*
+	// The scheduled transaction
+	ScheduledTransactionBody *SchedulableTransactionBody `protobuf:"bytes,1,opt,name=scheduledTransactionBody,proto3" json:"scheduledTransactionBody,omitempty"`
+	//*
+	// An optional memo with a UTF-8 encoding of no more than 100 bytes which does not contain the
+	// zero byte
+	Memo string `protobuf:"bytes,2,opt,name=memo,proto3" json:"memo,omitempty"`
+	//*
+	// An optional Hedera key which can be used to sign a ScheduleDelete and remove the schedule
+	AdminKey *Key `protobuf:"bytes,3,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
+	//*
+	// An optional id of the account to be charged the service fee for the scheduled transaction at
+	// the consensus time that it executes (if ever); defaults to the ScheduleCreate payer if not
+	// given
+	PayerAccountID *AccountID `protobuf:"bytes,4,opt,name=payerAccountID,proto3" json:"payerAccountID,omitempty"`
 }
 
 func (x *ScheduleCreateTransactionBody) Reset() {

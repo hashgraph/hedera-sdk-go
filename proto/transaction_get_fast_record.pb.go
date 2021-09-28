@@ -20,14 +20,23 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Get the tx record of a transaction, given its transaction ID. Once a transaction reaches consensus, then information about whether it succeeded or failed will be available until the end of the receipt period.  Before and after the receipt period, and for a transaction that was never submitted, the receipt is unknown.  This query is free (the payment field is left empty).
+//*
+// Get the tx record of a transaction, given its transaction ID. Once a transaction reaches
+// consensus, then information about whether it succeeded or failed will be available until the end
+// of the receipt period.  Before and after the receipt period, and for a transaction that was never
+// submitted, the receipt is unknown.  This query is free (the payment field is left empty).
 type TransactionGetFastRecordQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header        *QueryHeader   `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`               // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	TransactionID *TransactionID `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"` // The ID of the transaction for which the record is requested.
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The ID of the transaction for which the record is requested.
+	TransactionID *TransactionID `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
 }
 
 func (x *TransactionGetFastRecordQuery) Reset() {
@@ -76,14 +85,24 @@ func (x *TransactionGetFastRecordQuery) GetTransactionID() *TransactionID {
 	return nil
 }
 
-// Response when the client sends the node TransactionGetFastRecordQuery. If it created a new entity (account, file, or smart contract instance) then one of the three ID fields will be filled in with the ID of the new entity. Sometimes a single transaction will create more than one new entity, such as when a new contract instance is created, and this also creates the new account that it owned by that instance.
+//*
+// Response when the client sends the node TransactionGetFastRecordQuery. If it created a new entity
+// (account, file, or smart contract instance) then one of the three ID fields will be filled in
+// with the ID of the new entity. Sometimes a single transaction will create more than one new
+// entity, such as when a new contract instance is created, and this also creates the new account
+// that it owned by that instance.
 type TransactionGetFastRecordResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header            *ResponseHeader    `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                       //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	TransactionRecord *TransactionRecord `protobuf:"bytes,2,opt,name=transactionRecord,proto3" json:"transactionRecord,omitempty"` // The requested transaction records
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The requested transaction records
+	TransactionRecord *TransactionRecord `protobuf:"bytes,2,opt,name=transactionRecord,proto3" json:"transactionRecord,omitempty"`
 }
 
 func (x *TransactionGetFastRecordResponse) Reset() {

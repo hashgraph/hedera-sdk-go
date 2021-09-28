@@ -86,7 +86,7 @@ func _AccountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Acco
 		AutoRenewPeriod:                _DurationFromProtobuf(pb.AutoRenewPeriod),
 		LiveHashes:                     liveHashes,
 		OwnedNfts:                      pb.OwnedNfts,
-		MaxAutomaticTokenAssociations:  pb.MaxAutomaticTokenAssociations,
+		MaxAutomaticTokenAssociations:  uint32(pb.MaxAutomaticTokenAssociations),
 	}, nil
 }
 
@@ -122,7 +122,7 @@ func (info AccountInfo) _ToProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
 		TokenRelationships:             tokenRelationship,
 		Memo:                           info.AccountMemo,
 		OwnedNfts:                      info.OwnedNfts,
-		MaxAutomaticTokenAssociations:  info.MaxAutomaticTokenAssociations,
+		MaxAutomaticTokenAssociations:  int32(info.MaxAutomaticTokenAssociations),
 	}
 }
 

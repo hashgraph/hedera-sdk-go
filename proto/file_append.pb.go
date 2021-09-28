@@ -20,15 +20,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//
-//Append the given contents to the end of the specified file. If a file is too big to create with a single FileCreateTransaction, then it can be created with the first part of its contents, and then appended as many times as necessary to create the entire file. This transaction must be signed by all initial M-of-M KeyList keys. If keys contains additional KeyList or ThresholdKey then M-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
+//*
+// Append the given contents to the end of the specified file. If a file is too big to create with a
+// single FileCreateTransaction, then it can be created with the first part of its contents, and
+// then appended as many times as necessary to create the entire file. This transaction must be
+// signed by all initial M-of-M KeyList keys. If keys contains additional KeyList or ThresholdKey
+// then M-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 type FileAppendTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//*
 	// The file to which the bytes will be appended
 	FileID *FileID `protobuf:"bytes,2,opt,name=fileID,proto3" json:"fileID,omitempty"`
+	//*
 	// The bytes that will be appended to the end of the specified file
 	Contents []byte `protobuf:"bytes,4,opt,name=contents,proto3" json:"contents,omitempty"`
 }

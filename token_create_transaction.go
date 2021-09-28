@@ -41,6 +41,7 @@ type TokenCreateTransaction struct {
 	wipeKey            Key
 	scheduleKey        Key
 	supplyKey          Key
+	pauseKey           Key
 	initialSupply      uint64
 	freezeDefault      *bool
 	expirationTime     *time.Time
@@ -71,6 +72,7 @@ func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 	wipeKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetWipeKey())
 	scheduleKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetFeeScheduleKey())
 	supplyKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetSupplyKey())
+	pauseKey, _ := _KeyFromProtobuf(pb.GetTokenCreation().GetPauseKey())
 
 	freezeDefault := pb.GetTokenCreation().GetFreezeDefault()
 
@@ -95,6 +97,7 @@ func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.Tran
 		wipeKey:            wipeKey,
 		scheduleKey:        scheduleKey,
 		supplyKey:          supplyKey,
+		pauseKey:           pauseKey,
 		initialSupply:      pb.GetTokenCreation().InitialSupply,
 		freezeDefault:      &freezeDefault,
 		expirationTime:     &expirationTime,
@@ -245,6 +248,16 @@ func (transaction *TokenCreateTransaction) GetFeeScheduleKey() Key {
 	return transaction.scheduleKey
 }
 
+func (transaction *TokenCreateTransaction) SetPauseKey(key Key) *TokenCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.pauseKey = key
+	return transaction
+}
+
+func (transaction *TokenCreateTransaction) GetPauseKey() Key {
+	return transaction.pauseKey
+}
+
 func (transaction *TokenCreateTransaction) SetCustomFees(customFee []Fee) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.customFees = customFee
@@ -338,6 +351,10 @@ func (transaction *TokenCreateTransaction) _Build() *proto.TransactionBody {
 
 	if transaction.supplyKey != nil {
 		body.SupplyKey = transaction.supplyKey._ToProtoKey()
+	}
+
+	if transaction.pauseKey != nil {
+		body.PauseKey = transaction.pauseKey._ToProtoKey()
 	}
 
 	return &proto.TransactionBody{
