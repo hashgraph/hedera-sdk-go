@@ -189,3 +189,39 @@ func TestIntegrationClientPingAllBadNetwork(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
 }
+
+func TestIntegrationClientSetNetwork(t *testing.T) {
+	client := ClientForTestnet()
+	nodes := make(map[string]AccountID, 2)
+	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil}
+	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil}
+
+	err := client.SetNetwork(nodes)
+	assert.NoError(t, err)
+	network := client.GetNetwork()
+	assert.Equal(t, 2, len(network))
+	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil})
+	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil})
+
+	nodes = make(map[string]AccountID, 2)
+	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil}
+	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil}
+	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil}
+
+	err = client.SetNetwork(nodes)
+	assert.NoError(t, err)
+	network = client.GetNetwork()
+	assert.Equal(t, 3, len(network))
+	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil})
+	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil})
+	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil})
+
+	nodes = make(map[string]AccountID, 1)
+	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil}
+
+	err = client.SetNetwork(nodes)
+	assert.NoError(t, err)
+	network = client.GetNetwork()
+	assert.Equal(t, 1, len(network))
+	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil})
+}

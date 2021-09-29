@@ -7,8 +7,6 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
-	"math"
-	"strings"
 	"time"
 
 	"golang.org/x/net/context"
@@ -21,74 +19,52 @@ import (
 
 type _Node struct {
 	accountID   AccountID
-	address     string
-	delay       int64
-	lastUsed    int64
-	delayUntil  int64
-	useCount    int64
 	channel     *_Channel
-	waitTime    int64
-	attempts    int64
-	addressBook *_NodeAddress
+	managedNode _ManagedNode
 }
 
 type _Nodes struct {
 	nodes []*_Node
 }
 
-func _NewNode(accountID AccountID, address string, waitTime int64) _Node {
+func _NewNode(accountID AccountID, address string, minBackoff int64) _Node {
 	return _Node{
 		accountID:   accountID,
-		address:     address,
-		delay:       250,
-		lastUsed:    time.Now().UTC().UnixNano(),
-		delayUntil:  time.Now().UTC().UnixNano(),
-		useCount:    0,
 		channel:     nil,
-		waitTime:    waitTime,
-		attempts:    0,
-		addressBook: nil,
+		managedNode: _NewManagedNode(address, minBackoff),
 	}
 }
 
-func (node *_Node) _SetWaitTime(waitTime int64) {
-	if node.delay == node.waitTime {
-		node.delay = node.waitTime
-	}
-
-	node.waitTime = waitTime
+func (node *_Node) _SetMinBackoff(waitTime int64) {
+	node.managedNode._SetMinBackoff(waitTime)
 }
 
 func (node *_Node) SetAddressBook(addressBook *_NodeAddress) {
-	node.addressBook = addressBook
+	node.managedNode._SetAddressBook(addressBook)
 }
 
 func (node *_Node) GetAddressBook() *_NodeAddress {
-	return node.addressBook
+	return node.managedNode._GetAddressBook()
 }
 
 func (node *_Node) _InUse() {
-	node.useCount++
-	node.lastUsed = time.Now().UTC().UnixNano()
+	node.managedNode._InUse()
 }
 
 func (node *_Node) _IsHealthy() bool {
-	return node.delayUntil <= time.Now().UTC().UnixNano()
+	return node.managedNode._IsHealthy()
 }
 
 func (node *_Node) _IncreaseDelay() {
-	node.attempts++
-	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
-	node.delayUntil = (node.delay * 100000) + time.Now().UTC().UnixNano()
+	node.managedNode._IncreaseDelay()
 }
 
 func (node *_Node) _DecreaseDelay() {
-	node.delay = int64(math.Max(float64(node.delay)/2, 250))
+	node.managedNode._DecreaseDelay()
 }
 
 func (node *_Node) _Wait() {
-	delay := node.delayUntil - node.lastUsed
-	time.Sleep(time.Duration(delay) * time.Nanosecond)
+	node.managedNode._Wait()
 }
 
 func (node *_Node) _GetChannel() (*_Channel, error) {
@@ -104,13 +80,12 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 	var conn *grpc.ClientConn
 	var err error
-	parts := strings.SplitN(node.address, ":", 2)
 	security := grpc.WithInsecure()
-	if parts[1] == "443" || parts[1] == "50212" {
+	if node.managedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 			InsecureSkipVerify: true, // nolint
 			VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
-				if node.addressBook == nil {
+				if node.managedNode.addressBook == nil {
 					println("skipping certificate check since no cert hash was found")
 					return nil
 				}
@@ -134,7 +109,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 					certHash = digest.Sum(nil)
 
-					if string(node.addressBook.certHash) == hex.EncodeToString(certHash) {
+					if string(node.managedNode.addressBook.certHash) == hex.EncodeToString(certHash) {
 						return nil
 					}
 				}
@@ -146,7 +121,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 	cont, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	conn, err = grpc.DialContext(cont, node.address, security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	conn, err = grpc.DialContext(cont, node.managedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
 		return nil, status.Error(codes.ResourceExhausted, "dial timeout of 10sec exceeded")
 	}
@@ -167,6 +142,16 @@ func (node *_Node) _Close() error {
 	return nil
 }
 
+func (node *_Node) ToSecure() *_Node {
+	node.managedNode.address = node.managedNode.address._ToSecure()
+	return node
+}
+
+func (node *_Node) ToInsecure() *_Node {
+	node.managedNode.address = node.managedNode.address._ToInsecure()
+	return node
+}
+
 func (nodes _Nodes) Len() int {
 	return len(nodes.nodes)
 }
@@ -176,24 +161,24 @@ func (nodes _Nodes) Swap(i, j int) {
 
 func (nodes _Nodes) Less(i, j int) bool {
 	if nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() { // nolint
-		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
+		if nodes.nodes[i].managedNode.useCount < nodes.nodes[j].managedNode.useCount { // nolint
 			return true
-		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
+		} else if nodes.nodes[i].managedNode.useCount > nodes.nodes[j].managedNode.useCount {
 			return false
 		} else {
-			return nodes.nodes[i].lastUsed < nodes.nodes[j].lastUsed
+			return nodes.nodes[i].managedNode.lastUsed < nodes.nodes[j].managedNode.lastUsed
 		}
 	} else if nodes.nodes[i]._IsHealthy() && !nodes.nodes[j]._IsHealthy() {
 		return true
 	} else if !nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() {
 		return false
 	} else {
-		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
+		if nodes.nodes[i].managedNode.useCount < nodes.nodes[j].managedNode.useCount { // nolint
 			return true
-		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
+		} else if nodes.nodes[i].managedNode.useCount > nodes.nodes[j].managedNode.useCount {
 			return false
 		} else {
-			return nodes.nodes[i].lastUsed < nodes.nodes[j].lastUsed
+			return nodes.nodes[i].managedNode.lastUsed < nodes.nodes[j].managedNode.lastUsed
 		}
 	}
 }

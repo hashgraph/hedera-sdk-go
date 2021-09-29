@@ -924,7 +924,7 @@ var legacy = [...]string{
 	"defy",
 	"degree",
 	"deity",
-	"delay",
+	"currentBackoff",
 	"delete",
 	"delhi",
 	"delta",

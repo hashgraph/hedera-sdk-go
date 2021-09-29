@@ -18,6 +18,7 @@ type _Network struct {
 	maxNodesPerTransaction *int
 	addressBook            map[AccountID]_NodeAddress
 	networkName            *NetworkName
+	transportSecurity      bool
 }
 
 func _NewNetwork() _Network {
@@ -29,6 +30,7 @@ func _NewNetwork() _Network {
 		nodeWaitTime:           250 * time.Millisecond,
 		maxNodesPerTransaction: nil,
 		addressBook:            nil,
+		transportSecurity:      false,
 	}
 }
 
@@ -74,13 +76,13 @@ func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
 			} else {
 				panic(errors.New("null pointer exception, node can't be nil"))
 			}
-			if nod.attempts >= int64(network.maxNodeAttempts) {
+			if nod.managedNode.attempts >= int64(network.maxNodeAttempts) {
 				err := nod._Close()
 				if err != nil {
 					panic(err)
 				}
 				network.nodes = append(network.nodes[:i], network.nodes[i+1:]...)
-				delete(network.network, nod.address)
+				delete(network.network, nod.managedNode.address._String())
 				delete(network.networkNodes, nod.accountID)
 				i--
 			}
@@ -116,7 +118,7 @@ func (network *_Network) _SetNetworkName(net NetworkName) *_Network {
 	if network.addressBook != nil {
 		for _, nod := range network.nodes {
 			temp := network.addressBook[nod.accountID]
-			nod.addressBook = &temp
+			nod.managedNode.addressBook = &temp
 		}
 	}
 
@@ -170,7 +172,7 @@ func (network *_Network) _SetNodeWaitTime(waitTime time.Duration) {
 	network.nodeWaitTime = waitTime
 	for _, nod := range network.nodes {
 		if nod != nil {
-			nod._SetWaitTime(waitTime.Milliseconds())
+			nod._SetMinBackoff(waitTime.Milliseconds())
 		}
 	}
 }
@@ -190,4 +192,25 @@ func (network *_Network) Close() error {
 	}
 
 	return nil
+}
+
+func (network *_Network) SetTransportSecurity(transportSecurity bool) *_Network {
+	if network.transportSecurity != transportSecurity {
+		_ = network.Close()
+		network.network = make(map[string]AccountID)
+
+		for _, node := range network.nodes {
+			if transportSecurity {
+				node = node.ToSecure()
+			} else {
+				node = node.ToInsecure()
+			}
+
+			network.network[node.managedNode.address._String()] = node.accountID
+		}
+	}
+
+	network.transportSecurity = transportSecurity
+
+	return network
 }

@@ -357,6 +357,13 @@ func (client *Client) GetMirrorNetwork() []string {
 	return client.mirrorNetwork.network
 }
 
+func (client *Client) SetTransportSecurity(tls bool) *Client {
+	client.network.SetTransportSecurity(tls)
+	client.mirrorNetwork.SetTransportSecurity(tls)
+
+	return client
+}
+
 func (client *Client) SetNetworkName(name NetworkName) {
 	client.network._SetNetworkName(name)
 }

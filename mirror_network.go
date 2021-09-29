@@ -5,16 +5,18 @@ import (
 )
 
 type _MirrorNetwork struct {
-	networkNodes map[string]*_MirrorNode
-	network      []string
-	index        uint
+	networkNodes      map[string]*_MirrorNode
+	network           []string
+	index             uint
+	transportSecurity bool
 }
 
 func _NewMirrorNetwork() *_MirrorNetwork {
 	return &_MirrorNetwork{
-		networkNodes: make(map[string]*_MirrorNode),
-		network:      make([]string, 0),
-		index:        0,
+		networkNodes:      make(map[string]*_MirrorNode),
+		network:           make([]string, 0),
+		index:             0,
+		transportSecurity: false,
 	}
 }
 
@@ -56,4 +58,25 @@ func (network *_MirrorNetwork) _GetNextMirrorNode() *_MirrorNode {
 	node := network.networkNodes[network.network[network.index]]
 	network.index = (network.index + 1) % uint(len(network.network))
 	return node
+}
+
+func (network *_MirrorNetwork) SetTransportSecurity(transportSecurity bool) *_MirrorNetwork {
+	if network.transportSecurity != transportSecurity {
+		for _, node := range network.networkNodes {
+			_ = node._Close()
+		}
+
+		for _, node := range network.networkNodes {
+			if transportSecurity {
+				node = node.ToSecure()
+			} else {
+				node = node.ToInsecure()
+			}
+		}
+
+	}
+
+	network.transportSecurity = transportSecurity
+
+	return network
 }
