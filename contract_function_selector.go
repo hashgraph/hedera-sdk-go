@@ -266,7 +266,7 @@ func (selector *ContractFunctionSelector) _Build(function *string) []byte {
 	if function != nil {
 		selector.function = function
 	} else if selector.function == nil {
-		panic("unreacahble: function name must be non-nil at this point")
+		panic("unreachable: function name must be non-nil at this point")
 	}
 
 	hash := sha3.NewLegacyKeccak256()

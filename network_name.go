@@ -20,5 +20,18 @@ func (networkName NetworkName) _LedgerID() string {
 		return "2"
 	}
 
-	panic(fmt.Sprintf("unreacahble: NetworkName._LedgerID() switch statement is non-exhaustive. NetworkName: %s", networkName))
+	panic(fmt.Sprintf("unreachable: NetworkName._LedgerID() switch statement is non-exhaustive. NetworkName: %s", networkName))
+}
+
+func (networkName NetworkName) String() string {
+	switch networkName {
+	case NetworkNameMainnet:
+		return "mainnet"
+	case NetworkNameTestnet:
+		return "testnet"
+	case NetworkNamePreviewnet:
+		return "previewnet"
+	}
+
+	panic("unreachable: NetworkName.String() switch statement is non-exhaustive.")
 }

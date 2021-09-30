@@ -125,7 +125,7 @@ func _NewClient(network map[string]AccountID, mirrorNetwork []string, name Netwo
 
 	_ = client.SetNetwork(network)
 	client.SetMirrorNetwork(mirrorNetwork)
-	client.network.networkName = &name
+	client.network._SetNetworkName(name)
 
 	return &client
 }
@@ -274,7 +274,14 @@ func ClientFromConfigFile(filename string) (*Client, error) {
 
 // Close is used to disconnect the Client from the _Network
 func (client *Client) Close() error {
-	client.network.Close()
+	err := client.network._Close()
+	if err != nil {
+		return err
+	}
+	err = client.mirrorNetwork._Close()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -286,7 +293,7 @@ func (client *Client) SetNetwork(network map[string]AccountID) error {
 }
 
 func (client *Client) GetNetwork() map[string]AccountID {
-	return client.network.network
+	return client.network._GetNetwork()
 }
 
 func (client *Client) SetMaxBackoff(max time.Duration) {
@@ -354,22 +361,32 @@ func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
 }
 
 func (client *Client) GetMirrorNetwork() []string {
-	return client.mirrorNetwork.network
+	return client.mirrorNetwork._GetNetwork()
 }
 
 func (client *Client) SetTransportSecurity(tls bool) *Client {
-	client.network.SetTransportSecurity(tls)
-	client.mirrorNetwork.SetTransportSecurity(tls)
+	client.network._SetTransportSecurity(tls)
+	client.mirrorNetwork._SetTransportSecurity(tls)
 
 	return client
+}
+
+func (client *Client) SetCertificateVerification(verify bool) *Client {
+	client.network._SetVerifyCertificate(verify)
+
+	return client
+}
+
+func (client *Client) GetCertificateVerification() bool {
+	return client.network._GetVerifyCertificate()
 }
 
 func (client *Client) SetNetworkName(name NetworkName) {
 	client.network._SetNetworkName(name)
 }
 
-func (client *Client) GetNetworkName() NetworkName {
-	return *client.network._GetNetworkName()
+func (client *Client) GetNetworkName() *NetworkName {
+	return client.network._GetNetworkName()
 }
 
 func (client *Client) SetAutoValidateChecksums(validate bool) {
@@ -439,7 +456,7 @@ func (client *Client) Ping(nodeID AccountID) error {
 }
 
 func (client *Client) PingAll() {
-	for _, s := range client.network.network {
+	for _, s := range client.GetNetwork() {
 		_ = client.Ping(s)
 	}
 }

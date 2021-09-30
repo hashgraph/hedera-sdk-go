@@ -39,10 +39,10 @@ func (id TokenID) String() string {
 }
 
 func (id TokenID) ToStringWithChecksum(client Client) (string, error) {
-	if client.network.networkName == nil {
+	if client.GetNetworkName() == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+	checksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
 	if err != nil {
 		return "", err
 	}
@@ -95,8 +95,8 @@ func TokenIDFromString(data string) (TokenID, error) {
 }
 
 func (id *TokenID) Validate(client *Client) error {
-	if !id._IsZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
+	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token))
 		if err != nil {
 			return err
 		}

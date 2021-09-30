@@ -13,49 +13,62 @@ import (
 )
 
 type _MirrorNode struct {
-	channel     *mirror.ConsensusServiceClient
-	client      *grpc.ClientConn
-	managedNode _ManagedNode
+	*_ManagedNode
+	channel *mirror.ConsensusServiceClient
+	client  *grpc.ClientConn
 }
 
-func _NewMirrorNode(address string) *_MirrorNode {
+func _NewMirrorNode(address string) _MirrorNode {
 	wait := 250 * time.Millisecond
-	return &_MirrorNode{
-		managedNode: _NewManagedNode(address, wait.Milliseconds()),
-		channel:     nil,
+	temp := _NewManagedNode(address, wait.Milliseconds())
+	return _MirrorNode{
+		_ManagedNode: &temp,
+		channel:      nil,
 	}
 }
 
 func (node *_MirrorNode) _SetMinBackoff(waitTime int64) {
-	node.managedNode._SetMinBackoff(waitTime)
-}
-
-func (node *_MirrorNode) SetAddressBook(addressBook *_NodeAddress) {
-	node.managedNode._SetAddressBook(addressBook)
-}
-
-func (node *_MirrorNode) GetAddressBook() *_NodeAddress {
-	return node.managedNode._GetAddressBook()
+	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
 func (node *_MirrorNode) _InUse() {
-	node.managedNode._InUse()
+	node._ManagedNode._InUse()
 }
 
 func (node *_MirrorNode) _IsHealthy() bool {
-	return node.managedNode._IsHealthy()
+	return node._ManagedNode._IsHealthy()
 }
 
 func (node *_MirrorNode) _IncreaseDelay() {
-	node.managedNode._IncreaseDelay()
+	node._ManagedNode._IncreaseDelay()
 }
 
 func (node *_MirrorNode) _DecreaseDelay() {
-	node.managedNode._DecreaseDelay()
+	node._ManagedNode._DecreaseDelay()
 }
 
 func (node *_MirrorNode) _Wait() {
-	node.managedNode._Wait()
+	node._ManagedNode._Wait()
+}
+
+func (node *_MirrorNode) _GetUseCount() int64 {
+	return node._ManagedNode._GetUseCount()
+}
+
+func (node *_MirrorNode) _GetLastUsed() int64 {
+	return node._ManagedNode._GetLastUsed()
+}
+
+func (node *_MirrorNode) _GetManagedNode() *_ManagedNode {
+	return node._ManagedNode
+}
+
+func (node *_MirrorNode) _GetAttempts() int64 {
+	return node._ManagedNode._GetAttempts()
+}
+
+func (node *_MirrorNode) _GetAddress() string {
+	return node._ManagedNode._GetAddress()
 }
 
 func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
@@ -71,15 +84,15 @@ func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
 
 	var security grpc.DialOption
 
-	if node.managedNode.address._IsTransportSecurity() {
+	if node._ManagedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
 		security = grpc.WithInsecure()
 	}
 
-	conn, err := grpc.Dial(node.managedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	conn, err := grpc.Dial(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
-		return nil, errors.Wrapf(err, "error connecting to mirror at %s", node.managedNode.address._String())
+		return nil, errors.Wrapf(err, "error connecting to mirror at %s", node._ManagedNode.address._String())
 	}
 
 	channel := mirror.NewConsensusServiceClient(conn)
@@ -89,14 +102,40 @@ func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
 	return node.channel, nil
 }
 
-func (node *_MirrorNode) ToSecure() *_MirrorNode {
-	node.managedNode.address = node.managedNode.address._ToSecure()
-	return node
+func (node *_MirrorNode) _ToSecure() _IManagedNode {
+	managed := _ManagedNode{
+		address:        node.address._ToSecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		backoffUntil:   node.lastUsed,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
+	}
+
+	return &_MirrorNode{
+		_ManagedNode: &managed,
+		channel:      node.channel,
+		client:       node.client,
+	}
 }
 
-func (node *_MirrorNode) ToInsecure() *_MirrorNode {
-	node.managedNode.address = node.managedNode.address._ToInsecure()
-	return node
+func (node *_MirrorNode) _ToInsecure() _IManagedNode {
+	managed := _ManagedNode{
+		address:        node.address._ToInsecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		backoffUntil:   node.lastUsed,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
+	}
+
+	return &_MirrorNode{
+		_ManagedNode: &managed,
+		channel:      node.channel,
+		client:       node.client,
+	}
 }
 
 func (node *_MirrorNode) _Close() error {
