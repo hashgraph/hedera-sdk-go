@@ -190,12 +190,10 @@ func TestIntegrationAccountRecordQuerySetSmallMaxPayment(t *testing.T) {
 	cost, err := records.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	recordsQuery, err := records.Execute(env.Client)
+	_, err = records.Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, "cost of AccountRecordsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
-
-	assert.True(t, len(recordsQuery) >= 0)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
@@ -233,12 +231,10 @@ func TestIntegrationAccountRecordQueryInsufficientFee(t *testing.T) {
 	_, err = records.GetCost(env.Client)
 	assert.NoError(t, err)
 
-	recordsQuery, err := records.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
+	_, err = records.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
 		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
-
-	assert.True(t, len(recordsQuery) >= 0)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)

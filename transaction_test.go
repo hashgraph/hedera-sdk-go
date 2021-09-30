@@ -81,6 +81,41 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestIntegrationTransactionSignTransaction(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	assert.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey.PublicKey()).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	assert.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	tx, err := NewAccountDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(*receipt.AccountID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		FreezeWith(env.Client)
+	assert.NoError(t, err)
+
+	_, err = newKey.SignTransaction(&tx.Transaction)
+	assert.NoError(t, err)
+
+	resp, err = tx.Execute(env.Client)
+	assert.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	assert.NoError(t, err)
+}
+
 func TestIntegrationTransactionGetHash(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
