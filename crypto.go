@@ -411,7 +411,21 @@ func (sk PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
 	}
 
 	signature := sk.Sign(transaction.signedTransactions[0].GetBodyBytes())
-	// transaction.AddSignature(sk.PublicKey(), signature)
+
+	if transaction._KeyAlreadySigned(sk.PublicKey()) {
+		return []byte{}, nil
+	}
+
+	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.publicKeys = append(transaction.publicKeys, sk.PublicKey())
+	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+
+	for index := 0; index < len(transaction.signedTransactions); index++ {
+		transaction.signedTransactions[index].SigMap.SigPair = append(
+			transaction.signedTransactions[index].SigMap.SigPair,
+			sk.PublicKey()._ToSignaturePairProtobuf(signature),
+		)
+	}
 
 	return signature, nil
 }
