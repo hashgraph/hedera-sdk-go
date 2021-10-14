@@ -18,32 +18,50 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CryptoServiceClient interface {
+	//*
 	// Creates a new account by submitting the transaction
 	CreateAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Updates an account by submitting the transaction
 	UpdateAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Initiates a transfer by submitting the transaction
 	CryptoTransfer(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Deletes and account by submitting the transaction
 	CryptoDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Adds a livehash
 	AddLiveHash(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Deletes a livehash
 	DeleteLiveHash(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Retrieves a livehash for an account
 	GetLiveHash(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	// Returns all transactions in the last 180s of consensus time for which the given account was the effective payer <b>and</b> network property <tt>ledger.keepRecordsInState</tt> was <tt>true</tt>.
+	//*
+	// Returns all transactions in the last 180s of consensus time for which the given account was
+	// the effective payer <b>and</b> network property <tt>ledger.keepRecordsInState</tt> was
+	// <tt>true</tt>.
 	GetAccountRecords(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Retrieves the balance of an account
 	CryptoGetBalance(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Retrieves the metadata of an account
 	GetAccountInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	// Retrieves the latest receipt for a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
+	//*
+	// Retrieves the latest receipt for a transaction that is either awaiting consensus, or reached
+	// consensus in the last 180 seconds
 	GetTransactionReceipts(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Returns the records of transactions recently funded by an account
 	GetFastTransactionRecord(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	// Retrieves the record of a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
+	//*
+	// Retrieves the record of a transaction that is either awaiting consensus, or reached consensus
+	// in the last 180 seconds
 	GetTxRecordByTxID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Retrieves the stakers for a node by account id
 	GetStakersByAccountID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 }
@@ -186,32 +204,50 @@ func (c *cryptoServiceClient) GetStakersByAccountID(ctx context.Context, in *Que
 // All implementations must embed UnimplementedCryptoServiceServer
 // for forward compatibility
 type CryptoServiceServer interface {
+	//*
 	// Creates a new account by submitting the transaction
 	CreateAccount(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Updates an account by submitting the transaction
 	UpdateAccount(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Initiates a transfer by submitting the transaction
 	CryptoTransfer(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Deletes and account by submitting the transaction
 	CryptoDelete(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Adds a livehash
 	AddLiveHash(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Deletes a livehash
 	DeleteLiveHash(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Retrieves a livehash for an account
 	GetLiveHash(context.Context, *Query) (*Response, error)
-	// Returns all transactions in the last 180s of consensus time for which the given account was the effective payer <b>and</b> network property <tt>ledger.keepRecordsInState</tt> was <tt>true</tt>.
+	//*
+	// Returns all transactions in the last 180s of consensus time for which the given account was
+	// the effective payer <b>and</b> network property <tt>ledger.keepRecordsInState</tt> was
+	// <tt>true</tt>.
 	GetAccountRecords(context.Context, *Query) (*Response, error)
+	//*
 	// Retrieves the balance of an account
 	CryptoGetBalance(context.Context, *Query) (*Response, error)
+	//*
 	// Retrieves the metadata of an account
 	GetAccountInfo(context.Context, *Query) (*Response, error)
-	// Retrieves the latest receipt for a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
+	//*
+	// Retrieves the latest receipt for a transaction that is either awaiting consensus, or reached
+	// consensus in the last 180 seconds
 	GetTransactionReceipts(context.Context, *Query) (*Response, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Returns the records of transactions recently funded by an account
 	GetFastTransactionRecord(context.Context, *Query) (*Response, error)
-	// Retrieves the record of a transaction that is either awaiting consensus, or reached consensus in the last 180 seconds
+	//*
+	// Retrieves the record of a transaction that is either awaiting consensus, or reached consensus
+	// in the last 180 seconds
 	GetTxRecordByTxID(context.Context, *Query) (*Response, error)
+	//*
 	// (NOT CURRENTLY SUPPORTED) Retrieves the stakers for a node by account id
 	GetStakersByAccountID(context.Context, *Query) (*Response, error)
 	mustEmbedUnimplementedCryptoServiceServer()

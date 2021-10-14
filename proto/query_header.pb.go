@@ -20,17 +20,26 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//
-//The client uses the ResponseType to indicate that it desires the node send just the answer, or both the answer and a state proof. It can also ask for just the cost and not the answer itself (allowing it to tailor the payment transaction accordingly). If the payment in the query fails the precheck, then the response may have some fields blank. The state proof is only available for some types of information. It is available for a Record, but not a receipt. It is available for the information in each kind of *GetInfo request.
+//*
+// The client uses the ResponseType to indicate that it desires the node send just the answer, or
+// both the answer and a state proof. It can also ask for just the cost and not the answer itself
+// (allowing it to tailor the payment transaction accordingly). If the payment in the query fails
+// the precheck, then the response may have some fields blank. The state proof is only available for
+// some types of information. It is available for a Record, but not a receipt. It is available for
+// the information in each kind of *GetInfo request.
 type ResponseType int32
 
 const (
+	//*
 	// Response returns answer
 	ResponseType_ANSWER_ONLY ResponseType = 0
+	//*
 	// (NOT YET SUPPORTED) Response returns both answer and state proof
 	ResponseType_ANSWER_STATE_PROOF ResponseType = 1
+	//*
 	// Response returns the cost of answer
 	ResponseType_COST_ANSWER ResponseType = 2
+	//*
 	// (NOT YET SUPPORTED) Response returns the total cost of answer and state proof
 	ResponseType_COST_ANSWER_STATE_PROOF ResponseType = 3
 )
@@ -78,15 +87,21 @@ func (ResponseType) EnumDescriptor() ([]byte, []int) {
 	return file_proto_query_header_proto_rawDescGZIP(), []int{0}
 }
 
-//
-//Each query from the client to the node will contain the QueryHeader, which gives the requested response type, and includes a payment transaction that will compensate the node for responding to the query. The payment can be blank if the query is free.
+//*
+// Each query from the client to the node will contain the QueryHeader, which gives the requested
+// response type, and includes a payment transaction that will compensate the node for responding to
+// the query. The payment can be blank if the query is free.
 type QueryHeader struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Payment      *Transaction `protobuf:"bytes,1,opt,name=payment,proto3" json:"payment,omitempty"`                                    // A signed CryptoTransferTransaction to pay the node a fee for handling this query
-	ResponseType ResponseType `protobuf:"varint,2,opt,name=responseType,proto3,enum=proto.ResponseType" json:"responseType,omitempty"` // The requested response, asking for cost, state proof, both, or neither
+	//*
+	// A signed CryptoTransferTransaction to pay the node a fee for handling this query
+	Payment *Transaction `protobuf:"bytes,1,opt,name=payment,proto3" json:"payment,omitempty"`
+	//*
+	// The requested response, asking for cost, state proof, both, or neither
+	ResponseType ResponseType `protobuf:"varint,2,opt,name=responseType,proto3,enum=proto.ResponseType" json:"responseType,omitempty"`
 }
 
 func (x *QueryHeader) Reset() {

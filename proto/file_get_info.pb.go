@@ -20,14 +20,24 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Get all of the information about a file, except for its contents. When a file expires, it no longer exists, and there will be no info about it, and the fileInfo field will be blank. If a transaction or smart contract deletes the file, but it has not yet expired, then the fileInfo field will be non-empty, the deleted field will be true, its size will be 0, and its contents will be empty.
+//*
+// Get all of the information about a file, except for its contents. When a file expires, it no
+// longer exists, and there will be no info about it, and the fileInfo field will be blank. If a
+// transaction or smart contract deletes the file, but it has not yet expired, then the fileInfo
+// field will be non-empty, the deleted field will be true, its size will be 0, and its contents
+// will be empty.
 type FileGetInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	FileID *FileID      `protobuf:"bytes,2,opt,name=fileID,proto3" json:"fileID,omitempty"` // The file ID of the file for which information is requested
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The file ID of the file for which information is requested
+	FileID *FileID `protobuf:"bytes,2,opt,name=fileID,proto3" json:"fileID,omitempty"`
 }
 
 func (x *FileGetInfoQuery) Reset() {
@@ -76,14 +86,20 @@ func (x *FileGetInfoQuery) GetFileID() *FileID {
 	return nil
 }
 
+//*
 // Response when the client sends the node FileGetInfoQuery
 type FileGetInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header   *ResponseHeader               `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`     //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	FileInfo *FileGetInfoResponse_FileInfo `protobuf:"bytes,2,opt,name=fileInfo,proto3" json:"fileInfo,omitempty"` // The information about the file
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The information about the file
+	FileInfo *FileGetInfoResponse_FileInfo `protobuf:"bytes,2,opt,name=fileInfo,proto3" json:"fileInfo,omitempty"`
 }
 
 func (x *FileGetInfoResponse) Reset() {
@@ -137,12 +153,24 @@ type FileGetInfoResponse_FileInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FileID         *FileID    `protobuf:"bytes,1,opt,name=fileID,proto3" json:"fileID,omitempty"`                 // The file ID of the file for which information is requested
-	Size           int64      `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`                    // Number of bytes in contents
-	ExpirationTime *Timestamp `protobuf:"bytes,3,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"` // The current time at which this account is set to expire
-	Deleted        bool       `protobuf:"varint,4,opt,name=deleted,proto3" json:"deleted,omitempty"`              // True if deleted but not yet expired
-	Keys           *KeyList   `protobuf:"bytes,5,opt,name=keys,proto3" json:"keys,omitempty"`                     // One of these keys must sign in order to modify or delete the file
-	Memo           string     `protobuf:"bytes,6,opt,name=memo,proto3" json:"memo,omitempty"`                     // The memo associated with the file
+	//*
+	// The file ID of the file for which information is requested
+	FileID *FileID `protobuf:"bytes,1,opt,name=fileID,proto3" json:"fileID,omitempty"`
+	//*
+	// Number of bytes in contents
+	Size int64 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	//*
+	// The current time at which this account is set to expire
+	ExpirationTime *Timestamp `protobuf:"bytes,3,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
+	//*
+	// True if deleted but not yet expired
+	Deleted bool `protobuf:"varint,4,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	//*
+	// One of these keys must sign in order to modify or delete the file
+	Keys *KeyList `protobuf:"bytes,5,opt,name=keys,proto3" json:"keys,omitempty"`
+	//*
+	// The memo associated with the file
+	Memo string `protobuf:"bytes,6,opt,name=memo,proto3" json:"memo,omitempty"`
 }
 
 func (x *FileGetInfoResponse_FileInfo) Reset() {

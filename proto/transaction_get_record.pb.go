@@ -20,15 +20,33 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Get the record for a transaction. If the transaction requested a record, then the record lasts for one hour, and a state proof is available for it. If the transaction created an account, file, or smart contract instance, then the record will contain the ID for what it created. If the transaction called a smart contract function, then the record contains the result of that call. If the transaction was a cryptocurrency transfer, then the record includes the TransferList which gives the details of that transfer. If the transaction didn't return anything that should be in the record, then the results field will be set to nothing.
+//*
+// Get the record for a transaction. If the transaction requested a record, then the record lasts
+// for one hour, and a state proof is available for it. If the transaction created an account, file,
+// or smart contract instance, then the record will contain the ID for what it created. If the
+// transaction called a smart contract function, then the record contains the result of that call.
+// If the transaction was a cryptocurrency transfer, then the record includes the TransferList which
+// gives the details of that transfer. If the transaction didn't return anything that should be in
+// the record, then the results field will be set to nothing.
 type TransactionGetRecordQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header            *QueryHeader   `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                        // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	TransactionID     *TransactionID `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`          // The ID of the transaction for which the record is requested.
-	IncludeDuplicates bool           `protobuf:"varint,3,opt,name=includeDuplicates,proto3" json:"includeDuplicates,omitempty"` // Whether records of processing duplicate transactions should be returned along with the record of processing the first consensus transaction with the given id whose status was neither <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>; <b>or</b>, if no such record exists, the record of processing the first transaction to reach consensus with the given transaction id..
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The ID of the transaction for which the record is requested.
+	TransactionID *TransactionID `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
+	//*
+	// Whether records of processing duplicate transactions should be returned along with the record
+	// of processing the first consensus transaction with the given id whose status was neither
+	// <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>; <b>or</b>, if no such
+	// record exists, the record of processing the first transaction to reach consensus with the
+	// given transaction id..
+	IncludeDuplicates bool `protobuf:"varint,3,opt,name=includeDuplicates,proto3" json:"includeDuplicates,omitempty"`
 }
 
 func (x *TransactionGetRecordQuery) Reset() {
@@ -84,15 +102,27 @@ func (x *TransactionGetRecordQuery) GetIncludeDuplicates() bool {
 	return false
 }
 
+//*
 // Response when the client sends the node TransactionGetRecordQuery
 type TransactionGetRecordResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header                      *ResponseHeader      `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                                           // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither.
-	TransactionRecord           *TransactionRecord   `protobuf:"bytes,3,opt,name=transactionRecord,proto3" json:"transactionRecord,omitempty"`                     // Either the record of processing the first consensus transaction with the given id whose status was neither <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>; <b>or</b>, if no such record exists, the record of processing the first transaction to reach consensus with the given transaction id.
-	DuplicateTransactionRecords []*TransactionRecord `protobuf:"bytes,4,rep,name=duplicateTransactionRecords,proto3" json:"duplicateTransactionRecords,omitempty"` // The records of processing all consensus transaction with the same id as the distinguished record above, in chronological order.
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither.
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// Either the record of processing the first consensus transaction with the given id whose
+	// status was neither <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>;
+	// <b>or</b>, if no such record exists, the record of processing the first transaction to reach
+	// consensus with the given transaction id.
+	TransactionRecord *TransactionRecord `protobuf:"bytes,3,opt,name=transactionRecord,proto3" json:"transactionRecord,omitempty"`
+	//*
+	// The records of processing all consensus transaction with the same id as the distinguished
+	// record above, in chronological order.
+	DuplicateTransactionRecords []*TransactionRecord `protobuf:"bytes,4,rep,name=duplicateTransactionRecords,proto3" json:"duplicateTransactionRecords,omitempty"`
 }
 
 func (x *TransactionGetRecordResponse) Reset() {

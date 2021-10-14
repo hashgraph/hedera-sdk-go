@@ -20,21 +20,29 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // Freezes transfers of the specified token for the account. Must be signed by the Token's freezeKey.
-//If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
-//If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
-//If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
-//If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
-//If an Association between the provided token and account is not found, the transaction will resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
-//If no Freeze Key is defined, the transaction will resolve to TOKEN_HAS_NO_FREEZE_KEY.
-//Once executed the Account is marked as Frozen and will not be able to receive or send tokens unless unfrozen. The operation is idempotent.
+// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If an Association between the provided token and account is not found, the transaction will
+// resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+// If no Freeze Key is defined, the transaction will resolve to TOKEN_HAS_NO_FREEZE_KEY.
+// Once executed the Account is marked as Frozen and will not be able to receive or send tokens
+// unless unfrozen. The operation is idempotent.
 type TokenFreezeAccountTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token   *TokenID   `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`     // The token for which this account will be frozen. If token does not exist, transaction results in INVALID_TOKEN_ID
-	Account *AccountID `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty"` // The account to be frozen
+	//*
+	// The token for which this account will be frozen. If token does not exist, transaction results
+	// in INVALID_TOKEN_ID
+	Token *TokenID `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	//*
+	// The account to be frozen
+	Account *AccountID `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty"`
 }
 
 func (x *TokenFreezeAccountTransactionBody) Reset() {

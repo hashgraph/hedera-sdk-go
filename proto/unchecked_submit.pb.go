@@ -20,14 +20,17 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//
-//Submit an arbitrary (serialized) Transaction to the network without prechecks. Requires superuser privileges.
+//*
+// Submit an arbitrary (serialized) Transaction to the network without prechecks. Requires superuser
+// privileges.
 type UncheckedSubmitBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TransactionBytes []byte `protobuf:"bytes,1,opt,name=transactionBytes,proto3" json:"transactionBytes,omitempty"` // The serialized bytes of the Transaction to be submitted without prechecks
+	//*
+	// The serialized bytes of the Transaction to be submitted without prechecks
+	TransactionBytes []byte `protobuf:"bytes,1,opt,name=transactionBytes,proto3" json:"transactionBytes,omitempty"`
 }
 
 func (x *UncheckedSubmitBody) Reset() {

@@ -20,14 +20,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // Get the balance of a cryptocurrency account. This returns only the balance, so it is a smaller
-//reply than CryptoGetInfo, which returns the balance plus additional information.
+// reply than CryptoGetInfo, which returns the balance plus additional information.
 type CryptoGetAccountBalanceQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
 	// Types that are assignable to BalanceSource:
 	//	*CryptoGetAccountBalanceQuery_AccountID
 	//	*CryptoGetAccountBalanceQuery_ContractID
@@ -99,27 +103,42 @@ type isCryptoGetAccountBalanceQuery_BalanceSource interface {
 }
 
 type CryptoGetAccountBalanceQuery_AccountID struct {
-	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3,oneof"` // The account ID for which information is requested
+	//*
+	// The account ID for which information is requested
+	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3,oneof"`
 }
 
 type CryptoGetAccountBalanceQuery_ContractID struct {
-	ContractID *ContractID `protobuf:"bytes,3,opt,name=contractID,proto3,oneof"` // The account ID for which information is requested
+	//*
+	// The account ID for which information is requested
+	ContractID *ContractID `protobuf:"bytes,3,opt,name=contractID,proto3,oneof"`
 }
 
 func (*CryptoGetAccountBalanceQuery_AccountID) isCryptoGetAccountBalanceQuery_BalanceSource() {}
 
 func (*CryptoGetAccountBalanceQuery_ContractID) isCryptoGetAccountBalanceQuery_BalanceSource() {}
 
+//*
 // Response when the client sends the node CryptoGetAccountBalanceQuery
 type CryptoGetAccountBalanceResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header        *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`               // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither.
-	AccountID     *AccountID      `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`         // The account ID that is being described (this is useful with state proofs, for proving to a third party)
-	Balance       uint64          `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`            // The current balance, in tinybars.
-	TokenBalances []*TokenBalance `protobuf:"bytes,4,rep,name=tokenBalances,proto3" json:"tokenBalances,omitempty"` // The token balances possessed by the target account.
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither.
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The account ID that is being described (this is useful with state proofs, for proving to a
+	// third party)
+	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	//*
+	// The current balance, in tinybars.
+	Balance uint64 `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	//*
+	// The token balances possessed by the target account.
+	TokenBalances []*TokenBalance `protobuf:"bytes,4,rep,name=tokenBalances,proto3" json:"tokenBalances,omitempty"`
 }
 
 func (x *CryptoGetAccountBalanceResponse) Reset() {

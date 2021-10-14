@@ -20,14 +20,20 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// An exact date and time. This is the same data structure as the protobuf Timestamp.proto (see the comments in https://github.com/google/protobuf/blob/master/src/google/protobuf/timestamp.proto)
+//*
+// An exact date and time. This is the same data structure as the protobuf Timestamp.proto (see the
+// comments in https://github.com/google/protobuf/blob/master/src/google/protobuf/timestamp.proto)
 type Timestamp struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Seconds int64 `protobuf:"varint,1,opt,name=seconds,proto3" json:"seconds,omitempty"` // Number of complete seconds since the start of the epoch
-	Nanos   int32 `protobuf:"varint,2,opt,name=nanos,proto3" json:"nanos,omitempty"`     // Number of nanoseconds since the start of the last second
+	//*
+	// Number of complete seconds since the start of the epoch
+	Seconds int64 `protobuf:"varint,1,opt,name=seconds,proto3" json:"seconds,omitempty"`
+	//*
+	// Number of nanoseconds since the start of the last second
+	Nanos int32 `protobuf:"varint,2,opt,name=nanos,proto3" json:"nanos,omitempty"`
 }
 
 func (x *Timestamp) Reset() {
@@ -76,13 +82,16 @@ func (x *Timestamp) GetNanos() int32 {
 	return 0
 }
 
+//*
 // An exact date and time,  with a resolution of one second (no nanoseconds).
 type TimestampSeconds struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Seconds int64 `protobuf:"varint,1,opt,name=seconds,proto3" json:"seconds,omitempty"` // Number of complete seconds since the start of the epoch
+	//*
+	// Number of complete seconds since the start of the epoch
+	Seconds int64 `protobuf:"varint,1,opt,name=seconds,proto3" json:"seconds,omitempty"`
 }
 
 func (x *TimestampSeconds) Reset() {

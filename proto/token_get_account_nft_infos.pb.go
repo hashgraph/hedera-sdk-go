@@ -20,14 +20,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on NFTs N through M owned by the specified accountId.
-// Example: If Account A owns 5 NFTs (might be of different Token Entity), having start=0 and end=5 will return all of the NFTs
+//*
+// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on NFTs N through M owned by the
+// specified accountId.
+// Example: If Account A owns 5 NFTs (might be of different Token Entity), having start=0 and end=5
+// will return all of the NFTs
 //
 // INVALID_QUERY_RANGE response code will be returned if:
 // 1) Start > End
 // 2) Start and End indices are non-positive
 // 3) Start and End indices are out of boundaries for the retrieved nft list
-// 4) The range between Start and End is bigger than the global dynamic property for maximum query range
+// 4) The range between Start and End is bigger than the global dynamic property for maximum query
+//    range
 //
 // NOT_SUPPORTED response code will be returned if the queried token is of type FUNGIBLE_COMMON
 //
@@ -39,10 +43,21 @@ type TokenGetAccountNftInfosQuery struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header    *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	AccountID *AccountID   `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"` // The Account for which information is requested
-	Start     int64        `protobuf:"varint,3,opt,name=start,proto3" json:"start,omitempty"`        // Specifies the start index (inclusive) of the range of NFTs to query for. Value must be in the range [0; ownedNFTs-1]
-	End       int64        `protobuf:"varint,4,opt,name=end,proto3" json:"end,omitempty"`            // Specifies the end index (exclusive) of the range of NFTs to query for. Value must be in the range (start; ownedNFTs]
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The Account for which information is requested
+	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	//*
+	// Specifies the start index (inclusive) of the range of NFTs to query for. Value must be in the
+	// range [0; ownedNFTs-1]
+	Start int64 `protobuf:"varint,3,opt,name=start,proto3" json:"start,omitempty"`
+	//*
+	// Specifies the end index (exclusive) of the range of NFTs to query for. Value must be in the
+	// range (start; ownedNFTs]
+	End int64 `protobuf:"varint,4,opt,name=end,proto3" json:"end,omitempty"`
 }
 
 func (x *TokenGetAccountNftInfosQuery) Reset() {
@@ -105,13 +120,20 @@ func (x *TokenGetAccountNftInfosQuery) GetEnd() int64 {
 	return 0
 }
 
+//*
+// UNDOCUMENTED
 type TokenGetAccountNftInfosResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	Nfts   []*TokenNftInfo `protobuf:"bytes,2,rep,name=nfts,proto3" json:"nfts,omitempty"`     // List of NFTs associated to the account
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// List of NFTs associated to the account
+	Nfts []*TokenNftInfo `protobuf:"bytes,2,rep,name=nfts,proto3" json:"nfts,omitempty"`
 }
 
 func (x *TokenGetAccountNftInfosResponse) Reset() {

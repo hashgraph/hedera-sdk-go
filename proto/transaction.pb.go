@@ -20,22 +20,43 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// A single signed transaction, including all its signatures. The SignatureList will have a Signature for each Key in the transaction, either explicit or implicit, in the order that they appear in the transaction. For example, a CryptoTransfer will first have a Signature corresponding to the Key for the paying account, followed by a Signature corresponding to the Key for each account that is sending or receiving cryptocurrency in the transfer. Each Transaction should not have more than 50 levels.
+//*
+// A single signed transaction, including all its signatures. The SignatureList will have a
+// Signature for each Key in the transaction, either explicit or implicit, in the order that they
+// appear in the transaction. For example, a CryptoTransfer will first have a Signature
+// corresponding to the Key for the paying account, followed by a Signature corresponding to the Key
+// for each account that is sending or receiving cryptocurrency in the transfer. Each Transaction
+// should not have more than 50 levels.
 // The SignatureList field is deprecated and succeeded by SignatureMap.
 type Transaction struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//*
+	// the body of the transaction, which needs to be signed
+	//
 	// Deprecated: Do not use.
-	Body *TransactionBody `protobuf:"bytes,1,opt,name=body,proto3" json:"body,omitempty"` // the body of the transaction, which needs to be signed
+	Body *TransactionBody `protobuf:"bytes,1,opt,name=body,proto3" json:"body,omitempty"`
+	//*
+	// The signatures on the body, to authorize the transaction; deprecated and to be succeeded by
+	// SignatureMap field
+	//
 	// Deprecated: Do not use.
-	Sigs *SignatureList `protobuf:"bytes,2,opt,name=sigs,proto3" json:"sigs,omitempty"` // The signatures on the body, to authorize the transaction; deprecated and to be succeeded by SignatureMap field
+	Sigs *SignatureList `protobuf:"bytes,2,opt,name=sigs,proto3" json:"sigs,omitempty"`
+	//*
+	// The signatures on the body with the new format, to authorize the transaction
+	//
 	// Deprecated: Do not use.
-	SigMap *SignatureMap `protobuf:"bytes,3,opt,name=sigMap,proto3" json:"sigMap,omitempty"` // The signatures on the body with the new format, to authorize the transaction
+	SigMap *SignatureMap `protobuf:"bytes,3,opt,name=sigMap,proto3" json:"sigMap,omitempty"`
+	//*
+	// TransactionBody serialized into bytes, which needs to be signed
+	//
 	// Deprecated: Do not use.
-	BodyBytes              []byte `protobuf:"bytes,4,opt,name=bodyBytes,proto3" json:"bodyBytes,omitempty"`                           // TransactionBody serialized into bytes, which needs to be signed
-	SignedTransactionBytes []byte `protobuf:"bytes,5,opt,name=signedTransactionBytes,proto3" json:"signedTransactionBytes,omitempty"` // SignedTransaction serialized into bytes
+	BodyBytes []byte `protobuf:"bytes,4,opt,name=bodyBytes,proto3" json:"bodyBytes,omitempty"`
+	//*
+	// SignedTransaction serialized into bytes
+	SignedTransactionBytes []byte `protobuf:"bytes,5,opt,name=signedTransactionBytes,proto3" json:"signedTransactionBytes,omitempty"`
 }
 
 func (x *Transaction) Reset() {

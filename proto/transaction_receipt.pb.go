@@ -20,57 +20,75 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//
-//The summary of a transaction's result so far. If the transaction has not reached consensus, this result will be necessarily incomplete.
+//*
+// The summary of a transaction's result so far. If the transaction has not reached consensus, this
+// result will be necessarily incomplete.
 type TransactionReceipt struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The consensus status of the transaction; is UNKNOWN if consensus has not been reached, or if the
-	// associated transaction did not have a valid payer signature
+	//*
+	// The consensus status of the transaction; is UNKNOWN if consensus has not been reached, or if
+	// the associated transaction did not have a valid payer signature
 	Status ResponseCodeEnum `protobuf:"varint,1,opt,name=status,proto3,enum=proto.ResponseCodeEnum" json:"status,omitempty"`
+	//*
 	// In the receipt of a CryptoCreate, the id of the newly created account
 	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	//*
 	// In the receipt of a FileCreate, the id of the newly created file
 	FileID *FileID `protobuf:"bytes,3,opt,name=fileID,proto3" json:"fileID,omitempty"`
+	//*
 	// In the receipt of a ContractCreate, the id of the newly created contract
 	ContractID *ContractID `protobuf:"bytes,4,opt,name=contractID,proto3" json:"contractID,omitempty"`
+	//*
 	// The exchange rates in effect when the transaction reached consensus
 	ExchangeRate *ExchangeRateSet `protobuf:"bytes,5,opt,name=exchangeRate,proto3" json:"exchangeRate,omitempty"`
+	//*
 	// In the receipt of a ConsensusCreateTopic, the id of the newly created topic.
 	TopicID *TopicID `protobuf:"bytes,6,opt,name=topicID,proto3" json:"topicID,omitempty"`
-	// In the receipt of a ConsensusSubmitMessage, the new sequence number of the topic that received the message
+	//*
+	// In the receipt of a ConsensusSubmitMessage, the new sequence number of the topic that
+	// received the message
 	TopicSequenceNumber uint64 `protobuf:"varint,7,opt,name=topicSequenceNumber,proto3" json:"topicSequenceNumber,omitempty"`
-	// In the receipt of a ConsensusSubmitMessage, the new running hash of the topic that received the message.
-	// This 48-byte field is the output of a particular SHA-384 digest whose input data are determined by the
-	// value of the topicRunningHashVersion below. The bytes of each uint64 or uint32 are to be in Big-Endian
-	// format.
+	//*
+	// In the receipt of a ConsensusSubmitMessage, the new running hash of the topic that received
+	// the message.  This 48-byte field is the output of a particular SHA-384 digest whose input
+	// data are determined by the value of the topicRunningHashVersion below. The bytes of each
+	// uint64 or uint32 are to be in Big-Endian format.
 	//
-	// IF the topicRunningHashVersion is '0' or '1', then the input data to the SHA-384 digest are, in order:
+	// IF the topicRunningHashVersion is '0' or '1', then the input data to the SHA-384 digest are,
+	// in order:
 	// ---
 	// 1. The previous running hash of the topic (48 bytes)
 	// 2. The topic's shard (8 bytes)
 	// 3. The topic's realm (8 bytes)
 	// 4. The topic's number (8 bytes)
-	// 5. The number of seconds since the epoch before the ConsensusSubmitMessage reached consensus (8 bytes)
-	// 6. The number of nanoseconds since 5. before the ConsensusSubmitMessage reached consensus (4 bytes)
+	// 5. The number of seconds since the epoch before the ConsensusSubmitMessage reached
+	//    consensus (8 bytes)
+	// 6. The number of nanoseconds since 5. before the ConsensusSubmitMessage reached
+	//    consensus (4 bytes)
 	// 7. The topicSequenceNumber from above (8 bytes)
 	// 8. The message bytes from the ConsensusSubmitMessage (variable).
 	//
-	// IF the topicRunningHashVersion is '2', then the input data to the SHA-384 digest are, in order:
+	// IF the topicRunningHashVersion is '2', then the input data to the SHA-384 digest are, in
+	// order:
 	// ---
 	// 1. The previous running hash of the topic (48 bytes)
 	// 2. The topicRunningHashVersion below (8 bytes)
 	// 3. The topic's shard (8 bytes)
 	// 4. The topic's realm (8 bytes)
 	// 5. The topic's number (8 bytes)
-	// 6. The number of seconds since the epoch before the ConsensusSubmitMessage reached consensus (8 bytes)
-	// 7. The number of nanoseconds since 6. before the ConsensusSubmitMessage reached consensus (4 bytes)
+	// 6. The number of seconds since the epoch before the ConsensusSubmitMessage reached
+	//    consensus (8 bytes)
+	// 7. The number of nanoseconds since 6. before the ConsensusSubmitMessage reached
+	//    consensus (4 bytes)
 	// 8. The topicSequenceNumber from above (8 bytes)
-	// 9. The output of the SHA-384 digest of the message bytes from the consensusSubmitMessage (48 bytes)
+	// 9. The output of the SHA-384 digest of the message bytes from the
+	//    consensusSubmitMessage (48 bytes)
 	//
-	// Otherwise, IF the topicRunningHashVersion is '3', then the input data to the SHA-384 digest are, in order:
+	// Otherwise, IF the topicRunningHashVersion is '3', then the input data to the SHA-384 digest
+	// are, in order:
 	// ---
 	// 1. The previous running hash of the topic (48 bytes)
 	// 2. The topicRunningHashVersion below (8 bytes)
@@ -80,22 +98,37 @@ type TransactionReceipt struct {
 	// 6. The topic's shard (8 bytes)
 	// 7. The topic's realm (8 bytes)
 	// 8. The topic's number (8 bytes)
-	// 9. The number of seconds since the epoch before the ConsensusSubmitMessage reached consensus (8 bytes)
-	// 10. The number of nanoseconds since 9. before the ConsensusSubmitMessage reached consensus (4 bytes)
+	// 9. The number of seconds since the epoch before the ConsensusSubmitMessage reached
+	//    consensus (8 bytes)
+	// 10. The number of nanoseconds since 9. before the ConsensusSubmitMessage reached
+	//     consensus (4 bytes)
 	// 11. The topicSequenceNumber from above (8 bytes)
-	// 12. The output of the SHA-384 digest of the message bytes from the consensusSubmitMessage (48 bytes)
+	// 12. The output of the SHA-384 digest of the message bytes from the
+	//     consensusSubmitMessage (48 bytes)
 	TopicRunningHash []byte `protobuf:"bytes,8,opt,name=topicRunningHash,proto3" json:"topicRunningHash,omitempty"`
-	// In the receipt of a ConsensusSubmitMessage, the version of the SHA-384 digest used to update the running hash.
+	//*
+	// In the receipt of a ConsensusSubmitMessage, the version of the SHA-384 digest used to update
+	// the running hash.
 	TopicRunningHashVersion uint64 `protobuf:"varint,9,opt,name=topicRunningHashVersion,proto3" json:"topicRunningHashVersion,omitempty"`
+	//*
 	// In the receipt of a CreateToken, the id of the newly created token
 	TokenID *TokenID `protobuf:"bytes,10,opt,name=tokenID,proto3" json:"tokenID,omitempty"`
-	// In the receipt of TokenMint, TokenWipe, TokenBurn, For fungible tokens - the current total supply of this token. For non fungible tokens - the total number of NFTs issued for a given tokenID
+	//*
+	// In the receipt of TokenMint, TokenWipe, TokenBurn, For fungible tokens - the current total
+	// supply of this token. For non fungible tokens - the total number of NFTs issued for a given
+	// tokenID
 	NewTotalSupply uint64 `protobuf:"varint,11,opt,name=newTotalSupply,proto3" json:"newTotalSupply,omitempty"`
+	//*
 	// In the receipt of a ScheduleCreate, the id of the newly created Scheduled Entity
 	ScheduleID *ScheduleID `protobuf:"bytes,12,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"`
-	// In the receipt of a ScheduleCreate or ScheduleSign that resolves to SUCCESS, the TransactionID that should be used to query for the receipt or record of the relevant scheduled transaction
+	//*
+	// In the receipt of a ScheduleCreate or ScheduleSign that resolves to SUCCESS, the
+	// TransactionID that should be used to query for the receipt or record of the relevant
+	// scheduled transaction
 	ScheduledTransactionID *TransactionID `protobuf:"bytes,13,opt,name=scheduledTransactionID,proto3" json:"scheduledTransactionID,omitempty"`
-	// In the receipt of a TokenMint for tokens of type NON_FUNGIBLE_UNIQUE, the serial numbers of the newly created NFTs
+	//*
+	// In the receipt of a TokenMint for tokens of type NON_FUNGIBLE_UNIQUE, the serial numbers of
+	// the newly created NFTs
 	SerialNumbers []int64 `protobuf:"varint,14,rep,packed,name=serialNumbers,proto3" json:"serialNumbers,omitempty"`
 }
 

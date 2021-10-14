@@ -20,18 +20,24 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// A hash---presumably of some kind of credential or certificate---along with a list of keys, each of which may be either a primitive or a threshold key.
+//*
+// A hash---presumably of some kind of credential or certificate---along with a list of keys, each
+// of which may be either a primitive or a threshold key.
 type LiveHash struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//*
 	// The account to which the livehash is attached
 	AccountId *AccountID `protobuf:"bytes,1,opt,name=accountId,proto3" json:"accountId,omitempty"`
+	//*
 	// The SHA-384 hash of a credential or certificate
 	Hash []byte `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
+	//*
 	// A list of keys (primitive or threshold), all of which must sign to attach the livehash to an account, and any one of which can later delete it.
 	Keys *KeyList `protobuf:"bytes,3,opt,name=keys,proto3" json:"keys,omitempty"`
+	//*
 	// The duration for which the livehash will remain valid
 	Duration *Duration `protobuf:"bytes,5,opt,name=duration,proto3" json:"duration,omitempty"`
 }
@@ -96,19 +102,22 @@ func (x *LiveHash) GetDuration() *Duration {
 	return nil
 }
 
-// At consensus, attaches the given livehash to the given account.
-//The hash can be deleted by the key controlling the account, or by any of the keys associated to the livehash.
-//Hence livehashes provide a revocation service for their implied credentials; for example,
-//when an authority grants a credential to the account, the account owner will cosign with the authority (or authorities)
-//to attach a hash of the credential to the account---hence proving the grant. If the credential is revoked, then any of
-//the authorities may delete it (or the account owner). In this way, the livehash mechanism acts as a revocation service.
-//An account cannot have two identical livehashes associated. To modify the list of keys in a livehash, the
-//livehash should first be deleted, then recreated with a new list of keys.
+//*
+// At consensus, attaches the given livehash to the given account.  The hash can be deleted by the
+// key controlling the account, or by any of the keys associated to the livehash.  Hence livehashes
+// provide a revocation service for their implied credentials; for example, when an authority grants
+// a credential to the account, the account owner will cosign with the authority (or authorities) to
+// attach a hash of the credential to the account---hence proving the grant. If the credential is
+// revoked, then any of the authorities may delete it (or the account owner). In this way, the
+// livehash mechanism acts as a revocation service.  An account cannot have two identical livehashes
+// associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
+// recreated with a new list of keys.
 type CryptoAddLiveHashTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//*
 	// A hash of some credential or certificate, along with the keys of the entities that asserted it validity
 	LiveHash *LiveHash `protobuf:"bytes,3,opt,name=liveHash,proto3" json:"liveHash,omitempty"`
 }

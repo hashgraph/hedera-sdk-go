@@ -222,7 +222,11 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	case *proto.TransactionBody_ScheduleDelete:
 		return _ScheduleDeleteTransactionFromProtobuf(tx, first), nil
 	case *proto.TransactionBody_TokenFeeScheduleUpdate:
-		return TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
+		return _TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
+	case *proto.TransactionBody_TokenPause:
+		return _TokenPauseTransactionFromProtobuf(tx, first), nil
+	case *proto.TransactionBody_TokenUnpause:
+		return _TokenUnpauseTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
