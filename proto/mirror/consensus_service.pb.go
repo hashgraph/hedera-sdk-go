@@ -45,20 +45,13 @@ type ConsensusTopicQuery struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// A required topic ID to retrieve messages for.
-	TopicID *proto.TopicID `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"`
-	//*
-	// Include messages which reached consensus on or after this time. Defaults to current time if
-	// not set.
+	TopicID *proto.TopicID `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"` // A required topic ID to retrieve messages for.
+	// Include messages which reached consensus on or after this time. Defaults to current time if not set.
 	ConsensusStartTime *proto.Timestamp `protobuf:"bytes,2,opt,name=consensusStartTime,proto3" json:"consensusStartTime,omitempty"`
-	//*
-	// Include messages which reached consensus before this time. If not set it will receive
-	// indefinitely.
+	// Include messages which reached consensus before this time. If not set it will receive indefinitely.
 	ConsensusEndTime *proto.Timestamp `protobuf:"bytes,3,opt,name=consensusEndTime,proto3" json:"consensusEndTime,omitempty"`
-	//*
-	// The maximum number of messages to receive before stopping. If not set or set to zero it will
-	// return messages indefinitely.
+	// The maximum number of messages to receive before stopping. If not set or set to zero it will return messages
+	// indefinitely.
 	Limit uint64 `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
 }
 
@@ -127,25 +120,13 @@ type ConsensusTopicResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The time at which the transaction reached consensus
-	ConsensusTimestamp *proto.Timestamp `protobuf:"bytes,1,opt,name=consensusTimestamp,proto3" json:"consensusTimestamp,omitempty"`
-	//*
-	// The message body originally in the ConsensusSubmitMessageTransactionBody. Message size will
-	// be less than 6KiB.
-	Message []byte `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	//*
-	// The running hash (SHA384) of every message.
-	RunningHash []byte `protobuf:"bytes,3,opt,name=runningHash,proto3" json:"runningHash,omitempty"`
-	//*
-	// Starts at 1 for first submitted message. Incremented on each submitted message.
-	SequenceNumber uint64 `protobuf:"varint,4,opt,name=sequenceNumber,proto3" json:"sequenceNumber,omitempty"`
-	//*
-	// Version of the SHA-384 digest used to update the running hash.
-	RunningHashVersion uint64 `protobuf:"varint,5,opt,name=runningHashVersion,proto3" json:"runningHashVersion,omitempty"`
-	//*
-	// Optional information of the current chunk in a fragmented message.
-	ChunkInfo *proto.ConsensusMessageChunkInfo `protobuf:"bytes,6,opt,name=chunkInfo,proto3" json:"chunkInfo,omitempty"`
+	ConsensusTimestamp *proto.Timestamp `protobuf:"bytes,1,opt,name=consensusTimestamp,proto3" json:"consensusTimestamp,omitempty"` // The time at which the transaction reached consensus
+	// The message body originally in the ConsensusSubmitMessageTransactionBody. Message size will be less than 6KiB.
+	Message            []byte                           `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	RunningHash        []byte                           `protobuf:"bytes,3,opt,name=runningHash,proto3" json:"runningHash,omitempty"`                // The running hash (SHA384) of every message.
+	SequenceNumber     uint64                           `protobuf:"varint,4,opt,name=sequenceNumber,proto3" json:"sequenceNumber,omitempty"`         // Starts at 1 for first submitted message. Incremented on each submitted message.
+	RunningHashVersion uint64                           `protobuf:"varint,5,opt,name=runningHashVersion,proto3" json:"runningHashVersion,omitempty"` // Version of the SHA-384 digest used to update the running hash.
+	ChunkInfo          *proto.ConsensusMessageChunkInfo `protobuf:"bytes,6,opt,name=chunkInfo,proto3" json:"chunkInfo,omitempty"`                    // Optional information of the current chunk in a fragmented message.
 }
 
 func (x *ConsensusTopicResponse) Reset() {

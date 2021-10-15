@@ -20,21 +20,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // Requests a livehash associated to an account.
 type CryptoGetLiveHashQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither).
+	// Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
 	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
 	// The account to which the livehash is associated
 	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
 	// The SHA-384 data in the livehash
 	Hash []byte `protobuf:"bytes,3,opt,name=hash,proto3" json:"hash,omitempty"`
 }
@@ -92,20 +87,14 @@ func (x *CryptoGetLiveHashQuery) GetHash() []byte {
 	return nil
 }
 
-//*
-// Returns the full livehash associated to an account, if it is present. Note that the only way to
-// obtain a state proof exhibiting the absence of a livehash from an account is to retrieve a state
-// proof of the entire account with its list of livehashes.
+// Returns the full livehash associated to an account, if it is present. Note that the only way to obtain a state proof exhibiting the absence of a livehash from an account is to retrieve a state proof of the entire account with its list of livehashes.
 type CryptoGetLiveHashResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
+	// Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
 	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
 	// The livehash, if present
 	LiveHash *LiveHash `protobuf:"bytes,2,opt,name=liveHash,proto3" json:"liveHash,omitempty"`
 }

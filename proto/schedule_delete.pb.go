@@ -20,23 +20,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Marks a schedule in the network's action queue as deleted. Must be signed by the admin key of the
-// target schedule.  A deleted schedule cannot receive any additional signing keys, nor will it be
-// executed.
 //
-// Other notable response codes include, <tt>INVALID_SCHEDULE_ID</tt>,
-// <tt>SCHEDULE_WAS_DELETED</tt>, <tt>SCHEDULE_WAS_EXECUTED</tt>, <tt>SCHEDULE_IS_IMMUTABLE</tt>.
-// For more information please see the section of this documentation on the <tt>ResponseCode</tt>
-// enum.
+//Marks a schedule in the network's action queue as deleted. Must be signed by the admin key of the target schedule.
+//A deleted schedule cannot receive any additional signing keys, nor will it be executed.
+//
+//Other notable response codes include, <tt>INVALID_SCHEDULE_ID</tt>, <tt>SCHEDULE_WAS_DELETED</tt>, <tt>SCHEDULE_WAS_EXECUTED</tt>,
+//<tt>SCHEDULE_IS_IMMUTABLE</tt>. For more information please see the section of this documentation on the <tt>ResponseCode</tt> enum.
 type ScheduleDeleteTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The ID of the Scheduled Entity
-	ScheduleID *ScheduleID `protobuf:"bytes,1,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"`
+	ScheduleID *ScheduleID `protobuf:"bytes,1,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"` // The ID of the Scheduled Entity
 }
 
 func (x *ScheduleDeleteTransactionBody) Reset() {

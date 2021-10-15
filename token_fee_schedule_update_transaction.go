@@ -23,7 +23,7 @@ func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 	return &transaction
 }
 
-func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenFeeScheduleUpdateTransaction {
+func TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenFeeScheduleUpdateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {

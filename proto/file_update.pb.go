@@ -21,33 +21,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Modify the metadata and/or contents of a file. If a field is not set in the transaction body, the
-// corresponding file attribute will be unchanged. This transaction must be signed by all the keys
-// in the top level of a key list (M-of-M) of the file being updated. If the keys themselves are
-// being updated, then the transaction must also be signed by all the new keys. If the keys contain
-// additional KeyList or ThresholdKey then M-of-M secondary KeyList or ThresholdKey signing
-// requirements must be meet
+//
+//Modify the metadata and/or contents of a file. If a field is not set in the transaction body, the corresponding file attribute will be unchanged. This transaction must be signed by all the keys in the top level of a key list (M-of-M) of the file being updated. If the keys themselves are being updated, then the transaction must also be signed by all the new keys. If the keys contain additional KeyList or ThresholdKey then M-of-M secondary KeyList or ThresholdKey signing requirements must be meet
 type FileUpdateTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The ID of the file to update
-	FileID *FileID `protobuf:"bytes,1,opt,name=fileID,proto3" json:"fileID,omitempty"`
-	//*
-	// The new expiry time (ignored if not later than the current expiry)
-	ExpirationTime *Timestamp `protobuf:"bytes,2,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
-	//*
-	// The new list of keys that can modify or delete the file
-	Keys *KeyList `protobuf:"bytes,3,opt,name=keys,proto3" json:"keys,omitempty"`
-	//*
-	// The new contents that should overwrite the file's current contents
-	Contents []byte `protobuf:"bytes,4,opt,name=contents,proto3" json:"contents,omitempty"`
-	//*
-	// If set, the new memo to be associated with the file (UTF-8 encoding max 100 bytes)
-	Memo *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=memo,proto3" json:"memo,omitempty"`
+	FileID         *FileID                 `protobuf:"bytes,1,opt,name=fileID,proto3" json:"fileID,omitempty"`                 // The ID of the file to update
+	ExpirationTime *Timestamp              `protobuf:"bytes,2,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"` // The new expiry time (ignored if not later than the current expiry)
+	Keys           *KeyList                `protobuf:"bytes,3,opt,name=keys,proto3" json:"keys,omitempty"`                     // The new list of keys that can modify or delete the file
+	Contents       []byte                  `protobuf:"bytes,4,opt,name=contents,proto3" json:"contents,omitempty"`             // The new contents that should overwrite the file's current contents
+	Memo           *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=memo,proto3" json:"memo,omitempty"`                     // If set, the new memo to be associated with the file (UTF-8 encoding max 100 bytes)
 }
 
 func (x *FileUpdateTransactionBody) Reset() {

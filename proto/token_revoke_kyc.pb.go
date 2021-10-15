@@ -20,28 +20,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // Revokes KYC to the account for the given token. Must be signed by the Token's kycKey.
-// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
-// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
-// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
-// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
-// If an Association between the provided token and account is not found, the transaction will
-// resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
-// If no KYC Key is defined, the transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
-// Once executed the Account is marked as KYC Revoked
+//If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+//If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+//If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+//If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+//If an Association between the provided token and account is not found, the transaction will resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+//If no KYC Key is defined, the transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
+//Once executed the Account is marked as KYC Revoked
 type TokenRevokeKycTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The token for which this account will get his KYC revoked. If token does not exist,
-	// transaction results in INVALID_TOKEN_ID
-	Token *TokenID `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	//*
-	// The account to be KYC Revoked
-	Account *AccountID `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty"`
+	Token   *TokenID   `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`     // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
+	Account *AccountID `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty"` // The account to be KYC Revoked
 }
 
 func (x *TokenRevokeKycTransactionBody) Reset() {

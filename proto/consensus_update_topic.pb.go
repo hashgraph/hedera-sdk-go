@@ -21,7 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // All fields left null will not be updated.
 // See [ConsensusService.updateTopic()](#proto.ConsensusService)
 type ConsensusUpdateTopicTransactionBody struct {
@@ -29,37 +28,28 @@ type ConsensusUpdateTopicTransactionBody struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// UNDOCUMENTED
-	TopicID *TopicID `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"`
-	//*
-	// If set, the new memo to be associated with the topic (UTF-8 encoding max 100 bytes)
-	Memo *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=memo,proto3" json:"memo,omitempty"`
-	//*
+	TopicID *TopicID                `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"`
+	Memo    *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=memo,proto3" json:"memo,omitempty"` // If set, the new memo to be associated with the topic (UTF-8 encoding max 100 bytes)
 	// Effective consensus timestamp at (and after) which all consensus transactions and queries will fail.
 	// The expirationTime may be no longer than MAX_AUTORENEW_PERIOD (8000001 seconds) from the consensus timestamp of
 	// this transaction.
 	// On topics with no adminKey, extending the expirationTime is the only updateTopic option allowed on the topic.
 	// If unspecified, no change.
 	ExpirationTime *Timestamp `protobuf:"bytes,4,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
-	//*
 	// Access control for update/delete of the topic.
 	// If unspecified, no change.
 	// If empty keyList - the adminKey is cleared.
 	AdminKey *Key `protobuf:"bytes,6,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
-	//*
 	// Access control for ConsensusService.submitMessage.
 	// If unspecified, no change.
 	// If empty keyList - the submitKey is cleared.
 	SubmitKey *Key `protobuf:"bytes,7,opt,name=submitKey,proto3" json:"submitKey,omitempty"`
-	//
 	// The amount of time to extend the topic's lifetime automatically at expirationTime if the autoRenewAccount is
 	// configured and has funds (once autoRenew functionality is supported by HAPI).
 	// Limited to between MIN_AUTORENEW_PERIOD (6999999 seconds) and MAX_AUTORENEW_PERIOD (8000001 seconds) by
 	// servers-side configuration (which may change).
 	// If unspecified, no change.
 	AutoRenewPeriod *Duration `protobuf:"bytes,8,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
-	//*
 	// Optional account to be used at the topic's expirationTime to extend the life of the topic.
 	// Once autoRenew functionality is supported by HAPI, the topic lifetime will be extended up to a maximum of the
 	// autoRenewPeriod or however long the topic can be extended using all funds on the account (whichever is the

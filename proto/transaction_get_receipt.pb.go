@@ -20,31 +20,15 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Get the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus,
-// then information about whether it succeeded or failed will be available until the end of the
-// receipt period.  Before and after the receipt period, and for a transaction that was never
-// submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
-// State proof is available for this response
+// Get the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus, then information about whether it succeeded or failed will be available until the end of the receipt period.  Before and after the receipt period, and for a transaction that was never submitted, the receipt is unknown.  This query is free (the payment field is left empty). No State proof is available for this response
 type TransactionGetReceiptQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither).
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The ID of the transaction for which the receipt is requested.
-	TransactionID *TransactionID `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
-	//*
-	// Whether receipts of processing duplicate transactions should be returned along with the
-	// receipt of processing the first consensus transaction with the given id whose status was
-	// neither <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>; <b>or</b>, if no
-	// such receipt exists, the receipt of processing the first transaction to reach consensus with
-	// the given transaction id..
-	IncludeDuplicates bool `protobuf:"varint,3,opt,name=includeDuplicates,proto3" json:"includeDuplicates,omitempty"`
+	Header            *QueryHeader   `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                        // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	TransactionID     *TransactionID `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`          // The ID of the transaction for which the receipt is requested.
+	IncludeDuplicates bool           `protobuf:"varint,3,opt,name=includeDuplicates,proto3" json:"includeDuplicates,omitempty"` // Whether receipts of processing duplicate transactions should be returned along with the receipt of processing the first consensus transaction with the given id whose status was neither <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>; <b>or</b>, if no such receipt exists, the receipt of processing the first transaction to reach consensus with the given transaction id..
 }
 
 func (x *TransactionGetReceiptQuery) Reset() {
@@ -100,31 +84,15 @@ func (x *TransactionGetReceiptQuery) GetIncludeDuplicates() bool {
 	return false
 }
 
-//*
-// Response when the client sends the node TransactionGetReceiptQuery. If it created a new entity
-// (account, file, or smart contract instance) then one of the three ID fields will be filled in
-// with the ID of the new entity. Sometimes a single transaction will create more than one new
-// entity, such as when a new contract instance is created, and this also creates the new account
-// that it owned by that instance. No State proof is available for this response
+// Response when the client sends the node TransactionGetReceiptQuery. If it created a new entity (account, file, or smart contract instance) then one of the three ID fields will be filled in with the ID of the new entity. Sometimes a single transaction will create more than one new entity, such as when a new contract instance is created, and this also creates the new account that it owned by that instance. No State proof is available for this response
 type TransactionGetReceiptResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// Either the receipt of processing the first consensus transaction with the given id whose
-	// status was neither <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>;
-	// <b>or</b>, if no such receipt exists, the receipt of processing the first transaction to
-	// reach consensus with the given transaction id.
-	Receipt *TransactionReceipt `protobuf:"bytes,2,opt,name=receipt,proto3" json:"receipt,omitempty"`
-	//*
-	// The receipts of processing all consensus transaction with the same id as the distinguished
-	// receipt above, in chronological order.
-	DuplicateTransactionReceipts []*TransactionReceipt `protobuf:"bytes,4,rep,name=duplicateTransactionReceipts,proto3" json:"duplicateTransactionReceipts,omitempty"`
+	Header                       *ResponseHeader       `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                                             //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	Receipt                      *TransactionReceipt   `protobuf:"bytes,2,opt,name=receipt,proto3" json:"receipt,omitempty"`                                           // Either the receipt of processing the first consensus transaction with the given id whose status was neither <tt>INVALID_NODE_ACCOUNT</tt> nor <tt>INVALID_PAYER_SIGNATURE</tt>; <b>or</b>, if no such receipt exists, the receipt of processing the first transaction to reach consensus with the given transaction id.
+	DuplicateTransactionReceipts []*TransactionReceipt `protobuf:"bytes,4,rep,name=duplicateTransactionReceipts,proto3" json:"duplicateTransactionReceipts,omitempty"` // The receipts of processing all consensus transaction with the same id as the distinguished receipt above, in chronological order.
 }
 
 func (x *TransactionGetReceiptResponse) Reset() {

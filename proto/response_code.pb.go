@@ -20,639 +20,237 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// UNDOCUMENTED
 type ResponseCodeEnum int32
 
 const (
-	//*
-	// The transaction passed the precheck validations.
-	ResponseCodeEnum_OK ResponseCodeEnum = 0
-	//*
-	// For any error not handled by specific error codes listed below.
-	ResponseCodeEnum_INVALID_TRANSACTION ResponseCodeEnum = 1
-	//*
-	// Payer account does not exist.
-	ResponseCodeEnum_PAYER_ACCOUNT_NOT_FOUND ResponseCodeEnum = 2
-	//*
-	// Node Account provided does not match the node account of the node the transaction was submitted
-	// to.
-	ResponseCodeEnum_INVALID_NODE_ACCOUNT ResponseCodeEnum = 3
-	//*
-	// Pre-Check error when TransactionValidStart + transactionValidDuration is less than current
-	// consensus time.
-	ResponseCodeEnum_TRANSACTION_EXPIRED ResponseCodeEnum = 4
-	//*
-	// Transaction start time is greater than current consensus time
-	ResponseCodeEnum_INVALID_TRANSACTION_START ResponseCodeEnum = 5
-	//*
-	// The given transactionValidDuration was either non-positive, or greater than the maximum
-	// valid duration of 180 secs.
-	//
-	ResponseCodeEnum_INVALID_TRANSACTION_DURATION ResponseCodeEnum = 6
-	//*
-	// The transaction signature is not valid
-	ResponseCodeEnum_INVALID_SIGNATURE ResponseCodeEnum = 7
-	//*
-	// Transaction memo size exceeded 100 bytes
-	ResponseCodeEnum_MEMO_TOO_LONG ResponseCodeEnum = 8
-	//*
-	// The fee provided in the transaction is insufficient for this type of transaction
-	ResponseCodeEnum_INSUFFICIENT_TX_FEE ResponseCodeEnum = 9
-	//*
-	// The payer account has insufficient cryptocurrency to pay the transaction fee
-	ResponseCodeEnum_INSUFFICIENT_PAYER_BALANCE ResponseCodeEnum = 10
-	//*
-	// This transaction ID is a duplicate of one that was submitted to this node or reached consensus
-	// in the last 180 seconds (receipt period)
-	ResponseCodeEnum_DUPLICATE_TRANSACTION ResponseCodeEnum = 11
-	//*
-	// If API is throttled out
-	ResponseCodeEnum_BUSY ResponseCodeEnum = 12
-	//*
-	// The API is not currently supported
-	ResponseCodeEnum_NOT_SUPPORTED ResponseCodeEnum = 13
-	//*
-	// The file id is invalid or does not exist
-	ResponseCodeEnum_INVALID_FILE_ID ResponseCodeEnum = 14
-	//*
-	// The account id is invalid or does not exist
-	ResponseCodeEnum_INVALID_ACCOUNT_ID ResponseCodeEnum = 15
-	//*
-	// The contract id is invalid or does not exist
-	ResponseCodeEnum_INVALID_CONTRACT_ID ResponseCodeEnum = 16
-	//*
-	// Transaction id is not valid
-	ResponseCodeEnum_INVALID_TRANSACTION_ID ResponseCodeEnum = 17
-	//*
-	// Receipt for given transaction id does not exist
-	ResponseCodeEnum_RECEIPT_NOT_FOUND ResponseCodeEnum = 18
-	//*
-	// Record for given transaction id does not exist
-	ResponseCodeEnum_RECORD_NOT_FOUND ResponseCodeEnum = 19
-	//*
-	// The solidity id is invalid or entity with this solidity id does not exist
-	ResponseCodeEnum_INVALID_SOLIDITY_ID ResponseCodeEnum = 20
-	//*
-	// The responding node has submitted the transaction to the network. Its final status is still
-	// unknown.
-	ResponseCodeEnum_UNKNOWN ResponseCodeEnum = 21
-	//*
-	// The transaction succeeded
-	ResponseCodeEnum_SUCCESS ResponseCodeEnum = 22
-	//*
-	// There was a system error and the transaction failed because of invalid request parameters.
-	ResponseCodeEnum_FAIL_INVALID ResponseCodeEnum = 23
-	//*
-	// There was a system error while performing fee calculation, reserved for future.
-	ResponseCodeEnum_FAIL_FEE ResponseCodeEnum = 24
-	//*
-	// There was a system error while performing balance checks, reserved for future.
-	ResponseCodeEnum_FAIL_BALANCE ResponseCodeEnum = 25
-	//*
-	// Key not provided in the transaction body
-	ResponseCodeEnum_KEY_REQUIRED ResponseCodeEnum = 26
-	//*
-	// Unsupported algorithm/encoding used for keys in the transaction
-	ResponseCodeEnum_BAD_ENCODING ResponseCodeEnum = 27
-	//*
-	// When the account balance is not sufficient for the transfer
-	ResponseCodeEnum_INSUFFICIENT_ACCOUNT_BALANCE ResponseCodeEnum = 28
-	//*
-	// During an update transaction when the system is not able to find the Users Solidity address
-	ResponseCodeEnum_INVALID_SOLIDITY_ADDRESS ResponseCodeEnum = 29
-	//*
-	// Not enough gas was supplied to execute transaction
-	ResponseCodeEnum_INSUFFICIENT_GAS ResponseCodeEnum = 30
-	//*
-	// contract byte code size is over the limit
-	ResponseCodeEnum_CONTRACT_SIZE_LIMIT_EXCEEDED ResponseCodeEnum = 31
-	//*
-	// local execution (query) is requested for a function which changes state
-	ResponseCodeEnum_LOCAL_CALL_MODIFICATION_EXCEPTION ResponseCodeEnum = 32
-	//*
-	// Contract REVERT OPCODE executed
-	ResponseCodeEnum_CONTRACT_REVERT_EXECUTED ResponseCodeEnum = 33
-	//*
-	// For any contract execution related error not handled by specific error codes listed above.
-	ResponseCodeEnum_CONTRACT_EXECUTION_EXCEPTION ResponseCodeEnum = 34
-	//*
-	// In Query validation, account with +ve(amount) value should be Receiving node account, the
-	// receiver account should be only one account in the list
-	ResponseCodeEnum_INVALID_RECEIVING_NODE_ACCOUNT ResponseCodeEnum = 35
-	//*
-	// Header is missing in Query request
-	ResponseCodeEnum_MISSING_QUERY_HEADER ResponseCodeEnum = 36
-	//*
-	// The update of the account failed
-	ResponseCodeEnum_ACCOUNT_UPDATE_FAILED ResponseCodeEnum = 37
-	//*
-	// Provided key encoding was not supported by the system
-	ResponseCodeEnum_INVALID_KEY_ENCODING ResponseCodeEnum = 38
-	//*
-	// null solidity address
-	ResponseCodeEnum_NULL_SOLIDITY_ADDRESS ResponseCodeEnum = 39
-	//*
-	// update of the contract failed
-	ResponseCodeEnum_CONTRACT_UPDATE_FAILED ResponseCodeEnum = 40
-	//*
-	// the query header is invalid
-	ResponseCodeEnum_INVALID_QUERY_HEADER ResponseCodeEnum = 41
-	//*
-	// Invalid fee submitted
-	ResponseCodeEnum_INVALID_FEE_SUBMITTED ResponseCodeEnum = 42
-	//*
-	// Payer signature is invalid
-	ResponseCodeEnum_INVALID_PAYER_SIGNATURE ResponseCodeEnum = 43
-	//*
-	// The keys were not provided in the request.
-	ResponseCodeEnum_KEY_NOT_PROVIDED ResponseCodeEnum = 44
-	//*
-	// Expiration time provided in the transaction was invalid.
-	ResponseCodeEnum_INVALID_EXPIRATION_TIME ResponseCodeEnum = 45
-	//*
-	// WriteAccess Control Keys are not provided for the file
-	ResponseCodeEnum_NO_WACL_KEY ResponseCodeEnum = 46
-	//*
-	// The contents of file are provided as empty.
-	ResponseCodeEnum_FILE_CONTENT_EMPTY ResponseCodeEnum = 47
-	//*
-	// The crypto transfer credit and debit do not sum equal to 0
-	ResponseCodeEnum_INVALID_ACCOUNT_AMOUNTS ResponseCodeEnum = 48
-	//*
-	// Transaction body provided is empty
-	ResponseCodeEnum_EMPTY_TRANSACTION_BODY ResponseCodeEnum = 49
-	//*
-	// Invalid transaction body provided
-	ResponseCodeEnum_INVALID_TRANSACTION_BODY ResponseCodeEnum = 50
-	//*
-	// the type of key (base ed25519 key, KeyList, or ThresholdKey) does not match the type of
-	// signature (base ed25519 signature, SignatureList, or ThresholdKeySignature)
-	ResponseCodeEnum_INVALID_SIGNATURE_TYPE_MISMATCHING_KEY ResponseCodeEnum = 51
-	//*
-	// the number of key (KeyList, or ThresholdKey) does not match that of signature (SignatureList,
-	// or ThresholdKeySignature). e.g. if a keyList has 3 base keys, then the corresponding
-	// signatureList should also have 3 base signatures.
-	ResponseCodeEnum_INVALID_SIGNATURE_COUNT_MISMATCHING_KEY ResponseCodeEnum = 52
-	//*
-	// the livehash body is empty
-	ResponseCodeEnum_EMPTY_LIVE_HASH_BODY ResponseCodeEnum = 53
-	//*
-	// the livehash data is missing
-	ResponseCodeEnum_EMPTY_LIVE_HASH ResponseCodeEnum = 54
-	//*
-	// the keys for a livehash are missing
-	ResponseCodeEnum_EMPTY_LIVE_HASH_KEYS ResponseCodeEnum = 55
-	//*
-	// the livehash data is not the output of a SHA-384 digest
-	ResponseCodeEnum_INVALID_LIVE_HASH_SIZE ResponseCodeEnum = 56
-	//*
-	// the query body is empty
-	ResponseCodeEnum_EMPTY_QUERY_BODY ResponseCodeEnum = 57
-	//*
-	// the crypto livehash query is empty
-	ResponseCodeEnum_EMPTY_LIVE_HASH_QUERY ResponseCodeEnum = 58
-	//*
-	// the livehash is not present
-	ResponseCodeEnum_LIVE_HASH_NOT_FOUND ResponseCodeEnum = 59
-	//*
-	// the account id passed has not yet been created.
-	ResponseCodeEnum_ACCOUNT_ID_DOES_NOT_EXIST ResponseCodeEnum = 60
-	//*
-	// the livehash already exists for a given account
-	ResponseCodeEnum_LIVE_HASH_ALREADY_EXISTS ResponseCodeEnum = 61
-	//*
-	// File WACL keys are invalid
-	ResponseCodeEnum_INVALID_FILE_WACL ResponseCodeEnum = 62
-	//*
-	// Serialization failure
-	ResponseCodeEnum_SERIALIZATION_FAILED ResponseCodeEnum = 63
-	//*
-	// The size of the Transaction is greater than transactionMaxBytes
-	ResponseCodeEnum_TRANSACTION_OVERSIZE ResponseCodeEnum = 64
-	//*
-	// The Transaction has more than 50 levels
-	ResponseCodeEnum_TRANSACTION_TOO_MANY_LAYERS ResponseCodeEnum = 65
-	//*
-	// Contract is marked as deleted
-	ResponseCodeEnum_CONTRACT_DELETED ResponseCodeEnum = 66
-	//*
-	// the platform node is either disconnected or lagging behind.
-	ResponseCodeEnum_PLATFORM_NOT_ACTIVE ResponseCodeEnum = 67
-	//*
-	// one public key matches more than one prefixes on the signature map
-	ResponseCodeEnum_KEY_PREFIX_MISMATCH ResponseCodeEnum = 68
-	//*
-	// transaction not created by platform due to large backlog
-	ResponseCodeEnum_PLATFORM_TRANSACTION_NOT_CREATED ResponseCodeEnum = 69
-	//*
-	// auto renewal period is not a positive number of seconds
-	ResponseCodeEnum_INVALID_RENEWAL_PERIOD ResponseCodeEnum = 70
-	//*
-	// the response code when a smart contract id is passed for a crypto API request
-	ResponseCodeEnum_INVALID_PAYER_ACCOUNT_ID ResponseCodeEnum = 71
-	//*
-	// the account has been marked as deleted
-	ResponseCodeEnum_ACCOUNT_DELETED ResponseCodeEnum = 72
-	//*
-	// the file has been marked as deleted
-	ResponseCodeEnum_FILE_DELETED ResponseCodeEnum = 73
-	//*
-	// same accounts repeated in the transfer account list
-	ResponseCodeEnum_ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS ResponseCodeEnum = 74
-	//*
-	// attempting to set negative balance value for crypto account
-	ResponseCodeEnum_SETTING_NEGATIVE_ACCOUNT_BALANCE ResponseCodeEnum = 75
-	//*
-	// when deleting smart contract that has crypto balance either transfer account or transfer smart
-	// contract is required
-	ResponseCodeEnum_OBTAINER_REQUIRED ResponseCodeEnum = 76
-	//*
-	// when deleting smart contract that has crypto balance you can not use the same contract id as
-	// transferContractId as the one being deleted
-	ResponseCodeEnum_OBTAINER_SAME_CONTRACT_ID ResponseCodeEnum = 77
-	//*
-	// transferAccountId or transferContractId specified for contract delete does not exist
-	ResponseCodeEnum_OBTAINER_DOES_NOT_EXIST ResponseCodeEnum = 78
-	//*
-	// attempting to modify (update or delete a immutable smart contract, i.e. one created without a
-	// admin key)
-	ResponseCodeEnum_MODIFYING_IMMUTABLE_CONTRACT ResponseCodeEnum = 79
-	//*
-	// Unexpected exception thrown by file system functions
-	ResponseCodeEnum_FILE_SYSTEM_EXCEPTION ResponseCodeEnum = 80
-	//*
-	// the duration is not a subset of [MINIMUM_AUTORENEW_DURATION,MAXIMUM_AUTORENEW_DURATION]
-	ResponseCodeEnum_AUTORENEW_DURATION_NOT_IN_RANGE ResponseCodeEnum = 81
-	//*
-	// Decoding the smart contract binary to a byte array failed. Check that the input is a valid hex
-	// string.
-	ResponseCodeEnum_ERROR_DECODING_BYTESTRING ResponseCodeEnum = 82
-	//*
-	// File to create a smart contract was of length zero
-	ResponseCodeEnum_CONTRACT_FILE_EMPTY ResponseCodeEnum = 83
-	//*
-	// Bytecode for smart contract is of length zero
-	ResponseCodeEnum_CONTRACT_BYTECODE_EMPTY ResponseCodeEnum = 84
-	//*
-	// Attempt to set negative initial balance
-	ResponseCodeEnum_INVALID_INITIAL_BALANCE ResponseCodeEnum = 85
-	//*
-	// [Deprecated]. attempt to set negative receive record threshold
-	//
+	ResponseCodeEnum_OK                                      ResponseCodeEnum = 0  // The transaction passed the precheck validations.
+	ResponseCodeEnum_INVALID_TRANSACTION                     ResponseCodeEnum = 1  // For any error not handled by specific error codes listed below.
+	ResponseCodeEnum_PAYER_ACCOUNT_NOT_FOUND                 ResponseCodeEnum = 2  //Payer account does not exist.
+	ResponseCodeEnum_INVALID_NODE_ACCOUNT                    ResponseCodeEnum = 3  //Node Account provided does not match the node account of the node the transaction was submitted to.
+	ResponseCodeEnum_TRANSACTION_EXPIRED                     ResponseCodeEnum = 4  // Pre-Check error when TransactionValidStart + transactionValidDuration is less than current consensus time.
+	ResponseCodeEnum_INVALID_TRANSACTION_START               ResponseCodeEnum = 5  // Transaction start time is greater than current consensus time
+	ResponseCodeEnum_INVALID_TRANSACTION_DURATION            ResponseCodeEnum = 6  //valid transaction duration is a positive non zero number that does not exceed 120 seconds
+	ResponseCodeEnum_INVALID_SIGNATURE                       ResponseCodeEnum = 7  // The transaction signature is not valid
+	ResponseCodeEnum_MEMO_TOO_LONG                           ResponseCodeEnum = 8  //Transaction memo size exceeded 100 bytes
+	ResponseCodeEnum_INSUFFICIENT_TX_FEE                     ResponseCodeEnum = 9  // The fee provided in the transaction is insufficient for this type of transaction
+	ResponseCodeEnum_INSUFFICIENT_PAYER_BALANCE              ResponseCodeEnum = 10 // The payer account has insufficient cryptocurrency to pay the transaction fee
+	ResponseCodeEnum_DUPLICATE_TRANSACTION                   ResponseCodeEnum = 11 // This transaction ID is a duplicate of one that was submitted to this node or reached consensus in the last 180 seconds (receipt period)
+	ResponseCodeEnum_BUSY                                    ResponseCodeEnum = 12 //If API is throttled out
+	ResponseCodeEnum_NOT_SUPPORTED                           ResponseCodeEnum = 13 //The API is not currently supported
+	ResponseCodeEnum_INVALID_FILE_ID                         ResponseCodeEnum = 14 //The file id is invalid or does not exist
+	ResponseCodeEnum_INVALID_ACCOUNT_ID                      ResponseCodeEnum = 15 //The account id is invalid or does not exist
+	ResponseCodeEnum_INVALID_CONTRACT_ID                     ResponseCodeEnum = 16 //The contract id is invalid or does not exist
+	ResponseCodeEnum_INVALID_TRANSACTION_ID                  ResponseCodeEnum = 17 //Transaction id is not valid
+	ResponseCodeEnum_RECEIPT_NOT_FOUND                       ResponseCodeEnum = 18 //Receipt for given transaction id does not exist
+	ResponseCodeEnum_RECORD_NOT_FOUND                        ResponseCodeEnum = 19 //Record for given transaction id does not exist
+	ResponseCodeEnum_INVALID_SOLIDITY_ID                     ResponseCodeEnum = 20 //The solidity id is invalid or entity with this solidity id does not exist
+	ResponseCodeEnum_UNKNOWN                                 ResponseCodeEnum = 21 // The responding node has submitted the transaction to the network. Its final status is still unknown.
+	ResponseCodeEnum_SUCCESS                                 ResponseCodeEnum = 22 // The transaction succeeded
+	ResponseCodeEnum_FAIL_INVALID                            ResponseCodeEnum = 23 // There was a system error and the transaction failed because of invalid request parameters.
+	ResponseCodeEnum_FAIL_FEE                                ResponseCodeEnum = 24 // There was a system error while performing fee calculation, reserved for future.
+	ResponseCodeEnum_FAIL_BALANCE                            ResponseCodeEnum = 25 // There was a system error while performing balance checks, reserved for future.
+	ResponseCodeEnum_KEY_REQUIRED                            ResponseCodeEnum = 26 //Key not provided in the transaction body
+	ResponseCodeEnum_BAD_ENCODING                            ResponseCodeEnum = 27 //Unsupported algorithm/encoding used for keys in the transaction
+	ResponseCodeEnum_INSUFFICIENT_ACCOUNT_BALANCE            ResponseCodeEnum = 28 //When the account balance is not sufficient for the transfer
+	ResponseCodeEnum_INVALID_SOLIDITY_ADDRESS                ResponseCodeEnum = 29 //During an update transaction when the system is not able to find the Users Solidity address
+	ResponseCodeEnum_INSUFFICIENT_GAS                        ResponseCodeEnum = 30 //Not enough gas was supplied to execute transaction
+	ResponseCodeEnum_CONTRACT_SIZE_LIMIT_EXCEEDED            ResponseCodeEnum = 31 //contract byte code size is over the limit
+	ResponseCodeEnum_LOCAL_CALL_MODIFICATION_EXCEPTION       ResponseCodeEnum = 32 //local execution (query) is requested for a function which changes state
+	ResponseCodeEnum_CONTRACT_REVERT_EXECUTED                ResponseCodeEnum = 33 //Contract REVERT OPCODE executed
+	ResponseCodeEnum_CONTRACT_EXECUTION_EXCEPTION            ResponseCodeEnum = 34 //For any contract execution related error not handled by specific error codes listed above.
+	ResponseCodeEnum_INVALID_RECEIVING_NODE_ACCOUNT          ResponseCodeEnum = 35 //In Query validation, account with +ve(amount) value should be Receiving node account, the receiver account should be only one account in the list
+	ResponseCodeEnum_MISSING_QUERY_HEADER                    ResponseCodeEnum = 36 // Header is missing in Query request
+	ResponseCodeEnum_ACCOUNT_UPDATE_FAILED                   ResponseCodeEnum = 37 // The update of the account failed
+	ResponseCodeEnum_INVALID_KEY_ENCODING                    ResponseCodeEnum = 38 // Provided key encoding was not supported by the system
+	ResponseCodeEnum_NULL_SOLIDITY_ADDRESS                   ResponseCodeEnum = 39 // null solidity address
+	ResponseCodeEnum_CONTRACT_UPDATE_FAILED                  ResponseCodeEnum = 40 // update of the contract failed
+	ResponseCodeEnum_INVALID_QUERY_HEADER                    ResponseCodeEnum = 41 // the query header is invalid
+	ResponseCodeEnum_INVALID_FEE_SUBMITTED                   ResponseCodeEnum = 42 // Invalid fee submitted
+	ResponseCodeEnum_INVALID_PAYER_SIGNATURE                 ResponseCodeEnum = 43 // Payer signature is invalid
+	ResponseCodeEnum_KEY_NOT_PROVIDED                        ResponseCodeEnum = 44 // The keys were not provided in the request.
+	ResponseCodeEnum_INVALID_EXPIRATION_TIME                 ResponseCodeEnum = 45 // Expiration time provided in the transaction was invalid.
+	ResponseCodeEnum_NO_WACL_KEY                             ResponseCodeEnum = 46 //WriteAccess Control Keys are not provided for the file
+	ResponseCodeEnum_FILE_CONTENT_EMPTY                      ResponseCodeEnum = 47 //The contents of file are provided as empty.
+	ResponseCodeEnum_INVALID_ACCOUNT_AMOUNTS                 ResponseCodeEnum = 48 // The crypto transfer credit and debit do not sum equal to 0
+	ResponseCodeEnum_EMPTY_TRANSACTION_BODY                  ResponseCodeEnum = 49 // Transaction body provided is empty
+	ResponseCodeEnum_INVALID_TRANSACTION_BODY                ResponseCodeEnum = 50 // Invalid transaction body provided
+	ResponseCodeEnum_INVALID_SIGNATURE_TYPE_MISMATCHING_KEY  ResponseCodeEnum = 51 // the type of key (base ed25519 key, KeyList, or ThresholdKey) does not match the type of signature (base ed25519 signature, SignatureList, or ThresholdKeySignature)
+	ResponseCodeEnum_INVALID_SIGNATURE_COUNT_MISMATCHING_KEY ResponseCodeEnum = 52 // the number of key (KeyList, or ThresholdKey) does not match that of signature (SignatureList, or ThresholdKeySignature). e.g. if a keyList has 3 base keys, then the corresponding signatureList should also have 3 base signatures.
+	ResponseCodeEnum_EMPTY_LIVE_HASH_BODY                    ResponseCodeEnum = 53 // the livehash body is empty
+	ResponseCodeEnum_EMPTY_LIVE_HASH                         ResponseCodeEnum = 54 // the livehash data is missing
+	ResponseCodeEnum_EMPTY_LIVE_HASH_KEYS                    ResponseCodeEnum = 55 // the keys for a livehash are missing
+	ResponseCodeEnum_INVALID_LIVE_HASH_SIZE                  ResponseCodeEnum = 56 // the livehash data is not the output of a SHA-384 digest
+	ResponseCodeEnum_EMPTY_QUERY_BODY                        ResponseCodeEnum = 57 // the query body is empty
+	ResponseCodeEnum_EMPTY_LIVE_HASH_QUERY                   ResponseCodeEnum = 58 // the crypto livehash query is empty
+	ResponseCodeEnum_LIVE_HASH_NOT_FOUND                     ResponseCodeEnum = 59 // the livehash is not present
+	ResponseCodeEnum_ACCOUNT_ID_DOES_NOT_EXIST               ResponseCodeEnum = 60 // the account id passed has not yet been created.
+	ResponseCodeEnum_LIVE_HASH_ALREADY_EXISTS                ResponseCodeEnum = 61 // the livehash already exists for a given account
+	ResponseCodeEnum_INVALID_FILE_WACL                       ResponseCodeEnum = 62 // File WACL keys are invalid
+	ResponseCodeEnum_SERIALIZATION_FAILED                    ResponseCodeEnum = 63 // Serialization failure
+	ResponseCodeEnum_TRANSACTION_OVERSIZE                    ResponseCodeEnum = 64 // The size of the Transaction is greater than transactionMaxBytes
+	ResponseCodeEnum_TRANSACTION_TOO_MANY_LAYERS             ResponseCodeEnum = 65 // The Transaction has more than 50 levels
+	ResponseCodeEnum_CONTRACT_DELETED                        ResponseCodeEnum = 66 //Contract is marked as deleted
+	ResponseCodeEnum_PLATFORM_NOT_ACTIVE                     ResponseCodeEnum = 67 // the platform node is either disconnected or lagging behind.
+	ResponseCodeEnum_KEY_PREFIX_MISMATCH                     ResponseCodeEnum = 68 // one public key matches more than one prefixes on the signature map
+	ResponseCodeEnum_PLATFORM_TRANSACTION_NOT_CREATED        ResponseCodeEnum = 69 // transaction not created by platform due to large backlog
+	ResponseCodeEnum_INVALID_RENEWAL_PERIOD                  ResponseCodeEnum = 70 // auto renewal period is not a positive number of seconds
+	ResponseCodeEnum_INVALID_PAYER_ACCOUNT_ID                ResponseCodeEnum = 71 // the response code when a smart contract id is passed for a crypto API request
+	ResponseCodeEnum_ACCOUNT_DELETED                         ResponseCodeEnum = 72 // the account has been marked as deleted
+	ResponseCodeEnum_FILE_DELETED                            ResponseCodeEnum = 73 // the file has been marked as deleted
+	ResponseCodeEnum_ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS     ResponseCodeEnum = 74 // same accounts repeated in the transfer account list
+	ResponseCodeEnum_SETTING_NEGATIVE_ACCOUNT_BALANCE        ResponseCodeEnum = 75 // attempting to set negative balance value for crypto account
+	ResponseCodeEnum_OBTAINER_REQUIRED                       ResponseCodeEnum = 76 // when deleting smart contract that has crypto balance either transfer account or transfer smart contract is required
+	ResponseCodeEnum_OBTAINER_SAME_CONTRACT_ID               ResponseCodeEnum = 77 //when deleting smart contract that has crypto balance you can not use the same contract id as transferContractId as the one being deleted
+	ResponseCodeEnum_OBTAINER_DOES_NOT_EXIST                 ResponseCodeEnum = 78 //transferAccountId or transferContractId specified for contract delete does not exist
+	ResponseCodeEnum_MODIFYING_IMMUTABLE_CONTRACT            ResponseCodeEnum = 79 //attempting to modify (update or delete a immutable smart contract, i.e. one created without a admin key)
+	ResponseCodeEnum_FILE_SYSTEM_EXCEPTION                   ResponseCodeEnum = 80 //Unexpected exception thrown by file system functions
+	ResponseCodeEnum_AUTORENEW_DURATION_NOT_IN_RANGE         ResponseCodeEnum = 81 // the duration is not a subset of [MINIMUM_AUTORENEW_DURATION,MAXIMUM_AUTORENEW_DURATION]
+	ResponseCodeEnum_ERROR_DECODING_BYTESTRING               ResponseCodeEnum = 82 // Decoding the smart contract binary to a byte array failed. Check that the input is a valid hex string.
+	ResponseCodeEnum_CONTRACT_FILE_EMPTY                     ResponseCodeEnum = 83 // File to create a smart contract was of length zero
+	ResponseCodeEnum_CONTRACT_BYTECODE_EMPTY                 ResponseCodeEnum = 84 // Bytecode for smart contract is of length zero
+	ResponseCodeEnum_INVALID_INITIAL_BALANCE                 ResponseCodeEnum = 85 // Attempt to set negative initial balance
 	// Deprecated: Do not use.
-	ResponseCodeEnum_INVALID_RECEIVE_RECORD_THRESHOLD ResponseCodeEnum = 86
-	//*
-	// [Deprecated]. attempt to set negative send record threshold
-	//
+	ResponseCodeEnum_INVALID_RECEIVE_RECORD_THRESHOLD ResponseCodeEnum = 86 // [Deprecated]. attempt to set negative receive record threshold
 	// Deprecated: Do not use.
-	ResponseCodeEnum_INVALID_SEND_RECORD_THRESHOLD ResponseCodeEnum = 87
-	//*
-	// Special Account Operations should be performed by only Genesis account, return this code if it
-	// is not Genesis Account
-	ResponseCodeEnum_ACCOUNT_IS_NOT_GENESIS_ACCOUNT ResponseCodeEnum = 88
-	//*
-	// The fee payer account doesn't have permission to submit such Transaction
-	ResponseCodeEnum_PAYER_ACCOUNT_UNAUTHORIZED ResponseCodeEnum = 89
-	//*
-	// FreezeTransactionBody is invalid
-	ResponseCodeEnum_INVALID_FREEZE_TRANSACTION_BODY ResponseCodeEnum = 90
-	//*
-	// FreezeTransactionBody does not exist
-	ResponseCodeEnum_FREEZE_TRANSACTION_BODY_NOT_FOUND ResponseCodeEnum = 91
-	//*
-	// Exceeded the number of accounts (both from and to) allowed for crypto transfer list
-	ResponseCodeEnum_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED ResponseCodeEnum = 92
-	//*
-	// Smart contract result size greater than specified maxResultSize
-	ResponseCodeEnum_RESULT_SIZE_LIMIT_EXCEEDED ResponseCodeEnum = 93
-	//*
-	// The payer account is not a special account(account 0.0.55)
-	ResponseCodeEnum_NOT_SPECIAL_ACCOUNT ResponseCodeEnum = 94
-	//*
-	// Negative gas was offered in smart contract call
-	ResponseCodeEnum_CONTRACT_NEGATIVE_GAS ResponseCodeEnum = 95
-	//*
-	// Negative value / initial balance was specified in a smart contract call / create
-	ResponseCodeEnum_CONTRACT_NEGATIVE_VALUE ResponseCodeEnum = 96
-	//*
-	// Failed to update fee file
-	ResponseCodeEnum_INVALID_FEE_FILE ResponseCodeEnum = 97
-	//*
-	// Failed to update exchange rate file
-	ResponseCodeEnum_INVALID_EXCHANGE_RATE_FILE ResponseCodeEnum = 98
-	//*
-	// Payment tendered for contract local call cannot cover both the fee and the gas
-	ResponseCodeEnum_INSUFFICIENT_LOCAL_CALL_GAS ResponseCodeEnum = 99
-	//*
-	// Entities with Entity ID below 1000 are not allowed to be deleted
-	ResponseCodeEnum_ENTITY_NOT_ALLOWED_TO_DELETE ResponseCodeEnum = 100
-	//*
-	// Violating one of these rules: 1) treasury account can update all entities below 0.0.1000, 2)
-	// account 0.0.50 can update all entities from 0.0.51 - 0.0.80, 3) Network Function Master Account
-	// A/c 0.0.50 - Update all Network Function accounts & perform all the Network Functions listed
-	// below, 4) Network Function Accounts: i) A/c 0.0.55 - Update Address Book files (0.0.101/102),
-	// ii) A/c 0.0.56 - Update Fee schedule (0.0.111), iii) A/c 0.0.57 - Update Exchange Rate
-	// (0.0.112).
-	ResponseCodeEnum_AUTHORIZATION_FAILED ResponseCodeEnum = 101
-	//*
-	// Fee Schedule Proto uploaded but not valid (append or update is required)
-	ResponseCodeEnum_FILE_UPLOADED_PROTO_INVALID ResponseCodeEnum = 102
-	//*
-	// Fee Schedule Proto uploaded but not valid (append or update is required)
-	ResponseCodeEnum_FILE_UPLOADED_PROTO_NOT_SAVED_TO_DISK ResponseCodeEnum = 103
-	//*
-	// Fee Schedule Proto File Part uploaded
-	ResponseCodeEnum_FEE_SCHEDULE_FILE_PART_UPLOADED ResponseCodeEnum = 104
-	//*
-	// The change on Exchange Rate exceeds Exchange_Rate_Allowed_Percentage
-	ResponseCodeEnum_EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED ResponseCodeEnum = 105
-	//*
-	// Contract permanent storage exceeded the currently allowable limit
-	ResponseCodeEnum_MAX_CONTRACT_STORAGE_EXCEEDED ResponseCodeEnum = 106
-	//*
-	// Transfer Account should not be same as Account to be deleted
-	ResponseCodeEnum_TRANSFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT ResponseCodeEnum = 107
+	ResponseCodeEnum_INVALID_SEND_RECORD_THRESHOLD           ResponseCodeEnum = 87  // [Deprecated]. attempt to set negative send record threshold
+	ResponseCodeEnum_ACCOUNT_IS_NOT_GENESIS_ACCOUNT          ResponseCodeEnum = 88  // Special Account Operations should be performed by only Genesis account, return this code if it is not Genesis Account
+	ResponseCodeEnum_PAYER_ACCOUNT_UNAUTHORIZED              ResponseCodeEnum = 89  // The fee payer account doesn't have permission to submit such Transaction
+	ResponseCodeEnum_INVALID_FREEZE_TRANSACTION_BODY         ResponseCodeEnum = 90  // FreezeTransactionBody is invalid
+	ResponseCodeEnum_FREEZE_TRANSACTION_BODY_NOT_FOUND       ResponseCodeEnum = 91  // FreezeTransactionBody does not exist
+	ResponseCodeEnum_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED       ResponseCodeEnum = 92  //Exceeded the number of accounts (both from and to) allowed for crypto transfer list
+	ResponseCodeEnum_RESULT_SIZE_LIMIT_EXCEEDED              ResponseCodeEnum = 93  // Smart contract result size greater than specified maxResultSize
+	ResponseCodeEnum_NOT_SPECIAL_ACCOUNT                     ResponseCodeEnum = 94  //The payer account is not a special account(account 0.0.55)
+	ResponseCodeEnum_CONTRACT_NEGATIVE_GAS                   ResponseCodeEnum = 95  // Negative gas was offered in smart contract call
+	ResponseCodeEnum_CONTRACT_NEGATIVE_VALUE                 ResponseCodeEnum = 96  // Negative value / initial balance was specified in a smart contract call / create
+	ResponseCodeEnum_INVALID_FEE_FILE                        ResponseCodeEnum = 97  // Failed to update fee file
+	ResponseCodeEnum_INVALID_EXCHANGE_RATE_FILE              ResponseCodeEnum = 98  // Failed to update exchange rate file
+	ResponseCodeEnum_INSUFFICIENT_LOCAL_CALL_GAS             ResponseCodeEnum = 99  // Payment tendered for contract local call cannot cover both the fee and the gas
+	ResponseCodeEnum_ENTITY_NOT_ALLOWED_TO_DELETE            ResponseCodeEnum = 100 // Entities with Entity ID below 1000 are not allowed to be deleted
+	ResponseCodeEnum_AUTHORIZATION_FAILED                    ResponseCodeEnum = 101 // Violating one of these rules: 1) treasury account can update all entities below 0.0.1000, 2) account 0.0.50 can update all entities from 0.0.51 - 0.0.80, 3) Network Function Master Account A/c 0.0.50 - Update all Network Function accounts & perform all the Network Functions listed below, 4) Network Function Accounts: i) A/c 0.0.55 - Update Address Book files (0.0.101/102), ii) A/c 0.0.56 - Update Fee schedule (0.0.111), iii) A/c 0.0.57 - Update Exchange Rate (0.0.112).
+	ResponseCodeEnum_FILE_UPLOADED_PROTO_INVALID             ResponseCodeEnum = 102 // Fee Schedule Proto uploaded but not valid (append or update is required)
+	ResponseCodeEnum_FILE_UPLOADED_PROTO_NOT_SAVED_TO_DISK   ResponseCodeEnum = 103 // Fee Schedule Proto uploaded but not valid (append or update is required)
+	ResponseCodeEnum_FEE_SCHEDULE_FILE_PART_UPLOADED         ResponseCodeEnum = 104 // Fee Schedule Proto File Part uploaded
+	ResponseCodeEnum_EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED     ResponseCodeEnum = 105 // The change on Exchange Rate exceeds Exchange_Rate_Allowed_Percentage
+	ResponseCodeEnum_MAX_CONTRACT_STORAGE_EXCEEDED           ResponseCodeEnum = 106 // Contract permanent storage exceeded the currently allowable limit
+	ResponseCodeEnum_TRANSFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT ResponseCodeEnum = 107 // Transfer Account should not be same as Account to be deleted
 	ResponseCodeEnum_TOTAL_LEDGER_BALANCE_INVALID            ResponseCodeEnum = 108
-	//*
-	// The expiration date/time on a smart contract may not be reduced
-	ResponseCodeEnum_EXPIRATION_REDUCTION_NOT_ALLOWED ResponseCodeEnum = 110
-	//*
-	// Gas exceeded currently allowable gas limit per transaction
-	ResponseCodeEnum_MAX_GAS_LIMIT_EXCEEDED ResponseCodeEnum = 111
-	//*
-	// File size exceeded the currently allowable limit
-	ResponseCodeEnum_MAX_FILE_SIZE_EXCEEDED ResponseCodeEnum = 112
-	//*
-	// When a valid signature is not provided for operations on account with receiverSigRequired=true
-	ResponseCodeEnum_RECEIVER_SIG_REQUIRED ResponseCodeEnum = 113
-	//*
-	// The Topic ID specified is not in the system.
-	ResponseCodeEnum_INVALID_TOPIC_ID ResponseCodeEnum = 150
-	//*
-	// A provided admin key was invalid.
-	ResponseCodeEnum_INVALID_ADMIN_KEY ResponseCodeEnum = 155
-	//*
-	// A provided submit key was invalid.
-	ResponseCodeEnum_INVALID_SUBMIT_KEY ResponseCodeEnum = 156
-	//*
-	// An attempted operation was not authorized (ie - a deleteTopic for a topic with no adminKey).
-	ResponseCodeEnum_UNAUTHORIZED ResponseCodeEnum = 157
-	//*
-	// A ConsensusService message is empty.
-	ResponseCodeEnum_INVALID_TOPIC_MESSAGE ResponseCodeEnum = 158
-	//*
-	// The autoRenewAccount specified is not a valid, active account.
-	ResponseCodeEnum_INVALID_AUTORENEW_ACCOUNT ResponseCodeEnum = 159
-	//*
-	// An adminKey was not specified on the topic, so there must not be an autoRenewAccount.
-	ResponseCodeEnum_AUTORENEW_ACCOUNT_NOT_ALLOWED ResponseCodeEnum = 160
-	//*
-	// The topic has expired, was not automatically renewed, and is in a 7 day grace period before the
-	// topic will be deleted unrecoverably. This error response code will not be returned until
-	// autoRenew functionality is supported by HAPI.
-	ResponseCodeEnum_TOPIC_EXPIRED                            ResponseCodeEnum = 162
-	ResponseCodeEnum_INVALID_CHUNK_NUMBER                     ResponseCodeEnum = 163 // chunk number must be from 1 to total (chunks) inclusive.
-	ResponseCodeEnum_INVALID_CHUNK_TRANSACTION_ID             ResponseCodeEnum = 164 // For every chunk, the payer account that is part of initialTransactionID must match the Payer Account of this transaction. The entire initialTransactionID should match the transactionID of the first chunk, but this is not checked or enforced by Hedera except when the chunk number is 1.
-	ResponseCodeEnum_ACCOUNT_FROZEN_FOR_TOKEN                 ResponseCodeEnum = 165 // Account is frozen and cannot transact with the token
-	ResponseCodeEnum_TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED        ResponseCodeEnum = 166 // An involved account already has more than <tt>tokens.maxPerAccount</tt> associations with non-deleted tokens.
-	ResponseCodeEnum_INVALID_TOKEN_ID                         ResponseCodeEnum = 167 // The token is invalid or does not exist
-	ResponseCodeEnum_INVALID_TOKEN_DECIMALS                   ResponseCodeEnum = 168 // Invalid token decimals
-	ResponseCodeEnum_INVALID_TOKEN_INITIAL_SUPPLY             ResponseCodeEnum = 169 // Invalid token initial supply
-	ResponseCodeEnum_INVALID_TREASURY_ACCOUNT_FOR_TOKEN       ResponseCodeEnum = 170 // Treasury Account does not exist or is deleted
-	ResponseCodeEnum_INVALID_TOKEN_SYMBOL                     ResponseCodeEnum = 171 // Token Symbol is not UTF-8 capitalized alphabetical string
-	ResponseCodeEnum_TOKEN_HAS_NO_FREEZE_KEY                  ResponseCodeEnum = 172 // Freeze key is not set on token
-	ResponseCodeEnum_TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN         ResponseCodeEnum = 173 // Amounts in transfer list are not net zero
-	ResponseCodeEnum_MISSING_TOKEN_SYMBOL                     ResponseCodeEnum = 174 // A token symbol was not provided
-	ResponseCodeEnum_TOKEN_SYMBOL_TOO_LONG                    ResponseCodeEnum = 175 // The provided token symbol was too long
-	ResponseCodeEnum_ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN        ResponseCodeEnum = 176 // KYC must be granted and account does not have KYC granted
-	ResponseCodeEnum_TOKEN_HAS_NO_KYC_KEY                     ResponseCodeEnum = 177 // KYC key is not set on token
-	ResponseCodeEnum_INSUFFICIENT_TOKEN_BALANCE               ResponseCodeEnum = 178 // Token balance is not sufficient for the transaction
-	ResponseCodeEnum_TOKEN_WAS_DELETED                        ResponseCodeEnum = 179 // Token transactions cannot be executed on deleted token
-	ResponseCodeEnum_TOKEN_HAS_NO_SUPPLY_KEY                  ResponseCodeEnum = 180 // Supply key is not set on token
-	ResponseCodeEnum_TOKEN_HAS_NO_WIPE_KEY                    ResponseCodeEnum = 181 // Wipe key is not set on token
-	ResponseCodeEnum_INVALID_TOKEN_MINT_AMOUNT                ResponseCodeEnum = 182 // The requested token mint amount would cause an invalid total supply
-	ResponseCodeEnum_INVALID_TOKEN_BURN_AMOUNT                ResponseCodeEnum = 183 // The requested token burn amount would cause an invalid total supply
-	ResponseCodeEnum_TOKEN_NOT_ASSOCIATED_TO_ACCOUNT          ResponseCodeEnum = 184 // A required token-account relationship is missing
-	ResponseCodeEnum_CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT       ResponseCodeEnum = 185 // The target of a wipe operation was the token treasury account
-	ResponseCodeEnum_INVALID_KYC_KEY                          ResponseCodeEnum = 186 // The provided KYC key was invalid.
-	ResponseCodeEnum_INVALID_WIPE_KEY                         ResponseCodeEnum = 187 // The provided wipe key was invalid.
-	ResponseCodeEnum_INVALID_FREEZE_KEY                       ResponseCodeEnum = 188 // The provided freeze key was invalid.
-	ResponseCodeEnum_INVALID_SUPPLY_KEY                       ResponseCodeEnum = 189 // The provided supply key was invalid.
-	ResponseCodeEnum_MISSING_TOKEN_NAME                       ResponseCodeEnum = 190 // Token Name is not provided
-	ResponseCodeEnum_TOKEN_NAME_TOO_LONG                      ResponseCodeEnum = 191 // Token Name is too long
-	ResponseCodeEnum_INVALID_WIPING_AMOUNT                    ResponseCodeEnum = 192 // The provided wipe amount must not be negative, zero or bigger than the token holder balance
-	ResponseCodeEnum_TOKEN_IS_IMMUTABLE                       ResponseCodeEnum = 193 // Token does not have Admin key set, thus update/delete transactions cannot be performed
-	ResponseCodeEnum_TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT      ResponseCodeEnum = 194 // An <tt>associateToken</tt> operation specified a token already associated to the account
-	ResponseCodeEnum_TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES ResponseCodeEnum = 195 // An attempted operation is invalid until all token balances for the target account are zero
-	ResponseCodeEnum_ACCOUNT_IS_TREASURY                      ResponseCodeEnum = 196 // An attempted operation is invalid because the account is a treasury
-	ResponseCodeEnum_TOKEN_ID_REPEATED_IN_TOKEN_LIST          ResponseCodeEnum = 197 // Same TokenIDs present in the token list
-	ResponseCodeEnum_TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED  ResponseCodeEnum = 198 // Exceeded the number of token transfers (both from and to) allowed for token transfer list
-	ResponseCodeEnum_EMPTY_TOKEN_TRANSFER_BODY                ResponseCodeEnum = 199 // TokenTransfersTransactionBody has no TokenTransferList
-	ResponseCodeEnum_EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS     ResponseCodeEnum = 200 // TokenTransfersTransactionBody has a TokenTransferList with no AccountAmounts
-	//*
-	// The Scheduled entity does not exist; or has now expired, been deleted, or been executed
-	ResponseCodeEnum_INVALID_SCHEDULE_ID ResponseCodeEnum = 201
-	//*
-	// The Scheduled entity cannot be modified. Admin key not set
-	ResponseCodeEnum_SCHEDULE_IS_IMMUTABLE ResponseCodeEnum = 202
-	//*
-	// The provided Scheduled Payer does not exist
-	ResponseCodeEnum_INVALID_SCHEDULE_PAYER_ID ResponseCodeEnum = 203
-	//*
-	// The Schedule Create Transaction TransactionID account does not exist
-	ResponseCodeEnum_INVALID_SCHEDULE_ACCOUNT_ID ResponseCodeEnum = 204
-	//*
-	// The provided sig map did not contain any new valid signatures from required signers of the scheduled transaction
-	ResponseCodeEnum_NO_NEW_VALID_SIGNATURES ResponseCodeEnum = 205
-	//*
-	// The required signers for a scheduled transaction cannot be resolved, for example because they do not exist or have been deleted
-	ResponseCodeEnum_UNRESOLVABLE_REQUIRED_SIGNERS ResponseCodeEnum = 206
-	//*
-	// Only whitelisted transaction types may be scheduled
-	ResponseCodeEnum_SCHEDULED_TRANSACTION_NOT_IN_WHITELIST ResponseCodeEnum = 207
-	//*
-	// At least one of the signatures in the provided sig map did not represent a valid signature for any required signer
-	ResponseCodeEnum_SOME_SIGNATURES_WERE_INVALID ResponseCodeEnum = 208
-	//*
-	// The scheduled field in the TransactionID may not be set to true
-	ResponseCodeEnum_TRANSACTION_ID_FIELD_NOT_ALLOWED ResponseCodeEnum = 209
-	//*
-	// A schedule already exists with the same identifying fields of an attempted ScheduleCreate (that is, all fields other than scheduledPayerAccountID)
-	ResponseCodeEnum_IDENTICAL_SCHEDULE_ALREADY_CREATED ResponseCodeEnum = 210
-	//*
-	// A string field in the transaction has a UTF-8 encoding with the prohibited zero byte
-	ResponseCodeEnum_INVALID_ZERO_BYTE_IN_STRING ResponseCodeEnum = 211
-	//*
-	// A schedule being signed or deleted has already been deleted
-	ResponseCodeEnum_SCHEDULE_ALREADY_DELETED ResponseCodeEnum = 212
-	//*
-	// A schedule being signed or deleted has already been executed
-	ResponseCodeEnum_SCHEDULE_ALREADY_EXECUTED ResponseCodeEnum = 213
-	//*
-	// ConsensusSubmitMessage request's message size is larger than allowed.
-	ResponseCodeEnum_MESSAGE_SIZE_TOO_LARGE ResponseCodeEnum = 214
-	//*
-	// An operation was assigned to more than one throttle group in a given bucket
-	ResponseCodeEnum_OPERATION_REPEATED_IN_BUCKET_GROUPS ResponseCodeEnum = 215
-	//*
-	// The capacity needed to satisfy all opsPerSec groups in a bucket overflowed a signed 8-byte integral type
-	ResponseCodeEnum_BUCKET_CAPACITY_OVERFLOW ResponseCodeEnum = 216
-	//*
-	// Given the network size in the address book, the node-level capacity for an operation would never be enough to accept a single request; usually means a bucket burstPeriod should be increased
-	ResponseCodeEnum_NODE_CAPACITY_NOT_SUFFICIENT_FOR_OPERATION ResponseCodeEnum = 217
-	//*
-	// A bucket was defined without any throttle groups
-	ResponseCodeEnum_BUCKET_HAS_NO_THROTTLE_GROUPS ResponseCodeEnum = 218
-	//*
-	// A throttle group was granted zero opsPerSec
-	ResponseCodeEnum_THROTTLE_GROUP_HAS_ZERO_OPS_PER_SEC ResponseCodeEnum = 219
-	//*
-	// The throttle definitions file was updated, but some supported operations were not assigned a bucket
-	ResponseCodeEnum_SUCCESS_BUT_MISSING_EXPECTED_OPERATION ResponseCodeEnum = 220
-	//*
-	// The new contents for the throttle definitions system file were not valid protobuf
-	ResponseCodeEnum_UNPARSEABLE_THROTTLE_DEFINITIONS ResponseCodeEnum = 221
-	//*
-	// The new throttle definitions system file were invalid, and no more specific error could be divined
-	ResponseCodeEnum_INVALID_THROTTLE_DEFINITIONS ResponseCodeEnum = 222
-	//*
-	// The transaction references an account which has passed its expiration without renewal funds available, and currently remains in the ledger only because of the grace period given to expired entities
-	ResponseCodeEnum_ACCOUNT_EXPIRED_AND_PENDING_REMOVAL ResponseCodeEnum = 223
-	//*
-	// Invalid token max supply
-	ResponseCodeEnum_INVALID_TOKEN_MAX_SUPPLY ResponseCodeEnum = 224
-	//*
-	// Invalid token nft serial number
-	ResponseCodeEnum_INVALID_TOKEN_NFT_SERIAL_NUMBER ResponseCodeEnum = 225
-	//*
-	// Invalid nft id
-	ResponseCodeEnum_INVALID_NFT_ID ResponseCodeEnum = 226
-	//*
-	// Nft metadata is too long
-	ResponseCodeEnum_METADATA_TOO_LONG ResponseCodeEnum = 227
-	//*
-	// Repeated operations count exceeds the limit
-	ResponseCodeEnum_BATCH_SIZE_LIMIT_EXCEEDED ResponseCodeEnum = 228
-	//*
-	// The range of data to be gathered is out of the set boundaries
-	ResponseCodeEnum_INVALID_QUERY_RANGE ResponseCodeEnum = 229
-	//*
-	// A custom fractional fee set a denominator of zero
-	ResponseCodeEnum_FRACTION_DIVIDES_BY_ZERO ResponseCodeEnum = 230
-	//*
-	// The transaction payer could not afford a custom fee
-	//
+	ResponseCodeEnum_EXPIRATION_REDUCTION_NOT_ALLOWED        ResponseCodeEnum = 110 // The expiration date/time on a smart contract may not be reduced
+	ResponseCodeEnum_MAX_GAS_LIMIT_EXCEEDED                  ResponseCodeEnum = 111 //Gas exceeded currently allowable gas limit per transaction
+	ResponseCodeEnum_MAX_FILE_SIZE_EXCEEDED                  ResponseCodeEnum = 112 // File size exceeded the currently allowable limit
+	ResponseCodeEnum_RECEIVER_SIG_REQUIRED                   ResponseCodeEnum = 113 // When a valid signature is not provided for operations on account with receiverSigRequired=true
+	ResponseCodeEnum_INVALID_TOPIC_ID                        ResponseCodeEnum = 150 // The Topic ID specified is not in the system.
+	ResponseCodeEnum_INVALID_ADMIN_KEY                       ResponseCodeEnum = 155 // A provided admin key was invalid.
+	ResponseCodeEnum_INVALID_SUBMIT_KEY                      ResponseCodeEnum = 156 // A provided submit key was invalid.
+	ResponseCodeEnum_UNAUTHORIZED                            ResponseCodeEnum = 157 // An attempted operation was not authorized (ie - a deleteTopic for a topic with no adminKey).
+	ResponseCodeEnum_INVALID_TOPIC_MESSAGE                   ResponseCodeEnum = 158 // A ConsensusService message is empty.
+	ResponseCodeEnum_INVALID_AUTORENEW_ACCOUNT               ResponseCodeEnum = 159 // The autoRenewAccount specified is not a valid, active account.
+	ResponseCodeEnum_AUTORENEW_ACCOUNT_NOT_ALLOWED           ResponseCodeEnum = 160 // An adminKey was not specified on the topic, so there must not be an autoRenewAccount.
+	// The topic has expired, was not automatically renewed, and is in a 7 day grace period before the topic will be
+	// deleted unrecoverably. This error response code will not be returned until autoRenew functionality is supported
+	// by HAPI.
+	ResponseCodeEnum_TOPIC_EXPIRED                              ResponseCodeEnum = 162
+	ResponseCodeEnum_INVALID_CHUNK_NUMBER                       ResponseCodeEnum = 163 // chunk number must be from 1 to total (chunks) inclusive.
+	ResponseCodeEnum_INVALID_CHUNK_TRANSACTION_ID               ResponseCodeEnum = 164 // For every chunk, the payer account that is part of initialTransactionID must match the Payer Account of this transaction. The entire initialTransactionID should match the transactionID of the first chunk, but this is not checked or enforced by Hedera except when the chunk number is 1.
+	ResponseCodeEnum_ACCOUNT_FROZEN_FOR_TOKEN                   ResponseCodeEnum = 165 // Account is frozen and cannot transact with the token
+	ResponseCodeEnum_TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED          ResponseCodeEnum = 166 // An involved account already has more than <tt>tokens.maxPerAccount</tt> associations with non-deleted tokens.
+	ResponseCodeEnum_INVALID_TOKEN_ID                           ResponseCodeEnum = 167 // The token is invalid or does not exist
+	ResponseCodeEnum_INVALID_TOKEN_DECIMALS                     ResponseCodeEnum = 168 // Invalid token decimals
+	ResponseCodeEnum_INVALID_TOKEN_INITIAL_SUPPLY               ResponseCodeEnum = 169 // Invalid token initial supply
+	ResponseCodeEnum_INVALID_TREASURY_ACCOUNT_FOR_TOKEN         ResponseCodeEnum = 170 // Treasury Account does not exist or is deleted
+	ResponseCodeEnum_INVALID_TOKEN_SYMBOL                       ResponseCodeEnum = 171 // Token Symbol is not UTF-8 capitalized alphabetical string
+	ResponseCodeEnum_TOKEN_HAS_NO_FREEZE_KEY                    ResponseCodeEnum = 172 // Freeze key is not set on token
+	ResponseCodeEnum_TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN           ResponseCodeEnum = 173 // Amounts in transfer list are not net zero
+	ResponseCodeEnum_MISSING_TOKEN_SYMBOL                       ResponseCodeEnum = 174 // A token symbol was not provided
+	ResponseCodeEnum_TOKEN_SYMBOL_TOO_LONG                      ResponseCodeEnum = 175 // The provided token symbol was too long
+	ResponseCodeEnum_ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN          ResponseCodeEnum = 176 // KYC must be granted and account does not have KYC granted
+	ResponseCodeEnum_TOKEN_HAS_NO_KYC_KEY                       ResponseCodeEnum = 177 // KYC key is not set on token
+	ResponseCodeEnum_INSUFFICIENT_TOKEN_BALANCE                 ResponseCodeEnum = 178 // Token balance is not sufficient for the transaction
+	ResponseCodeEnum_TOKEN_WAS_DELETED                          ResponseCodeEnum = 179 // Token transactions cannot be executed on deleted token
+	ResponseCodeEnum_TOKEN_HAS_NO_SUPPLY_KEY                    ResponseCodeEnum = 180 // Supply key is not set on token
+	ResponseCodeEnum_TOKEN_HAS_NO_WIPE_KEY                      ResponseCodeEnum = 181 // Wipe key is not set on token
+	ResponseCodeEnum_INVALID_TOKEN_MINT_AMOUNT                  ResponseCodeEnum = 182 // The requested token mint amount would cause an invalid total supply
+	ResponseCodeEnum_INVALID_TOKEN_BURN_AMOUNT                  ResponseCodeEnum = 183 // The requested token burn amount would cause an invalid total supply
+	ResponseCodeEnum_TOKEN_NOT_ASSOCIATED_TO_ACCOUNT            ResponseCodeEnum = 184 // A required token-account relationship is missing
+	ResponseCodeEnum_CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT         ResponseCodeEnum = 185 // The target of a wipe operation was the token treasury account
+	ResponseCodeEnum_INVALID_KYC_KEY                            ResponseCodeEnum = 186 // The provided KYC key was invalid.
+	ResponseCodeEnum_INVALID_WIPE_KEY                           ResponseCodeEnum = 187 // The provided wipe key was invalid.
+	ResponseCodeEnum_INVALID_FREEZE_KEY                         ResponseCodeEnum = 188 // The provided freeze key was invalid.
+	ResponseCodeEnum_INVALID_SUPPLY_KEY                         ResponseCodeEnum = 189 // The provided supply key was invalid.
+	ResponseCodeEnum_MISSING_TOKEN_NAME                         ResponseCodeEnum = 190 // Token Name is not provided
+	ResponseCodeEnum_TOKEN_NAME_TOO_LONG                        ResponseCodeEnum = 191 // Token Name is too long
+	ResponseCodeEnum_INVALID_WIPING_AMOUNT                      ResponseCodeEnum = 192 // The provided wipe amount must not be negative, zero or bigger than the token holder balance
+	ResponseCodeEnum_TOKEN_IS_IMMUTABLE                         ResponseCodeEnum = 193 // Token does not have Admin key set, thus update/delete transactions cannot be performed
+	ResponseCodeEnum_TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT        ResponseCodeEnum = 194 // An <tt>associateToken</tt> operation specified a token already associated to the account
+	ResponseCodeEnum_TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES   ResponseCodeEnum = 195 // An attempted operation is invalid until all token balances for the target account are zero
+	ResponseCodeEnum_ACCOUNT_IS_TREASURY                        ResponseCodeEnum = 196 // An attempted operation is invalid because the account is a treasury
+	ResponseCodeEnum_TOKEN_ID_REPEATED_IN_TOKEN_LIST            ResponseCodeEnum = 197 // Same TokenIDs present in the token list
+	ResponseCodeEnum_TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED    ResponseCodeEnum = 198 // Exceeded the number of token transfers (both from and to) allowed for token transfer list
+	ResponseCodeEnum_EMPTY_TOKEN_TRANSFER_BODY                  ResponseCodeEnum = 199 // TokenTransfersTransactionBody has no TokenTransferList
+	ResponseCodeEnum_EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS       ResponseCodeEnum = 200 // TokenTransfersTransactionBody has a TokenTransferList with no AccountAmounts
+	ResponseCodeEnum_INVALID_SCHEDULE_ID                        ResponseCodeEnum = 201 // The Scheduled entity does not exist; or has now expired, been deleted, or been executed
+	ResponseCodeEnum_SCHEDULE_IS_IMMUTABLE                      ResponseCodeEnum = 202 // The Scheduled entity cannot be modified. Admin key not set
+	ResponseCodeEnum_INVALID_SCHEDULE_PAYER_ID                  ResponseCodeEnum = 203 // The provided Scheduled Payer does not exist
+	ResponseCodeEnum_INVALID_SCHEDULE_ACCOUNT_ID                ResponseCodeEnum = 204 // The Schedule Create Transaction TransactionID account does not exist
+	ResponseCodeEnum_NO_NEW_VALID_SIGNATURES                    ResponseCodeEnum = 205 // The provided sig map did not contain any new valid signatures from required signers of the scheduled transaction
+	ResponseCodeEnum_UNRESOLVABLE_REQUIRED_SIGNERS              ResponseCodeEnum = 206 // The required signers for a scheduled transaction cannot be resolved, for example because they do not exist or have been deleted
+	ResponseCodeEnum_SCHEDULED_TRANSACTION_NOT_IN_WHITELIST     ResponseCodeEnum = 207 // Only whitelisted transaction types may be scheduled
+	ResponseCodeEnum_SOME_SIGNATURES_WERE_INVALID               ResponseCodeEnum = 208 // At least one of the signatures in the provided sig map did not represent a valid signature for any required signer
+	ResponseCodeEnum_TRANSACTION_ID_FIELD_NOT_ALLOWED           ResponseCodeEnum = 209 // The scheduled field in the TransactionID may not be set to true
+	ResponseCodeEnum_IDENTICAL_SCHEDULE_ALREADY_CREATED         ResponseCodeEnum = 210 // A schedule already exists with the same identifying fields of an attempted ScheduleCreate (that is, all fields other than scheduledPayerAccountID)
+	ResponseCodeEnum_INVALID_ZERO_BYTE_IN_STRING                ResponseCodeEnum = 211 // A string field in the transaction has a UTF-8 encoding with the prohibited zero byte
+	ResponseCodeEnum_SCHEDULE_ALREADY_DELETED                   ResponseCodeEnum = 212 // A schedule being signed or deleted has already been deleted
+	ResponseCodeEnum_SCHEDULE_ALREADY_EXECUTED                  ResponseCodeEnum = 213 // A schedule being signed or deleted has already been executed
+	ResponseCodeEnum_MESSAGE_SIZE_TOO_LARGE                     ResponseCodeEnum = 214 // ConsensusSubmitMessage request's message size is larger than allowed.
+	ResponseCodeEnum_OPERATION_REPEATED_IN_BUCKET_GROUPS        ResponseCodeEnum = 215 // An operation was assigned to more than one throttle group in a given bucket
+	ResponseCodeEnum_BUCKET_CAPACITY_OVERFLOW                   ResponseCodeEnum = 216 // The capacity needed to satisfy all opsPerSec groups in a bucket overflowed a signed 8-byte integral type
+	ResponseCodeEnum_NODE_CAPACITY_NOT_SUFFICIENT_FOR_OPERATION ResponseCodeEnum = 217 // Given the network size in the address book, the node-level capacity for an operation would never be enough to accept a single request; usually means a bucket burstPeriod should be increased
+	ResponseCodeEnum_BUCKET_HAS_NO_THROTTLE_GROUPS              ResponseCodeEnum = 218 // A bucket was defined without any throttle groups
+	ResponseCodeEnum_THROTTLE_GROUP_HAS_ZERO_OPS_PER_SEC        ResponseCodeEnum = 219 // A throttle group was granted zero opsPerSec
+	ResponseCodeEnum_SUCCESS_BUT_MISSING_EXPECTED_OPERATION     ResponseCodeEnum = 220 // The throttle definitions file was updated, but some supported operations were not assigned a bucket
+	ResponseCodeEnum_UNPARSEABLE_THROTTLE_DEFINITIONS           ResponseCodeEnum = 221 // The new contents for the throttle definitions system file were not valid protobuf
+	ResponseCodeEnum_INVALID_THROTTLE_DEFINITIONS               ResponseCodeEnum = 222 // The new throttle definitions system file were invalid, and no more specific error could be divined
+	ResponseCodeEnum_ACCOUNT_EXPIRED_AND_PENDING_REMOVAL        ResponseCodeEnum = 223 // The transaction references an account which has passed its expiration without renewal funds available, and currently remains in the ledger only because of the grace period given to expired entities
+	ResponseCodeEnum_INVALID_TOKEN_MAX_SUPPLY                   ResponseCodeEnum = 224 // Invalid token max supply
+	ResponseCodeEnum_INVALID_TOKEN_NFT_SERIAL_NUMBER            ResponseCodeEnum = 225 // Invalid token nft serial number
+	ResponseCodeEnum_INVALID_NFT_ID                             ResponseCodeEnum = 226 // Invalid nft id
+	ResponseCodeEnum_METADATA_TOO_LONG                          ResponseCodeEnum = 227 // Nft metadata is too long
+	ResponseCodeEnum_BATCH_SIZE_LIMIT_EXCEEDED                  ResponseCodeEnum = 228 // Repeated operations count exceeds the limit
+	ResponseCodeEnum_INVALID_QUERY_RANGE                        ResponseCodeEnum = 229 // The range of data to be gathered is out of the set boundaries
+	ResponseCodeEnum_FRACTION_DIVIDES_BY_ZERO                   ResponseCodeEnum = 230 // A custom fractional fee set a denominator of zero
 	// Deprecated: Do not use.
-	ResponseCodeEnum_INSUFFICIENT_PAYER_BALANCE_FOR_CUSTOM_FEE ResponseCodeEnum = 231
-	//*
-	// More than 10 custom fees were specified
-	ResponseCodeEnum_CUSTOM_FEES_LIST_TOO_LONG ResponseCodeEnum = 232
-	//*
-	// Any of the feeCollector accounts for customFees is invalid
-	ResponseCodeEnum_INVALID_CUSTOM_FEE_COLLECTOR ResponseCodeEnum = 233
-	//*
-	// Any of the token Ids in customFees is invalid
-	ResponseCodeEnum_INVALID_TOKEN_ID_IN_CUSTOM_FEES ResponseCodeEnum = 234
-	//*
-	// Any of the token Ids in customFees are not associated to feeCollector
-	ResponseCodeEnum_TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR ResponseCodeEnum = 235
-	//*
-	// A token cannot have more units minted due to its configured supply ceiling
-	ResponseCodeEnum_TOKEN_MAX_SUPPLY_REACHED ResponseCodeEnum = 236
-	//*
-	// The transaction attempted to move an NFT serial number from an account other than its owner
-	ResponseCodeEnum_SENDER_DOES_NOT_OWN_NFT_SERIAL_NO ResponseCodeEnum = 237
-	//*
-	// A custom fee schedule entry did not specify either a fixed or fractional fee
-	ResponseCodeEnum_CUSTOM_FEE_NOT_FULLY_SPECIFIED ResponseCodeEnum = 238
-	//*
-	// Only positive fees may be assessed at this time
-	ResponseCodeEnum_CUSTOM_FEE_MUST_BE_POSITIVE ResponseCodeEnum = 239
-	//*
-	// Fee schedule key is not set on token
-	ResponseCodeEnum_TOKEN_HAS_NO_FEE_SCHEDULE_KEY ResponseCodeEnum = 240
-	//*
-	// A fractional custom fee exceeded the range of a 64-bit signed integer
-	ResponseCodeEnum_CUSTOM_FEE_OUTSIDE_NUMERIC_RANGE ResponseCodeEnum = 241
-	//*
-	// A royalty cannot exceed the total fungible value exchanged for an NFT
-	ResponseCodeEnum_ROYALTY_FRACTION_CANNOT_EXCEED_ONE ResponseCodeEnum = 242
-	//*
-	// Each fractional custom fee must have its maximum_amount, if specified, at least its minimum_amount
-	ResponseCodeEnum_FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT ResponseCodeEnum = 243
-	//*
-	// A fee schedule update tried to clear the custom fees from a token whose fee schedule was already empty
-	ResponseCodeEnum_CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES ResponseCodeEnum = 244
-	//*
-	// Only tokens of type FUNGIBLE_COMMON can be used to as fee schedule denominations
-	ResponseCodeEnum_CUSTOM_FEE_DENOMINATION_MUST_BE_FUNGIBLE_COMMON ResponseCodeEnum = 245
-	//*
-	// Only tokens of type FUNGIBLE_COMMON can have fractional fees
-	ResponseCodeEnum_CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON ResponseCodeEnum = 246
-	//*
-	// The provided custom fee schedule key was invalid
-	ResponseCodeEnum_INVALID_CUSTOM_FEE_SCHEDULE_KEY ResponseCodeEnum = 247
-	//*
-	// The requested token mint metadata was invalid
-	ResponseCodeEnum_INVALID_TOKEN_MINT_METADATA ResponseCodeEnum = 248
-	//*
-	// The requested token burn metadata was invalid
-	ResponseCodeEnum_INVALID_TOKEN_BURN_METADATA ResponseCodeEnum = 249
-	//*
-	// The treasury for a unique token cannot be changed until it owns no NFTs
-	ResponseCodeEnum_CURRENT_TREASURY_STILL_OWNS_NFTS ResponseCodeEnum = 250
-	//*
-	// An account cannot be dissociated from a unique token if it owns NFTs for the token
-	ResponseCodeEnum_ACCOUNT_STILL_OWNS_NFTS ResponseCodeEnum = 251
-	//*
-	// A NFT can only be burned when owned by the unique token's treasury
-	ResponseCodeEnum_TREASURY_MUST_OWN_BURNED_NFT ResponseCodeEnum = 252
-	//*
-	// An account did not own the NFT to be wiped
-	ResponseCodeEnum_ACCOUNT_DOES_NOT_OWN_WIPED_NFT ResponseCodeEnum = 253
-	//*
-	// An AccountAmount token transfers list referenced a token type other than FUNGIBLE_COMMON
-	ResponseCodeEnum_ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON ResponseCodeEnum = 254
-	//*
-	// All the NFTs allowed in the current price regime have already been minted
-	ResponseCodeEnum_MAX_NFTS_IN_PRICE_REGIME_HAVE_BEEN_MINTED ResponseCodeEnum = 255
-	//*
-	// The payer account has been marked as deleted
-	ResponseCodeEnum_PAYER_ACCOUNT_DELETED ResponseCodeEnum = 256
-	//*
-	// The reference chain of custom fees for a transferred token exceeded the maximum length of 2
-	ResponseCodeEnum_CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH ResponseCodeEnum = 257
-	//*
-	// More than 20 balance adjustments were to satisfy a CryptoTransfer and its implied custom fee payments
-	ResponseCodeEnum_CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS ResponseCodeEnum = 258
-	//*
-	// The sender account in the token transfer transaction could not afford a custom fee
-	ResponseCodeEnum_INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE ResponseCodeEnum = 259
-	//*
-	// Currently no more than 4,294,967,295 NFTs may be minted for a given unique token type
-	ResponseCodeEnum_SERIAL_NUMBER_LIMIT_REACHED ResponseCodeEnum = 260
-	//*
-	// Only tokens of type NON_FUNGIBLE_UNIQUE can have royalty fees
-	ResponseCodeEnum_CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE ResponseCodeEnum = 261
-	//*
-	// The account has reached the limit on the automatic associations count.
-	ResponseCodeEnum_NO_REMAINING_AUTOMATIC_ASSOCIATIONS ResponseCodeEnum = 262
-	//*
-	// Already existing automatic associations are more than the new maximum automatic associations.
-	ResponseCodeEnum_EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT ResponseCodeEnum = 263
-	//*
-	// Cannot set the number of automatic associations for an account more than the maximum allowed token associations <tt>tokens.maxPerAccount</tt>
-	ResponseCodeEnum_REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT ResponseCodeEnum = 264
-	//*
-	// Token is paused. This Token cannot be a part of any kind of Transaction until unpaused.
-	ResponseCodeEnum_TOKEN_IS_PAUSED ResponseCodeEnum = 265
-	//*
-	// Pause key is not set on token
-	ResponseCodeEnum_TOKEN_HAS_NO_PAUSE_KEY ResponseCodeEnum = 266
-	//*
-	// The provided pause key was invalid
-	ResponseCodeEnum_INVALID_PAUSE_KEY ResponseCodeEnum = 267
+	ResponseCodeEnum_INSUFFICIENT_PAYER_BALANCE_FOR_CUSTOM_FEE                 ResponseCodeEnum = 231 // The transaction payer could not afford a custom fee
+	ResponseCodeEnum_CUSTOM_FEES_LIST_TOO_LONG                                 ResponseCodeEnum = 232 // More than 10 custom fees were specified
+	ResponseCodeEnum_INVALID_CUSTOM_FEE_COLLECTOR                              ResponseCodeEnum = 233 // Any of the feeCollector accounts for customFees is invalid
+	ResponseCodeEnum_INVALID_TOKEN_ID_IN_CUSTOM_FEES                           ResponseCodeEnum = 234 // Any of the token Ids in customFees is invalid
+	ResponseCodeEnum_TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR                     ResponseCodeEnum = 235 // Any of the token Ids in customFees are not associated to feeCollector
+	ResponseCodeEnum_TOKEN_MAX_SUPPLY_REACHED                                  ResponseCodeEnum = 236 // A token cannot have more units minted due to its configured supply ceiling
+	ResponseCodeEnum_SENDER_DOES_NOT_OWN_NFT_SERIAL_NO                         ResponseCodeEnum = 237 // The transaction attempted to move an NFT serial number from an account other than its owner
+	ResponseCodeEnum_CUSTOM_FEE_NOT_FULLY_SPECIFIED                            ResponseCodeEnum = 238 // A custom fee schedule entry did not specify either a fixed or fractional fee
+	ResponseCodeEnum_CUSTOM_FEE_MUST_BE_POSITIVE                               ResponseCodeEnum = 239 // Only positive fees may be assessed at this time
+	ResponseCodeEnum_TOKEN_HAS_NO_FEE_SCHEDULE_KEY                             ResponseCodeEnum = 240 // Fee schedule key is not set on token
+	ResponseCodeEnum_CUSTOM_FEE_OUTSIDE_NUMERIC_RANGE                          ResponseCodeEnum = 241 // A fractional custom fee exceeded the range of a 64-bit signed integer
+	ResponseCodeEnum_ROYALTY_FRACTION_CANNOT_EXCEED_ONE                        ResponseCodeEnum = 242 // A royalty cannot exceed the total fungible value exchanged for an NFT
+	ResponseCodeEnum_FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT            ResponseCodeEnum = 243 // Each fractional custom fee must have its maximum_amount, if specified, at least its minimum_amount
+	ResponseCodeEnum_CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES                       ResponseCodeEnum = 244 // A fee schedule update tried to clear the custom fees from a token whose fee schedule was already empty
+	ResponseCodeEnum_CUSTOM_FEE_DENOMINATION_MUST_BE_FUNGIBLE_COMMON           ResponseCodeEnum = 245 // Only tokens of type FUNGIBLE_COMMON can be used to as fee schedule denominations
+	ResponseCodeEnum_CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON    ResponseCodeEnum = 246 // Only tokens of type FUNGIBLE_COMMON can have fractional fees
+	ResponseCodeEnum_INVALID_CUSTOM_FEE_SCHEDULE_KEY                           ResponseCodeEnum = 247 // The provided custom fee schedule key was invalid
+	ResponseCodeEnum_INVALID_TOKEN_MINT_METADATA                               ResponseCodeEnum = 248 // The requested token mint metadata was invalid
+	ResponseCodeEnum_INVALID_TOKEN_BURN_METADATA                               ResponseCodeEnum = 249 // The requested token burn metadata was invalid
+	ResponseCodeEnum_CURRENT_TREASURY_STILL_OWNS_NFTS                          ResponseCodeEnum = 250 // The treasury for a unique token cannot be changed until it owns no NFTs
+	ResponseCodeEnum_ACCOUNT_STILL_OWNS_NFTS                                   ResponseCodeEnum = 251 // An account cannot be dissociated from a unique token if it owns NFTs for the token
+	ResponseCodeEnum_TREASURY_MUST_OWN_BURNED_NFT                              ResponseCodeEnum = 252 // A NFT can only be burned when owned by the unique token's treasury
+	ResponseCodeEnum_ACCOUNT_DOES_NOT_OWN_WIPED_NFT                            ResponseCodeEnum = 253 // An account did not own the NFT to be wiped
+	ResponseCodeEnum_ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON ResponseCodeEnum = 254 // An AccountAmount token transfers list referenced a token type other than FUNGIBLE_COMMON
+	ResponseCodeEnum_MAX_NFTS_IN_PRICE_REGIME_HAVE_BEEN_MINTED                 ResponseCodeEnum = 255 // All the NFTs allowed in the current price regime have already been minted
+	ResponseCodeEnum_PAYER_ACCOUNT_DELETED                                     ResponseCodeEnum = 256 // The payer account has been marked as deleted
+	ResponseCodeEnum_CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH          ResponseCodeEnum = 257 // The reference chain of custom fees for a transferred token exceeded the maximum length of 2
+	ResponseCodeEnum_CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS          ResponseCodeEnum = 258 // More than 20 balance adjustments were to satisfy a CryptoTransfer and its implied custom fee payments
+	ResponseCodeEnum_INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE        ResponseCodeEnum = 259 // The sender account in the token transfer transaction could not afford a custom fee
+	ResponseCodeEnum_SERIAL_NUMBER_LIMIT_REACHED                               ResponseCodeEnum = 260 // Currently no more than 4,294,967,295 NFTs may be minted for a given unique token type
+	ResponseCodeEnum_CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE   ResponseCodeEnum = 261 // Only tokens of type NON_FUNGIBLE_UNIQUE can have royalty fees
+	ResponseCodeEnum_NO_REMAINING_AUTO_ASSOCIATIONS                            ResponseCodeEnum = 262 // The account has reached the limit on the automatic associations count.
+	ResponseCodeEnum_EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT        ResponseCodeEnum = 263 // Already existing automatic associations are more than the new maximum automatic associations
 )
 
 // Enum value maps for ResponseCodeEnum.
@@ -878,240 +476,232 @@ var (
 		259: "INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE",
 		260: "SERIAL_NUMBER_LIMIT_REACHED",
 		261: "CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE",
-		262: "NO_REMAINING_AUTOMATIC_ASSOCIATIONS",
+		262: "NO_REMAINING_AUTO_ASSOCIATIONS",
 		263: "EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT",
-		264: "REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT",
-		265: "TOKEN_IS_PAUSED",
-		266: "TOKEN_HAS_NO_PAUSE_KEY",
-		267: "INVALID_PAUSE_KEY",
 	}
 	ResponseCodeEnum_value = map[string]int32{
-		"OK":                                                             0,
-		"INVALID_TRANSACTION":                                            1,
-		"PAYER_ACCOUNT_NOT_FOUND":                                        2,
-		"INVALID_NODE_ACCOUNT":                                           3,
-		"TRANSACTION_EXPIRED":                                            4,
-		"INVALID_TRANSACTION_START":                                      5,
-		"INVALID_TRANSACTION_DURATION":                                   6,
-		"INVALID_SIGNATURE":                                              7,
-		"MEMO_TOO_LONG":                                                  8,
-		"INSUFFICIENT_TX_FEE":                                            9,
-		"INSUFFICIENT_PAYER_BALANCE":                                     10,
-		"DUPLICATE_TRANSACTION":                                          11,
-		"BUSY":                                                           12,
-		"NOT_SUPPORTED":                                                  13,
-		"INVALID_FILE_ID":                                                14,
-		"INVALID_ACCOUNT_ID":                                             15,
-		"INVALID_CONTRACT_ID":                                            16,
-		"INVALID_TRANSACTION_ID":                                         17,
-		"RECEIPT_NOT_FOUND":                                              18,
-		"RECORD_NOT_FOUND":                                               19,
-		"INVALID_SOLIDITY_ID":                                            20,
-		"UNKNOWN":                                                        21,
-		"SUCCESS":                                                        22,
-		"FAIL_INVALID":                                                   23,
-		"FAIL_FEE":                                                       24,
-		"FAIL_BALANCE":                                                   25,
-		"KEY_REQUIRED":                                                   26,
-		"BAD_ENCODING":                                                   27,
-		"INSUFFICIENT_ACCOUNT_BALANCE":                                   28,
-		"INVALID_SOLIDITY_ADDRESS":                                       29,
-		"INSUFFICIENT_GAS":                                               30,
-		"CONTRACT_SIZE_LIMIT_EXCEEDED":                                   31,
-		"LOCAL_CALL_MODIFICATION_EXCEPTION":                              32,
-		"CONTRACT_REVERT_EXECUTED":                                       33,
-		"CONTRACT_EXECUTION_EXCEPTION":                                   34,
-		"INVALID_RECEIVING_NODE_ACCOUNT":                                 35,
-		"MISSING_QUERY_HEADER":                                           36,
-		"ACCOUNT_UPDATE_FAILED":                                          37,
-		"INVALID_KEY_ENCODING":                                           38,
-		"NULL_SOLIDITY_ADDRESS":                                          39,
-		"CONTRACT_UPDATE_FAILED":                                         40,
-		"INVALID_QUERY_HEADER":                                           41,
-		"INVALID_FEE_SUBMITTED":                                          42,
-		"INVALID_PAYER_SIGNATURE":                                        43,
-		"KEY_NOT_PROVIDED":                                               44,
-		"INVALID_EXPIRATION_TIME":                                        45,
-		"NO_WACL_KEY":                                                    46,
-		"FILE_CONTENT_EMPTY":                                             47,
-		"INVALID_ACCOUNT_AMOUNTS":                                        48,
-		"EMPTY_TRANSACTION_BODY":                                         49,
-		"INVALID_TRANSACTION_BODY":                                       50,
-		"INVALID_SIGNATURE_TYPE_MISMATCHING_KEY":                         51,
-		"INVALID_SIGNATURE_COUNT_MISMATCHING_KEY":                        52,
-		"EMPTY_LIVE_HASH_BODY":                                           53,
-		"EMPTY_LIVE_HASH":                                                54,
-		"EMPTY_LIVE_HASH_KEYS":                                           55,
-		"INVALID_LIVE_HASH_SIZE":                                         56,
-		"EMPTY_QUERY_BODY":                                               57,
-		"EMPTY_LIVE_HASH_QUERY":                                          58,
-		"LIVE_HASH_NOT_FOUND":                                            59,
-		"ACCOUNT_ID_DOES_NOT_EXIST":                                      60,
-		"LIVE_HASH_ALREADY_EXISTS":                                       61,
-		"INVALID_FILE_WACL":                                              62,
-		"SERIALIZATION_FAILED":                                           63,
-		"TRANSACTION_OVERSIZE":                                           64,
-		"TRANSACTION_TOO_MANY_LAYERS":                                    65,
-		"CONTRACT_DELETED":                                               66,
-		"PLATFORM_NOT_ACTIVE":                                            67,
-		"KEY_PREFIX_MISMATCH":                                            68,
-		"PLATFORM_TRANSACTION_NOT_CREATED":                               69,
-		"INVALID_RENEWAL_PERIOD":                                         70,
-		"INVALID_PAYER_ACCOUNT_ID":                                       71,
-		"ACCOUNT_DELETED":                                                72,
-		"FILE_DELETED":                                                   73,
-		"ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS":                            74,
-		"SETTING_NEGATIVE_ACCOUNT_BALANCE":                               75,
-		"OBTAINER_REQUIRED":                                              76,
-		"OBTAINER_SAME_CONTRACT_ID":                                      77,
-		"OBTAINER_DOES_NOT_EXIST":                                        78,
-		"MODIFYING_IMMUTABLE_CONTRACT":                                   79,
-		"FILE_SYSTEM_EXCEPTION":                                          80,
-		"AUTORENEW_DURATION_NOT_IN_RANGE":                                81,
-		"ERROR_DECODING_BYTESTRING":                                      82,
-		"CONTRACT_FILE_EMPTY":                                            83,
-		"CONTRACT_BYTECODE_EMPTY":                                        84,
-		"INVALID_INITIAL_BALANCE":                                        85,
-		"INVALID_RECEIVE_RECORD_THRESHOLD":                               86,
-		"INVALID_SEND_RECORD_THRESHOLD":                                  87,
-		"ACCOUNT_IS_NOT_GENESIS_ACCOUNT":                                 88,
-		"PAYER_ACCOUNT_UNAUTHORIZED":                                     89,
-		"INVALID_FREEZE_TRANSACTION_BODY":                                90,
-		"FREEZE_TRANSACTION_BODY_NOT_FOUND":                              91,
-		"TRANSFER_LIST_SIZE_LIMIT_EXCEEDED":                              92,
-		"RESULT_SIZE_LIMIT_EXCEEDED":                                     93,
-		"NOT_SPECIAL_ACCOUNT":                                            94,
-		"CONTRACT_NEGATIVE_GAS":                                          95,
-		"CONTRACT_NEGATIVE_VALUE":                                        96,
-		"INVALID_FEE_FILE":                                               97,
-		"INVALID_EXCHANGE_RATE_FILE":                                     98,
-		"INSUFFICIENT_LOCAL_CALL_GAS":                                    99,
-		"ENTITY_NOT_ALLOWED_TO_DELETE":                                   100,
-		"AUTHORIZATION_FAILED":                                           101,
-		"FILE_UPLOADED_PROTO_INVALID":                                    102,
-		"FILE_UPLOADED_PROTO_NOT_SAVED_TO_DISK":                          103,
-		"FEE_SCHEDULE_FILE_PART_UPLOADED":                                104,
-		"EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED":                            105,
-		"MAX_CONTRACT_STORAGE_EXCEEDED":                                  106,
-		"TRANSFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT":                        107,
-		"TOTAL_LEDGER_BALANCE_INVALID":                                   108,
-		"EXPIRATION_REDUCTION_NOT_ALLOWED":                               110,
-		"MAX_GAS_LIMIT_EXCEEDED":                                         111,
-		"MAX_FILE_SIZE_EXCEEDED":                                         112,
-		"RECEIVER_SIG_REQUIRED":                                          113,
-		"INVALID_TOPIC_ID":                                               150,
-		"INVALID_ADMIN_KEY":                                              155,
-		"INVALID_SUBMIT_KEY":                                             156,
-		"UNAUTHORIZED":                                                   157,
-		"INVALID_TOPIC_MESSAGE":                                          158,
-		"INVALID_AUTORENEW_ACCOUNT":                                      159,
-		"AUTORENEW_ACCOUNT_NOT_ALLOWED":                                  160,
-		"TOPIC_EXPIRED":                                                  162,
-		"INVALID_CHUNK_NUMBER":                                           163,
-		"INVALID_CHUNK_TRANSACTION_ID":                                   164,
-		"ACCOUNT_FROZEN_FOR_TOKEN":                                       165,
-		"TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED":                              166,
-		"INVALID_TOKEN_ID":                                               167,
-		"INVALID_TOKEN_DECIMALS":                                         168,
-		"INVALID_TOKEN_INITIAL_SUPPLY":                                   169,
-		"INVALID_TREASURY_ACCOUNT_FOR_TOKEN":                             170,
-		"INVALID_TOKEN_SYMBOL":                                           171,
-		"TOKEN_HAS_NO_FREEZE_KEY":                                        172,
-		"TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN":                               173,
-		"MISSING_TOKEN_SYMBOL":                                           174,
-		"TOKEN_SYMBOL_TOO_LONG":                                          175,
-		"ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN":                              176,
-		"TOKEN_HAS_NO_KYC_KEY":                                           177,
-		"INSUFFICIENT_TOKEN_BALANCE":                                     178,
-		"TOKEN_WAS_DELETED":                                              179,
-		"TOKEN_HAS_NO_SUPPLY_KEY":                                        180,
-		"TOKEN_HAS_NO_WIPE_KEY":                                          181,
-		"INVALID_TOKEN_MINT_AMOUNT":                                      182,
-		"INVALID_TOKEN_BURN_AMOUNT":                                      183,
-		"TOKEN_NOT_ASSOCIATED_TO_ACCOUNT":                                184,
-		"CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT":                             185,
-		"INVALID_KYC_KEY":                                                186,
-		"INVALID_WIPE_KEY":                                               187,
-		"INVALID_FREEZE_KEY":                                             188,
-		"INVALID_SUPPLY_KEY":                                             189,
-		"MISSING_TOKEN_NAME":                                             190,
-		"TOKEN_NAME_TOO_LONG":                                            191,
-		"INVALID_WIPING_AMOUNT":                                          192,
-		"TOKEN_IS_IMMUTABLE":                                             193,
-		"TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT":                            194,
-		"TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES":                       195,
-		"ACCOUNT_IS_TREASURY":                                            196,
-		"TOKEN_ID_REPEATED_IN_TOKEN_LIST":                                197,
-		"TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED":                        198,
-		"EMPTY_TOKEN_TRANSFER_BODY":                                      199,
-		"EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS":                           200,
-		"INVALID_SCHEDULE_ID":                                            201,
-		"SCHEDULE_IS_IMMUTABLE":                                          202,
-		"INVALID_SCHEDULE_PAYER_ID":                                      203,
-		"INVALID_SCHEDULE_ACCOUNT_ID":                                    204,
-		"NO_NEW_VALID_SIGNATURES":                                        205,
-		"UNRESOLVABLE_REQUIRED_SIGNERS":                                  206,
-		"SCHEDULED_TRANSACTION_NOT_IN_WHITELIST":                         207,
-		"SOME_SIGNATURES_WERE_INVALID":                                   208,
-		"TRANSACTION_ID_FIELD_NOT_ALLOWED":                               209,
-		"IDENTICAL_SCHEDULE_ALREADY_CREATED":                             210,
-		"INVALID_ZERO_BYTE_IN_STRING":                                    211,
-		"SCHEDULE_ALREADY_DELETED":                                       212,
-		"SCHEDULE_ALREADY_EXECUTED":                                      213,
-		"MESSAGE_SIZE_TOO_LARGE":                                         214,
-		"OPERATION_REPEATED_IN_BUCKET_GROUPS":                            215,
-		"BUCKET_CAPACITY_OVERFLOW":                                       216,
-		"NODE_CAPACITY_NOT_SUFFICIENT_FOR_OPERATION":                     217,
-		"BUCKET_HAS_NO_THROTTLE_GROUPS":                                  218,
-		"THROTTLE_GROUP_HAS_ZERO_OPS_PER_SEC":                            219,
-		"SUCCESS_BUT_MISSING_EXPECTED_OPERATION":                         220,
-		"UNPARSEABLE_THROTTLE_DEFINITIONS":                               221,
-		"INVALID_THROTTLE_DEFINITIONS":                                   222,
-		"ACCOUNT_EXPIRED_AND_PENDING_REMOVAL":                            223,
-		"INVALID_TOKEN_MAX_SUPPLY":                                       224,
-		"INVALID_TOKEN_NFT_SERIAL_NUMBER":                                225,
-		"INVALID_NFT_ID":                                                 226,
-		"METADATA_TOO_LONG":                                              227,
-		"BATCH_SIZE_LIMIT_EXCEEDED":                                      228,
-		"INVALID_QUERY_RANGE":                                            229,
-		"FRACTION_DIVIDES_BY_ZERO":                                       230,
-		"INSUFFICIENT_PAYER_BALANCE_FOR_CUSTOM_FEE":                      231,
-		"CUSTOM_FEES_LIST_TOO_LONG":                                      232,
-		"INVALID_CUSTOM_FEE_COLLECTOR":                                   233,
-		"INVALID_TOKEN_ID_IN_CUSTOM_FEES":                                234,
-		"TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR":                          235,
-		"TOKEN_MAX_SUPPLY_REACHED":                                       236,
-		"SENDER_DOES_NOT_OWN_NFT_SERIAL_NO":                              237,
-		"CUSTOM_FEE_NOT_FULLY_SPECIFIED":                                 238,
-		"CUSTOM_FEE_MUST_BE_POSITIVE":                                    239,
-		"TOKEN_HAS_NO_FEE_SCHEDULE_KEY":                                  240,
-		"CUSTOM_FEE_OUTSIDE_NUMERIC_RANGE":                               241,
-		"ROYALTY_FRACTION_CANNOT_EXCEED_ONE":                             242,
-		"FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT":                 243,
-		"CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES":                            244,
-		"CUSTOM_FEE_DENOMINATION_MUST_BE_FUNGIBLE_COMMON":                245,
-		"CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON":         246,
-		"INVALID_CUSTOM_FEE_SCHEDULE_KEY":                                247,
-		"INVALID_TOKEN_MINT_METADATA":                                    248,
-		"INVALID_TOKEN_BURN_METADATA":                                    249,
-		"CURRENT_TREASURY_STILL_OWNS_NFTS":                               250,
-		"ACCOUNT_STILL_OWNS_NFTS":                                        251,
-		"TREASURY_MUST_OWN_BURNED_NFT":                                   252,
-		"ACCOUNT_DOES_NOT_OWN_WIPED_NFT":                                 253,
-		"ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON":      254,
-		"MAX_NFTS_IN_PRICE_REGIME_HAVE_BEEN_MINTED":                      255,
-		"PAYER_ACCOUNT_DELETED":                                          256,
-		"CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH":               257,
-		"CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS":               258,
-		"INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE":             259,
-		"SERIAL_NUMBER_LIMIT_REACHED":                                    260,
-		"CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE":        261,
-		"NO_REMAINING_AUTOMATIC_ASSOCIATIONS":                            262,
-		"EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT":             263,
-		"REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT": 264,
-		"TOKEN_IS_PAUSED":                                                265,
-		"TOKEN_HAS_NO_PAUSE_KEY":                                         266,
-		"INVALID_PAUSE_KEY":                                              267,
+		"OK":                                                        0,
+		"INVALID_TRANSACTION":                                       1,
+		"PAYER_ACCOUNT_NOT_FOUND":                                   2,
+		"INVALID_NODE_ACCOUNT":                                      3,
+		"TRANSACTION_EXPIRED":                                       4,
+		"INVALID_TRANSACTION_START":                                 5,
+		"INVALID_TRANSACTION_DURATION":                              6,
+		"INVALID_SIGNATURE":                                         7,
+		"MEMO_TOO_LONG":                                             8,
+		"INSUFFICIENT_TX_FEE":                                       9,
+		"INSUFFICIENT_PAYER_BALANCE":                                10,
+		"DUPLICATE_TRANSACTION":                                     11,
+		"BUSY":                                                      12,
+		"NOT_SUPPORTED":                                             13,
+		"INVALID_FILE_ID":                                           14,
+		"INVALID_ACCOUNT_ID":                                        15,
+		"INVALID_CONTRACT_ID":                                       16,
+		"INVALID_TRANSACTION_ID":                                    17,
+		"RECEIPT_NOT_FOUND":                                         18,
+		"RECORD_NOT_FOUND":                                          19,
+		"INVALID_SOLIDITY_ID":                                       20,
+		"UNKNOWN":                                                   21,
+		"SUCCESS":                                                   22,
+		"FAIL_INVALID":                                              23,
+		"FAIL_FEE":                                                  24,
+		"FAIL_BALANCE":                                              25,
+		"KEY_REQUIRED":                                              26,
+		"BAD_ENCODING":                                              27,
+		"INSUFFICIENT_ACCOUNT_BALANCE":                              28,
+		"INVALID_SOLIDITY_ADDRESS":                                  29,
+		"INSUFFICIENT_GAS":                                          30,
+		"CONTRACT_SIZE_LIMIT_EXCEEDED":                              31,
+		"LOCAL_CALL_MODIFICATION_EXCEPTION":                         32,
+		"CONTRACT_REVERT_EXECUTED":                                  33,
+		"CONTRACT_EXECUTION_EXCEPTION":                              34,
+		"INVALID_RECEIVING_NODE_ACCOUNT":                            35,
+		"MISSING_QUERY_HEADER":                                      36,
+		"ACCOUNT_UPDATE_FAILED":                                     37,
+		"INVALID_KEY_ENCODING":                                      38,
+		"NULL_SOLIDITY_ADDRESS":                                     39,
+		"CONTRACT_UPDATE_FAILED":                                    40,
+		"INVALID_QUERY_HEADER":                                      41,
+		"INVALID_FEE_SUBMITTED":                                     42,
+		"INVALID_PAYER_SIGNATURE":                                   43,
+		"KEY_NOT_PROVIDED":                                          44,
+		"INVALID_EXPIRATION_TIME":                                   45,
+		"NO_WACL_KEY":                                               46,
+		"FILE_CONTENT_EMPTY":                                        47,
+		"INVALID_ACCOUNT_AMOUNTS":                                   48,
+		"EMPTY_TRANSACTION_BODY":                                    49,
+		"INVALID_TRANSACTION_BODY":                                  50,
+		"INVALID_SIGNATURE_TYPE_MISMATCHING_KEY":                    51,
+		"INVALID_SIGNATURE_COUNT_MISMATCHING_KEY":                   52,
+		"EMPTY_LIVE_HASH_BODY":                                      53,
+		"EMPTY_LIVE_HASH":                                           54,
+		"EMPTY_LIVE_HASH_KEYS":                                      55,
+		"INVALID_LIVE_HASH_SIZE":                                    56,
+		"EMPTY_QUERY_BODY":                                          57,
+		"EMPTY_LIVE_HASH_QUERY":                                     58,
+		"LIVE_HASH_NOT_FOUND":                                       59,
+		"ACCOUNT_ID_DOES_NOT_EXIST":                                 60,
+		"LIVE_HASH_ALREADY_EXISTS":                                  61,
+		"INVALID_FILE_WACL":                                         62,
+		"SERIALIZATION_FAILED":                                      63,
+		"TRANSACTION_OVERSIZE":                                      64,
+		"TRANSACTION_TOO_MANY_LAYERS":                               65,
+		"CONTRACT_DELETED":                                          66,
+		"PLATFORM_NOT_ACTIVE":                                       67,
+		"KEY_PREFIX_MISMATCH":                                       68,
+		"PLATFORM_TRANSACTION_NOT_CREATED":                          69,
+		"INVALID_RENEWAL_PERIOD":                                    70,
+		"INVALID_PAYER_ACCOUNT_ID":                                  71,
+		"ACCOUNT_DELETED":                                           72,
+		"FILE_DELETED":                                              73,
+		"ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS":                       74,
+		"SETTING_NEGATIVE_ACCOUNT_BALANCE":                          75,
+		"OBTAINER_REQUIRED":                                         76,
+		"OBTAINER_SAME_CONTRACT_ID":                                 77,
+		"OBTAINER_DOES_NOT_EXIST":                                   78,
+		"MODIFYING_IMMUTABLE_CONTRACT":                              79,
+		"FILE_SYSTEM_EXCEPTION":                                     80,
+		"AUTORENEW_DURATION_NOT_IN_RANGE":                           81,
+		"ERROR_DECODING_BYTESTRING":                                 82,
+		"CONTRACT_FILE_EMPTY":                                       83,
+		"CONTRACT_BYTECODE_EMPTY":                                   84,
+		"INVALID_INITIAL_BALANCE":                                   85,
+		"INVALID_RECEIVE_RECORD_THRESHOLD":                          86,
+		"INVALID_SEND_RECORD_THRESHOLD":                             87,
+		"ACCOUNT_IS_NOT_GENESIS_ACCOUNT":                            88,
+		"PAYER_ACCOUNT_UNAUTHORIZED":                                89,
+		"INVALID_FREEZE_TRANSACTION_BODY":                           90,
+		"FREEZE_TRANSACTION_BODY_NOT_FOUND":                         91,
+		"TRANSFER_LIST_SIZE_LIMIT_EXCEEDED":                         92,
+		"RESULT_SIZE_LIMIT_EXCEEDED":                                93,
+		"NOT_SPECIAL_ACCOUNT":                                       94,
+		"CONTRACT_NEGATIVE_GAS":                                     95,
+		"CONTRACT_NEGATIVE_VALUE":                                   96,
+		"INVALID_FEE_FILE":                                          97,
+		"INVALID_EXCHANGE_RATE_FILE":                                98,
+		"INSUFFICIENT_LOCAL_CALL_GAS":                               99,
+		"ENTITY_NOT_ALLOWED_TO_DELETE":                              100,
+		"AUTHORIZATION_FAILED":                                      101,
+		"FILE_UPLOADED_PROTO_INVALID":                               102,
+		"FILE_UPLOADED_PROTO_NOT_SAVED_TO_DISK":                     103,
+		"FEE_SCHEDULE_FILE_PART_UPLOADED":                           104,
+		"EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED":                       105,
+		"MAX_CONTRACT_STORAGE_EXCEEDED":                             106,
+		"TRANSFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT":                   107,
+		"TOTAL_LEDGER_BALANCE_INVALID":                              108,
+		"EXPIRATION_REDUCTION_NOT_ALLOWED":                          110,
+		"MAX_GAS_LIMIT_EXCEEDED":                                    111,
+		"MAX_FILE_SIZE_EXCEEDED":                                    112,
+		"RECEIVER_SIG_REQUIRED":                                     113,
+		"INVALID_TOPIC_ID":                                          150,
+		"INVALID_ADMIN_KEY":                                         155,
+		"INVALID_SUBMIT_KEY":                                        156,
+		"UNAUTHORIZED":                                              157,
+		"INVALID_TOPIC_MESSAGE":                                     158,
+		"INVALID_AUTORENEW_ACCOUNT":                                 159,
+		"AUTORENEW_ACCOUNT_NOT_ALLOWED":                             160,
+		"TOPIC_EXPIRED":                                             162,
+		"INVALID_CHUNK_NUMBER":                                      163,
+		"INVALID_CHUNK_TRANSACTION_ID":                              164,
+		"ACCOUNT_FROZEN_FOR_TOKEN":                                  165,
+		"TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED":                         166,
+		"INVALID_TOKEN_ID":                                          167,
+		"INVALID_TOKEN_DECIMALS":                                    168,
+		"INVALID_TOKEN_INITIAL_SUPPLY":                              169,
+		"INVALID_TREASURY_ACCOUNT_FOR_TOKEN":                        170,
+		"INVALID_TOKEN_SYMBOL":                                      171,
+		"TOKEN_HAS_NO_FREEZE_KEY":                                   172,
+		"TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN":                          173,
+		"MISSING_TOKEN_SYMBOL":                                      174,
+		"TOKEN_SYMBOL_TOO_LONG":                                     175,
+		"ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN":                         176,
+		"TOKEN_HAS_NO_KYC_KEY":                                      177,
+		"INSUFFICIENT_TOKEN_BALANCE":                                178,
+		"TOKEN_WAS_DELETED":                                         179,
+		"TOKEN_HAS_NO_SUPPLY_KEY":                                   180,
+		"TOKEN_HAS_NO_WIPE_KEY":                                     181,
+		"INVALID_TOKEN_MINT_AMOUNT":                                 182,
+		"INVALID_TOKEN_BURN_AMOUNT":                                 183,
+		"TOKEN_NOT_ASSOCIATED_TO_ACCOUNT":                           184,
+		"CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT":                        185,
+		"INVALID_KYC_KEY":                                           186,
+		"INVALID_WIPE_KEY":                                          187,
+		"INVALID_FREEZE_KEY":                                        188,
+		"INVALID_SUPPLY_KEY":                                        189,
+		"MISSING_TOKEN_NAME":                                        190,
+		"TOKEN_NAME_TOO_LONG":                                       191,
+		"INVALID_WIPING_AMOUNT":                                     192,
+		"TOKEN_IS_IMMUTABLE":                                        193,
+		"TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT":                       194,
+		"TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES":                  195,
+		"ACCOUNT_IS_TREASURY":                                       196,
+		"TOKEN_ID_REPEATED_IN_TOKEN_LIST":                           197,
+		"TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED":                   198,
+		"EMPTY_TOKEN_TRANSFER_BODY":                                 199,
+		"EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS":                      200,
+		"INVALID_SCHEDULE_ID":                                       201,
+		"SCHEDULE_IS_IMMUTABLE":                                     202,
+		"INVALID_SCHEDULE_PAYER_ID":                                 203,
+		"INVALID_SCHEDULE_ACCOUNT_ID":                               204,
+		"NO_NEW_VALID_SIGNATURES":                                   205,
+		"UNRESOLVABLE_REQUIRED_SIGNERS":                             206,
+		"SCHEDULED_TRANSACTION_NOT_IN_WHITELIST":                    207,
+		"SOME_SIGNATURES_WERE_INVALID":                              208,
+		"TRANSACTION_ID_FIELD_NOT_ALLOWED":                          209,
+		"IDENTICAL_SCHEDULE_ALREADY_CREATED":                        210,
+		"INVALID_ZERO_BYTE_IN_STRING":                               211,
+		"SCHEDULE_ALREADY_DELETED":                                  212,
+		"SCHEDULE_ALREADY_EXECUTED":                                 213,
+		"MESSAGE_SIZE_TOO_LARGE":                                    214,
+		"OPERATION_REPEATED_IN_BUCKET_GROUPS":                       215,
+		"BUCKET_CAPACITY_OVERFLOW":                                  216,
+		"NODE_CAPACITY_NOT_SUFFICIENT_FOR_OPERATION":                217,
+		"BUCKET_HAS_NO_THROTTLE_GROUPS":                             218,
+		"THROTTLE_GROUP_HAS_ZERO_OPS_PER_SEC":                       219,
+		"SUCCESS_BUT_MISSING_EXPECTED_OPERATION":                    220,
+		"UNPARSEABLE_THROTTLE_DEFINITIONS":                          221,
+		"INVALID_THROTTLE_DEFINITIONS":                              222,
+		"ACCOUNT_EXPIRED_AND_PENDING_REMOVAL":                       223,
+		"INVALID_TOKEN_MAX_SUPPLY":                                  224,
+		"INVALID_TOKEN_NFT_SERIAL_NUMBER":                           225,
+		"INVALID_NFT_ID":                                            226,
+		"METADATA_TOO_LONG":                                         227,
+		"BATCH_SIZE_LIMIT_EXCEEDED":                                 228,
+		"INVALID_QUERY_RANGE":                                       229,
+		"FRACTION_DIVIDES_BY_ZERO":                                  230,
+		"INSUFFICIENT_PAYER_BALANCE_FOR_CUSTOM_FEE":                 231,
+		"CUSTOM_FEES_LIST_TOO_LONG":                                 232,
+		"INVALID_CUSTOM_FEE_COLLECTOR":                              233,
+		"INVALID_TOKEN_ID_IN_CUSTOM_FEES":                           234,
+		"TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR":                     235,
+		"TOKEN_MAX_SUPPLY_REACHED":                                  236,
+		"SENDER_DOES_NOT_OWN_NFT_SERIAL_NO":                         237,
+		"CUSTOM_FEE_NOT_FULLY_SPECIFIED":                            238,
+		"CUSTOM_FEE_MUST_BE_POSITIVE":                               239,
+		"TOKEN_HAS_NO_FEE_SCHEDULE_KEY":                             240,
+		"CUSTOM_FEE_OUTSIDE_NUMERIC_RANGE":                          241,
+		"ROYALTY_FRACTION_CANNOT_EXCEED_ONE":                        242,
+		"FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT":            243,
+		"CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES":                       244,
+		"CUSTOM_FEE_DENOMINATION_MUST_BE_FUNGIBLE_COMMON":           245,
+		"CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON":    246,
+		"INVALID_CUSTOM_FEE_SCHEDULE_KEY":                           247,
+		"INVALID_TOKEN_MINT_METADATA":                               248,
+		"INVALID_TOKEN_BURN_METADATA":                               249,
+		"CURRENT_TREASURY_STILL_OWNS_NFTS":                          250,
+		"ACCOUNT_STILL_OWNS_NFTS":                                   251,
+		"TREASURY_MUST_OWN_BURNED_NFT":                              252,
+		"ACCOUNT_DOES_NOT_OWN_WIPED_NFT":                            253,
+		"ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON": 254,
+		"MAX_NFTS_IN_PRICE_REGIME_HAVE_BEEN_MINTED":                 255,
+		"PAYER_ACCOUNT_DELETED":                                     256,
+		"CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH":          257,
+		"CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS":          258,
+		"INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE":        259,
+		"SERIAL_NUMBER_LIMIT_REACHED":                               260,
+		"CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE":   261,
+		"NO_REMAINING_AUTO_ASSOCIATIONS":                            262,
+		"EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT":        263,
 	}
 )
 
@@ -1147,7 +737,7 @@ var File_proto_response_code_proto protoreflect.FileDescriptor
 var file_proto_response_code_proto_rawDesc = []byte{
 	0x0a, 0x19, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
 	0x5f, 0x63, 0x6f, 0x64, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2a, 0xbb, 0x38, 0x0a, 0x10, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x43,
+	0x74, 0x6f, 0x2a, 0xa6, 0x37, 0x0a, 0x10, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x43,
 	0x6f, 0x64, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x12, 0x06, 0x0a, 0x02, 0x4f, 0x4b, 0x10, 0x00, 0x12,
 	0x17, 0x0a, 0x13, 0x49, 0x4e, 0x56, 0x41, 0x4c, 0x49, 0x44, 0x5f, 0x54, 0x52, 0x41, 0x4e, 0x53,
 	0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x10, 0x01, 0x12, 0x1b, 0x0a, 0x17, 0x50, 0x41, 0x59, 0x45,
@@ -1583,28 +1173,18 @@ var file_proto_response_code_proto_rawDesc = []byte{
 	0x3c, 0x0a, 0x37, 0x43, 0x55, 0x53, 0x54, 0x4f, 0x4d, 0x5f, 0x52, 0x4f, 0x59, 0x41, 0x4c, 0x54,
 	0x59, 0x5f, 0x46, 0x45, 0x45, 0x5f, 0x4f, 0x4e, 0x4c, 0x59, 0x5f, 0x41, 0x4c, 0x4c, 0x4f, 0x57,
 	0x45, 0x44, 0x5f, 0x46, 0x4f, 0x52, 0x5f, 0x4e, 0x4f, 0x4e, 0x5f, 0x46, 0x55, 0x4e, 0x47, 0x49,
-	0x42, 0x4c, 0x45, 0x5f, 0x55, 0x4e, 0x49, 0x51, 0x55, 0x45, 0x10, 0x85, 0x02, 0x12, 0x28, 0x0a,
-	0x23, 0x4e, 0x4f, 0x5f, 0x52, 0x45, 0x4d, 0x41, 0x49, 0x4e, 0x49, 0x4e, 0x47, 0x5f, 0x41, 0x55,
-	0x54, 0x4f, 0x4d, 0x41, 0x54, 0x49, 0x43, 0x5f, 0x41, 0x53, 0x53, 0x4f, 0x43, 0x49, 0x41, 0x54,
-	0x49, 0x4f, 0x4e, 0x53, 0x10, 0x86, 0x02, 0x12, 0x37, 0x0a, 0x32, 0x45, 0x58, 0x49, 0x53, 0x54,
-	0x49, 0x4e, 0x47, 0x5f, 0x41, 0x55, 0x54, 0x4f, 0x4d, 0x41, 0x54, 0x49, 0x43, 0x5f, 0x41, 0x53,
-	0x53, 0x4f, 0x43, 0x49, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x53, 0x5f, 0x45, 0x58, 0x43, 0x45, 0x45,
-	0x44, 0x5f, 0x47, 0x49, 0x56, 0x45, 0x4e, 0x5f, 0x4c, 0x49, 0x4d, 0x49, 0x54, 0x10, 0x87, 0x02,
-	0x12, 0x43, 0x0a, 0x3e, 0x52, 0x45, 0x51, 0x55, 0x45, 0x53, 0x54, 0x45, 0x44, 0x5f, 0x4e, 0x55,
-	0x4d, 0x5f, 0x41, 0x55, 0x54, 0x4f, 0x4d, 0x41, 0x54, 0x49, 0x43, 0x5f, 0x41, 0x53, 0x53, 0x4f,
-	0x43, 0x49, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x53, 0x5f, 0x45, 0x58, 0x43, 0x45, 0x45, 0x44, 0x53,
-	0x5f, 0x41, 0x53, 0x53, 0x4f, 0x43, 0x49, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x4c, 0x49, 0x4d,
-	0x49, 0x54, 0x10, 0x88, 0x02, 0x12, 0x14, 0x0a, 0x0f, 0x54, 0x4f, 0x4b, 0x45, 0x4e, 0x5f, 0x49,
-	0x53, 0x5f, 0x50, 0x41, 0x55, 0x53, 0x45, 0x44, 0x10, 0x89, 0x02, 0x12, 0x1b, 0x0a, 0x16, 0x54,
-	0x4f, 0x4b, 0x45, 0x4e, 0x5f, 0x48, 0x41, 0x53, 0x5f, 0x4e, 0x4f, 0x5f, 0x50, 0x41, 0x55, 0x53,
-	0x45, 0x5f, 0x4b, 0x45, 0x59, 0x10, 0x8a, 0x02, 0x12, 0x16, 0x0a, 0x11, 0x49, 0x4e, 0x56, 0x41,
-	0x4c, 0x49, 0x44, 0x5f, 0x50, 0x41, 0x55, 0x53, 0x45, 0x5f, 0x4b, 0x45, 0x59, 0x10, 0x8b, 0x02,
-	0x42, 0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68,
-	0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
-	0x5a, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73,
-	0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64,
-	0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x42, 0x4c, 0x45, 0x5f, 0x55, 0x4e, 0x49, 0x51, 0x55, 0x45, 0x10, 0x85, 0x02, 0x12, 0x23, 0x0a,
+	0x1e, 0x4e, 0x4f, 0x5f, 0x52, 0x45, 0x4d, 0x41, 0x49, 0x4e, 0x49, 0x4e, 0x47, 0x5f, 0x41, 0x55,
+	0x54, 0x4f, 0x5f, 0x41, 0x53, 0x53, 0x4f, 0x43, 0x49, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x53, 0x10,
+	0x86, 0x02, 0x12, 0x37, 0x0a, 0x32, 0x45, 0x58, 0x49, 0x53, 0x54, 0x49, 0x4e, 0x47, 0x5f, 0x41,
+	0x55, 0x54, 0x4f, 0x4d, 0x41, 0x54, 0x49, 0x43, 0x5f, 0x41, 0x53, 0x53, 0x4f, 0x43, 0x49, 0x41,
+	0x54, 0x49, 0x4f, 0x4e, 0x53, 0x5f, 0x45, 0x58, 0x43, 0x45, 0x45, 0x44, 0x5f, 0x47, 0x49, 0x56,
+	0x45, 0x4e, 0x5f, 0x4c, 0x49, 0x4d, 0x49, 0x54, 0x10, 0x87, 0x02, 0x42, 0x4b, 0x0a, 0x1a, 0x63,
+	0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72,
+	0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2b, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70,
+	0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f,
+	0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

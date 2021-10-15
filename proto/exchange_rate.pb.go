@@ -20,21 +20,17 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// An exchange rate between hbar and cents (USD) and the time at which the exchange rate will
-// expire, and be superseded by a new exchange rate.
+//
+//An exchange rate between hbar and cents (USD) and the time at which the exchange rate will expire, and be superseded by a new exchange rate.
 type ExchangeRate struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
 	// Denominator in calculation of exchange rate between hbar and cents
 	HbarEquiv int32 `protobuf:"varint,1,opt,name=hbarEquiv,proto3" json:"hbarEquiv,omitempty"`
-	//*
 	// Numerator in calculation of exchange rate between hbar and cents
 	CentEquiv int32 `protobuf:"varint,2,opt,name=centEquiv,proto3" json:"centEquiv,omitempty"`
-	//*
 	// Expiration time in seconds for this exchange rate
 	ExpirationTime *TimestampSeconds `protobuf:"bytes,3,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
 }
@@ -92,17 +88,14 @@ func (x *ExchangeRate) GetExpirationTime() *TimestampSeconds {
 	return nil
 }
 
-//*
 // Two sets of exchange rates
 type ExchangeRateSet struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
 	// Current exchange rate
 	CurrentRate *ExchangeRate `protobuf:"bytes,1,opt,name=currentRate,proto3" json:"currentRate,omitempty"`
-	//*
 	// Next exchange rate which will take effect when current rate expires
 	NextRate *ExchangeRate `protobuf:"bytes,2,opt,name=nextRate,proto3" json:"nextRate,omitempty"`
 }

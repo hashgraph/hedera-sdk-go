@@ -20,16 +20,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // See [ConsensusService.deleteTopic()](#proto.ConsensusService)
 type ConsensusDeleteTopicTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Topic identifier
-	TopicID *TopicID `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"`
+	TopicID *TopicID `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"` // Topic identifier.
 }
 
 func (x *ConsensusDeleteTopicTransactionBody) Reset() {

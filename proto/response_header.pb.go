@@ -20,29 +20,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Every query receives a response containing the QueryResponseHeader. Either or both of the cost
-// and stateProof fields may be blank, if the responseType didn't ask for the cost or stateProof.
+// Every query receives a response containing the QueryResponseHeader. Either or both of the cost and stateProof fields may be blank, if the responseType didn't ask for the cost or stateProof.
 type ResponseHeader struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Result of fee transaction precheck, saying it passed, or why it failed
-	NodeTransactionPrecheckCode ResponseCodeEnum `protobuf:"varint,1,opt,name=nodeTransactionPrecheckCode,proto3,enum=proto.ResponseCodeEnum" json:"nodeTransactionPrecheckCode,omitempty"`
-	//*
-	// The requested response is repeated back here, for convenience
-	ResponseType ResponseType `protobuf:"varint,2,opt,name=responseType,proto3,enum=proto.ResponseType" json:"responseType,omitempty"`
-	//*
-	// The fee that would be charged to get the requested information (if a cost was requested).
-	// Note: This cost only includes the query fee and does not include the transfer fee(which is
-	// required to execute the transfer transaction to debit the payer account and credit the node
-	// account with query fee)
-	Cost uint64 `protobuf:"varint,3,opt,name=cost,proto3" json:"cost,omitempty"`
-	//*
-	// The state proof for this information (if a state proof was requested, and is available)
-	StateProof []byte `protobuf:"bytes,4,opt,name=stateProof,proto3" json:"stateProof,omitempty"`
+	NodeTransactionPrecheckCode ResponseCodeEnum `protobuf:"varint,1,opt,name=nodeTransactionPrecheckCode,proto3,enum=proto.ResponseCodeEnum" json:"nodeTransactionPrecheckCode,omitempty"` // Result of fee transaction precheck, saying it passed, or why it failed
+	ResponseType                ResponseType     `protobuf:"varint,2,opt,name=responseType,proto3,enum=proto.ResponseType" json:"responseType,omitempty"`                                   // The requested response is repeated back here, for convenience
+	Cost                        uint64           `protobuf:"varint,3,opt,name=cost,proto3" json:"cost,omitempty"`                                                                           // The fee that would be charged to get the requested information (if a cost was requested). Note: This cost only includes the query fee and does not include the transfer fee(which is required to execute the transfer transaction to debit the payer account and credit the node account with query fee)
+	StateProof                  []byte           `protobuf:"bytes,4,opt,name=stateProof,proto3" json:"stateProof,omitempty"`                                                                // The state proof for this information (if a state proof was requested, and is available)
 }
 
 func (x *ResponseHeader) Reset() {

@@ -20,17 +20,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // Current state of a topic.
 type ConsensusTopicInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The memo associated with the topic (UTF-8 encoding max 100 bytes)
-	Memo string `protobuf:"bytes,1,opt,name=memo,proto3" json:"memo,omitempty"`
-	//*
+	Memo string `protobuf:"bytes,1,opt,name=memo,proto3" json:"memo,omitempty"` // The memo associated with the topic (UTF-8 encoding max 100 bytes)
 	// When a topic is created, its running hash is initialized to 48 bytes of binary zeros.
 	// For each submitted message, the topic's running hash is then updated to the output
 	// of a particular SHA-384 digest whose input data include the previous running hash.
@@ -38,27 +34,15 @@ type ConsensusTopicInfo struct {
 	// See the TransactionReceipt.proto documentation for an exact description of the
 	// data included in the SHA-384 digest used for the update.
 	RunningHash []byte `protobuf:"bytes,2,opt,name=runningHash,proto3" json:"runningHash,omitempty"`
-	//*
 	// Sequence number (starting at 1 for the first submitMessage) of messages on the topic.
 	SequenceNumber uint64 `protobuf:"varint,3,opt,name=sequenceNumber,proto3" json:"sequenceNumber,omitempty"`
-	//*
 	// Effective consensus timestamp at (and after) which submitMessage calls will no longer succeed on the topic
 	// and the topic will expire and after AUTORENEW_GRACE_PERIOD be automatically deleted.
-	ExpirationTime *Timestamp `protobuf:"bytes,4,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
-	//*
-	// Access control for update/delete of the topic. Null if there is no key.
-	AdminKey *Key `protobuf:"bytes,5,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
-	//*
-	// Access control for ConsensusService.submitMessage. Null if there is no key.
-	SubmitKey *Key `protobuf:"bytes,6,opt,name=submitKey,proto3" json:"submitKey,omitempty"`
-	//*
-	// If an auto-renew account is specified, when the topic expires, its lifetime will be extended
-	// by up to this duration (depending on the solvency of the auto-renew account). If the
-	// auto-renew account has no funds at all, the topic will be deleted instead.
-	AutoRenewPeriod *Duration `protobuf:"bytes,7,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
-	//*
-	// The account, if any, to charge for automatic renewal of the topic's lifetime upon expiry.
-	AutoRenewAccount *AccountID `protobuf:"bytes,8,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"`
+	ExpirationTime   *Timestamp `protobuf:"bytes,4,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
+	AdminKey         *Key       `protobuf:"bytes,5,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                 // Access control for update/delete of the topic. Null if there is no key.
+	SubmitKey        *Key       `protobuf:"bytes,6,opt,name=submitKey,proto3" json:"submitKey,omitempty"`               // Access control for ConsensusService.submitMessage. Null if there is no key.
+	AutoRenewPeriod  *Duration  `protobuf:"bytes,7,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`   // If an auto-renew account is specified, when the topic expires, its lifetime will be extended by up to this duration (depending on the solvency of the auto-renew account). If the auto-renew account has no funds at all, the topic will be deleted instead.
+	AutoRenewAccount *AccountID `protobuf:"bytes,8,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"` // The account, if any, to charge for automatic renewal of the topic's lifetime upon expiry.
 }
 
 func (x *ConsensusTopicInfo) Reset() {

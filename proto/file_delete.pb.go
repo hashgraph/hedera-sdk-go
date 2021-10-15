@@ -20,21 +20,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Delete the given file. After deletion, it will be marked as deleted and will have no contents.
-// But information about it will continue to exist until it expires. A list of keys was given when
-// the file was created. All the top level keys on that list must sign transactions to create or
-// modify the file, but any single one of the top level keys can be used to delete the file. This
-// transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
-// ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
+// Delete the given file. After deletion, it will be marked as deleted and will have no contents. But information about it will continue to exist until it expires. A list of keys was given when the file was created. All the top level keys on that list must sign transactions to create or modify the file, but any single one of the top level keys can be used to delete the file. This transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 type FileDeleteTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The file to delete. It will be marked as deleted until it expires. Then it will disappear.
-	FileID *FileID `protobuf:"bytes,2,opt,name=fileID,proto3" json:"fileID,omitempty"`
+	FileID *FileID `protobuf:"bytes,2,opt,name=fileID,proto3" json:"fileID,omitempty"` // The file to delete. It will be marked as deleted until it expires. Then it will disappear.
 }
 
 func (x *FileDeleteTransactionBody) Reset() {

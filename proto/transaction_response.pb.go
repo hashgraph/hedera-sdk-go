@@ -20,24 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// When the client sends the node a transaction of any kind, the node replies with this, which
-// simply says that the transaction passed the precheck (so the node will submit it to the network)
-// or it failed (so it won't). If the fee offered was insufficient, this will also contain the
-// amount of the required fee. To learn the consensus result, the client should later obtain a
-// receipt (free), or can buy a more detailed record (not free).
+// When the client sends the node a transaction of any kind, the node replies with this, which simply says that the transaction passed the precheck (so the node will submit it to the network) or it failed (so it won't). If the fee offered was insufficient, this will also contain the amount of the required fee. To learn the consensus result, the client should later obtain a receipt (free), or can buy a more detailed record (not free).
 type TransactionResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The response code that indicates the current status of the transaction.
-	NodeTransactionPrecheckCode ResponseCodeEnum `protobuf:"varint,1,opt,name=nodeTransactionPrecheckCode,proto3,enum=proto.ResponseCodeEnum" json:"nodeTransactionPrecheckCode,omitempty"`
-	//*
-	// If the response code was INSUFFICIENT_TX_FEE, the actual transaction fee that would be
-	// required to execute the transaction.
-	Cost uint64 `protobuf:"varint,2,opt,name=cost,proto3" json:"cost,omitempty"`
+	NodeTransactionPrecheckCode ResponseCodeEnum `protobuf:"varint,1,opt,name=nodeTransactionPrecheckCode,proto3,enum=proto.ResponseCodeEnum" json:"nodeTransactionPrecheckCode,omitempty"` // The response code that indicates the current status of the transaction.
+	Cost                        uint64           `protobuf:"varint,2,opt,name=cost,proto3" json:"cost,omitempty"`                                                                           // If the response code was INSUFFICIENT_TX_FEE, the actual transaction fee that would be required to execute the transaction.
 }
 
 func (x *TransactionResponse) Reset() {

@@ -32,39 +32,17 @@ import "proto/duration.proto";
 import "proto/basic_types.proto";
 import "proto/transaction_body.proto";
 
-/**
- * A single signed transaction, including all its signatures. The SignatureList will have a
- * Signature for each Key in the transaction, either explicit or implicit, in the order that they
- * appear in the transaction. For example, a CryptoTransfer will first have a Signature
- * corresponding to the Key for the paying account, followed by a Signature corresponding to the Key
- * for each account that is sending or receiving cryptocurrency in the transfer. Each Transaction
- * should not have more than 50 levels. 
+/* A single signed transaction, including all its signatures. The SignatureList will have a Signature for each Key in the transaction, either explicit or implicit, in the order that they appear in the transaction. For example, a CryptoTransfer will first have a Signature corresponding to the Key for the paying account, followed by a Signature corresponding to the Key for each account that is sending or receiving cryptocurrency in the transfer. Each Transaction should not have more than 50 levels. 
  * The SignatureList field is deprecated and succeeded by SignatureMap.
  */
 message Transaction {
-    /**
-     * the body of the transaction, which needs to be signed
-     */
-    TransactionBody body = 1 [deprecated = true];
-
-    /**
-     * The signatures on the body, to authorize the transaction; deprecated and to be succeeded by
-     * SignatureMap field
-     */
-    SignatureList sigs = 2 [deprecated = true];
+    TransactionBody body = 1 [deprecated = true]; // the body of the transaction, which needs to be signed
     
-    /**
-     * The signatures on the body with the new format, to authorize the transaction
-     */
-    SignatureMap sigMap = 3 [deprecated = true];
+    SignatureList sigs = 2 [deprecated = true]; // The signatures on the body, to authorize the transaction; deprecated and to be succeeded by SignatureMap field
     
-    /**
-     * TransactionBody serialized into bytes, which needs to be signed
-     */
-    bytes bodyBytes = 4 [deprecated = true];
+    SignatureMap sigMap = 3 [deprecated = true]; // The signatures on the body with the new format, to authorize the transaction
+    
+    bytes bodyBytes = 4 [deprecated = true]; // TransactionBody serialized into bytes, which needs to be signed
 
-    /**
-     * SignedTransaction serialized into bytes
-     */
-    bytes signedTransactionBytes = 5;
+    bytes signedTransactionBytes = 5; // SignedTransaction serialized into bytes
 }

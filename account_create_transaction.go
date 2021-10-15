@@ -160,7 +160,7 @@ func (transaction *AccountCreateTransaction) _Build() *proto.TransactionBody {
 		ReceiveRecordThreshold:        transaction.sendRecordThreshold,
 		ReceiverSigRequired:           transaction.receiverSignatureRequired,
 		Memo:                          transaction.memo,
-		MaxAutomaticTokenAssociations: int32(transaction.maxAutomaticTokenAssociations),
+		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
 	}
 
 	if transaction.key != nil {

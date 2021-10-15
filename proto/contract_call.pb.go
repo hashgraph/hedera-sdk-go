@@ -20,34 +20,15 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Call a function of the given smart contract instance, giving it functionParameters as its inputs.
-// The call can use at maximum the given amount of gas – the paying account will not be charged for
-// any unspent gas.
-//
-// If this function results in data being stored, an amount of gas is calculated that reflects this
-// storage burden.
-//
-// The amount of gas used, as well as other attributes of the transaction, e.g. size, number of
-// signatures to be verified, determine the fee for the transaction – which is charged to the paying
-// account.
 type ContractCallTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// the contract instance to call, in the format used in transactions
-	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`
-	//*
-	// the maximum amount of gas to use for the call
-	Gas int64 `protobuf:"varint,2,opt,name=gas,proto3" json:"gas,omitempty"`
-	//*
-	// number of tinybars sent (the function must be payable if this is nonzero)
-	Amount int64 `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
-	//*
-	// which function to call, and the parameters to pass to the function
-	FunctionParameters []byte `protobuf:"bytes,4,opt,name=functionParameters,proto3" json:"functionParameters,omitempty"`
+	ContractID         *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`                 // the contract instance to call, in the format used in transactions
+	Gas                int64       `protobuf:"varint,2,opt,name=gas,proto3" json:"gas,omitempty"`                              // the maximum amount of gas to use for the call
+	Amount             int64       `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`                        // number of tinybars sent (the function must be payable if this is nonzero)
+	FunctionParameters []byte      `protobuf:"bytes,4,opt,name=functionParameters,proto3" json:"functionParameters,omitempty"` // which function to call, and the parameters to pass to the function
 }
 
 func (x *ContractCallTransactionBody) Reset() {

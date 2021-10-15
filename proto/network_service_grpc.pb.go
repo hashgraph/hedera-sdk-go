@@ -18,20 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NetworkServiceClient interface {
-	//*
-	// Retrieves the active versions of Hedera Services and HAPI proto
 	GetVersionInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	//*
-	// Retrieves the time in nanoseconds spent in <tt>handleTransaction</tt> for one or more
-	// TransactionIDs (assuming they have reached consensus "recently", since only a limited
-	// number of execution times are kept in-memory, depending on the value of the node-local
-	// property <tt>stats.executionTimesToTrack</tt>).
-	GetExecutionTime(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	//*
-	// Submits a "wrapped" transaction to the network, skipping its standard prechecks. (Note that
-	// the "wrapper" <tt>UncheckedSubmit</tt> transaction is still subject to normal prechecks,
-	// including an authorization requirement that its payer be either the treasury or system admin
-	// account.)
 	UncheckedSubmit(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
 
@@ -52,15 +39,6 @@ func (c *networkServiceClient) GetVersionInfo(ctx context.Context, in *Query, op
 	return out, nil
 }
 
-func (c *networkServiceClient) GetExecutionTime(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/proto.NetworkService/getExecutionTime", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *networkServiceClient) UncheckedSubmit(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
 	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, "/proto.NetworkService/uncheckedSubmit", in, out, opts...)
@@ -74,20 +52,7 @@ func (c *networkServiceClient) UncheckedSubmit(ctx context.Context, in *Transact
 // All implementations must embed UnimplementedNetworkServiceServer
 // for forward compatibility
 type NetworkServiceServer interface {
-	//*
-	// Retrieves the active versions of Hedera Services and HAPI proto
 	GetVersionInfo(context.Context, *Query) (*Response, error)
-	//*
-	// Retrieves the time in nanoseconds spent in <tt>handleTransaction</tt> for one or more
-	// TransactionIDs (assuming they have reached consensus "recently", since only a limited
-	// number of execution times are kept in-memory, depending on the value of the node-local
-	// property <tt>stats.executionTimesToTrack</tt>).
-	GetExecutionTime(context.Context, *Query) (*Response, error)
-	//*
-	// Submits a "wrapped" transaction to the network, skipping its standard prechecks. (Note that
-	// the "wrapper" <tt>UncheckedSubmit</tt> transaction is still subject to normal prechecks,
-	// including an authorization requirement that its payer be either the treasury or system admin
-	// account.)
 	UncheckedSubmit(context.Context, *Transaction) (*TransactionResponse, error)
 	mustEmbedUnimplementedNetworkServiceServer()
 }
@@ -98,9 +63,6 @@ type UnimplementedNetworkServiceServer struct {
 
 func (UnimplementedNetworkServiceServer) GetVersionInfo(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVersionInfo not implemented")
-}
-func (UnimplementedNetworkServiceServer) GetExecutionTime(context.Context, *Query) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetExecutionTime not implemented")
 }
 func (UnimplementedNetworkServiceServer) UncheckedSubmit(context.Context, *Transaction) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UncheckedSubmit not implemented")
@@ -136,24 +98,6 @@ func _NetworkService_GetVersionInfo_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _NetworkService_GetExecutionTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Query)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkServiceServer).GetExecutionTime(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.NetworkService/getExecutionTime",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetExecutionTime(ctx, req.(*Query))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _NetworkService_UncheckedSubmit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Transaction)
 	if err := dec(in); err != nil {
@@ -182,10 +126,6 @@ var NetworkService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getVersionInfo",
 			Handler:    _NetworkService_GetVersionInfo_Handler,
-		},
-		{
-			MethodName: "getExecutionTime",
-			Handler:    _NetworkService_GetExecutionTime_Handler,
 		},
 		{
 			MethodName: "uncheckedSubmit",

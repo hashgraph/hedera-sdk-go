@@ -28,13 +28,8 @@ option java_package = "com.hedera.hashgraph.proto";
 import "proto/transaction_response.proto";
 import "proto/transaction.proto";
 
-/**
- * The request and responses for freeze service.
- */
+/* The request and responses for freeze service. */
 service FreezeService {
-    /**
-     * Freezes the nodes by submitting the transaction. The grpc server returns the
-     * TransactionResponse
-     */
-    rpc freeze (Transaction) returns (TransactionResponse);
+
+    rpc freeze (Transaction) returns (TransactionResponse); // Freezes the nodes by submitting the transaction. The grpc server returns the TransactionResponse
 }

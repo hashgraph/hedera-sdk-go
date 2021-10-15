@@ -20,21 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Get all the accounts that are proxy staking to this account. For each of them, give the amount
-// currently staked. This is not yet implemented, but will be in a future version of the API.
+// Get all the accounts that are proxy staking to this account. For each of them, give the amount currently staked. This is not yet implemented, but will be in a future version of the API.
 type CryptoGetStakersQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither).
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The Account ID for which the records should be retrieved
-	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	Header    *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	AccountID *AccountID   `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"` // The Account ID for which the records should be retrieved
 }
 
 func (x *CryptoGetStakersQuery) Reset() {
@@ -83,19 +76,14 @@ func (x *CryptoGetStakersQuery) GetAccountID() *AccountID {
 	return nil
 }
 
-//*
 // information about a single account that is proxy staking
 type ProxyStaker struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The Account ID that is proxy staking
-	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
-	// The number of hbars that are currently proxy staked
-	Amount int64 `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"` // The Account ID that is proxy staking
+	Amount    int64      `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`      // The number of hbars that are currently proxy staked
 }
 
 func (x *ProxyStaker) Reset() {
@@ -144,19 +132,14 @@ func (x *ProxyStaker) GetAmount() int64 {
 	return 0
 }
 
-//*
 // all of the accounts proxy staking to a given account, and the amounts proxy staked
 type AllProxyStakers struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The Account ID that is being proxy staked to
-	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
-	// Each of the proxy staking accounts, and the amount they are proxy staking
-	ProxyStaker []*ProxyStaker `protobuf:"bytes,2,rep,name=proxyStaker,proto3" json:"proxyStaker,omitempty"`
+	AccountID   *AccountID     `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`     // The Account ID that is being proxy staked to
+	ProxyStaker []*ProxyStaker `protobuf:"bytes,2,rep,name=proxyStaker,proto3" json:"proxyStaker,omitempty"` // Each of the proxy staking accounts, and the amount they are proxy staking
 }
 
 func (x *AllProxyStakers) Reset() {
@@ -205,21 +188,14 @@ func (x *AllProxyStakers) GetProxyStaker() []*ProxyStaker {
 	return nil
 }
 
-//*
 // Response when the client sends the node CryptoGetStakersQuery
 type CryptoGetStakersResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// List of accounts proxy staking to this account, and the amount each is currently proxy
-	// staking
-	Stakers *AllProxyStakers `protobuf:"bytes,3,opt,name=stakers,proto3" json:"stakers,omitempty"`
+	Header  *ResponseHeader  `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`   //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	Stakers *AllProxyStakers `protobuf:"bytes,3,opt,name=stakers,proto3" json:"stakers,omitempty"` // List of accounts proxy staking to this account, and the amount each is currently proxy staking
 }
 
 func (x *CryptoGetStakersResponse) Reset() {

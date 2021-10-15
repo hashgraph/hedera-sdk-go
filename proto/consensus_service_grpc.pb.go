@@ -18,14 +18,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ConsensusServiceClient interface {
-	//*
 	// Create a topic to be used for consensus.
 	// If an autoRenewAccount is specified, that account must also sign this transaction.
 	// If an adminKey is specified, the adminKey must sign the transaction.
 	// On success, the resulting TransactionReceipt contains the newly created TopicId.
 	// Request is [ConsensusCreateTopicTransactionBody](#proto.ConsensusCreateTopicTransactionBody)
 	CreateTopic(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Update a topic.
 	// If there is no adminKey, the only authorized update (available to anyone) is to extend the expirationTime.
 	// Otherwise transaction must be signed by the adminKey.
@@ -33,19 +31,16 @@ type ConsensusServiceClient interface {
 	// If a new autoRenewAccount is specified (not just being removed), that account must also sign the transaction.
 	// Request is [ConsensusUpdateTopicTransactionBody](#proto.ConsensusUpdateTopicTransactionBody)
 	UpdateTopic(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Delete a topic. No more transactions or queries on the topic (via HAPI) will succeed.
 	// If an adminKey is set, this transaction must be signed by that key.
 	// If there is no adminKey, this transaction will fail UNAUTHORIZED.
 	// Request is [ConsensusDeleteTopicTransactionBody](#proto.ConsensusDeleteTopicTransactionBody)
 	DeleteTopic(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Retrieve the latest state of a topic. This method is unrestricted and allowed on any topic by any payer account.
 	// Deleted accounts will not be returned.
 	// Request is [ConsensusGetTopicInfoQuery](#proto.ConsensusGetTopicInfoQuery)
 	// Response is [ConsensusGetTopicInfoResponse](#proto.ConsensusGetTopicInfoResponse)
 	GetTopicInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	//*
 	// Submit a message for consensus.
 	// Valid and authorized messages on valid topics will be ordered by the consensus service, gossipped to the
 	// mirror net, and published (in order) to all subscribers (from the mirror net) on this topic.
@@ -113,14 +108,12 @@ func (c *consensusServiceClient) SubmitMessage(ctx context.Context, in *Transact
 // All implementations must embed UnimplementedConsensusServiceServer
 // for forward compatibility
 type ConsensusServiceServer interface {
-	//*
 	// Create a topic to be used for consensus.
 	// If an autoRenewAccount is specified, that account must also sign this transaction.
 	// If an adminKey is specified, the adminKey must sign the transaction.
 	// On success, the resulting TransactionReceipt contains the newly created TopicId.
 	// Request is [ConsensusCreateTopicTransactionBody](#proto.ConsensusCreateTopicTransactionBody)
 	CreateTopic(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Update a topic.
 	// If there is no adminKey, the only authorized update (available to anyone) is to extend the expirationTime.
 	// Otherwise transaction must be signed by the adminKey.
@@ -128,19 +121,16 @@ type ConsensusServiceServer interface {
 	// If a new autoRenewAccount is specified (not just being removed), that account must also sign the transaction.
 	// Request is [ConsensusUpdateTopicTransactionBody](#proto.ConsensusUpdateTopicTransactionBody)
 	UpdateTopic(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Delete a topic. No more transactions or queries on the topic (via HAPI) will succeed.
 	// If an adminKey is set, this transaction must be signed by that key.
 	// If there is no adminKey, this transaction will fail UNAUTHORIZED.
 	// Request is [ConsensusDeleteTopicTransactionBody](#proto.ConsensusDeleteTopicTransactionBody)
 	DeleteTopic(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Retrieve the latest state of a topic. This method is unrestricted and allowed on any topic by any payer account.
 	// Deleted accounts will not be returned.
 	// Request is [ConsensusGetTopicInfoQuery](#proto.ConsensusGetTopicInfoQuery)
 	// Response is [ConsensusGetTopicInfoResponse](#proto.ConsensusGetTopicInfoResponse)
 	GetTopicInfo(context.Context, *Query) (*Response, error)
-	//*
 	// Submit a message for consensus.
 	// Valid and authorized messages on valid topics will be ordered by the consensus service, gossipped to the
 	// mirror net, and published (in order) to all subscribers (from the mirror net) on this topic.

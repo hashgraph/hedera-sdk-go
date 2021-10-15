@@ -18,16 +18,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ScheduleServiceClient interface {
-	//*
 	// Creates a new Schedule by submitting the transaction
 	CreateSchedule(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Signs a new Schedule by submitting the transaction
 	SignSchedule(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Deletes a new Schedule by submitting the transaction
 	DeleteSchedule(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Retrieves the metadata of a schedule entity
 	GetScheduleInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 }
@@ -80,16 +76,12 @@ func (c *scheduleServiceClient) GetScheduleInfo(ctx context.Context, in *Query, 
 // All implementations must embed UnimplementedScheduleServiceServer
 // for forward compatibility
 type ScheduleServiceServer interface {
-	//*
 	// Creates a new Schedule by submitting the transaction
 	CreateSchedule(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Signs a new Schedule by submitting the transaction
 	SignSchedule(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Deletes a new Schedule by submitting the transaction
 	DeleteSchedule(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Retrieves the metadata of a schedule entity
 	GetScheduleInfo(context.Context, *Query) (*Response, error)
 	mustEmbedUnimplementedScheduleServiceServer()

@@ -31,8 +31,6 @@ type TokenInfo struct {
 	MaxSupply           int64
 	FeeScheduleKey      Key
 	CustomFees          []Fee
-	PauseKey            Key
-	PauseStatus         *bool
 }
 
 func _FreezeStatusFromProtobuf(pb proto.TokenFreezeStatus) *bool {
@@ -60,19 +58,6 @@ func _KycStatusFromProtobuf(pb proto.TokenKycStatus) *bool {
 		return nil
 	}
 	return &kycStatus
-}
-
-func _PauseStatusFromProtobuf(pb proto.TokenPauseStatus) *bool {
-	var pauseStatus bool
-	switch pb.Number() {
-	case 1:
-		pauseStatus = true
-	case 2:
-		pauseStatus = false
-	default:
-		return nil
-	}
-	return &pauseStatus
 }
 
 func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *proto.TokenFreezeStatus {
@@ -113,25 +98,6 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *proto.TokenKycStatus {
 	return &kycStatus
 }
 
-func (tokenInfo *TokenInfo) PauseStatusToProtobuf() *proto.TokenPauseStatus {
-	var pauseStatus proto.TokenPauseStatus
-
-	if tokenInfo.PauseStatus == nil {
-		return nil
-	}
-
-	switch *tokenInfo.PauseStatus {
-	case true:
-		pauseStatus = proto.TokenPauseStatus_Paused
-	case false:
-		pauseStatus = proto.TokenPauseStatus_Unpaused
-	default:
-		pauseStatus = proto.TokenPauseStatus_PauseNotApplicable
-	}
-
-	return &pauseStatus
-}
-
 func _TokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 	if pb == nil {
 		return TokenInfo{}
@@ -160,11 +126,6 @@ func _TokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 	var supplyKey Key
 	if pb.SupplyKey != nil {
 		supplyKey, _ = _KeyFromProtobuf(pb.SupplyKey)
-	}
-
-	var pauseKey Key
-	if pb.PauseKey != nil {
-		pauseKey, _ = _KeyFromProtobuf(pb.PauseKey)
 	}
 
 	var feeScheduleKey Key
@@ -228,8 +189,6 @@ func _TokenInfoFromProtobuf(pb *proto.TokenInfo) TokenInfo {
 		MaxSupply:           pb.MaxSupply,
 		FeeScheduleKey:      feeScheduleKey,
 		CustomFees:          customFees,
-		PauseKey:            pauseKey,
-		PauseStatus:         _PauseStatusFromProtobuf(pb.PauseStatus),
 	}
 }
 
@@ -257,11 +216,6 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *proto.TokenInfo {
 	var supplyKey *proto.Key
 	if tokenInfo.SupplyKey != nil {
 		supplyKey = tokenInfo.SupplyKey._ToProtoKey()
-	}
-
-	var pauseKey *proto.Key
-	if tokenInfo.PauseKey != nil {
-		pauseKey = tokenInfo.PauseKey._ToProtoKey()
 	}
 
 	var feeScheduleKey *proto.Key
@@ -310,8 +264,6 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *proto.TokenInfo {
 		MaxSupply:           tokenInfo.MaxSupply,
 		FeeScheduleKey:      feeScheduleKey,
 		CustomFees:          customFees,
-		PauseKey:            pauseKey,
-		PauseStatus:         *tokenInfo.PauseStatusToProtobuf(),
 	}
 }
 

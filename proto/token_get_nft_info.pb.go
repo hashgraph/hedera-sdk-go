@@ -20,19 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // Represents an NFT on the Ledger
 type NftID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The (non-fungible) token of which this NFT is an instance
-	TokenID *TokenID `protobuf:"bytes,1,opt,name=tokenID,proto3" json:"tokenID,omitempty"`
-	//*
-	// The unique identifier of this instance
-	SerialNumber int64 `protobuf:"varint,2,opt,name=serialNumber,proto3" json:"serialNumber,omitempty"`
+	TokenID      *TokenID `protobuf:"bytes,1,opt,name=tokenID,proto3" json:"tokenID,omitempty"`            // The (non-fungible) token of which this NFT is an instance
+	SerialNumber int64    `protobuf:"varint,2,opt,name=serialNumber,proto3" json:"serialNumber,omitempty"` // The unique identifier of this instance
 }
 
 func (x *NftID) Reset() {
@@ -81,21 +76,14 @@ func (x *NftID) GetSerialNumber() int64 {
 	return 0
 }
 
-//*
-// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on a NFT for a given TokenID (of
-// type NON_FUNGIBLE_UNIQUE) and serial number
+// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on a NFT for a given TokenID (of type NON_FUNGIBLE_UNIQUE) and serial number
 type TokenGetNftInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither).
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The ID of the NFT
-	NftID *NftID `protobuf:"bytes,2,opt,name=nftID,proto3" json:"nftID,omitempty"`
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	NftID  *NftID       `protobuf:"bytes,2,opt,name=nftID,proto3" json:"nftID,omitempty"`   // The ID of the NFT
 }
 
 func (x *TokenGetNftInfoQuery) Reset() {
@@ -144,25 +132,15 @@ func (x *TokenGetNftInfoQuery) GetNftID() *NftID {
 	return nil
 }
 
-//*
-// UNDOCUMENTED
 type TokenNftInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The ID of the NFT
-	NftID *NftID `protobuf:"bytes,1,opt,name=nftID,proto3" json:"nftID,omitempty"`
-	//*
-	// The current owner of the NFT
-	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
-	// The effective consensus timestamp at which the NFT was minted
-	CreationTime *Timestamp `protobuf:"bytes,3,opt,name=creationTime,proto3" json:"creationTime,omitempty"`
-	//*
-	// Represents the unique metadata of the NFT
-	Metadata []byte `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	NftID        *NftID     `protobuf:"bytes,1,opt,name=nftID,proto3" json:"nftID,omitempty"`               // The ID of the NFT
+	AccountID    *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`       // The current owner of the NFT
+	CreationTime *Timestamp `protobuf:"bytes,3,opt,name=creationTime,proto3" json:"creationTime,omitempty"` // The effective consensus timestamp at which the NFT was minted
+	Metadata     []byte     `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata,omitempty"`         // Represents the unique metadata of the NFT
 }
 
 func (x *TokenNftInfo) Reset() {
@@ -225,20 +203,13 @@ func (x *TokenNftInfo) GetMetadata() []byte {
 	return nil
 }
 
-//*
-// UNDOCUMENTED
 type TokenGetNftInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The information about this NFT
-	Nft *TokenNftInfo `protobuf:"bytes,2,opt,name=nft,proto3" json:"nft,omitempty"`
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	Nft    *TokenNftInfo   `protobuf:"bytes,2,opt,name=nft,proto3" json:"nft,omitempty"`       // The information about this NFT
 }
 
 func (x *TokenGetNftInfoResponse) Reset() {

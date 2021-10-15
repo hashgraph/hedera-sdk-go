@@ -20,34 +20,27 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // See [ConsensusService.createTopic()](#proto.ConsensusService)
 type ConsensusCreateTopicTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Short publicly visible memo about the topic. No guarantee of uniqueness.
-	Memo string `protobuf:"bytes,1,opt,name=memo,proto3" json:"memo,omitempty"`
-	//*
+	Memo string `protobuf:"bytes,1,opt,name=memo,proto3" json:"memo,omitempty"` // Short publicly visible memo about the topic. No guarantee of uniqueness.
 	// Access control for updateTopic/deleteTopic.
 	// Anyone can increase the topic's expirationTime via ConsensusService.updateTopic(), regardless of the adminKey.
 	// If no adminKey is specified, updateTopic may only be used to extend the topic's expirationTime, and deleteTopic
 	// is disallowed.
 	AdminKey *Key `protobuf:"bytes,2,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
-	//*
 	// Access control for submitMessage.
 	// If unspecified, no access control is performed on ConsensusService.submitMessage (all submissions are allowed).
 	SubmitKey *Key `protobuf:"bytes,3,opt,name=submitKey,proto3" json:"submitKey,omitempty"`
-	//*
 	// The initial lifetime of the topic and the amount of time to attempt to extend the topic's lifetime by
 	// automatically at the topic's expirationTime, if the autoRenewAccount is configured (once autoRenew functionality
 	// is supported by HAPI).
 	// Limited to MIN_AUTORENEW_PERIOD and MAX_AUTORENEW_PERIOD value by server-side configuration.
 	// Required.
 	AutoRenewPeriod *Duration `protobuf:"bytes,6,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
-	//*
 	// Optional account to be used at the topic's expirationTime to extend the life of the topic (once autoRenew
 	// functionality is supported by HAPI).
 	// The topic lifetime will be extended up to a maximum of the autoRenewPeriod or however long the topic

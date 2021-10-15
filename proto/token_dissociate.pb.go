@@ -20,33 +20,23 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Dissociates the provided account with the provided tokens. Must be signed by the provided
-// Account's key.
-// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
-// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
-// If any of the provided tokens is not found, the transaction will resolve to INVALID_TOKEN_REF.
-// If any of the provided tokens has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
-// If an association between the provided account and any of the tokens does not exist, the
-// transaction will resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
-// If a token has not been deleted and has not expired, and the user has a nonzero balance, the
-// transaction will resolve to TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES.
-// If a <b>fungible token</b> has expired, the user can disassociate even if their token balance is
-// not zero.
-// If a <b>non fungible token</b> has expired, the user can <b>not</b> disassociate if their token
-// balance is not zero. The transaction will resolve to TRANSACTION_REQUIRED_ZERO_TOKEN_BALANCES.
-// On success, associations between the provided account and tokens are removed.
+// Dissociates the provided account with the provided tokens. Must be signed by the provided Account's key.
+//If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+//If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+//If any of the provided tokens is not found, the transaction will resolve to INVALID_TOKEN_REF.
+//If any of the provided tokens has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+//If an association between the provided account and any of the tokens does not exist, the transaction will resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+//If a token has not been deleted and has not expired, and the user has a nonzero balance, the transaction will resolve to TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES.
+//If a <b>fungible token</b> has expired, the user can disassociate even if their token balance is not zero.
+//If a <b>non fungible token</b> has expired, the user can <b>not</b> disassociate if their token balance is not zero. The transaction will resolve to TRANSACTION_REQUIRED_ZERO_TOKEN_BALANCES.
+//On success, associations between the provided account and tokens are removed.
 type TokenDissociateTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The account to be dissociated with the provided tokens
-	Account *AccountID `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
-	//*
-	// The tokens to be dissociated with the provided account
-	Tokens []*TokenID `protobuf:"bytes,2,rep,name=tokens,proto3" json:"tokens,omitempty"`
+	Account *AccountID `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"` // The account to be dissociated with the provided tokens
+	Tokens  []*TokenID `protobuf:"bytes,2,rep,name=tokens,proto3" json:"tokens,omitempty"`   // The tokens to be dissociated with the provided account
 }
 
 func (x *TokenDissociateTransactionBody) Reset() {
