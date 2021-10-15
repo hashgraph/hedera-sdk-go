@@ -20,21 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // Gets information about Token instance
 type TokenGetInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither)
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The token for which information is requested. If invalid token is provided, INVALID_TOKEN_ID
-	// response is returned.
-	Token *TokenID `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither)
+	Token  *TokenID     `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`   // The token for which information is requested. If invalid token is provided, INVALID_TOKEN_ID response is returned.
 }
 
 func (x *TokenGetInfoQuery) Reset() {
@@ -83,103 +76,35 @@ func (x *TokenGetInfoQuery) GetToken() *TokenID {
 	return nil
 }
 
-//*
 // The metadata about a Token instance
 type TokenInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// ID of the token instance
-	TokenId *TokenID `protobuf:"bytes,1,opt,name=tokenId,proto3" json:"tokenId,omitempty"`
-	//*
-	// The name of the token. It is a string of ASCII only characters
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	//*
-	// The symbol of the token. It is a UTF-8 capitalized alphabetical string
-	Symbol string `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	//*
-	// The number of decimal places a token is divisible by. Always 0 for tokens of type
-	// NON_FUNGIBLE_UNIQUE
-	Decimals uint32 `protobuf:"varint,4,opt,name=decimals,proto3" json:"decimals,omitempty"`
-	//*
-	// For tokens of type FUNGIBLE_COMMON - the total supply of tokens that are currently in
-	// circulation. For tokens of type NON_FUNGIBLE_UNIQUE - the number of NFTs created of this
-	// token instance
-	TotalSupply uint64 `protobuf:"varint,5,opt,name=totalSupply,proto3" json:"totalSupply,omitempty"`
-	//*
-	// The ID of the account which is set as Treasury
-	Treasury *AccountID `protobuf:"bytes,6,opt,name=treasury,proto3" json:"treasury,omitempty"`
-	//*
-	// The key which can perform update/delete operations on the token. If empty, the token can be
-	// perceived as immutable (not being able to be updated/deleted)
-	AdminKey *Key `protobuf:"bytes,7,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
-	//*
-	// The key which can grant or revoke KYC of an account for the token's transactions. If empty,
-	// KYC is not required, and KYC grant or revoke operations are not possible.
-	KycKey *Key `protobuf:"bytes,8,opt,name=kycKey,proto3" json:"kycKey,omitempty"`
-	//*
-	// The key which can freeze or unfreeze an account for token transactions. If empty, freezing is
-	// not possible
-	FreezeKey *Key `protobuf:"bytes,9,opt,name=freezeKey,proto3" json:"freezeKey,omitempty"`
-	//*
-	// The key which can wipe token balance of an account. If empty, wipe is not possible
-	WipeKey *Key `protobuf:"bytes,10,opt,name=wipeKey,proto3" json:"wipeKey,omitempty"`
-	//*
-	// The key which can change the supply of a token. The key is used to sign Token Mint/Burn
-	// operations
-	SupplyKey *Key `protobuf:"bytes,11,opt,name=supplyKey,proto3" json:"supplyKey,omitempty"`
-	//*
-	// The default Freeze status (not applicable, frozen or unfrozen) of Hedera accounts relative to
-	// this token. FreezeNotApplicable is returned if Token Freeze Key is empty. Frozen is returned
-	// if Token Freeze Key is set and defaultFreeze is set to true. Unfrozen is returned if Token
-	// Freeze Key is set and defaultFreeze is set to false
-	DefaultFreezeStatus TokenFreezeStatus `protobuf:"varint,12,opt,name=defaultFreezeStatus,proto3,enum=proto.TokenFreezeStatus" json:"defaultFreezeStatus,omitempty"`
-	//*
-	// The default KYC status (KycNotApplicable or Revoked) of Hedera accounts relative to this
-	// token. KycNotApplicable is returned if KYC key is not set, otherwise Revoked
-	DefaultKycStatus TokenKycStatus `protobuf:"varint,13,opt,name=defaultKycStatus,proto3,enum=proto.TokenKycStatus" json:"defaultKycStatus,omitempty"`
-	//*
-	// Specifies whether the token was deleted or not
-	Deleted bool `protobuf:"varint,14,opt,name=deleted,proto3" json:"deleted,omitempty"`
-	//*
-	// An account which will be automatically charged to renew the token's expiration, at
-	// autoRenewPeriod interval
-	AutoRenewAccount *AccountID `protobuf:"bytes,15,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"`
-	//*
-	// The interval at which the auto-renew account will be charged to extend the token's expiry
-	AutoRenewPeriod *Duration `protobuf:"bytes,16,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
-	//*
-	// The epoch second at which the token will expire
-	Expiry *Timestamp `protobuf:"bytes,17,opt,name=expiry,proto3" json:"expiry,omitempty"`
-	//*
-	// The memo associated with the token
-	Memo string `protobuf:"bytes,18,opt,name=memo,proto3" json:"memo,omitempty"`
-	//*
-	// The token type
-	TokenType TokenType `protobuf:"varint,19,opt,name=tokenType,proto3,enum=proto.TokenType" json:"tokenType,omitempty"`
-	//*
-	// The token supply type
-	SupplyType TokenSupplyType `protobuf:"varint,20,opt,name=supplyType,proto3,enum=proto.TokenSupplyType" json:"supplyType,omitempty"`
-	//*
-	// For tokens of type FUNGIBLE_COMMON - The Maximum number of fungible tokens that can be in
-	// circulation. For tokens of type NON_FUNGIBLE_UNIQUE - the maximum number of NFTs (serial
-	// numbers) that can be in circulation
-	MaxSupply int64 `protobuf:"varint,21,opt,name=maxSupply,proto3" json:"maxSupply,omitempty"`
-	//*
-	// The key which can change the custom fee schedule of the token; if not set, the fee schedule
-	// is immutable
-	FeeScheduleKey *Key `protobuf:"bytes,22,opt,name=fee_schedule_key,json=feeScheduleKey,proto3" json:"fee_schedule_key,omitempty"`
-	//*
-	// The custom fees to be assessed during a CryptoTransfer that transfers units of this token
-	CustomFees []*CustomFee `protobuf:"bytes,23,rep,name=custom_fees,json=customFees,proto3" json:"custom_fees,omitempty"`
-	//*
-	// The Key which can pause and unpause the Token.
-	PauseKey *Key `protobuf:"bytes,24,opt,name=pause_key,json=pauseKey,proto3" json:"pause_key,omitempty"`
-	//*
-	// Specifies whether the token is paused or not. PauseNotApplicable is returned if pauseKey is not set.
-	PauseStatus TokenPauseStatus `protobuf:"varint,25,opt,name=pause_status,json=pauseStatus,proto3,enum=proto.TokenPauseStatus" json:"pause_status,omitempty"`
+	TokenId             *TokenID          `protobuf:"bytes,1,opt,name=tokenId,proto3" json:"tokenId,omitempty"`                                                        // ID of the token instance
+	Name                string            `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                                              // The name of the token. It is a string of ASCII only characters
+	Symbol              string            `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`                                                          // The symbol of the token. It is a UTF-8 capitalized alphabetical string
+	Decimals            uint32            `protobuf:"varint,4,opt,name=decimals,proto3" json:"decimals,omitempty"`                                                     // The number of decimal places a token is divisible by. Always 0 for tokens of type NON_FUNGIBLE_UNIQUE
+	TotalSupply         uint64            `protobuf:"varint,5,opt,name=totalSupply,proto3" json:"totalSupply,omitempty"`                                               // For tokens of type FUNGIBLE_COMMON - the total supply of tokens that are currently in circulation. For tokens of type NON_FUNGIBLE_UNIQUE - the number of NFTs created of this token instance
+	Treasury            *AccountID        `protobuf:"bytes,6,opt,name=treasury,proto3" json:"treasury,omitempty"`                                                      // The ID of the account which is set as Treasury
+	AdminKey            *Key              `protobuf:"bytes,7,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                                                      // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
+	KycKey              *Key              `protobuf:"bytes,8,opt,name=kycKey,proto3" json:"kycKey,omitempty"`                                                          // The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
+	FreezeKey           *Key              `protobuf:"bytes,9,opt,name=freezeKey,proto3" json:"freezeKey,omitempty"`                                                    // The key which can freeze or unfreeze an account for token transactions. If empty, freezing is not possible
+	WipeKey             *Key              `protobuf:"bytes,10,opt,name=wipeKey,proto3" json:"wipeKey,omitempty"`                                                       // The key which can wipe token balance of an account. If empty, wipe is not possible
+	SupplyKey           *Key              `protobuf:"bytes,11,opt,name=supplyKey,proto3" json:"supplyKey,omitempty"`                                                   // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
+	DefaultFreezeStatus TokenFreezeStatus `protobuf:"varint,12,opt,name=defaultFreezeStatus,proto3,enum=proto.TokenFreezeStatus" json:"defaultFreezeStatus,omitempty"` // The default Freeze status (not applicable, frozen or unfrozen) of Hedera accounts relative to this token. FreezeNotApplicable is returned if Token Freeze Key is empty. Frozen is returned if Token Freeze Key is set and defaultFreeze is set to true. Unfrozen is returned if Token Freeze Key is set and defaultFreeze is set to false
+	DefaultKycStatus    TokenKycStatus    `protobuf:"varint,13,opt,name=defaultKycStatus,proto3,enum=proto.TokenKycStatus" json:"defaultKycStatus,omitempty"`          // The default KYC status (KycNotApplicable or Revoked) of Hedera accounts relative to this token. KycNotApplicable is returned if KYC key is not set, otherwise Revoked
+	Deleted             bool              `protobuf:"varint,14,opt,name=deleted,proto3" json:"deleted,omitempty"`                                                      // Specifies whether the token was deleted or not
+	AutoRenewAccount    *AccountID        `protobuf:"bytes,15,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"`                                     // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
+	AutoRenewPeriod     *Duration         `protobuf:"bytes,16,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`                                       // The interval at which the auto-renew account will be charged to extend the token's expiry
+	Expiry              *Timestamp        `protobuf:"bytes,17,opt,name=expiry,proto3" json:"expiry,omitempty"`                                                         // The epoch second at which the token will expire
+	Memo                string            `protobuf:"bytes,18,opt,name=memo,proto3" json:"memo,omitempty"`                                                             // The memo associated with the token
+	TokenType           TokenType         `protobuf:"varint,19,opt,name=tokenType,proto3,enum=proto.TokenType" json:"tokenType,omitempty"`                             // The token type
+	SupplyType          TokenSupplyType   `protobuf:"varint,20,opt,name=supplyType,proto3,enum=proto.TokenSupplyType" json:"supplyType,omitempty"`                     // The token supply type
+	MaxSupply           int64             `protobuf:"varint,21,opt,name=maxSupply,proto3" json:"maxSupply,omitempty"`                                                  // For tokens of type FUNGIBLE_COMMON - The Maximum number of fungible tokens that can be in circulation. For tokens of type NON_FUNGIBLE_UNIQUE - the maximum number of NFTs (serial numbers) that can be in circulation
+	FeeScheduleKey      *Key              `protobuf:"bytes,22,opt,name=fee_schedule_key,json=feeScheduleKey,proto3" json:"fee_schedule_key,omitempty"`                 // The key which can change the custom fee schedule of the token; if not set, the fee schedule is immutable
+	CustomFees          []*CustomFee      `protobuf:"bytes,23,rep,name=custom_fees,json=customFees,proto3" json:"custom_fees,omitempty"`                               // The custom fees to be assessed during a CryptoTransfer that transfers units of this token
 }
 
 func (x *TokenInfo) Reset() {
@@ -375,34 +300,14 @@ func (x *TokenInfo) GetCustomFees() []*CustomFee {
 	return nil
 }
 
-func (x *TokenInfo) GetPauseKey() *Key {
-	if x != nil {
-		return x.PauseKey
-	}
-	return nil
-}
-
-func (x *TokenInfo) GetPauseStatus() TokenPauseStatus {
-	if x != nil {
-		return x.PauseStatus
-	}
-	return TokenPauseStatus_PauseNotApplicable
-}
-
-//*
 // Response when the client sends the node TokenGetInfoQuery
 type TokenGetInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The information requested about this token instance
-	TokenInfo *TokenInfo `protobuf:"bytes,2,opt,name=tokenInfo,proto3" json:"tokenInfo,omitempty"`
+	Header    *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	TokenInfo *TokenInfo      `protobuf:"bytes,2,opt,name=tokenInfo,proto3" json:"tokenInfo,omitempty"` // The information requested about this token instance
 }
 
 func (x *TokenGetInfoResponse) Reset() {
@@ -472,7 +377,7 @@ var file_proto_token_get_info_proto_rawDesc = []byte{
 	0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x24, 0x0a, 0x05, 0x74, 0x6f,
 	0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x44, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e,
-	0x22, 0xc7, 0x08, 0x0a, 0x09, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x28,
+	0x22, 0xe2, 0x07, 0x0a, 0x09, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x28,
 	0x0a, 0x07, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x44, 0x52,
 	0x07, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
@@ -534,26 +439,20 @@ var file_proto_token_get_info_proto_rawDesc = []byte{
 	0x65, 0x79, 0x12, 0x31, 0x0a, 0x0b, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x5f, 0x66, 0x65, 0x65,
 	0x73, 0x18, 0x17, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
 	0x43, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x46, 0x65, 0x65, 0x52, 0x0a, 0x63, 0x75, 0x73, 0x74, 0x6f,
-	0x6d, 0x46, 0x65, 0x65, 0x73, 0x12, 0x27, 0x0a, 0x09, 0x70, 0x61, 0x75, 0x73, 0x65, 0x5f, 0x6b,
-	0x65, 0x79, 0x18, 0x18, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x2e, 0x4b, 0x65, 0x79, 0x52, 0x08, 0x70, 0x61, 0x75, 0x73, 0x65, 0x4b, 0x65, 0x79, 0x12, 0x3a,
-	0x0a, 0x0c, 0x70, 0x61, 0x75, 0x73, 0x65, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x19,
-	0x20, 0x01, 0x28, 0x0e, 0x32, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b,
-	0x65, 0x6e, 0x50, 0x61, 0x75, 0x73, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x0b, 0x70,
-	0x61, 0x75, 0x73, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x75, 0x0a, 0x14, 0x54, 0x6f,
-	0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x2d, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65,
-	0x72, 0x12, 0x2e, 0x0a, 0x09, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b,
-	0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x09, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66,
-	0x6f, 0x42, 0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e,
-	0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x50,
-	0x01, 0x5a, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61,
-	0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73,
-	0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6d, 0x46, 0x65, 0x65, 0x73, 0x22, 0x75, 0x0a, 0x14, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x65,
+	0x74, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2d, 0x0a,
+	0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x65,
+	0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x2e, 0x0a, 0x09,
+	0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66,
+	0x6f, 0x52, 0x09, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x42, 0x4b, 0x0a, 0x1a,
+	0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67,
+	0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2b, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61,
+	0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f,
+	0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -584,8 +483,7 @@ var file_proto_token_get_info_proto_goTypes = []interface{}{
 	(TokenType)(0),               // 11: proto.TokenType
 	(TokenSupplyType)(0),         // 12: proto.TokenSupplyType
 	(*CustomFee)(nil),            // 13: proto.CustomFee
-	(TokenPauseStatus)(0),        // 14: proto.TokenPauseStatus
-	(*ResponseHeader)(nil),       // 15: proto.ResponseHeader
+	(*ResponseHeader)(nil),       // 14: proto.ResponseHeader
 }
 var file_proto_token_get_info_proto_depIdxs = []int32{
 	3,  // 0: proto.TokenGetInfoQuery.header:type_name -> proto.QueryHeader
@@ -606,15 +504,13 @@ var file_proto_token_get_info_proto_depIdxs = []int32{
 	12, // 15: proto.TokenInfo.supplyType:type_name -> proto.TokenSupplyType
 	6,  // 16: proto.TokenInfo.fee_schedule_key:type_name -> proto.Key
 	13, // 17: proto.TokenInfo.custom_fees:type_name -> proto.CustomFee
-	6,  // 18: proto.TokenInfo.pause_key:type_name -> proto.Key
-	14, // 19: proto.TokenInfo.pause_status:type_name -> proto.TokenPauseStatus
-	15, // 20: proto.TokenGetInfoResponse.header:type_name -> proto.ResponseHeader
-	1,  // 21: proto.TokenGetInfoResponse.tokenInfo:type_name -> proto.TokenInfo
-	22, // [22:22] is the sub-list for method output_type
-	22, // [22:22] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	14, // 18: proto.TokenGetInfoResponse.header:type_name -> proto.ResponseHeader
+	1,  // 19: proto.TokenGetInfoResponse.tokenInfo:type_name -> proto.TokenInfo
+	20, // [20:20] is the sub-list for method output_type
+	20, // [20:20] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_proto_token_get_info_proto_init() }

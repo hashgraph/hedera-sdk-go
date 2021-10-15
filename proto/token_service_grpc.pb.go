@@ -18,63 +18,40 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TokenServiceClient interface {
-	//*
 	// Creates a new Token by submitting the transaction
 	CreateToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Updates the account by submitting the transaction
 	UpdateToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Mints an amount of the token to the defined treasury account
 	MintToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Burns an amount of the token from the defined treasury account
 	BurnToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Deletes a Token
 	DeleteToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Wipes the provided amount of tokens from the specified Account ID
 	WipeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Freezes the transfer of tokens to or from the specified Account ID
 	FreezeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Unfreezes the transfer of tokens to or from the specified Account ID
 	UnfreezeTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Flags the provided Account ID as having gone through KYC
 	GrantKycToTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Removes the KYC flag of the provided Account ID
 	RevokeKycFromTokenAccount(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Associates tokens to an account
 	AssociateTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Dissociates tokens from an account
 	DissociateTokens(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Updates the custom fee schedule on a token
 	UpdateTokenFeeSchedule(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//*
 	// Retrieves the metadata of a token
 	GetTokenInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	// Deprecated: Do not use.
-	//*
-	// (DEPRECATED) Gets info on NFTs N through M on the list of NFTs associated with a given account
+	// Gets info on NFTs N through M on the list of NFTs associated with a given account
 	GetAccountNftInfos(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	//*
 	// Retrieves the metadata of an NFT by TokenID and serial number
 	GetTokenNftInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	// Deprecated: Do not use.
-	//*
-	// (DEPRECATED) Gets info on NFTs N through M on the list of NFTs associated with a given Token of type NON_FUNGIBLE
+	// Gets info on NFTs N through M on the list of NFTs associated with a given Token of type NON_FUNGIBLE
 	GetTokenNftInfos(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
-	// Pause the token
-	PauseToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
-	//  Unpause the token
-	UnpauseToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
 
 type tokenServiceClient struct {
@@ -211,7 +188,6 @@ func (c *tokenServiceClient) GetTokenInfo(ctx context.Context, in *Query, opts .
 	return out, nil
 }
 
-// Deprecated: Do not use.
 func (c *tokenServiceClient) GetAccountNftInfos(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/getAccountNftInfos", in, out, opts...)
@@ -230,28 +206,9 @@ func (c *tokenServiceClient) GetTokenNftInfo(ctx context.Context, in *Query, opt
 	return out, nil
 }
 
-// Deprecated: Do not use.
 func (c *tokenServiceClient) GetTokenNftInfos(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.TokenService/getTokenNftInfos", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tokenServiceClient) PauseToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
-	out := new(TransactionResponse)
-	err := c.cc.Invoke(ctx, "/proto.TokenService/pauseToken", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tokenServiceClient) UnpauseToken(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error) {
-	out := new(TransactionResponse)
-	err := c.cc.Invoke(ctx, "/proto.TokenService/unpauseToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -262,63 +219,40 @@ func (c *tokenServiceClient) UnpauseToken(ctx context.Context, in *Transaction, 
 // All implementations must embed UnimplementedTokenServiceServer
 // for forward compatibility
 type TokenServiceServer interface {
-	//*
 	// Creates a new Token by submitting the transaction
 	CreateToken(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Updates the account by submitting the transaction
 	UpdateToken(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Mints an amount of the token to the defined treasury account
 	MintToken(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Burns an amount of the token from the defined treasury account
 	BurnToken(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Deletes a Token
 	DeleteToken(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Wipes the provided amount of tokens from the specified Account ID
 	WipeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Freezes the transfer of tokens to or from the specified Account ID
 	FreezeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Unfreezes the transfer of tokens to or from the specified Account ID
 	UnfreezeTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Flags the provided Account ID as having gone through KYC
 	GrantKycToTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Removes the KYC flag of the provided Account ID
 	RevokeKycFromTokenAccount(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Associates tokens to an account
 	AssociateTokens(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Dissociates tokens from an account
 	DissociateTokens(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Updates the custom fee schedule on a token
 	UpdateTokenFeeSchedule(context.Context, *Transaction) (*TransactionResponse, error)
-	//*
 	// Retrieves the metadata of a token
 	GetTokenInfo(context.Context, *Query) (*Response, error)
-	// Deprecated: Do not use.
-	//*
-	// (DEPRECATED) Gets info on NFTs N through M on the list of NFTs associated with a given account
+	// Gets info on NFTs N through M on the list of NFTs associated with a given account
 	GetAccountNftInfos(context.Context, *Query) (*Response, error)
-	//*
 	// Retrieves the metadata of an NFT by TokenID and serial number
 	GetTokenNftInfo(context.Context, *Query) (*Response, error)
-	// Deprecated: Do not use.
-	//*
-	// (DEPRECATED) Gets info on NFTs N through M on the list of NFTs associated with a given Token of type NON_FUNGIBLE
+	// Gets info on NFTs N through M on the list of NFTs associated with a given Token of type NON_FUNGIBLE
 	GetTokenNftInfos(context.Context, *Query) (*Response, error)
-	// Pause the token
-	PauseToken(context.Context, *Transaction) (*TransactionResponse, error)
-	//  Unpause the token
-	UnpauseToken(context.Context, *Transaction) (*TransactionResponse, error)
 	mustEmbedUnimplementedTokenServiceServer()
 }
 
@@ -376,12 +310,6 @@ func (UnimplementedTokenServiceServer) GetTokenNftInfo(context.Context, *Query) 
 }
 func (UnimplementedTokenServiceServer) GetTokenNftInfos(context.Context, *Query) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTokenNftInfos not implemented")
-}
-func (UnimplementedTokenServiceServer) PauseToken(context.Context, *Transaction) (*TransactionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PauseToken not implemented")
-}
-func (UnimplementedTokenServiceServer) UnpauseToken(context.Context, *Transaction) (*TransactionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnpauseToken not implemented")
 }
 func (UnimplementedTokenServiceServer) mustEmbedUnimplementedTokenServiceServer() {}
 
@@ -702,42 +630,6 @@ func _TokenService_GetTokenNftInfos_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TokenService_PauseToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Transaction)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TokenServiceServer).PauseToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.TokenService/pauseToken",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).PauseToken(ctx, req.(*Transaction))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TokenService_UnpauseToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Transaction)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TokenServiceServer).UnpauseToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.TokenService/unpauseToken",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenServiceServer).UnpauseToken(ctx, req.(*Transaction))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // TokenService_ServiceDesc is the grpc.ServiceDesc for TokenService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -812,14 +704,6 @@ var TokenService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getTokenNftInfos",
 			Handler:    _TokenService_GetTokenNftInfos_Handler,
-		},
-		{
-			MethodName: "pauseToken",
-			Handler:    _TokenService_PauseToken_Handler,
-		},
-		{
-			MethodName: "unpauseToken",
-			Handler:    _TokenService_UnpauseToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -20,21 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Get information about a smart contract instance. This includes the account that it uses, the file
-// containing its bytecode, and the time when it will expire.
+// Get information about a smart contract instance. This includes the account that it uses, the file containing its bytecode, and the time when it will expire.
 type ContractGetInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither).
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// the contract for which information is requested
-	ContractID *ContractID `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"`
+	Header     *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`         // standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	ContractID *ContractID  `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"` // the contract for which information is requested
 }
 
 func (x *ContractGetInfoQuery) Reset() {
@@ -83,20 +76,14 @@ func (x *ContractGetInfoQuery) GetContractID() *ContractID {
 	return nil
 }
 
-//*
 // Response when the client sends the node ContractGetInfoQuery
 type ContractGetInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// the information about this contract instance (a state proof can be generated for this)
-	ContractInfo *ContractGetInfoResponse_ContractInfo `protobuf:"bytes,2,opt,name=contractInfo,proto3" json:"contractInfo,omitempty"`
+	Header       *ResponseHeader                       `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`             //standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	ContractInfo *ContractGetInfoResponse_ContractInfo `protobuf:"bytes,2,opt,name=contractInfo,proto3" json:"contractInfo,omitempty"` // the information about this contract instance (a state proof can be generated for this)
 }
 
 func (x *ContractGetInfoResponse) Reset() {
@@ -150,49 +137,17 @@ type ContractGetInfoResponse_ContractInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// ID of the contract instance, in the format used in transactions
-	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`
-	//*
-	// ID of the cryptocurrency account owned by the contract instance, in the format used in
-	// transactions
-	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
-	// ID of both the contract instance and the cryptocurrency account owned by the contract
-	// instance, in the format used by Solidity
-	ContractAccountID string `protobuf:"bytes,3,opt,name=contractAccountID,proto3" json:"contractAccountID,omitempty"`
-	//*
-	// the state of the instance and its fields can be modified arbitrarily if this key signs a
-	// transaction to modify it. If this is null, then such modifications are not possible, and
-	// there is no administrator that can override the normal operation of this smart contract
-	// instance. Note that if it is created with no admin keys, then there is no administrator
-	// to authorize changing the admin keys, so there can never be any admin keys for that
-	// instance.
-	AdminKey *Key `protobuf:"bytes,4,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
-	//*
-	// the current time at which this contract instance (and its account) is set to expire
-	ExpirationTime *Timestamp `protobuf:"bytes,5,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
-	//*
-	// the expiration time will extend every this many seconds. If there are insufficient funds,
-	// then it extends as long as possible. If the account is empty when it expires, then it is
-	// deleted.
-	AutoRenewPeriod *Duration `protobuf:"bytes,6,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
-	//*
-	// number of bytes of storage being used by this instance (which affects the cost to extend
-	// the expiration time)
-	Storage int64 `protobuf:"varint,7,opt,name=storage,proto3" json:"storage,omitempty"`
-	//*
-	// the memo associated with the contract (max 100 bytes)
-	Memo string `protobuf:"bytes,8,opt,name=memo,proto3" json:"memo,omitempty"`
-	//*
-	// The current balance, in tinybars
-	Balance uint64 `protobuf:"varint,9,opt,name=balance,proto3" json:"balance,omitempty"`
-	//*
-	// Whether the contract has been deleted
-	Deleted bool `protobuf:"varint,10,opt,name=deleted,proto3" json:"deleted,omitempty"`
-	//*
-	// The tokens associated to the contract
-	TokenRelationships []*TokenRelationship `protobuf:"bytes,11,rep,name=tokenRelationships,proto3" json:"tokenRelationships,omitempty"`
+	ContractID         *ContractID          `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`                  // ID of the contract instance, in the format used in transactions
+	AccountID          *AccountID           `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`                    // ID of the cryptocurrency account owned by the contract instance, in the format used in transactions
+	ContractAccountID  string               `protobuf:"bytes,3,opt,name=contractAccountID,proto3" json:"contractAccountID,omitempty"`    // ID of both the contract instance and the cryptocurrency account owned by the contract instance, in the format used by Solidity
+	AdminKey           *Key                 `protobuf:"bytes,4,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                      // the state of the instance and its fields can be modified arbitrarily if this key signs a transaction to modify it. If this is null, then such modifications are not possible, and there is no administrator that can override the normal operation of this smart contract instance. Note that if it is created with no admin keys, then there is no administrator to authorize changing the admin keys, so there can never be any admin keys for that instance. */
+	ExpirationTime     *Timestamp           `protobuf:"bytes,5,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`          // the current time at which this contract instance (and its account) is set to expire
+	AutoRenewPeriod    *Duration            `protobuf:"bytes,6,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`        // the expiration time will extend every this many seconds. If there are insufficient funds, then it extends as long as possible. If the account is empty when it expires, then it is deleted.
+	Storage            int64                `protobuf:"varint,7,opt,name=storage,proto3" json:"storage,omitempty"`                       // number of bytes of storage being used by this instance (which affects the cost to extend the expiration time)
+	Memo               string               `protobuf:"bytes,8,opt,name=memo,proto3" json:"memo,omitempty"`                              // the memo associated with the contract (max 100 bytes)
+	Balance            uint64               `protobuf:"varint,9,opt,name=balance,proto3" json:"balance,omitempty"`                       // The current balance, in tinybars
+	Deleted            bool                 `protobuf:"varint,10,opt,name=deleted,proto3" json:"deleted,omitempty"`                      // Whether the contract has been deleted
+	TokenRelationships []*TokenRelationship `protobuf:"bytes,11,rep,name=tokenRelationships,proto3" json:"tokenRelationships,omitempty"` // The tokens associated to the contract
 }
 
 func (x *ContractGetInfoResponse_ContractInfo) Reset() {

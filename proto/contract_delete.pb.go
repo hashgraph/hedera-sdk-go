@@ -20,22 +20,19 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// At consensus, marks a contract as deleted and transfers its remaining hBars, if any, to a
-// designated receiver. After a contract is deleted, it can no longer be called.
 //
-// If the target contract is immutable (that is, was created without an admin key), then this
-// transaction resolves to MODIFYING_IMMUTABLE_CONTRACT.
+//At consensus, marks a contract as deleted and transfers its remaining hBars, if any, to a designated receiver. After a contract is deleted, it can no longer be called.
 //
-// --- Signing Requirements ---
-// 1. The admin key of the target contract must sign.
-// 2. If the transfer account or contract has receiverSigRequired, its associated key must also sign
+//If the target contract is immutable (that is, was created without an admin key), then this transaction resolves to MODIFYING_IMMUTABLE_CONTRACT.
+//
+//--- Signing Requirements ---
+//1. The admin key of the target contract must sign.
+//2. If the transfer account or contract has receiverSigRequired, its associated key must also sign.
 type ContractDeleteTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
 	// The id of the contract to be deleted
 	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`
 	// Types that are assignable to Obtainers:
@@ -109,13 +106,11 @@ type isContractDeleteTransactionBody_Obtainers interface {
 }
 
 type ContractDeleteTransactionBody_TransferAccountID struct {
-	//*
 	// The id of an account to receive any remaining hBars from the deleted contract
 	TransferAccountID *AccountID `protobuf:"bytes,2,opt,name=transferAccountID,proto3,oneof"`
 }
 
 type ContractDeleteTransactionBody_TransferContractID struct {
-	//*
 	// The id of a contract to receive any remaining hBars from the deleted contract
 	TransferContractID *ContractID `protobuf:"bytes,3,opt,name=transferContractID,proto3,oneof"`
 }

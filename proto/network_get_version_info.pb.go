@@ -20,17 +20,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // Get the deployed versions of Hedera Services and the HAPI proto in semantic version format
 type NetworkGetVersionInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither).
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
 }
 
 func (x *NetworkGetVersionInfoQuery) Reset() {
@@ -72,23 +68,15 @@ func (x *NetworkGetVersionInfoQuery) GetHeader() *QueryHeader {
 	return nil
 }
 
-//*
 // Response when the client sends the node NetworkGetVersionInfoQuery
 type NetworkGetVersionInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The Hedera API (HAPI) protobuf version recognized by the responding node.
-	HapiProtoVersion *SemanticVersion `protobuf:"bytes,2,opt,name=hapiProtoVersion,proto3" json:"hapiProtoVersion,omitempty"`
-	//*
-	// The version of the Hedera Services software deployed on the responding node.
-	HederaServicesVersion *SemanticVersion `protobuf:"bytes,3,opt,name=hederaServicesVersion,proto3" json:"hederaServicesVersion,omitempty"`
+	Header                *ResponseHeader  `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                               // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	HapiProtoVersion      *SemanticVersion `protobuf:"bytes,2,opt,name=hapiProtoVersion,proto3" json:"hapiProtoVersion,omitempty"`           // The Hedera API (HAPI) protobuf version recognized by the responding node.
+	HederaServicesVersion *SemanticVersion `protobuf:"bytes,3,opt,name=hederaServicesVersion,proto3" json:"hederaServicesVersion,omitempty"` // The version of the Hedera Services software deployed on the responding node.
 }
 
 func (x *NetworkGetVersionInfoResponse) Reset() {

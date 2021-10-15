@@ -20,21 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Mark an account as deleted, moving all its current hbars to another account. It will remain in
-// the ledger, marked as deleted, until it expires. Transfers into it a deleted account fail. But a
-// deleted account can still have its expiration extended in the normal way.
+// Mark an account as deleted, moving all its current hbars to another account. It will remain in the ledger, marked as deleted, until it expires. Transfers into it a deleted account fail. But a deleted account can still have its expiration extended in the normal way.
 type CryptoDeleteTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The account ID which will receive all remaining hbars
-	TransferAccountID *AccountID `protobuf:"bytes,1,opt,name=transferAccountID,proto3" json:"transferAccountID,omitempty"`
-	//*
-	// The account ID which should be deleted
-	DeleteAccountID *AccountID `protobuf:"bytes,2,opt,name=deleteAccountID,proto3" json:"deleteAccountID,omitempty"`
+	TransferAccountID *AccountID `protobuf:"bytes,1,opt,name=transferAccountID,proto3" json:"transferAccountID,omitempty"` // The account ID which will receive all remaining hbars
+	DeleteAccountID   *AccountID `protobuf:"bytes,2,opt,name=deleteAccountID,proto3" json:"deleteAccountID,omitempty"`     // The account ID which should be deleted
 }
 
 func (x *CryptoDeleteTransactionBody) Reset() {

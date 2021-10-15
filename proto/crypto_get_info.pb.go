@@ -20,21 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// Get all the information about an account, including the balance. This does not get the list of
-// account records.
+// Get all the information about an account, including the balance. This does not get the list of account records.
 type CryptoGetInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of
-	// response is requested (cost, state proof, both, or neither).
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The account ID for which information is requested
-	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	Header    *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	AccountID *AccountID   `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"` // The account ID for which information is requested
 }
 
 func (x *CryptoGetInfoQuery) Reset() {
@@ -83,20 +76,14 @@ func (x *CryptoGetInfoQuery) GetAccountID() *AccountID {
 	return nil
 }
 
-//*
 // Response when the client sends the node CryptoGetInfoQuery
 type CryptoGetInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof,
-	// or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// Info about the account (a state proof can be generated for this)
-	AccountInfo *CryptoGetInfoResponse_AccountInfo `protobuf:"bytes,2,opt,name=accountInfo,proto3" json:"accountInfo,omitempty"`
+	Header      *ResponseHeader                    `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`           //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	AccountInfo *CryptoGetInfoResponse_AccountInfo `protobuf:"bytes,2,opt,name=accountInfo,proto3" json:"accountInfo,omitempty"` // Info about the account (a state proof can be generated for this)
 }
 
 func (x *CryptoGetInfoResponse) Reset() {
@@ -150,73 +137,29 @@ type CryptoGetInfoResponse_AccountInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The account ID for which this information applies
-	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
-	// The Contract Account ID comprising of both the contract instance and the cryptocurrency
-	// account owned by the contract instance, in the format used by Solidity
-	ContractAccountID string `protobuf:"bytes,2,opt,name=contractAccountID,proto3" json:"contractAccountID,omitempty"`
-	//*
-	// If true, then this account has been deleted, it will disappear when it expires, and all
-	// transactions for it will fail except the transaction to extend its expiration date
-	Deleted bool `protobuf:"varint,3,opt,name=deleted,proto3" json:"deleted,omitempty"`
-	//*
-	// The Account ID of the account to which this is proxy staked. If proxyAccountID is null,
-	// or is an invalid account, or is an account that isn't a node, then this account is
-	// automatically proxy staked to a node chosen by the network, but without earning payments.
-	// If the proxyAccountID account refuses to accept proxy staking , or if it is not currently
-	// running a node, then it will behave as if proxyAccountID was null.
-	ProxyAccountID *AccountID `protobuf:"bytes,4,opt,name=proxyAccountID,proto3" json:"proxyAccountID,omitempty"`
-	//*
-	// The total number of tinybars proxy staked to this account
-	ProxyReceived int64 `protobuf:"varint,6,opt,name=proxyReceived,proto3" json:"proxyReceived,omitempty"`
-	//*
-	// The key for the account, which must sign in order to transfer out, or to modify the
-	// account in any way other than extending its expiration date.
-	Key *Key `protobuf:"bytes,7,opt,name=key,proto3" json:"key,omitempty"`
-	//*
-	// The current balance of account in tinybars
-	Balance uint64 `protobuf:"varint,8,opt,name=balance,proto3" json:"balance,omitempty"`
-	//*
-	// [Deprecated]. The threshold amount, in tinybars, at which a record is created of any
-	// transaction that decreases the balance of this account by more than the threshold
+	AccountID         *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`                 // The account ID for which this information applies
+	ContractAccountID string     `protobuf:"bytes,2,opt,name=contractAccountID,proto3" json:"contractAccountID,omitempty"` // The Contract Account ID comprising of both the contract instance and the cryptocurrency account owned by the contract instance, in the format used by Solidity
+	Deleted           bool       `protobuf:"varint,3,opt,name=deleted,proto3" json:"deleted,omitempty"`                    // If true, then this account has been deleted, it will disappear when it expires, and all transactions for it will fail except the transaction to extend its expiration date
+	ProxyAccountID    *AccountID `protobuf:"bytes,4,opt,name=proxyAccountID,proto3" json:"proxyAccountID,omitempty"`       // The Account ID of the account to which this is proxy staked. If proxyAccountID is null, or is an invalid account, or is an account that isn't a node, then this account is automatically proxy staked to a node chosen by the network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking , or if it is not currently running a node, then it will behave as if proxyAccountID was null.
+	ProxyReceived     int64      `protobuf:"varint,6,opt,name=proxyReceived,proto3" json:"proxyReceived,omitempty"`        // The total number of tinybars proxy staked to this account
+	Key               *Key       `protobuf:"bytes,7,opt,name=key,proto3" json:"key,omitempty"`                             // The key for the account, which must sign in order to transfer out, or to modify the account in any way other than extending its expiration date.
+	Balance           uint64     `protobuf:"varint,8,opt,name=balance,proto3" json:"balance,omitempty"`                    // The current balance of account in tinybars
+	// [Deprecated]. The threshold amount, in tinybars, at which a record is created of any transaction that decreases the balance of this account by more than the threshold
 	//
 	// Deprecated: Do not use.
 	GenerateSendRecordThreshold uint64 `protobuf:"varint,9,opt,name=generateSendRecordThreshold,proto3" json:"generateSendRecordThreshold,omitempty"`
-	//*
-	// [Deprecated]. The threshold amount, in tinybars, at which a record is created of any
-	// transaction that increases the balance of this account by more than the threshold
+	// [Deprecated]. The threshold amount, in tinybars, at which a record is created of any transaction that increases the balance of this account by more than the threshold
 	//
 	// Deprecated: Do not use.
-	GenerateReceiveRecordThreshold uint64 `protobuf:"varint,10,opt,name=generateReceiveRecordThreshold,proto3" json:"generateReceiveRecordThreshold,omitempty"`
-	//*
-	// If true, no transaction can transfer to this account unless signed by this account's key
-	ReceiverSigRequired bool `protobuf:"varint,11,opt,name=receiverSigRequired,proto3" json:"receiverSigRequired,omitempty"`
-	//*
-	// The TimeStamp time at which this account is set to expire
-	ExpirationTime *Timestamp `protobuf:"bytes,12,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
-	//*
-	// The duration for expiration time will extend every this many seconds. If there are
-	// insufficient funds, then it extends as long as possible. If it is empty when it expires,
-	// then it is deleted.
-	AutoRenewPeriod *Duration `protobuf:"bytes,13,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
-	//*
-	// All of the livehashes attached to the account (each of which is a hash along with the
-	// keys that authorized it and can delete it)
-	LiveHashes []*LiveHash `protobuf:"bytes,14,rep,name=liveHashes,proto3" json:"liveHashes,omitempty"`
-	//*
-	// All tokens related to this account
-	TokenRelationships []*TokenRelationship `protobuf:"bytes,15,rep,name=tokenRelationships,proto3" json:"tokenRelationships,omitempty"`
-	//*
-	// The memo associated with the account
-	Memo string `protobuf:"bytes,16,opt,name=memo,proto3" json:"memo,omitempty"`
-	//*
-	// The number of NFTs owned by this account
-	OwnedNfts int64 `protobuf:"varint,17,opt,name=ownedNfts,proto3" json:"ownedNfts,omitempty"`
-	//*
-	// The maximum number of tokens that an Account can be implicitly associated with.
-	MaxAutomaticTokenAssociations int32 `protobuf:"varint,18,opt,name=max_automatic_token_associations,json=maxAutomaticTokenAssociations,proto3" json:"max_automatic_token_associations,omitempty"`
+	GenerateReceiveRecordThreshold uint64               `protobuf:"varint,10,opt,name=generateReceiveRecordThreshold,proto3" json:"generateReceiveRecordThreshold,omitempty"`
+	ReceiverSigRequired            bool                 `protobuf:"varint,11,opt,name=receiverSigRequired,proto3" json:"receiverSigRequired,omitempty"`                                                              // If true, no transaction can transfer to this account unless signed by this account's key
+	ExpirationTime                 *Timestamp           `protobuf:"bytes,12,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`                                                                         // The TimeStamp time at which this account is set to expire
+	AutoRenewPeriod                *Duration            `protobuf:"bytes,13,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`                                                                       // The duration for expiration time will extend every this many seconds. If there are insufficient funds, then it extends as long as possible. If it is empty when it expires, then it is deleted.
+	LiveHashes                     []*LiveHash          `protobuf:"bytes,14,rep,name=liveHashes,proto3" json:"liveHashes,omitempty"`                                                                                 // All of the livehashes attached to the account (each of which is a hash along with the keys that authorized it and can delete it)
+	TokenRelationships             []*TokenRelationship `protobuf:"bytes,15,rep,name=tokenRelationships,proto3" json:"tokenRelationships,omitempty"`                                                                 // All tokens related to this account
+	Memo                           string               `protobuf:"bytes,16,opt,name=memo,proto3" json:"memo,omitempty"`                                                                                             // The memo associated with the account
+	OwnedNfts                      int64                `protobuf:"varint,17,opt,name=ownedNfts,proto3" json:"ownedNfts,omitempty"`                                                                                  // The number of NFTs owned by this account
+	MaxAutomaticTokenAssociations  uint32               `protobuf:"varint,18,opt,name=max_automatic_token_associations,json=maxAutomaticTokenAssociations,proto3" json:"max_automatic_token_associations,omitempty"` // The maximum number of tokens that an Account can be implicitly associated with.
 }
 
 func (x *CryptoGetInfoResponse_AccountInfo) Reset() {
@@ -365,7 +308,7 @@ func (x *CryptoGetInfoResponse_AccountInfo) GetOwnedNfts() int64 {
 	return 0
 }
 
-func (x *CryptoGetInfoResponse_AccountInfo) GetMaxAutomaticTokenAssociations() int32 {
+func (x *CryptoGetInfoResponse_AccountInfo) GetMaxAutomaticTokenAssociations() uint32 {
 	if x != nil {
 		return x.MaxAutomaticTokenAssociations
 	}
@@ -454,7 +397,7 @@ var file_proto_crypto_get_info_proto_rawDesc = []byte{
 	0x11, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x6f, 0x77, 0x6e, 0x65, 0x64, 0x4e, 0x66, 0x74, 0x73,
 	0x12, 0x47, 0x0a, 0x20, 0x6d, 0x61, 0x78, 0x5f, 0x61, 0x75, 0x74, 0x6f, 0x6d, 0x61, 0x74, 0x69,
 	0x63, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x5f, 0x61, 0x73, 0x73, 0x6f, 0x63, 0x69, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x18, 0x12, 0x20, 0x01, 0x28, 0x05, 0x52, 0x1d, 0x6d, 0x61, 0x78, 0x41,
+	0x69, 0x6f, 0x6e, 0x73, 0x18, 0x12, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x1d, 0x6d, 0x61, 0x78, 0x41,
 	0x75, 0x74, 0x6f, 0x6d, 0x61, 0x74, 0x69, 0x63, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x41, 0x73, 0x73,
 	0x6f, 0x63, 0x69, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d,
 	0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70,

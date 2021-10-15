@@ -20,7 +20,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // Before v0.9.0, requested records of all transactions against the given contract in the last 25 hours.
 //
 // Deprecated: Do not use.
@@ -29,12 +28,8 @@ type ContractGetRecordsQuery struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The smart contract instance for which the records should be retrieved
-	ContractID *ContractID `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"`
+	Header     *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`         // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	ContractID *ContractID  `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"` // The smart contract instance for which the records should be retrieved
 }
 
 func (x *ContractGetRecordsQuery) Reset() {
@@ -83,7 +78,6 @@ func (x *ContractGetRecordsQuery) GetContractID() *ContractID {
 	return nil
 }
 
-//*
 // Before v0.9.0, returned records of all transactions against the given contract in the last 25 hours.
 //
 // Deprecated: Do not use.
@@ -92,15 +86,9 @@ type ContractGetRecordsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// The smart contract instance that this record is for
-	ContractID *ContractID `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"`
-	//*
-	// List of records, each with contractCreateResult or contractCallResult as its body
-	Records []*TransactionRecord `protobuf:"bytes,3,rep,name=records,proto3" json:"records,omitempty"`
+	Header     *ResponseHeader      `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`         //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	ContractID *ContractID          `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"` // The smart contract instance that this record is for
+	Records    []*TransactionRecord `protobuf:"bytes,3,rep,name=records,proto3" json:"records,omitempty"`       // List of records, each with contractCreateResult or contractCallResult as its body
 }
 
 func (x *ContractGetRecordsResponse) Reset() {

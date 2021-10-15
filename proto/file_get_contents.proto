@@ -31,48 +31,20 @@ import "proto/basic_types.proto";
 import "proto/query_header.proto";
 import "proto/response_header.proto";
 
-/**
- * Get the contents of a file. The content field is empty (no bytes) if the file is empty.
- */
+/* Get the contents of a file. The content field is empty (no bytes) if the file is empty. */
 message FileGetContentsQuery {
-    /**
-     * Standard info sent from client to node, including the signed payment, and what kind of
-     * response is requested (cost, state proof, both, or neither).
-     */
-    QueryHeader header = 1;
-
-    /**
-     * The file ID of the file whose contents are requested
-     */
-    FileID fileID = 2;
+    QueryHeader header = 1; // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+    FileID fileID = 2; // The file ID of the file whose contents are requested
 }
 
-/**
- * Response when the client sends the node FileGetContentsQuery
- */
+/* Response when the client sends the node FileGetContentsQuery */
 message FileGetContentsResponse {
-    /**
-     * Standard response from node to client, including the requested fields: cost, or state proof,
-     * or both, or neither
-     */
-    ResponseHeader header = 1;
-
+    ResponseHeader header = 1; //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
     message FileContents {
-        /**
-         * The file ID of the file whose contents are being returned
-         */
-        FileID fileID = 1;
-
-        /**
-         * The bytes contained in the file
-         */
-        bytes contents = 2;
+        FileID fileID = 1; // The file ID of the file whose contents are being returned
+        bytes contents = 2; // The bytes contained in the file
     }
-
-    /**
-     * the file ID and contents (a state proof can be generated for this)
-     */
-    FileContents fileContents = 2;
+    FileContents fileContents = 2; // the file ID and contents (a state proof can be generated for this)
 }
 
 

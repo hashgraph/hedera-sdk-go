@@ -22,21 +22,18 @@ const (
 
 //*
 // Possible Token Types (IWA Compatibility).
-// Apart from fungible and non-fungible, Tokens can have either a common or unique representation.
-// This distinction might seem subtle, but it is important when considering how tokens can be traced
-// and if they can have isolated and unique properties.
+// Apart from fungible and non-fungible, Tokens can have either a common or unique representation. This distinction might seem subtle, but it is important when considering
+// how tokens can be traced and if they can have isolated and unique properties.
 type TokenType int32
 
 const (
 	//*
-	// Interchangeable value with one another, where any quantity of them has the same value as
-	// another equal quantity if they are in the same class.  Share a single set of properties, not
-	// distinct from one another. Simply represented as a balance or quantity to a given Hedera
-	// account.
+	// Interchangeable value with one another, where any quantity of them has the same value as another equal quantity if they are in the same class.
+	// Share a single set of properties, not distinct from one another. Simply represented as a balance or quantity to a given Hedera account.
 	TokenType_FUNGIBLE_COMMON TokenType = 0
 	//*
-	// Unique, not interchangeable with other tokens of the same type as they typically have
-	// different values.  Individually traced and can carry unique properties (e.g. serial number).
+	// Unique, not interchangeable with other tokens of the same type as they typically have different values.
+	// Individually traced and can carry unique properties (e.g. serial number).
 	TokenType_NON_FUNGIBLE_UNIQUE TokenType = 1
 )
 
@@ -82,33 +79,21 @@ func (TokenType) EnumDescriptor() ([]byte, []int) {
 //*
 // Allows a set of resource prices to be scoped to a certain type of a HAPI operation.
 //
-// For example, the resource prices for a TokenMint operation are different between minting fungible
-// and non-fungible tokens. This enum allows us to "mark" a set of prices as applying to one or the
-// other.
+// For example, the resource prices for a TokenMint operation are different between
+// minting fungible and non-fungible tokens. This enum allows us to "mark" a set of
+// prices as applying to one or the other.
 //
-// Similarly, the resource prices for a basic TokenCreate without a custom fee schedule yield a
-// total price of $1. The resource prices for a TokenCreate with a custom fee schedule are different
-// and yield a total base price of $2.
+// Similarly, the resource prices for a basic TokenCreate without a custom fee schedule
+// yield a total price of $1. The resource prices for a TokenCreate with a custom fee
+// schedule are different and yield a total base price of $2.
 type SubType int32
 
 const (
-	//*
-	// The resource prices have no special scope
-	SubType_DEFAULT SubType = 0
-	//*
-	// The resource prices are scoped to an operation on a fungible common token
-	SubType_TOKEN_FUNGIBLE_COMMON SubType = 1
-	//*
-	// The resource prices are scoped to an operation on a non-fungible unique token
-	SubType_TOKEN_NON_FUNGIBLE_UNIQUE SubType = 2
-	//*
-	// The resource prices are scoped to an operation on a fungible common
-	// token with a custom fee schedule
-	SubType_TOKEN_FUNGIBLE_COMMON_WITH_CUSTOM_FEES SubType = 3
-	//*
-	// The resource prices are scoped to an operation on a non-fungible unique
-	// token with a custom fee schedule
-	SubType_TOKEN_NON_FUNGIBLE_UNIQUE_WITH_CUSTOM_FEES SubType = 4
+	SubType_DEFAULT                                    SubType = 0 // The resource prices have no special scope
+	SubType_TOKEN_FUNGIBLE_COMMON                      SubType = 1 // The resource prices are scoped to an operation on a fungible common token
+	SubType_TOKEN_NON_FUNGIBLE_UNIQUE                  SubType = 2 // The resource prices are scoped to an operation on a non-fungible unique token
+	SubType_TOKEN_FUNGIBLE_COMMON_WITH_CUSTOM_FEES     SubType = 3 // The resource prices are scoped to an operation on a fungible common token with a custom fee schedule
+	SubType_TOKEN_NON_FUNGIBLE_UNIQUE_WITH_CUSTOM_FEES SubType = 4 // The resource prices are scoped to an operation on a non-fungible unique token with a custom fee schedule
 )
 
 // Enum value maps for SubType.
@@ -162,13 +147,8 @@ func (SubType) EnumDescriptor() ([]byte, []int) {
 type TokenSupplyType int32
 
 const (
-	//*
-	// Indicates that tokens of that type have an upper bound of Long.MAX_VALUE.
-	TokenSupplyType_INFINITE TokenSupplyType = 0
-	//*
-	// Indicates that tokens of that type have an upper bound of maxSupply,
-	// provided on token creation.
-	TokenSupplyType_FINITE TokenSupplyType = 1
+	TokenSupplyType_INFINITE TokenSupplyType = 0 // Indicates that tokens of that type have an upper bound of Long.MAX_VALUE.
+	TokenSupplyType_FINITE   TokenSupplyType = 1 // Indicates that tokens of that type have an upper bound of maxSupply, provided on token creation.
 )
 
 // Enum value maps for TokenSupplyType.
@@ -210,21 +190,13 @@ func (TokenSupplyType) EnumDescriptor() ([]byte, []int) {
 	return file_proto_basic_types_proto_rawDescGZIP(), []int{2}
 }
 
-//*
-// Possible Freeze statuses returned on TokenGetInfoQuery or CryptoGetInfoResponse in
-// TokenRelationship
+// Possible Freeze statuses returned on TokenGetInfoQuery or CryptoGetInfoResponse in TokenRelationship
 type TokenFreezeStatus int32
 
 const (
-	//*
-	// UNDOCUMENTED
 	TokenFreezeStatus_FreezeNotApplicable TokenFreezeStatus = 0
-	//*
-	// UNDOCUMENTED
-	TokenFreezeStatus_Frozen TokenFreezeStatus = 1
-	//*
-	// UNDOCUMENTED
-	TokenFreezeStatus_Unfrozen TokenFreezeStatus = 2
+	TokenFreezeStatus_Frozen              TokenFreezeStatus = 1
+	TokenFreezeStatus_Unfrozen            TokenFreezeStatus = 2
 )
 
 // Enum value maps for TokenFreezeStatus.
@@ -268,20 +240,13 @@ func (TokenFreezeStatus) EnumDescriptor() ([]byte, []int) {
 	return file_proto_basic_types_proto_rawDescGZIP(), []int{3}
 }
 
-//*
 // Possible KYC statuses returned on TokenGetInfoQuery or CryptoGetInfoResponse in TokenRelationship
 type TokenKycStatus int32
 
 const (
-	//*
-	// UNDOCUMENTED
 	TokenKycStatus_KycNotApplicable TokenKycStatus = 0
-	//*
-	// UNDOCUMENTED
-	TokenKycStatus_Granted TokenKycStatus = 1
-	//*
-	// UNDOCUMENTED
-	TokenKycStatus_Revoked TokenKycStatus = 2
+	TokenKycStatus_Granted          TokenKycStatus = 1
+	TokenKycStatus_Revoked          TokenKycStatus = 2
 )
 
 // Enum value maps for TokenKycStatus.
@@ -325,268 +290,78 @@ func (TokenKycStatus) EnumDescriptor() ([]byte, []int) {
 	return file_proto_basic_types_proto_rawDescGZIP(), []int{4}
 }
 
-//*
-// Possible Pause statuses returned on TokenGetInfoQuery
-type TokenPauseStatus int32
-
-const (
-	//*
-	// Indicates that a Token has no pauseKey
-	TokenPauseStatus_PauseNotApplicable TokenPauseStatus = 0
-	//*
-	// Indicates that a Token is Paused
-	TokenPauseStatus_Paused TokenPauseStatus = 1
-	//*
-	// Indicates that a Token is Unpaused.
-	TokenPauseStatus_Unpaused TokenPauseStatus = 2
-)
-
-// Enum value maps for TokenPauseStatus.
-var (
-	TokenPauseStatus_name = map[int32]string{
-		0: "PauseNotApplicable",
-		1: "Paused",
-		2: "Unpaused",
-	}
-	TokenPauseStatus_value = map[string]int32{
-		"PauseNotApplicable": 0,
-		"Paused":             1,
-		"Unpaused":           2,
-	}
-)
-
-func (x TokenPauseStatus) Enum() *TokenPauseStatus {
-	p := new(TokenPauseStatus)
-	*p = x
-	return p
-}
-
-func (x TokenPauseStatus) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (TokenPauseStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_basic_types_proto_enumTypes[5].Descriptor()
-}
-
-func (TokenPauseStatus) Type() protoreflect.EnumType {
-	return &file_proto_basic_types_proto_enumTypes[5]
-}
-
-func (x TokenPauseStatus) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use TokenPauseStatus.Descriptor instead.
-func (TokenPauseStatus) EnumDescriptor() ([]byte, []int) {
-	return file_proto_basic_types_proto_rawDescGZIP(), []int{5}
-}
-
-//*
-// The transactions and queries supported by Hedera Hashgraph.
+//
+//The transactions and queries supported by Hedera Hashgraph.
 type HederaFunctionality int32
 
 const (
-	//*
-	// UNSPECIFIED - Need to keep first value as unspecified because first element is ignored and
-	// not parsed (0 is ignored by parser)
-	HederaFunctionality_NONE HederaFunctionality = 0
-	//*
-	// crypto transfer
-	HederaFunctionality_CryptoTransfer HederaFunctionality = 1
-	//*
-	// crypto update account
-	HederaFunctionality_CryptoUpdate HederaFunctionality = 2
-	//*
-	// crypto delete account
-	HederaFunctionality_CryptoDelete HederaFunctionality = 3
-	//*
+	HederaFunctionality_NONE           HederaFunctionality = 0 // UNSPECIFIED - Need to keep first value as unspecified because first element is ignored and not parsed (0 is ignored by parser)
+	HederaFunctionality_CryptoTransfer HederaFunctionality = 1 // crypto transfer
+	HederaFunctionality_CryptoUpdate   HederaFunctionality = 2 // crypto update account
+	HederaFunctionality_CryptoDelete   HederaFunctionality = 3 // crypto delete account
 	// Add a livehash to a crypto account
 	HederaFunctionality_CryptoAddLiveHash HederaFunctionality = 4
-	//*
 	// Delete a livehash from a crypto account
-	HederaFunctionality_CryptoDeleteLiveHash HederaFunctionality = 5
-	//*
-	// Smart Contract Call
-	HederaFunctionality_ContractCall HederaFunctionality = 6
-	//*
-	// Smart Contract Create Contract
-	HederaFunctionality_ContractCreate HederaFunctionality = 7
-	//*
-	// Smart Contract update contract
-	HederaFunctionality_ContractUpdate HederaFunctionality = 8
-	//*
-	// File Operation create file
-	HederaFunctionality_FileCreate HederaFunctionality = 9
-	//*
-	// File Operation append file
-	HederaFunctionality_FileAppend HederaFunctionality = 10
-	//*
-	// File Operation update file
-	HederaFunctionality_FileUpdate HederaFunctionality = 11
-	//*
-	// File Operation delete file
-	HederaFunctionality_FileDelete HederaFunctionality = 12
-	//*
-	// crypto get account balance
-	HederaFunctionality_CryptoGetAccountBalance HederaFunctionality = 13
-	//*
-	// crypto get account record
-	HederaFunctionality_CryptoGetAccountRecords HederaFunctionality = 14
-	//*
-	// Crypto get info
-	HederaFunctionality_CryptoGetInfo HederaFunctionality = 15
-	//*
-	// Smart Contract Call
-	HederaFunctionality_ContractCallLocal HederaFunctionality = 16
-	//*
-	// Smart Contract get info
-	HederaFunctionality_ContractGetInfo HederaFunctionality = 17
-	//*
-	// Smart Contract, get the byte code
-	HederaFunctionality_ContractGetBytecode HederaFunctionality = 18
-	//*
-	// Smart Contract, get by solidity ID
-	HederaFunctionality_GetBySolidityID HederaFunctionality = 19
-	//*
-	// Smart Contract, get by key
-	HederaFunctionality_GetByKey HederaFunctionality = 20
-	//*
+	HederaFunctionality_CryptoDeleteLiveHash    HederaFunctionality = 5
+	HederaFunctionality_ContractCall            HederaFunctionality = 6  // Smart Contract Call
+	HederaFunctionality_ContractCreate          HederaFunctionality = 7  // Smart Contract Create Contract
+	HederaFunctionality_ContractUpdate          HederaFunctionality = 8  // Smart Contract update contract
+	HederaFunctionality_FileCreate              HederaFunctionality = 9  // File Operation create file
+	HederaFunctionality_FileAppend              HederaFunctionality = 10 // File Operation append file
+	HederaFunctionality_FileUpdate              HederaFunctionality = 11 // File Operation update file
+	HederaFunctionality_FileDelete              HederaFunctionality = 12 // File Operation delete file
+	HederaFunctionality_CryptoGetAccountBalance HederaFunctionality = 13 // crypto get account balance
+	HederaFunctionality_CryptoGetAccountRecords HederaFunctionality = 14 // crypto get account record
+	HederaFunctionality_CryptoGetInfo           HederaFunctionality = 15 // Crypto get info
+	HederaFunctionality_ContractCallLocal       HederaFunctionality = 16 // Smart Contract Call
+	HederaFunctionality_ContractGetInfo         HederaFunctionality = 17 // Smart Contract get info
+	HederaFunctionality_ContractGetBytecode     HederaFunctionality = 18 // Smart Contract, get the byte code
+	HederaFunctionality_GetBySolidityID         HederaFunctionality = 19 // Smart Contract, get by solidity ID
+	HederaFunctionality_GetByKey                HederaFunctionality = 20 // Smart Contract, get by key
 	// Get a live hash from a crypto account
-	HederaFunctionality_CryptoGetLiveHash HederaFunctionality = 21
-	//*
-	// Crypto, get the stakers for the node
-	HederaFunctionality_CryptoGetStakers HederaFunctionality = 22
-	//*
-	// File Operations get file contents
-	HederaFunctionality_FileGetContents HederaFunctionality = 23
-	//*
-	// File Operations get the info of the file
-	HederaFunctionality_FileGetInfo HederaFunctionality = 24
-	//*
-	// Crypto get the transaction records
-	HederaFunctionality_TransactionGetRecord HederaFunctionality = 25
-	//*
-	// Contract get the transaction records
-	HederaFunctionality_ContractGetRecords HederaFunctionality = 26
-	//*
-	// crypto create account
-	HederaFunctionality_CryptoCreate HederaFunctionality = 27
-	//*
-	// system delete file
-	HederaFunctionality_SystemDelete HederaFunctionality = 28
-	//*
-	// system undelete file
-	HederaFunctionality_SystemUndelete HederaFunctionality = 29
-	//*
-	// delete contract
-	HederaFunctionality_ContractDelete HederaFunctionality = 30
-	//*
-	// freeze
-	HederaFunctionality_Freeze HederaFunctionality = 31
-	//*
-	// Create Tx Record
-	HederaFunctionality_CreateTransactionRecord HederaFunctionality = 32
-	//*
-	// Crypto Auto Renew
-	HederaFunctionality_CryptoAccountAutoRenew HederaFunctionality = 33
-	//*
-	// Contract Auto Renew
-	HederaFunctionality_ContractAutoRenew HederaFunctionality = 34
-	//*
-	// Get Version
-	HederaFunctionality_GetVersionInfo HederaFunctionality = 35
-	//*
-	// Transaction Get Receipt
-	HederaFunctionality_TransactionGetReceipt HederaFunctionality = 36
-	//*
-	// Create Topic
-	HederaFunctionality_ConsensusCreateTopic HederaFunctionality = 50
-	//*
-	// Update Topic
-	HederaFunctionality_ConsensusUpdateTopic HederaFunctionality = 51
-	//*
-	// Delete Topic
-	HederaFunctionality_ConsensusDeleteTopic HederaFunctionality = 52
-	//*
-	// Get Topic information
-	HederaFunctionality_ConsensusGetTopicInfo HederaFunctionality = 53
-	//*
-	// Submit message to topic
-	HederaFunctionality_ConsensusSubmitMessage HederaFunctionality = 54
-	HederaFunctionality_UncheckedSubmit        HederaFunctionality = 55
-	//*
-	// Create Token
-	HederaFunctionality_TokenCreate HederaFunctionality = 56
-	//*
-	// Get Token information
-	HederaFunctionality_TokenGetInfo HederaFunctionality = 58
-	//*
-	// Freeze Account
-	HederaFunctionality_TokenFreezeAccount HederaFunctionality = 59
-	//*
-	// Unfreeze Account
-	HederaFunctionality_TokenUnfreezeAccount HederaFunctionality = 60
-	//*
-	// Grant KYC to Account
-	HederaFunctionality_TokenGrantKycToAccount HederaFunctionality = 61
-	//*
-	// Revoke KYC from Account
-	HederaFunctionality_TokenRevokeKycFromAccount HederaFunctionality = 62
-	//*
-	// Delete Token
-	HederaFunctionality_TokenDelete HederaFunctionality = 63
-	//*
-	// Update Token
-	HederaFunctionality_TokenUpdate HederaFunctionality = 64
-	//*
-	// Mint tokens to treasury
-	HederaFunctionality_TokenMint HederaFunctionality = 65
-	//*
-	// Burn tokens from treasury
-	HederaFunctionality_TokenBurn HederaFunctionality = 66
-	//*
-	// Wipe token amount from Account holder
-	HederaFunctionality_TokenAccountWipe HederaFunctionality = 67
-	//*
-	// Associate tokens to an account
-	HederaFunctionality_TokenAssociateToAccount HederaFunctionality = 68
-	//*
-	// Dissociate tokens from an account
-	HederaFunctionality_TokenDissociateFromAccount HederaFunctionality = 69
-	//*
-	// Create Scheduled Transaction
-	HederaFunctionality_ScheduleCreate HederaFunctionality = 70
-	//*
-	// Delete Scheduled Transaction
-	HederaFunctionality_ScheduleDelete HederaFunctionality = 71
-	//*
-	// Sign Scheduled Transaction
-	HederaFunctionality_ScheduleSign HederaFunctionality = 72
-	//*
-	// Get Scheduled Transaction Information
-	HederaFunctionality_ScheduleGetInfo HederaFunctionality = 73
-	//*
-	// Get Token Account Nft Information
-	HederaFunctionality_TokenGetAccountNftInfos HederaFunctionality = 74
-	//*
-	// Get Token Nft Information
-	HederaFunctionality_TokenGetNftInfo HederaFunctionality = 75
-	//*
-	// Get Token Nft List Information
-	HederaFunctionality_TokenGetNftInfos HederaFunctionality = 76
-	//*
-	// Update a token's custom fee schedule, if permissible
-	HederaFunctionality_TokenFeeScheduleUpdate HederaFunctionality = 77
-	//*
-	// Get execution time(s) by TransactionID, if available
-	HederaFunctionality_NetworkGetExecutionTime HederaFunctionality = 78
-	//*
-	// Pause the Token
-	HederaFunctionality_TokenPause HederaFunctionality = 79
-	//*
-	// Unpause the Token
-	HederaFunctionality_TokenUnpause HederaFunctionality = 80
+	HederaFunctionality_CryptoGetLiveHash          HederaFunctionality = 21
+	HederaFunctionality_CryptoGetStakers           HederaFunctionality = 22 // Crypto, get the stakers for the node
+	HederaFunctionality_FileGetContents            HederaFunctionality = 23 // File Operations get file contents
+	HederaFunctionality_FileGetInfo                HederaFunctionality = 24 // File Operations get the info of the file
+	HederaFunctionality_TransactionGetRecord       HederaFunctionality = 25 // Crypto get the transaction records
+	HederaFunctionality_ContractGetRecords         HederaFunctionality = 26 // Contract get the transaction records
+	HederaFunctionality_CryptoCreate               HederaFunctionality = 27 // crypto create account
+	HederaFunctionality_SystemDelete               HederaFunctionality = 28 // system delete file
+	HederaFunctionality_SystemUndelete             HederaFunctionality = 29 // system undelete file
+	HederaFunctionality_ContractDelete             HederaFunctionality = 30 // delete contract
+	HederaFunctionality_Freeze                     HederaFunctionality = 31 // freeze
+	HederaFunctionality_CreateTransactionRecord    HederaFunctionality = 32 // Create Tx Record
+	HederaFunctionality_CryptoAccountAutoRenew     HederaFunctionality = 33 // Crypto Auto Renew
+	HederaFunctionality_ContractAutoRenew          HederaFunctionality = 34 // Contract Auto Renew
+	HederaFunctionality_GetVersionInfo             HederaFunctionality = 35 //Get Version
+	HederaFunctionality_TransactionGetReceipt      HederaFunctionality = 36 // Transaction Get Receipt
+	HederaFunctionality_ConsensusCreateTopic       HederaFunctionality = 50 // Create Topic
+	HederaFunctionality_ConsensusUpdateTopic       HederaFunctionality = 51 // Update Topic
+	HederaFunctionality_ConsensusDeleteTopic       HederaFunctionality = 52 // Delete Topic
+	HederaFunctionality_ConsensusGetTopicInfo      HederaFunctionality = 53 // Get Topic information
+	HederaFunctionality_ConsensusSubmitMessage     HederaFunctionality = 54 // Submit message to topic
+	HederaFunctionality_UncheckedSubmit            HederaFunctionality = 55
+	HederaFunctionality_TokenCreate                HederaFunctionality = 56 // Create Token
+	HederaFunctionality_TokenGetInfo               HederaFunctionality = 58 // Get Token information
+	HederaFunctionality_TokenFreezeAccount         HederaFunctionality = 59 // Freeze Account
+	HederaFunctionality_TokenUnfreezeAccount       HederaFunctionality = 60 // Unfreeze Account
+	HederaFunctionality_TokenGrantKycToAccount     HederaFunctionality = 61 // Grant KYC to Account
+	HederaFunctionality_TokenRevokeKycFromAccount  HederaFunctionality = 62 // Revoke KYC from Account
+	HederaFunctionality_TokenDelete                HederaFunctionality = 63 // Delete Token
+	HederaFunctionality_TokenUpdate                HederaFunctionality = 64 // Update Token
+	HederaFunctionality_TokenMint                  HederaFunctionality = 65 // Mint tokens to treasury
+	HederaFunctionality_TokenBurn                  HederaFunctionality = 66 // Burn tokens from treasury
+	HederaFunctionality_TokenAccountWipe           HederaFunctionality = 67 // Wipe token amount from Account holder
+	HederaFunctionality_TokenAssociateToAccount    HederaFunctionality = 68 // Associate tokens to an account
+	HederaFunctionality_TokenDissociateFromAccount HederaFunctionality = 69 // Dissociate tokens from an account
+	HederaFunctionality_ScheduleCreate             HederaFunctionality = 70 // Create Scheduled Transaction
+	HederaFunctionality_ScheduleDelete             HederaFunctionality = 71 // Delete Scheduled Transaction
+	HederaFunctionality_ScheduleSign               HederaFunctionality = 72 // Sign Scheduled Transaction
+	HederaFunctionality_ScheduleGetInfo            HederaFunctionality = 73 // Get Scheduled Transaction Information
+	HederaFunctionality_TokenGetAccountNftInfos    HederaFunctionality = 74 // Get Token Account Nft Information
+	HederaFunctionality_TokenGetNftInfo            HederaFunctionality = 75 // Get Token Nft Information
+	HederaFunctionality_TokenGetNftInfos           HederaFunctionality = 76 // Get Token Nft List Information
+	HederaFunctionality_TokenFeeScheduleUpdate     HederaFunctionality = 77 // Update a token's custom fee schedule, if permissible
 )
 
 // Enum value maps for HederaFunctionality.
@@ -656,9 +431,6 @@ var (
 		75: "TokenGetNftInfo",
 		76: "TokenGetNftInfos",
 		77: "TokenFeeScheduleUpdate",
-		78: "NetworkGetExecutionTime",
-		79: "TokenPause",
-		80: "TokenUnpause",
 	}
 	HederaFunctionality_value = map[string]int32{
 		"NONE":                       0,
@@ -725,9 +497,6 @@ var (
 		"TokenGetNftInfo":            75,
 		"TokenGetNftInfos":           76,
 		"TokenFeeScheduleUpdate":     77,
-		"NetworkGetExecutionTime":    78,
-		"TokenPause":                 79,
-		"TokenUnpause":               80,
 	}
 )
 
@@ -742,11 +511,11 @@ func (x HederaFunctionality) String() string {
 }
 
 func (HederaFunctionality) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_basic_types_proto_enumTypes[6].Descriptor()
+	return file_proto_basic_types_proto_enumTypes[5].Descriptor()
 }
 
 func (HederaFunctionality) Type() protoreflect.EnumType {
-	return &file_proto_basic_types_proto_enumTypes[6]
+	return &file_proto_basic_types_proto_enumTypes[5]
 }
 
 func (x HederaFunctionality) Number() protoreflect.EnumNumber {
@@ -755,30 +524,18 @@ func (x HederaFunctionality) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use HederaFunctionality.Descriptor instead.
 func (HederaFunctionality) EnumDescriptor() ([]byte, []int) {
-	return file_proto_basic_types_proto_rawDescGZIP(), []int{6}
+	return file_proto_basic_types_proto_rawDescGZIP(), []int{5}
 }
 
-//*
-// Each shard has a nonnegative shard number. Each realm within a given shard has a nonnegative
-// realm number (that number might be reused in other shards). And each account, file, and smart
-// contract instance within a given realm has a nonnegative number (which might be reused in other
-// realms).  Every account, file, and smart contract instance is within exactly one realm. So a
-// FileID is a triplet of numbers, like 0.1.2 for entity number 2 within realm 1  within shard 0.
-// Each realm maintains a single counter for assigning numbers,  so if there is a file with ID
-// 0.1.2, then there won't be an account or smart  contract instance with ID 0.1.2.
+// Each shard has a nonnegative shard number. Each realm within a given shard has a nonnegative realm number (that number might be reused in other shards). And each account, file, and smart contract instance within a given realm has a nonnegative number (which might be reused in other realms). Every account, file, and smart contract instance is within exactly one realm. So a FileID is a triplet of numbers, like 0.1.2 for entity number 2 within realm 1  within shard 0.  Each realm maintains a single counter for assigning numbers,  so if there is a file with ID 0.1.2, then there won't be an account or smart  contract instance with ID 0.1.2.
 //
-// Everything is partitioned into realms so that each Solidity smart contract can  access everything
-// in just a single realm, locking all those entities while it's  running, but other smart contracts
-// could potentially run in other realms in  parallel. So realms allow Solidity to be parallelized
-// somewhat, even though the  language itself assumes everything is serial.
+//Everything is partitioned into realms so that each Solidity smart contract can  access everything in just a single realm, locking all those entities while it's  running, but other smart contracts could potentially run in other realms in  parallel. So realms allow Solidity to be parallelized somewhat, even though the  language itself assumes everything is serial.
 type ShardID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// the shard number (nonnegative)
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
+	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"` //the shard number (nonnegative)
 }
 
 func (x *ShardID) Reset() {
@@ -820,20 +577,14 @@ func (x *ShardID) GetShardNum() int64 {
 	return 0
 }
 
-//*
-// The ID for a realm. Within a given shard, every realm has a unique ID. Each account, file, and
-// contract instance belongs to exactly one realm.
+// The ID for a realm. Within a given shard, every realm has a unique ID. Each account, file, and contract instance belongs to exactly one realm.
 type RealmID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The shard number (nonnegative)
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
-	//*
-	// The realm number (nonnegative)
-	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`
+	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"` //The shard number (nonnegative)
+	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"` //The realm number (nonnegative)
 }
 
 func (x *RealmID) Reset() {
@@ -882,22 +633,15 @@ func (x *RealmID) GetRealmNum() int64 {
 	return 0
 }
 
-//*
 // The ID for an a cryptocurrency account
 type AccountID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The shard number (nonnegative)
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
-	//*
-	// The realm number (nonnegative)
-	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`
-	//*
-	// A nonnegative account number unique within its realm
-	AccountNum int64 `protobuf:"varint,3,opt,name=accountNum,proto3" json:"accountNum,omitempty"`
+	ShardNum   int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`     //The shard number (nonnegative)
+	RealmNum   int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`     //The realm number (nonnegative)
+	AccountNum int64 `protobuf:"varint,3,opt,name=accountNum,proto3" json:"accountNum,omitempty"` //A nonnegative account number unique within its realm
 }
 
 func (x *AccountID) Reset() {
@@ -953,22 +697,15 @@ func (x *AccountID) GetAccountNum() int64 {
 	return 0
 }
 
-//*
 // The ID for a file
 type FileID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The shard number (nonnegative)
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
-	//*
-	// The realm number (nonnegative)
-	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`
-	//*
-	// A nonnegative File number unique within its realm
-	FileNum int64 `protobuf:"varint,3,opt,name=fileNum,proto3" json:"fileNum,omitempty"`
+	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"` //The shard number (nonnegative)
+	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"` //The realm number (nonnegative)
+	FileNum  int64 `protobuf:"varint,3,opt,name=fileNum,proto3" json:"fileNum,omitempty"`   //A nonnegative File number unique within its realm
 }
 
 func (x *FileID) Reset() {
@@ -1024,22 +761,15 @@ func (x *FileID) GetFileNum() int64 {
 	return 0
 }
 
-//*
 // The ID for a smart contract instance
 type ContractID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The shard number (nonnegative)
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
-	//*
-	// The realm number (nonnegative)
-	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`
-	//*
-	// A nonnegative number unique within its realm
-	ContractNum int64 `protobuf:"varint,3,opt,name=contractNum,proto3" json:"contractNum,omitempty"`
+	ShardNum    int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`       //The shard number (nonnegative)
+	RealmNum    int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`       //The realm number (nonnegative)
+	ContractNum int64 `protobuf:"varint,3,opt,name=contractNum,proto3" json:"contractNum,omitempty"` //A nonnegative number unique within its realm
 }
 
 func (x *ContractID) Reset() {
@@ -1095,36 +825,20 @@ func (x *ContractID) GetContractNum() int64 {
 	return 0
 }
 
-//*
-// The ID for a transaction. This is used for retrieving receipts and records for a transaction, for
-// appending to a file right after creating it, for instantiating a smart contract with bytecode in
-// a file just created, and internally by the network for detecting when duplicate transactions are
-// submitted. A user might get a transaction processed faster by submitting it to N nodes, each with
-// a different node account, but all with the same TransactionID. Then, the transaction will take
-// effect when the first of all those nodes submits the transaction and it reaches consensus. The
-// other transactions will not take effect. So this could make the transaction take effect faster,
-// if any given node might be slow. However, the full transaction fee is charged for each
-// transaction, so the total fee is N times as much if the transaction is sent to N nodes.
 //
-// Applicable to Scheduled Transactions:
-//  - The ID of a Scheduled Transaction has transactionValidStart and accountIDs inherited from the
-//    ScheduleCreate transaction that created it. That is to say that they are equal
-//  - The scheduled property is true for Scheduled Transactions
-//  - transactionValidStart, accountID and scheduled properties should be omitted
+//The ID for a transaction. This is used for retrieving receipts and records for a transaction, for appending to a file right after creating it, for instantiating a smart contract with bytecode in a file just created, and internally by the network for detecting when duplicate transactions are submitted. A user might get a transaction processed faster by submitting it to N nodes, each with a different node account, but all with the same TransactionID. Then, the transaction will take effect when the first of all those nodes submits the transaction and it reaches consensus. The other transactions will not take effect. So this could make the transaction take effect faster, if any given node might be slow. However, the full transaction fee is charged for each transaction, so the total fee is N times as much if the transaction is sent to N nodes.
+//Applicable to Scheduled Transactions:
+//- The ID of a Scheduled Transaction has transactionValidStart and accountIDs inherited from the ScheduleCreate transaction that created it. That is to say that they are equal
+//- The scheduled property is true for Scheduled Transactions
+//- transactionValidStart, accountID and scheduled properties should be omitted
 type TransactionID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The transaction is invalid if consensusTimestamp < transactionID.transactionStartValid
-	TransactionValidStart *Timestamp `protobuf:"bytes,1,opt,name=transactionValidStart,proto3" json:"transactionValidStart,omitempty"`
-	//*
-	// The Account ID that paid for this transaction
-	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
-	// Whether the Transaction is of type Scheduled or no
-	Scheduled bool `protobuf:"varint,3,opt,name=scheduled,proto3" json:"scheduled,omitempty"`
+	TransactionValidStart *Timestamp `protobuf:"bytes,1,opt,name=transactionValidStart,proto3" json:"transactionValidStart,omitempty"` // The transaction is invalid if consensusTimestamp < transactionID.transactionStartValid
+	AccountID             *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`                         // The Account ID that paid for this transaction
+	Scheduled             bool       `protobuf:"varint,3,opt,name=scheduled,proto3" json:"scheduled,omitempty"`                        // Whether the Transaction is of type Scheduled or no
 }
 
 func (x *TransactionID) Reset() {
@@ -1180,21 +894,14 @@ func (x *TransactionID) GetScheduled() bool {
 	return false
 }
 
-//*
 // An account, and the amount that it sends or receives during a cryptocurrency or token transfer.
 type AccountAmount struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The Account ID that sends/receives cryptocurrency or tokens
-	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	//*
-	// The amount of tinybars (for Crypto transfers) or in the lowest
-	// denomination (for Token transfers) that the account sends(negative) or
-	// receives(positive)
-	Amount int64 `protobuf:"zigzag64,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"` // The Account ID that sends/receives cryptocurrency or tokens
+	Amount    int64      `protobuf:"zigzag64,2,opt,name=amount,proto3" json:"amount,omitempty"`    // The amount of tinybars (for Crypto transfers) or in the lowest denomination (for Token transfers) that the account sends(negative) or receives(positive)
 }
 
 func (x *AccountAmount) Reset() {
@@ -1243,17 +950,13 @@ func (x *AccountAmount) GetAmount() int64 {
 	return 0
 }
 
-//*
 // A list of accounts and amounts to transfer out of each account (negative) or into it (positive).
 type TransferList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Multiple list of AccountAmount pairs, each of which has an account and
-	// an amount to transfer into it (positive) or out of it (negative)
-	AccountAmounts []*AccountAmount `protobuf:"bytes,1,rep,name=accountAmounts,proto3" json:"accountAmounts,omitempty"`
+	AccountAmounts []*AccountAmount `protobuf:"bytes,1,rep,name=accountAmounts,proto3" json:"accountAmounts,omitempty"` // Multiple list of AccountAmount pairs, each of which has an account and an amount to transfer into it (positive) or out of it (negative)
 }
 
 func (x *TransferList) Reset() {
@@ -1295,24 +998,15 @@ func (x *TransferList) GetAccountAmounts() []*AccountAmount {
 	return nil
 }
 
-//*
-// A sender account, a receiver account, and the serial number of an NFT of a Token with
-// NON_FUNGIBLE_UNIQUE type. When minting NFTs the sender will be the default AccountID instance
-// (0.0.0) and when burning NFTs, the receiver will be the default AccountID instance.
+// A sender account, a receiver account, and the serial number of an NFT of a Token with NON_FUNGIBLE_UNIQUE type. When minting NFTs the sender will be the default AccountID instance (0.0.0) and when burning NFTs, the receiver will be the default AccountID instance.
 type NftTransfer struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The accountID of the sender
-	SenderAccountID *AccountID `protobuf:"bytes,1,opt,name=senderAccountID,proto3" json:"senderAccountID,omitempty"`
-	//*
-	// The accountID of the receiver
-	ReceiverAccountID *AccountID `protobuf:"bytes,2,opt,name=receiverAccountID,proto3" json:"receiverAccountID,omitempty"`
-	//*
-	// The serial number of the NFT
-	SerialNumber int64 `protobuf:"varint,3,opt,name=serialNumber,proto3" json:"serialNumber,omitempty"`
+	SenderAccountID   *AccountID `protobuf:"bytes,1,opt,name=senderAccountID,proto3" json:"senderAccountID,omitempty"`     // The accountID of the sender
+	ReceiverAccountID *AccountID `protobuf:"bytes,2,opt,name=receiverAccountID,proto3" json:"receiverAccountID,omitempty"` // The accountID of the receiver
+	SerialNumber      int64      `protobuf:"varint,3,opt,name=serialNumber,proto3" json:"serialNumber,omitempty"`          // The serial number of the NFT
 }
 
 func (x *NftTransfer) Reset() {
@@ -1368,25 +1062,15 @@ func (x *NftTransfer) GetSerialNumber() int64 {
 	return 0
 }
 
-//*
-// A list of token IDs and amounts representing the transferred out (negative) or into (positive)
-// amounts, represented in the lowest denomination of the token
+// A list of token IDs and amounts representing the transferred out (negative) or into (positive) amounts, represented in the lowest denomination of the token
 type TokenTransferList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The ID of the token
-	Token *TokenID `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	//*
-	// Applicable to tokens of type FUNGIBLE_COMMON. Multiple list of AccountAmounts, each of which
-	// has an account and amount
-	Transfers []*AccountAmount `protobuf:"bytes,2,rep,name=transfers,proto3" json:"transfers,omitempty"`
-	//*
-	// Applicable to tokens of type NON_FUNGIBLE_UNIQUE. Multiple list of NftTransfers, each of
-	// which has a sender and receiver account, including the serial number of the NFT
-	NftTransfers []*NftTransfer `protobuf:"bytes,3,rep,name=nftTransfers,proto3" json:"nftTransfers,omitempty"`
+	Token        *TokenID         `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`               // The ID of the token
+	Transfers    []*AccountAmount `protobuf:"bytes,2,rep,name=transfers,proto3" json:"transfers,omitempty"`       // Applicable to tokens of type FUNGIBLE_COMMON. Multiple list of AccountAmounts, each of which has an account and amount
+	NftTransfers []*NftTransfer   `protobuf:"bytes,3,rep,name=nftTransfers,proto3" json:"nftTransfers,omitempty"` // Applicable to tokens of type NON_FUNGIBLE_UNIQUE. Multiple list of NftTransfers, each of which has a sender and receiver account, including the serial number of the NFT
 }
 
 func (x *TokenTransferList) Reset() {
@@ -1442,19 +1126,14 @@ func (x *TokenTransferList) GetNftTransfers() []*NftTransfer {
 	return nil
 }
 
-//*
 // A rational number, used to set the amount of a value transfer to collect as a custom fee
 type Fraction struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The rational's numerator
-	Numerator int64 `protobuf:"varint,1,opt,name=numerator,proto3" json:"numerator,omitempty"`
-	//*
-	// The rational's denominator; a zero value will result in FRACTION_DIVIDES_BY_ZERO
-	Denominator int64 `protobuf:"varint,2,opt,name=denominator,proto3" json:"denominator,omitempty"`
+	Numerator   int64 `protobuf:"varint,1,opt,name=numerator,proto3" json:"numerator,omitempty"`     // The rational's numerator
+	Denominator int64 `protobuf:"varint,2,opt,name=denominator,proto3" json:"denominator,omitempty"` // The rational's denominator; a zero value will result in FRACTION_DIVIDES_BY_ZERO
 }
 
 func (x *Fraction) Reset() {
@@ -1503,22 +1182,15 @@ func (x *Fraction) GetDenominator() int64 {
 	return 0
 }
 
-//*
 // Unique identifier for a topic (used by the consensus service)
 type TopicID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The shard number (nonnegative)
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
-	//*
-	// The realm number (nonnegative)
-	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`
-	//*
-	// Unique topic identifier within a realm (nonnegative).
-	TopicNum int64 `protobuf:"varint,3,opt,name=topicNum,proto3" json:"topicNum,omitempty"`
+	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"` // The shard number (nonnegative)
+	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"` // The realm number (nonnegative)
+	TopicNum int64 `protobuf:"varint,3,opt,name=topicNum,proto3" json:"topicNum,omitempty"` // Unique topic identifier within a realm (nonnegative).
 }
 
 func (x *TopicID) Reset() {
@@ -1574,22 +1246,15 @@ func (x *TopicID) GetTopicNum() int64 {
 	return 0
 }
 
-//*
 // Unique identifier for a token
 type TokenID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// A nonnegative shard number
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
-	//*
-	// A nonnegative realm number
-	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`
-	//*
-	// A nonnegative token number
-	TokenNum int64 `protobuf:"varint,3,opt,name=tokenNum,proto3" json:"tokenNum,omitempty"`
+	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"` // A nonnegative shard number
+	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"` // A nonnegative realm number
+	TokenNum int64 `protobuf:"varint,3,opt,name=tokenNum,proto3" json:"tokenNum,omitempty"` // A nonnegative token number
 }
 
 func (x *TokenID) Reset() {
@@ -1645,22 +1310,15 @@ func (x *TokenID) GetTokenNum() int64 {
 	return 0
 }
 
-//*
 // Unique identifier for a Schedule
 type ScheduleID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// A nonnegative shard number
-	ShardNum int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`
-	//*
-	// A nonnegative realm number
-	RealmNum int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`
-	//*
-	// A nonnegative schedule number
-	ScheduleNum int64 `protobuf:"varint,3,opt,name=scheduleNum,proto3" json:"scheduleNum,omitempty"`
+	ShardNum    int64 `protobuf:"varint,1,opt,name=shardNum,proto3" json:"shardNum,omitempty"`       // A nonnegative shard number
+	RealmNum    int64 `protobuf:"varint,2,opt,name=realmNum,proto3" json:"realmNum,omitempty"`       // A nonnegative realm number
+	ScheduleNum int64 `protobuf:"varint,3,opt,name=scheduleNum,proto3" json:"scheduleNum,omitempty"` // A nonnegative schedule number
 }
 
 func (x *ScheduleID) Reset() {
@@ -1716,40 +1374,17 @@ func (x *ScheduleID) GetScheduleNum() int64 {
 	return 0
 }
 
-//*
-// A Key can be a public key from one of the three supported systems (ed25519, RSA-3072,  ECDSA with
-// p384). Or, it can be the ID of a smart contract instance, which is authorized to act as if it had
-// a key. If an account has an ed25519 key associated with it, then the corresponding private key
-// must sign any transaction to transfer cryptocurrency out of it. And similarly for RSA and ECDSA.
+// A Key can be a public key from one of the three supported systems (ed25519, RSA-3072,  ECDSA with p384). Or, it can be the ID of a smart contract instance, which is authorized to act as if it had a key. If an account has an ed25519 key associated with it, then the corresponding private key must sign any transaction to transfer cryptocurrency out of it. And similarly for RSA and ECDSA.
 //
-// A Key can be a smart contract ID, which means that smart contract is to authorize operations as
-// if it had signed with a key that it owned. The smart contract doesn't actually have a key, and
-// doesn't actually sign a transaction. But it's as if a virtual transaction were created, and the
-// smart contract signed it with a private key.
+// A Key can be a smart contract ID, which means that smart contract is to authorize operations as if it had signed with a key that it owned. The smart contract doesn't actually have a key, and  doesn't actually sign a transaction. But it's as if a virtual transaction were created, and the smart contract signed it with a private key.
 //
-// A Key can be a "threshold key", which means a list of M keys, any N of which must sign in order
-// for the threshold signature to be considered valid. The keys within a threshold signature may
-// themselves be threshold signatures, to allow complex signature requirements.
+// A Key can be a "threshold key", which means a list of M keys, any N of which must sign in order for the threshold signature to be considered valid. The keys within a threshold signature may themselves be threshold signatures, to allow complex signature requirements.
 //
-// A Key can be a "key list" where all keys in the list must sign unless specified otherwise in the
-// documentation for a specific transaction type (e.g.  FileDeleteTransactionBody).  Their use is
-// dependent on context. For example, a Hedera file is created with a list of keys, where all of
-// them must sign a transaction to create or modify the file, but only one of them is needed to sign
-// a transaction to delete the file. So it's a single list that sometimes acts as a 1-of-M threshold
-// key, and sometimes acts as an M-of-M threshold key.  A key list is always an M-of-M, unless
-// specified otherwise in documentation. A key list can have nested key lists or threshold keys.
-// Nested key lists are always M-of-M. A key list can have repeated Ed25519 public keys, but all
-// repeated keys are only required to sign once.
+//A Key can be a "key list" where all keys in the list must sign unless specified otherwise in the documentation for a specific transaction type (e.g. FileDeleteTransactionBody).  Their use is dependent on context. For example, a Hedera file is created with a list of keys, where all of them must sign a transaction to create or modify the file, but only one of them is needed to sign a transaction to delete the file. So it's a single list that sometimes acts as a 1-of-M threshold key, and sometimes acts as an M-of-M threshold key. A key list is always an M-of-M, unless specified otherwise in documentation. A key list can have nested key lists or threshold keys. Nested key lists are always M-of-M. A key list can have repeated Ed25519 public keys, but all repeated keys are only required to sign once.
 //
-// A Key can contain a ThresholdKey or KeyList, which in turn contain a Key, so this mutual
-// recursion would allow nesting arbitrarily deep. A ThresholdKey which contains a list of primitive
-// keys (e.g., ed25519) has 3 levels: ThresholdKey -> KeyList -> Key. A KeyList which contains
-// several primitive keys (e.g., ed25519) has 2 levels: KeyList -> Key. A Key with 2 levels of
-// nested ThresholdKeys has 7 levels: Key -> ThresholdKey -> KeyList -> Key -> ThresholdKey ->
-// KeyList -> Key.
+// A Key can contain a ThresholdKey or KeyList, which in turn contain a Key, so this mutual recursion would allow nesting arbitrarily deep. A ThresholdKey which contains a list of primitive keys (e.g., ed25519) has 3 levels: ThresholdKey -> KeyList -> Key. A KeyList which contains several primitive keys (e.g., ed25519) has 2 levels: KeyList -> Key. A Key with 2 levels of nested ThresholdKeys has 7 levels: Key -> ThresholdKey -> KeyList -> Key -> ThresholdKey -> KeyList -> Key.
 //
-// Each Key should not have more than 46 levels, which implies 15 levels of nested ThresholdKeys.
-// Only ed25519 primitive keys are currently supported.
+// Each Key should not have more than 46 levels, which implies 15 levels of nested ThresholdKeys. Only ed25519 primitive keys are currently supported.
 type Key struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1851,40 +1486,27 @@ type isKey_Key interface {
 }
 
 type Key_ContractID struct {
-	//*
-	// smart contract instance that is authorized as if it had signed with a key
-	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3,oneof"`
+	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3,oneof"` // smart contract instance that is authorized as if it had signed with a key
 }
 
 type Key_Ed25519 struct {
-	//*
-	// ed25519 public key bytes
-	Ed25519 []byte `protobuf:"bytes,2,opt,name=ed25519,proto3,oneof"`
+	Ed25519 []byte `protobuf:"bytes,2,opt,name=ed25519,proto3,oneof"` // ed25519 public key bytes
 }
 
 type Key_RSA_3072 struct {
-	//*
-	// RSA-3072 public key bytes
-	RSA_3072 []byte `protobuf:"bytes,3,opt,name=RSA_3072,json=RSA3072,proto3,oneof"`
+	RSA_3072 []byte `protobuf:"bytes,3,opt,name=RSA_3072,json=RSA3072,proto3,oneof"` // RSA-3072 public key bytes
 }
 
 type Key_ECDSA_384 struct {
-	//*
-	// ECDSA with the p-384 curve public key bytes
-	ECDSA_384 []byte `protobuf:"bytes,4,opt,name=ECDSA_384,json=ECDSA384,proto3,oneof"`
+	ECDSA_384 []byte `protobuf:"bytes,4,opt,name=ECDSA_384,json=ECDSA384,proto3,oneof"` // ECDSA with the p-384 curve public key bytes
 }
 
 type Key_ThresholdKey struct {
-	//*
-	// a threshold N followed by a list of M keys, any N of which are required to form a valid
-	// signature
-	ThresholdKey *ThresholdKey `protobuf:"bytes,5,opt,name=thresholdKey,proto3,oneof"`
+	ThresholdKey *ThresholdKey `protobuf:"bytes,5,opt,name=thresholdKey,proto3,oneof"` // a threshold N followed by a list of M keys, any N of which are required to form a valid signature
 }
 
 type Key_KeyList struct {
-	//*
-	// A list of Keys of the Key type.
-	KeyList *KeyList `protobuf:"bytes,6,opt,name=keyList,proto3,oneof"`
+	KeyList *KeyList `protobuf:"bytes,6,opt,name=keyList,proto3,oneof"` // A list of Keys of the Key type.
 }
 
 func (*Key_ContractID) isKey_Key() {}
@@ -1899,23 +1521,14 @@ func (*Key_ThresholdKey) isKey_Key() {}
 
 func (*Key_KeyList) isKey_Key() {}
 
-//*
-// A set of public keys that are used together to form a threshold signature.  If the threshold is N
-// and there are M keys, then this is an N of M threshold signature. If an account is associated
-// with ThresholdKeys, then a transaction to move cryptocurrency out of it must be signed by a list
-// of M signatures, where at most M-N of them are blank, and the other at least N of them are valid
-// signatures corresponding to at least N of the public keys listed here.
+// A set of public keys that are used together to form a threshold signature. If the threshold is N and there are M keys, then this is an N of M threshold signature. If an account is associated with ThresholdKeys, then a transaction to move cryptocurrency out of it must be signed by a list of M signatures, where at most M-N of them are blank, and the other at least N of them are valid signatures corresponding to at least N of the public keys listed here.
 type ThresholdKey struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// A valid signature set must have at least this many signatures
-	Threshold uint32 `protobuf:"varint,1,opt,name=threshold,proto3" json:"threshold,omitempty"`
-	//*
-	// List of all the keys that can sign
-	Keys *KeyList `protobuf:"bytes,2,opt,name=keys,proto3" json:"keys,omitempty"`
+	Threshold uint32   `protobuf:"varint,1,opt,name=threshold,proto3" json:"threshold,omitempty"` // A valid signature set must have at least this many signatures
+	Keys      *KeyList `protobuf:"bytes,2,opt,name=keys,proto3" json:"keys,omitempty"`            // List of all the keys that can sign
 }
 
 func (x *ThresholdKey) Reset() {
@@ -1964,18 +1577,13 @@ func (x *ThresholdKey) GetKeys() *KeyList {
 	return nil
 }
 
-//*
-// A list of keys that requires all keys (M-of-M) to sign unless otherwise specified in
-// documentation. A KeyList may contain repeated keys, but all repeated keys are only required to
-// sign once.
+// A list of keys that requires all keys (M-of-M) to sign unless otherwise specified in documentation. A KeyList may contain repeated keys, but all repeated keys are only required to sign once.
 type KeyList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// list of keys
-	Keys []*Key `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
+	Keys []*Key `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"` // list of keys
 }
 
 func (x *KeyList) Reset() {
@@ -2017,27 +1625,8 @@ func (x *KeyList) GetKeys() []*Key {
 	return nil
 }
 
-//*
-// A Signature corresponding to a Key. It is a sequence of bytes holding a public key signature from
-// one of the three supported systems (ed25519, RSA-3072,  ECDSA with p384). Or, it can be a list of
-// signatures corresponding to a single threshold key. Or, it can be the ID of a smart contract
-// instance, which is authorized to act as if it had a key. If an account has an ed25519 key
-// associated with it, then the corresponding private key must sign any transaction to transfer
-// cryptocurrency out of it.  If it has a smart contract ID associated with it, then that smart
-// contract is allowed to transfer cryptocurrency out of it. The smart contract doesn't actually
-// have a key, and  doesn't actually sign a transaction. But it's as if a virtual transaction were
-// created, and the smart contract signed it with a private key. A key can also be a "threshold
-// key", which means a list of M keys, any N of which must sign in order for the threshold signature
-// to be considered valid. The keys within a threshold signature may themselves be threshold
-// signatures, to allow complex signature requirements (this nesting is not supported in the
-// currently, but will be supported in a future version of API). If a Signature message is missing
-// the "signature" field, then this is considered to be a null signature. That is useful in cases
-// such as threshold signatures, where some of the signatures can be null.  The definition of Key
-// uses mutual recursion, so it allows nesting that is arbitrarily deep. But the current API only
-// accepts Key messages up to 3 levels deep, such as a list of threshold keys, each of which is a
-// list of primitive keys. Therefore, the matching Signature will have the same limitation. This
-// restriction may be relaxed in future versions of the API, to allow deeper nesting.
-//
+// A Signature corresponding to a Key. It is a sequence of bytes holding a public key signature from one of the three supported systems (ed25519, RSA-3072,  ECDSA with p384). Or, it can be a list of signatures corresponding to a single threshold key. Or, it can be the ID of a smart contract instance, which is authorized to act as if it had a key. If an account has an ed25519 key associated with it, then the corresponding private key must sign any transaction to transfer cryptocurrency out of it. If it has a smart contract ID associated with it, then that smart contract is allowed to transfer cryptocurrency out of it. The smart contract doesn't actually have a key, and  doesn't actually sign a transaction. But it's as if a virtual transaction were created, and the smart contract signed it with a private key. A key can also be a "threshold key", which means a list of M keys, any N of which must sign in order for the threshold signature to be considered valid. The keys within a threshold signature may themselves be threshold signatures, to allow complex signature requirements (this nesting is not supported in the currently, but will be supported in a future version of API). If a Signature message is missing the "signature" field, then this is considered to be a null signature. That is useful in cases such as threshold signatures, where some of the signatures can be null.
+// The definition of Key uses mutual recursion, so it allows nesting that is arbitrarily deep. But the current API only accepts Key messages up to 3 levels deep, such as a list of threshold keys, each of which is a list of primitive keys. Therefore, the matching Signature will have the same limitation. This restriction may be relaxed in future versions of the API, to allow deeper nesting.
 // This message is deprecated and succeeded by SignaturePair and SignatureMap messages.
 //
 // Deprecated: Do not use.
@@ -2142,40 +1731,27 @@ type isSignature_Signature interface {
 }
 
 type Signature_Contract struct {
-	//*
-	// smart contract virtual signature (always length zero)
-	Contract []byte `protobuf:"bytes,1,opt,name=contract,proto3,oneof"`
+	Contract []byte `protobuf:"bytes,1,opt,name=contract,proto3,oneof"` // smart contract virtual signature (always length zero)
 }
 
 type Signature_Ed25519 struct {
-	//*
-	// ed25519 signature bytes
-	Ed25519 []byte `protobuf:"bytes,2,opt,name=ed25519,proto3,oneof"`
+	Ed25519 []byte `protobuf:"bytes,2,opt,name=ed25519,proto3,oneof"` // ed25519 signature bytes
 }
 
 type Signature_RSA_3072 struct {
-	//*
-	// RSA-3072 signature bytes
-	RSA_3072 []byte `protobuf:"bytes,3,opt,name=RSA_3072,json=RSA3072,proto3,oneof"`
+	RSA_3072 []byte `protobuf:"bytes,3,opt,name=RSA_3072,json=RSA3072,proto3,oneof"` //RSA-3072 signature bytes
 }
 
 type Signature_ECDSA_384 struct {
-	//*
-	// ECDSA p-384 signature bytes
-	ECDSA_384 []byte `protobuf:"bytes,4,opt,name=ECDSA_384,json=ECDSA384,proto3,oneof"`
+	ECDSA_384 []byte `protobuf:"bytes,4,opt,name=ECDSA_384,json=ECDSA384,proto3,oneof"` //ECDSA p-384 signature bytes
 }
 
 type Signature_ThresholdSignature struct {
-	//*
-	// A list of signatures for a single N-of-M threshold Key. This must be a list of exactly M
-	// signatures, at least N of which are non-null.
-	ThresholdSignature *ThresholdSignature `protobuf:"bytes,5,opt,name=thresholdSignature,proto3,oneof"`
+	ThresholdSignature *ThresholdSignature `protobuf:"bytes,5,opt,name=thresholdSignature,proto3,oneof"` // A list of signatures for a single N-of-M threshold Key. This must be a list of exactly M signatures, at least N of which are non-null.
 }
 
 type Signature_SignatureList struct {
-	//*
-	// A list of M signatures, each corresponding to a Key in a KeyList of the same length.
-	SignatureList *SignatureList `protobuf:"bytes,6,opt,name=signatureList,proto3,oneof"`
+	SignatureList *SignatureList `protobuf:"bytes,6,opt,name=signatureList,proto3,oneof"` // A list of M signatures, each corresponding to a Key in a KeyList of the same length.
 }
 
 func (*Signature_Contract) isSignature_Signature() {}
@@ -2190,10 +1766,9 @@ func (*Signature_ThresholdSignature) isSignature_Signature() {}
 
 func (*Signature_SignatureList) isSignature_Signature() {}
 
-//*
-// A signature corresponding to a ThresholdKey. For an N-of-M threshold key, this is a list of M
-// signatures, at least N of which must be non-null.  This message is deprecated and succeeded by
-// SignaturePair and SignatureMap messages.
+//
+//A signature corresponding to a ThresholdKey. For an N-of-M threshold key, this is a list of M signatures, at least N of which must be non-null.
+//This message is deprecated and succeeded by SignaturePair and SignatureMap messages.
 //
 // Deprecated: Do not use.
 type ThresholdSignature struct {
@@ -2201,10 +1776,7 @@ type ThresholdSignature struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// for an N-of-M threshold key, this is a list of M signatures, at least N of which must be
-	// non-null
-	Sigs *SignatureList `protobuf:"bytes,2,opt,name=sigs,proto3" json:"sigs,omitempty"`
+	Sigs *SignatureList `protobuf:"bytes,2,opt,name=sigs,proto3" json:"sigs,omitempty"` // for an N-of-M threshold key, this is a list of M signatures, at least N of which must be non-null
 }
 
 func (x *ThresholdSignature) Reset() {
@@ -2246,9 +1818,9 @@ func (x *ThresholdSignature) GetSigs() *SignatureList {
 	return nil
 }
 
-//*
-// The signatures corresponding to a KeyList of the same length.  This message is deprecated and
-// succeeded by SignaturePair and SignatureMap messages.
+//
+//The signatures corresponding to a KeyList of the same length.
+//This message is deprecated and succeeded by SignaturePair and SignatureMap messages.
 //
 // Deprecated: Do not use.
 type SignatureList struct {
@@ -2256,9 +1828,7 @@ type SignatureList struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// each signature corresponds to a Key in the KeyList
-	Sigs []*Signature `protobuf:"bytes,2,rep,name=sigs,proto3" json:"sigs,omitempty"`
+	Sigs []*Signature `protobuf:"bytes,2,rep,name=sigs,proto3" json:"sigs,omitempty"` // each signature corresponds to a Key in the KeyList
 }
 
 func (x *SignatureList) Reset() {
@@ -2300,18 +1870,16 @@ func (x *SignatureList) GetSigs() []*Signature {
 	return nil
 }
 
-//*
-// The client may use any number of bytes from 0 to the whole length of the public key for
-// pubKeyPrefix.  If 0 bytes is used, then it is assumed that only one public key is used to sign.
-// Only ed25519 keys and hence signatures are currently supported.
+//
+//The client may use any number of bytes from 0 to the whole length of the public key for pubKeyPrefix.
+//If 0 bytes is used, then it is assumed that only one public key is used to sign. Only ed25519
+//keys and hence signatures are currently supported.
 type SignaturePair struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// First few bytes of the public key
-	PubKeyPrefix []byte `protobuf:"bytes,1,opt,name=pubKeyPrefix,proto3" json:"pubKeyPrefix,omitempty"`
+	PubKeyPrefix []byte `protobuf:"bytes,1,opt,name=pubKeyPrefix,proto3" json:"pubKeyPrefix,omitempty"` // First few bytes of the public key
 	// Types that are assignable to Signature:
 	//	*SignaturePair_Contract
 	//	*SignaturePair_Ed25519
@@ -2399,27 +1967,19 @@ type isSignaturePair_Signature interface {
 }
 
 type SignaturePair_Contract struct {
-	//*
-	// smart contract virtual signature (always length zero)
-	Contract []byte `protobuf:"bytes,2,opt,name=contract,proto3,oneof"`
+	Contract []byte `protobuf:"bytes,2,opt,name=contract,proto3,oneof"` // smart contract virtual signature (always length zero)
 }
 
 type SignaturePair_Ed25519 struct {
-	//*
-	// ed25519 signature
-	Ed25519 []byte `protobuf:"bytes,3,opt,name=ed25519,proto3,oneof"`
+	Ed25519 []byte `protobuf:"bytes,3,opt,name=ed25519,proto3,oneof"` // ed25519 signature
 }
 
 type SignaturePair_RSA_3072 struct {
-	//*
-	// RSA-3072 signature
-	RSA_3072 []byte `protobuf:"bytes,4,opt,name=RSA_3072,json=RSA3072,proto3,oneof"`
+	RSA_3072 []byte `protobuf:"bytes,4,opt,name=RSA_3072,json=RSA3072,proto3,oneof"` //RSA-3072 signature
 }
 
 type SignaturePair_ECDSA_384 struct {
-	//*
-	// ECDSA p-384 signature
-	ECDSA_384 []byte `protobuf:"bytes,5,opt,name=ECDSA_384,json=ECDSA384,proto3,oneof"`
+	ECDSA_384 []byte `protobuf:"bytes,5,opt,name=ECDSA_384,json=ECDSA384,proto3,oneof"` //ECDSA p-384 signature
 }
 
 func (*SignaturePair_Contract) isSignaturePair_Signature() {}
@@ -2430,18 +1990,14 @@ func (*SignaturePair_RSA_3072) isSignaturePair_Signature() {}
 
 func (*SignaturePair_ECDSA_384) isSignaturePair_Signature() {}
 
-//*
-// A set of signatures corresponding to every unique public key used to sign a given transaction. If
-// one public key matches more than one prefixes on the signature map, the transaction containing
-// the map will fail immediately with the response code KEY_PREFIX_MISMATCH.
+//
+//A set of signatures corresponding to every unique public key used to sign a given transaction. If one public key matches more than one prefixes on the signature map, the transaction containing the map will fail immediately with the response code KEY_PREFIX_MISMATCH.
 type SignatureMap struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Each signature pair corresponds to a unique Key required to sign the transaction.
-	SigPair []*SignaturePair `protobuf:"bytes,1,rep,name=sigPair,proto3" json:"sigPair,omitempty"`
+	SigPair []*SignaturePair `protobuf:"bytes,1,rep,name=sigPair,proto3" json:"sigPair,omitempty"` // Each signature pair corresponds to a unique Key required to sign the transaction.
 }
 
 func (x *SignatureMap) Reset() {
@@ -2483,49 +2039,26 @@ func (x *SignatureMap) GetSigPair() []*SignaturePair {
 	return nil
 }
 
-//*
-// A set of prices the nodes use in determining transaction and query fees, and constants involved
-// in fee calculations.  Nodes multiply the amount of resources consumed by a transaction or query
-// by the corresponding price to calculate the appropriate fee. Units are one-thousandth of a
-// tinyCent.
+//
+//A set of prices the nodes use in determining transaction and query fees, and constants involved in fee calculations.
+//Nodes multiply the amount of resources consumed by a transaction or query by the corresponding price to calculate the
+//appropriate fee. Units are one-thousandth of a tinyCent.
 type FeeComponents struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// A minimum, the calculated fee must be greater than this value
-	Min int64 `protobuf:"varint,1,opt,name=min,proto3" json:"min,omitempty"`
-	//*
-	// A maximum, the calculated fee must be less than this value
-	Max int64 `protobuf:"varint,2,opt,name=max,proto3" json:"max,omitempty"`
-	//*
-	// A constant contribution to the fee
-	Constant int64 `protobuf:"varint,3,opt,name=constant,proto3" json:"constant,omitempty"`
-	//*
-	// The price of bandwidth consumed by a transaction, measured in bytes
-	Bpt int64 `protobuf:"varint,4,opt,name=bpt,proto3" json:"bpt,omitempty"`
-	//*
-	// The price per signature verification for a transaction
-	Vpt int64 `protobuf:"varint,5,opt,name=vpt,proto3" json:"vpt,omitempty"`
-	//*
-	// The price of RAM consumed by a transaction, measured in byte-hours
-	Rbh int64 `protobuf:"varint,6,opt,name=rbh,proto3" json:"rbh,omitempty"`
-	//*
-	// The price of storage consumed by a transaction, measured in byte-hours
-	Sbh int64 `protobuf:"varint,7,opt,name=sbh,proto3" json:"sbh,omitempty"`
-	//*
-	// The price of computation for a smart contract transaction, measured in gas
-	Gas int64 `protobuf:"varint,8,opt,name=gas,proto3" json:"gas,omitempty"`
-	//*
-	// The price per hbar transferred for a transfer
-	Tv int64 `protobuf:"varint,9,opt,name=tv,proto3" json:"tv,omitempty"`
-	//*
-	// The price of bandwidth for data retrieved from memory for a response, measured in bytes
-	Bpr int64 `protobuf:"varint,10,opt,name=bpr,proto3" json:"bpr,omitempty"`
-	//*
-	// The price of bandwidth for data retrieved from disk for a response, measured in bytes
-	Sbpr int64 `protobuf:"varint,11,opt,name=sbpr,proto3" json:"sbpr,omitempty"`
+	Min      int64 `protobuf:"varint,1,opt,name=min,proto3" json:"min,omitempty"`           // A minimum, the calculated fee must be greater than this value
+	Max      int64 `protobuf:"varint,2,opt,name=max,proto3" json:"max,omitempty"`           // A maximum, the calculated fee must be less than this value
+	Constant int64 `protobuf:"varint,3,opt,name=constant,proto3" json:"constant,omitempty"` // A constant contribution to the fee
+	Bpt      int64 `protobuf:"varint,4,opt,name=bpt,proto3" json:"bpt,omitempty"`           // The price of bandwidth consumed by a transaction, measured in bytes
+	Vpt      int64 `protobuf:"varint,5,opt,name=vpt,proto3" json:"vpt,omitempty"`           // The price per signature verification for a transaction
+	Rbh      int64 `protobuf:"varint,6,opt,name=rbh,proto3" json:"rbh,omitempty"`           // The price of RAM consumed by a transaction, measured in byte-hours
+	Sbh      int64 `protobuf:"varint,7,opt,name=sbh,proto3" json:"sbh,omitempty"`           // The price of storage consumed by a transaction, measured in byte-hours
+	Gas      int64 `protobuf:"varint,8,opt,name=gas,proto3" json:"gas,omitempty"`           // The price of computation for a smart contract transaction, measured in gas
+	Tv       int64 `protobuf:"varint,9,opt,name=tv,proto3" json:"tv,omitempty"`             // The price per hbar transferred for a transfer
+	Bpr      int64 `protobuf:"varint,10,opt,name=bpr,proto3" json:"bpr,omitempty"`          // The price of bandwidth for data retrieved from memory for a response, measured in bytes
+	Sbpr     int64 `protobuf:"varint,11,opt,name=sbpr,proto3" json:"sbpr,omitempty"`        // The price of bandwidth for data retrieved from disk for a response, measured in bytes
 }
 
 func (x *FeeComponents) Reset() {
@@ -2637,22 +2170,18 @@ func (x *FeeComponents) GetSbpr() int64 {
 	return 0
 }
 
-//*
 // The fees for a specific transaction or query based on the fee data.
 type TransactionFeeSchedule struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
 	// A particular transaction or query
 	HederaFunctionality HederaFunctionality `protobuf:"varint,1,opt,name=hederaFunctionality,proto3,enum=proto.HederaFunctionality" json:"hederaFunctionality,omitempty"`
-	//*
 	// Resource price coefficients
 	//
 	// Deprecated: Do not use.
 	FeeData *FeeData `protobuf:"bytes,2,opt,name=feeData,proto3" json:"feeData,omitempty"`
-	//*
 	// Resource price coefficients. Supports subtype price definition.
 	Fees []*FeeData `protobuf:"bytes,3,rep,name=fees,proto3" json:"fees,omitempty"`
 }
@@ -2711,29 +2240,20 @@ func (x *TransactionFeeSchedule) GetFees() []*FeeData {
 	return nil
 }
 
-//*
-// The total fee charged for a transaction. It is composed of three components – a node fee that
-// compensates the specific node that submitted the transaction, a network fee that compensates the
-// network for assigning the transaction a consensus timestamp, and a service fee that compensates
-// the network for the ongoing maintenance of the consequences of the transaction.
+//
+//The total fee charged for a transaction. It is composed of three components – a node fee that compensates the specific node that submitted the transaction, a network fee that compensates the network for assigning the transaction a consensus timestamp, and a service fee that compensates the network for the ongoing maintenance of the consequences of the transaction.
 type FeeData struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
 	// Fee paid to the submitting node
 	Nodedata *FeeComponents `protobuf:"bytes,1,opt,name=nodedata,proto3" json:"nodedata,omitempty"`
-	//*
 	// Fee paid to the network for processing a transaction into consensus
 	Networkdata *FeeComponents `protobuf:"bytes,2,opt,name=networkdata,proto3" json:"networkdata,omitempty"`
-	//*
-	// Fee paid to the network for providing the service associated with the
-	// transaction; for instance, storing a file
+	// Fee paid to the network for providing the service associated with the transaction; for instance, storing a file
 	Servicedata *FeeComponents `protobuf:"bytes,3,opt,name=servicedata,proto3" json:"servicedata,omitempty"`
-	//*
-	// SubType distinguishing between different types of FeeData, correlating
-	// to the same HederaFunctionality
+	// SubType distinguishing between different types of FeeData, correlating to the same HederaFunctionality
 	SubType SubType `protobuf:"varint,4,opt,name=subType,proto3,enum=proto.SubType" json:"subType,omitempty"`
 }
 
@@ -2797,19 +2317,15 @@ func (x *FeeData) GetSubType() SubType {
 	return SubType_DEFAULT
 }
 
-//*
-// A list of resource prices fee for different transactions and queries and the time period at which
-// this fee schedule will expire. Nodes use the prices to determine the fees for all transactions
-// based on how much of those resources each transaction uses.
+//
+//A list of resource prices fee for different transactions and queries and the time period at which this fee schedule will expire. Nodes use the prices to determine the fees for all transactions based on how much of those resources each transaction uses.
 type FeeSchedule struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
 	// List of price coefficients for network resources
 	TransactionFeeSchedule []*TransactionFeeSchedule `protobuf:"bytes,1,rep,name=transactionFeeSchedule,proto3" json:"transactionFeeSchedule,omitempty"`
-	//*
 	// FeeSchedule expiry time
 	ExpiryTime *TimestampSeconds `protobuf:"bytes,2,opt,name=expiryTime,proto3" json:"expiryTime,omitempty"`
 }
@@ -2860,19 +2376,14 @@ func (x *FeeSchedule) GetExpiryTime() *TimestampSeconds {
 	return nil
 }
 
-//*
 // This contains two Fee Schedules with expiry timestamp.
 type CurrentAndNextFeeSchedule struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Contains current Fee Schedule
-	CurrentFeeSchedule *FeeSchedule `protobuf:"bytes,1,opt,name=currentFeeSchedule,proto3" json:"currentFeeSchedule,omitempty"`
-	//*
-	// Contains next Fee Schedule
-	NextFeeSchedule *FeeSchedule `protobuf:"bytes,2,opt,name=nextFeeSchedule,proto3" json:"nextFeeSchedule,omitempty"`
+	CurrentFeeSchedule *FeeSchedule `protobuf:"bytes,1,opt,name=currentFeeSchedule,proto3" json:"currentFeeSchedule,omitempty"` // Contains current Fee Schedule
+	NextFeeSchedule    *FeeSchedule `protobuf:"bytes,2,opt,name=nextFeeSchedule,proto3" json:"nextFeeSchedule,omitempty"`       // Contains next Fee Schedule
 }
 
 func (x *CurrentAndNextFeeSchedule) Reset() {
@@ -2921,21 +2432,15 @@ func (x *CurrentAndNextFeeSchedule) GetNextFeeSchedule() *FeeSchedule {
 	return nil
 }
 
-//*
-// Contains the IP address and the port representing a service endpoint of a Node in a network. Used
-// to reach the Hedera API and submit transactions to the network.
+//
+//Contains the IP address and the port representing a service endpoint of a Node in a network. Used to reach the Hedera API and submit transactions to the network.
 type ServiceEndpoint struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The 32-bit IPv4 address of the node encoded in left to right order (e.g.  127.0.0.1 has 127
-	// as its first byte)
-	IpAddressV4 []byte `protobuf:"bytes,1,opt,name=ipAddressV4,proto3" json:"ipAddressV4,omitempty"`
-	//*
-	// The port of the node
-	Port int32 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
+	IpAddressV4 []byte `protobuf:"bytes,1,opt,name=ipAddressV4,proto3" json:"ipAddressV4,omitempty"` // The 32-bit IPv4 address of the node encoded in left to right order (e.g. 127.0.0.1 has 127 as its first byte)
+	Port        int32  `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`              // The port of the node
 }
 
 func (x *ServiceEndpoint) Reset() {
@@ -2984,63 +2489,32 @@ func (x *ServiceEndpoint) GetPort() int32 {
 	return 0
 }
 
-//*
-// The data about a node, including its service endpoints and the Hedera account to be paid for
-// services provided by the node (that is, queries answered and transactions submitted.)
 //
-// If the <tt>serviceEndpoint</tt> list is not set, or empty, then the endpoint given by the
-// (deprecated) <tt>ipAddress</tt> and <tt>portno</tt> fields should be used.
+//The data about a node, including its service endpoints and the Hedera account to be paid for services
+//provided by the node (that is, queries answered and transactions submitted.)
 //
-// All fields are populated in the 0.0.102 address book file while only fields that start with # are
-// populated in the 0.0.101 address book file.
+//If the <tt>serviceEndpoint</tt> list is not set, or empty, then the endpoint given by the (deprecated)
+//<tt>ipAddress</tt> and <tt>portno</tt> fields should be used.
+//
+//All fields are populated in the 0.0.102 address book file while only fields that start with # are populated in the 0.0.101 address book file.
 type NodeAddress struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The IP address of the Node with separator & octets encoded in UTF-8.  Usage is deprecated,
-	// ServiceEndpoint is preferred to retrieve a node's list of IP addresses and ports
-	//
 	// Deprecated: Do not use.
-	IpAddress []byte `protobuf:"bytes,1,opt,name=ipAddress,proto3" json:"ipAddress,omitempty"`
-	//*
-	// The port number of the grpc server for the node.  Usage is deprecated, ServiceEndpoint is
-	// preferred to retrieve a node's list of IP addresses and ports
-	//
+	IpAddress []byte `protobuf:"bytes,1,opt,name=ipAddress,proto3" json:"ipAddress,omitempty"` // The IP address of the Node with separator & octets encoded in UTF-8. Usage is deprecated, ServiceEndpoint is preferred to retrieve a node's list of IP addresses and ports
 	// Deprecated: Do not use.
-	Portno int32 `protobuf:"varint,2,opt,name=portno,proto3" json:"portno,omitempty"`
-	//*
-	// Usage is deprecated, nodeAccountId is preferred to retrieve a node's account ID
-	//
+	Portno int32 `protobuf:"varint,2,opt,name=portno,proto3" json:"portno,omitempty"` // The port number of the grpc server for the node.  Usage is deprecated, ServiceEndpoint is preferred to retrieve a node's list of IP addresses and ports
 	// Deprecated: Do not use.
-	Memo []byte `protobuf:"bytes,3,opt,name=memo,proto3" json:"memo,omitempty"`
-	//*
-	// The node's X509 RSA public key used to sign stream files (e.g., record stream
-	// files). Precisely, this field is a string of hexadecimal characters which,
-	// translated to binary, are the public key's DER encoding.
-	RSA_PubKey string `protobuf:"bytes,4,opt,name=RSA_PubKey,json=RSAPubKey,proto3" json:"RSA_PubKey,omitempty"`
-	//*
-	// # A non-sequential identifier for the node
-	NodeId int64 `protobuf:"varint,5,opt,name=nodeId,proto3" json:"nodeId,omitempty"`
-	//*
-	// # The account to be paid for queries and transactions sent to this node
-	NodeAccountId *AccountID `protobuf:"bytes,6,opt,name=nodeAccountId,proto3" json:"nodeAccountId,omitempty"`
-	//*
-	// # Hash of the node's TLS certificate. Precisely, this field is a string of
-	// hexadecimal characters which, translated to binary, are the SHA-384 hash of
-	// the UTF-8 NFKD encoding of the node's TLS cert in PEM format. Its value can be
-	// used to verify the node's certificate it presents during TLS negotiations.
-	NodeCertHash []byte `protobuf:"bytes,7,opt,name=nodeCertHash,proto3" json:"nodeCertHash,omitempty"`
-	//*
-	// # A node's service IP addresses and ports
-	ServiceEndpoint []*ServiceEndpoint `protobuf:"bytes,8,rep,name=serviceEndpoint,proto3" json:"serviceEndpoint,omitempty"`
-	//*
-	// A description of the node, with UTF-8 encoding up to 100 bytes
-	Description string `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
-	//*
-	// The amount of tinybars staked to the node
-	Stake int64 `protobuf:"varint,10,opt,name=stake,proto3" json:"stake,omitempty"`
+	Memo            []byte             `protobuf:"bytes,3,opt,name=memo,proto3" json:"memo,omitempty"`                            // Usage is deprecated, nodeAccountId is preferred to retrieve a node's account ID
+	RSA_PubKey      string             `protobuf:"bytes,4,opt,name=RSA_PubKey,json=RSAPubKey,proto3" json:"RSA_PubKey,omitempty"` // The node's hex-encoded X509 RSA public key
+	NodeId          int64              `protobuf:"varint,5,opt,name=nodeId,proto3" json:"nodeId,omitempty"`                       // # A non-sequential identifier for the node
+	NodeAccountId   *AccountID         `protobuf:"bytes,6,opt,name=nodeAccountId,proto3" json:"nodeAccountId,omitempty"`          // # The account to be paid for queries and transactions sent to this node
+	NodeCertHash    []byte             `protobuf:"bytes,7,opt,name=nodeCertHash,proto3" json:"nodeCertHash,omitempty"`            // # The hex-encoded SHA-384 hash of the X509 cert used to encrypt gRPC traffic to the node
+	ServiceEndpoint []*ServiceEndpoint `protobuf:"bytes,8,rep,name=serviceEndpoint,proto3" json:"serviceEndpoint,omitempty"`      // # A node's service IP addresses and ports
+	Description     string             `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`              // A description of the node, with UTF-8 encoding up to 100 bytes
+	Stake           int64              `protobuf:"varint,10,opt,name=stake,proto3" json:"stake,omitempty"`                        // The amount of tinybars staked to the node
 }
 
 func (x *NodeAddress) Reset() {
@@ -3148,17 +2622,16 @@ func (x *NodeAddress) GetStake() int64 {
 	return 0
 }
 
-//*
-// A list of nodes and their metadata that contains all details of the nodes for the network.  Used
-// to parse the contents of system files <tt>0.0.101</tt> and <tt>0.0.102</tt>.
+//
+//A list of nodes and their metadata that contains all details of the nodes for the network.
+//
+//Used to parse the contents of system files <tt>0.0.101</tt> and <tt>0.0.102</tt>.
 type NodeAddressBook struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Metadata of all nodes in the network
-	NodeAddress []*NodeAddress `protobuf:"bytes,1,rep,name=nodeAddress,proto3" json:"nodeAddress,omitempty"`
+	NodeAddress []*NodeAddress `protobuf:"bytes,1,rep,name=nodeAddress,proto3" json:"nodeAddress,omitempty"` // Metadata of all nodes in the network
 }
 
 func (x *NodeAddressBook) Reset() {
@@ -3200,36 +2673,19 @@ func (x *NodeAddressBook) GetNodeAddress() []*NodeAddress {
 	return nil
 }
 
-//*
-// Hedera follows semantic versioning (https://semver.org/) for both the HAPI protobufs and the
-// Services software.  This type allows the <tt>getVersionInfo</tt> query in the
-// <tt>NetworkService</tt> to return the deployed versions of both protobufs and software on the
-// node answering the query.
+// Hedera follows semantic versioning (https://semver.org/) for both the HAPI protobufs and the Services software.
+//This type allows the <tt>getVersionInfo</tt> query in the <tt>NetworkService</tt> to return the deployed versions
+//of both protobufs and software on the node answering the query.
 type SemanticVersion struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// Increases with incompatible API changes
-	Major int32 `protobuf:"varint,1,opt,name=major,proto3" json:"major,omitempty"`
-	//*
-	// Increases with backwards-compatible new functionality
-	Minor int32 `protobuf:"varint,2,opt,name=minor,proto3" json:"minor,omitempty"`
-	//*
-	// Increases with backwards-compatible bug fixes
-	Patch int32 `protobuf:"varint,3,opt,name=patch,proto3" json:"patch,omitempty"`
-	//*
-	// A pre-release version MAY be denoted by appending a hyphen and a series of dot separated
-	// identifiers (https://semver.org/#spec-item-9); so given a semver 0.14.0-alpha.1+21AF26D3,
-	// this field would contain 'alpha.1'
-	Pre string `protobuf:"bytes,4,opt,name=pre,proto3" json:"pre,omitempty"`
-	//*
-	// Build metadata MAY be denoted by appending a plus sign and a series of dot separated
-	// identifiers immediately following the patch or pre-release version
-	// (https://semver.org/#spec-item-10); so given a semver 0.14.0-alpha.1+21AF26D3, this field
-	// would contain '21AF26D3'
-	Build string `protobuf:"bytes,5,opt,name=build,proto3" json:"build,omitempty"`
+	Major int32  `protobuf:"varint,1,opt,name=major,proto3" json:"major,omitempty"` // Increases with incompatible API changes
+	Minor int32  `protobuf:"varint,2,opt,name=minor,proto3" json:"minor,omitempty"` // Increases with backwards-compatible new functionality
+	Patch int32  `protobuf:"varint,3,opt,name=patch,proto3" json:"patch,omitempty"` // Increases with backwards-compatible bug fixes
+	Pre   string `protobuf:"bytes,4,opt,name=pre,proto3" json:"pre,omitempty"`      // A pre-release version MAY be denoted by appending a hyphen and a series of dot separated identifiers (https://semver.org/#spec-item-9); so given a semver 0.14.0-alpha.1+21AF26D3, this field would contain 'alpha.1'
+	Build string `protobuf:"bytes,5,opt,name=build,proto3" json:"build,omitempty"`  // Build metadata MAY be denoted by appending a plus sign and a series of dot separated identifiers immediately following the patch or pre-release version (https://semver.org/#spec-item-10); so given a semver 0.14.0-alpha.1+21AF26D3, this field would contain '21AF26D3'
 }
 
 func (x *SemanticVersion) Reset() {
@@ -3299,22 +2755,14 @@ func (x *SemanticVersion) GetBuild() string {
 	return ""
 }
 
-//*
-// UNDOCUMENTED
 type Setting struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// name of the property
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	//*
-	// value of the property
-	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	//*
-	// any data associated with property
-	Data []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`   // name of the property
+	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"` // value of the property
+	Data  []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`   // any data associated with property
 }
 
 func (x *Setting) Reset() {
@@ -3370,16 +2818,12 @@ func (x *Setting) GetData() []byte {
 	return nil
 }
 
-//*
-// UNDOCUMENTED
 type ServicesConfigurationList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// list of name value pairs of the application properties
-	NameValue []*Setting `protobuf:"bytes,1,rep,name=nameValue,proto3" json:"nameValue,omitempty"`
+	NameValue []*Setting `protobuf:"bytes,1,rep,name=nameValue,proto3" json:"nameValue,omitempty"` // list of name value pairs of the application properties
 }
 
 func (x *ServicesConfigurationList) Reset() {
@@ -3421,38 +2865,19 @@ func (x *ServicesConfigurationList) GetNameValue() []*Setting {
 	return nil
 }
 
-//*
 // Token's information related to the given Account
 type TokenRelationship struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The ID of the token
-	TokenId *TokenID `protobuf:"bytes,1,opt,name=tokenId,proto3" json:"tokenId,omitempty"`
-	//*
-	// The Symbol of the token
-	Symbol string `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	//*
-	// For token of type FUNGIBLE_COMMON - the balance that the Account holds in the smallest
-	// denomination. For token of type NON_FUNGIBLE_UNIQUE - the number of NFTs held by the account
-	Balance uint64 `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
-	//*
-	// The KYC status of the account (KycNotApplicable, Granted or Revoked). If the token does not
-	// have KYC key, KycNotApplicable is returned
-	KycStatus TokenKycStatus `protobuf:"varint,4,opt,name=kycStatus,proto3,enum=proto.TokenKycStatus" json:"kycStatus,omitempty"`
-	//*
-	// The Freeze status of the account (FreezeNotApplicable, Frozen or Unfrozen). If the token does
-	// not have Freeze key, FreezeNotApplicable is returned
-	FreezeStatus TokenFreezeStatus `protobuf:"varint,5,opt,name=freezeStatus,proto3,enum=proto.TokenFreezeStatus" json:"freezeStatus,omitempty"`
-	//*
-	// Tokens divide into <tt>10<sup>decimals</sup></tt> pieces
-	Decimals uint32 `protobuf:"varint,6,opt,name=decimals,proto3" json:"decimals,omitempty"`
-	//*
-	// Specifies if the relationship is created implicitly. False : explicitly associated, True :
-	// implicitly associated.
-	AutomaticAssociation bool `protobuf:"varint,7,opt,name=automatic_association,json=automaticAssociation,proto3" json:"automatic_association,omitempty"`
+	TokenId              *TokenID          `protobuf:"bytes,1,opt,name=tokenId,proto3" json:"tokenId,omitempty"`                                                        // The ID of the token
+	Symbol               string            `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`                                                          // The Symbol of the token
+	Balance              uint64            `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`                                                       // For token of type FUNGIBLE_COMMON - the balance that the Account holds in the smallest denomination. For token of type NON_FUNGIBLE_UNIQUE - the number of NFTs held by the account
+	KycStatus            TokenKycStatus    `protobuf:"varint,4,opt,name=kycStatus,proto3,enum=proto.TokenKycStatus" json:"kycStatus,omitempty"`                         // The KYC status of the account (KycNotApplicable, Granted or Revoked). If the token does not have KYC key, KycNotApplicable is returned
+	FreezeStatus         TokenFreezeStatus `protobuf:"varint,5,opt,name=freezeStatus,proto3,enum=proto.TokenFreezeStatus" json:"freezeStatus,omitempty"`                // The Freeze status of the account (FreezeNotApplicable, Frozen or Unfrozen). If the token does not have Freeze key, FreezeNotApplicable is returned
+	Decimals             uint32            `protobuf:"varint,6,opt,name=decimals,proto3" json:"decimals,omitempty"`                                                     // Tokens divide into <tt>10<sup>decimals</sup></tt> pieces
+	AutomaticAssociation bool              `protobuf:"varint,7,opt,name=automatic_association,json=automaticAssociation,proto3" json:"automatic_association,omitempty"` // Specifies if the relationship is created implicitly. False : explicitly associated, True : implicitly associated.
 }
 
 func (x *TokenRelationship) Reset() {
@@ -3536,32 +2961,19 @@ func (x *TokenRelationship) GetAutomaticAssociation() bool {
 	return false
 }
 
-//*
 // A number of <i>transferable units</i> of a certain token.
 //
-// The transferable unit of a token is its smallest denomination, as given by the token's
-// <tt>decimals</tt> property---each minted token contains <tt>10<sup>decimals</sup></tt>
-// transferable units. For example, we could think of the cent as the transferable unit of the US
-// dollar (<tt>decimals=2</tt>); and the tinybar as the transferable unit of hbar
-// (<tt>decimals=8</tt>).
+//The transferable unit of a token is its smallest denomination, as given by the token's <tt>decimals</tt> property---each minted token contains <tt>10<sup>decimals</sup></tt> transferable units. For example, we could think of the cent as the transferable unit of the US dollar (<tt>decimals=2</tt>); and the tinybar as the transferable unit of hbar (<tt>decimals=8</tt>).
 //
-// Transferable units are not directly comparable across different tokens.
+//Transferable units are not directly comparable across different tokens.
 type TokenBalance struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// A unique token id
-	TokenId *TokenID `protobuf:"bytes,1,opt,name=tokenId,proto3" json:"tokenId,omitempty"`
-	//*
-	// Number of transferable units of the identified token. For token of type FUNGIBLE_COMMON -
-	// balance in the smallest denomination. For token of type NON_FUNGIBLE_UNIQUE - the number of
-	// NFTs held by the account
-	Balance uint64 `protobuf:"varint,2,opt,name=balance,proto3" json:"balance,omitempty"`
-	//*
-	// Tokens divide into <tt>10<sup>decimals</sup></tt> pieces
-	Decimals uint32 `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
+	TokenId  *TokenID `protobuf:"bytes,1,opt,name=tokenId,proto3" json:"tokenId,omitempty"`    // A unique token id
+	Balance  uint64   `protobuf:"varint,2,opt,name=balance,proto3" json:"balance,omitempty"`   // Number of transferable units of the identified token. For token of type FUNGIBLE_COMMON - balance in the smallest denomination. For token of type NON_FUNGIBLE_UNIQUE - the number of NFTs held by the account
+	Decimals uint32   `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"` // Tokens divide into <tt>10<sup>decimals</sup></tt> pieces
 }
 
 func (x *TokenBalance) Reset() {
@@ -3617,7 +3029,6 @@ func (x *TokenBalance) GetDecimals() uint32 {
 	return 0
 }
 
-//*
 // A sequence of token balances
 type TokenBalances struct {
 	state         protoimpl.MessageState
@@ -4057,109 +3468,101 @@ var file_proto_basic_types_proto_rawDesc = []byte{
 	0x4b, 0x79, 0x63, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x14, 0x0a, 0x10, 0x4b, 0x79, 0x63,
 	0x4e, 0x6f, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x62, 0x6c, 0x65, 0x10, 0x00, 0x12,
 	0x0b, 0x0a, 0x07, 0x47, 0x72, 0x61, 0x6e, 0x74, 0x65, 0x64, 0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07,
-	0x52, 0x65, 0x76, 0x6f, 0x6b, 0x65, 0x64, 0x10, 0x02, 0x2a, 0x44, 0x0a, 0x10, 0x54, 0x6f, 0x6b,
-	0x65, 0x6e, 0x50, 0x61, 0x75, 0x73, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x16, 0x0a,
-	0x12, 0x50, 0x61, 0x75, 0x73, 0x65, 0x4e, 0x6f, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61,
-	0x62, 0x6c, 0x65, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x50, 0x61, 0x75, 0x73, 0x65, 0x64, 0x10,
-	0x01, 0x12, 0x0c, 0x0a, 0x08, 0x55, 0x6e, 0x70, 0x61, 0x75, 0x73, 0x65, 0x64, 0x10, 0x02, 0x2a,
-	0xc2, 0x0b, 0x0a, 0x13, 0x48, 0x65, 0x64, 0x65, 0x72, 0x61, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x4f, 0x4e, 0x45, 0x10,
-	0x00, 0x12, 0x12, 0x0a, 0x0e, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x54, 0x72, 0x61, 0x6e, 0x73,
-	0x66, 0x65, 0x72, 0x10, 0x01, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x55,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x10, 0x02, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x72, 0x79, 0x70, 0x74,
-	0x6f, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x03, 0x12, 0x15, 0x0a, 0x11, 0x43, 0x72, 0x79,
-	0x70, 0x74, 0x6f, 0x41, 0x64, 0x64, 0x4c, 0x69, 0x76, 0x65, 0x48, 0x61, 0x73, 0x68, 0x10, 0x04,
-	0x12, 0x18, 0x0a, 0x14, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
-	0x4c, 0x69, 0x76, 0x65, 0x48, 0x61, 0x73, 0x68, 0x10, 0x05, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x6f,
-	0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x43, 0x61, 0x6c, 0x6c, 0x10, 0x06, 0x12, 0x12, 0x0a, 0x0e,
-	0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x07,
-	0x12, 0x12, 0x0a, 0x0e, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x10, 0x08, 0x12, 0x0e, 0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x61,
-	0x74, 0x65, 0x10, 0x09, 0x12, 0x0e, 0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x41, 0x70, 0x70, 0x65,
-	0x6e, 0x64, 0x10, 0x0a, 0x12, 0x0e, 0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x10, 0x0b, 0x12, 0x0e, 0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x44, 0x65, 0x6c, 0x65,
-	0x74, 0x65, 0x10, 0x0c, 0x12, 0x1b, 0x0a, 0x17, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x47, 0x65,
-	0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x10,
-	0x0d, 0x12, 0x1b, 0x0a, 0x17, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x47, 0x65, 0x74, 0x41, 0x63,
-	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x10, 0x0e, 0x12, 0x11,
-	0x0a, 0x0d, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10,
-	0x0f, 0x12, 0x15, 0x0a, 0x11, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x43, 0x61, 0x6c,
-	0x6c, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x10, 0x10, 0x12, 0x13, 0x0a, 0x0f, 0x43, 0x6f, 0x6e, 0x74,
-	0x72, 0x61, 0x63, 0x74, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x11, 0x12, 0x17, 0x0a,
-	0x13, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x47, 0x65, 0x74, 0x42, 0x79, 0x74, 0x65,
-	0x63, 0x6f, 0x64, 0x65, 0x10, 0x12, 0x12, 0x13, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x42, 0x79, 0x53,
-	0x6f, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x49, 0x44, 0x10, 0x13, 0x12, 0x0c, 0x0a, 0x08, 0x47,
-	0x65, 0x74, 0x42, 0x79, 0x4b, 0x65, 0x79, 0x10, 0x14, 0x12, 0x15, 0x0a, 0x11, 0x43, 0x72, 0x79,
-	0x70, 0x74, 0x6f, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x76, 0x65, 0x48, 0x61, 0x73, 0x68, 0x10, 0x15,
-	0x12, 0x14, 0x0a, 0x10, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x47, 0x65, 0x74, 0x53, 0x74, 0x61,
-	0x6b, 0x65, 0x72, 0x73, 0x10, 0x16, 0x12, 0x13, 0x0a, 0x0f, 0x46, 0x69, 0x6c, 0x65, 0x47, 0x65,
-	0x74, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x73, 0x10, 0x17, 0x12, 0x0f, 0x0a, 0x0b, 0x46,
-	0x69, 0x6c, 0x65, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x18, 0x12, 0x18, 0x0a, 0x14,
-	0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x65, 0x74, 0x52, 0x65,
-	0x63, 0x6f, 0x72, 0x64, 0x10, 0x19, 0x12, 0x16, 0x0a, 0x12, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61,
-	0x63, 0x74, 0x47, 0x65, 0x74, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x10, 0x1a, 0x12, 0x10,
-	0x0a, 0x0c, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x1b,
-	0x12, 0x10, 0x0a, 0x0c, 0x53, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
-	0x10, 0x1c, 0x12, 0x12, 0x0a, 0x0e, 0x53, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x55, 0x6e, 0x64, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x10, 0x1d, 0x12, 0x12, 0x0a, 0x0e, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61,
-	0x63, 0x74, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x1e, 0x12, 0x0a, 0x0a, 0x06, 0x46, 0x72,
-	0x65, 0x65, 0x7a, 0x65, 0x10, 0x1f, 0x12, 0x1b, 0x0a, 0x17, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
-	0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x63, 0x6f, 0x72,
-	0x64, 0x10, 0x20, 0x12, 0x1a, 0x0a, 0x16, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x41, 0x63, 0x63,
-	0x6f, 0x75, 0x6e, 0x74, 0x41, 0x75, 0x74, 0x6f, 0x52, 0x65, 0x6e, 0x65, 0x77, 0x10, 0x21, 0x12,
-	0x15, 0x0a, 0x11, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x41, 0x75, 0x74, 0x6f, 0x52,
-	0x65, 0x6e, 0x65, 0x77, 0x10, 0x22, 0x12, 0x12, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x56, 0x65, 0x72,
-	0x73, 0x69, 0x6f, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x23, 0x12, 0x19, 0x0a, 0x15, 0x54, 0x72,
-	0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x63, 0x65,
-	0x69, 0x70, 0x74, 0x10, 0x24, 0x12, 0x18, 0x0a, 0x14, 0x43, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73,
-	0x75, 0x73, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x10, 0x32, 0x12,
-	0x18, 0x0a, 0x14, 0x43, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x10, 0x33, 0x12, 0x18, 0x0a, 0x14, 0x43, 0x6f, 0x6e,
-	0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x10, 0x34, 0x12, 0x19, 0x0a, 0x15, 0x43, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73,
-	0x47, 0x65, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x35, 0x12, 0x1a,
-	0x0a, 0x16, 0x43, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x53, 0x75, 0x62, 0x6d, 0x69,
-	0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x10, 0x36, 0x12, 0x13, 0x0a, 0x0f, 0x55, 0x6e,
-	0x63, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x10, 0x37, 0x12,
-	0x0f, 0x0a, 0x0b, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x38,
-	0x12, 0x10, 0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f,
-	0x10, 0x3a, 0x12, 0x16, 0x0a, 0x12, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x46, 0x72, 0x65, 0x65, 0x7a,
-	0x65, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x3b, 0x12, 0x18, 0x0a, 0x14, 0x54, 0x6f,
-	0x6b, 0x65, 0x6e, 0x55, 0x6e, 0x66, 0x72, 0x65, 0x65, 0x7a, 0x65, 0x41, 0x63, 0x63, 0x6f, 0x75,
-	0x6e, 0x74, 0x10, 0x3c, 0x12, 0x1a, 0x0a, 0x16, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x72, 0x61,
-	0x6e, 0x74, 0x4b, 0x79, 0x63, 0x54, 0x6f, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x3d,
-	0x12, 0x1d, 0x0a, 0x19, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x76, 0x6f, 0x6b, 0x65, 0x4b,
-	0x79, 0x63, 0x46, 0x72, 0x6f, 0x6d, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x3e, 0x12,
-	0x0f, 0x0a, 0x0b, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x3f,
-	0x12, 0x0f, 0x0a, 0x0b, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x10,
-	0x40, 0x12, 0x0d, 0x0a, 0x09, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x4d, 0x69, 0x6e, 0x74, 0x10, 0x41,
-	0x12, 0x0d, 0x0a, 0x09, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x42, 0x75, 0x72, 0x6e, 0x10, 0x42, 0x12,
-	0x14, 0x0a, 0x10, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x57,
-	0x69, 0x70, 0x65, 0x10, 0x43, 0x12, 0x1b, 0x0a, 0x17, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x41, 0x73,
-	0x73, 0x6f, 0x63, 0x69, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74,
-	0x10, 0x44, 0x12, 0x1e, 0x0a, 0x1a, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x44, 0x69, 0x73, 0x73, 0x6f,
-	0x63, 0x69, 0x61, 0x74, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74,
-	0x10, 0x45, 0x12, 0x12, 0x0a, 0x0e, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x72,
-	0x65, 0x61, 0x74, 0x65, 0x10, 0x46, 0x12, 0x12, 0x0a, 0x0e, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75,
-	0x6c, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x47, 0x12, 0x10, 0x0a, 0x0c, 0x53, 0x63,
-	0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x10, 0x48, 0x12, 0x13, 0x0a, 0x0f,
-	0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10,
-	0x49, 0x12, 0x1b, 0x0a, 0x17, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x41, 0x63, 0x63,
-	0x6f, 0x75, 0x6e, 0x74, 0x4e, 0x66, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x10, 0x4a, 0x12, 0x13,
-	0x0a, 0x0f, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x4e, 0x66, 0x74, 0x49, 0x6e, 0x66,
-	0x6f, 0x10, 0x4b, 0x12, 0x14, 0x0a, 0x10, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x4e,
-	0x66, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x10, 0x4c, 0x12, 0x1a, 0x0a, 0x16, 0x54, 0x6f, 0x6b,
-	0x65, 0x6e, 0x46, 0x65, 0x65, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x55, 0x70, 0x64,
-	0x61, 0x74, 0x65, 0x10, 0x4d, 0x12, 0x1b, 0x0a, 0x17, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x47, 0x65, 0x74, 0x45, 0x78, 0x65, 0x63, 0x75, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x69, 0x6d, 0x65,
-	0x10, 0x4e, 0x12, 0x0e, 0x0a, 0x0a, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x50, 0x61, 0x75, 0x73, 0x65,
-	0x10, 0x4f, 0x12, 0x10, 0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x55, 0x6e, 0x70, 0x61, 0x75,
-	0x73, 0x65, 0x10, 0x50, 0x42, 0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65,
-	0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72,
-	0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x65, 0x76, 0x6f, 0x6b, 0x65, 0x64, 0x10, 0x02, 0x2a, 0x83, 0x0b, 0x0a, 0x13, 0x48, 0x65,
+	0x64, 0x65, 0x72, 0x61, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x69, 0x74,
+	0x79, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x43,
+	0x72, 0x79, 0x70, 0x74, 0x6f, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x10, 0x01, 0x12,
+	0x10, 0x0a, 0x0c, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x10,
+	0x02, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x44, 0x65, 0x6c, 0x65, 0x74,
+	0x65, 0x10, 0x03, 0x12, 0x15, 0x0a, 0x11, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x41, 0x64, 0x64,
+	0x4c, 0x69, 0x76, 0x65, 0x48, 0x61, 0x73, 0x68, 0x10, 0x04, 0x12, 0x18, 0x0a, 0x14, 0x43, 0x72,
+	0x79, 0x70, 0x74, 0x6f, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4c, 0x69, 0x76, 0x65, 0x48, 0x61,
+	0x73, 0x68, 0x10, 0x05, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74,
+	0x43, 0x61, 0x6c, 0x6c, 0x10, 0x06, 0x12, 0x12, 0x0a, 0x0e, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61,
+	0x63, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x07, 0x12, 0x12, 0x0a, 0x0e, 0x43, 0x6f,
+	0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x10, 0x08, 0x12, 0x0e,
+	0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x09, 0x12, 0x0e,
+	0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x41, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x10, 0x0a, 0x12, 0x0e,
+	0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x10, 0x0b, 0x12, 0x0e,
+	0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x0c, 0x12, 0x1b,
+	0x0a, 0x17, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x47, 0x65, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75,
+	0x6e, 0x74, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x10, 0x0d, 0x12, 0x1b, 0x0a, 0x17, 0x43,
+	0x72, 0x79, 0x70, 0x74, 0x6f, 0x47, 0x65, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52,
+	0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x10, 0x0e, 0x12, 0x11, 0x0a, 0x0d, 0x43, 0x72, 0x79, 0x70,
+	0x74, 0x6f, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x0f, 0x12, 0x15, 0x0a, 0x11, 0x43,
+	0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x43, 0x61, 0x6c, 0x6c, 0x4c, 0x6f, 0x63, 0x61, 0x6c,
+	0x10, 0x10, 0x12, 0x13, 0x0a, 0x0f, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x47, 0x65,
+	0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x11, 0x12, 0x17, 0x0a, 0x13, 0x43, 0x6f, 0x6e, 0x74, 0x72,
+	0x61, 0x63, 0x74, 0x47, 0x65, 0x74, 0x42, 0x79, 0x74, 0x65, 0x63, 0x6f, 0x64, 0x65, 0x10, 0x12,
+	0x12, 0x13, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x42, 0x79, 0x53, 0x6f, 0x6c, 0x69, 0x64, 0x69, 0x74,
+	0x79, 0x49, 0x44, 0x10, 0x13, 0x12, 0x0c, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x42, 0x79, 0x4b, 0x65,
+	0x79, 0x10, 0x14, 0x12, 0x15, 0x0a, 0x11, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x47, 0x65, 0x74,
+	0x4c, 0x69, 0x76, 0x65, 0x48, 0x61, 0x73, 0x68, 0x10, 0x15, 0x12, 0x14, 0x0a, 0x10, 0x43, 0x72,
+	0x79, 0x70, 0x74, 0x6f, 0x47, 0x65, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x73, 0x10, 0x16,
+	0x12, 0x13, 0x0a, 0x0f, 0x46, 0x69, 0x6c, 0x65, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x73, 0x10, 0x17, 0x12, 0x0f, 0x0a, 0x0b, 0x46, 0x69, 0x6c, 0x65, 0x47, 0x65, 0x74,
+	0x49, 0x6e, 0x66, 0x6f, 0x10, 0x18, 0x12, 0x18, 0x0a, 0x14, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x10, 0x19,
+	0x12, 0x16, 0x0a, 0x12, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x47, 0x65, 0x74, 0x52,
+	0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x10, 0x1a, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x72, 0x79, 0x70,
+	0x74, 0x6f, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x1b, 0x12, 0x10, 0x0a, 0x0c, 0x53, 0x79,
+	0x73, 0x74, 0x65, 0x6d, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x1c, 0x12, 0x12, 0x0a, 0x0e,
+	0x53, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x55, 0x6e, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x1d,
+	0x12, 0x12, 0x0a, 0x0e, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x10, 0x1e, 0x12, 0x0a, 0x0a, 0x06, 0x46, 0x72, 0x65, 0x65, 0x7a, 0x65, 0x10, 0x1f,
+	0x12, 0x1b, 0x0a, 0x17, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x10, 0x20, 0x12, 0x1a, 0x0a,
+	0x16, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6f, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x41, 0x75,
+	0x74, 0x6f, 0x52, 0x65, 0x6e, 0x65, 0x77, 0x10, 0x21, 0x12, 0x15, 0x0a, 0x11, 0x43, 0x6f, 0x6e,
+	0x74, 0x72, 0x61, 0x63, 0x74, 0x41, 0x75, 0x74, 0x6f, 0x52, 0x65, 0x6e, 0x65, 0x77, 0x10, 0x22,
+	0x12, 0x12, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x6e,
+	0x66, 0x6f, 0x10, 0x23, 0x12, 0x19, 0x0a, 0x15, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x63, 0x65, 0x69, 0x70, 0x74, 0x10, 0x24, 0x12,
+	0x18, 0x0a, 0x14, 0x43, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x43, 0x72, 0x65, 0x61,
+	0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x10, 0x32, 0x12, 0x18, 0x0a, 0x14, 0x43, 0x6f, 0x6e,
+	0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69,
+	0x63, 0x10, 0x33, 0x12, 0x18, 0x0a, 0x14, 0x43, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73,
+	0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x10, 0x34, 0x12, 0x19, 0x0a,
+	0x15, 0x43, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x47, 0x65, 0x74, 0x54, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x35, 0x12, 0x1a, 0x0a, 0x16, 0x43, 0x6f, 0x6e, 0x73,
+	0x65, 0x6e, 0x73, 0x75, 0x73, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x10, 0x36, 0x12, 0x13, 0x0a, 0x0f, 0x55, 0x6e, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x65,
+	0x64, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x10, 0x37, 0x12, 0x0f, 0x0a, 0x0b, 0x54, 0x6f, 0x6b,
+	0x65, 0x6e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x38, 0x12, 0x10, 0x0a, 0x0c, 0x54, 0x6f,
+	0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x3a, 0x12, 0x16, 0x0a, 0x12,
+	0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x46, 0x72, 0x65, 0x65, 0x7a, 0x65, 0x41, 0x63, 0x63, 0x6f, 0x75,
+	0x6e, 0x74, 0x10, 0x3b, 0x12, 0x18, 0x0a, 0x14, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x55, 0x6e, 0x66,
+	0x72, 0x65, 0x65, 0x7a, 0x65, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x3c, 0x12, 0x1a,
+	0x0a, 0x16, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x72, 0x61, 0x6e, 0x74, 0x4b, 0x79, 0x63, 0x54,
+	0x6f, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x3d, 0x12, 0x1d, 0x0a, 0x19, 0x54, 0x6f,
+	0x6b, 0x65, 0x6e, 0x52, 0x65, 0x76, 0x6f, 0x6b, 0x65, 0x4b, 0x79, 0x63, 0x46, 0x72, 0x6f, 0x6d,
+	0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x3e, 0x12, 0x0f, 0x0a, 0x0b, 0x54, 0x6f, 0x6b,
+	0x65, 0x6e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x10, 0x3f, 0x12, 0x0f, 0x0a, 0x0b, 0x54, 0x6f,
+	0x6b, 0x65, 0x6e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x10, 0x40, 0x12, 0x0d, 0x0a, 0x09, 0x54,
+	0x6f, 0x6b, 0x65, 0x6e, 0x4d, 0x69, 0x6e, 0x74, 0x10, 0x41, 0x12, 0x0d, 0x0a, 0x09, 0x54, 0x6f,
+	0x6b, 0x65, 0x6e, 0x42, 0x75, 0x72, 0x6e, 0x10, 0x42, 0x12, 0x14, 0x0a, 0x10, 0x54, 0x6f, 0x6b,
+	0x65, 0x6e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x57, 0x69, 0x70, 0x65, 0x10, 0x43, 0x12,
+	0x1b, 0x0a, 0x17, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x41, 0x73, 0x73, 0x6f, 0x63, 0x69, 0x61, 0x74,
+	0x65, 0x54, 0x6f, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x44, 0x12, 0x1e, 0x0a, 0x1a,
+	0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x44, 0x69, 0x73, 0x73, 0x6f, 0x63, 0x69, 0x61, 0x74, 0x65, 0x46,
+	0x72, 0x6f, 0x6d, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x10, 0x45, 0x12, 0x12, 0x0a, 0x0e,
+	0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x10, 0x46,
+	0x12, 0x12, 0x0a, 0x0e, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x10, 0x47, 0x12, 0x10, 0x0a, 0x0c, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65,
+	0x53, 0x69, 0x67, 0x6e, 0x10, 0x48, 0x12, 0x13, 0x0a, 0x0f, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75,
+	0x6c, 0x65, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x49, 0x12, 0x1b, 0x0a, 0x17, 0x54,
+	0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x4e, 0x66,
+	0x74, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x10, 0x4a, 0x12, 0x13, 0x0a, 0x0f, 0x54, 0x6f, 0x6b, 0x65,
+	0x6e, 0x47, 0x65, 0x74, 0x4e, 0x66, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x10, 0x4b, 0x12, 0x14, 0x0a,
+	0x10, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x47, 0x65, 0x74, 0x4e, 0x66, 0x74, 0x49, 0x6e, 0x66, 0x6f,
+	0x73, 0x10, 0x4c, 0x12, 0x1a, 0x0a, 0x16, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x46, 0x65, 0x65, 0x53,
+	0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x10, 0x4d, 0x42,
+	0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61,
+	0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
+	0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68,
+	0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b,
+	0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4174,7 +3577,7 @@ func file_proto_basic_types_proto_rawDescGZIP() []byte {
 	return file_proto_basic_types_proto_rawDescData
 }
 
-var file_proto_basic_types_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
+var file_proto_basic_types_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
 var file_proto_basic_types_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_proto_basic_types_proto_goTypes = []interface{}{
 	(TokenType)(0),                    // 0: proto.TokenType
@@ -4182,90 +3585,89 @@ var file_proto_basic_types_proto_goTypes = []interface{}{
 	(TokenSupplyType)(0),              // 2: proto.TokenSupplyType
 	(TokenFreezeStatus)(0),            // 3: proto.TokenFreezeStatus
 	(TokenKycStatus)(0),               // 4: proto.TokenKycStatus
-	(TokenPauseStatus)(0),             // 5: proto.TokenPauseStatus
-	(HederaFunctionality)(0),          // 6: proto.HederaFunctionality
-	(*ShardID)(nil),                   // 7: proto.ShardID
-	(*RealmID)(nil),                   // 8: proto.RealmID
-	(*AccountID)(nil),                 // 9: proto.AccountID
-	(*FileID)(nil),                    // 10: proto.FileID
-	(*ContractID)(nil),                // 11: proto.ContractID
-	(*TransactionID)(nil),             // 12: proto.TransactionID
-	(*AccountAmount)(nil),             // 13: proto.AccountAmount
-	(*TransferList)(nil),              // 14: proto.TransferList
-	(*NftTransfer)(nil),               // 15: proto.NftTransfer
-	(*TokenTransferList)(nil),         // 16: proto.TokenTransferList
-	(*Fraction)(nil),                  // 17: proto.Fraction
-	(*TopicID)(nil),                   // 18: proto.TopicID
-	(*TokenID)(nil),                   // 19: proto.TokenID
-	(*ScheduleID)(nil),                // 20: proto.ScheduleID
-	(*Key)(nil),                       // 21: proto.Key
-	(*ThresholdKey)(nil),              // 22: proto.ThresholdKey
-	(*KeyList)(nil),                   // 23: proto.KeyList
-	(*Signature)(nil),                 // 24: proto.Signature
-	(*ThresholdSignature)(nil),        // 25: proto.ThresholdSignature
-	(*SignatureList)(nil),             // 26: proto.SignatureList
-	(*SignaturePair)(nil),             // 27: proto.SignaturePair
-	(*SignatureMap)(nil),              // 28: proto.SignatureMap
-	(*FeeComponents)(nil),             // 29: proto.FeeComponents
-	(*TransactionFeeSchedule)(nil),    // 30: proto.TransactionFeeSchedule
-	(*FeeData)(nil),                   // 31: proto.FeeData
-	(*FeeSchedule)(nil),               // 32: proto.FeeSchedule
-	(*CurrentAndNextFeeSchedule)(nil), // 33: proto.CurrentAndNextFeeSchedule
-	(*ServiceEndpoint)(nil),           // 34: proto.ServiceEndpoint
-	(*NodeAddress)(nil),               // 35: proto.NodeAddress
-	(*NodeAddressBook)(nil),           // 36: proto.NodeAddressBook
-	(*SemanticVersion)(nil),           // 37: proto.SemanticVersion
-	(*Setting)(nil),                   // 38: proto.Setting
-	(*ServicesConfigurationList)(nil), // 39: proto.ServicesConfigurationList
-	(*TokenRelationship)(nil),         // 40: proto.TokenRelationship
-	(*TokenBalance)(nil),              // 41: proto.TokenBalance
-	(*TokenBalances)(nil),             // 42: proto.TokenBalances
-	(*TokenAssociation)(nil),          // 43: proto.TokenAssociation
-	(*Timestamp)(nil),                 // 44: proto.Timestamp
-	(*TimestampSeconds)(nil),          // 45: proto.TimestampSeconds
+	(HederaFunctionality)(0),          // 5: proto.HederaFunctionality
+	(*ShardID)(nil),                   // 6: proto.ShardID
+	(*RealmID)(nil),                   // 7: proto.RealmID
+	(*AccountID)(nil),                 // 8: proto.AccountID
+	(*FileID)(nil),                    // 9: proto.FileID
+	(*ContractID)(nil),                // 10: proto.ContractID
+	(*TransactionID)(nil),             // 11: proto.TransactionID
+	(*AccountAmount)(nil),             // 12: proto.AccountAmount
+	(*TransferList)(nil),              // 13: proto.TransferList
+	(*NftTransfer)(nil),               // 14: proto.NftTransfer
+	(*TokenTransferList)(nil),         // 15: proto.TokenTransferList
+	(*Fraction)(nil),                  // 16: proto.Fraction
+	(*TopicID)(nil),                   // 17: proto.TopicID
+	(*TokenID)(nil),                   // 18: proto.TokenID
+	(*ScheduleID)(nil),                // 19: proto.ScheduleID
+	(*Key)(nil),                       // 20: proto.Key
+	(*ThresholdKey)(nil),              // 21: proto.ThresholdKey
+	(*KeyList)(nil),                   // 22: proto.KeyList
+	(*Signature)(nil),                 // 23: proto.Signature
+	(*ThresholdSignature)(nil),        // 24: proto.ThresholdSignature
+	(*SignatureList)(nil),             // 25: proto.SignatureList
+	(*SignaturePair)(nil),             // 26: proto.SignaturePair
+	(*SignatureMap)(nil),              // 27: proto.SignatureMap
+	(*FeeComponents)(nil),             // 28: proto.FeeComponents
+	(*TransactionFeeSchedule)(nil),    // 29: proto.TransactionFeeSchedule
+	(*FeeData)(nil),                   // 30: proto.FeeData
+	(*FeeSchedule)(nil),               // 31: proto.FeeSchedule
+	(*CurrentAndNextFeeSchedule)(nil), // 32: proto.CurrentAndNextFeeSchedule
+	(*ServiceEndpoint)(nil),           // 33: proto.ServiceEndpoint
+	(*NodeAddress)(nil),               // 34: proto.NodeAddress
+	(*NodeAddressBook)(nil),           // 35: proto.NodeAddressBook
+	(*SemanticVersion)(nil),           // 36: proto.SemanticVersion
+	(*Setting)(nil),                   // 37: proto.Setting
+	(*ServicesConfigurationList)(nil), // 38: proto.ServicesConfigurationList
+	(*TokenRelationship)(nil),         // 39: proto.TokenRelationship
+	(*TokenBalance)(nil),              // 40: proto.TokenBalance
+	(*TokenBalances)(nil),             // 41: proto.TokenBalances
+	(*TokenAssociation)(nil),          // 42: proto.TokenAssociation
+	(*Timestamp)(nil),                 // 43: proto.Timestamp
+	(*TimestampSeconds)(nil),          // 44: proto.TimestampSeconds
 }
 var file_proto_basic_types_proto_depIdxs = []int32{
-	44, // 0: proto.TransactionID.transactionValidStart:type_name -> proto.Timestamp
-	9,  // 1: proto.TransactionID.accountID:type_name -> proto.AccountID
-	9,  // 2: proto.AccountAmount.accountID:type_name -> proto.AccountID
-	13, // 3: proto.TransferList.accountAmounts:type_name -> proto.AccountAmount
-	9,  // 4: proto.NftTransfer.senderAccountID:type_name -> proto.AccountID
-	9,  // 5: proto.NftTransfer.receiverAccountID:type_name -> proto.AccountID
-	19, // 6: proto.TokenTransferList.token:type_name -> proto.TokenID
-	13, // 7: proto.TokenTransferList.transfers:type_name -> proto.AccountAmount
-	15, // 8: proto.TokenTransferList.nftTransfers:type_name -> proto.NftTransfer
-	11, // 9: proto.Key.contractID:type_name -> proto.ContractID
-	22, // 10: proto.Key.thresholdKey:type_name -> proto.ThresholdKey
-	23, // 11: proto.Key.keyList:type_name -> proto.KeyList
-	23, // 12: proto.ThresholdKey.keys:type_name -> proto.KeyList
-	21, // 13: proto.KeyList.keys:type_name -> proto.Key
-	25, // 14: proto.Signature.thresholdSignature:type_name -> proto.ThresholdSignature
-	26, // 15: proto.Signature.signatureList:type_name -> proto.SignatureList
-	26, // 16: proto.ThresholdSignature.sigs:type_name -> proto.SignatureList
-	24, // 17: proto.SignatureList.sigs:type_name -> proto.Signature
-	27, // 18: proto.SignatureMap.sigPair:type_name -> proto.SignaturePair
-	6,  // 19: proto.TransactionFeeSchedule.hederaFunctionality:type_name -> proto.HederaFunctionality
-	31, // 20: proto.TransactionFeeSchedule.feeData:type_name -> proto.FeeData
-	31, // 21: proto.TransactionFeeSchedule.fees:type_name -> proto.FeeData
-	29, // 22: proto.FeeData.nodedata:type_name -> proto.FeeComponents
-	29, // 23: proto.FeeData.networkdata:type_name -> proto.FeeComponents
-	29, // 24: proto.FeeData.servicedata:type_name -> proto.FeeComponents
+	43, // 0: proto.TransactionID.transactionValidStart:type_name -> proto.Timestamp
+	8,  // 1: proto.TransactionID.accountID:type_name -> proto.AccountID
+	8,  // 2: proto.AccountAmount.accountID:type_name -> proto.AccountID
+	12, // 3: proto.TransferList.accountAmounts:type_name -> proto.AccountAmount
+	8,  // 4: proto.NftTransfer.senderAccountID:type_name -> proto.AccountID
+	8,  // 5: proto.NftTransfer.receiverAccountID:type_name -> proto.AccountID
+	18, // 6: proto.TokenTransferList.token:type_name -> proto.TokenID
+	12, // 7: proto.TokenTransferList.transfers:type_name -> proto.AccountAmount
+	14, // 8: proto.TokenTransferList.nftTransfers:type_name -> proto.NftTransfer
+	10, // 9: proto.Key.contractID:type_name -> proto.ContractID
+	21, // 10: proto.Key.thresholdKey:type_name -> proto.ThresholdKey
+	22, // 11: proto.Key.keyList:type_name -> proto.KeyList
+	22, // 12: proto.ThresholdKey.keys:type_name -> proto.KeyList
+	20, // 13: proto.KeyList.keys:type_name -> proto.Key
+	24, // 14: proto.Signature.thresholdSignature:type_name -> proto.ThresholdSignature
+	25, // 15: proto.Signature.signatureList:type_name -> proto.SignatureList
+	25, // 16: proto.ThresholdSignature.sigs:type_name -> proto.SignatureList
+	23, // 17: proto.SignatureList.sigs:type_name -> proto.Signature
+	26, // 18: proto.SignatureMap.sigPair:type_name -> proto.SignaturePair
+	5,  // 19: proto.TransactionFeeSchedule.hederaFunctionality:type_name -> proto.HederaFunctionality
+	30, // 20: proto.TransactionFeeSchedule.feeData:type_name -> proto.FeeData
+	30, // 21: proto.TransactionFeeSchedule.fees:type_name -> proto.FeeData
+	28, // 22: proto.FeeData.nodedata:type_name -> proto.FeeComponents
+	28, // 23: proto.FeeData.networkdata:type_name -> proto.FeeComponents
+	28, // 24: proto.FeeData.servicedata:type_name -> proto.FeeComponents
 	1,  // 25: proto.FeeData.subType:type_name -> proto.SubType
-	30, // 26: proto.FeeSchedule.transactionFeeSchedule:type_name -> proto.TransactionFeeSchedule
-	45, // 27: proto.FeeSchedule.expiryTime:type_name -> proto.TimestampSeconds
-	32, // 28: proto.CurrentAndNextFeeSchedule.currentFeeSchedule:type_name -> proto.FeeSchedule
-	32, // 29: proto.CurrentAndNextFeeSchedule.nextFeeSchedule:type_name -> proto.FeeSchedule
-	9,  // 30: proto.NodeAddress.nodeAccountId:type_name -> proto.AccountID
-	34, // 31: proto.NodeAddress.serviceEndpoint:type_name -> proto.ServiceEndpoint
-	35, // 32: proto.NodeAddressBook.nodeAddress:type_name -> proto.NodeAddress
-	38, // 33: proto.ServicesConfigurationList.nameValue:type_name -> proto.Setting
-	19, // 34: proto.TokenRelationship.tokenId:type_name -> proto.TokenID
+	29, // 26: proto.FeeSchedule.transactionFeeSchedule:type_name -> proto.TransactionFeeSchedule
+	44, // 27: proto.FeeSchedule.expiryTime:type_name -> proto.TimestampSeconds
+	31, // 28: proto.CurrentAndNextFeeSchedule.currentFeeSchedule:type_name -> proto.FeeSchedule
+	31, // 29: proto.CurrentAndNextFeeSchedule.nextFeeSchedule:type_name -> proto.FeeSchedule
+	8,  // 30: proto.NodeAddress.nodeAccountId:type_name -> proto.AccountID
+	33, // 31: proto.NodeAddress.serviceEndpoint:type_name -> proto.ServiceEndpoint
+	34, // 32: proto.NodeAddressBook.nodeAddress:type_name -> proto.NodeAddress
+	37, // 33: proto.ServicesConfigurationList.nameValue:type_name -> proto.Setting
+	18, // 34: proto.TokenRelationship.tokenId:type_name -> proto.TokenID
 	4,  // 35: proto.TokenRelationship.kycStatus:type_name -> proto.TokenKycStatus
 	3,  // 36: proto.TokenRelationship.freezeStatus:type_name -> proto.TokenFreezeStatus
-	19, // 37: proto.TokenBalance.tokenId:type_name -> proto.TokenID
-	41, // 38: proto.TokenBalances.tokenBalances:type_name -> proto.TokenBalance
-	19, // 39: proto.TokenAssociation.token_id:type_name -> proto.TokenID
-	9,  // 40: proto.TokenAssociation.account_id:type_name -> proto.AccountID
+	18, // 37: proto.TokenBalance.tokenId:type_name -> proto.TokenID
+	40, // 38: proto.TokenBalances.tokenBalances:type_name -> proto.TokenBalance
+	18, // 39: proto.TokenAssociation.token_id:type_name -> proto.TokenID
+	8,  // 40: proto.TokenAssociation.account_id:type_name -> proto.AccountID
 	41, // [41:41] is the sub-list for method output_type
 	41, // [41:41] is the sub-list for method input_type
 	41, // [41:41] is the sub-list for extension type_name
@@ -4752,7 +4154,7 @@ func file_proto_basic_types_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_basic_types_proto_rawDesc,
-			NumEnums:      7,
+			NumEnums:      6,
 			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   0,

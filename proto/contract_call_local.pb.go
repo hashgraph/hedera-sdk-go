@@ -20,26 +20,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// The log information for an event returned by a smart contract function call. One function call
-// may return several such events.
+// The log information for an event returned by a smart contract function call. One function call may return several such events.
 type ContractLoginfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// address of a contract that emitted the event
-	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`
-	//*
-	// bloom filter for a particular log
-	Bloom []byte `protobuf:"bytes,2,opt,name=bloom,proto3" json:"bloom,omitempty"`
-	//*
-	// topics of a particular event
-	Topic [][]byte `protobuf:"bytes,3,rep,name=topic,proto3" json:"topic,omitempty"`
-	//*
-	// event data
-	Data []byte `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
+	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"` // address of a contract that emitted the event
+	Bloom      []byte      `protobuf:"bytes,2,opt,name=bloom,proto3" json:"bloom,omitempty"`           // bloom filter for a particular log
+	Topic      [][]byte    `protobuf:"bytes,3,rep,name=topic,proto3" json:"topic,omitempty"`           // topics of a particular event
+	Data       []byte      `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`             // event data
 }
 
 func (x *ContractLoginfo) Reset() {
@@ -102,37 +92,19 @@ func (x *ContractLoginfo) GetData() []byte {
 	return nil
 }
 
-//*
-// The result returned by a call to a smart contract function. This is part of the response to a
-// ContractCallLocal query, and is in the record for a ContractCall or ContractCreateInstance
-// transaction. The ContractCreateInstance transaction record has the results of the call to the
-// constructor.
+// The result returned by a call to a smart contract function. This is part of the response to a ContractCallLocal query, and is in the record for a ContractCall or ContractCreateInstance transaction. The ContractCreateInstance transaction record has the results of the call to the constructor.
 type ContractFunctionResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// the smart contract instance whose function was called
-	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`
-	//*
-	// the result returned by the function
-	ContractCallResult []byte `protobuf:"bytes,2,opt,name=contractCallResult,proto3" json:"contractCallResult,omitempty"`
-	//*
-	// message In case there was an error during smart contract execution
-	ErrorMessage string `protobuf:"bytes,3,opt,name=errorMessage,proto3" json:"errorMessage,omitempty"`
-	//*
-	// bloom filter for record
-	Bloom []byte `protobuf:"bytes,4,opt,name=bloom,proto3" json:"bloom,omitempty"`
-	//*
-	// units of gas used to execute contract
-	GasUsed uint64 `protobuf:"varint,5,opt,name=gasUsed,proto3" json:"gasUsed,omitempty"`
-	//*
-	// the log info for events returned by the function
-	LogInfo []*ContractLoginfo `protobuf:"bytes,6,rep,name=logInfo,proto3" json:"logInfo,omitempty"`
-	//*
-	// the list of smart contracts that were created by the function call
-	CreatedContractIDs []*ContractID `protobuf:"bytes,7,rep,name=createdContractIDs,proto3" json:"createdContractIDs,omitempty"`
+	ContractID         *ContractID        `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`                 // the smart contract instance whose function was called
+	ContractCallResult []byte             `protobuf:"bytes,2,opt,name=contractCallResult,proto3" json:"contractCallResult,omitempty"` // the result returned by the function
+	ErrorMessage       string             `protobuf:"bytes,3,opt,name=errorMessage,proto3" json:"errorMessage,omitempty"`             // message In case there was an error during smart contract execution
+	Bloom              []byte             `protobuf:"bytes,4,opt,name=bloom,proto3" json:"bloom,omitempty"`                           // bloom filter for record
+	GasUsed            uint64             `protobuf:"varint,5,opt,name=gasUsed,proto3" json:"gasUsed,omitempty"`                      // units of gas used to execute contract
+	LogInfo            []*ContractLoginfo `protobuf:"bytes,6,rep,name=logInfo,proto3" json:"logInfo,omitempty"`                       // the log info for events returned by the function
+	CreatedContractIDs []*ContractID      `protobuf:"bytes,7,rep,name=createdContractIDs,proto3" json:"createdContractIDs,omitempty"` // the list of smart contracts that were created by the function call
 }
 
 func (x *ContractFunctionResult) Reset() {
@@ -216,36 +188,26 @@ func (x *ContractFunctionResult) GetCreatedContractIDs() []*ContractID {
 	return nil
 }
 
-//*
-// Call a function of the given smart contract instance, giving it functionParameters as its inputs.
-// This is performed locally on the particular node that the client is communicating with.
-// It cannot change the state of the contract instance (and so, cannot spend anything from the instance's cryptocurrency account).
-// It will not have a consensus timestamp. It cannot generate a record or a receipt. The response will contain the output
-// returned by the function call.  This is useful for calling getter functions, which purely read the state and don't change it.
-// It is faster and cheaper than a normal call, because it is purely local to a single  node.
 //
-// Unlike a ContractCall transaction, the node will consume the entire amount of provided gas in determining
-// the fee for this query.
+//Call a function of the given smart contract instance, giving it functionParameters as its inputs.
+//This is performed locally on the particular node that the client is communicating with.
+//It cannot change the state of the contract instance (and so, cannot spend anything from the instance's cryptocurrency account).
+//It will not have a consensus timestamp. It cannot generate a record or a receipt. The response will contain the output
+//returned by the function call.  This is useful for calling getter functions, which purely read the state and don't change it.
+//It is faster and cheaper than a normal call, because it is purely local to a single  node.
+//
+//Unlike a ContractCall transaction, the node will consume the entire amount of provided gas in determining
+//the fee for this query.
 type ContractCallLocalQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither). The payment must cover the fees and all of the gas offered.
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// the contract instance to call, in the format used in transactions
-	ContractID *ContractID `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"`
-	//*
-	// The amount of gas to use for the call; all of the gas offered will be used and charged a corresponding fee
-	Gas int64 `protobuf:"varint,3,opt,name=gas,proto3" json:"gas,omitempty"`
-	//*
-	// which function to call, and the parameters to pass to the function
-	FunctionParameters []byte `protobuf:"bytes,4,opt,name=functionParameters,proto3" json:"functionParameters,omitempty"`
-	//*
-	// max number of bytes that the result might include. The run will fail if it would have returned more than this number of bytes.
-	MaxResultSize int64 `protobuf:"varint,5,opt,name=maxResultSize,proto3" json:"maxResultSize,omitempty"`
+	Header             *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                         // standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither). The payment must cover the fees and all of the gas offered.
+	ContractID         *ContractID  `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"`                 // the contract instance to call, in the format used in transactions
+	Gas                int64        `protobuf:"varint,3,opt,name=gas,proto3" json:"gas,omitempty"`                              // The amount of gas to use for the call; all of the gas offered will be used and charged a corresponding fee
+	FunctionParameters []byte       `protobuf:"bytes,4,opt,name=functionParameters,proto3" json:"functionParameters,omitempty"` // which function to call, and the parameters to pass to the function
+	MaxResultSize      int64        `protobuf:"varint,5,opt,name=maxResultSize,proto3" json:"maxResultSize,omitempty"`          // max number of bytes that the result might include. The run will fail if it would have returned more than this number of bytes.
 }
 
 func (x *ContractCallLocalQuery) Reset() {
@@ -315,19 +277,14 @@ func (x *ContractCallLocalQuery) GetMaxResultSize() int64 {
 	return 0
 }
 
-//*
 // Response when the client sends the node ContractCallLocalQuery
 type ContractCallLocalResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	//*
-	// the value returned by the function (if it completed and didn't fail)
-	FunctionResult *ContractFunctionResult `protobuf:"bytes,2,opt,name=functionResult,proto3" json:"functionResult,omitempty"`
+	Header         *ResponseHeader         `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                 //standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	FunctionResult *ContractFunctionResult `protobuf:"bytes,2,opt,name=functionResult,proto3" json:"functionResult,omitempty"` // the value returned by the function (if it completed and didn't fail)
 }
 
 func (x *ContractCallLocalResponse) Reset() {

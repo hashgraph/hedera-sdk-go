@@ -20,26 +20,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
 // At consensus, updates a token type's fee schedule to the given list of custom fees.
 //
-// If the target token type has no fee_schedule_key, resolves to TOKEN_HAS_NO_FEE_SCHEDULE_KEY.
-// Otherwise this transaction must be signed to the fee_schedule_key, or the transaction will
-// resolve to INVALID_SIGNATURE.
+//If the target token type has no fee_schedule_key, resolves to TOKEN_HAS_NO_FEE_SCHEDULE_KEY.
+//Otherwise this transaction must be signed to the fee_schedule_key, or the transaction will
+//resolve to INVALID_SIGNATURE.
 //
-// If the custom_fees list is empty, clears the fee schedule or resolves to
-// CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES if the fee schedule was already empty.
+//If the custom_fees list is empty, clears the fee schedule or resolves to
+//CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES if the fee schedule was already empty.
 type TokenFeeScheduleUpdateTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The token whose fee schedule is to be updated
-	TokenId *TokenID `protobuf:"bytes,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
-	//*
-	// The new custom fees to be assessed during a CryptoTransfer that transfers units of this token
-	CustomFees []*CustomFee `protobuf:"bytes,2,rep,name=custom_fees,json=customFees,proto3" json:"custom_fees,omitempty"`
+	TokenId    *TokenID     `protobuf:"bytes,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`          // The token whose fee schedule is to be updated
+	CustomFees []*CustomFee `protobuf:"bytes,2,rep,name=custom_fees,json=customFees,proto3" json:"custom_fees,omitempty"` // The new custom fees to be assessed during a CryptoTransfer that transfers units of this token
 }
 
 func (x *TokenFeeScheduleUpdateTransactionBody) Reset() {

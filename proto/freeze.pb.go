@@ -20,44 +20,23 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// At consensus, sets the consensus time at which the platform should stop creating events and
-// accepting transactions, and enter a maintenance window.
+// At consensus, sets the consensus time at which the platform should stop creating events and accepting transactions, and enter a maintenance window.
 type FreezeTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	// The start hour (in UTC time), a value between 0 and 23
-	//
 	// Deprecated: Do not use.
-	StartHour int32 `protobuf:"varint,1,opt,name=startHour,proto3" json:"startHour,omitempty"`
-	//*
-	// The start minute (in UTC time), a value between 0 and 59
-	//
+	StartHour int32 `protobuf:"varint,1,opt,name=startHour,proto3" json:"startHour,omitempty"` // The start hour (in UTC time), a value between 0 and 23
 	// Deprecated: Do not use.
-	StartMin int32 `protobuf:"varint,2,opt,name=startMin,proto3" json:"startMin,omitempty"`
-	//*
-	// The end hour (in UTC time), a value between 0 and 23
-	//
+	StartMin int32 `protobuf:"varint,2,opt,name=startMin,proto3" json:"startMin,omitempty"` // The start minute (in UTC time), a value between 0 and 59
 	// Deprecated: Do not use.
-	EndHour int32 `protobuf:"varint,3,opt,name=endHour,proto3" json:"endHour,omitempty"`
-	//*
-	// The end minute (in UTC time), a value between 0 and 59
-	//
+	EndHour int32 `protobuf:"varint,3,opt,name=endHour,proto3" json:"endHour,omitempty"` // The end hour (in UTC time), a value between 0 and 23
 	// Deprecated: Do not use.
-	EndMin int32 `protobuf:"varint,4,opt,name=endMin,proto3" json:"endMin,omitempty"`
-	//*
-	// If set, the file whose contents should be used for a network software update during the
-	// maintenance window
-	UpdateFile *FileID `protobuf:"bytes,5,opt,name=update_file,json=updateFile,proto3" json:"update_file,omitempty"`
-	//*
-	// If set, the expected hash of the contents of the update file (used to verify the update)
-	FileHash []byte `protobuf:"bytes,6,opt,name=file_hash,json=fileHash,proto3" json:"file_hash,omitempty"`
-	//*
-	// The consensus time at which the maintenance window should begin
-	StartTime *Timestamp `protobuf:"bytes,7,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndMin     int32      `protobuf:"varint,4,opt,name=endMin,proto3" json:"endMin,omitempty"`                          // The end minute (in UTC time), a value between 0 and 59
+	UpdateFile *FileID    `protobuf:"bytes,5,opt,name=update_file,json=updateFile,proto3" json:"update_file,omitempty"` // If set, the file whose contents should be used for a network software update during the maintenance window
+	FileHash   []byte     `protobuf:"bytes,6,opt,name=file_hash,json=fileHash,proto3" json:"file_hash,omitempty"`       // If set, the expected hash of the contents of the update file (used to verify the update)
+	StartTime  *Timestamp `protobuf:"bytes,7,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`    // The consensus time at which the maintenance window should begin
 }
 
 func (x *FreezeTransactionBody) Reset() {

@@ -21,49 +21,32 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//*
-// At consensus, updates the fields of a smart contract to the given values.
 //
-// If no value is given for a field, that field is left unchanged on the contract. For an immutable
-// smart contract (that is, a contract created without an adminKey), only the expirationTime may be
-// updated; setting any other field in this case will cause the transaction status to resolve to
-// MODIFYING_IMMUTABLE_CONTRACT.
+//At consensus, updates the fields of a smart contract to the given values.
 //
-// --- Signing Requirements ---
-// 1. Whether or not a contract has an admin Key, its expiry can be extended with only the
-//    transaction payer's signature.
-// 2. Updating any other field of a mutable contract requires the admin key's signature.
-// 3. If the update transaction includes a new admin key, this new key must also sign <b>unless</b>
-//    it is exactly an empty <tt>KeyList</tt>. This special sentinel key removes the existing admin
-//    key and causes the contract to become immutable. (Other <tt>Key</tt> structures without a
-//    constituent <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
+//If no value is given for a field, that field is left unchanged on the contract. For an immutable smart contract (that is, a contract created without an adminKey), only the expirationTime may be updated; setting any other field in this case will cause the transaction status to resolve to MODIFYING_IMMUTABLE_CONTRACT.
+//
+//--- Signing Requirements ---
+//1. Whether or not a contract has an admin Key, its expiry can be extended with only the transaction payer's signature.
+//2. Updating any other field of a mutable contract requires the admin key's signature.
+//3. If the update transaction includes a new admin key, this new key must also sign <b>unless</b> it is exactly an empty <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the contract to become immutable. (Other <tt>Key</tt> structures without a constituent <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
 type ContractUpdateTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
 	// The id of the contract to be updated
 	ContractID *ContractID `protobuf:"bytes,1,opt,name=contractID,proto3" json:"contractID,omitempty"`
-	//*
-	// The new expiry of the contract, no earlier than the current expiry (resolves to
-	// EXPIRATION_REDUCTION_NOT_ALLOWED otherwise)
+	// The new expiry of the contract, no earlier than the current expiry (resolves to EXPIRATION_REDUCTION_NOT_ALLOWED otherwise)
 	ExpirationTime *Timestamp `protobuf:"bytes,2,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
-	//*
 	// The new key to control updates to the contract
 	AdminKey *Key `protobuf:"bytes,3,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
-	//*
 	// (NOT YET IMPLEMENTED) The new id of the account to which the contract is proxy staked
 	ProxyAccountID *AccountID `protobuf:"bytes,6,opt,name=proxyAccountID,proto3" json:"proxyAccountID,omitempty"`
-	//*
-	// (NOT YET IMPLEMENTED) The new interval at which the contract will pay to extend its expiry
-	// (by the same interval)
+	// (NOT YET IMPLEMENTED) The new interval at which the contract will pay to extend its expiry (by the same interval)
 	AutoRenewPeriod *Duration `protobuf:"bytes,7,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
-	//*
-	// The new id of the file asserted to contain the bytecode of the Solidity transaction that
-	// created this contract
+	// The new id of the file asserted to contain the bytecode of the Solidity transaction that created this contract
 	FileID *FileID `protobuf:"bytes,8,opt,name=fileID,proto3" json:"fileID,omitempty"`
-	//*
 	// The new contract memo, assumed to be Unicode encoded with UTF-8 (at most 100 bytes)
 	//
 	// Types that are assignable to MemoField:
@@ -173,18 +156,12 @@ type isContractUpdateTransactionBody_MemoField interface {
 }
 
 type ContractUpdateTransactionBody_Memo struct {
-	//*
-	// [Deprecated] If set with a non-zero length, the new memo to be associated with the account
-	// (UTF-8 encoding max 100 bytes)
-	//
 	// Deprecated: Do not use.
-	Memo string `protobuf:"bytes,9,opt,name=memo,proto3,oneof"`
+	Memo string `protobuf:"bytes,9,opt,name=memo,proto3,oneof"` // [Deprecated] If set with a non-zero length, the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
 }
 
 type ContractUpdateTransactionBody_MemoWrapper struct {
-	//*
-	// If set, the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
-	MemoWrapper *wrapperspb.StringValue `protobuf:"bytes,10,opt,name=memoWrapper,proto3,oneof"`
+	MemoWrapper *wrapperspb.StringValue `protobuf:"bytes,10,opt,name=memoWrapper,proto3,oneof"` // If set, the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
 }
 
 func (*ContractUpdateTransactionBody_Memo) isContractUpdateTransactionBody_MemoField() {}
