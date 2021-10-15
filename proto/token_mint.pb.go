@@ -20,23 +20,40 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//
-//Mints tokens to the Token's treasury Account. If no Supply Key is defined, the transaction will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
-//The operation increases the Total Supply of the Token. The maximum total supply a token can have is 2^63-1.
-//The amount provided must be in the lowest denomination possible. Example:
-//Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order to mint 100.55 tokens, one must provide amount of 10055.
-//If both amount and metadata list get filled, a INVALID_TRANSACTION_BODY response code will be returned.
-//If the metadata list contains metadata which is too large, a METADATA_TOO_LONG response code will be returned.
-//If neither the amount nor the metadata list get filled, a INVALID_TOKEN_MINT_AMOUNT response code will be returned.
-//If the metadata list count is greater than the batch size limit global dynamic property, a BATCH_SIZE_LIMIT_EXCEEDED response code will be returned.
+//*
+// Mints tokens to the Token's treasury Account. If no Supply Key is defined, the transaction will
+// resolve to TOKEN_HAS_NO_SUPPLY_KEY.
+// The operation increases the Total Supply of the Token. The maximum total supply a token can have
+// is 2^63-1.
+// The amount provided must be in the lowest denomination possible. Example:
+// Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order
+// to mint 100.55 tokens, one must provide amount of 10055.
+// If both amount and metadata list get filled, a INVALID_TRANSACTION_BODY response code will be
+// returned.
+// If the metadata list contains metadata which is too large, a METADATA_TOO_LONG response code will
+// be returned.
+// If neither the amount nor the metadata list get filled, a INVALID_TOKEN_MINT_AMOUNT response code
+// will be returned.
+// If the metadata list count is greater than the batch size limit global dynamic property, a
+// BATCH_SIZE_LIMIT_EXCEEDED response code will be returned.
 type TokenMintTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token    *TokenID `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`       // The token for which to mint tokens. If token does not exist, transaction results in INVALID_TOKEN_ID
-	Amount   uint64   `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`    // Applicable to tokens of type FUNGIBLE_COMMON. The amount to mint to the Treasury Account. Amount must be a positive non-zero number represented in the lowest denomination of the token. The new supply must be lower than 2^63.
-	Metadata [][]byte `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty"` // Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created. Maximum allowed size of each metadata is 100 bytes
+	//*
+	// The token for which to mint tokens. If token does not exist, transaction results in
+	// INVALID_TOKEN_ID
+	Token *TokenID `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	//*
+	// Applicable to tokens of type FUNGIBLE_COMMON. The amount to mint to the Treasury Account.
+	// Amount must be a positive non-zero number represented in the lowest denomination of the
+	// token. The new supply must be lower than 2^63.
+	Amount uint64 `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	//*
+	// Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
+	// Maximum allowed size of each metadata is 100 bytes
+	Metadata [][]byte `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty"`
 }
 
 func (x *TokenMintTransactionBody) Reset() {

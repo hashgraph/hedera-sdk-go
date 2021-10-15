@@ -20,14 +20,20 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // Get the bytecode for a smart contract instance
 type ContractGetBytecodeQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header     *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`         // standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	ContractID *ContractID  `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"` // the contract for which information is requested
+	//*
+	// standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// the contract for which information is requested
+	ContractID *ContractID `protobuf:"bytes,2,opt,name=contractID,proto3" json:"contractID,omitempty"`
 }
 
 func (x *ContractGetBytecodeQuery) Reset() {
@@ -76,14 +82,20 @@ func (x *ContractGetBytecodeQuery) GetContractID() *ContractID {
 	return nil
 }
 
+//*
 // Response when the client sends the node ContractGetBytecodeQuery
 type ContractGetBytecodeResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header   *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`     //standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	Bytecode []byte          `protobuf:"bytes,6,opt,name=bytecode,proto3" json:"bytecode,omitempty"` // the bytecode
+	//*
+	// standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// the bytecode
+	Bytecode []byte `protobuf:"bytes,6,opt,name=bytecode,proto3" json:"bytecode,omitempty"`
 }
 
 func (x *ContractGetBytecodeResponse) Reset() {

@@ -20,23 +20,26 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
+// Adds zero or more signing keys to a schedule. If the resulting set of signing keys satisfy the
+// scheduled transaction's signing requirements, it will be executed immediately after the
+// triggering <tt>ScheduleSign</tt>.
 //
-//Adds zero or more signing keys to a schedule. If the resulting set of signing keys satisfy the scheduled
-//transaction's signing requirements, it will be executed immediately after the triggering <tt>ScheduleSign</tt>.
+// Upon <tt>SUCCESS</tt>, the receipt includes the <tt>scheduledTransactionID</tt> to use to query
+// for the record of the scheduled transaction's execution (if it occurs).
 //
-//Upon <tt>SUCCESS</tt>, the receipt includes the <tt>scheduledTransactionID</tt> to use to query for the
-//record of the scheduled transaction's execution (if it occurs).
-//
-//Other notable response codes include <tt>INVALID_SCHEDULE_ID</tt>, <tt>SCHEDULE_WAS_DELETD</tt>,
-//<tt>INVALID_ACCOUNT_ID</tt>, <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt>, <tt>SOME_SIGNATURES_WERE_INVALID</tt>,
-//and <tt>NO_NEW_VALID_SIGNATURES</tt>. For more information please see the section of this
-//documentation on the <tt>ResponseCode</tt> enum.
+// Other notable response codes include <tt>INVALID_SCHEDULE_ID</tt>, <tt>SCHEDULE_WAS_DELETD</tt>,
+// <tt>INVALID_ACCOUNT_ID</tt>, <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt>,
+// <tt>SOME_SIGNATURES_WERE_INVALID</tt>, and <tt>NO_NEW_VALID_SIGNATURES</tt>. For more information
+// please see the section of this documentation on the <tt>ResponseCode</tt> enum.
 type ScheduleSignTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ScheduleID *ScheduleID `protobuf:"bytes,1,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"` // The id of the schedule to add signing keys to
+	//*
+	// The id of the schedule to add signing keys to
+	ScheduleID *ScheduleID `protobuf:"bytes,1,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"`
 }
 
 func (x *ScheduleSignTransactionBody) Reset() {

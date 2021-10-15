@@ -20,14 +20,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
+// UNDOCUMENTED
 type ConsensusMessageChunkInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	InitialTransactionID *TransactionID `protobuf:"bytes,1,opt,name=initialTransactionID,proto3" json:"initialTransactionID,omitempty"` // TransactionID of the first chunk, gets copied to every subsequent chunk in a fragmented message.
-	Total                int32          `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`                              // The total number of chunks in the message.
-	Number               int32          `protobuf:"varint,3,opt,name=number,proto3" json:"number,omitempty"`                            // The sequence number (from 1 to total) of the current chunk in the message.
+	//*
+	// TransactionID of the first chunk, gets copied to every subsequent chunk in a fragmented message.
+	InitialTransactionID *TransactionID `protobuf:"bytes,1,opt,name=initialTransactionID,proto3" json:"initialTransactionID,omitempty"`
+	//*
+	// The total number of chunks in the message.
+	Total int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	//*
+	// The sequence number (from 1 to total) of the current chunk in the message.
+	Number int32 `protobuf:"varint,3,opt,name=number,proto3" json:"number,omitempty"`
 }
 
 func (x *ConsensusMessageChunkInfo) Reset() {
@@ -83,14 +91,22 @@ func (x *ConsensusMessageChunkInfo) GetNumber() int32 {
 	return 0
 }
 
+//*
+// UNDOCUMENTED
 type ConsensusSubmitMessageTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicID   *TopicID                   `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"`     // Topic to submit message to.
-	Message   []byte                     `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`     // Message to be submitted. Max size of the Transaction (including signatures) is 6KiB.
-	ChunkInfo *ConsensusMessageChunkInfo `protobuf:"bytes,3,opt,name=chunkInfo,proto3" json:"chunkInfo,omitempty"` // Optional information of the current chunk in a fragmented message.
+	//*
+	// Topic to submit message to.
+	TopicID *TopicID `protobuf:"bytes,1,opt,name=topicID,proto3" json:"topicID,omitempty"`
+	//*
+	// Message to be submitted. Max size of the Transaction (including signatures) is 6KiB.
+	Message []byte `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	//*
+	// Optional information of the current chunk in a fragmented message.
+	ChunkInfo *ConsensusMessageChunkInfo `protobuf:"bytes,3,opt,name=chunkInfo,proto3" json:"chunkInfo,omitempty"`
 }
 
 func (x *ConsensusSubmitMessageTransactionBody) Reset() {

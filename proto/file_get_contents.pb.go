@@ -20,14 +20,20 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // Get the contents of a file. The content field is empty (no bytes) if the file is empty.
 type FileGetContentsQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	FileID *FileID      `protobuf:"bytes,2,opt,name=fileID,proto3" json:"fileID,omitempty"` // The file ID of the file whose contents are requested
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The file ID of the file whose contents are requested
+	FileID *FileID `protobuf:"bytes,2,opt,name=fileID,proto3" json:"fileID,omitempty"`
 }
 
 func (x *FileGetContentsQuery) Reset() {
@@ -76,14 +82,20 @@ func (x *FileGetContentsQuery) GetFileID() *FileID {
 	return nil
 }
 
+//*
 // Response when the client sends the node FileGetContentsQuery
 type FileGetContentsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header       *ResponseHeader                       `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`             //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	FileContents *FileGetContentsResponse_FileContents `protobuf:"bytes,2,opt,name=fileContents,proto3" json:"fileContents,omitempty"` // the file ID and contents (a state proof can be generated for this)
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// the file ID and contents (a state proof can be generated for this)
+	FileContents *FileGetContentsResponse_FileContents `protobuf:"bytes,2,opt,name=fileContents,proto3" json:"fileContents,omitempty"`
 }
 
 func (x *FileGetContentsResponse) Reset() {
@@ -137,8 +149,12 @@ type FileGetContentsResponse_FileContents struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FileID   *FileID `protobuf:"bytes,1,opt,name=fileID,proto3" json:"fileID,omitempty"`     // The file ID of the file whose contents are being returned
-	Contents []byte  `protobuf:"bytes,2,opt,name=contents,proto3" json:"contents,omitempty"` // The bytes contained in the file
+	//*
+	// The file ID of the file whose contents are being returned
+	FileID *FileID `protobuf:"bytes,1,opt,name=fileID,proto3" json:"fileID,omitempty"`
+	//*
+	// The bytes contained in the file
+	Contents []byte `protobuf:"bytes,2,opt,name=contents,proto3" json:"contents,omitempty"`
 }
 
 func (x *FileGetContentsResponse_FileContents) Reset() {

@@ -18,6 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FreezeServiceClient interface {
+	//*
+	// Freezes the nodes by submitting the transaction. The grpc server returns the
+	// TransactionResponse
 	Freeze(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
 
@@ -42,6 +45,9 @@ func (c *freezeServiceClient) Freeze(ctx context.Context, in *Transaction, opts 
 // All implementations must embed UnimplementedFreezeServiceServer
 // for forward compatibility
 type FreezeServiceServer interface {
+	//*
+	// Freezes the nodes by submitting the transaction. The grpc server returns the
+	// TransactionResponse
 	Freeze(context.Context, *Transaction) (*TransactionResponse, error)
 	mustEmbedUnimplementedFreezeServiceServer()
 }

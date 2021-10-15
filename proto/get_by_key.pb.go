@@ -20,14 +20,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Get all accounts, claims, files, and smart contract instances whose associated keys include the given Key. The given Key must not be a contractID or a ThresholdKey. This is not yet implemented in the API, but will be in the future.
+//*
+// Get all accounts, claims, files, and smart contract instances whose associated keys include the
+// given Key. The given Key must not be a contractID or a ThresholdKey. This is not yet implemented
+// in the API, but will be in the future.
 type GetByKeyQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	Key    *Key         `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`       // The key to search for. It must not contain a contractID nor a ThresholdSignature.
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The key to search for. It must not contain a contractID nor a ThresholdSignature.
+	Key *Key `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetByKeyQuery) Reset() {
@@ -76,6 +84,7 @@ func (x *GetByKeyQuery) GetKey() *Key {
 	return nil
 }
 
+//*
 // the ID for a single entity (account, livehash, file, or smart contract instance)
 type EntityID struct {
 	state         protoimpl.MessageState
@@ -162,19 +171,27 @@ type isEntityID_Entity interface {
 }
 
 type EntityID_AccountID struct {
-	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3,oneof"` // The Account ID for the cryptocurrency account
+	//*
+	// The Account ID for the cryptocurrency account
+	AccountID *AccountID `protobuf:"bytes,1,opt,name=accountID,proto3,oneof"`
 }
 
 type EntityID_LiveHash struct {
-	LiveHash *LiveHash `protobuf:"bytes,2,opt,name=liveHash,proto3,oneof"` // A uniquely identifying livehash of an acount
+	//*
+	// A uniquely identifying livehash of an acount
+	LiveHash *LiveHash `protobuf:"bytes,2,opt,name=liveHash,proto3,oneof"`
 }
 
 type EntityID_FileID struct {
-	FileID *FileID `protobuf:"bytes,3,opt,name=fileID,proto3,oneof"` // The file ID of the file
+	//*
+	// The file ID of the file
+	FileID *FileID `protobuf:"bytes,3,opt,name=fileID,proto3,oneof"`
 }
 
 type EntityID_ContractID struct {
-	ContractID *ContractID `protobuf:"bytes,4,opt,name=contractID,proto3,oneof"` // The smart contract ID that identifies instance
+	//*
+	// The smart contract ID that identifies instance
+	ContractID *ContractID `protobuf:"bytes,4,opt,name=contractID,proto3,oneof"`
 }
 
 func (*EntityID_AccountID) isEntityID_Entity() {}
@@ -185,14 +202,20 @@ func (*EntityID_FileID) isEntityID_Entity() {}
 
 func (*EntityID_ContractID) isEntityID_Entity() {}
 
+//*
 // Response when the client sends the node GetByKeyQuery
 type GetByKeyResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header   *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`     //Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	Entities []*EntityID     `protobuf:"bytes,2,rep,name=entities,proto3" json:"entities,omitempty"` // The list of entities that include this public key in their associated Key list
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The list of entities that include this public key in their associated Key list
+	Entities []*EntityID `protobuf:"bytes,2,rep,name=entities,proto3" json:"entities,omitempty"`
 }
 
 func (x *GetByKeyResponse) Reset() {

@@ -20,8 +20,9 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//
-//Undelete a file or smart contract that was deleted by SystemDelete; requires a Hedera administrative multisignature.
+//*
+// Undelete a file or smart contract that was deleted by SystemDelete; requires a Hedera
+// administrative multisignature.
 type SystemUndeleteTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -91,11 +92,15 @@ type isSystemUndeleteTransactionBody_Id interface {
 }
 
 type SystemUndeleteTransactionBody_FileID struct {
-	FileID *FileID `protobuf:"bytes,1,opt,name=fileID,proto3,oneof"` // The file ID to undelete, in the format used in transactions
+	//*
+	// The file ID to undelete, in the format used in transactions
+	FileID *FileID `protobuf:"bytes,1,opt,name=fileID,proto3,oneof"`
 }
 
 type SystemUndeleteTransactionBody_ContractID struct {
-	ContractID *ContractID `protobuf:"bytes,2,opt,name=contractID,proto3,oneof"` // The contract ID instance to undelete, in the format used in transactions
+	//*
+	// The contract ID instance to undelete, in the format used in transactions
+	ContractID *ContractID `protobuf:"bytes,2,opt,name=contractID,proto3,oneof"`
 }
 
 func (*SystemUndeleteTransactionBody_FileID) isSystemUndeleteTransactionBody_Id() {}

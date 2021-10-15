@@ -20,14 +20,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// At consensus, deletes a livehash associated to the given account. The transaction must be signed by either the key of the owning account, or at least one of the keys associated to the livehash.
+//*
+// At consensus, deletes a livehash associated to the given account. The transaction must be signed
+// by either the key of the owning account, or at least one of the keys associated to the livehash.
 type CryptoDeleteLiveHashTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//*
 	// The account owning the livehash
 	AccountOfLiveHash *AccountID `protobuf:"bytes,1,opt,name=accountOfLiveHash,proto3" json:"accountOfLiveHash,omitempty"`
+	//*
 	// The SHA-384 livehash to delete from the account
 	LiveHashToDelete []byte `protobuf:"bytes,2,opt,name=liveHashToDelete,proto3" json:"liveHashToDelete,omitempty"`
 }

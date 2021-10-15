@@ -18,27 +18,39 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SmartContractServiceClient interface {
+	//*
 	// Creates a contract
 	CreateContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Updates a contract with the content
 	UpdateContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Calls a contract
 	ContractCallMethod(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Retrieves the contract information
 	GetContractInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Calls a smart contract to be run on a single node
 	ContractCallLocalMethod(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Retrieves the byte code of a contract
 	ContractGetBytecode(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Retrieves a contract by its Solidity address
 	GetBySolidityID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
 	// Deprecated: Do not use.
-	// Always returns an empty record list, as contract accounts are never effective payers for transactions
+	//*
+	// Always returns an empty record list, as contract accounts are never effective payers for
+	// transactions
 	GetTxRecordByContractID(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Deletes a contract instance and transfers any remaining hbars to a specified receiver
 	DeleteContract(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Deletes a contract if the submitting account has network admin privileges
 	SystemDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Undeletes a contract if the submitting account has network admin privileges
 	SystemUndelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
@@ -155,27 +167,39 @@ func (c *smartContractServiceClient) SystemUndelete(ctx context.Context, in *Tra
 // All implementations must embed UnimplementedSmartContractServiceServer
 // for forward compatibility
 type SmartContractServiceServer interface {
+	//*
 	// Creates a contract
 	CreateContract(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Updates a contract with the content
 	UpdateContract(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Calls a contract
 	ContractCallMethod(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Retrieves the contract information
 	GetContractInfo(context.Context, *Query) (*Response, error)
+	//*
 	// Calls a smart contract to be run on a single node
 	ContractCallLocalMethod(context.Context, *Query) (*Response, error)
+	//*
 	// Retrieves the byte code of a contract
 	ContractGetBytecode(context.Context, *Query) (*Response, error)
+	//*
 	// Retrieves a contract by its Solidity address
 	GetBySolidityID(context.Context, *Query) (*Response, error)
 	// Deprecated: Do not use.
-	// Always returns an empty record list, as contract accounts are never effective payers for transactions
+	//*
+	// Always returns an empty record list, as contract accounts are never effective payers for
+	// transactions
 	GetTxRecordByContractID(context.Context, *Query) (*Response, error)
+	//*
 	// Deletes a contract instance and transfers any remaining hbars to a specified receiver
 	DeleteContract(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Deletes a contract if the submitting account has network admin privileges
 	SystemDelete(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Undeletes a contract if the submitting account has network admin privileges
 	SystemUndelete(context.Context, *Transaction) (*TransactionResponse, error)
 	mustEmbedUnimplementedSmartContractServiceServer()
