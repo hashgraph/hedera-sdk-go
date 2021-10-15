@@ -231,6 +231,17 @@ const (
 	StatusTokenIsPaused                                            Status = 265
 	StatusTokenHasNoPauseKey                                       Status = 266
 	StatusInvalidPauseKey                                          Status = 267
+	StatusFreezeUpdateFileDoesNotExist                             Status = 268
+	StatusFreezeUpdateFileHashDoesNotMatch                         Status = 269
+	StatusNoUpgradeHasBeenPrepared                                 Status = 270
+	StatusNoFreezeIsScheduled                                      Status = 271
+	StatusUpdateFileHashChangedSincePrepareUpgrade                 Status = 272
+	StatusFreezeStartTimeMustBeFuture                              Status = 273
+	StatusPreparedUpdateFileIsImmutable                            Status = 274
+	StatusFreezeAlreadyScheduled                                   Status = 275
+	StatusFreezeUpgradeInProgress                                  Status = 276
+	StatusUpdateFileIDDoesNotMatchPrepared                         Status = 277
+	StatusUpdateFileHashDoesNotMatchPrepared                       Status = 278
 )
 
 // String() returns a string representation of the status
@@ -688,6 +699,26 @@ func (status Status) String() string { // nolint
 		return "TOKEN_HAS_NO_PAUSE_KEY"
 	case StatusInvalidPauseKey:
 		return "INVALID_PAUSE_KEY"
+	case StatusFreezeUpdateFileDoesNotExist:
+		return "FREEZE_UPDATE_FILE_DOES_NOT_EXIST"
+	case StatusFreezeUpdateFileHashDoesNotMatch:
+		return "FREEZE_UPDATE_FILE_HASH_DOES_NOT_MATCH"
+	case StatusNoUpgradeHasBeenPrepared:
+		return "NO_UPGRADE_HAS_BEEN_PREPARED"
+	case StatusUpdateFileHashChangedSincePrepareUpgrade:
+		return "UPDATE_FILE_HASH_CHANGED_SINCE_PREPARE_UPGRADE"
+	case StatusFreezeStartTimeMustBeFuture:
+		return "FREEZE_START_TIME_MUST_BE_FUTURE"
+	case StatusPreparedUpdateFileIsImmutable:
+		return "PREPARED_UPDATE_FILE_IS_IMMUTABLE"
+	case StatusFreezeAlreadyScheduled:
+		return "FREEZE_ALREADY_SCHEDULED"
+	case StatusFreezeUpgradeInProgress:
+		return "FREEZE_UPGRADE_IN_PROGRESS"
+	case StatusUpdateFileIDDoesNotMatchPrepared:
+		return "UPDATE_FILE_ID_DOES_NOT_MATCH_PREPARED"
+	case StatusUpdateFileHashDoesNotMatchPrepared:
+		return "UPDATE_FILE_HASH_DOES_NOT_MATCH_PREPARED"
 	}
 
 	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
