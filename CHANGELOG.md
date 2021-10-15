@@ -1,3 +1,15 @@
+## v2.3.0-beta 1
+
+### Added
+
+ * Support for HIP-24 (token pausing)
+    * `TokenInfo.PauseKey`
+    * `TokenInfo.PauseStatus`
+    * `TokenCreateTransaction.PauseKey`
+    * `TokenUpdateTransaction.PauseKey`
+    * `TokenPauseTransaction`
+    * `TokenUnpauseTransaction`
+
 ## v2.2.0
 
 ### Added
