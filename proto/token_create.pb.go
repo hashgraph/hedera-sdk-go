@@ -20,54 +20,135 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
+// Create a new token. After the token is created, the Token ID for it is in the receipt.
+// The specified Treasury Account is receiving the initial supply of tokens as-well as the tokens
+// from the Token Mint operation once executed. The balance of the treasury account is decreased
+// when the Token Burn operation is executed.
 //
-//Create a new token. After the token is created, the Token ID for it is in the receipt.
-//The specified Treasury Account is receiving the initial supply of tokens as-well as the tokens from the Token Mint operation once executed. The balance of the treasury account is decreased when the Token Burn operation is executed.
+// The <tt>initialSupply</tt> is the initial supply of the smallest parts of a token (like a
+// tinybar, not an hbar). These are the smallest units of the token which may be transferred.
 //
-//The <tt>initialSupply</tt> is the initial supply of the smallest parts of a token (like a tinybar, not an hbar). These are the smallest units of the token which may be transferred.
+// The supply can change over time. If the total supply at some moment is <i>S</i> parts of tokens,
+// and the token is using <i>D</i> decimals, then <i>S</i> must be less than or equal to
+// 2<sup>63</sup>-1, which is 9,223,372,036,854,775,807. The number of whole tokens (not parts) will
+// be <i>S / 10<sup>D</sup></i>.
 //
-//The supply can change over time. If the total supply at some moment is <i>S</i> parts of tokens, and the token is using <i>D</i> decimals, then <i>S</i> must be less than or equal to 2<sup>63</sup>-1, which is 9,223,372,036,854,775,807. The number of whole tokens (not parts) will be <i>S / 10<sup>D</sup></i>.
+// If decimals is 8 or 11, then the number of whole tokens can be at most a few billions or
+// millions, respectively. For example, it could match Bitcoin (21 million whole tokens with 8
+// decimals) or hbars (50 billion whole tokens with 8 decimals). It could even match Bitcoin with
+// milli-satoshis (21 million whole tokens with 11 decimals).
 //
-//If decimals is 8 or 11, then the number of whole tokens can be at most a few billions or millions, respectively. For example, it could match Bitcoin (21 million whole tokens with 8 decimals) or hbars (50 billion whole tokens with 8 decimals). It could even match Bitcoin with milli-satoshis (21 million whole tokens with 11 decimals).
+// Note that a created token is <i>immutable</i> if the <tt>adminKey</tt> is omitted. No property of
+// an immutable token can ever change, with the sole exception of its expiry. Anyone can pay to
+// extend the expiry time of an immutable token.
 //
-//Note that a created token is <i>immutable</i> if the <tt>adminKey</tt> is omitted. No property of an immutable token can ever change, with the sole exception of its expiry. Anyone can pay to extend the expiry time of an immutable token.
+// A token can be either <i>FUNGIBLE_COMMON</i> or <i>NON_FUNGIBLE_UNIQUE</i>, based on its
+// <i>TokenType</i>. If it has been omitted, <i>FUNGIBLE_COMMON</i> type is used.
 //
-//A token can be either <i>FUNGIBLE_COMMON</i> or <i>NON_FUNGIBLE_UNIQUE</i>, based on its <i>TokenType</i>. If it has been omitted, <i>FUNGIBLE_COMMON</i> type is used.
+// A token can have either <i>INFINITE</i> or <i>FINITE</i> supply type, based on its
+// <i>TokenType</i>. If it has been omitted, <i>INFINITE</i> type is used.
 //
-//A token can have either <i>INFINITE</i> or <i>FINITE</i> supply type, based on its <i>TokenType</i>. If it has been omitted, <i>INFINITE</i> type is used.
+// If a <i>FUNGIBLE</i> TokenType is used, <i>initialSupply</i> should explicitly be set to a
+// non-negative. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
 //
-//If a <i>FUNGIBLE</i> TokenType is used, <i>initialSupply</i> should explicitly be set to a non-negative. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+// If a <i>NON_FUNGIBLE_UNIQUE</i> TokenType is used, <i>initialSupply</i> should explicitly be set
+// to 0. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
 //
-//If a <i>NON_FUNGIBLE_UNIQUE</i> TokenType is used, <i>initialSupply</i> should explicitly be set to 0. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+// If an <i>INFINITE</i> TokenSupplyType is used, <i>maxSupply</i> should explicitly be set to 0. If
+// it is not 0, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
 //
-//If an <i>INFINITE</i> TokenSupplyType is used, <i>maxSupply</i> should explicitly be set to 0. If it is not 0, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
-//
-//If a <i>FINITE</i> TokenSupplyType is used, <i>maxSupply</i> should be explicitly set to a non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
+// If a <i>FINITE</i> TokenSupplyType is used, <i>maxSupply</i> should be explicitly set to a
+// non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
 type TokenCreateTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name             string          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`                                              // The publicly visible name of the token, limited to a UTF-8 encoding of length <tt>tokens.maxSymbolUtf8Bytes</tt>.
-	Symbol           string          `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`                                          // The publicly visible token symbol, limited to a UTF-8 encoding of length <tt>tokens.maxTokenNameUtf8Bytes</tt>.
-	Decimals         uint32          `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`                                     // For tokens of type FUNGIBLE_COMMON - the number of decimal places a token is divisible by. For tokens of type NON_FUNGIBLE_UNIQUE - value must be 0
-	InitialSupply    uint64          `protobuf:"varint,4,opt,name=initialSupply,proto3" json:"initialSupply,omitempty"`                           // Specifies the initial supply of tokens to be put in circulation. The initial supply is sent to the Treasury Account. The supply is in the lowest denomination possible. In the case for NON_FUNGIBLE_UNIQUE Type the value must be 0
-	Treasury         *AccountID      `protobuf:"bytes,5,opt,name=treasury,proto3" json:"treasury,omitempty"`                                      // The account which will act as a treasury for the token. This account will receive the specified initial supply or the newly minted NFTs in the case for NON_FUNGIBLE_UNIQUE Type
-	AdminKey         *Key            `protobuf:"bytes,6,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                                      // The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
-	KycKey           *Key            `protobuf:"bytes,7,opt,name=kycKey,proto3" json:"kycKey,omitempty"`                                          // The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
-	FreezeKey        *Key            `protobuf:"bytes,8,opt,name=freezeKey,proto3" json:"freezeKey,omitempty"`                                    // The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
-	WipeKey          *Key            `protobuf:"bytes,9,opt,name=wipeKey,proto3" json:"wipeKey,omitempty"`                                        // The key which can wipe the token balance of an account. If empty, wipe is not possible
-	SupplyKey        *Key            `protobuf:"bytes,10,opt,name=supplyKey,proto3" json:"supplyKey,omitempty"`                                   // The key which can change the supply of a token. The key is used to sign Token Mint/Burn operations
-	FreezeDefault    bool            `protobuf:"varint,11,opt,name=freezeDefault,proto3" json:"freezeDefault,omitempty"`                          // The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If true, an account must be unfrozen before it can receive the token
-	Expiry           *Timestamp      `protobuf:"bytes,13,opt,name=expiry,proto3" json:"expiry,omitempty"`                                         // The epoch second at which the token should expire; if an auto-renew account and period are specified, this is coerced to the current epoch second plus the autoRenewPeriod
-	AutoRenewAccount *AccountID      `protobuf:"bytes,14,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"`                     // An account which will be automatically charged to renew the token's expiration, at autoRenewPeriod interval
-	AutoRenewPeriod  *Duration       `protobuf:"bytes,15,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`                       // The interval at which the auto-renew account will be charged to extend the token's expiry
-	Memo             string          `protobuf:"bytes,16,opt,name=memo,proto3" json:"memo,omitempty"`                                             // The memo associated with the token (UTF-8 encoding max 100 bytes)
-	TokenType        TokenType       `protobuf:"varint,17,opt,name=tokenType,proto3,enum=proto.TokenType" json:"tokenType,omitempty"`             // IWA compatibility. Specifies the token type. Defaults to FUNGIBLE_COMMON
-	SupplyType       TokenSupplyType `protobuf:"varint,18,opt,name=supplyType,proto3,enum=proto.TokenSupplyType" json:"supplyType,omitempty"`     // IWA compatibility. Specified the token supply type. Defaults to INFINITE
-	MaxSupply        int64           `protobuf:"varint,19,opt,name=maxSupply,proto3" json:"maxSupply,omitempty"`                                  // IWA Compatibility. Depends on TokenSupplyType. For tokens of type FUNGIBLE_COMMON - the maximum number of tokens that can be in circulation. For tokens of type NON_FUNGIBLE_UNIQUE - the maximum number of NFTs (serial numbers) that can be minted. This field can never be changed!
-	FeeScheduleKey   *Key            `protobuf:"bytes,20,opt,name=fee_schedule_key,json=feeScheduleKey,proto3" json:"fee_schedule_key,omitempty"` // The key which can change the token's custom fee schedule; must sign a TokenFeeScheduleUpdate transaction
-	CustomFees       []*CustomFee    `protobuf:"bytes,21,rep,name=custom_fees,json=customFees,proto3" json:"custom_fees,omitempty"`               // The custom fees to be assessed during a CryptoTransfer that transfers units of this token
+	//*
+	// The publicly visible name of the token, limited to a UTF-8 encoding of
+	// length <tt>tokens.maxSymbolUtf8Bytes</tt>.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	//*
+	// The publicly visible token symbol, limited to a UTF-8 encoding of length
+	// <tt>tokens.maxTokenNameUtf8Bytes</tt>.
+	Symbol string `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	//*
+	// For tokens of type FUNGIBLE_COMMON - the number of decimal places a
+	// token is divisible by. For tokens of type NON_FUNGIBLE_UNIQUE - value
+	// must be 0
+	Decimals uint32 `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
+	//*
+	// Specifies the initial supply of tokens to be put in circulation. The
+	// initial supply is sent to the Treasury Account. The supply is in the
+	// lowest denomination possible. In the case for NON_FUNGIBLE_UNIQUE Type
+	// the value must be 0
+	InitialSupply uint64 `protobuf:"varint,4,opt,name=initialSupply,proto3" json:"initialSupply,omitempty"`
+	//*
+	// The account which will act as a treasury for the token. This account
+	// will receive the specified initial supply or the newly minted NFTs in
+	// the case for NON_FUNGIBLE_UNIQUE Type
+	Treasury *AccountID `protobuf:"bytes,5,opt,name=treasury,proto3" json:"treasury,omitempty"`
+	//*
+	// The key which can perform update/delete operations on the token. If empty, the token can be
+	// perceived as immutable (not being able to be updated/deleted)
+	AdminKey *Key `protobuf:"bytes,6,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
+	//*
+	// The key which can grant or revoke KYC of an account for the token's transactions. If empty,
+	// KYC is not required, and KYC grant or revoke operations are not possible.
+	KycKey *Key `protobuf:"bytes,7,opt,name=kycKey,proto3" json:"kycKey,omitempty"`
+	//*
+	// The key which can sign to freeze or unfreeze an account for token transactions. If empty,
+	// freezing is not possible
+	FreezeKey *Key `protobuf:"bytes,8,opt,name=freezeKey,proto3" json:"freezeKey,omitempty"`
+	//*
+	// The key which can wipe the token balance of an account. If empty, wipe is not possible
+	WipeKey *Key `protobuf:"bytes,9,opt,name=wipeKey,proto3" json:"wipeKey,omitempty"`
+	//*
+	// The key which can change the supply of a token. The key is used to sign Token Mint/Burn
+	// operations
+	SupplyKey *Key `protobuf:"bytes,10,opt,name=supplyKey,proto3" json:"supplyKey,omitempty"`
+	//*
+	// The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If
+	// true, an account must be unfrozen before it can receive the token
+	FreezeDefault bool `protobuf:"varint,11,opt,name=freezeDefault,proto3" json:"freezeDefault,omitempty"`
+	//*
+	// The epoch second at which the token should expire; if an auto-renew account and period are
+	// specified, this is coerced to the current epoch second plus the autoRenewPeriod
+	Expiry *Timestamp `protobuf:"bytes,13,opt,name=expiry,proto3" json:"expiry,omitempty"`
+	//*
+	// An account which will be automatically charged to renew the token's expiration, at
+	// autoRenewPeriod interval
+	AutoRenewAccount *AccountID `protobuf:"bytes,14,opt,name=autoRenewAccount,proto3" json:"autoRenewAccount,omitempty"`
+	//*
+	// The interval at which the auto-renew account will be charged to extend the token's expiry
+	AutoRenewPeriod *Duration `protobuf:"bytes,15,opt,name=autoRenewPeriod,proto3" json:"autoRenewPeriod,omitempty"`
+	//*
+	// The memo associated with the token (UTF-8 encoding max 100 bytes)
+	Memo string `protobuf:"bytes,16,opt,name=memo,proto3" json:"memo,omitempty"`
+	//*
+	// IWA compatibility. Specifies the token type. Defaults to FUNGIBLE_COMMON
+	TokenType TokenType `protobuf:"varint,17,opt,name=tokenType,proto3,enum=proto.TokenType" json:"tokenType,omitempty"`
+	//*
+	// IWA compatibility. Specified the token supply type. Defaults to INFINITE
+	SupplyType TokenSupplyType `protobuf:"varint,18,opt,name=supplyType,proto3,enum=proto.TokenSupplyType" json:"supplyType,omitempty"`
+	//*
+	// IWA Compatibility. Depends on TokenSupplyType. For tokens of type FUNGIBLE_COMMON - the
+	// maximum number of tokens that can be in circulation. For tokens of type NON_FUNGIBLE_UNIQUE -
+	// the maximum number of NFTs (serial numbers) that can be minted. This field can never be
+	// changed!
+	MaxSupply int64 `protobuf:"varint,19,opt,name=maxSupply,proto3" json:"maxSupply,omitempty"`
+	//*
+	// The key which can change the token's custom fee schedule; must sign a TokenFeeScheduleUpdate
+	// transaction
+	FeeScheduleKey *Key `protobuf:"bytes,20,opt,name=fee_schedule_key,json=feeScheduleKey,proto3" json:"fee_schedule_key,omitempty"`
+	//*
+	// The custom fees to be assessed during a CryptoTransfer that transfers units of this token
+	CustomFees []*CustomFee `protobuf:"bytes,21,rep,name=custom_fees,json=customFees,proto3" json:"custom_fees,omitempty"`
+	//*
+	// The Key which can pause and unpause the Token.
+	// If Empty the token pause status defaults to PauseNotApplicable, otherwise Unpaused.
+	PauseKey *Key `protobuf:"bytes,22,opt,name=pause_key,json=pauseKey,proto3" json:"pause_key,omitempty"`
 }
 
 func (x *TokenCreateTransactionBody) Reset() {
@@ -242,6 +323,13 @@ func (x *TokenCreateTransactionBody) GetCustomFees() []*CustomFee {
 	return nil
 }
 
+func (x *TokenCreateTransactionBody) GetPauseKey() *Key {
+	if x != nil {
+		return x.PauseKey
+	}
+	return nil
+}
+
 var File_proto_token_create_proto protoreflect.FileDescriptor
 
 var file_proto_token_create_proto_rawDesc = []byte{
@@ -253,7 +341,7 @@ var file_proto_token_create_proto_rawDesc = []byte{
 	0x1a, 0x17, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x5f, 0x66,
 	0x65, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x15, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x22, 0xca, 0x06, 0x0a, 0x1a, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
+	0x22, 0xf3, 0x06, 0x0a, 0x1a, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
 	0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x6f, 0x64, 0x79, 0x12,
 	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
 	0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x02, 0x20,
@@ -305,13 +393,15 @@ var file_proto_token_create_proto_rawDesc = []byte{
 	0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x4b, 0x65, 0x79, 0x12, 0x31, 0x0a, 0x0b, 0x63, 0x75,
 	0x73, 0x74, 0x6f, 0x6d, 0x5f, 0x66, 0x65, 0x65, 0x73, 0x18, 0x15, 0x20, 0x03, 0x28, 0x0b, 0x32,
 	0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x46, 0x65,
-	0x65, 0x52, 0x0a, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x46, 0x65, 0x65, 0x73, 0x42, 0x4b, 0x0a,
-	0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68,
-	0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2b, 0x67,
-	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72,
-	0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64, 0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67,
-	0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x65, 0x52, 0x0a, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x46, 0x65, 0x65, 0x73, 0x12, 0x27, 0x0a,
+	0x09, 0x70, 0x61, 0x75, 0x73, 0x65, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x16, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x52, 0x08, 0x70, 0x61,
+	0x75, 0x73, 0x65, 0x4b, 0x65, 0x79, 0x42, 0x4b, 0x0a, 0x1a, 0x63, 0x6f, 0x6d, 0x2e, 0x68, 0x65,
+	0x64, 0x65, 0x72, 0x61, 0x2e, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x68, 0x61, 0x73, 0x68, 0x67, 0x72, 0x61, 0x70, 0x68, 0x2f, 0x68, 0x65, 0x64,
+	0x65, 0x72, 0x61, 0x2d, 0x73, 0x64, 0x6b, 0x2d, 0x67, 0x6f, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -351,11 +441,12 @@ var file_proto_token_create_proto_depIdxs = []int32{
 	6,  // 10: proto.TokenCreateTransactionBody.supplyType:type_name -> proto.TokenSupplyType
 	2,  // 11: proto.TokenCreateTransactionBody.fee_schedule_key:type_name -> proto.Key
 	7,  // 12: proto.TokenCreateTransactionBody.custom_fees:type_name -> proto.CustomFee
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	2,  // 13: proto.TokenCreateTransactionBody.pause_key:type_name -> proto.Key
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_proto_token_create_proto_init() }

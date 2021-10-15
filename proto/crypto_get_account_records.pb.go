@@ -20,14 +20,19 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // Requests records of all transactions for which the given account was the effective payer in the last 3 minutes of consensus time and <tt>ledger.keepRecordsInState=true</tt> was true during <tt>handleTransaction</tt>.
 type CryptoGetAccountRecordsQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header    *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	AccountID *AccountID   `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"` // The account ID for which the records should be retrieved
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The account ID for which the records should be retrieved
+	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
 }
 
 func (x *CryptoGetAccountRecordsQuery) Reset() {
@@ -76,15 +81,22 @@ func (x *CryptoGetAccountRecordsQuery) GetAccountID() *AccountID {
 	return nil
 }
 
+//*
 // Returns records of all transactions for which the given account was the effective payer in the last 3 minutes of consensus time and <tt>ledger.keepRecordsInState=true</tt> was true during <tt>handleTransaction</tt>.
 type CryptoGetAccountRecordsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header    *ResponseHeader      `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`       // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	AccountID *AccountID           `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"` // The account that this record is for
-	Records   []*TransactionRecord `protobuf:"bytes,3,rep,name=records,proto3" json:"records,omitempty"`     // List of records
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The account that this record is for
+	AccountID *AccountID `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	//*
+	// List of records
+	Records []*TransactionRecord `protobuf:"bytes,3,rep,name=records,proto3" json:"records,omitempty"`
 }
 
 func (x *CryptoGetAccountRecordsResponse) Reset() {

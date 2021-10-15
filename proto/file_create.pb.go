@@ -20,30 +20,67 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // Create a new file, containing the given contents.
-//After the file is created, the FileID for it can be found in the receipt, or record, or retrieved with a GetByKey query.
+// After the file is created, the FileID for it can be found in the receipt, or record, or retrieved
+// with a GetByKey query.
 //
-//The file contains the specified contents (possibly empty). The file will automatically disappear at the expirationTime, unless its expiration is extended by another transaction before that time. If the file is deleted, then its contents will become empty and it will be marked as deleted until it expires, and then it will cease to exist.
+// The file contains the specified contents (possibly empty). The file will automatically disappear
+// at the expirationTime, unless its expiration is extended by another transaction before that time.
+// If the file is deleted, then its contents will become empty and it will be marked as deleted
+// until it expires, and then it will cease to exist.
 //
-//The keys field is a list of keys. All keys within the top-level key list must sign (M-M) to create or modify a file. However, to delete the file, only one key (1-M) is required to sign from the top-level key list.  Each of those "keys" may itself be threshold key containing other keys (including other threshold keys). In other words, the behavior is an AND for create/modify, OR for delete. This is useful for acting as a revocation server. If it is desired to have the behavior be AND for all 3 operations (or OR for all 3), then the list should have only a single Key, which is a threshold key, with N=1 for OR, N=M for AND.
+// The keys field is a list of keys. All keys within the top-level key list must sign (M-M) to
+// create or modify a file. However, to delete the file, only one key (1-M) is required to sign from
+// the top-level key list.  Each of those "keys" may itself be threshold key containing other keys
+// (including other threshold keys). In other words, the behavior is an AND for create/modify, OR
+// for delete. This is useful for acting as a revocation server. If it is desired to have the
+// behavior be AND for all 3 operations (or OR for all 3), then the list should have only a single
+// Key, which is a threshold key, with N=1 for OR, N=M for AND.
 //
-//If a file is created without ANY keys in the keys field, the file is immutable and ONLY the expirationTime of the file can be changed with a FileUpdate transaction. The file contents or its keys cannot be changed.
+// If a file is created without ANY keys in the keys field, the file is immutable and ONLY the
+// expirationTime of the file can be changed with a FileUpdate transaction. The file contents or its
+// keys cannot be changed.
 //
-//An entity (account, file, or smart contract instance) must be created in a particular realm. If the realmID is left null, then a new realm will be created with the given admin key. If a new realm has a null adminKey, then anyone can create/modify/delete entities in that realm. But if an admin key is given, then any transaction to create/modify/delete an entity in that realm must be signed by that key, though anyone can still call functions on smart contract instances that exist in that realm. A realm ceases to exist when everything within it has expired and no longer exists.
+// An entity (account, file, or smart contract instance) must be created in a particular realm. If
+// the realmID is left null, then a new realm will be created with the given admin key. If a new
+// realm has a null adminKey, then anyone can create/modify/delete entities in that realm. But if an
+// admin key is given, then any transaction to create/modify/delete an entity in that realm must be
+// signed by that key, though anyone can still call functions on smart contract instances that exist
+// in that realm. A realm ceases to exist when everything within it has expired and no longer
+// exists.
 //
-//The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0, with a null key. Future versions of the API will support multiple realms and multiple shards.
+// The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0
+// and realm 0, with a null key. Future versions of the API will support multiple realms and
+// multiple shards.
 type FileCreateTransactionBody struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ExpirationTime   *Timestamp `protobuf:"bytes,2,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`     // The time at which this file should expire (unless FileUpdateTransaction is used before then to extend its life)
-	Keys             *KeyList   `protobuf:"bytes,3,opt,name=keys,proto3" json:"keys,omitempty"`                         // All keys at the top level of a key list must sign to create or modify the file. Any one of the keys at the top level key list can sign to delete the file.
-	Contents         []byte     `protobuf:"bytes,4,opt,name=contents,proto3" json:"contents,omitempty"`                 // The bytes that are the contents of the file
-	ShardID          *ShardID   `protobuf:"bytes,5,opt,name=shardID,proto3" json:"shardID,omitempty"`                   // Shard in which this file is created
-	RealmID          *RealmID   `protobuf:"bytes,6,opt,name=realmID,proto3" json:"realmID,omitempty"`                   // The Realm in which to the file is created (leave this null to create a new realm)
-	NewRealmAdminKey *Key       `protobuf:"bytes,7,opt,name=newRealmAdminKey,proto3" json:"newRealmAdminKey,omitempty"` // If realmID is null, then this the admin key for the new realm that will be created
-	Memo             string     `protobuf:"bytes,8,opt,name=memo,proto3" json:"memo,omitempty"`                         // The memo associated with the file (UTF-8 encoding max 100 bytes)
+	//*
+	// The time at which this file should expire (unless FileUpdateTransaction is used before then
+	// to extend its life)
+	ExpirationTime *Timestamp `protobuf:"bytes,2,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
+	//*
+	// All keys at the top level of a key list must sign to create or modify the file. Any one of
+	// the keys at the top level key list can sign to delete the file.
+	Keys *KeyList `protobuf:"bytes,3,opt,name=keys,proto3" json:"keys,omitempty"`
+	//*
+	// The bytes that are the contents of the file
+	Contents []byte `protobuf:"bytes,4,opt,name=contents,proto3" json:"contents,omitempty"`
+	//*
+	// Shard in which this file is created
+	ShardID *ShardID `protobuf:"bytes,5,opt,name=shardID,proto3" json:"shardID,omitempty"`
+	//*
+	// The Realm in which to the file is created (leave this null to create a new realm)
+	RealmID *RealmID `protobuf:"bytes,6,opt,name=realmID,proto3" json:"realmID,omitempty"`
+	//*
+	// If realmID is null, then this the admin key for the new realm that will be created
+	NewRealmAdminKey *Key `protobuf:"bytes,7,opt,name=newRealmAdminKey,proto3" json:"newRealmAdminKey,omitempty"`
+	//*
+	// The memo associated with the file (UTF-8 encoding max 100 bytes)
+	Memo string `protobuf:"bytes,8,opt,name=memo,proto3" json:"memo,omitempty"`
 }
 
 func (x *FileCreateTransactionBody) Reset() {

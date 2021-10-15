@@ -20,17 +20,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
+// Gets information about a schedule in the network's action queue.
 //
-//Gets information about a schedule in the network's action queue.
-//
-//Responds with <tt>INVALID_SCHEDULE_ID</tt> if the requested schedule doesn't exist.
+// Responds with <tt>INVALID_SCHEDULE_ID</tt> if the requested schedule doesn't exist.
 type ScheduleGetInfoQuery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header     *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`         // standard info sent from client to node including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	ScheduleID *ScheduleID  `protobuf:"bytes,2,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"` // The id of the schedule to interrogate
+	//*
+	// standard info sent from client to node including the signed payment, and what kind of response
+	// is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The id of the schedule to interrogate
+	ScheduleID *ScheduleID `protobuf:"bytes,2,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"`
 }
 
 func (x *ScheduleGetInfoQuery) Reset() {
@@ -79,26 +84,45 @@ func (x *ScheduleGetInfoQuery) GetScheduleID() *ScheduleID {
 	return nil
 }
 
-//
-//Information summarizing schedule state
+//*
+// Information summarizing schedule state
 type ScheduleInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ScheduleID *ScheduleID `protobuf:"bytes,1,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"` // The id of the schedule
+	//*
+	// The id of the schedule
+	ScheduleID *ScheduleID `protobuf:"bytes,1,opt,name=scheduleID,proto3" json:"scheduleID,omitempty"`
 	// Types that are assignable to Data:
 	//	*ScheduleInfo_DeletionTime
 	//	*ScheduleInfo_ExecutionTime
-	Data                     isScheduleInfo_Data         `protobuf_oneof:"data"`
-	ExpirationTime           *Timestamp                  `protobuf:"bytes,4,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`                     // The time at which the schedule will expire
-	ScheduledTransactionBody *SchedulableTransactionBody `protobuf:"bytes,5,opt,name=scheduledTransactionBody,proto3" json:"scheduledTransactionBody,omitempty"` // The scheduled transaction
-	Memo                     string                      `protobuf:"bytes,6,opt,name=memo,proto3" json:"memo,omitempty"`                                         // The publicly visible memo of the schedule
-	AdminKey                 *Key                        `protobuf:"bytes,7,opt,name=adminKey,proto3" json:"adminKey,omitempty"`                                 // The key used to delete the schedule from state
-	Signers                  *KeyList                    `protobuf:"bytes,8,opt,name=signers,proto3" json:"signers,omitempty"`                                   // The Ed25519 keys the network deems to have signed the scheduled transaction
-	CreatorAccountID         *AccountID                  `protobuf:"bytes,9,opt,name=creatorAccountID,proto3" json:"creatorAccountID,omitempty"`                 // The id of the account that created the schedule
-	PayerAccountID           *AccountID                  `protobuf:"bytes,10,opt,name=payerAccountID,proto3" json:"payerAccountID,omitempty"`                    // The id of the account responsible for the service fee of the scheduled transaction
-	ScheduledTransactionID   *TransactionID              `protobuf:"bytes,11,opt,name=scheduledTransactionID,proto3" json:"scheduledTransactionID,omitempty"`    // The transaction id that will be used in the record of the scheduled transaction (if it executes)
+	Data isScheduleInfo_Data `protobuf_oneof:"data"`
+	//*
+	// The time at which the schedule will expire
+	ExpirationTime *Timestamp `protobuf:"bytes,4,opt,name=expirationTime,proto3" json:"expirationTime,omitempty"`
+	//*
+	// The scheduled transaction
+	ScheduledTransactionBody *SchedulableTransactionBody `protobuf:"bytes,5,opt,name=scheduledTransactionBody,proto3" json:"scheduledTransactionBody,omitempty"`
+	//*
+	// The publicly visible memo of the schedule
+	Memo string `protobuf:"bytes,6,opt,name=memo,proto3" json:"memo,omitempty"`
+	//*
+	// The key used to delete the schedule from state
+	AdminKey *Key `protobuf:"bytes,7,opt,name=adminKey,proto3" json:"adminKey,omitempty"`
+	//*
+	// The Ed25519 keys the network deems to have signed the scheduled transaction
+	Signers *KeyList `protobuf:"bytes,8,opt,name=signers,proto3" json:"signers,omitempty"`
+	//*
+	// The id of the account that created the schedule
+	CreatorAccountID *AccountID `protobuf:"bytes,9,opt,name=creatorAccountID,proto3" json:"creatorAccountID,omitempty"`
+	//*
+	// The id of the account responsible for the service fee of the scheduled transaction
+	PayerAccountID *AccountID `protobuf:"bytes,10,opt,name=payerAccountID,proto3" json:"payerAccountID,omitempty"`
+	//*
+	// The transaction id that will be used in the record of the scheduled transaction (if it
+	// executes)
+	ScheduledTransactionID *TransactionID `protobuf:"bytes,11,opt,name=scheduledTransactionID,proto3" json:"scheduledTransactionID,omitempty"`
 }
 
 func (x *ScheduleInfo) Reset() {
@@ -222,26 +246,35 @@ type isScheduleInfo_Data interface {
 }
 
 type ScheduleInfo_DeletionTime struct {
-	DeletionTime *Timestamp `protobuf:"bytes,2,opt,name=deletion_time,json=deletionTime,proto3,oneof"` // If the schedule has been deleted, the consensus time when this occurred
+	//*
+	// If the schedule has been deleted, the consensus time when this occurred
+	DeletionTime *Timestamp `protobuf:"bytes,2,opt,name=deletion_time,json=deletionTime,proto3,oneof"`
 }
 
 type ScheduleInfo_ExecutionTime struct {
-	ExecutionTime *Timestamp `protobuf:"bytes,3,opt,name=execution_time,json=executionTime,proto3,oneof"` // If the schedule has been executed, the consensus time when this occurred
+	//*
+	// If the schedule has been executed, the consensus time when this occurred
+	ExecutionTime *Timestamp `protobuf:"bytes,3,opt,name=execution_time,json=executionTime,proto3,oneof"`
 }
 
 func (*ScheduleInfo_DeletionTime) isScheduleInfo_Data() {}
 
 func (*ScheduleInfo_ExecutionTime) isScheduleInfo_Data() {}
 
-//
-//Response wrapper for the <tt>ScheduleInfo</tt>
+//*
+// Response wrapper for the <tt>ScheduleInfo</tt>
 type ScheduleGetInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header       *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`             // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	ScheduleInfo *ScheduleInfo   `protobuf:"bytes,2,opt,name=scheduleInfo,proto3" json:"scheduleInfo,omitempty"` // The information requested about this schedule instance
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof, or
+	// both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The information requested about this schedule instance
+	ScheduleInfo *ScheduleInfo `protobuf:"bytes,2,opt,name=scheduleInfo,proto3" json:"scheduleInfo,omitempty"`
 }
 
 func (x *ScheduleGetInfoResponse) Reset() {

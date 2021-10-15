@@ -25,8 +25,12 @@ type SignedTransaction struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BodyBytes []byte        `protobuf:"bytes,1,opt,name=bodyBytes,proto3" json:"bodyBytes,omitempty"` // TransactionBody serialized into bytes, which needs to be signed
-	SigMap    *SignatureMap `protobuf:"bytes,2,opt,name=sigMap,proto3" json:"sigMap,omitempty"`       // The signatures on the body with the new format, to authorize the transaction
+	//*
+	// TransactionBody serialized into bytes, which needs to be signed
+	BodyBytes []byte `protobuf:"bytes,1,opt,name=bodyBytes,proto3" json:"bodyBytes,omitempty"`
+	//*
+	// The signatures on the body with the new format, to authorize the transaction
+	SigMap *SignatureMap `protobuf:"bytes,2,opt,name=sigMap,proto3" json:"sigMap,omitempty"`
 }
 
 func (x *SignedTransaction) Reset() {

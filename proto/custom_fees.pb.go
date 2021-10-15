@@ -20,18 +20,29 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// A fraction of the transferred units of a token to assess as a fee. The amount assessed
-//will never be less than the given minimum_amount, and never greater than the given maximum_amount.
-//The denomination is always units of the token to which this fractional fee is attached.
+//*
+// A fraction of the transferred units of a token to assess as a fee. The amount assessed will never
+// be less than the given minimum_amount, and never greater than the given maximum_amount.  The
+// denomination is always units of the token to which this fractional fee is attached.
 type FractionalFee struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FractionalAmount *Fraction `protobuf:"bytes,1,opt,name=fractional_amount,json=fractionalAmount,proto3" json:"fractional_amount,omitempty"` // The fraction of the transferred units to assess as a fee
-	MinimumAmount    int64     `protobuf:"varint,2,opt,name=minimum_amount,json=minimumAmount,proto3" json:"minimum_amount,omitempty"`         // The minimum amount to assess
-	MaximumAmount    int64     `protobuf:"varint,3,opt,name=maximum_amount,json=maximumAmount,proto3" json:"maximum_amount,omitempty"`         // The maximum amount to assess (zero implies no maximum)
-	NetOfTransfers   bool      `protobuf:"varint,4,opt,name=net_of_transfers,json=netOfTransfers,proto3" json:"net_of_transfers,omitempty"`    // If true, assesses the fee to the sender, so the receiver gets the full amount from the token transfer list, and the sender is charged an additional fee; if false, the receiver does NOT get the full amount, but only what is left over after paying the fractional fee
+	//*
+	// The fraction of the transferred units to assess as a fee
+	FractionalAmount *Fraction `protobuf:"bytes,1,opt,name=fractional_amount,json=fractionalAmount,proto3" json:"fractional_amount,omitempty"`
+	//*
+	// The minimum amount to assess
+	MinimumAmount int64 `protobuf:"varint,2,opt,name=minimum_amount,json=minimumAmount,proto3" json:"minimum_amount,omitempty"`
+	//*
+	// The maximum amount to assess (zero implies no maximum)
+	MaximumAmount int64 `protobuf:"varint,3,opt,name=maximum_amount,json=maximumAmount,proto3" json:"maximum_amount,omitempty"`
+	//*
+	// If true, assesses the fee to the sender, so the receiver gets the full amount from the token
+	// transfer list, and the sender is charged an additional fee; if false, the receiver does NOT get
+	// the full amount, but only what is left over after paying the fractional fee
+	NetOfTransfers bool `protobuf:"varint,4,opt,name=net_of_transfers,json=netOfTransfers,proto3" json:"net_of_transfers,omitempty"`
 }
 
 func (x *FractionalFee) Reset() {
@@ -94,15 +105,21 @@ func (x *FractionalFee) GetNetOfTransfers() bool {
 	return false
 }
 
-// A fixed number of units (hbar or token) to assess as a fee during a CryptoTransfer
-//that transfers units of the token to which this fixed fee is attached.
+//*
+// A fixed number of units (hbar or token) to assess as a fee during a CryptoTransfer that transfers
+// units of the token to which this fixed fee is attached.
 type FixedFee struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Amount              int64    `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`                                                       // The number of units to assess as a fee
-	DenominatingTokenId *TokenID `protobuf:"bytes,2,opt,name=denominating_token_id,json=denominatingTokenId,proto3" json:"denominating_token_id,omitempty"` // The denomination of the fee; taken as hbar if left unset and, in a TokenCreate, taken as the id of the newly created token if set to the sentinel value of 0.0.0
+	//*
+	// The number of units to assess as a fee
+	Amount int64 `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	//*
+	// The denomination of the fee; taken as hbar if left unset and, in a TokenCreate, taken as the id
+	// of the newly created token if set to the sentinel value of 0.0.0
+	DenominatingTokenId *TokenID `protobuf:"bytes,2,opt,name=denominating_token_id,json=denominatingTokenId,proto3" json:"denominating_token_id,omitempty"`
 }
 
 func (x *FixedFee) Reset() {
@@ -151,19 +168,24 @@ func (x *FixedFee) GetDenominatingTokenId() *TokenID {
 	return nil
 }
 
-// A fee to assess during a CryptoTransfer that changes ownership of an NFT. Defines
-//the fraction of the fungible value exchanged for an NFT that the ledger should collect
-//as a royalty. ("Fungible value" includes both ℏ and units of fungible HTS tokens.) When
-//the NFT sender does not receive any fungible value, the ledger will assess the fallback
-//fee, if present, to the new NFT owner. Royalty fees can only be added to tokens of type
-//type NON_FUNGIBLE_UNIQUE.
+//*
+// A fee to assess during a CryptoTransfer that changes ownership of an NFT. Defines the fraction of
+// the fungible value exchanged for an NFT that the ledger should collect as a royalty. ("Fungible
+// value" includes both ℏ and units of fungible HTS tokens.) When the NFT sender does not receive
+// any fungible value, the ledger will assess the fallback fee, if present, to the new NFT owner.
+// Royalty fees can only be added to tokens of type type NON_FUNGIBLE_UNIQUE.
 type RoyaltyFee struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ExchangeValueFraction *Fraction `protobuf:"bytes,1,opt,name=exchange_value_fraction,json=exchangeValueFraction,proto3" json:"exchange_value_fraction,omitempty"` // The fraction of fungible value exchanged for an NFT to collect as royalty
-	FallbackFee           *FixedFee `protobuf:"bytes,2,opt,name=fallback_fee,json=fallbackFee,proto3" json:"fallback_fee,omitempty"`                                 // If present, the fixed fee to assess to the NFT receiver when no fungible value is exchanged with the sender
+	//*
+	// The fraction of fungible value exchanged for an NFT to collect as royalty
+	ExchangeValueFraction *Fraction `protobuf:"bytes,1,opt,name=exchange_value_fraction,json=exchangeValueFraction,proto3" json:"exchange_value_fraction,omitempty"`
+	//*
+	// If present, the fixed fee to assess to the NFT receiver when no fungible value is exchanged
+	// with the sender
+	FallbackFee *FixedFee `protobuf:"bytes,2,opt,name=fallback_fee,json=fallbackFee,proto3" json:"fallback_fee,omitempty"`
 }
 
 func (x *RoyaltyFee) Reset() {
@@ -212,9 +234,10 @@ func (x *RoyaltyFee) GetFallbackFee() *FixedFee {
 	return nil
 }
 
-// A transfer fee to assess during a CryptoTransfer that transfers units of the token
-//to which the fee is attached. A custom fee may be either fixed or fractional, and must specify
-//a fee collector account to receive the assessed fees. Only positive fees may be assessed.
+//*
+// A transfer fee to assess during a CryptoTransfer that transfers units of the token to which the
+// fee is attached. A custom fee may be either fixed or fractional, and must specify a fee collector
+// account to receive the assessed fees. Only positive fees may be assessed.
 type CustomFee struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -224,8 +247,10 @@ type CustomFee struct {
 	//	*CustomFee_FixedFee
 	//	*CustomFee_FractionalFee
 	//	*CustomFee_RoyaltyFee
-	Fee                   isCustomFee_Fee `protobuf_oneof:"fee"`
-	FeeCollectorAccountId *AccountID      `protobuf:"bytes,3,opt,name=fee_collector_account_id,json=feeCollectorAccountId,proto3" json:"fee_collector_account_id,omitempty"` // The account to receive the custom fee
+	Fee isCustomFee_Fee `protobuf_oneof:"fee"`
+	//*
+	// The account to receive the custom fee
+	FeeCollectorAccountId *AccountID `protobuf:"bytes,3,opt,name=fee_collector_account_id,json=feeCollectorAccountId,proto3" json:"fee_collector_account_id,omitempty"`
 }
 
 func (x *CustomFee) Reset() {
@@ -300,15 +325,21 @@ type isCustomFee_Fee interface {
 }
 
 type CustomFee_FixedFee struct {
-	FixedFee *FixedFee `protobuf:"bytes,1,opt,name=fixed_fee,json=fixedFee,proto3,oneof"` // Fixed fee to be charged
+	//*
+	// Fixed fee to be charged
+	FixedFee *FixedFee `protobuf:"bytes,1,opt,name=fixed_fee,json=fixedFee,proto3,oneof"`
 }
 
 type CustomFee_FractionalFee struct {
-	FractionalFee *FractionalFee `protobuf:"bytes,2,opt,name=fractional_fee,json=fractionalFee,proto3,oneof"` // Fractional fee to be charged
+	//*
+	// Fractional fee to be charged
+	FractionalFee *FractionalFee `protobuf:"bytes,2,opt,name=fractional_fee,json=fractionalFee,proto3,oneof"`
 }
 
 type CustomFee_RoyaltyFee struct {
-	RoyaltyFee *RoyaltyFee `protobuf:"bytes,4,opt,name=royalty_fee,json=royaltyFee,proto3,oneof"` // Royalty fee to be charged
+	//*
+	// Royalty fee to be charged
+	RoyaltyFee *RoyaltyFee `protobuf:"bytes,4,opt,name=royalty_fee,json=royaltyFee,proto3,oneof"`
 }
 
 func (*CustomFee_FixedFee) isCustomFee_Fee() {}
@@ -317,16 +348,25 @@ func (*CustomFee_FractionalFee) isCustomFee_Fee() {}
 
 func (*CustomFee_RoyaltyFee) isCustomFee_Fee() {}
 
+//*
 // A custom transfer fee that was assessed during handling of a CryptoTransfer.
 type AssessedCustomFee struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Amount                  int64        `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`                                                                     // The number of units assessed for the fee
-	TokenId                 *TokenID     `protobuf:"bytes,2,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`                                                     // The denomination of the fee; taken as hbar if left unset
-	FeeCollectorAccountId   *AccountID   `protobuf:"bytes,3,opt,name=fee_collector_account_id,json=feeCollectorAccountId,proto3" json:"fee_collector_account_id,omitempty"`       // The account to receive the assessed fee
-	EffectivePayerAccountId []*AccountID `protobuf:"bytes,4,rep,name=effective_payer_account_id,json=effectivePayerAccountId,proto3" json:"effective_payer_account_id,omitempty"` // The account(s) whose final balances would have been higher in the absence of this assessed fee
+	//*
+	// The number of units assessed for the fee
+	Amount int64 `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	//*
+	// The denomination of the fee; taken as hbar if left unset
+	TokenId *TokenID `protobuf:"bytes,2,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	//*
+	// The account to receive the assessed fee
+	FeeCollectorAccountId *AccountID `protobuf:"bytes,3,opt,name=fee_collector_account_id,json=feeCollectorAccountId,proto3" json:"fee_collector_account_id,omitempty"`
+	//*
+	// The account(s) whose final balances would have been higher in the absence of this assessed fee
+	EffectivePayerAccountId []*AccountID `protobuf:"bytes,4,rep,name=effective_payer_account_id,json=effectivePayerAccountId,proto3" json:"effective_payer_account_id,omitempty"`
 }
 
 func (x *AssessedCustomFee) Reset() {

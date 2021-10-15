@@ -18,20 +18,28 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileServiceClient interface {
+	//*
 	// Creates a file
 	CreateFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Updates a file
 	UpdateFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Deletes a file
 	DeleteFile(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Appends to a file
 	AppendContent(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Retrieves the file contents
 	GetFileContent(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Retrieves the file information
 	GetFileInfo(ctx context.Context, in *Query, opts ...grpc.CallOption) (*Response, error)
+	//*
 	// Deletes a file if the submitting account has network admin privileges
 	SystemDelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
+	//*
 	// Undeletes a file if the submitting account has network admin privileges
 	SystemUndelete(ctx context.Context, in *Transaction, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
@@ -120,20 +128,28 @@ func (c *fileServiceClient) SystemUndelete(ctx context.Context, in *Transaction,
 // All implementations must embed UnimplementedFileServiceServer
 // for forward compatibility
 type FileServiceServer interface {
+	//*
 	// Creates a file
 	CreateFile(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Updates a file
 	UpdateFile(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Deletes a file
 	DeleteFile(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Appends to a file
 	AppendContent(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Retrieves the file contents
 	GetFileContent(context.Context, *Query) (*Response, error)
+	//*
 	// Retrieves the file information
 	GetFileInfo(context.Context, *Query) (*Response, error)
+	//*
 	// Deletes a file if the submitting account has network admin privileges
 	SystemDelete(context.Context, *Transaction) (*TransactionResponse, error)
+	//*
 	// Undeletes a file if the submitting account has network admin privileges
 	SystemUndelete(context.Context, *Transaction) (*TransactionResponse, error)
 	mustEmbedUnimplementedFileServiceServer()

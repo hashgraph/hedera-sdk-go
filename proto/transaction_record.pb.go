@@ -20,27 +20,56 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // Response when the client sends the node TransactionGetRecordResponse
 type TransactionRecord struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Receipt            *TransactionReceipt `protobuf:"bytes,1,opt,name=receipt,proto3" json:"receipt,omitempty"`                       // The status (reach consensus, or failed, or is unknown) and the ID of any new account/file/instance created.
-	TransactionHash    []byte              `protobuf:"bytes,2,opt,name=transactionHash,proto3" json:"transactionHash,omitempty"`       // The hash of the Transaction that executed (not the hash of any Transaction that failed for having a duplicate TransactionID)
-	ConsensusTimestamp *Timestamp          `protobuf:"bytes,3,opt,name=consensusTimestamp,proto3" json:"consensusTimestamp,omitempty"` // The consensus timestamp (or null if didn't reach consensus yet)
-	TransactionID      *TransactionID      `protobuf:"bytes,4,opt,name=transactionID,proto3" json:"transactionID,omitempty"`           // The ID of the transaction this record represents
-	Memo               string              `protobuf:"bytes,5,opt,name=memo,proto3" json:"memo,omitempty"`                             // The memo that was submitted as part of the transaction (max 100 bytes)
-	TransactionFee     uint64              `protobuf:"varint,6,opt,name=transactionFee,proto3" json:"transactionFee,omitempty"`        // The actual transaction fee charged, not the original transactionFee value from TransactionBody
+	//*
+	// The status (reach consensus, or failed, or is unknown) and the ID of any new
+	// account/file/instance created.
+	Receipt *TransactionReceipt `protobuf:"bytes,1,opt,name=receipt,proto3" json:"receipt,omitempty"`
+	//*
+	// The hash of the Transaction that executed (not the hash of any Transaction that failed for
+	// having a duplicate TransactionID)
+	TransactionHash []byte `protobuf:"bytes,2,opt,name=transactionHash,proto3" json:"transactionHash,omitempty"`
+	//*
+	// The consensus timestamp (or null if didn't reach consensus yet)
+	ConsensusTimestamp *Timestamp `protobuf:"bytes,3,opt,name=consensusTimestamp,proto3" json:"consensusTimestamp,omitempty"`
+	//*
+	// The ID of the transaction this record represents
+	TransactionID *TransactionID `protobuf:"bytes,4,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
+	//*
+	// The memo that was submitted as part of the transaction (max 100 bytes)
+	Memo string `protobuf:"bytes,5,opt,name=memo,proto3" json:"memo,omitempty"`
+	//*
+	// The actual transaction fee charged, not the original transactionFee value from
+	// TransactionBody
+	TransactionFee uint64 `protobuf:"varint,6,opt,name=transactionFee,proto3" json:"transactionFee,omitempty"`
 	// Types that are assignable to Body:
 	//	*TransactionRecord_ContractCallResult
 	//	*TransactionRecord_ContractCreateResult
-	Body                       isTransactionRecord_Body `protobuf_oneof:"body"`
-	TransferList               *TransferList            `protobuf:"bytes,10,opt,name=transferList,proto3" json:"transferList,omitempty"`                                                                 // All hbar transfers as a result of this transaction, such as fees, or transfers performed by the transaction, or by a smart contract it calls, or by the creation of threshold records that it triggers.
-	TokenTransferLists         []*TokenTransferList     `protobuf:"bytes,11,rep,name=tokenTransferLists,proto3" json:"tokenTransferLists,omitempty"`                                                     // All Token transfers as a result of this transaction
-	ScheduleRef                *ScheduleID              `protobuf:"bytes,12,opt,name=scheduleRef,proto3" json:"scheduleRef,omitempty"`                                                                   // Reference to the scheduled transaction ID that this transaction record represent
-	AssessedCustomFees         []*AssessedCustomFee     `protobuf:"bytes,13,rep,name=assessed_custom_fees,json=assessedCustomFees,proto3" json:"assessed_custom_fees,omitempty"`                         // All custom fees that were assessed during a CryptoTransfer, and must be paid if the transaction status resolved to SUCCESS
-	AutomaticTokenAssociations []*TokenAssociation      `protobuf:"bytes,14,rep,name=automatic_token_associations,json=automaticTokenAssociations,proto3" json:"automatic_token_associations,omitempty"` // All token associations implicitly created while handling this transaction
+	Body isTransactionRecord_Body `protobuf_oneof:"body"`
+	//*
+	// All hbar transfers as a result of this transaction, such as fees, or transfers performed by
+	// the transaction, or by a smart contract it calls, or by the creation of threshold records
+	// that it triggers.
+	TransferList *TransferList `protobuf:"bytes,10,opt,name=transferList,proto3" json:"transferList,omitempty"`
+	//*
+	// All Token transfers as a result of this transaction
+	TokenTransferLists []*TokenTransferList `protobuf:"bytes,11,rep,name=tokenTransferLists,proto3" json:"tokenTransferLists,omitempty"`
+	//*
+	// Reference to the scheduled transaction ID that this transaction record represent
+	ScheduleRef *ScheduleID `protobuf:"bytes,12,opt,name=scheduleRef,proto3" json:"scheduleRef,omitempty"`
+	//*
+	// All custom fees that were assessed during a CryptoTransfer, and must be paid if the
+	// transaction status resolved to SUCCESS
+	AssessedCustomFees []*AssessedCustomFee `protobuf:"bytes,13,rep,name=assessed_custom_fees,json=assessedCustomFees,proto3" json:"assessed_custom_fees,omitempty"`
+	//*
+	// All token associations implicitly created while handling this transaction
+	AutomaticTokenAssociations []*TokenAssociation `protobuf:"bytes,14,rep,name=automatic_token_associations,json=automaticTokenAssociations,proto3" json:"automatic_token_associations,omitempty"`
 }
 
 func (x *TransactionRecord) Reset() {
@@ -178,11 +207,17 @@ type isTransactionRecord_Body interface {
 }
 
 type TransactionRecord_ContractCallResult struct {
-	ContractCallResult *ContractFunctionResult `protobuf:"bytes,7,opt,name=contractCallResult,proto3,oneof"` // Record of the value returned by the smart contract function (if it completed and didn't fail) from ContractCallTransaction
+	//*
+	// Record of the value returned by the smart contract function (if it completed and didn't
+	// fail) from ContractCallTransaction
+	ContractCallResult *ContractFunctionResult `protobuf:"bytes,7,opt,name=contractCallResult,proto3,oneof"`
 }
 
 type TransactionRecord_ContractCreateResult struct {
-	ContractCreateResult *ContractFunctionResult `protobuf:"bytes,8,opt,name=contractCreateResult,proto3,oneof"` // Record of the value returned by the smart contract constructor (if it completed and didn't fail) from ContractCreateTransaction
+	//*
+	// Record of the value returned by the smart contract constructor (if it completed and
+	// didn't fail) from ContractCreateTransaction
+	ContractCreateResult *ContractFunctionResult `protobuf:"bytes,8,opt,name=contractCreateResult,proto3,oneof"`
 }
 
 func (*TransactionRecord_ContractCallResult) isTransactionRecord_Body() {}

@@ -209,7 +209,7 @@ func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
 			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: transaction.receiverSignatureRequired},
 		},
 		Memo:                          &wrapperspb.StringValue{Value: transaction.memo},
-		MaxAutomaticTokenAssociations: &wrapperspb.UInt32Value{Value: transaction.maxAutomaticTokenAssociations},
+		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: int32(transaction.maxAutomaticTokenAssociations)},
 	}
 
 	if transaction.autoRenewPeriod != nil {
@@ -242,7 +242,7 @@ func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
 		},
 	}
 
-	body.MaxAutomaticTokenAssociations = &wrapperspb.UInt32Value{Value: transaction.maxAutomaticTokenAssociations}
+	body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: int32(transaction.maxAutomaticTokenAssociations)}
 
 	return &pb
 }

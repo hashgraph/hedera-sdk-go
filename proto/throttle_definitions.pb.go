@@ -20,14 +20,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+//*
 // A set of operations which should be collectively throttled at a given milli-ops-per-second limit.
 type ThrottleGroup struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Operations     []HederaFunctionality `protobuf:"varint,1,rep,packed,name=operations,proto3,enum=proto.HederaFunctionality" json:"operations,omitempty"` // The operations to be throttled
-	MilliOpsPerSec uint64                `protobuf:"varint,2,opt,name=milliOpsPerSec,proto3" json:"milliOpsPerSec,omitempty"`                               // The number of total operations per second across the entire network, multiplied by 1000. So, to choose 3 operations per second (which on a network of 30 nodes is a tenth of an operation per second for each node), set milliOpsPerSec = 3000. And to choose 3.6 ops per second, use milliOpsPerSec = 3600. Minimum allowed value is 1, and maximum allowed value is 9223372.
+	//*
+	// The operations to be throttled
+	Operations []HederaFunctionality `protobuf:"varint,1,rep,packed,name=operations,proto3,enum=proto.HederaFunctionality" json:"operations,omitempty"`
+	//*
+	// The number of total operations per second across the entire network, multiplied by 1000. So, to
+	// choose 3 operations per second (which on a network of 30 nodes is a tenth of an operation per
+	// second for each node), set milliOpsPerSec = 3000. And to choose 3.6 ops per second, use
+	// milliOpsPerSec = 3600. Minimum allowed value is 1, and maximum allowed value is 9223372.
+	MilliOpsPerSec uint64 `protobuf:"varint,2,opt,name=milliOpsPerSec,proto3" json:"milliOpsPerSec,omitempty"`
 }
 
 func (x *ThrottleGroup) Reset() {
@@ -76,15 +84,24 @@ func (x *ThrottleGroup) GetMilliOpsPerSec() uint64 {
 	return 0
 }
 
+//*
 // A list of throttle groups that should all compete for the same internal bucket.
 type ThrottleBucket struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name           string           `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`                     // A name for this bucket (primarily for use in logs)
-	BurstPeriodMs  uint64           `protobuf:"varint,2,opt,name=burstPeriodMs,proto3" json:"burstPeriodMs,omitempty"`  // The number of milliseconds required for this bucket to drain completely when full. The product of this number and the least common multiple of the milliOpsPerSec values in this bucket must not exceed 9223372036.
-	ThrottleGroups []*ThrottleGroup `protobuf:"bytes,3,rep,name=throttleGroups,proto3" json:"throttleGroups,omitempty"` // The throttle groups competing for this bucket
+	//*
+	// A name for this bucket (primarily for use in logs)
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	//*
+	// The number of milliseconds required for this bucket to drain completely when full. The product
+	// of this number and the least common multiple of the milliOpsPerSec values in this bucket must
+	// not exceed 9223372036.
+	BurstPeriodMs uint64 `protobuf:"varint,2,opt,name=burstPeriodMs,proto3" json:"burstPeriodMs,omitempty"`
+	//*
+	// The throttle groups competing for this bucket
+	ThrottleGroups []*ThrottleGroup `protobuf:"bytes,3,rep,name=throttleGroups,proto3" json:"throttleGroups,omitempty"`
 }
 
 func (x *ThrottleBucket) Reset() {
@@ -140,12 +157,13 @@ func (x *ThrottleBucket) GetThrottleGroups() []*ThrottleGroup {
 	return nil
 }
 
+//*
 // A list of throttle buckets which, simultaneously enforced, define the system's throttling policy.
-//<ol>
-//<li> When an operation appears in more than one throttling bucket, all its buckets must have room
-//or it will be throttled.</li>
-//<li>An operation assigned to no buckets is always throttled.</li>
-//</ol>
+// <ol>
+// <li> When an operation appears in more than one throttling bucket, all its buckets must have room
+// or it will be throttled.</li>
+// <li>An operation assigned to no buckets is always throttled.</li>
+// </ol>
 type ThrottleDefinitions struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

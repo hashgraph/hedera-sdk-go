@@ -20,14 +20,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on NFTs N through M on the list of NFTs associated with a given NON_FUNGIBLE_UNIQUE Token.
-// Example: If there are 10 NFTs issued, having start=0 and end=5 will query for the first 5 NFTs. Querying +all 10 NFTs will require start=0 and end=10
+//*
+// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on NFTs N through M on the list
+// of NFTs associated with a given NON_FUNGIBLE_UNIQUE Token.
+// Example: If there are 10 NFTs issued, having start=0 and end=5 will query for the first 5 NFTs.
+// Querying +all 10 NFTs will require start=0 and end=10
 //
 // INVALID_QUERY_RANGE response code will be returned if:
 // 1) Start > End
 // 2) Start and End indices are non-positive
 // 3) Start and End indices are out of boundaries for the retrieved nft list
-// 4) The range between Start and End is bigger than the global dynamic property for maximum query range
+// 4) The range between Start and End is bigger than the global dynamic property for maximum query
+// range
 //
 // NOT_SUPPORTED response code will be returned if the queried token is of type FUNGIBLE_COMMON
 //
@@ -37,10 +41,21 @@ type TokenGetNftInfosQuery struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header  *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`   // Standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither).
-	TokenID *TokenID     `protobuf:"bytes,2,opt,name=tokenID,proto3" json:"tokenID,omitempty"` // The ID of the token for which information is requested
-	Start   int64        `protobuf:"varint,3,opt,name=start,proto3" json:"start,omitempty"`    // Specifies the start index (inclusive) of the range of NFTs to query for. Value must be in the range [0; ownedNFTs-1]
-	End     int64        `protobuf:"varint,4,opt,name=end,proto3" json:"end,omitempty"`        // Specifies the end index (exclusive) of the range of NFTs to query for. Value must be in the range (start; ownedNFTs]
+	//*
+	// Standard info sent from client to node, including the signed payment, and what kind of
+	// response is requested (cost, state proof, both, or neither).
+	Header *QueryHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The ID of the token for which information is requested
+	TokenID *TokenID `protobuf:"bytes,2,opt,name=tokenID,proto3" json:"tokenID,omitempty"`
+	//*
+	// Specifies the start index (inclusive) of the range of NFTs to query for. Value must be in the
+	// range [0; ownedNFTs-1]
+	Start int64 `protobuf:"varint,3,opt,name=start,proto3" json:"start,omitempty"`
+	//*
+	// Specifies the end index (exclusive) of the range of NFTs to query for. Value must be in the
+	// range (start; ownedNFTs]
+	End int64 `protobuf:"varint,4,opt,name=end,proto3" json:"end,omitempty"`
 }
 
 func (x *TokenGetNftInfosQuery) Reset() {
@@ -108,9 +123,16 @@ type TokenGetNftInfosResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header  *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`   // Standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
-	TokenID *TokenID        `protobuf:"bytes,2,opt,name=tokenID,proto3" json:"tokenID,omitempty"` // The Token with type NON_FUNGIBLE that this record is for
-	Nfts    []*TokenNftInfo `protobuf:"bytes,3,rep,name=nfts,proto3" json:"nfts,omitempty"`       // List of NFTs associated to the specified token
+	//*
+	// Standard response from node to client, including the requested fields: cost, or state proof,
+	// or both, or neither
+	Header *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	//*
+	// The Token with type NON_FUNGIBLE that this record is for
+	TokenID *TokenID `protobuf:"bytes,2,opt,name=tokenID,proto3" json:"tokenID,omitempty"`
+	//*
+	// List of NFTs associated to the specified token
+	Nfts []*TokenNftInfo `protobuf:"bytes,3,rep,name=nfts,proto3" json:"nfts,omitempty"`
 }
 
 func (x *TokenGetNftInfosResponse) Reset() {
