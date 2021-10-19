@@ -8,11 +8,10 @@ import (
 
 type FreezeTransaction struct {
 	Transaction
-	startTime  time.Time
-	endTime    time.Time
-	fileID     *FileID
-	fileHash   []byte
-	freezeType FreezeType
+	startTime time.Time
+	endTime   time.Time
+	fileID    *FileID
+	fileHash  []byte
 }
 
 func NewFreezeTransaction() *FreezeTransaction {
@@ -57,14 +56,12 @@ func (transaction *FreezeTransaction) GetStartTime() time.Time {
 	return transaction.startTime
 }
 
-// Deprecated
 func (transaction *FreezeTransaction) SetEndTime(endTime time.Time) *FreezeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.endTime = endTime
 	return transaction
 }
 
-// Deprecated
 func (transaction *FreezeTransaction) GetEndTime() time.Time {
 	return transaction.endTime
 }
@@ -79,16 +76,6 @@ func (transaction *FreezeTransaction) GetFileID() *FileID {
 	return transaction.fileID
 }
 
-func (transaction *FreezeTransaction) SetFreezeType(freezeType FreezeType) *FreezeTransaction {
-	transaction._RequireNotFrozen()
-	transaction.freezeType = freezeType
-	return transaction
-}
-
-func (transaction *FreezeTransaction) GetFreezeType() FreezeType {
-	return transaction.freezeType
-}
-
 func (transaction *FreezeTransaction) SetFileHash(hash []byte) *FreezeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.fileHash = hash
@@ -101,9 +88,11 @@ func (transaction *FreezeTransaction) GetFileHash() []byte {
 
 func (transaction *FreezeTransaction) _Build() *proto.TransactionBody {
 	body := &proto.FreezeTransactionBody{
-		FileHash:   transaction.fileHash,
-		StartTime:  _TimeToProtobuf(transaction.startTime),
-		FreezeType: proto.FreezeType(transaction.freezeType),
+		StartHour: int32(transaction.startTime.Hour()),
+		StartMin:  int32(transaction.startTime.Minute()),
+		EndHour:   int32(transaction.endTime.Hour()),
+		EndMin:    int32(transaction.endTime.Minute()),
+		FileHash:  transaction.fileHash,
 	}
 
 	if transaction.fileID != nil {
@@ -134,9 +123,11 @@ func (transaction *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, er
 
 func (transaction *FreezeTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
 	body := &proto.FreezeTransactionBody{
-		FileHash:   transaction.fileHash,
-		StartTime:  _TimeToProtobuf(transaction.startTime),
-		FreezeType: proto.FreezeType(transaction.freezeType),
+		StartHour: int32(transaction.startTime.Hour()),
+		StartMin:  int32(transaction.startTime.Minute()),
+		EndHour:   int32(transaction.endTime.Hour()),
+		EndMin:    int32(transaction.endTime.Minute()),
+		FileHash:  transaction.fileHash,
 	}
 
 	if transaction.fileID != nil {
