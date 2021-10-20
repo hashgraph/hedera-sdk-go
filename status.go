@@ -225,7 +225,7 @@ const (
 	StatusInsufficientSenderAccountBalanceForCustomFee             Status = 259
 	StatusSerialNumberLimitReached                                 Status = 260
 	StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique          Status = 261
-	StatusNoRemainingAutoAssociations                              Status = 262
+	StatusNoRemainingAutomaticAssociations                         Status = 262
 	StatusExistingAutomaticAssociationsExceedGivenLimit            Status = 263
 	StatusRequestedNumAutomaticAssociationsExceedsAssociationLimit Status = 264
 	StatusTokenIsPaused                                            Status = 265
@@ -687,8 +687,8 @@ func (status Status) String() string { // nolint
 		return "SERIAL_NUMBER_LIMIT_REACHED"
 	case StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique:
 		return "CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE"
-	case StatusNoRemainingAutoAssociations:
-		return "NO_REMAINING_AUTO_ASSOCIATIONS"
+	case StatusNoRemainingAutomaticAssociations:
+		return "NO_REMAINING_AUTOMATIC_ASSOCIATIONS"
 	case StatusExistingAutomaticAssociationsExceedGivenLimit:
 		return "EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT"
 	case StatusRequestedNumAutomaticAssociationsExceedsAssociationLimit:
@@ -705,6 +705,8 @@ func (status Status) String() string { // nolint
 		return "FREEZE_UPDATE_FILE_HASH_DOES_NOT_MATCH"
 	case StatusNoUpgradeHasBeenPrepared:
 		return "NO_UPGRADE_HAS_BEEN_PREPARED"
+	case StatusNoFreezeIsScheduled:
+		return "NO_FREEZE_IS_SCHEDULED"
 	case StatusUpdateFileHashChangedSincePrepareUpgrade:
 		return "UPDATE_FILE_HASH_CHANGED_SINCE_PREPARE_UPGRADE"
 	case StatusFreezeStartTimeMustBeFuture:
