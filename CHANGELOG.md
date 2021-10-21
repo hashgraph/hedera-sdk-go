@@ -1,3 +1,10 @@
+## v2.3.0
+
+### Added
+
+ * `FreezeType`
+ * `FreezeTransaction.[get|set]FreezeType()`
+
 ## v2.3.0-beta 1
 
 ### Added
