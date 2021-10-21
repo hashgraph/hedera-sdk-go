@@ -61,7 +61,7 @@ func main() {
 		SetTopicID(topicID).
 		SetStartTime(time.Unix(0, 0)).
 		Subscribe(client, func(message hedera.TopicMessage) {
-            print("Received message ", message.SequenceNumber, "\r")
+			print("Received message ", message.SequenceNumber, "\r")
 		})
 
 	if err != nil {
@@ -69,26 +69,25 @@ func main() {
 		return
 	}
 
-
 	for {
-        _, err = hedera.NewTopicMessageSubmitTransaction().
-            SetMessage([]byte(content)).
-            SetTopicID(topicID).
-            Execute(client)
+		_, err = hedera.NewTopicMessageSubmitTransaction().
+			SetMessage([]byte(content)).
+			SetTopicID(topicID).
+			Execute(client)
 
-        if err != nil {
-            println(err.Error(), ": error submitting topic")
-            return
-        }
+		if err != nil {
+			println(err.Error(), ": error submitting topic")
+			return
+		}
 
-        if uint64(time.Since(start).Seconds()) > 60 * 10 {
-            break;
-        }
+		if uint64(time.Since(start).Seconds()) > 60*10 {
+			break
+		}
 
 		time.Sleep(2000)
 	}
 
-    println()
+	println()
 
 	transactionResponse, err = hedera.NewTopicDeleteTransaction().
 		SetTopicID(topicID).

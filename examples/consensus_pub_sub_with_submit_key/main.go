@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {

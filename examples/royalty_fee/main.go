@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {
@@ -30,33 +31,33 @@ func main() {
 	client.SetOperator(operatorAccountID, operatorKey)
 
 	resp, err := hedera.NewTokenCreateTransaction().
-	SetTokenName("ffff").
-	SetTokenSymbol("F").
-	SetTokenMemo("fnord").
-	SetTokenType(hedera.TokenTypeNonFungibleUnique).
-	SetTreasuryAccountID(client.GetOperatorAccountID()).
-	SetAdminKey(client.GetOperatorPublicKey()).
-	SetFreezeKey(client.GetOperatorPublicKey()).
-	SetWipeKey(client.GetOperatorPublicKey()).
-	SetKycKey(client.GetOperatorPublicKey()).
-	SetSupplyKey(client.GetOperatorPublicKey()).
-	SetCustomFees([]hedera.Fee{
-		hedera.CustomRoyaltyFee{
-			CustomFee: hedera.CustomFee{
-				FeeCollectorAccountID: &operatorAccountID,
-			},
-			Numerator:   1,
-			Denominator: 20,
-			FallbackFee: &hedera.CustomFixedFee{
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMemo("fnord").
+		SetTokenType(hedera.TokenTypeNonFungibleUnique).
+		SetTreasuryAccountID(client.GetOperatorAccountID()).
+		SetAdminKey(client.GetOperatorPublicKey()).
+		SetFreezeKey(client.GetOperatorPublicKey()).
+		SetWipeKey(client.GetOperatorPublicKey()).
+		SetKycKey(client.GetOperatorPublicKey()).
+		SetSupplyKey(client.GetOperatorPublicKey()).
+		SetCustomFees([]hedera.Fee{
+			hedera.CustomRoyaltyFee{
 				CustomFee: hedera.CustomFee{
 					FeeCollectorAccountID: &operatorAccountID,
 				},
-				Amount: 10,
+				Numerator:   1,
+				Denominator: 20,
+				FallbackFee: &hedera.CustomFixedFee{
+					CustomFee: hedera.CustomFee{
+						FeeCollectorAccountID: &operatorAccountID,
+					},
+					Amount: 10,
+				},
 			},
-		},
-	}).
-	SetFreezeDefault(false).
-	Execute(client)
+		}).
+		SetFreezeDefault(false).
+		Execute(client)
 
 	if err != nil {
 		panic(err)
@@ -64,6 +65,6 @@ func main() {
 
 	_, err = resp.GetReceipt(client)
 	if err != nil {
-		panic(err);
+		panic(err)
 	}
 }

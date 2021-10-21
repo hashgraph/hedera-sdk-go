@@ -123,21 +123,21 @@ func main() {
 	}
 
 	var transfers map[hedera.AccountID]hedera.Hbar
-	switch tx := transfer.(type){
+	switch tx := transfer.(type) {
 	case *hedera.TransferTransaction:
 		transfers = tx.GetHbarTransfers()
 	}
 
-	if len(transfers) != 2{
+	if len(transfers) != 2 {
 		println("more transfers than expected")
 		return
 	}
 
-	if transfers[newAccountID].AsTinybar() != -hedera.NewHbar(1).AsTinybar(){
+	if transfers[newAccountID].AsTinybar() != -hedera.NewHbar(1).AsTinybar() {
 		println("transfer for ", newAccountID.String(), " is not whats is expected")
 	}
 
-	if transfers[client.GetOperatorAccountID()].AsTinybar() != hedera.NewHbar(1).AsTinybar(){
+	if transfers[client.GetOperatorAccountID()].AsTinybar() != hedera.NewHbar(1).AsTinybar() {
 		println("transfer for ", client.GetOperatorAccountID().String(), " is not whats is expected")
 	}
 

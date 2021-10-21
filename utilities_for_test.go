@@ -73,28 +73,27 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	env.Client.SetMaxNodeAttempts(1)
 	env.Client.PingAll()
 
-    network := make(map[string]AccountID)
+	network := make(map[string]AccountID)
 
-    for key, value := range env.Client.GetNetwork() {
-        _, err = NewAccountBalanceQuery().
-            SetNodeAccountIDs([]AccountID{value}).
-            SetAccountID(value).
-            Execute(env.Client)
+	for key, value := range env.Client.GetNetwork() {
+		_, err = NewAccountBalanceQuery().
+			SetNodeAccountIDs([]AccountID{value}).
+			SetAccountID(value).
+			Execute(env.Client)
 
-        if err != nil {
-            continue;
-        }
+		if err != nil {
+			continue
+		}
 
-        network[key] = value
-        break
-    }
+		network[key] = value
+		break
+	}
 
-    env.Client.SetNetwork(network)
+	env.Client.SetNetwork(network)
 
-    if len(network) == 0 {
-        panic("failed to construct network; each node returned an error")
-    }
-
+	if len(network) == 0 {
+		panic("failed to construct network; each node returned an error")
+	}
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
