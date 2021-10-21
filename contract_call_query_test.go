@@ -27,7 +27,7 @@ func TestIntegrationContractCallQueryCanExecute(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -47,7 +47,7 @@ func TestIntegrationContractCallQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(1)).
-		SetGas(2000).
+		SetGas(75000).
 		SetFunction("getMessage", nil).
 		SetMaxQueryPayment(NewHbar(5)).
 		Execute(env.Client)
@@ -58,7 +58,7 @@ func TestIntegrationContractCallQueryCanExecute(t *testing.T) {
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(10000).
+		SetGas(75000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -71,7 +71,7 @@ func TestIntegrationContractCallQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(2)).
 		SetQueryPayment(NewHbar(1)).
-		SetGas(2000).
+		SetGas(75000).
 		SetFunction("getMessage", nil).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -150,7 +150,7 @@ func TestIntegrationContractCallQueryGetCost(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -170,7 +170,7 @@ func TestIntegrationContractCallQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
 		SetMaxQueryPayment(NewHbar(1)).
-		SetGas(2000).
+		SetGas(75000).
 		SetFunction("getMessage", nil)
 
 	cost, err := callQuery.GetCost(env.Client)
@@ -222,7 +222,7 @@ func TestIntegrationContractCallQuerySetMaxPaymentBig(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -242,7 +242,7 @@ func TestIntegrationContractCallQuerySetMaxPaymentBig(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
 		SetMaxQueryPayment(NewHbar(10000)).
-		SetGas(2000).
+		SetGas(75000).
 		SetFunction("getMessage", nil)
 
 	_, err = callQuery.GetCost(env.Client)
@@ -294,7 +294,7 @@ func TestIntegrationContractCallQuerySetSmallMaxPayment(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -314,7 +314,7 @@ func TestIntegrationContractCallQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
 		SetMaxQueryPayment(HbarFromTinybar(1)).
-		SetGas(2000).
+		SetGas(75000).
 		SetFunction("getMessage", nil)
 
 	cost, err := callQuery.GetCost(env.Client)
@@ -368,7 +368,7 @@ func TestIntegrationContractCallQueryInsufficientFee(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -388,7 +388,7 @@ func TestIntegrationContractCallQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
 		SetMaxQueryPayment(NewHbar(1)).
-		SetGas(2000).
+		SetGas(75000).
 		SetFunction("getMessage", nil)
 
 	_, err = callQuery.GetCost(env.Client)
@@ -425,7 +425,7 @@ func TestIntegrationContractCallQueryNoContractID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewContractCallQuery().
-		SetGas(2000).
+		SetGas(75000).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		// test getCost
 		SetFunction("getMessage", nil).
@@ -460,7 +460,7 @@ func TestIntegrationContractCallQueryNoGas(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -530,7 +530,7 @@ func TestIntegrationContractCallQueryNoFunction(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("Hello from Hedera.")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
@@ -549,7 +549,7 @@ func TestIntegrationContractCallQueryNoFunction(t *testing.T) {
 	_, err = NewContractCallQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContractID(contractID).
-		SetGas(2000).
+		SetGas(75000).
 		SetQueryPayment(NewHbar(1)).
 		// test getCost
 		Execute(env.Client)

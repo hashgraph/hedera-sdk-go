@@ -29,7 +29,7 @@ func TestIntegrationContractCreateTransactionCanExecute(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
@@ -121,7 +121,7 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		SetBytecodeFileID(fileID).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -239,7 +239,7 @@ func TestIntegrationContractCreateTransactionNoBytecodeFileID(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(2000).
+		SetGas(75000).
 		Execute(env.Client)
 	assert.NoError(t, err)
 
