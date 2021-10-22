@@ -141,7 +141,7 @@ func TestIntegrationClientPingAllGoodNetwork(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) {
+func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	tempClient := _NewClient(env.Client.GetNetwork(), env.Client.GetMirrorNetwork(), *env.Client.network.networkName)

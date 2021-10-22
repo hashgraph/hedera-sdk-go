@@ -89,7 +89,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		break
 	}
 
-	env.Client.SetNetwork(network)
+	_ = env.Client.SetNetwork(network)
 
 	if len(network) == 0 {
 		panic("failed to construct network; each node returned an error")
