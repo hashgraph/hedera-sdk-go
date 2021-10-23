@@ -1,4 +1,4 @@
-name: CI against previewnet
+name: Previewnet
 env:
     OPERATOR_KEY: ${{ secrets.PREVIEWNET_OPERATOR_KEY }}
     OPERATOR_ID: ${{ secrets.PREVIEWNET_OPERATOR_ID }}
