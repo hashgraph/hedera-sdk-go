@@ -144,7 +144,7 @@ func (transaction *AccountCreateTransaction) _ValidateNetworkOnIDs(client *Clien
 
 	if transaction.proxyAccountID != nil {
 		if transaction.proxyAccountID != nil {
-			if err := transaction.proxyAccountID.Validate(client); err != nil {
+			if err := transaction.proxyAccountID.ValidateChecksum(client); err != nil {
 				return err
 			}
 		}

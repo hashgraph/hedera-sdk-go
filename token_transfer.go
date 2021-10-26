@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -60,4 +62,8 @@ func TokenTransferFromBytes(data []byte) (TokenTransfer, error) {
 	}
 
 	return _TokenTransferFromProtobuf(&pb), nil
+}
+
+func (transfer TokenTransfer) String() string {
+	return fmt.Sprintf("accountID: %s, amount: %d", transfer.AccountID.String(), transfer.Amount)
 }

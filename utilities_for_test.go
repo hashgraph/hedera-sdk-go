@@ -209,6 +209,9 @@ func TestIntegrationPreviewnetTls(t *testing.T) {
 	}
 
 	client := ClientForNetwork(network)
+	client.SetNetworkName(NetworkNamePreviewnet)
+	client.SetMirrorNetwork([]string{"hcs.previewnet.mirrornode.hedera.com:5600"})
+	client.SetMaxAttempts(3)
 
 	for _, nodeAccountID := range network {
 		_, err := NewAccountBalanceQuery().
@@ -229,6 +232,9 @@ func TestIntegrationTestnetTls(t *testing.T) {
 	}
 
 	client := ClientForNetwork(network)
+	client.SetNetworkName(NetworkNameTestnet)
+	client.SetMirrorNetwork([]string{"hcs.testnet.mirrornode.hedera.com:5600"})
+	client.SetMaxAttempts(3)
 
 	for _, nodeAccountID := range network {
 		_, err := NewAccountBalanceQuery().

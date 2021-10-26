@@ -102,7 +102,7 @@ func (transaction *ScheduleCreateTransaction) _ValidateNetworkOnIDs(client *Clie
 	}
 
 	if transaction.payerAccountID != nil {
-		if err := transaction.payerAccountID.Validate(client); err != nil {
+		if err := transaction.payerAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

@@ -125,7 +125,7 @@ func (transaction *TopicMessageSubmitTransaction) _ValidateNetworkOnIDs(client *
 	}
 
 	if transaction.topicID != nil {
-		if err := transaction.topicID.Validate(client); err != nil {
+		if err := transaction.topicID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

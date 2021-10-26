@@ -102,7 +102,7 @@ func (transaction *LiveHashAddTransaction) _ValidateNetworkOnIDs(client *Client)
 	}
 
 	if transaction.accountID != nil {
-		if err := transaction.accountID.Validate(client); err != nil {
+		if err := transaction.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

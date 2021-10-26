@@ -110,13 +110,13 @@ func (transaction *TokenWipeTransaction) _ValidateNetworkOnIDs(client *Client) e
 	}
 
 	if transaction.tokenID != nil {
-		if err := transaction.tokenID.Validate(client); err != nil {
+		if err := transaction.tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if transaction.accountID != nil {
-		if err := transaction.accountID.Validate(client); err != nil {
+		if err := transaction.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

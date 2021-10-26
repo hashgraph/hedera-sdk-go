@@ -84,13 +84,13 @@ func (transaction *SystemDeleteTransaction) _ValidateNetworkOnIDs(client *Client
 	}
 
 	if transaction.contractID != nil {
-		if err := transaction.contractID.Validate(client); err != nil {
+		if err := transaction.contractID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if transaction.fileID != nil {
-		if err := transaction.fileID.Validate(client); err != nil {
+		if err := transaction.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

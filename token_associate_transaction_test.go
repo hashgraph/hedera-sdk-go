@@ -118,7 +118,7 @@ func TestUnitTokenAssociateTransactionValidateWrong(t *testing.T) {
 	err = tokenAssociate._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
 	}
 }
 
@@ -284,7 +284,8 @@ func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
 	assert.NoError(t, err)
 
 	for _, s := range record.AutomaticTokenAssociations {
-		println(s.AccountID.String(), s.TokenID.String())
+		assert.Equal(t, accountID.String(), s.AccountID.String())
+		assert.Equal(t, receipt.TokenID.String(), s.TokenID.String())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

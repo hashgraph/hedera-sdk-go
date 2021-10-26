@@ -61,7 +61,7 @@ func (transaction *LiveHashDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	}
 
 	if transaction.accountID != nil {
-		if err := transaction.accountID.Validate(client); err != nil {
+		if err := transaction.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

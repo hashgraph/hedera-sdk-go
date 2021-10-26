@@ -40,7 +40,7 @@ func (query *ContractBytecodeQuery) _ValidateNetworkOnIDs(client *Client) error 
 	}
 
 	if query.contractID != nil {
-		if err := query.contractID.Validate(client); err != nil {
+		if err := query.contractID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

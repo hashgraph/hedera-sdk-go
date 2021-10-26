@@ -181,13 +181,13 @@ func (transaction *TopicUpdateTransaction) _ValidateNetworkOnIDs(client *Client)
 	}
 
 	if transaction.topicID != nil {
-		if err := transaction.topicID.Validate(client); err != nil {
+		if err := transaction.topicID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if transaction.autoRenewAccountID != nil {
-		if err := transaction.autoRenewAccountID.Validate(client); err != nil {
+		if err := transaction.autoRenewAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

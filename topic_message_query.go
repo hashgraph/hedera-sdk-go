@@ -113,7 +113,7 @@ func (query *TopicMessageQuery) _ValidateNetworkOnIDs(client *Client) error {
 	}
 
 	if query.topicID != nil {
-		if err := query.topicID.Validate(client); err != nil {
+		if err := query.topicID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

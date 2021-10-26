@@ -36,7 +36,7 @@ func (query *ScheduleInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	}
 
 	if query.scheduleID != nil {
-		if err := query.scheduleID.Validate(client); err != nil {
+		if err := query.scheduleID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

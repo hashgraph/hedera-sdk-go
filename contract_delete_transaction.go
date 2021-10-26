@@ -83,19 +83,19 @@ func (transaction *ContractDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	}
 
 	if transaction.contractID != nil {
-		if err := transaction.contractID.Validate(client); err != nil {
+		if err := transaction.contractID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if transaction.transferContactID != nil {
-		if err := transaction.transferContactID.Validate(client); err != nil {
+		if err := transaction.transferContactID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if transaction.transferAccountID != nil {
-		if err := transaction.transferAccountID.Validate(client); err != nil {
+		if err := transaction.transferAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

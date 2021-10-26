@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -33,12 +35,12 @@ func _CustomFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) 
 }
 
 func (fee CustomFixedFee) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 	if fee.DenominationTokenID != nil {
 		if fee.DenominationTokenID != nil {
-			if err := fee.DenominationTokenID.Validate(client); err != nil {
+			if err := fee.DenominationTokenID.ValidateChecksum(client); err != nil {
 				return err
 			}
 		}
@@ -46,7 +48,7 @@ func (fee CustomFixedFee) _ValidateNetworkOnIDs(client *Client) error {
 
 	if fee.FeeCollectorAccountID != nil {
 		if fee.FeeCollectorAccountID != nil {
-			if err := fee.FeeCollectorAccountID.Validate(client); err != nil {
+			if err := fee.FeeCollectorAccountID.ValidateChecksum(client); err != nil {
 				return err
 			}
 		}
@@ -86,9 +88,10 @@ func (fee *CustomFixedFee) GetAmount() Hbar {
 	return NewHbar(float64(fee.Amount))
 }
 
-func (fee *CustomFixedFee) SetHbarAmount(hbar Hbar) {
-	fee.Amount = int64(hbar.As(HbarUnits.Hbar))
+func (fee *CustomFixedFee) SetHbarAmount(hbar Hbar) *CustomFixedFee {
+	fee.Amount = int64(hbar.As(HbarUnits.Tinybar))
 	fee.DenominationTokenID = nil
+	return fee
 }
 
 func (fee *CustomFixedFee) GetHbarAmount() Hbar {
@@ -129,4 +132,12 @@ func (fee CustomFixedFee) ToBytes() []byte {
 	}
 
 	return data
+}
+
+func (fee CustomFixedFee) String() string {
+	if fee.DenominationTokenID != nil {
+		return fmt.Sprintf("feeCollectorAccountID: %s, amount: %d, denominatingTokenID: %s", fee.FeeCollectorAccountID.String(), fee.Amount, fee.DenominationTokenID.String())
+	}
+
+	return fmt.Sprintf("feeCollectorAccountID: %s, amount: %d", fee.FeeCollectorAccountID.String(), fee.Amount)
 }

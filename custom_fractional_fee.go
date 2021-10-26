@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -90,13 +92,13 @@ func _CustomFractionalFeeFromProtobuf(fractionalFee *proto.FractionalFee, fee Cu
 }
 
 func (fee CustomFractionalFee) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
 	if fee.FeeCollectorAccountID != nil {
 		if fee.FeeCollectorAccountID != nil {
-			if err := fee.FeeCollectorAccountID.Validate(client); err != nil {
+			if err := fee.FeeCollectorAccountID.ValidateChecksum(client); err != nil {
 				return err
 			}
 		}
@@ -134,4 +136,8 @@ func (fee CustomFractionalFee) ToBytes() []byte {
 	}
 
 	return data
+}
+
+func (fee CustomFractionalFee) String() string {
+	return fmt.Sprintf("feeCollectorAccountID: %s, numerator: %d, denominator: %d, min: %d, Max: %d, assessmentMethod: %s", fee.FeeCollectorAccountID.String(), fee.Numerator, fee.Denominator, fee.MinimumAmount, fee.MaximumAmount, fee.AssessmentMethod.String())
 }

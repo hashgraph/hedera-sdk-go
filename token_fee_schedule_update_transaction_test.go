@@ -102,7 +102,7 @@ func TestUnitTokenFeeScheduleUpdateTransactionValidateWrong(t *testing.T) {
 	err = tokenFeeUpdate._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
 	}
 }
 
@@ -340,10 +340,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 	assert.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, "exceptional receipt status: CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES", err.Error())
-	}
+	assert.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	assert.NoError(t, err)

@@ -173,16 +173,16 @@ func (transaction *TransferTransaction) _ValidateNetworkOnIDs(client *Client) er
 	}
 	var err error
 	for tokenID, accountMap := range transaction.tokenTransfers {
-		err = tokenID.Validate(client)
+		err = tokenID.ValidateChecksum(client)
 		for accountID := range accountMap {
-			err = accountID.Validate(client)
+			err = accountID.ValidateChecksum(client)
 		}
 	}
 	for nftID := range transaction.nftTransfers {
-		err = nftID.Validate(client)
+		err = nftID.ValidateChecksum(client)
 	}
 	for accountID := range transaction.hbarTransfers {
-		err = accountID.Validate(client)
+		err = accountID.ValidateChecksum(client)
 	}
 	if err != nil {
 		return err

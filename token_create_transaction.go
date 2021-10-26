@@ -274,13 +274,13 @@ func (transaction *TokenCreateTransaction) _ValidateNetworkOnIDs(client *Client)
 	}
 
 	if transaction.treasuryAccountID != nil {
-		if err := transaction.treasuryAccountID.Validate(client); err != nil {
+		if err := transaction.treasuryAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if transaction.autoRenewAccountID != nil {
-		if err := transaction.autoRenewAccountID.Validate(client); err != nil {
+		if err := transaction.autoRenewAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

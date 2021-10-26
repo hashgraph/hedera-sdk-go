@@ -47,7 +47,7 @@ func (transaction *FileDeleteTransaction) _ValidateNetworkOnIDs(client *Client) 
 	}
 
 	if transaction.fileID != nil {
-		if err := transaction.fileID.Validate(client); err != nil {
+		if err := transaction.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

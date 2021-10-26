@@ -127,7 +127,7 @@ func (transaction *TopicCreateTransaction) _ValidateNetworkOnIDs(client *Client)
 	}
 
 	if transaction.autoRenewAccountID != nil {
-		if err := transaction.autoRenewAccountID.Validate(client); err != nil {
+		if err := transaction.autoRenewAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -48,7 +50,7 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 	}, nil
 }
 
-func (id *AccountID) Validate(client *Client) error {
+func (id *AccountID) ValidateChecksum(client *Client) error {
 	if !id._IsZero() && client != nil && client.network.networkName != nil {
 		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
@@ -59,9 +61,31 @@ func (id *AccountID) Validate(client *Client) error {
 			return err
 		}
 		if id.checksum == nil {
-			id.checksum = &tempChecksum.correctChecksum
-			return nil
+			return errChecksumMissing
 		}
+		if tempChecksum.correctChecksum != *id.checksum {
+			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
+				*id.checksum,
+				tempChecksum.correctChecksum,
+				*client.network.networkName))
+		}
+	}
+
+	return nil
+}
+
+// Deprecated
+func (id *AccountID) Validate(client *Client) error {
+	if !id._IsZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+		if err != nil {
+			return err
+		}
+		err = _ChecksumVerify(tempChecksum.status)
+		if err != nil {
+			return err
+		}
+
 		if tempChecksum.correctChecksum != *id.checksum {
 			return errNetworkMismatch
 		}
@@ -85,6 +109,10 @@ func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, checksum.correctChecksum), nil
+}
+
+func (id AccountID) GetChecksum() *string {
+	return id.checksum
 }
 
 // ToSolidityAddress returns the string representation of the AccountID as a
