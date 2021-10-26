@@ -57,8 +57,8 @@ func (id *ContractID) ValidateChecksum(client *Client) error {
 
 // Deprecated
 func (id *ContractID) Validate(client *Client) error {
-	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	if !id._IsZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
 		if err != nil {
 			return err
 		}

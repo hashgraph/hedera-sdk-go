@@ -202,12 +202,12 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 
 func TestIntegrationPreviewnetTls(t *testing.T) {
 	client := ClientForPreviewnet()
-	client.SetTransportSecurity(true)
-	client.SetMaxAttempts(3)
-	client.SetNetworkName(NetworkNamePreviewnet)
+    client.SetTransportSecurity(true)
 
-	for address, nodeAccountID := range client.GetNetwork() {
-		assert.True(t, strings.HasSuffix(address, ":50212"))
+	client := ClientForNetwork(network)
+	client.SetNetworkName(NetworkNamePreviewnet)
+	client.SetMirrorNetwork([]string{"hcs.previewnet.mirrornode.hedera.com:5600"})
+	client.SetMaxAttempts(3)
 
 		_, err := NewAccountBalanceQuery().
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
@@ -219,12 +219,12 @@ func TestIntegrationPreviewnetTls(t *testing.T) {
 
 func TestIntegrationTestnetTls(t *testing.T) {
 	client := ClientForTestnet()
-	client.SetTransportSecurity(true)
-	client.SetMaxAttempts(3)
-	client.SetNetworkName(NetworkNamePreviewnet)
+    client.SetTransportSecurity(true)
 
-	for address, nodeAccountID := range client.GetNetwork() {
-		assert.True(t, strings.HasSuffix(address, ":50212"))
+	client := ClientForNetwork(network)
+	client.SetNetworkName(NetworkNameTestnet)
+	client.SetMirrorNetwork([]string{"hcs.testnet.mirrornode.hedera.com:5600"})
+	client.SetMaxAttempts(3)
 
 		_, err := NewAccountBalanceQuery().
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).

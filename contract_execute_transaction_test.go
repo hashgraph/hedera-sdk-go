@@ -113,6 +113,9 @@ func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
 	assert.NoError(t, err)
+	//if err != nil {
+	//	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp.TransactionID), err.Error())
+	//}
 }
 
 func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
