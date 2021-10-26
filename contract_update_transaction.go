@@ -82,14 +82,14 @@ func (transaction *ContractUpdateTransaction) GetContractID() ContractID {
 	return *transaction.contractID
 }
 
-// SetBytecodeFileID sets the file ID of file containing the smart contract byte code. A copy will be made and held by
-// the contract instance, and have the same expiration time as the instance.
+// Deprecated
 func (transaction *ContractUpdateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.bytecodeFileID = &bytecodeFileID
 	return transaction
 }
 
+// Deprecated
 func (transaction *ContractUpdateTransaction) GetBytecodeFileID() FileID {
 	if transaction.bytecodeFileID == nil {
 		return FileID{}
@@ -197,12 +197,6 @@ func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Clie
 		}
 	}
 
-	if transaction.bytecodeFileID != nil {
-		if err := transaction.bytecodeFileID.Validate(client); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -227,10 +221,6 @@ func (transaction *ContractUpdateTransaction) _Build() *proto.TransactionBody {
 
 	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
-	if transaction.bytecodeFileID != nil {
-		body.FileID = transaction.bytecodeFileID._ToProtobuf()
 	}
 
 	if body.GetMemoWrapper() != nil {
