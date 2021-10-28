@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIntegrationFileCreateTransactionCanExecute(t *testing.T) {
+func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
@@ -39,12 +39,16 @@ func TestIntegrationFileCreateTransactionCanExecute(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
+func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	resp, err := NewFileCreateTransaction().
+		SetKeys(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetContents([]byte("Hello, World")).
+		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
+
 	assert.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
@@ -54,7 +58,6 @@ func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
 	assert.NotNil(t, fileID)
 
 	resp, err = NewFileDeleteTransaction().
-		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	assert.NoError(t, err)
@@ -62,7 +65,7 @@ func TestIntegrationFileCreateTransactionNoKey(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: UNAUTHORIZED", err.Error())
+		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

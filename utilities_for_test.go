@@ -1,8 +1,9 @@
+//+build all unit e2e
+
 package hedera
 
 import (
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -198,38 +199,4 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 	tx.Sign(privateKey)
 
 	return tx, nil
-}
-
-func TestIntegrationPreviewnetTls(t *testing.T) {
-	client := ClientForPreviewnet()
-    client.SetTransportSecurity(true)
-
-	client := ClientForNetwork(network)
-	client.SetNetworkName(NetworkNamePreviewnet)
-	client.SetMirrorNetwork([]string{"hcs.previewnet.mirrornode.hedera.com:5600"})
-	client.SetMaxAttempts(3)
-
-		_, err := NewAccountBalanceQuery().
-			SetNodeAccountIDs([]AccountID{nodeAccountID}).
-			SetAccountID(nodeAccountID).
-			Execute(client)
-		assert.NoError(t, err)
-	}
-}
-
-func TestIntegrationTestnetTls(t *testing.T) {
-	client := ClientForTestnet()
-    client.SetTransportSecurity(true)
-
-	client := ClientForNetwork(network)
-	client.SetNetworkName(NetworkNameTestnet)
-	client.SetMirrorNetwork([]string{"hcs.testnet.mirrornode.hedera.com:5600"})
-	client.SetMaxAttempts(3)
-
-		_, err := NewAccountBalanceQuery().
-			SetNodeAccountIDs([]AccountID{nodeAccountID}).
-			SetAccountID(nodeAccountID).
-			Execute(client)
-		assert.NoError(t, err)
-	}
 }
