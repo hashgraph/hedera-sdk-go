@@ -100,7 +100,7 @@ func main() {
 	// Instantiate the contract instance
 	contractTransactionResponse, err := hedera.NewContractCreateTransaction().
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
-		SetGas(2000).
+		SetGas(75000).
 		SetBytecodeFileID(byteCodeFileID).
 		// Setting an admin key allows you to delete the contract in the future
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -132,7 +132,7 @@ func main() {
 	// Call the contract to receive the greeting
 	callResult, err := hedera.NewContractCallQuery().
 		SetContractID(newContractID).
-		SetGas(30000).
+		SetGas(75000).
 		SetFunction("greet", nil).
 		Execute(client)
 
