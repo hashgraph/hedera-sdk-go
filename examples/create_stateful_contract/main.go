@@ -97,7 +97,7 @@ func main() {
 	// Instantiate the contract instance
 	contractTransactionID, err := hedera.NewContractCreateTransaction().
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
-		SetGas(2000).
+		SetGas(75000).
 		// Failing to set parameters when required will result in "CONTRACT_REVERT_EXECUTED" status
 		SetConstructorParameters(contractFunctionParams).
 		SetBytecodeFileID(byteCodeFileID).
@@ -129,7 +129,7 @@ func main() {
 	// Ask for the current message (set on creation)
 	callResult, err := hedera.NewContractCallQuery().
 		SetContractID(newContractID).
-		SetGas(1000).
+		SetGas(75000).
 		SetQueryPayment(hedera.NewHbar(1)).
 		// nil -> no parameters
 		SetFunction("getMessage", nil).
@@ -148,7 +148,7 @@ func main() {
 	// Update the message
 	contractExecuteID, err := hedera.NewContractExecuteTransaction().
 		SetContractID(newContractID).
-		SetGas(7000).
+		SetGas(75000).
 		SetFunction("setMessage", contractFunctionParams).
 		Execute(client)
 
@@ -173,7 +173,7 @@ func main() {
 
 	secondCallResult, err := hedera.NewContractCallQuery().
 		SetContractID(newContractID).
-		SetGas(1000).
+		SetGas(75000).
 		SetQueryPayment(hedera.NewHbar(1)).
 		SetFunction("getMessage", nil).
 		Execute(client)
