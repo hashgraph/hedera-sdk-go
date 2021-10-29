@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 	"time"
+    "strings"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -200,20 +201,14 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 }
 
 func TestIntegrationPreviewnetTls(t *testing.T) {
-	var network = map[string]AccountID{
-		"0.previewnet.hedera.com:50212": {Account: 3},
-		"1.previewnet.hedera.com:50212": {Account: 4},
-		"2.previewnet.hedera.com:50212": {Account: 5},
-		"3.previewnet.hedera.com:50212": {Account: 6},
-		"4.previewnet.hedera.com:50212": {Account: 7},
-	}
+	client := ClientForPreviewnet()
+    client.SetTransportSecurity(true)
+    client.SetMaxAttempts(3)
+    client.SetNetworkName(NetworkNamePreviewnet)
 
-	client := ClientForNetwork(network)
-	client.SetNetworkName(NetworkNamePreviewnet)
-	client.SetMirrorNetwork([]string{"hcs.previewnet.mirrornode.hedera.com:5600"})
-	client.SetMaxAttempts(3)
+	for address, nodeAccountID := range client.GetNetwork() {
+        assert.True(t, strings.HasSuffix(address, ":50212"))
 
-	for _, nodeAccountID := range network {
 		_, err := NewAccountBalanceQuery().
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
 			SetAccountID(nodeAccountID).
@@ -223,20 +218,14 @@ func TestIntegrationPreviewnetTls(t *testing.T) {
 }
 
 func TestIntegrationTestnetTls(t *testing.T) {
-	var network = map[string]AccountID{
-		"0.testnet.hedera.com:50212": {Account: 3},
-		"1.testnet.hedera.com:50212": {Account: 4},
-		"2.testnet.hedera.com:50212": {Account: 5},
-		"3.testnet.hedera.com:50212": {Account: 6},
-		"4.testnet.hedera.com:50212": {Account: 7},
-	}
+	client := ClientForTestnet()
+    client.SetTransportSecurity(true)
+    client.SetMaxAttempts(3)
+    client.SetNetworkName(NetworkNamePreviewnet)
 
-	client := ClientForNetwork(network)
-	client.SetNetworkName(NetworkNameTestnet)
-	client.SetMirrorNetwork([]string{"hcs.testnet.mirrornode.hedera.com:5600"})
-	client.SetMaxAttempts(3)
+	for address, nodeAccountID := range client.GetNetwork() {
+        assert.True(t, strings.HasSuffix(address, ":50212"))
 
-	for _, nodeAccountID := range network {
 		_, err := NewAccountBalanceQuery().
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
 			SetAccountID(nodeAccountID).
