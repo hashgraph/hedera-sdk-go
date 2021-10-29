@@ -101,10 +101,10 @@ func (id AccountID) String() string {
 }
 
 func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
-	if client.network.networkName == nil {
+	if client.GetNetworkName() == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	checksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 	if err != nil {
 		return "", err
 	}

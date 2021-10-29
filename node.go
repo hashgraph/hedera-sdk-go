@@ -7,8 +7,6 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
-	"math"
-	"strings"
 	"time"
 
 	"golang.org/x/net/context"
@@ -20,75 +18,70 @@ import (
 )
 
 type _Node struct {
-	accountID   AccountID
-	address     string
-	delay       int64
-	lastUsed    int64
-	delayUntil  int64
-	useCount    int64
-	channel     *_Channel
-	waitTime    int64
-	attempts    int64
-	addressBook *_NodeAddress
+	*_ManagedNode
+	accountID         AccountID
+	channel           *_Channel
+	addressBook       *_NodeAddress
+	verifyCertificate bool
 }
 
 type _Nodes struct {
-	nodes []*_Node
+	nodes []_IManagedNode
 }
 
-func _NewNode(accountID AccountID, address string, waitTime int64) _Node {
+func _NewNode(accountID AccountID, address string, minBackoff int64) _Node {
+	temp := _NewManagedNode(address, minBackoff)
 	return _Node{
-		accountID:   accountID,
-		address:     address,
-		delay:       250,
-		lastUsed:    time.Now().UTC().UnixNano(),
-		delayUntil:  time.Now().UTC().UnixNano(),
-		useCount:    0,
-		channel:     nil,
-		waitTime:    waitTime,
-		attempts:    0,
-		addressBook: nil,
+		accountID:         accountID,
+		channel:           nil,
+		_ManagedNode:      &temp,
+		addressBook:       nil,
+		verifyCertificate: true,
 	}
 }
 
-func (node *_Node) _SetWaitTime(waitTime int64) {
-	if node.delay == node.waitTime {
-		node.delay = node.waitTime
-	}
-
-	node.waitTime = waitTime
-}
-
-func (node *_Node) SetAddressBook(addressBook *_NodeAddress) {
-	node.addressBook = addressBook
-}
-
-func (node *_Node) GetAddressBook() *_NodeAddress {
-	return node.addressBook
+func (node *_Node) _SetMinBackoff(waitTime int64) {
+	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
 func (node *_Node) _InUse() {
-	node.useCount++
-	node.lastUsed = time.Now().UTC().UnixNano()
+	node._ManagedNode._InUse()
 }
 
 func (node *_Node) _IsHealthy() bool {
-	return node.delayUntil <= time.Now().UTC().UnixNano()
+	return node._ManagedNode._IsHealthy()
 }
 
 func (node *_Node) _IncreaseDelay() {
-	node.attempts++
-	node.delay = int64(math.Min(float64(node.delay)*2, 8000))
-	node.delayUntil = (node.delay * 100000) + time.Now().UTC().UnixNano()
+	node._ManagedNode._IncreaseDelay()
 }
 
 func (node *_Node) _DecreaseDelay() {
-	node.delay = int64(math.Max(float64(node.delay)/2, 250))
+	node._ManagedNode._DecreaseDelay()
 }
 
 func (node *_Node) _Wait() {
-	delay := node.delayUntil - node.lastUsed
-	time.Sleep(time.Duration(delay) * time.Nanosecond)
+	node._ManagedNode._Wait()
+}
+
+func (node *_Node) _GetUseCount() int64 {
+	return node._ManagedNode._GetUseCount()
+}
+
+func (node *_Node) _GetLastUsed() int64 {
+	return node._ManagedNode._GetLastUsed()
+}
+
+func (node *_Node) _GetManagedNode() *_ManagedNode {
+	return node._ManagedNode
+}
+
+func (node *_Node) _GetAttempts() int64 {
+	return node._ManagedNode._GetAttempts()
+}
+
+func (node *_Node) _GetAddress() string {
+	return node._ManagedNode._GetAddress()
 }
 
 func (node *_Node) _GetChannel() (*_Channel, error) {
@@ -104,14 +97,20 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 	var conn *grpc.ClientConn
 	var err error
-	parts := strings.SplitN(node.address, ":", 2)
 	security := grpc.WithInsecure()
-	if parts[1] == "443" || parts[1] == "50212" {
+	if !node.verifyCertificate {
+		println("skipping certificate check")
+	}
+	if node._ManagedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 			InsecureSkipVerify: true, // nolint
 			VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 				if node.addressBook == nil {
 					println("skipping certificate check since no cert hash was found")
+					return nil
+				}
+
+				if !node.verifyCertificate {
 					return nil
 				}
 
@@ -150,7 +149,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 	cont, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	conn, err = grpc.DialContext(cont, node.address, security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	conn, err = grpc.DialContext(cont, node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
 	if err != nil {
 		return nil, status.Error(codes.ResourceExhausted, "dial timeout of 10sec exceeded")
 	}
@@ -171,6 +170,46 @@ func (node *_Node) _Close() error {
 	return nil
 }
 
+func (node *_Node) _ToSecure() _IManagedNode {
+	managed := _ManagedNode{
+		address:        node.address._ToSecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		backoffUntil:   node.lastUsed,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
+	}
+
+	return &_Node{
+		_ManagedNode:      &managed,
+		accountID:         node.accountID,
+		channel:           node.channel,
+		addressBook:       node.addressBook,
+		verifyCertificate: node.verifyCertificate,
+	}
+}
+
+func (node *_Node) _ToInsecure() _IManagedNode {
+	managed := _ManagedNode{
+		address:        node.address._ToInsecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		backoffUntil:   node.lastUsed,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
+	}
+
+	return &_Node{
+		_ManagedNode:      &managed,
+		accountID:         node.accountID,
+		channel:           node.channel,
+		addressBook:       node.addressBook,
+		verifyCertificate: node.verifyCertificate,
+	}
+}
+
 func (nodes _Nodes) Len() int {
 	return len(nodes.nodes)
 }
@@ -180,24 +219,31 @@ func (nodes _Nodes) Swap(i, j int) {
 
 func (nodes _Nodes) Less(i, j int) bool {
 	if nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() { // nolint
-		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
+		if nodes.nodes[i]._GetUseCount() < nodes.nodes[j]._GetUseCount() { // nolint
 			return true
-		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
+		} else if nodes.nodes[i]._GetUseCount() > nodes.nodes[j]._GetUseCount() {
 			return false
 		} else {
-			return nodes.nodes[i].lastUsed < nodes.nodes[j].lastUsed
+			return nodes.nodes[i]._GetLastUsed() < nodes.nodes[j]._GetLastUsed()
 		}
 	} else if nodes.nodes[i]._IsHealthy() && !nodes.nodes[j]._IsHealthy() {
 		return true
 	} else if !nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() {
 		return false
 	} else {
-		if nodes.nodes[i].useCount < nodes.nodes[j].useCount { // nolint
+		if nodes.nodes[i]._GetUseCount() < nodes.nodes[j]._GetUseCount() { // nolint
 			return true
-		} else if nodes.nodes[i].useCount > nodes.nodes[j].useCount {
+		} else if nodes.nodes[i]._GetUseCount() > nodes.nodes[j]._GetUseCount() {
 			return false
 		} else {
-			return nodes.nodes[i].lastUsed < nodes.nodes[j].lastUsed
+			return nodes.nodes[i]._GetLastUsed() < nodes.nodes[j]._GetLastUsed()
 		}
 	}
+}
+
+func (node *_Node) _SetCertificateVerification(verify bool) { //nolint
+	node.verifyCertificate = verify
+}
+func (node *_Node) _GetCertificateVerification() bool { //nolint
+	return node.verifyCertificate
 }

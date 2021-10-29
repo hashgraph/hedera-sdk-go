@@ -73,8 +73,8 @@ func (id *FileID) ValidateChecksum(client *Client) error {
 
 // Deprecated
 func (id *FileID) Validate(client *Client) error {
-	if !id._IsZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
 		if err != nil {
 			return err
 		}
@@ -118,10 +118,10 @@ func (id FileID) String() string {
 }
 
 func (id FileID) ToStringWithChecksum(client Client) (string, error) {
-	if client.network.networkName == nil {
+	if client.GetNetworkName() == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+	checksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
 	if err != nil {
 		return "", err
 	}

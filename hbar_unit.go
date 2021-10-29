@@ -38,7 +38,7 @@ func (unit HbarUnit) Symbol() string {
 		return "Gℏ"
 	}
 
-	panic("unreacahble: HbarUnit.Symbol() switch statement is non-exhaustive")
+	panic("unreachable: HbarUnit.Symbol() switch statement is non-exhaustive")
 }
 
 func (unit HbarUnit) String() string {
@@ -63,5 +63,5 @@ func (unit HbarUnit) _NumberOfTinybar() int64 {
 		return 100_000_000_000_000_000
 	}
 
-	panic("unreacahble: HbarUnit.Symbol() switch statement is non-exhaustive")
+	panic("unreachable: HbarUnit.Symbol() switch statement is non-exhaustive")
 }

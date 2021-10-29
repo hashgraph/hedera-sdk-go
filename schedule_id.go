@@ -59,8 +59,8 @@ func (id *ScheduleID) ValidateChecksum(client *Client) error {
 
 // Deprecated
 func (id *ScheduleID) Validate(client *Client) error {
-	if !id._IsZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 		if err != nil {
 			return err
 		}
@@ -89,10 +89,10 @@ func (id ScheduleID) String() string {
 }
 
 func (id ScheduleID) ToStringWithChecksum(client Client) (string, error) {
-	if client.network.networkName == nil {
+	if client.GetNetworkName() == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+	checksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 	if err != nil {
 		return "", err
 	}

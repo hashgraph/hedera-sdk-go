@@ -253,5 +253,5 @@ func (requestType RequestType) String() string { // nolint
 		return "SCHEDULE_GET_INFO"
 	}
 
-	panic(fmt.Sprintf("unreacahble: RequestType.String() switch statement is non-exhaustive. RequestType: %v", uint32(requestType)))
+	panic(fmt.Sprintf("unreachable: RequestType.String() switch statement is non-exhaustive. RequestType: %v", uint32(requestType)))
 }
