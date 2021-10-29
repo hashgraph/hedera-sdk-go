@@ -2,125 +2,76 @@ package hedera
 
 import (
 	"io/ioutil"
-	"math"
-	"sort"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type _Network struct {
-	network                map[string]AccountID
-	nodes                  []*_Node
-	networkNodes           map[AccountID]*_Node
-	maxNodeAttempts        int
-	nodeWaitTime           time.Duration
-	maxNodesPerTransaction *int
-	addressBook            map[AccountID]_NodeAddress
-	networkName            *NetworkName
+	_ManagedNetwork
+	addressBook map[AccountID]_NodeAddress
 }
 
 func _NewNetwork() _Network {
 	return _Network{
-		network:                make(map[string]AccountID),
-		nodes:                  make([]*_Node, 0),
-		networkNodes:           make(map[AccountID]*_Node),
-		maxNodeAttempts:        -1,
-		nodeWaitTime:           250 * time.Millisecond,
-		maxNodesPerTransaction: nil,
-		addressBook:            nil,
+		_ManagedNetwork: _NewManagedNetwork(),
+		addressBook:     nil,
 	}
 }
 
 func (network *_Network) SetNetwork(net map[string]AccountID) error {
-	for url, id := range network.network {
-		if _, ok := net[url]; !ok {
-			err := network.networkNodes[id]._Close()
-			if err != nil {
-				return err
-			}
-
-			delete(network.networkNodes, id)
-		}
-	}
-
+	newNetwork := make(map[string]_IManagedNode)
 	for url, id := range net {
-		if _, ok := network.network[url]; !ok {
-			node := _NewNode(id, url, network.nodeWaitTime.Milliseconds())
-			network.networkNodes[id] = &node
-		}
+		node := _NewNode(id, url, network._ManagedNetwork.nodeWaitTime.Milliseconds())
+		newNetwork[id.String()] = &node
 	}
 
-	network.nodes = make([]*_Node, len(net))
-	i := 0
-	for _, node := range network.networkNodes {
-		network.nodes[i] = node
-		i++
-	}
-
-	network.network = net
-
-	return nil
+	return network._ManagedNetwork._SetNetwork(newNetwork)
 }
 
-func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
-	sort.Sort(_Nodes{nodes: network.nodes})
+func (network *_Network) _GetNetwork() map[string]AccountID {
+	temp := make(map[string]AccountID)
+	for _, node := range network._ManagedNetwork.nodes {
+		switch n := node.(type) { //nolint
+		case *_Node:
+			temp[n._GetAddress()] = n.accountID
+		}
+	}
 
-	if network.maxNodeAttempts > 0 {
-		for i := 0; i < len(network.nodes); i++ {
-			var nod *_Node
-			if network.nodes[i] != nil {
-				nod = network.nodes[i]
-			} else {
-				panic(errors.New("null pointer exception, node can't be nil"))
-			}
-			if nod.attempts >= int64(network.maxNodeAttempts) {
-				err := nod._Close()
-				if err != nil {
-					panic(err)
-				}
-				network.nodes = append(network.nodes[:i], network.nodes[i+1:]...)
-				delete(network.network, nod.address)
-				delete(network.networkNodes, nod.accountID)
-				i--
+	return temp
+}
+
+func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
+	for _, node := range network._ManagedNetwork.nodes {
+		switch n := node.(type) { //nolint
+		case *_Node:
+			if n.accountID.String() == id.String() {
+				return n, true
 			}
 		}
 	}
 
-	length := network._GetNumberOfNodesForTransaction()
-	accountIDs := make([]AccountID, 0)
-
-	for i := 0; i < length; i++ {
-		accountIDs = append(accountIDs, network.nodes[i].accountID)
-	}
-
-	return accountIDs
+	return &_Node{}, false
 }
 
 func (network *_Network) _GetNetworkName() *NetworkName {
-	return network.networkName
+	return network._ManagedNetwork._GetNetworkName()
 }
 
-func (network *_Network) _SetNetworkName(net NetworkName) *_Network {
-	network.networkName = &net
+func (network *_Network) _SetNetworkName(net NetworkName) {
+	network._ManagedNetwork._SetNetworkName(net)
 
-	switch net {
-	case NetworkNameMainnet:
-		network.addressBook = _ReadAddressBookResource("addressbook/mainnet.pb")
-	case NetworkNameTestnet:
-		network.addressBook = _ReadAddressBookResource("addressbook/testnet.pb")
-	case NetworkNamePreviewnet:
-		network.addressBook = _ReadAddressBookResource("addressbook/previewnet.pb")
-	}
+	if network._ManagedNetwork.transportSecurity {
+		network.addressBook = _ReadAddressBookResource("addressbook/" + net.String() + ".pb")
 
-	if network.addressBook != nil {
-		for _, nod := range network.nodes {
-			temp := network.addressBook[nod.accountID]
-			nod.addressBook = &temp
+		if network.addressBook != nil {
+			for _, nod := range network._ManagedNetwork.nodes {
+				switch n := nod.(type) { //nolint
+				case *_Node:
+					temp := network.addressBook[n.accountID]
+					n.addressBook = &temp
+				}
+			}
 		}
 	}
-
-	return network
 }
 
 func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
@@ -146,47 +97,63 @@ func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
 	return resultMap
 }
 
-func (network *_Network) _GetNumberOfNodesForTransaction() int {
-	if network.maxNodesPerTransaction != nil {
-		return int(math.Min(float64(*network.maxNodesPerTransaction), float64(len(network.nodes))))
+func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
+	err := network._RemoveDeadNodes()
+	if err != nil {
+		panic(err)
 	}
 
-	return (len(network.nodes) + 3 - 1) / 3
+	length := network._ManagedNetwork._GetNumberOfNodesForTransaction()
+	accountIDs := make([]AccountID, 0)
+
+	for i := 0; i < length; i++ {
+		switch nod := network._ManagedNetwork.nodes[i].(type) { //nolint
+		case *_Node:
+			accountIDs = append(accountIDs, nod.accountID)
+		}
+	}
+
+	return accountIDs
 }
 
 func (network *_Network) _SetMaxNodesPerTransaction(max int) {
-	network.maxNodesPerTransaction = &max
+	network._ManagedNetwork._SetMaxNodesPerTransaction(max)
 }
 
 func (network *_Network) _SetMaxNodeAttempts(max int) {
-	network.maxNodeAttempts = max
+	network._ManagedNetwork._SetMaxNodeAttempts(max)
 }
 
 func (network *_Network) _GetMaxNodeAttempts() int {
-	return network.maxNodeAttempts
+	return network._ManagedNetwork._GetMaxNodeAttempts()
 }
 
 func (network *_Network) _SetNodeWaitTime(waitTime time.Duration) {
-	network.nodeWaitTime = waitTime
-	for _, nod := range network.nodes {
-		if nod != nil {
-			nod._SetWaitTime(waitTime.Milliseconds())
-		}
-	}
+	network._ManagedNetwork._SetNodeWaitTime(waitTime)
 }
 
 func (network *_Network) _GetNodeWaitTime() time.Duration {
-	return network.nodeWaitTime
+	return network._ManagedNetwork._GetNodeWaitTime()
+}
+
+func (network *_Network) _SetTransportSecurity(transportSecurity bool) *_Network {
+	network._ManagedNetwork._SetTransportSecurity(transportSecurity)
+
+	return network
+}
+
+func (network *_Network) _SetVerifyCertificate(verify bool) *_ManagedNetwork {
+	return network._ManagedNetwork._SetVerifyCertificate(verify)
+}
+
+func (network *_Network) _GetVerifyCertificate() bool {
+	return network._ManagedNetwork._GetVerifyCertificate()
 }
 
 func (network *_Network) Close() error {
-	for _, conn := range network.nodes {
-		if conn.channel != nil {
-			err := conn.channel.client.Close()
-			if err != nil {
-				return err
-			}
-		}
+	err := network._ManagedNetwork._Close()
+	if err != nil {
+		return err
 	}
 
 	return nil

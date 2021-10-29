@@ -165,7 +165,7 @@ func _NewMockClient() (*Client, error) {
 	}
 
 	var net = make(map[string]AccountID)
-	net["nonexistent-testnet"] = AccountID{Account: 3}
+	net["nonexistent-testnet:56747"] = AccountID{Account: 3}
 
 	client := _NewClient(net, []string{}, "testnet")
 	client.SetOperator(AccountID{Account: 2}, privateKey)

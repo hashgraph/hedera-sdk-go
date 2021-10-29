@@ -723,5 +723,5 @@ func (status Status) String() string { // nolint
 		return "UPDATE_FILE_HASH_DOES_NOT_MATCH_PREPARED"
 	}
 
-	panic(fmt.Sprintf("unreacahble: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
+	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
 }

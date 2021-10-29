@@ -112,7 +112,7 @@ func _Execute(
 		protoRequest := protoReq
 		nodeAccountID := getNodeAccountID(request)
 
-		node, ok := client.network.networkNodes[nodeAccountID]
+		node, ok := client.network._GetNodeForAccountID(nodeAccountID)
 		if !ok {
 			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}

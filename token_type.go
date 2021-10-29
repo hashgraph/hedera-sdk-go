@@ -17,5 +17,5 @@ func (tokenType TokenType) String() string {
 		return "TOKEN_TYPE_NON_FUNGIBLE_UNIQUE"
 	}
 
-	panic(fmt.Sprintf("unreacahble: TokenType.String() switch statement is non-exhaustive. Status: %v", uint32(tokenType)))
+	panic(fmt.Sprintf("unreachable: TokenType.String() switch statement is non-exhaustive. Status: %v", uint32(tokenType)))
 }
