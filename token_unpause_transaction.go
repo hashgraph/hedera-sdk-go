@@ -47,7 +47,7 @@ func (transaction *TokenUnpauseTransaction) _ValidateNetworkOnIDs(client *Client
 	}
 
 	if transaction.tokenID != nil {
-		if err := transaction.tokenID.Validate(client); err != nil {
+		if err := transaction.tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

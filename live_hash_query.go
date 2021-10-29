@@ -46,7 +46,7 @@ func (query *LiveHashQuery) _ValidateNetworkOnIDs(client *Client) error {
 	}
 
 	if query.accountID != nil {
-		if err := query.accountID.Validate(client); err != nil {
+		if err := query.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

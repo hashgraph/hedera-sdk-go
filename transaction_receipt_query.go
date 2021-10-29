@@ -23,7 +23,7 @@ func (query *TransactionReceiptQuery) _ValidateNetworkOnIDs(client *Client) erro
 		return nil
 	}
 
-	if err := query.transactionID.AccountID.Validate(client); err != nil {
+	if err := query.transactionID.AccountID.ValidateChecksum(client); err != nil {
 		return err
 	}
 

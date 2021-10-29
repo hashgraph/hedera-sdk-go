@@ -107,7 +107,7 @@ func (transaction *ContractExecuteTransaction) _ValidateNetworkOnIDs(client *Cli
 	}
 
 	if transaction.contractID != nil {
-		if err := transaction.contractID.Validate(client); err != nil {
+		if err := transaction.contractID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

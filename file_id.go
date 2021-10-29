@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -46,6 +47,31 @@ func FileIDFromString(data string) (FileID, error) {
 	}, nil
 }
 
+func (id *FileID) ValidateChecksum(client *Client) error {
+	if !id._IsZero() && client != nil && client.network.networkName != nil {
+		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
+		if err != nil {
+			return err
+		}
+		err = _ChecksumVerify(tempChecksum.status)
+		if err != nil {
+			return err
+		}
+		if id.checksum == nil {
+			return errChecksumMissing
+		}
+		if tempChecksum.correctChecksum != *id.checksum {
+			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
+				*id.checksum,
+				tempChecksum.correctChecksum,
+				*client.network.networkName))
+		}
+	}
+
+	return nil
+}
+
+// Deprecated
 func (id *FileID) Validate(client *Client) error {
 	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
 		tempChecksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File))
@@ -57,11 +83,13 @@ func (id *FileID) Validate(client *Client) error {
 			return err
 		}
 		if id.checksum == nil {
-			id.checksum = &tempChecksum.correctChecksum
-			return nil
+			return errChecksumMissing
 		}
 		if tempChecksum.correctChecksum != *id.checksum {
-			return errNetworkMismatch
+			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
+				*id.checksum,
+				tempChecksum.correctChecksum,
+				*client.network.networkName))
 		}
 	}
 

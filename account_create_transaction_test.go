@@ -245,7 +245,7 @@ func TestUnitAccountCreateTransactionValidateWrong(t *testing.T) {
 	err = createAccount._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
 	}
 }
 
@@ -253,7 +253,6 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	env.Client.SetAutoValidateChecksums(true)
 	assert.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -273,6 +272,8 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 
 	accountID := *receipt.AccountID
 
+	env.Client.SetAutoValidateChecksums(true)
+
 	accountIDString, err := accountID.ToStringWithChecksum(ClientForMainnet())
 	assert.NoError(t, err)
 	accountID, err = AccountIDFromString(accountIDString)
@@ -285,6 +286,8 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
 	assert.Error(t, err)
+
+	env.Client.SetAutoValidateChecksums(false)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)

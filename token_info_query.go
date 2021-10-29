@@ -39,7 +39,7 @@ func (query *TokenInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	}
 
 	if query.tokenID != nil {
-		if err := query.tokenID.Validate(client); err != nil {
+		if err := query.tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

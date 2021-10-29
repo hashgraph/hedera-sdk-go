@@ -70,7 +70,7 @@ func TestUnitAccountRecordQueryValidateWrong(t *testing.T) {
 	err = recordQuery._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
 	}
 }
 

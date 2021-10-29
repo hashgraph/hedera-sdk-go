@@ -47,7 +47,7 @@ func (transaction *ScheduleDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	}
 
 	if transaction.scheduleID != nil {
-		if err := transaction.scheduleID.Validate(client); err != nil {
+		if err := transaction.scheduleID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

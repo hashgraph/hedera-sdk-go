@@ -163,7 +163,7 @@ func TestUnitTokenTransferTransactionValidateWrong(t *testing.T) {
 	err = tokenTransfer._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
 	}
 }
 
@@ -1019,7 +1019,7 @@ func TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector(t *te
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR", err.Error())
+		assert.Equal(t, "exceptional receipt status: INVALID_TOKEN_ID_IN_CUSTOM_FEES", err.Error())
 	}
 }
 

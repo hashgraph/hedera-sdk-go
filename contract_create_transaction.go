@@ -173,13 +173,13 @@ func (transaction *ContractCreateTransaction) _ValidateNetworkOnIDs(client *Clie
 	}
 
 	if transaction.byteCodeFileID != nil {
-		if err := transaction.byteCodeFileID.Validate(client); err != nil {
+		if err := transaction.byteCodeFileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if transaction.proxyAccountID != nil {
-		if err := transaction.proxyAccountID.Validate(client); err != nil {
+		if err := transaction.proxyAccountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

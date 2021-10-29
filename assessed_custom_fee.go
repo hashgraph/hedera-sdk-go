@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -16,7 +18,7 @@ func _AssessedCustomFeeFromProtobuf(assessedFee *proto.AssessedCustomFee) Assess
 	accountID := _AccountIDFromProtobuf(assessedFee.FeeCollectorAccountId)
 	tokenID := _TokenIDFromProtobuf(assessedFee.TokenId)
 
-	payerAccountIds := make([]*AccountID, len(assessedFee.EffectivePayerAccountId))
+	payerAccountIds := make([]*AccountID, 0)
 
 	for _, id := range assessedFee.EffectivePayerAccountId {
 		payerAccountIds = append(payerAccountIds, _AccountIDFromProtobuf(id))
@@ -75,4 +77,16 @@ func AssessedCustomFeeFromBytes(data []byte) (AssessedCustomFee, error) {
 	}
 
 	return _AssessedCustomFeeFromProtobuf(&pb), nil
+}
+
+func (fee AssessedCustomFee) String() string {
+	accountIDs := ""
+	for _, s := range fee.PayerAccountIDs {
+		accountIDs = accountIDs + " " + s.String()
+	}
+	if fee.TokenID != nil {
+		return fmt.Sprintf("feeCollectorAccountID: %s, amount: %d, tokenID: %s, payerAccountIds: %s", fee.FeeCollectorAccountId.String(), fee.Amount, fee.TokenID.String(), accountIDs)
+	}
+
+	return fmt.Sprintf("feeCollectorAccountID: %s, amount: %d, payerAccountIds: %s", fee.FeeCollectorAccountId.String(), fee.Amount, accountIDs)
 }

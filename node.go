@@ -138,7 +138,11 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 					}
 				}
 
-				return x509.CertificateInvalidError{}
+				return x509.CertificateInvalidError{
+					Cert:   nil,
+					Reason: x509.Expired,
+					Detail: "",
+				}
 			},
 		}))
 	}

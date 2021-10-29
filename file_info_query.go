@@ -36,7 +36,7 @@ func (query *FileInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	}
 
 	if query.fileID != nil {
-		if err := query.fileID.Validate(client); err != nil {
+		if err := query.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

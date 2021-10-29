@@ -64,13 +64,13 @@ func (query *AccountBalanceQuery) _ValidateNetworkOnIDs(client *Client) error {
 	}
 
 	if query.accountID != nil {
-		if err := query.accountID.Validate(client); err != nil {
+		if err := query.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	if query.contractID != nil {
-		if err := query.contractID.Validate(client); err != nil {
+		if err := query.contractID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

@@ -107,13 +107,13 @@ func (transaction *TokenAssociateTransaction) _ValidateNetworkOnIDs(client *Clie
 	}
 
 	if transaction.accountID != nil {
-		if err := transaction.accountID.Validate(client); err != nil {
+		if err := transaction.accountID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
 
 	for _, tokenID := range transaction.tokens {
-		if err := tokenID.Validate(client); err != nil {
+		if err := tokenID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}

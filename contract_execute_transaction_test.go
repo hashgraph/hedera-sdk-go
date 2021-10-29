@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -101,22 +100,19 @@ func TestUnitContractExecuteTransactionValidateWrong(t *testing.T) {
 	err = contractExecute._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch; some IDs have different networks set", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
 	}
 }
 
 func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewContractExecuteTransaction().
+	_, err := NewContractExecuteTransaction().
 		SetGas(75000).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp.TransactionID), err.Error())
-	}
+	assert.NoError(t, err)
 }
 
 func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {

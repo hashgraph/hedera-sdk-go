@@ -67,12 +67,12 @@ func (transaction *FileAppendTransaction) GetContents() []byte {
 }
 
 func (transaction *FileAppendTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
 	if transaction.fileID != nil {
-		if err := transaction.fileID.Validate(client); err != nil {
+		if err := transaction.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
@@ -200,9 +200,15 @@ func (transaction *FileAppendTransaction) Execute(
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
+		if len(list) > 0 {
+			return TransactionResponse{
+				TransactionID: transaction.GetTransactionID(),
+				NodeID:        list[0].NodeID,
+				Hash:          make([]byte, 0),
+			}, err
+		}
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        list[0].NodeID,
 			Hash:          make([]byte, 0),
 		}, err
 	}

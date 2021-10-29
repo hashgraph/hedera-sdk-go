@@ -111,12 +111,12 @@ func (transaction *FileUpdateTransaction) GeFileMemo() string {
 }
 
 func (transaction *FileUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
-	if client == nil {
+	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
 
 	if transaction.fileID != nil {
-		if err := transaction.fileID.Validate(client); err != nil {
+		if err := transaction.fileID.ValidateChecksum(client); err != nil {
 			return err
 		}
 	}
