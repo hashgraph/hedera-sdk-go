@@ -1,3 +1,9 @@
+## v2.4.0
+
+### Added
+
+ * Support for toggling TLS for both mirror network and services network
+
 ## v2.3.0
 
 ### Added
