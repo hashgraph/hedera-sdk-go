@@ -4,6 +4,18 @@
 
  * `TransactionReceiptQuery` should fill out `TransactionReceipt` even when a bad `Status` is returned
 
+### Deprecated
+
+ * `ContractCallQuery.[Set|Get]MaxResultSize()`
+ * `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
+
+## v2.5.0-beta.1
+
+### Deprecated
+
+ * `ContractCallQuery.[Set|Get]MaxResultSize()`
+ * `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
+
 ## v2.4.1
 
 ### Fixed

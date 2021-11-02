@@ -82,12 +82,14 @@ func (transaction *ContractUpdateTransaction) GetContractID() ContractID {
 	return *transaction.contractID
 }
 
+// Deprecated
 func (transaction *ContractUpdateTransaction) SetBytecodeFileID(bytecodeFileID FileID) *ContractUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.bytecodeFileID = &bytecodeFileID
 	return transaction
 }
 
+// Deprecated
 func (transaction *ContractUpdateTransaction) GetBytecodeFileID() FileID {
 	if transaction.bytecodeFileID == nil {
 		return FileID{}
@@ -211,10 +213,6 @@ func (transaction *ContractUpdateTransaction) _Build() *proto.TransactionBody {
 
 	if transaction.adminKey != nil {
 		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.bytecodeFileID != nil {
-		body.FileID = transaction.bytecodeFileID._ToProtobuf()
 	}
 
 	if transaction.contractID != nil {
