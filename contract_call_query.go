@@ -57,7 +57,6 @@ func (query *ContractCallQuery) GetGas() uint64 {
 	return query.gas
 }
 
-// Deprecated
 func (query *ContractCallQuery) SetMaxResultSize(size uint64) *ContractCallQuery {
 	query.maxResultSize = size
 	return query
@@ -99,8 +98,9 @@ func (query *ContractCallQuery) _ValidateNetworkOnIDs(client *Client) error {
 func (query *ContractCallQuery) _Build() *proto.Query_ContractCallLocal {
 	pb := proto.Query_ContractCallLocal{
 		ContractCallLocal: &proto.ContractCallLocalQuery{
-			Header: &proto.QueryHeader{},
-			Gas:    int64(query.gas),
+			Header:        &proto.QueryHeader{},
+			Gas:           int64(query.gas),
+			MaxResultSize: int64(query.maxResultSize),
 		},
 	}
 

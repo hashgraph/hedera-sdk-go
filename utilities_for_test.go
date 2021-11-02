@@ -2,9 +2,9 @@ package hedera
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
-    "strings"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -202,12 +202,12 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 
 func TestIntegrationPreviewnetTls(t *testing.T) {
 	client := ClientForPreviewnet()
-    client.SetTransportSecurity(true)
-    client.SetMaxAttempts(3)
-    client.SetNetworkName(NetworkNamePreviewnet)
+	client.SetTransportSecurity(true)
+	client.SetMaxAttempts(3)
+	client.SetNetworkName(NetworkNamePreviewnet)
 
 	for address, nodeAccountID := range client.GetNetwork() {
-        assert.True(t, strings.HasSuffix(address, ":50212"))
+		assert.True(t, strings.HasSuffix(address, ":50212"))
 
 		_, err := NewAccountBalanceQuery().
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
@@ -219,12 +219,12 @@ func TestIntegrationPreviewnetTls(t *testing.T) {
 
 func TestIntegrationTestnetTls(t *testing.T) {
 	client := ClientForTestnet()
-    client.SetTransportSecurity(true)
-    client.SetMaxAttempts(3)
-    client.SetNetworkName(NetworkNamePreviewnet)
+	client.SetTransportSecurity(true)
+	client.SetMaxAttempts(3)
+	client.SetNetworkName(NetworkNamePreviewnet)
 
 	for address, nodeAccountID := range client.GetNetwork() {
-        assert.True(t, strings.HasSuffix(address, ":50212"))
+		assert.True(t, strings.HasSuffix(address, ":50212"))
 
 		_, err := NewAccountBalanceQuery().
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
