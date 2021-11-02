@@ -47,7 +47,7 @@ func main() {
 		return
 	}
 
-	// marshal your transaction to bytes
+	// Marshal your transaction to bytes
 	txBytes, err := transaction.ToBytes()
 	if err != nil {
 		println(err.Error(), ": error converting transfer transaction to bytes")
@@ -68,7 +68,7 @@ func main() {
 
 	fmt.Printf("Received bytes for signed transaction: \n%v\n", signedTxBytes)
 
-	// unmarshal your bytes into the signed transaction
+	// Unmarshal your bytes into the signed transaction
 	var signedTx hedera.TransferTransaction
 	tx, err := hedera.TransactionFromBytes(signedTxBytes)
 	if err != nil {
@@ -76,6 +76,7 @@ func main() {
 		return
 	}
 
+	// Converting from interface{} to TransferTransaction, if that's what we got
 	switch t := tx.(type) {
 	case hedera.TransferTransaction:
 		signedTx = t
@@ -83,7 +84,7 @@ func main() {
 		panic("Did not receive `TransferTransaction` back from signed bytes")
 	}
 
-	// execute the transaction
+	// Execute the transaction
 	response, err := signedTx.Execute(client)
 
 	if err != nil {
@@ -91,7 +92,7 @@ func main() {
 		return
 	}
 
-	// get the receipt of the transaction to check the status
+	// Get the receipt of the transaction to check the status
 	receipt, err := response.GetReceipt(client)
 
 	if err != nil {
@@ -99,7 +100,7 @@ func main() {
 		return
 	}
 
-	// if Status Success is returned then everything is good
+	// If Status Success is returned then everything is good
 	fmt.Printf("Crypto transfer status: %v\n", receipt.Status)
 }
 
@@ -114,13 +115,14 @@ func signingService(txBytes []byte) ([]byte, error) {
 		return txBytes, err
 	}
 
-	// unmarshal the unsigned transaction's bytes
+	// Unmarshal the unsigned transaction's bytes
 	var unsignedTx hedera.TransferTransaction
 	tx, err := hedera.TransactionFromBytes(txBytes)
 	if err != nil {
 		return txBytes, err
 	}
 
+	// Converting from interface{} to TransferTransaction, if that's what we got
 	switch t := tx.(type) {
 	case hedera.TransferTransaction:
 		unsignedTx = t

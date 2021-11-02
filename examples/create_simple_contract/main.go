@@ -9,6 +9,7 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
+// a simple contract struct
 type contract struct {
 	// ignore the link references since it is empty
 	Object    string `json:"object"`
@@ -54,20 +55,24 @@ func main() {
 		}
 	}()
 
+	// R contents from hello_world.json file
 	rawContract, err := ioutil.ReadFile("./hello_world.json")
 	if err != nil {
 		println(err.Error(), ": error reading hello_world.json")
 		return
 	}
 
-	var contract contract = contract{}
+	// Initialize simple contract
+	contract := contract{}
 
+	// Unmarshal the json read from the file into the simple contract
 	err = json.Unmarshal([]byte(rawContract), &contract)
 	if err != nil {
 		println(err.Error(), ": error unmarshaling the json file")
 		return
 	}
 
+	// Convert contract to bytes
 	contractByteCode := []byte(contract.Object)
 
 	fmt.Println("Simple contract example")
@@ -76,7 +81,9 @@ func main() {
 	// Upload a file containing the byte code
 	byteCodeTransactionID, err := hedera.NewFileCreateTransaction().
 		SetMaxTransactionFee(hedera.NewHbar(2)).
+		// All keys at the top level of a key list must sign to create or modify the file
 		SetKeys(client.GetOperatorPublicKey()).
+		// Initial contents, in our case it's the contract object converted to bytes
 		SetContents(contractByteCode).
 		Execute(client)
 
@@ -85,6 +92,7 @@ func main() {
 		return
 	}
 
+	// Get the record
 	byteCodeTransactionRecord, err := byteCodeTransactionID.GetRecord(client)
 	if err != nil {
 		println(err.Error(), ": error getting file creation record")
@@ -93,6 +101,7 @@ func main() {
 
 	fmt.Printf("contract bytecode file upload fee: %v\n", byteCodeTransactionRecord.TransactionFee)
 
+	// Get the file ID from the record we got
 	byteCodeFileID := *byteCodeTransactionRecord.Receipt.FileID
 
 	fmt.Printf("contract bytecode file: %v\n", byteCodeFileID)
@@ -101,6 +110,7 @@ func main() {
 	contractTransactionResponse, err := hedera.NewContractCreateTransaction().
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
 		SetGas(75000).
+		// The file ID we got from the record of the file created previously
 		SetBytecodeFileID(byteCodeFileID).
 		// Setting an admin key allows you to delete the contract in the future
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -111,6 +121,7 @@ func main() {
 		return
 	}
 
+	// get the record for the contract we created
 	contractRecord, err := contractTransactionResponse.GetRecord(client)
 	if err != nil {
 		println(err.Error(), ": error retrieving contract creation record")
@@ -123,6 +134,7 @@ func main() {
 		return
 	}
 
+	// get the contract ID from the record
 	newContractID := *contractRecord.Receipt.ContractID
 
 	fmt.Printf("Contract create gas used: %v\n", contractCreateResult.GasUsed)
@@ -132,8 +144,15 @@ func main() {
 	// Call the contract to receive the greeting
 	callResult, err := hedera.NewContractCallQuery().
 		SetContractID(newContractID).
+		// The amount of gas to use for the call
+		// All of the gas offered will be used and charged a corresponding fee
 		SetGas(75000).
+		// This query requires payment, depends on gas used
+		SetQueryPayment(hedera.NewHbar(1)).
+		// Specified which function to call, and the parameters to pass to the function
 		SetFunction("greet", nil).
+		// This requires payment
+		SetMaxQueryPayment(hedera.NewHbar(5)).
 		Execute(client)
 
 	if err != nil {
@@ -144,8 +163,9 @@ func main() {
 	fmt.Printf("Call gas used: %v\n", callResult.GasUsed)
 	fmt.Printf("Message: %v\n", callResult.GetString(0))
 
-	// delete the transaction
+	// Clean up, delete the transaction
 	deleteTransactionResponse, err := hedera.NewContractDeleteTransaction().
+		// Only thing required here is the contract ID
 		SetContractID(newContractID).
 		Execute(client)
 

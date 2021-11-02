@@ -10,29 +10,40 @@ func main() {
 	var client *hedera.Client
 	var err error
 
+	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		println(err.Error(), ": error creating client")
 		return
 	}
 
+	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		println(err.Error(), ": error converting string to AccountID")
 		return
 	}
 
+	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		println(err.Error(), ": error converting string to PrivateKey")
 		return
 	}
 
+	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
+	// Create a new file
 	newFileResponse, err := hedera.NewFileCreateTransaction().
+		// Accepts both Key and []Key
+		// All keys at the top level of a key list must sign to create or modify the file. Any one of
+		// the keys at the top level key list can sign to delete the file.
 		SetKeys(client.GetOperatorPublicKey()).
+		// Basic starting file content
 		SetContents([]byte("Hello from Hedera.")).
+		SetMemo("go file append test").
+		// Set max fee if we don't want to get overcharged
 		SetMaxTransactionFee(hedera.NewHbar(2)).
 		Execute(client)
 	if err != nil {
@@ -40,41 +51,45 @@ func main() {
 		return
 	}
 
+	// Get receipt to make sure the transaction worked
 	receipt, err := newFileResponse.GetReceipt(client)
 	if err != nil {
 		println(err.Error(), ": error retrieving file creation receipt")
 		return
 	}
 
+	// Retrieve file ID from the receipt
 	fileID := *receipt.FileID
 
-	fileAppend, err := hedera.NewFileAppendTransaction().
+	// File append
+	fileResponse, err := hedera.NewFileAppendTransaction().
+		// Make sure the node is the same as the new file, as we don't have to wait for propagation
 		SetNodeAccountIDs([]hedera.AccountID{newFileResponse.NodeID}).
+		// File ID to append to
 		SetFileID(fileID).
+		// Contents that will be appended to the end of the file
 		SetContents([]byte(bigContents)).
-		SetMaxTransactionFee(hedera.NewHbar(1000)).
-		FreezeWith(client)
+		// Set max transaction when you are not sure how much it will cost.
+		SetMaxTransactionFee(hedera.NewHbar(5)).
+		Execute(client)
 	if err != nil {
-		println(err.Error(), ": error freezing file append transaction")
+		println(err.Error(), ": error executing file append transaction")
 		return
 	}
 
-	response, err := fileAppend.Execute(client)
-	if err != nil {
-		println(err.Error(), ": error appending to file")
-		return
-	}
-
-	receipt, err = response.GetReceipt(client)
+	// Checking if transaction went through
+	receipt, err = fileResponse.GetReceipt(client)
 	if err != nil {
 		println(err.Error(), ": error retrieving file append transaction receipt")
 		return
 	}
 
+	// Checking if append succeeded
 	println(receipt.Status.String())
-
 	info, err := hedera.NewFileInfoQuery().
-		SetNodeAccountIDs([]hedera.AccountID{response.NodeID}).
+		// Once again same node account ID
+		SetNodeAccountIDs([]hedera.AccountID{fileResponse.NodeID}).
+		// Only the file ID is required for this
 		SetFileID(fileID).
 		Execute(client)
 
@@ -84,6 +99,7 @@ func main() {
 	}
 
 	println("File size according to `FileInfoQuery`:", info.Size)
+	println("File memo according to `FileInfoQuery`:", info.FileMemo)
 }
 
 // 14k+ stuff to upload

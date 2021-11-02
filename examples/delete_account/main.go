@@ -11,26 +11,31 @@ func main() {
 	var client *hedera.Client
 	var err error
 
+	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		println(err.Error(), ": error creating client")
 		return
 	}
 
+	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		println(err.Error(), ": error converting string to AccountID")
 		return
 	}
 
+	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		println(err.Error(), ": error converting string to PrivateKey")
 		return
 	}
 
+	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
+	// Generate the key to use with the new account
 	newKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
 		println(err.Error(), ": error generating PrivateKey")
@@ -41,9 +46,11 @@ func main() {
 	fmt.Printf("private = %v\n", newKey)
 	fmt.Printf("public = %v\n", newKey.PublicKey())
 
-	// first create an account
+	// First create an account
 	transactionResponse, err := hedera.NewAccountCreateTransaction().
+		// This key will be required to delete the account later
 		SetKey(newKey.PublicKey()).
+		// Initial balance
 		SetInitialBalance(hedera.NewHbar(2)).
 		SetTransactionMemo("go sdk example delete_account/main.go").
 		Execute(client)
@@ -68,7 +75,7 @@ func main() {
 	deleteTransaction, err := hedera.NewAccountDeleteTransaction().
 		// Set the account to be deleted
 		SetAccountID(newAccountID).
-		// Set an account to transfer to balance of the deleted account to
+		// Set an account ID to transfer the balance of the deleted account to
 		SetTransferAccountID(hedera.AccountID{Account: 3}).
 		SetTransactionMemo("go sdk example delete_account/main.go").
 		FreezeWith(client)
