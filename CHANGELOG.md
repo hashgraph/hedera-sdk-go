@@ -1,3 +1,10 @@
+## v2.5.0-beta.1
+
+### Deprecated
+
+ * `ContractCallQuery.[Set|Get]MaxResultSize()`
+ * `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
+
 ## v2.4.0
 
 ### Added
