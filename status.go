@@ -242,6 +242,7 @@ const (
 	StatusFreezeUpgradeInProgress                                  Status = 276
 	StatusUpdateFileIDDoesNotMatchPrepared                         Status = 277
 	StatusUpdateFileHashDoesNotMatchPrepared                       Status = 278
+	StatusConsensusGasExhausted                                    Status = 279
 )
 
 // String() returns a string representation of the status
@@ -721,6 +722,8 @@ func (status Status) String() string { // nolint
 		return "UPDATE_FILE_ID_DOES_NOT_MATCH_PREPARED"
 	case StatusUpdateFileHashDoesNotMatchPrepared:
 		return "UPDATE_FILE_HASH_DOES_NOT_MATCH_PREPARED"
+	case StatusConsensusGasExhausted:
+		return "CONSENSUS_GAS_EXHAUSTED"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
