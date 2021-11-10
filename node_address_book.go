@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -9,7 +9,7 @@ type _NodeAddressBook struct {
 	nodeAddresses []_NodeAddress
 }
 
-func _NodeAddressBookFromProtobuf(book *proto.NodeAddressBook) _NodeAddressBook {
+func _NodeAddressBookFromProtobuf(book *services.NodeAddressBook) _NodeAddressBook {
 	addresses := make([]_NodeAddress, 0)
 
 	for _, k := range book.NodeAddress {
@@ -21,14 +21,14 @@ func _NodeAddressBookFromProtobuf(book *proto.NodeAddressBook) _NodeAddressBook 
 	}
 }
 
-func (book _NodeAddressBook) _ToProtobuf() *proto.NodeAddressBook {
-	addresses := make([]*proto.NodeAddress, 0)
+func (book _NodeAddressBook) _ToProtobuf() *services.NodeAddressBook {
+	addresses := make([]*services.NodeAddress, 0)
 
 	for _, k := range book.nodeAddresses {
 		addresses = append(addresses, k._ToProtobuf())
 	}
 
-	return &proto.NodeAddressBook{
+	return &services.NodeAddressBook{
 		NodeAddress: addresses,
 	}
 }
@@ -46,7 +46,7 @@ func _NodeAddressBookFromBytes(data []byte) (_NodeAddressBook, error) {
 	if data == nil {
 		return _NodeAddressBook{}, errByteArrayNull
 	}
-	pb := proto.NodeAddressBook{}
+	pb := services.NodeAddressBook{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return _NodeAddressBook{}, err

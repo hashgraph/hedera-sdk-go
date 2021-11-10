@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // Grants KYC to the account for the given token. Must be signed by the Token's kycKey.
@@ -30,7 +30,7 @@ func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	return &transaction
 }
 
-func _TokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenGrantKycTransaction {
+func _TokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenGrantKycTransaction {
 	return TokenGrantKycTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
@@ -88,8 +88,8 @@ func (transaction *TokenGrantKycTransaction) _ValidateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *TokenGrantKycTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenGrantKycTransactionBody{}
+func (transaction *TokenGrantKycTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenGrantKycTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
@@ -98,12 +98,12 @@ func (transaction *TokenGrantKycTransaction) _Build() *proto.TransactionBody {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenGrantKyc{
+		Data: &services.TransactionBody_TokenGrantKyc{
 			TokenGrantKyc: body,
 		},
 	}
@@ -120,8 +120,8 @@ func (transaction *TokenGrantKycTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenGrantKycTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenGrantKycTransactionBody{}
+func (transaction *TokenGrantKycTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenGrantKycTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
@@ -130,10 +130,10 @@ func (transaction *TokenGrantKycTransaction) _ConstructScheduleProtobuf() (*prot
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenGrantKyc{
+		Data: &services.SchedulableTransactionBody_TokenGrantKyc{
 			TokenGrantKyc: body,
 		},
 	}, nil
@@ -342,7 +342,7 @@ func (transaction *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, s
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

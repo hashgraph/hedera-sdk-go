@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type ScheduleInfoQuery struct {
@@ -44,16 +44,16 @@ func (query *ScheduleInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ScheduleInfoQuery) _Build() *proto.Query_ScheduleGetInfo {
-	body := &proto.ScheduleGetInfoQuery{
-		Header: &proto.QueryHeader{},
+func (query *ScheduleInfoQuery) _Build() *services.Query_ScheduleGetInfo {
+	body := &services.ScheduleGetInfoQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.scheduleID != nil {
 		body.ScheduleID = query.scheduleID._ToProtobuf()
 	}
 
-	return &proto.Query_ScheduleGetInfo{
+	return &services.Query_ScheduleGetInfo{
 		ScheduleGetInfo: body,
 	}
 }
@@ -63,10 +63,10 @@ func (query *ScheduleInfoQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ScheduleGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.ScheduleGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.ScheduleGetInfo.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -81,10 +81,10 @@ func (query *ScheduleInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoReq
 	}
 
 	pb.ScheduleGetInfo.Header.Payment = paymentTransaction
-	pb.ScheduleGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.ScheduleGetInfo.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

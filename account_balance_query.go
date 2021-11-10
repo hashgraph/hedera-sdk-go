@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller
@@ -78,22 +78,22 @@ func (query *AccountBalanceQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountBalanceQuery) _Build() *proto.Query_CryptogetAccountBalance {
-	pb := proto.CryptoGetAccountBalanceQuery{Header: &proto.QueryHeader{}}
+func (query *AccountBalanceQuery) _Build() *services.Query_CryptogetAccountBalance {
+	pb := services.CryptoGetAccountBalanceQuery{Header: &services.QueryHeader{}}
 
 	if query.accountID != nil {
-		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
+		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_AccountID{
 			AccountID: query.accountID._ToProtobuf(),
 		}
 	}
 
 	if query.contractID != nil {
-		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
+		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_ContractID{
 			ContractID: query.contractID._ToProtobuf(),
 		}
 	}
 
-	return &proto.Query_CryptogetAccountBalance{
+	return &services.Query_CryptogetAccountBalance{
 		CryptogetAccountBalance: &pb,
 	}
 }
@@ -141,9 +141,9 @@ func (query *AccountBalanceQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptogetAccountBalance.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.CryptogetAccountBalance.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.CryptogetAccountBalance.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -158,10 +158,10 @@ func (query *AccountBalanceQuery) _CostQueryMakeRequest(client *Client) (_ProtoR
 	}
 
 	pb.CryptogetAccountBalance.Header.Payment = paymentTransaction
-	pb.CryptogetAccountBalance.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.CryptogetAccountBalance.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

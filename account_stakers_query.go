@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount
@@ -52,10 +52,10 @@ func (query *AccountStakersQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountStakersQuery) _Build() *proto.Query_CryptoGetProxyStakers {
-	pb := proto.Query_CryptoGetProxyStakers{
-		CryptoGetProxyStakers: &proto.CryptoGetStakersQuery{
-			Header: &proto.QueryHeader{},
+func (query *AccountStakersQuery) _Build() *services.Query_CryptoGetProxyStakers {
+	pb := services.Query_CryptoGetProxyStakers{
+		CryptoGetProxyStakers: &services.CryptoGetStakersQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -71,9 +71,9 @@ func (query *AccountStakersQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetProxyStakers.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.CryptoGetProxyStakers.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -88,10 +88,10 @@ func (query *AccountStakersQuery) _CostQueryMakeRequest(client *Client) (_ProtoR
 	}
 
 	pb.CryptoGetProxyStakers.Header.Payment = paymentTransaction
-	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.CryptoGetProxyStakers.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

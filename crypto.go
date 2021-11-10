@@ -18,7 +18,7 @@ import (
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/pbkdf2"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/youmark/pkcs8"
 )
 
@@ -26,19 +26,19 @@ const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 
 type Key interface {
-	_ToProtoKey() *proto.Key
+	_ToProtoKey() *services.Key
 	String() string
 }
 
-func _KeyFromProtobuf(pbKey *proto.Key) (Key, error) {
+func _KeyFromProtobuf(pbKey *services.Key) (Key, error) {
 	if pbKey == nil {
 		return PublicKey{}, errParameterNull
 	}
 	switch key := pbKey.GetKey().(type) {
-	case *proto.Key_Ed25519:
+	case *services.Key_Ed25519:
 		return PublicKeyFromBytes(key.Ed25519)
 
-	case *proto.Key_ThresholdKey:
+	case *services.Key_ThresholdKey:
 		threshold := int(key.ThresholdKey.GetThreshold())
 		keys, err := _KeyListFromProtobuf(key.ThresholdKey.GetKeys())
 		if err != nil {
@@ -48,7 +48,7 @@ func _KeyFromProtobuf(pbKey *proto.Key) (Key, error) {
 
 		return &keys, nil
 
-	case *proto.Key_KeyList:
+	case *services.Key_KeyList:
 		keys, err := _KeyListFromProtobuf(key.KeyList)
 		if err != nil {
 			return nil, err
@@ -56,7 +56,7 @@ func _KeyFromProtobuf(pbKey *proto.Key) (Key, error) {
 
 		return &keys, nil
 
-	case *proto.Key_ContractID:
+	case *services.Key_ContractID:
 		return _ContractIDFromProtobuf(key.ContractID), nil
 
 	default:
@@ -386,18 +386,18 @@ func (pk PublicKey) Bytes() []byte {
 	return pk.keyData
 }
 
-func (sk PrivateKey) _ToProtoKey() *proto.Key {
+func (sk PrivateKey) _ToProtoKey() *services.Key {
 	return sk.PublicKey()._ToProtoKey()
 }
 
-func (pk PublicKey) _ToProtoKey() *proto.Key {
-	return &proto.Key{Key: &proto.Key_Ed25519{Ed25519: pk.keyData}}
+func (pk PublicKey) _ToProtoKey() *services.Key {
+	return &services.Key{Key: &services.Key_Ed25519{Ed25519: pk.keyData}}
 }
 
-func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *proto.SignaturePair {
-	return &proto.SignaturePair{
+func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.SignaturePair {
+	return &services.SignaturePair{
 		PubKeyPrefix: pk.keyData,
-		Signature: &proto.SignaturePair_Ed25519{
+		Signature: &services.SignaturePair_Ed25519{
 			Ed25519: signature,
 		},
 	}
@@ -416,7 +416,7 @@ func (sk PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
 		return []byte{}, nil
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, sk.PublicKey())
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

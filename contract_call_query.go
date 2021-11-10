@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractCallQuery calls a function of the given smart contract instance, giving it ContractFunctionParameters as its
@@ -96,11 +96,11 @@ func (query *ContractCallQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractCallQuery) _Build() *proto.Query_ContractCallLocal {
-	pb := proto.Query_ContractCallLocal{
-		ContractCallLocal: &proto.ContractCallLocalQuery{
-			Header:        &proto.QueryHeader{},
-			Gas:           int64(query.gas),
+func (query *ContractCallQuery) _Build() *services.Query_ContractCallLocal {
+	pb := services.Query_ContractCallLocal{
+		ContractCallLocal: &services.ContractCallLocalQuery{
+			Header: &services.QueryHeader{},
+			Gas:    int64(query.gas),
 		},
 	}
 
@@ -120,9 +120,9 @@ func (query *ContractCallQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.ContractCallLocal.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.ContractCallLocal.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -137,10 +137,10 @@ func (query *ContractCallQuery) _CostQueryMakeRequest(client *Client) (_ProtoReq
 	}
 
 	pb.ContractCallLocal.Header.Payment = paymentTransaction
-	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.ContractCallLocal.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

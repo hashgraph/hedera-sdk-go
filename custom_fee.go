@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -9,7 +9,7 @@ type CustomFee struct {
 	FeeCollectorAccountID *AccountID
 }
 
-func _CustomFeeFromProtobuf(customFee *proto.CustomFee) Fee {
+func _CustomFeeFromProtobuf(customFee *services.CustomFee) Fee {
 	if customFee == nil {
 		return nil
 	}
@@ -24,11 +24,11 @@ func _CustomFeeFromProtobuf(customFee *proto.CustomFee) Fee {
 	}
 
 	switch t := customFee.Fee.(type) {
-	case *proto.CustomFee_FixedFee:
+	case *services.CustomFee_FixedFee:
 		return _CustomFixedFeeFromProtobuf(t.FixedFee, fee)
-	case *proto.CustomFee_FractionalFee:
+	case *services.CustomFee_FractionalFee:
 		return _CustomFractionalFeeFromProtobuf(t.FractionalFee, fee)
-	case *proto.CustomFee_RoyaltyFee:
+	case *services.CustomFee_RoyaltyFee:
 		return _CustomRoyaltyFeeFromProtobuf(t.RoyaltyFee, fee)
 	}
 
@@ -48,7 +48,7 @@ func CustomFeeFromBytes(data []byte) (Fee, error) {
 	if data == nil {
 		return nil, errByteArrayNull
 	}
-	pb := proto.CustomFee{}
+	pb := services.CustomFee{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return nil, err

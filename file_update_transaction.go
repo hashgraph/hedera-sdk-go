@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type FileUpdateTransaction struct {
@@ -26,7 +26,7 @@ func NewFileUpdateTransaction() *FileUpdateTransaction {
 	return &transaction
 }
 
-func _FileUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileUpdateTransaction {
+func _FileUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileUpdateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileUpdate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
@@ -124,8 +124,8 @@ func (transaction *FileUpdateTransaction) _ValidateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *FileUpdateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.FileUpdateTransactionBody{
+func (transaction *FileUpdateTransaction) _Build() *services.TransactionBody {
+	body := &services.FileUpdateTransactionBody{
 		Memo: &wrappers.StringValue{Value: transaction.memo},
 	}
 	if transaction.fileID != nil {
@@ -144,12 +144,12 @@ func (transaction *FileUpdateTransaction) _Build() *proto.TransactionBody {
 		body.Contents = transaction.contents
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_FileUpdate{
+		Data: &services.TransactionBody_FileUpdate{
 			FileUpdate: body,
 		},
 	}
@@ -166,8 +166,8 @@ func (transaction *FileUpdateTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.FileUpdateTransactionBody{
+func (transaction *FileUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.FileUpdateTransactionBody{
 		Memo: &wrappers.StringValue{Value: transaction.memo},
 	}
 	if transaction.fileID != nil {
@@ -186,10 +186,10 @@ func (transaction *FileUpdateTransaction) _ConstructScheduleProtobuf() (*proto.S
 		body.Contents = transaction.contents
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_FileUpdate{
+		Data: &services.SchedulableTransactionBody_FileUpdate{
 			FileUpdate: body,
 		},
 	}, nil
@@ -398,7 +398,7 @@ func (transaction *FileUpdateTransaction) AddSignature(publicKey PublicKey, sign
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

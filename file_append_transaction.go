@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -31,7 +31,7 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	return &transaction
 }
 
-func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileAppendTransaction {
+func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileAppendTransaction {
 	return FileAppendTransaction{
 		Transaction: transaction,
 		maxChunks:   20,
@@ -80,18 +80,18 @@ func (transaction *FileAppendTransaction) _ValidateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *FileAppendTransaction) _Build() *proto.TransactionBody {
-	body := &proto.FileAppendTransactionBody{}
+func (transaction *FileAppendTransaction) _Build() *services.TransactionBody {
+	body := &services.FileAppendTransactionBody{}
 	if transaction.fileID != nil {
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_FileAppend{
+		Data: &services.TransactionBody_FileAppend{
 			FileAppend: body,
 		},
 	}
@@ -116,8 +116,8 @@ func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileAppendTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.FileAppendTransactionBody{
+func (transaction *FileAppendTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.FileAppendTransactionBody{
 		Contents: transaction.contents,
 	}
 
@@ -125,10 +125,10 @@ func (transaction *FileAppendTransaction) _ConstructScheduleProtobuf() (*proto.S
 		body.FileID = transaction.fileID._ToProtobuf()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_FileAppend{
+		Data: &services.SchedulableTransactionBody_FileAppend{
 			FileAppend: body,
 		},
 	}, nil
@@ -322,10 +322,10 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 	nextTransactionID := initialTransactionID
 
 	transaction.transactionIDs = []TransactionID{}
-	transaction.transactions = []*proto.Transaction{}
-	transaction.signedTransactions = []*proto.SignedTransaction{}
+	transaction.transactions = []*services.Transaction{}
+	transaction.signedTransactions = []*services.SignedTransaction{}
 
-	if b, ok := body.Data.(*proto.TransactionBody_FileAppend); ok {
+	if b, ok := body.Data.(*services.TransactionBody_FileAppend); ok {
 		for i := 0; uint64(i) < chunks; i++ {
 			start := i * chunkSize
 			end := start + chunkSize
@@ -338,7 +338,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 			b.FileAppend.Contents = transaction.contents[start:end]
 
 			body.TransactionID = nextTransactionID._ToProtobuf()
-			body.Data = &proto.TransactionBody_FileAppend{
+			body.Data = &services.TransactionBody_FileAppend{
 				FileAppend: b.FileAppend,
 			}
 
@@ -350,9 +350,9 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 					return transaction, errors.Wrap(err, "error serializing body for file append")
 				}
 
-				transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+				transaction.signedTransactions = append(transaction.signedTransactions, &services.SignedTransaction{
 					BodyBytes: bodyBytes,
-					SigMap:    &proto.SignatureMap{},
+					SigMap:    &services.SignatureMap{},
 				})
 			}
 
@@ -433,7 +433,7 @@ func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, sign
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type AccountBalance struct {
@@ -14,7 +14,7 @@ type AccountBalance struct {
 	TokenDecimals TokenDecimalMap
 }
 
-func _AccountBalanceFromProtobuf(pb *proto.CryptoGetAccountBalanceResponse) AccountBalance {
+func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) AccountBalance {
 	if pb == nil {
 		return AccountBalance{}
 	}

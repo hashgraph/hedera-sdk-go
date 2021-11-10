@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -18,7 +18,7 @@ type TopicInfo struct {
 	AutoRenewAccountID *AccountID
 }
 
-func _TopicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, error) {
+func _TopicInfoFromProtobuf(topicInfo *services.ConsensusTopicInfo) (TopicInfo, error) {
 	if topicInfo == nil {
 		return TopicInfo{}, errParameterNull
 	}
@@ -48,12 +48,12 @@ func _TopicInfoFromProtobuf(topicInfo *proto.ConsensusTopicInfo) (TopicInfo, err
 	return tempTopicInfo, err
 }
 
-func (topicInfo *TopicInfo) _ToProtobuf() *proto.ConsensusTopicInfo {
-	return &proto.ConsensusTopicInfo{
+func (topicInfo *TopicInfo) _ToProtobuf() *services.ConsensusTopicInfo {
+	return &services.ConsensusTopicInfo{
 		Memo:           topicInfo.TopicMemo,
 		RunningHash:    topicInfo.RunningHash,
 		SequenceNumber: topicInfo.SequenceNumber,
-		ExpirationTime: &proto.Timestamp{
+		ExpirationTime: &services.Timestamp{
 			Seconds: int64(topicInfo.ExpirationTime.Second()),
 			Nanos:   int32(topicInfo.ExpirationTime.Nanosecond()),
 		},
@@ -77,7 +77,7 @@ func TopicInfoFromBytes(data []byte) (TopicInfo, error) {
 	if data == nil {
 		return TopicInfo{}, errByteArrayNull
 	}
-	pb := proto.ConsensusTopicInfo{}
+	pb := services.ConsensusTopicInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TopicInfo{}, err

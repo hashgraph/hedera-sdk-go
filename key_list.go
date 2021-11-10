@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type KeyList struct {
@@ -66,18 +66,18 @@ func (kl *KeyList) String() string {
 	return s
 }
 
-func (kl *KeyList) _ToProtoKey() *proto.Key {
-	keys := make([]*proto.Key, len(kl.keys))
+func (kl *KeyList) _ToProtoKey() *services.Key {
+	keys := make([]*services.Key, len(kl.keys))
 	for i, key := range kl.keys {
 		keys[i] = key._ToProtoKey()
 	}
 
 	if kl.threshold >= 0 {
-		return &proto.Key{
-			Key: &proto.Key_ThresholdKey{
-				ThresholdKey: &proto.ThresholdKey{
+		return &services.Key{
+			Key: &services.Key_ThresholdKey{
+				ThresholdKey: &services.ThresholdKey{
 					Threshold: uint32(kl.threshold),
-					Keys: &proto.KeyList{
+					Keys: &services.KeyList{
 						Keys: keys,
 					},
 				},
@@ -85,27 +85,27 @@ func (kl *KeyList) _ToProtoKey() *proto.Key {
 		}
 	}
 
-	return &proto.Key{
-		Key: &proto.Key_KeyList{
-			KeyList: &proto.KeyList{
+	return &services.Key{
+		Key: &services.Key_KeyList{
+			KeyList: &services.KeyList{
 				Keys: keys,
 			},
 		},
 	}
 }
 
-func (kl *KeyList) _ToProtoKeyList() *proto.KeyList {
-	keys := make([]*proto.Key, len(kl.keys))
+func (kl *KeyList) _ToProtoKeyList() *services.KeyList {
+	keys := make([]*services.Key, len(kl.keys))
 	for i, key := range kl.keys {
 		keys[i] = key._ToProtoKey()
 	}
 
-	return &proto.KeyList{
+	return &services.KeyList{
 		Keys: keys,
 	}
 }
 
-func _KeyListFromProtobuf(pb *proto.KeyList) (KeyList, error) {
+func _KeyListFromProtobuf(pb *services.KeyList) (KeyList, error) {
 	if pb == nil {
 		return KeyList{}, errParameterNull
 	}

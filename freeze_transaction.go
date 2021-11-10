@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
@@ -25,7 +25,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 	return &transaction
 }
 
-func _FreezeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FreezeTransaction {
+func _FreezeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FreezeTransaction {
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
@@ -99,23 +99,23 @@ func (transaction *FreezeTransaction) GetFileHash() []byte {
 	return transaction.fileHash
 }
 
-func (transaction *FreezeTransaction) _Build() *proto.TransactionBody {
-	body := &proto.FreezeTransactionBody{
+func (transaction *FreezeTransaction) _Build() *services.TransactionBody {
+	body := &services.FreezeTransactionBody{
 		FileHash:   transaction.fileHash,
 		StartTime:  _TimeToProtobuf(transaction.startTime),
-		FreezeType: proto.FreezeType(transaction.freezeType),
+		FreezeType: services.FreezeType(transaction.freezeType),
 	}
 
 	if transaction.fileID != nil {
 		body.UpdateFile = transaction.fileID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_Freeze{
+		Data: &services.TransactionBody_Freeze{
 			Freeze: body,
 		},
 	}
@@ -132,20 +132,20 @@ func (transaction *FreezeTransaction) Schedule() (*ScheduleCreateTransaction, er
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FreezeTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.FreezeTransactionBody{
+func (transaction *FreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.FreezeTransactionBody{
 		FileHash:   transaction.fileHash,
 		StartTime:  _TimeToProtobuf(transaction.startTime),
-		FreezeType: proto.FreezeType(transaction.freezeType),
+		FreezeType: services.FreezeType(transaction.freezeType),
 	}
 
 	if transaction.fileID != nil {
 		body.UpdateFile = transaction.fileID._ToProtobuf()
 	}
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_Freeze{
+		Data: &services.SchedulableTransactionBody_Freeze{
 			Freeze: body,
 		},
 	}, nil
@@ -350,7 +350,7 @@ func (transaction *FreezeTransaction) AddSignature(publicKey PublicKey, signatur
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

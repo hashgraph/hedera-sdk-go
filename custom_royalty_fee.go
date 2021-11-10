@@ -1,6 +1,8 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 type CustomRoyaltyFee struct {
 	CustomFee
@@ -62,7 +64,7 @@ func (fee *CustomRoyaltyFee) GetFallbackFee() CustomFixedFee {
 	return CustomFixedFee{}
 }
 
-func _CustomRoyaltyFeeFromProtobuf(royalty *proto.RoyaltyFee, fee CustomFee) CustomRoyaltyFee {
+func _CustomRoyaltyFeeFromProtobuf(royalty *services.RoyaltyFee, fee CustomFee) CustomRoyaltyFee {
 	var fallback CustomFixedFee
 	if royalty.FallbackFee != nil {
 		fallback = _CustomFixedFeeFromProtobuf(royalty.FallbackFee, fee)
@@ -83,21 +85,21 @@ func (fee CustomRoyaltyFee) _ValidateNetworkOnIDs(client *Client) error {
 	return fee.FallbackFee._ValidateNetworkOnIDs(client)
 }
 
-func (fee CustomRoyaltyFee) _ToProtobuf() *proto.CustomFee {
-	var fallback *proto.FixedFee
+func (fee CustomRoyaltyFee) _ToProtobuf() *services.CustomFee {
+	var fallback *services.FixedFee
 	if fee.FallbackFee != nil {
 		fallback = fee.FallbackFee._ToProtobuf().GetFixedFee()
 	}
 
-	var FeeCollectorAccountID *proto.AccountID
+	var FeeCollectorAccountID *services.AccountID
 	if fee.FeeCollectorAccountID != nil {
 		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID._ToProtobuf()
 	}
 
-	return &proto.CustomFee{
-		Fee: &proto.CustomFee_RoyaltyFee{
-			RoyaltyFee: &proto.RoyaltyFee{
-				ExchangeValueFraction: &proto.Fraction{
+	return &services.CustomFee{
+		Fee: &services.CustomFee_RoyaltyFee{
+			RoyaltyFee: &services.RoyaltyFee{
+				ExchangeValueFraction: &services.Fraction{
 					Numerator:   fee.Numerator,
 					Denominator: fee.Denominator,
 				},

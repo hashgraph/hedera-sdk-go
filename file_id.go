@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -132,15 +132,15 @@ func (id FileID) ToSolidityAddress() string {
 	return _IdToSolidityAddress(id.Shard, id.Realm, id.File)
 }
 
-func (id FileID) _ToProtobuf() *proto.FileID {
-	return &proto.FileID{
+func (id FileID) _ToProtobuf() *services.FileID {
+	return &services.FileID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
 		FileNum:  int64(id.File),
 	}
 }
 
-func _FileIDFromProtobuf(fileID *proto.FileID) *FileID {
+func _FileIDFromProtobuf(fileID *services.FileID) *FileID {
 	if fileID == nil {
 		return nil
 	}
@@ -165,7 +165,7 @@ func FileIDFromBytes(data []byte) (FileID, error) {
 	if data == nil {
 		return FileID{}, errByteArrayNull
 	}
-	pb := proto.FileID{}
+	pb := services.FileID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FileID{}, err

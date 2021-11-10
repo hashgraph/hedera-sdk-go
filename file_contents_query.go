@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // FileContentsQuery retrieves the contents of a file.
@@ -48,16 +48,16 @@ func (query *FileContentsQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *FileContentsQuery) _Build() *proto.Query_FileGetContents {
-	body := &proto.FileGetContentsQuery{
-		Header: &proto.QueryHeader{},
+func (query *FileContentsQuery) _Build() *services.Query_FileGetContents {
+	body := &services.FileGetContentsQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.fileID != nil {
 		body.FileID = query.fileID._ToProtobuf()
 	}
 
-	return &proto.Query_FileGetContents{
+	return &services.Query_FileGetContents{
 		FileGetContents: body,
 	}
 }
@@ -67,10 +67,10 @@ func (query *FileContentsQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.FileGetContents.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.FileGetContents.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.FileGetContents.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -85,10 +85,10 @@ func (query *FileContentsQuery) _CostQueryMakeRequest(client *Client) (_ProtoReq
 	}
 
 	pb.FileGetContents.Header.Payment = paymentTransaction
-	pb.FileGetContents.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.FileGetContents.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

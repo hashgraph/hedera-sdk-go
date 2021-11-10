@@ -3,7 +3,7 @@ package hedera
 import (
 	"errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -17,7 +17,7 @@ type TokenRelationship struct {
 	AutomaticAssociation bool
 }
 
-func _TokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationship {
+func _TokenRelationshipFromProtobuf(pb *services.TokenRelationship) TokenRelationship {
 	if pb == nil {
 		return TokenRelationship{}
 	}
@@ -38,8 +38,8 @@ func _TokenRelationshipFromProtobuf(pb *proto.TokenRelationship) TokenRelationsh
 	}
 }
 
-func (relationship *TokenRelationship) _ToProtobuf() *proto.TokenRelationship {
-	var freezeStatus proto.TokenFreezeStatus
+func (relationship *TokenRelationship) _ToProtobuf() *services.TokenRelationship {
+	var freezeStatus services.TokenFreezeStatus
 	switch *relationship.FreezeStatus {
 	case true:
 		freezeStatus = 1
@@ -49,7 +49,7 @@ func (relationship *TokenRelationship) _ToProtobuf() *proto.TokenRelationship {
 		freezeStatus = 0
 	}
 
-	var kycStatus proto.TokenKycStatus
+	var kycStatus services.TokenKycStatus
 	switch *relationship.KycStatus {
 	case true:
 		kycStatus = 1
@@ -59,7 +59,7 @@ func (relationship *TokenRelationship) _ToProtobuf() *proto.TokenRelationship {
 		kycStatus = 0
 	}
 
-	return &proto.TokenRelationship{
+	return &services.TokenRelationship{
 		TokenId:              relationship.TokenID._ToProtobuf(),
 		Symbol:               relationship.Symbol,
 		Balance:              relationship.Balance,
@@ -83,7 +83,7 @@ func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
 	if data == nil {
 		return TokenRelationship{}, errors.New("byte array can't be null")
 	}
-	pb := proto.TokenRelationship{}
+	pb := services.TokenRelationship{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenRelationship{}, err
