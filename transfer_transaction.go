@@ -47,7 +47,15 @@ func NewTransferTransaction() *TransferTransaction {
 }
 
 func _TransferTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TransferTransaction {
-	tx := NewTransferTransaction()
+	tx := TransferTransaction{
+		Transaction: transaction,
+
+		tokenTransfers:   []tokenTransfer{},
+		tokenTransferMap: map[TokenID]int{},
+
+		hbarTransfers:   []accountAmount{},
+		hbarTransferMap: map[AccountID]int{},
+	}
 
 	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
 		accountID := _AccountIDFromProtobuf(aa.AccountID)
@@ -78,7 +86,7 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *proto.Transac
 		}
 	}
 
-	return *tx
+	return tx
 }
 
 func (transaction *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNftTransfer {
