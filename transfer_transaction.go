@@ -6,18 +6,39 @@ import (
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
+type accountAmount struct {
+	accountID AccountID
+	amount    Hbar
+}
+
+type tokenTransfer struct {
+	tokenID TokenID
+
+	transfers   []TokenTransfer
+	transferMap map[AccountID]int
+
+	nftTransfers []TokenNftTransfer
+}
+
 type TransferTransaction struct {
 	Transaction
-	tokenTransfers map[TokenID]map[AccountID]int64
-	hbarTransfers  map[AccountID]Hbar
-	nftTransfers   map[TokenID][]TokenNftTransfer
+
+	hbarTransfers   []accountAmount
+	hbarTransferMap map[AccountID]int
+
+	tokenTransfers   []tokenTransfer
+	tokenTransferMap map[TokenID]int
 }
 
 func NewTransferTransaction() *TransferTransaction {
 	transaction := TransferTransaction{
-		Transaction:    _NewTransaction(),
-		tokenTransfers: make(map[TokenID]map[AccountID]int64),
-		hbarTransfers:  make(map[AccountID]Hbar),
+		Transaction: _NewTransaction(),
+
+		tokenTransfers:   []tokenTransfer{},
+		tokenTransferMap: map[TokenID]int{},
+
+		hbarTransfers:   []accountAmount{},
+		hbarTransferMap: map[AccountID]int{},
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(1))
@@ -26,98 +47,89 @@ func NewTransferTransaction() *TransferTransaction {
 }
 
 func _TransferTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TransferTransaction {
-	hbarTransfers := make(map[AccountID]Hbar)
-	tokenTransfers := make(map[TokenID]map[AccountID]int64)
-	nftTransfers := make(map[TokenID][]TokenNftTransfer)
+	tx := NewTransferTransaction()
 
 	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
 		accountID := _AccountIDFromProtobuf(aa.AccountID)
 		amount := HbarFromTinybar(aa.Amount)
 
-		if value, ok := hbarTransfers[*accountID]; ok {
-			hbarTransfers[*accountID] = HbarFromTinybar(amount.AsTinybar() + value.AsTinybar())
-		} else {
-			hbarTransfers[*accountID] = amount
-		}
+		tx.AddHbarTransfer(*accountID, amount)
 	}
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
 		if tokenID := _TokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
-			var currentTokenTransfers map[AccountID]int64
-
-			if value, ok := tokenTransfers[*tokenID]; ok {
-				currentTokenTransfers = value
-			} else {
-				currentTokenTransfers = make(map[AccountID]int64)
-			}
-
-			for _, aa := range tokenTransfersList.GetTransfers() {
-				if accountID := _AccountIDFromProtobuf(aa.AccountID); accountID != nil {
-					if value, ok := currentTokenTransfers[*accountID]; ok {
-						currentTokenTransfers[*accountID] = aa.Amount + value
-					} else {
-						currentTokenTransfers[*accountID] = aa.Amount
-					}
+			for _, tokenTransfer := range tokenTransfersList.GetTransfers() {
+				if accountID := _AccountIDFromProtobuf(tokenTransfer.AccountID); accountID != nil {
+					tx.AddTokenTransfer(*tokenID, *accountID, tokenTransfer.Amount)
 				}
 			}
 
-			tokenTransfers[*tokenID] = currentTokenTransfers
-		}
-	}
+			for _, nftTransfer := range tokenTransfersList.GetNftTransfers() {
+				senderAccountID := _AccountIDFromProtobuf(nftTransfer.SenderAccountID)
+				receiverAccountID := _AccountIDFromProtobuf(nftTransfer.ReceiverAccountID)
 
-	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
-		if tokenID := _TokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
-			for _, aa := range tokenTransfersList.GetNftTransfers() {
-				if nftTransfers[*tokenID] == nil {
-					nftTransfers[*tokenID] = make([]TokenNftTransfer, 0)
+				if senderAccountID != nil && receiverAccountID != nil {
+					tx.AddNftTransfer(NftID{
+						TokenID:      *tokenID,
+						SerialNumber: nftTransfer.SerialNumber,
+					}, *senderAccountID, *receiverAccountID)
 				}
-				nftTransfers[*tokenID] = append(nftTransfers[*tokenID], _NftTransferFromProtobuf(aa))
 			}
 		}
 	}
 
-	return TransferTransaction{
-		Transaction:    transaction,
-		hbarTransfers:  hbarTransfers,
-		tokenTransfers: tokenTransfers,
-		nftTransfers:   nftTransfers,
-	}
+	return *tx
 }
 
 func (transaction *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNftTransfer {
-	return transaction.nftTransfers
+	nftTransferMap := map[TokenID][]TokenNftTransfer{}
+
+	for _, tokenTransfer := range transaction.tokenTransfers {
+		if len(tokenTransfer.nftTransfers) > 0 {
+			nftTransferMap[tokenTransfer.tokenID] = tokenTransfer.nftTransfers
+		}
+	}
+
+	return nftTransferMap
 }
 
 func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenTransfer {
-	transfers := make(map[TokenID][]TokenTransfer)
+	tokenTransferMap := make(map[TokenID][]TokenTransfer)
 
-	for tokenID, tokenTransfers := range transaction.tokenTransfers {
-		tokenTransfersList := make([]TokenTransfer, 0)
-
-		for accountID, amount := range tokenTransfers {
-			tokenTransfersList = append(tokenTransfersList, TokenTransfer{
-				AccountID: accountID,
-				Amount:    amount,
-			})
+	for _, tokenTransfer := range transaction.tokenTransfers {
+		if len(tokenTransfer.nftTransfers) > 0 {
+			tokenTransferMap[tokenTransfer.tokenID] = tokenTransfer.transfers
 		}
-
-		transfers[tokenID] = tokenTransfersList
 	}
 
-	return transfers
+	return tokenTransferMap
 }
 
 func (transaction *TransferTransaction) GetHbarTransfers() map[AccountID]Hbar {
-	return transaction.hbarTransfers
+	transferMap := make(map[AccountID]Hbar)
+
+	for _, transfer := range transaction.hbarTransfers {
+		transferMap[transfer.accountID] = transfer.amount
+	}
+
+	return transferMap
 }
 
 func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amount Hbar) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
-	if value, ok := transaction.hbarTransfers[accountID]; ok {
-		transaction.hbarTransfers[accountID] = HbarFromTinybar(amount.AsTinybar() + value.AsTinybar())
+	if index, ok := transaction.hbarTransferMap[accountID]; ok {
+		currentAmount := transaction.hbarTransfers[index].amount
+
+		transaction.hbarTransfers[index].amount = HbarFromTinybar(currentAmount.AsTinybar() + amount.AsTinybar())
 	} else {
-		transaction.hbarTransfers[accountID] = amount
+		index := len(transaction.hbarTransfers)
+
+		transaction.hbarTransferMap[accountID] = index
+		transaction.hbarTransfers = append(transaction.hbarTransfers, accountAmount{
+			accountID: accountID,
+			amount:    amount,
+		})
 	}
 
 	return transaction
@@ -126,23 +138,34 @@ func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amo
 func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, value int64) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
-	var tokenTransfers map[AccountID]int64
-	var amount int64
+	if tokenIndex, ok := transaction.tokenTransferMap[tokenID]; ok {
+		tokenTransfer := transaction.tokenTransfers[tokenIndex]
 
-	if value, ok := transaction.tokenTransfers[tokenID]; ok {
-		tokenTransfers = value
+		if transferIndex, transferOk := tokenTransfer.transferMap[accountID]; transferOk {
+			tokenTransfer.transfers[transferIndex].Amount += value
+		} else {
+			transferIndex := len(tokenTransfer.transfers)
+
+			tokenTransfer.transferMap[accountID] = transferIndex
+			tokenTransfer.transfers = append(tokenTransfer.transfers, TokenTransfer{
+				AccountID: accountID,
+				Amount:    value,
+			})
+		}
 	} else {
-		tokenTransfers = make(map[AccountID]int64)
-	}
+		tokenIndex := len(transaction.tokenTransfers)
 
-	if transfer, ok := tokenTransfers[accountID]; ok {
-		amount = transfer + value
-	} else {
-		amount = value
+		transaction.tokenTransferMap[tokenID] = tokenIndex
+		transaction.tokenTransfers = append(transaction.tokenTransfers, tokenTransfer{
+			tokenID:      tokenID,
+			nftTransfers: []TokenNftTransfer{},
+			transferMap:  map[AccountID]int{accountID: 0},
+			transfers: []TokenTransfer{TokenTransfer{
+				AccountID: accountID,
+				Amount:    value,
+			}},
+		})
 	}
-
-	tokenTransfers[accountID] = amount
-	transaction.tokenTransfers[tokenID] = tokenTransfers
 
 	return transaction
 }
@@ -150,19 +173,26 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender AccountID, receiver AccountID) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
-	if transaction.nftTransfers == nil {
-		transaction.nftTransfers = make(map[TokenID][]TokenNftTransfer)
-	}
-
-	if transaction.nftTransfers[nftID.TokenID] == nil {
-		transaction.nftTransfers[nftID.TokenID] = make([]TokenNftTransfer, 0)
-	}
-
-	transaction.nftTransfers[nftID.TokenID] = append(transaction.nftTransfers[nftID.TokenID], TokenNftTransfer{
+	nftTransfer := TokenNftTransfer{
 		SenderAccountID:   sender,
 		ReceiverAccountID: receiver,
 		SerialNumber:      nftID.SerialNumber,
-	})
+	}
+
+	if tokenIndex, ok := transaction.tokenTransferMap[nftID.TokenID]; ok {
+		tokenTransfer := transaction.tokenTransfers[tokenIndex]
+		tokenTransfer.nftTransfers = append(tokenTransfer.nftTransfers, nftTransfer)
+	} else {
+		tokenIndex := len(transaction.tokenTransfers)
+
+		transaction.tokenTransferMap[nftID.TokenID] = tokenIndex
+		transaction.tokenTransfers = append(transaction.tokenTransfers, tokenTransfer{
+			tokenID:      nftID.TokenID,
+			nftTransfers: []TokenNftTransfer{nftTransfer},
+			transferMap:  map[AccountID]int{},
+			transfers:    []TokenTransfer{},
+		})
+	}
 
 	return transaction
 }
@@ -171,21 +201,40 @@ func (transaction *TransferTransaction) _ValidateNetworkOnIDs(client *Client) er
 	if client == nil || !client.autoValidateChecksums {
 		return nil
 	}
+
 	var err error
-	for tokenID, accountMap := range transaction.tokenTransfers {
-		err = tokenID.ValidateChecksum(client)
-		for accountID := range accountMap {
-			err = accountID.ValidateChecksum(client)
+
+	for _, tokenTransfer := range transaction.tokenTransfers {
+		err = tokenTransfer.tokenID.ValidateChecksum(client)
+		if err != nil {
+			return err
+		}
+
+		for _, transfer := range tokenTransfer.transfers {
+			err = transfer.AccountID.ValidateChecksum(client)
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, nftTransfer := range tokenTransfer.nftTransfers {
+			err = nftTransfer.ReceiverAccountID.ValidateChecksum(client)
+			if err != nil {
+				return err
+			}
+
+			err = nftTransfer.SenderAccountID.ValidateChecksum(client)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	for nftID := range transaction.nftTransfers {
-		err = nftID.ValidateChecksum(client)
-	}
-	for accountID := range transaction.hbarTransfers {
-		err = accountID.ValidateChecksum(client)
-	}
-	if err != nil {
-		return err
+
+	for _, transfer := range transaction.hbarTransfers {
+		err = transfer.accountID.ValidateChecksum(client)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -212,10 +261,11 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*proto.Sch
 
 	if len(transaction.hbarTransfers) > 0 {
 		body.Transfers.AccountAmounts = make([]*proto.AccountAmount, 0)
-		for accountID, amount := range transaction.hbarTransfers {
+
+		for _, transfer := range transaction.hbarTransfers {
 			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &proto.AccountAmount{
-				AccountID: accountID._ToProtobuf(),
-				Amount:    amount.AsTinybar(),
+				AccountID: transfer.accountID._ToProtobuf(),
+				Amount:    transfer.amount.AsTinybar(),
 			})
 		}
 	}
@@ -225,37 +275,28 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*proto.Sch
 			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
 		}
 
-		for tokenID, tokenTransfers := range transaction.tokenTransfers {
+		for _, tokenTransfer := range transaction.tokenTransfers {
 			transfers := make([]*proto.AccountAmount, 0)
+			nftTransfers := make([]*proto.NftTransfer, 0)
 
-			for accountID, amount := range tokenTransfers {
+			for _, transfer := range tokenTransfer.transfers {
 				transfers = append(transfers, &proto.AccountAmount{
-					AccountID: accountID._ToProtobuf(),
-					Amount:    amount,
+					AccountID: transfer.AccountID._ToProtobuf(),
+					Amount:    transfer.Amount,
+				})
+			}
+
+			for _, nftTransfer := range tokenTransfer.nftTransfers {
+				nftTransfers = append(nftTransfers, &proto.NftTransfer{
+					SenderAccountID:   nftTransfer.SenderAccountID._ToProtobuf(),
+					ReceiverAccountID: nftTransfer.ReceiverAccountID._ToProtobuf(),
+					SerialNumber:      nftTransfer.SerialNumber,
 				})
 			}
 
 			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
-				Token:     tokenID._ToProtobuf(),
-				Transfers: transfers,
-			})
-		}
-	}
-
-	if len(transaction.nftTransfers) > 0 {
-		if body.TokenTransfers == nil {
-			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
-		}
-
-		for tokenID, nftTransfer := range transaction.nftTransfers {
-			nftTransfers := make([]*proto.NftTransfer, 0)
-
-			for _, nftT := range nftTransfer {
-				nftTransfers = append(nftTransfers, nftT._ToProtobuf())
-			}
-
-			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
-				Token:        tokenID._ToProtobuf(),
+				Token:        tokenTransfer.tokenID._ToProtobuf(),
+				Transfers:    transfers,
 				NftTransfers: nftTransfers,
 			})
 		}
@@ -419,10 +460,11 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 
 	if len(transaction.hbarTransfers) > 0 {
 		body.Transfers.AccountAmounts = make([]*proto.AccountAmount, 0)
-		for accountID, amount := range transaction.hbarTransfers {
+
+		for _, transfer := range transaction.hbarTransfers {
 			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &proto.AccountAmount{
-				AccountID: accountID._ToProtobuf(),
-				Amount:    amount.AsTinybar(),
+				AccountID: transfer.accountID._ToProtobuf(),
+				Amount:    transfer.amount.AsTinybar(),
 			})
 		}
 	}
@@ -432,38 +474,28 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
 		}
 
-		for tokenID, tokenTransfers := range transaction.tokenTransfers {
+		for _, tokenTransfer := range transaction.tokenTransfers {
 			transfers := make([]*proto.AccountAmount, 0)
+			nftTransfers := make([]*proto.NftTransfer, 0)
 
-			for accountID, amount := range tokenTransfers {
+			for _, transfer := range tokenTransfer.transfers {
 				transfers = append(transfers, &proto.AccountAmount{
-					AccountID: accountID._ToProtobuf(),
-					Amount:    amount,
+					AccountID: transfer.AccountID._ToProtobuf(),
+					Amount:    transfer.Amount,
+				})
+			}
+
+			for _, nftTransfer := range tokenTransfer.nftTransfers {
+				nftTransfers = append(nftTransfers, &proto.NftTransfer{
+					SenderAccountID:   nftTransfer.SenderAccountID._ToProtobuf(),
+					ReceiverAccountID: nftTransfer.ReceiverAccountID._ToProtobuf(),
+					SerialNumber:      nftTransfer.SerialNumber,
 				})
 			}
 
 			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
-				Token:     tokenID._ToProtobuf(),
+				Token:     tokenTransfer.tokenID._ToProtobuf(),
 				Transfers: transfers,
-			})
-		}
-	}
-
-	if len(transaction.nftTransfers) > 0 {
-		if body.TokenTransfers == nil {
-			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
-		}
-
-		for tokenID, nftTransfer := range transaction.nftTransfers {
-			nftTransfers := make([]*proto.NftTransfer, 0)
-
-			for _, nftT := range nftTransfer {
-				nftTransfers = append(nftTransfers, nftT._ToProtobuf())
-			}
-
-			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
-				Token:        tokenID._ToProtobuf(),
-				NftTransfers: nftTransfers,
 			})
 		}
 	}
