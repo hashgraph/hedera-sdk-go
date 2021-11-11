@@ -168,7 +168,7 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 			tokenID:      tokenID,
 			nftTransfers: []TokenNftTransfer{},
 			transferMap:  map[AccountID]int{accountID: 0},
-			transfers: []TokenTransfer{TokenTransfer{
+			transfers: []TokenTransfer{{
 				AccountID: accountID,
 				Amount:    value,
 			}},
@@ -502,8 +502,9 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 			}
 
 			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
-				Token:     tokenTransfer.tokenID._ToProtobuf(),
-				Transfers: transfers,
+				Token:        tokenTransfer.tokenID._ToProtobuf(),
+				Transfers:    transfers,
+				NftTransfers: nftTransfers,
 			})
 		}
 	}
