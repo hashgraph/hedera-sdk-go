@@ -1,3 +1,9 @@
+## v2.4.1
+
+### Fixed
+
+ * `TransferTransaction` should serialize the transfers list deterministically
+
 ## v2.4.0
 
 ### Added
