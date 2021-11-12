@@ -29,7 +29,7 @@ func (network *_Network) SetNetwork(net map[string]AccountID) error {
 
 func (network *_Network) _GetNetwork() map[string]AccountID {
 	temp := make(map[string]AccountID)
-	for _, node := range network._ManagedNetwork.nodes {
+	for node, _ := range network._ManagedNetwork.nodes {
 		switch n := node.(type) { //nolint
 		case *_Node:
 			temp[n._GetAddress()] = n.accountID
@@ -40,7 +40,7 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 }
 
 func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
-	for _, node := range network._ManagedNetwork.nodes {
+	for node, _ := range network._ManagedNetwork.nodes {
 		switch n := node.(type) { //nolint
 		case *_Node:
 			if n.accountID.String() == id.String() {
@@ -63,7 +63,7 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 		network.addressBook = _ReadAddressBookResource("addressbook/" + net.String() + ".pb")
 
 		if network.addressBook != nil {
-			for _, nod := range network._ManagedNetwork.nodes {
+			for nod, _ := range network._ManagedNetwork.nodes {
 				switch n := nod.(type) { //nolint
 				case *_Node:
 					temp := network.addressBook[n.accountID]
@@ -106,10 +106,15 @@ func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
 	length := network._ManagedNetwork._GetNumberOfNodesForTransaction()
 	accountIDs := make([]AccountID, 0)
 
-	for i := 0; i < length; i++ {
-		switch nod := network._ManagedNetwork.nodes[i].(type) { //nolint
+	i := 0
+	for n, _ := range network._ManagedNetwork.nodes {
+		switch nod := n.(type) { //nolint
 		case *_Node:
 			accountIDs = append(accountIDs, nod.accountID)
+		}
+		i++
+		if i == length {
+			break
 		}
 	}
 

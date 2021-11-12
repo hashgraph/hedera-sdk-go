@@ -30,6 +30,7 @@ type _ManagedNode struct {
 	useCount       int64
 	minBackoff     int64
 	attempts       int64
+	inUse          bool
 }
 
 func (node *_ManagedNode) _GetAttempts() int64 {
@@ -53,6 +54,7 @@ func _NewManagedNode(address string, minBackoff int64) _ManagedNode {
 		useCount:       0,
 		minBackoff:     minBackoff,
 		attempts:       0,
+		inUse:          false,
 	}
 }
 

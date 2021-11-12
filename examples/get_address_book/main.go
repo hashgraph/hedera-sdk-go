@@ -34,9 +34,11 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
+	k, _ := hedera.FileIDFromString("0.0.101")
+
 	fileQuery := hedera.NewFileContentsQuery().
 		// Set the file ID for address book which is 0.0.102
-		SetFileID(hedera.FileIDForAddressBook())
+		SetFileID(k)
 
 	println("the network that address book is for:", client.GetNetworkName().String())
 
@@ -83,6 +85,8 @@ func main() {
 		println(err.Error(), ": error emptying file")
 		return
 	}
+
+	println(string(contents))
 
 	// Write the contents (string([]byte)) into the string file
 	leng, err := fileString.WriteString(string(contents))
