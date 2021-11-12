@@ -16,12 +16,12 @@ type FileID struct {
 	checksum *string
 }
 
-// FileIDForAddressBook returns the public _Node address book for the current _Network.
+// FileIDForAddressBook returns the public node address book for the current network.
 func FileIDForAddressBook() FileID {
 	return FileID{File: 102}
 }
 
-// FileIDForFeeSchedule returns the current fee schedule for the _Network.
+// FileIDForFeeSchedule returns the current fee schedule for the network.
 func FileIDForFeeSchedule() FileID {
 	return FileID{File: 111}
 }

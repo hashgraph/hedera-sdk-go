@@ -9,31 +9,39 @@ func main() {
 	var client *hedera.Client
 	var err error
 
+	// Retrieving network type from environment variable HEDERA_NETWORK
 	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
 		println(err.Error(), ": error creating client")
 		return
 	}
 
+	// Retrieving operator ID from environment variable OPERATOR_ID
 	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		println(err.Error(), ": error converting string to AccountID")
 		return
 	}
 
+	// Retrieving operator key from environment variable OPERATOR_KEY
 	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
 		println(err.Error(), ": error converting string to PrivateKey")
 		return
 	}
 
+	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
+	// Generate new key to be used with new account
 	aliceKey, err := hedera.GeneratePrivateKey()
 	if err != nil {
 		println(err.Error(), ": error generating PrivateKey")
 		return
 	}
+
+	// Create three accounts, Alice, Bob, and Charlie.  Alice will be the treasury for our example token.
+	// Fees only apply in transactions not involving the treasury, so we need two other accounts.
 
 	aliceAccountCreate, err := hedera.NewAccountCreateTransaction().
 		SetInitialBalance(hedera.NewHbar(10)).
@@ -141,18 +149,46 @@ func main() {
 	println("Bob:", bobId.String())
 	println("Charlie:", charlieId.String())
 
+	// Let's start with a custom fee list of 1 fixed fee.  A custom fee list can be a list of up to
+	// 10 custom fees, where each fee is a fixed fee or a fractional fee.
+	// This fixed fee will mean that every time Bob transfers any number of tokens to Charlie,
+	// Alice will collect 1 Hbar from each account involved in the transaction who is SENDING
+	// the Token (in this case, Bob).
+
 	customHbarFee := hedera.NewCustomFixedFee().
 		SetHbarAmount(hedera.NewHbar(1)).
 		SetFeeCollectorAccountID(aliceId)
 
+	// In this example the fee is in Hbar, but you can charge a fixed fee in a token if you'd like.
+	// EG, you can make it so that each time an account transfers Foo tokens,
+	// they must pay a fee in Bar tokens to the fee collecting account.
+	// To charge a fixed fee in tokens, instead of calling setHbarAmount(), call
+	// setDenominatingTokenId(tokenForFee) and setAmount(tokenFeeAmount).
+
+	// Setting the feeScheduleKey to Alice's key will enable Alice to change the custom
+	// fees list on this token later using the TokenFeeScheduleUpdateTransaction.
+	// We will create an initial supply of 100 of these tokens.
+
 	tokenCreate, err := hedera.NewTokenCreateTransaction().
+		// Token name and symbol are only things required to create a token
 		SetTokenName("Example Token").
 		SetTokenSymbol("EX").
+		// The key which can perform update/delete operations on the token. If empty, the token can be
+		// perceived as immutable (not being able to be updated/deleted)
 		SetAdminKey(aliceKey).
+		// The key which can change the supply of a token. The key is used to sign Token Mint/Burn
+		// operations
 		SetSupplyKey(aliceKey).
+		// The key which can change the token's custom fee schedule; must sign a TokenFeeScheduleUpdate
+		// transaction
 		SetFeeScheduleKey(aliceKey).
+		// The account which will act as a treasury for the token. This account
+		// will receive the specified initial supply or the newly minted NFTs
 		SetTreasuryAccountID(aliceId).
+		// The custom fees to be assessed during a CryptoTransfer that transfers units of this token
 		SetCustomFees([]hedera.Fee{*customHbarFee}).
+		// Specifies the initial supply of tokens to be put in circulation. The
+		// initial supply is sent to the Treasury Account.
 		SetInitialSupply(100).
 		FreezeWith(client)
 	if err != nil {
@@ -160,6 +196,7 @@ func main() {
 		return
 	}
 
+	// Sign with alice's key before executing
 	tokenCreate.Sign(aliceKey)
 	resp, err = tokenCreate.Execute(client)
 	if err != nil {
@@ -167,12 +204,14 @@ func main() {
 		return
 	}
 
+	// Get receipt to make sure the transaction passed through
 	receipt, err = resp.GetReceipt(client)
 	if err != nil {
 		println(err.Error(), ": error getting receipt for token create transaction")
 		return
 	}
 
+	// Get the token out of the receipt
 	var tokenId hedera.TokenID
 	if receipt.TokenID != nil {
 		tokenId = *receipt.TokenID
@@ -195,8 +234,12 @@ func main() {
 		}
 	}
 
+	// We must associate the token with Bob and Charlie before they can trade in it.
+
 	tokenAssociate, err := hedera.NewTokenAssociateTransaction().
+		// Account to associate token with
 		SetAccountID(bobId).
+		// The token to associate with
 		SetTokenIDs(tokenId).
 		FreezeWith(client)
 	if err != nil {
@@ -204,6 +247,7 @@ func main() {
 		return
 	}
 
+	// Signing with bob's key
 	tokenAssociate.Sign(bobKey)
 	resp, err = tokenAssociate.Execute(client)
 	if err != nil {
@@ -217,8 +261,11 @@ func main() {
 		return
 	}
 
+	// Associating charlie's account with the token
 	tokenAssociate, err = hedera.NewTokenAssociateTransaction().
+		// Account to associate token with
 		SetAccountID(charlieId).
+		// The token to associate with
 		SetTokenIDs(tokenId).
 		FreezeWith(client)
 	if err != nil {
@@ -226,6 +273,7 @@ func main() {
 		return
 	}
 
+	// Signing with charlie's key
 	tokenAssociate.Sign(charlieKey)
 	resp, err = tokenAssociate.Execute(client)
 	if err != nil {
@@ -239,8 +287,11 @@ func main() {
 		return
 	}
 
+	// Give all 100 tokens to Bob
 	transferTransaction, err := hedera.NewTransferTransaction().
+		// The 100 tokens being given to bob
 		AddTokenTransfer(tokenId, bobId, 100).
+		// Have to take the 100 tokens from alice by negating the 100
 		AddTokenTransfer(tokenId, aliceId, -100).
 		FreezeWith(client)
 	if err != nil {
@@ -248,6 +299,7 @@ func main() {
 		return
 	}
 
+	// Have to sign with alice's key as we are taking alice's tokens
 	transferTransaction.Sign(aliceKey)
 	resp, err = transferTransaction.Execute(client)
 	if err != nil {
@@ -255,12 +307,15 @@ func main() {
 		return
 	}
 
+	// Make sure the transaction passed through
 	_, err = resp.GetReceipt(client)
 	if err != nil {
 		println(err.Error(), ": error getting receipt for token transfer transaction for alice")
 		return
 	}
 
+	// Check alice's balance before Bob transfers 20 tokens to Charlie
+	// This is a free query
 	aliceBalance1, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
@@ -271,8 +326,11 @@ func main() {
 
 	println("Alice's Hbar balance before Bob transfers 20 tokens to Charlie:", aliceBalance1.Hbars.String())
 
+	// Transfer 20 tokens from bob to charlie
 	transferTransaction, err = hedera.NewTransferTransaction().
+		// Taking away 20 tokens from bob
 		AddTokenTransfer(tokenId, bobId, -20).
+		// Giving 20 to charlie
 		AddTokenTransfer(tokenId, charlieId, 20).
 		FreezeWith(client)
 	if err != nil {
@@ -280,6 +338,7 @@ func main() {
 		return
 	}
 
+	// As we are taking from bob, bob has to sign this.
 	transferTransaction.Sign(bobKey)
 	resp, err = transferTransaction.Execute(client)
 	if err != nil {
@@ -287,12 +346,14 @@ func main() {
 		return
 	}
 
+	// Getting the record to show the assessed custom fees
 	record1, err := resp.GetRecord(client)
 	if err != nil {
 		println(err.Error(), ": error getting record for token transfer transaction for bob")
 		return
 	}
 
+	// Query to check alice's balance
 	aliceBalance2, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
@@ -307,15 +368,31 @@ func main() {
 		println(k.String())
 	}
 
+	// Let's use the TokenUpdateFeeScheduleTransaction with Alice's key to change the custom fees on our token.
+	// TokenUpdateFeeScheduleTransaction will replace the list of fees that apply to the token with
+	// an entirely new list.  Let's charge a 10% fractional fee.  This means that when Bob attempts to transfer
+	// 20 tokens to Charlie, 10% of the tokens he attempts to transfer (2 in this case) will be transferred to
+	// Alice instead.
+
+	// Fractional fees default to FeeAssessmentMethod.INCLUSIVE, which is the behavior described above.
+	// If you set the assessment method to EXCLUSIVE, then when Bob attempts to transfer 20 tokens to Charlie,
+	// Charlie will receive all 20 tokens, and Bob will be charged an _additional_ 10% fee which
+	// will be transferred to Alice.
+
 	customFractionalFee := hedera.NewCustomFractionalFee().
 		SetNumerator(1).
 		SetDenominator(10).
+		// The minimum amount to assess
 		SetMin(1).
+		// The maximum amount to assess (zero implies no maximum)
 		SetMax(10).
+		// The account to receive the custom fee
 		SetFeeCollectorAccountID(aliceId)
 
 	tokenFeeUpdate, err := hedera.NewTokenFeeScheduleUpdateTransaction().
+		// The token for which the custom fee will be updated
 		SetTokenID(tokenId).
+		// The updated custom fee
 		SetCustomFees([]hedera.Fee{*customFractionalFee}).
 		FreezeWith(client)
 	if err != nil {
@@ -323,6 +400,7 @@ func main() {
 		return
 	}
 
+	// As the token is owned by alice and all keys are set to alice's key we have to sign with that
 	tokenFeeUpdate.Sign(aliceKey)
 	resp, err = tokenFeeUpdate.Execute(client)
 	if err != nil {
@@ -336,6 +414,7 @@ func main() {
 		return
 	}
 
+	// Get token info, we can check if the custom fee is updated
 	tokenInfo2, err := hedera.NewTokenInfoQuery().
 		SetTokenID(tokenId).
 		Execute(client)
@@ -352,6 +431,7 @@ func main() {
 		}
 	}
 
+	// Another account balance query to check alice's token balance before Bob transfers 20 tokens to Charlie
 	aliceBalance3, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
@@ -362,6 +442,7 @@ func main() {
 
 	println("Alice's token balance before Bob transfers 20 tokens to Charlie:", aliceBalance3.Tokens.Get(tokenId))
 
+	// Once again transfer 20 tokens from bob to charlie
 	transferTransaction, err = hedera.NewTransferTransaction().
 		AddTokenTransfer(tokenId, bobId, -20).
 		AddTokenTransfer(tokenId, charlieId, 20).
@@ -371,6 +452,7 @@ func main() {
 		return
 	}
 
+	// Bob's is losing 20 tokens again. so he has to sign this transfer
 	transferTransaction.Sign(bobKey)
 	resp, err = transferTransaction.Execute(client)
 	if err != nil {
@@ -384,6 +466,7 @@ func main() {
 		return
 	}
 
+	// Checking alice's token balance again
 	aliceBalance4, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(aliceId).
 		Execute(client)
