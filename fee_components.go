@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -22,7 +22,7 @@ type FeeComponents struct {
 	ResponseDiscByte           int64
 }
 
-func _FeeComponentsFromProtobuf(feeComponents *proto.FeeComponents) (FeeComponents, error) {
+func _FeeComponentsFromProtobuf(feeComponents *services.FeeComponents) (FeeComponents, error) {
 	if feeComponents == nil {
 		return FeeComponents{}, errParameterNull
 	}
@@ -42,8 +42,8 @@ func _FeeComponentsFromProtobuf(feeComponents *proto.FeeComponents) (FeeComponen
 	}, nil
 }
 
-func (feeComponents FeeComponents) _ToProtobuf() *proto.FeeComponents {
-	return &proto.FeeComponents{
+func (feeComponents FeeComponents) _ToProtobuf() *services.FeeComponents {
+	return &services.FeeComponents{
 		Min:      feeComponents.Min,
 		Max:      feeComponents.Max,
 		Constant: feeComponents.Constant,
@@ -71,7 +71,7 @@ func FeeComponentsFromBytes(data []byte) (FeeComponents, error) {
 	if data == nil {
 		return FeeComponents{}, errByteArrayNull
 	}
-	pb := proto.FeeComponents{}
+	pb := services.FeeComponents{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FeeComponents{}, err

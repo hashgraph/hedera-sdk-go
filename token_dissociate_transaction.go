@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenDissociateTransaction struct {
@@ -21,7 +21,7 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	return &transaction
 }
 
-func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDissociateTransaction {
+func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -104,8 +104,8 @@ func (transaction *TokenDissociateTransaction) _ValidateNetworkOnIDs(client *Cli
 	return nil
 }
 
-func (transaction *TokenDissociateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenDissociateTransactionBody{}
+func (transaction *TokenDissociateTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenDissociateTransactionBody{}
 	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
@@ -113,18 +113,18 @@ func (transaction *TokenDissociateTransaction) _Build() *proto.TransactionBody {
 	if len(transaction.tokens) > 0 {
 		for _, tokenID := range transaction.tokens {
 			if body.Tokens == nil {
-				body.Tokens = make([]*proto.TokenID, 0)
+				body.Tokens = make([]*services.TokenID, 0)
 			}
 			body.Tokens = append(body.Tokens, tokenID._ToProtobuf())
 		}
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenDissociate{
+		Data: &services.TransactionBody_TokenDissociate{
 			TokenDissociate: body,
 		},
 	}
@@ -141,8 +141,8 @@ func (transaction *TokenDissociateTransaction) Schedule() (*ScheduleCreateTransa
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenDissociateTransactionBody{}
+func (transaction *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenDissociateTransactionBody{}
 	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
@@ -150,16 +150,16 @@ func (transaction *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*pr
 	if len(transaction.tokens) > 0 {
 		for _, tokenID := range transaction.tokens {
 			if body.Tokens == nil {
-				body.Tokens = make([]*proto.TokenID, 0)
+				body.Tokens = make([]*services.TokenID, 0)
 			}
 			body.Tokens = append(body.Tokens, tokenID._ToProtobuf())
 		}
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenDissociate{
+		Data: &services.SchedulableTransactionBody_TokenDissociate{
 			TokenDissociate: body,
 		},
 	}, nil
@@ -368,7 +368,7 @@ func (transaction *TokenDissociateTransaction) AddSignature(publicKey PublicKey,
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

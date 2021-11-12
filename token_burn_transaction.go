@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // Burns tokens from the Token's treasury Account. If no Supply Key is defined, the transaction
@@ -29,7 +29,7 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 	return &transaction
 }
 
-func _TokenBurnTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenBurnTransaction {
+func _TokenBurnTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenBurnTransaction {
 	return TokenBurnTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenBurn().Token),
@@ -105,8 +105,8 @@ func (transaction *TokenBurnTransaction) _ValidateNetworkOnIDs(client *Client) e
 	return nil
 }
 
-func (transaction *TokenBurnTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenBurnTransactionBody{
+func (transaction *TokenBurnTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenBurnTransactionBody{
 		Amount: transaction.amount,
 	}
 
@@ -118,12 +118,12 @@ func (transaction *TokenBurnTransaction) _Build() *proto.TransactionBody {
 		body.SerialNumbers = transaction.serial
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenBurn{
+		Data: &services.TransactionBody_TokenBurn{
 			TokenBurn: body,
 		},
 	}
@@ -140,8 +140,8 @@ func (transaction *TokenBurnTransaction) Schedule() (*ScheduleCreateTransaction,
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenBurnTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenBurnTransactionBody{
+func (transaction *TokenBurnTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenBurnTransactionBody{
 		Amount: transaction.amount,
 	}
 
@@ -152,10 +152,10 @@ func (transaction *TokenBurnTransaction) _ConstructScheduleProtobuf() (*proto.Sc
 	if transaction.serial != nil {
 		body.SerialNumbers = transaction.serial
 	}
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenBurn{
+		Data: &services.SchedulableTransactionBody_TokenBurn{
 			TokenBurn: body,
 		},
 	}, nil
@@ -368,7 +368,7 @@ func (transaction *TokenBurnTransaction) AddSignature(publicKey PublicKey, signa
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

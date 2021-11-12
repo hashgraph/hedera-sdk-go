@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -10,7 +10,7 @@ type TokenAssociation struct {
 	AccountID *AccountID
 }
 
-func tokenAssociationFromProtobuf(pb *proto.TokenAssociation) TokenAssociation {
+func tokenAssociationFromProtobuf(pb *services.TokenAssociation) TokenAssociation {
 	if pb == nil {
 		return TokenAssociation{}
 	}
@@ -21,18 +21,18 @@ func tokenAssociationFromProtobuf(pb *proto.TokenAssociation) TokenAssociation {
 	}
 }
 
-func (association *TokenAssociation) toProtobuf() *proto.TokenAssociation {
-	var tokenID *proto.TokenID
+func (association *TokenAssociation) toProtobuf() *services.TokenAssociation {
+	var tokenID *services.TokenID
 	if association.TokenID != nil {
 		tokenID = association.TokenID._ToProtobuf()
 	}
 
-	var accountID *proto.AccountID
+	var accountID *services.AccountID
 	if association.AccountID != nil {
 		accountID = association.AccountID._ToProtobuf()
 	}
 
-	return &proto.TokenAssociation{
+	return &services.TokenAssociation{
 		TokenId:   tokenID,
 		AccountId: accountID,
 	}
@@ -51,7 +51,7 @@ func TokenAssociationFromBytes(data []byte) (TokenAssociation, error) {
 	if data == nil {
 		return TokenAssociation{}, errByteArrayNull
 	}
-	pb := proto.TokenAssociation{}
+	pb := services.TokenAssociation{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenAssociation{}, err

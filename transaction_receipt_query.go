@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionReceiptQuery struct {
@@ -30,9 +30,9 @@ func (query *TransactionReceiptQuery) _ValidateNetworkOnIDs(client *Client) erro
 	return nil
 }
 
-func (query *TransactionReceiptQuery) _Build() *proto.Query_TransactionGetReceipt {
-	body := &proto.TransactionGetReceiptQuery{
-		Header: &proto.QueryHeader{},
+func (query *TransactionReceiptQuery) _Build() *services.Query_TransactionGetReceipt {
+	body := &services.TransactionGetReceiptQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.transactionID.AccountID != nil {
@@ -43,7 +43,7 @@ func (query *TransactionReceiptQuery) _Build() *proto.Query_TransactionGetReceip
 		body.IncludeDuplicates = *query.duplicates
 	}
 
-	return &proto.Query_TransactionGetReceipt{
+	return &services.Query_TransactionGetReceipt{
 		TransactionGetReceipt: body,
 	}
 }
@@ -53,10 +53,10 @@ func (query *TransactionReceiptQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TransactionGetReceipt.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.TransactionGetReceipt.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.TransactionGetReceipt.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -71,10 +71,10 @@ func (query *TransactionReceiptQuery) _CostQueryMakeRequest(client *Client) (_Pr
 	}
 
 	pb.TransactionGetReceipt.Header.Payment = paymentTransaction
-	pb.TransactionGetReceipt.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.TransactionGetReceipt.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

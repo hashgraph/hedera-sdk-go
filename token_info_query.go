@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenInfoQuery struct {
@@ -47,15 +47,15 @@ func (query *TokenInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TokenInfoQuery) _Build() *proto.Query_TokenGetInfo {
-	body := &proto.TokenGetInfoQuery{
-		Header: &proto.QueryHeader{},
+func (query *TokenInfoQuery) _Build() *services.Query_TokenGetInfo {
+	body := &services.TokenGetInfoQuery{
+		Header: &services.QueryHeader{},
 	}
 	if query.tokenID != nil {
 		body.Token = query.tokenID._ToProtobuf()
 	}
 
-	return &proto.Query_TokenGetInfo{
+	return &services.Query_TokenGetInfo{
 		TokenGetInfo: body,
 	}
 }
@@ -65,10 +65,10 @@ func (query *TokenInfoQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TokenGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.TokenGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.TokenGetInfo.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -83,10 +83,10 @@ func (query *TokenInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoReques
 	}
 
 	pb.TokenGetInfo.Header.Payment = paymentTransaction
-	pb.TokenGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.TokenGetInfo.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

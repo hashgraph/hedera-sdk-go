@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -13,7 +13,7 @@ type FeeSchedule struct {
 	ExpirationTime          *time.Time
 }
 
-func _FeeScheduleFromProtobuf(feeSchedule *proto.FeeSchedule) (FeeSchedule, error) {
+func _FeeScheduleFromProtobuf(feeSchedule *services.FeeSchedule) (FeeSchedule, error) {
 	if feeSchedule == nil {
 		return FeeSchedule{}, errParameterNull
 	}
@@ -38,18 +38,18 @@ func _FeeScheduleFromProtobuf(feeSchedule *proto.FeeSchedule) (FeeSchedule, erro
 	}, nil
 }
 
-func (feeSchedule FeeSchedule) _ToProtobuf() *proto.FeeSchedule {
-	txFeeSchedules := make([]*proto.TransactionFeeSchedule, 0)
+func (feeSchedule FeeSchedule) _ToProtobuf() *services.FeeSchedule {
+	txFeeSchedules := make([]*services.TransactionFeeSchedule, 0)
 	for _, txFeeSchedule := range feeSchedule.TransactionFeeSchedules {
 		txFeeSchedules = append(txFeeSchedules, txFeeSchedule._ToProtobuf())
 	}
 
-	var expiry proto.TimestampSeconds
+	var expiry services.TimestampSeconds
 	if feeSchedule.ExpirationTime != nil {
-		expiry = proto.TimestampSeconds{Seconds: feeSchedule.ExpirationTime.Unix()}
+		expiry = services.TimestampSeconds{Seconds: feeSchedule.ExpirationTime.Unix()}
 	}
 
-	return &proto.FeeSchedule{
+	return &services.FeeSchedule{
 		TransactionFeeSchedule: txFeeSchedules,
 		ExpiryTime:             &expiry,
 	}
@@ -68,7 +68,7 @@ func FeeScheduleFromBytes(data []byte) (FeeSchedule, error) {
 	if data == nil {
 		return FeeSchedule{}, errByteArrayNull
 	}
-	pb := proto.FeeSchedule{}
+	pb := services.FeeSchedule{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FeeSchedule{}, err

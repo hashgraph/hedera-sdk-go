@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type accountAmount struct {
@@ -46,7 +46,7 @@ func NewTransferTransaction() *TransferTransaction {
 	return &transaction
 }
 
-func _TransferTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TransferTransaction {
+func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TransferTransaction {
 	tx := TransferTransaction{
 		Transaction: transaction,
 
@@ -259,19 +259,18 @@ func (transaction *TransferTransaction) Schedule() (*ScheduleCreateTransaction, 
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.CryptoTransferTransactionBody{
-		Transfers: &proto.TransferList{
-			AccountAmounts: []*proto.AccountAmount{},
+func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.CryptoTransferTransactionBody{
+		Transfers: &services.TransferList{
+			AccountAmounts: []*services.AccountAmount{},
 		},
-		TokenTransfers: []*proto.TokenTransferList{},
+		TokenTransfers: []*services.TokenTransferList{},
 	}
 
 	if len(transaction.hbarTransfers) > 0 {
-		body.Transfers.AccountAmounts = make([]*proto.AccountAmount, 0)
-
+		body.Transfers.AccountAmounts = make([]*services.AccountAmount, 0)
 		for _, transfer := range transaction.hbarTransfers {
-			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &proto.AccountAmount{
+			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &services.AccountAmount{
 				AccountID: transfer.accountID._ToProtobuf(),
 				Amount:    transfer.amount.AsTinybar(),
 			})
@@ -280,29 +279,29 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*proto.Sch
 
 	if len(transaction.tokenTransfers) > 0 {
 		if body.TokenTransfers == nil {
-			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
+			body.TokenTransfers = make([]*services.TokenTransferList, 0)
 		}
 
 		for _, tokenTransfer := range transaction.tokenTransfers {
-			transfers := make([]*proto.AccountAmount, 0)
-			nftTransfers := make([]*proto.NftTransfer, 0)
+			transfers := make([]*services.AccountAmount, 0)
+			nftTransfers := make([]*services.NftTransfer, 0)
 
 			for _, transfer := range tokenTransfer.transfers {
-				transfers = append(transfers, &proto.AccountAmount{
+				transfers = append(transfers, &services.AccountAmount{
 					AccountID: transfer.AccountID._ToProtobuf(),
 					Amount:    transfer.Amount,
 				})
 			}
 
 			for _, nftTransfer := range tokenTransfer.nftTransfers {
-				nftTransfers = append(nftTransfers, &proto.NftTransfer{
+				nftTransfers = append(nftTransfers, &services.NftTransfer{
 					SenderAccountID:   nftTransfer.SenderAccountID._ToProtobuf(),
 					ReceiverAccountID: nftTransfer.ReceiverAccountID._ToProtobuf(),
 					SerialNumber:      nftTransfer.SerialNumber,
 				})
 			}
 
-			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
+			body.TokenTransfers = append(body.TokenTransfers, &services.TokenTransferList{
 				Token:        tokenTransfer.tokenID._ToProtobuf(),
 				Transfers:    transfers,
 				NftTransfers: nftTransfers,
@@ -310,10 +309,10 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*proto.Sch
 		}
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_CryptoTransfer{
+		Data: &services.SchedulableTransactionBody_CryptoTransfer{
 			CryptoTransfer: body,
 		},
 	}, nil
@@ -336,7 +335,7 @@ func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signat
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 
@@ -458,19 +457,19 @@ func (transaction *TransferTransaction) Execute(
 	}, nil
 }
 
-func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
-	body := &proto.CryptoTransferTransactionBody{
-		Transfers: &proto.TransferList{
-			AccountAmounts: []*proto.AccountAmount{},
+func (transaction *TransferTransaction) _Build() *services.TransactionBody {
+	body := &services.CryptoTransferTransactionBody{
+		Transfers: &services.TransferList{
+			AccountAmounts: []*services.AccountAmount{},
 		},
-		TokenTransfers: []*proto.TokenTransferList{},
+		TokenTransfers: []*services.TokenTransferList{},
 	}
 
 	if len(transaction.hbarTransfers) > 0 {
-		body.Transfers.AccountAmounts = make([]*proto.AccountAmount, 0)
+		body.Transfers.AccountAmounts = make([]*services.AccountAmount, 0)
 
 		for _, transfer := range transaction.hbarTransfers {
-			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &proto.AccountAmount{
+			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &services.AccountAmount{
 				AccountID: transfer.accountID._ToProtobuf(),
 				Amount:    transfer.amount.AsTinybar(),
 			})
@@ -479,29 +478,29 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 
 	if len(transaction.tokenTransfers) > 0 {
 		if body.TokenTransfers == nil {
-			body.TokenTransfers = make([]*proto.TokenTransferList, 0)
+			body.TokenTransfers = make([]*services.TokenTransferList, 0)
 		}
 
 		for _, tokenTransfer := range transaction.tokenTransfers {
-			transfers := make([]*proto.AccountAmount, 0)
-			nftTransfers := make([]*proto.NftTransfer, 0)
+			transfers := make([]*services.AccountAmount, 0)
+			nftTransfers := make([]*services.NftTransfer, 0)
 
 			for _, transfer := range tokenTransfer.transfers {
-				transfers = append(transfers, &proto.AccountAmount{
+				transfers = append(transfers, &services.AccountAmount{
 					AccountID: transfer.AccountID._ToProtobuf(),
 					Amount:    transfer.Amount,
 				})
 			}
 
 			for _, nftTransfer := range tokenTransfer.nftTransfers {
-				nftTransfers = append(nftTransfers, &proto.NftTransfer{
+				nftTransfers = append(nftTransfers, &services.NftTransfer{
 					SenderAccountID:   nftTransfer.SenderAccountID._ToProtobuf(),
 					ReceiverAccountID: nftTransfer.ReceiverAccountID._ToProtobuf(),
 					SerialNumber:      nftTransfer.SerialNumber,
 				})
 			}
 
-			body.TokenTransfers = append(body.TokenTransfers, &proto.TokenTransferList{
+			body.TokenTransfers = append(body.TokenTransfers, &services.TokenTransferList{
 				Token:        tokenTransfer.tokenID._ToProtobuf(),
 				Transfers:    transfers,
 				NftTransfers: nftTransfers,
@@ -509,12 +508,12 @@ func (transaction *TransferTransaction) _Build() *proto.TransactionBody {
 		}
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_CryptoTransfer{
+		Data: &services.TransactionBody_CryptoTransfer{
 			CryptoTransfer: body,
 		},
 	}

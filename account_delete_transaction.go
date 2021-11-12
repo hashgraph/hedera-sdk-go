@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountDeleteTransaction creates a new account. After the account is created, the AccountID for it is in the receipt,
@@ -20,7 +20,7 @@ type AccountDeleteTransaction struct {
 	deleteAccountID   *AccountID
 }
 
-func _AccountDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountDeleteTransaction {
+func _AccountDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) AccountDeleteTransaction {
 	return AccountDeleteTransaction{
 		Transaction:       transaction,
 		transferAccountID: _AccountIDFromProtobuf(pb.GetCryptoDelete().GetTransferAccountID()),
@@ -88,8 +88,8 @@ func (transaction *AccountDeleteTransaction) _ValidateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *AccountDeleteTransaction) _Build() *proto.TransactionBody {
-	body := &proto.CryptoDeleteTransactionBody{}
+func (transaction *AccountDeleteTransaction) _Build() *services.TransactionBody {
+	body := &services.CryptoDeleteTransactionBody{}
 
 	if transaction.transferAccountID != nil {
 		body.TransferAccountID = transaction.transferAccountID._ToProtobuf()
@@ -99,12 +99,12 @@ func (transaction *AccountDeleteTransaction) _Build() *proto.TransactionBody {
 		body.DeleteAccountID = transaction.deleteAccountID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_CryptoDelete{
+		Data: &services.TransactionBody_CryptoDelete{
 			CryptoDelete: body,
 		},
 	}
@@ -121,8 +121,8 @@ func (transaction *AccountDeleteTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.CryptoDeleteTransactionBody{}
+func (transaction *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.CryptoDeleteTransactionBody{}
 
 	if transaction.transferAccountID != nil {
 		body.TransferAccountID = transaction.transferAccountID._ToProtobuf()
@@ -132,10 +132,10 @@ func (transaction *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*prot
 		body.DeleteAccountID = transaction.deleteAccountID._ToProtobuf()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_CryptoDelete{
+		Data: &services.SchedulableTransactionBody_CryptoDelete{
 			CryptoDelete: body,
 		},
 	}, nil
@@ -345,7 +345,7 @@ func (transaction *AccountDeleteTransaction) AddSignature(publicKey PublicKey, s
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

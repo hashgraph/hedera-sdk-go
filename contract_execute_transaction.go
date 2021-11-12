@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
@@ -32,7 +32,7 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	return &transaction
 }
 
-func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractExecuteTransaction {
+func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractExecuteTransaction {
 	return ContractExecuteTransaction{
 		Transaction: transaction,
 		contractID:  _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
@@ -115,8 +115,8 @@ func (transaction *ContractExecuteTransaction) _ValidateNetworkOnIDs(client *Cli
 	return nil
 }
 
-func (transaction *ContractExecuteTransaction) _Build() *proto.TransactionBody {
-	body := proto.ContractCallTransactionBody{
+func (transaction *ContractExecuteTransaction) _Build() *services.TransactionBody {
+	body := services.ContractCallTransactionBody{
 		Gas:                transaction.gas,
 		Amount:             transaction.amount,
 		FunctionParameters: transaction.parameters,
@@ -126,12 +126,12 @@ func (transaction *ContractExecuteTransaction) _Build() *proto.TransactionBody {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ContractCall{
+		Data: &services.TransactionBody_ContractCall{
 			ContractCall: &body,
 		},
 	}
@@ -148,8 +148,8 @@ func (transaction *ContractExecuteTransaction) Schedule() (*ScheduleCreateTransa
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractExecuteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := proto.ContractCallTransactionBody{
+func (transaction *ContractExecuteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := services.ContractCallTransactionBody{
 		Gas:                transaction.gas,
 		Amount:             transaction.amount,
 		FunctionParameters: transaction.parameters,
@@ -159,10 +159,10 @@ func (transaction *ContractExecuteTransaction) _ConstructScheduleProtobuf() (*pr
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_ContractCall{
+		Data: &services.SchedulableTransactionBody_ContractCall{
 			ContractCall: &body,
 		},
 	}, nil
@@ -371,7 +371,7 @@ func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey,
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

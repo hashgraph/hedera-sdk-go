@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // Wipes the provided amount of tokens from the specified Account. Must be signed by the Token's
@@ -40,7 +40,7 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 	return &transaction
 }
 
-func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenWipeTransaction {
+func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenWipeTransaction {
 	return TokenWipeTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
@@ -124,8 +124,8 @@ func (transaction *TokenWipeTransaction) _ValidateNetworkOnIDs(client *Client) e
 	return nil
 }
 
-func (transaction *TokenWipeTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenWipeAccountTransactionBody{
+func (transaction *TokenWipeTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenWipeAccountTransactionBody{
 		Amount: transaction.amount,
 	}
 
@@ -141,12 +141,12 @@ func (transaction *TokenWipeTransaction) _Build() *proto.TransactionBody {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenWipe{
+		Data: &services.TransactionBody_TokenWipe{
 			TokenWipe: body,
 		},
 	}
@@ -163,8 +163,8 @@ func (transaction *TokenWipeTransaction) Schedule() (*ScheduleCreateTransaction,
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenWipeTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenWipeAccountTransactionBody{
+func (transaction *TokenWipeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenWipeAccountTransactionBody{
 		Amount: transaction.amount,
 	}
 
@@ -179,10 +179,10 @@ func (transaction *TokenWipeTransaction) _ConstructScheduleProtobuf() (*proto.Sc
 	if transaction.accountID != nil {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenWipe{
+		Data: &services.SchedulableTransactionBody_TokenWipe{
 			TokenWipe: body,
 		},
 	}, nil
@@ -387,7 +387,7 @@ func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signa
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

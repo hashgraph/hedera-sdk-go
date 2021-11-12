@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 
 	"time"
@@ -14,18 +14,18 @@ type LiveHash struct {
 	Duration  time.Time
 }
 
-func (liveHash *LiveHash) _ToProtobuf() *proto.LiveHash {
-	return &proto.LiveHash{
+func (liveHash *LiveHash) _ToProtobuf() *services.LiveHash {
+	return &services.LiveHash{
 		AccountId: liveHash.AccountID._ToProtobuf(),
 		Hash:      liveHash.Hash,
 		Keys:      liveHash.Keys._ToProtoKeyList(),
-		Duration: &proto.Duration{
+		Duration: &services.Duration{
 			Seconds: int64(liveHash.Duration.Second()),
 		},
 	}
 }
 
-func _LiveHashFromProtobuf(hash *proto.LiveHash) (LiveHash, error) {
+func _LiveHashFromProtobuf(hash *services.LiveHash) (LiveHash, error) {
 	if hash == nil {
 		return LiveHash{}, errParameterNull
 	}
@@ -62,7 +62,7 @@ func LiveHashFromBytes(data []byte) (LiveHash, error) {
 	if data == nil {
 		return LiveHash{}, errByteArrayNull
 	}
-	pb := proto.LiveHash{}
+	pb := services.LiveHash{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return LiveHash{}, err

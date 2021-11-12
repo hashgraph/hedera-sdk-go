@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type AccountInfoQuery struct {
@@ -45,10 +45,10 @@ func (query *AccountInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountInfoQuery) _Build() *proto.Query_CryptoGetInfo {
-	pb := proto.Query_CryptoGetInfo{
-		CryptoGetInfo: &proto.CryptoGetInfoQuery{
-			Header: &proto.QueryHeader{},
+func (query *AccountInfoQuery) _Build() *services.Query_CryptoGetInfo {
+	pb := services.Query_CryptoGetInfo{
+		CryptoGetInfo: &services.CryptoGetInfoQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -80,9 +80,9 @@ func (query *AccountInfoQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.CryptoGetInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.CryptoGetInfo.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -97,10 +97,10 @@ func (query *AccountInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequ
 	}
 
 	pb.CryptoGetInfo.Header.Payment = paymentTransaction
-	pb.CryptoGetInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.CryptoGetInfo.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

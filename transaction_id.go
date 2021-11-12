@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // TransactionID is the id used to identify a Transaction on the Hedera _Network. It consists of an AccountID and a
@@ -65,7 +65,7 @@ func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 
 // String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos` format
 func (id TransactionID) String() string {
-	var pb *proto.Timestamp
+	var pb *services.Timestamp
 	var returnString string
 	if id.AccountID != nil && id.ValidStart != nil {
 		pb = _TimeToProtobuf(*id.ValidStart)
@@ -124,25 +124,25 @@ func TransactionIdFromString(data string) (TransactionID, error) { // nolint
 	}, nil
 }
 
-func (id TransactionID) _ToProtobuf() *proto.TransactionID {
-	var validStart *proto.Timestamp
+func (id TransactionID) _ToProtobuf() *services.TransactionID {
+	var validStart *services.Timestamp
 	if id.ValidStart != nil {
 		validStart = _TimeToProtobuf(*id.ValidStart)
 	}
 
-	var accountID *proto.AccountID
+	var accountID *services.AccountID
 	if id.AccountID != nil {
 		accountID = id.AccountID._ToProtobuf()
 	}
 
-	return &proto.TransactionID{
+	return &services.TransactionID{
 		TransactionValidStart: validStart,
 		AccountID:             accountID,
 		Scheduled:             id.scheduled,
 	}
 }
 
-func _TransactionIDFromProtobuf(pb *proto.TransactionID) TransactionID {
+func _TransactionIDFromProtobuf(pb *services.TransactionID) TransactionID {
 	if pb == nil {
 		return TransactionID{}
 	}
@@ -172,7 +172,7 @@ func TransactionIDFromBytes(data []byte) (TransactionID, error) {
 	if data == nil {
 		return TransactionID{}, errByteArrayNull
 	}
-	pb := proto.TransactionID{}
+	pb := services.TransactionID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionID{}, err

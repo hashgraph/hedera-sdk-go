@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type _NodeAddress struct {
@@ -14,12 +14,12 @@ type _NodeAddress struct {
 	stake       int64
 }
 
-func _NodeAddressFromProtobuf(nodeAd *proto.NodeAddress) _NodeAddress {
+func _NodeAddressFromProtobuf(nodeAd *services.NodeAddress) _NodeAddress {
 	address := make([]_Endpoint, 0)
 
 	if len(nodeAd.GetIpAddress()) > 0 { // nolint
 		address = append(address, _EndpointFromProtobuf(
-			&proto.ServiceEndpoint{
+			&services.ServiceEndpoint{
 				IpAddressV4: nodeAd.GetIpAddress(), // nolint
 				Port:        nodeAd.GetPortno(),    // nolint
 			}))
@@ -40,8 +40,8 @@ func _NodeAddressFromProtobuf(nodeAd *proto.NodeAddress) _NodeAddress {
 	}
 }
 
-func (nodeAdd *_NodeAddress) _ToProtobuf() *proto.NodeAddress {
-	build := &proto.NodeAddress{
+func (nodeAdd *_NodeAddress) _ToProtobuf() *services.NodeAddress {
+	build := &services.NodeAddress{
 		RSA_PubKey:      nodeAdd.publicKey,
 		NodeId:          nodeAdd.nodeID,
 		NodeAccountId:   nil,
@@ -55,7 +55,7 @@ func (nodeAdd *_NodeAddress) _ToProtobuf() *proto.NodeAddress {
 		build.NodeAccountId = nodeAdd.accountID._ToProtobuf()
 	}
 
-	serviceEndpoint := make([]*proto.ServiceEndpoint, 0)
+	serviceEndpoint := make([]*services.ServiceEndpoint, 0)
 	for _, k := range nodeAdd.addresses {
 		serviceEndpoint = append(serviceEndpoint, k._ToProtobuf())
 	}

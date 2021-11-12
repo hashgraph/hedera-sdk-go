@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type LiveHashQuery struct {
@@ -54,9 +54,9 @@ func (query *LiveHashQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *LiveHashQuery) _Build() *proto.Query_CryptoGetLiveHash {
-	body := &proto.CryptoGetLiveHashQuery{
-		Header: &proto.QueryHeader{},
+func (query *LiveHashQuery) _Build() *services.Query_CryptoGetLiveHash {
+	body := &services.CryptoGetLiveHashQuery{
+		Header: &services.QueryHeader{},
 	}
 	if query.accountID != nil {
 		body.AccountID = query.accountID._ToProtobuf()
@@ -66,7 +66,7 @@ func (query *LiveHashQuery) _Build() *proto.Query_CryptoGetLiveHash {
 		body.Hash = query.hash
 	}
 
-	return &proto.Query_CryptoGetLiveHash{
+	return &services.Query_CryptoGetLiveHash{
 		CryptoGetLiveHash: body,
 	}
 }
@@ -76,10 +76,10 @@ func (query *LiveHashQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetLiveHash.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.CryptoGetLiveHash.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.CryptoGetLiveHash.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -94,10 +94,10 @@ func (query *LiveHashQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest
 	}
 
 	pb.CryptoGetLiveHash.Header.Payment = paymentTransaction
-	pb.CryptoGetLiveHash.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.CryptoGetLiveHash.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

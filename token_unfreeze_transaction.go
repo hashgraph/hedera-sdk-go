@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // Unfreezes transfers of the specified token for the account. Must be signed by the Token's freezeKey.
@@ -31,7 +31,7 @@ func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 	return &transaction
 }
 
-func _TokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenUnfreezeTransaction {
+func _TokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenUnfreezeTransaction {
 	return TokenUnfreezeTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
@@ -89,8 +89,8 @@ func (transaction *TokenUnfreezeTransaction) _ValidateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *TokenUnfreezeTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenUnfreezeAccountTransactionBody{}
+func (transaction *TokenUnfreezeTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenUnfreezeAccountTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
@@ -99,12 +99,12 @@ func (transaction *TokenUnfreezeTransaction) _Build() *proto.TransactionBody {
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenUnfreeze{
+		Data: &services.TransactionBody_TokenUnfreeze{
 			TokenUnfreeze: body,
 		},
 	}
@@ -121,8 +121,8 @@ func (transaction *TokenUnfreezeTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenUnfreezeTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenUnfreezeAccountTransactionBody{}
+func (transaction *TokenUnfreezeTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenUnfreezeAccountTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
@@ -131,10 +131,10 @@ func (transaction *TokenUnfreezeTransaction) _ConstructScheduleProtobuf() (*prot
 		body.Account = transaction.accountID._ToProtobuf()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenUnfreeze{
+		Data: &services.SchedulableTransactionBody_TokenUnfreeze{
 			TokenUnfreeze: body,
 		},
 	}, nil
@@ -352,7 +352,7 @@ func (transaction *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, s
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 
