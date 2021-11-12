@@ -1,8 +1,9 @@
+//+build all unit e2e
+
 package hedera
 
 import (
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -198,38 +199,4 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 	tx.Sign(privateKey)
 
 	return tx, nil
-}
-
-func TestIntegrationPreviewnetTls(t *testing.T) {
-	client := ClientForPreviewnet()
-	client.SetTransportSecurity(true)
-	client.SetMaxAttempts(3)
-	client.SetNetworkName(NetworkNamePreviewnet)
-
-	for address, nodeAccountID := range client.GetNetwork() {
-		assert.True(t, strings.HasSuffix(address, ":50212"))
-
-		_, err := NewAccountBalanceQuery().
-			SetNodeAccountIDs([]AccountID{nodeAccountID}).
-			SetAccountID(nodeAccountID).
-			Execute(client)
-		assert.NoError(t, err)
-	}
-}
-
-func TestIntegrationTestnetTls(t *testing.T) {
-	client := ClientForTestnet()
-	client.SetTransportSecurity(true)
-	client.SetMaxAttempts(3)
-	client.SetNetworkName(NetworkNamePreviewnet)
-
-	for address, nodeAccountID := range client.GetNetwork() {
-		assert.True(t, strings.HasSuffix(address, ":50212"))
-
-		_, err := NewAccountBalanceQuery().
-			SetNodeAccountIDs([]AccountID{nodeAccountID}).
-			SetAccountID(nodeAccountID).
-			Execute(client)
-		assert.NoError(t, err)
-	}
 }
