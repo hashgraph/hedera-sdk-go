@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -16,7 +16,7 @@ type FileInfo struct {
 	FileMemo       string
 }
 
-func _FileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileInfo, error) {
+func _FileInfoFromProtobuf(fileInfo *services.FileGetInfoResponse_FileInfo) (FileInfo, error) {
 	if fileInfo == nil {
 		return FileInfo{}, errParameterNull
 	}
@@ -44,11 +44,11 @@ func _FileInfoFromProtobuf(fileInfo *proto.FileGetInfoResponse_FileInfo) (FileIn
 	}, nil
 }
 
-func (fileInfo *FileInfo) _ToProtobuf() *proto.FileGetInfoResponse_FileInfo {
-	return &proto.FileGetInfoResponse_FileInfo{
+func (fileInfo *FileInfo) _ToProtobuf() *services.FileGetInfoResponse_FileInfo {
+	return &services.FileGetInfoResponse_FileInfo{
 		FileID: fileInfo.FileID._ToProtobuf(),
 		Size:   fileInfo.Size,
-		ExpirationTime: &proto.Timestamp{
+		ExpirationTime: &services.Timestamp{
 			Seconds: int64(fileInfo.ExpirationTime.Second()),
 			Nanos:   int32(fileInfo.ExpirationTime.Nanosecond()),
 		},
@@ -71,7 +71,7 @@ func FileInfoFromBytes(data []byte) (FileInfo, error) {
 	if data == nil {
 		return FileInfo{}, errByteArrayNull
 	}
-	pb := proto.FileGetInfoResponse_FileInfo{}
+	pb := services.FileGetInfoResponse_FileInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return FileInfo{}, err

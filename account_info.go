@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -28,7 +28,7 @@ type AccountInfo struct {
 	MaxAutomaticTokenAssociations  uint32
 }
 
-func _AccountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
+func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
 	if pb == nil {
 		return AccountInfo{}, errParameterNull
 	}
@@ -90,22 +90,22 @@ func _AccountInfoFromProtobuf(pb *proto.CryptoGetInfoResponse_AccountInfo) (Acco
 	}, nil
 }
 
-func (info AccountInfo) _ToProtobuf() *proto.CryptoGetInfoResponse_AccountInfo {
-	tokenRelationship := make([]*proto.TokenRelationship, len(info.TokenRelationships))
+func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInfo {
+	tokenRelationship := make([]*services.TokenRelationship, len(info.TokenRelationships))
 
 	for i, relationship := range info.TokenRelationships {
 		singleRelationship := relationship._ToProtobuf()
 		tokenRelationship[i] = singleRelationship
 	}
 
-	liveHashes := make([]*proto.LiveHash, len(info.LiveHashes))
+	liveHashes := make([]*services.LiveHash, len(info.LiveHashes))
 
 	for i, liveHash := range info.LiveHashes {
 		singleRelationship := liveHash._ToProtobuf()
 		liveHashes[i] = singleRelationship
 	}
 
-	return &proto.CryptoGetInfoResponse_AccountInfo{
+	return &services.CryptoGetInfoResponse_AccountInfo{
 		AccountID:                      info.AccountID._ToProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
 		Deleted:                        info.IsDeleted,
@@ -139,7 +139,7 @@ func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
 	if data == nil {
 		return AccountInfo{}, errByteArrayNull
 	}
-	pb := proto.CryptoGetInfoResponse_AccountInfo{}
+	pb := services.CryptoGetInfoResponse_AccountInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return AccountInfo{}, err

@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // A TopicCreateTransaction is for creating a new Topic on HCS.
@@ -35,7 +35,7 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 	return &transaction
 }
 
-func _TopicCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicCreateTransaction {
+func _TopicCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TopicCreateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetConsensusCreateTopic().GetAdminKey())
 	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusCreateTopic().GetSubmitKey())
 
@@ -135,8 +135,8 @@ func (transaction *TopicCreateTransaction) _ValidateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *TopicCreateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.ConsensusCreateTopicTransactionBody{
+func (transaction *TopicCreateTransaction) _Build() *services.TransactionBody {
+	body := &services.ConsensusCreateTopicTransactionBody{
 		Memo: transaction.memo,
 	}
 
@@ -156,12 +156,12 @@ func (transaction *TopicCreateTransaction) _Build() *proto.TransactionBody {
 		body.SubmitKey = transaction.submitKey._ToProtoKey()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ConsensusCreateTopic{
+		Data: &services.TransactionBody_ConsensusCreateTopic{
 			ConsensusCreateTopic: body,
 		},
 	}
@@ -178,8 +178,8 @@ func (transaction *TopicCreateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicCreateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.ConsensusCreateTopicTransactionBody{
+func (transaction *TopicCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.ConsensusCreateTopicTransactionBody{
 		Memo: transaction.memo,
 	}
 
@@ -199,10 +199,10 @@ func (transaction *TopicCreateTransaction) _ConstructScheduleProtobuf() (*proto.
 		body.SubmitKey = transaction.submitKey._ToProtoKey()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_ConsensusCreateTopic{
+		Data: &services.SchedulableTransactionBody_ConsensusCreateTopic{
 			ConsensusCreateTopic: body,
 		},
 	}, nil
@@ -411,7 +411,7 @@ func (transaction *TopicCreateTransaction) AddSignature(publicKey PublicKey, sig
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

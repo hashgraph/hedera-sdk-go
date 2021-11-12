@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ScheduleID is the ID for a Hedera account
@@ -99,8 +99,8 @@ func (id ScheduleID) ToStringWithChecksum(client Client) (string, error) {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Schedule, checksum.correctChecksum), nil
 }
 
-func (id ScheduleID) _ToProtobuf() *proto.ScheduleID {
-	return &proto.ScheduleID{
+func (id ScheduleID) _ToProtobuf() *services.ScheduleID {
+	return &services.ScheduleID{
 		ShardNum:    int64(id.Shard),
 		RealmNum:    int64(id.Realm),
 		ScheduleNum: int64(id.Schedule),
@@ -123,7 +123,7 @@ func (id *ScheduleID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func _ScheduleIDFromProtobuf(scheduleID *proto.ScheduleID) *ScheduleID {
+func _ScheduleIDFromProtobuf(scheduleID *services.ScheduleID) *ScheduleID {
 	if scheduleID == nil {
 		return nil
 	}

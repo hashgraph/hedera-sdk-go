@@ -3,12 +3,12 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
 type Fee interface {
-	_ToProtobuf() *proto.CustomFee
+	_ToProtobuf() *services.CustomFee
 	_ValidateNetworkOnIDs(client *Client) error
 }
 
@@ -26,7 +26,7 @@ func NewCustomFixedFee() *CustomFixedFee {
 	}
 }
 
-func _CustomFixedFeeFromProtobuf(fixedFee *proto.FixedFee, customFee CustomFee) CustomFixedFee {
+func _CustomFixedFeeFromProtobuf(fixedFee *services.FixedFee, customFee CustomFee) CustomFixedFee {
 	return CustomFixedFee{
 		CustomFee:           customFee,
 		Amount:              fixedFee.Amount,
@@ -57,20 +57,20 @@ func (fee CustomFixedFee) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (fee CustomFixedFee) _ToProtobuf() *proto.CustomFee {
-	var tokenID *proto.TokenID
+func (fee CustomFixedFee) _ToProtobuf() *services.CustomFee {
+	var tokenID *services.TokenID
 	if fee.DenominationTokenID != nil {
 		tokenID = fee.DenominationTokenID._ToProtobuf()
 	}
 
-	var FeeCollectorAccountID *proto.AccountID
+	var FeeCollectorAccountID *services.AccountID
 	if fee.FeeCollectorAccountID != nil {
 		FeeCollectorAccountID = fee.CustomFee.FeeCollectorAccountID._ToProtobuf()
 	}
 
-	return &proto.CustomFee{
-		Fee: &proto.CustomFee_FixedFee{
-			FixedFee: &proto.FixedFee{
+	return &services.CustomFee{
+		Fee: &services.CustomFee_FixedFee{
+			FixedFee: &services.FixedFee{
 				Amount:              fee.Amount,
 				DenominatingTokenId: tokenID,
 			},

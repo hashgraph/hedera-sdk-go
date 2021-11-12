@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractUpdateTransaction is used to modify a smart contract instance to have the given parameter values. Any nil
@@ -43,16 +43,16 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 	return &transaction
 }
 
-func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractUpdateTransaction {
+func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractUpdateInstance().AdminKey)
 	autoRenew := _DurationFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewPeriod())
 	expiration := _TimeFromProtobuf(pb.GetContractUpdateInstance().GetExpirationTime())
 	var memo string
 
 	switch m := pb.GetContractUpdateInstance().GetMemoField().(type) {
-	case *proto.ContractUpdateTransactionBody_Memo:
+	case *services.ContractUpdateTransactionBody_Memo:
 		memo = m.Memo // nolint
-	case *proto.ContractUpdateTransactionBody_MemoWrapper:
+	case *services.ContractUpdateTransactionBody_MemoWrapper:
 		memo = m.MemoWrapper.Value
 	}
 
@@ -60,7 +60,6 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.T
 		Transaction:     transaction,
 		contractID:      _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
 		proxyAccountID:  _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID()),
-		bytecodeFileID:  _FileIDFromProtobuf(pb.GetContractUpdateInstance().GetFileID()),
 		adminKey:        key,
 		autoRenewPeriod: &autoRenew,
 		expirationTime:  &expiration,
@@ -168,7 +167,7 @@ func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *Cont
 	// if transaction.pb.GetMemoWrapper() != nil {
 	//	transaction.pb.GetMemoWrapper().Value = memo
 	// } else {
-	//	transaction.pb.MemoField = &proto.ContractUpdateTransactionBody_MemoWrapper{
+	//	transaction.pb.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
 	//		MemoWrapper: &wrappers.StringValue{Value: memo},
 	//	}
 	// }
@@ -200,8 +199,8 @@ func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *ContractUpdateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.ContractUpdateTransactionBody{}
+func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody {
+	body := &services.ContractUpdateTransactionBody{}
 
 	if transaction.expirationTime != nil {
 		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
@@ -226,17 +225,17 @@ func (transaction *ContractUpdateTransaction) _Build() *proto.TransactionBody {
 	if body.GetMemoWrapper() != nil {
 		body.GetMemoWrapper().Value = transaction.memo
 	} else {
-		body.MemoField = &proto.ContractUpdateTransactionBody_MemoWrapper{
+		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
 			MemoWrapper: &wrappers.StringValue{Value: transaction.memo},
 		}
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ContractUpdateInstance{
+		Data: &services.TransactionBody_ContractUpdateInstance{
 			ContractUpdateInstance: body,
 		},
 	}
@@ -253,8 +252,8 @@ func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.ContractUpdateTransactionBody{}
+func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.ContractUpdateTransactionBody{}
 
 	if transaction.expirationTime != nil {
 		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
@@ -276,14 +275,10 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*pro
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
-	if transaction.bytecodeFileID != nil {
-		body.FileID = transaction.bytecodeFileID._ToProtobuf()
-	}
-
 	if body.GetMemoWrapper() != nil {
 		body.GetMemoWrapper().Value = transaction.memo
 	} else {
-		body.MemoField = &proto.ContractUpdateTransactionBody_MemoWrapper{
+		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
 			MemoWrapper: &wrappers.StringValue{Value: transaction.memo},
 		}
 	}
@@ -300,22 +295,18 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*pro
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
 	}
 
-	if transaction.bytecodeFileID != nil {
-		body.FileID = transaction.bytecodeFileID._ToProtobuf()
-	}
-
 	if body.GetMemoWrapper() != nil {
 		body.GetMemoWrapper().Value = transaction.memo
 	} else {
-		body.MemoField = &proto.ContractUpdateTransactionBody_MemoWrapper{
+		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
 			MemoWrapper: &wrappers.StringValue{Value: transaction.memo},
 		}
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_ContractUpdateInstance{
+		Data: &services.SchedulableTransactionBody_ContractUpdateInstance{
 			ContractUpdateInstance: body,
 		},
 	}, nil
@@ -524,7 +515,7 @@ func (transaction *ContractUpdateTransaction) AddSignature(publicKey PublicKey, 
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

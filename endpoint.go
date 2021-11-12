@@ -3,7 +3,7 @@ package hedera
 import (
 	"fmt"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type _Endpoint struct {
@@ -11,7 +11,7 @@ type _Endpoint struct {
 	port    int32
 }
 
-func _EndpointFromProtobuf(serviceEndpoint *proto.ServiceEndpoint) _Endpoint {
+func _EndpointFromProtobuf(serviceEndpoint *services.ServiceEndpoint) _Endpoint {
 	port := serviceEndpoint.GetPort()
 
 	if port == 0 || port == 50111 {
@@ -24,8 +24,8 @@ func _EndpointFromProtobuf(serviceEndpoint *proto.ServiceEndpoint) _Endpoint {
 	}
 }
 
-func (endpoint *_Endpoint) _ToProtobuf() *proto.ServiceEndpoint {
-	return &proto.ServiceEndpoint{
+func (endpoint *_Endpoint) _ToProtobuf() *services.ServiceEndpoint {
+	return &services.ServiceEndpoint{
 		IpAddressV4: endpoint.address._ToProtobuf(),
 		Port:        endpoint.port,
 	}

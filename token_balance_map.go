@@ -1,6 +1,8 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 type TokenBalanceMap struct {
 	balances map[string]uint64
@@ -14,7 +16,7 @@ func (tokenBalances *TokenBalanceMap) Get(tokenID TokenID) uint64 {
 	}.String()]
 }
 
-func _TokenBalanceMapFromProtobuf(pb []*proto.TokenBalance) TokenBalanceMap {
+func _TokenBalanceMapFromProtobuf(pb []*services.TokenBalance) TokenBalanceMap {
 	balances := make(map[string]uint64)
 
 	for _, tokenBalance := range pb {
@@ -24,15 +26,15 @@ func _TokenBalanceMapFromProtobuf(pb []*proto.TokenBalance) TokenBalanceMap {
 	return TokenBalanceMap{balances}
 }
 
-func (tokenBalances *TokenBalanceMap) _ToProtobuf() []*proto.TokenBalance { // nolint
-	decimals := make([]*proto.TokenBalance, 0)
+func (tokenBalances *TokenBalanceMap) _ToProtobuf() []*services.TokenBalance { // nolint
+	decimals := make([]*services.TokenBalance, 0)
 
 	for s, t := range tokenBalances.balances {
 		token, err := TokenIDFromString(s)
 		if err != nil {
-			return []*proto.TokenBalance{}
+			return []*services.TokenBalance{}
 		}
-		decimals = append(decimals, &proto.TokenBalance{
+		decimals = append(decimals, &services.TokenBalance{
 			TokenId: token._ToProtobuf(),
 			Balance: t,
 		})

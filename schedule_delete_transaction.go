@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
@@ -20,7 +20,7 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	return &transaction
 }
 
-func _ScheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleDeleteTransaction {
+func _ScheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleDeleteTransaction {
 	return ScheduleDeleteTransaction{
 		Transaction: transaction,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleDelete().GetScheduleID()),
@@ -55,18 +55,18 @@ func (transaction *ScheduleDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *ScheduleDeleteTransaction) _Build() *proto.TransactionBody {
-	body := &proto.ScheduleDeleteTransactionBody{}
+func (transaction *ScheduleDeleteTransaction) _Build() *services.TransactionBody {
+	body := &services.ScheduleDeleteTransactionBody{}
 	if transaction.scheduleID != nil {
 		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ScheduleDelete{
+		Data: &services.TransactionBody_ScheduleDelete{
 			ScheduleDelete: body,
 		},
 	}
@@ -83,16 +83,16 @@ func (transaction *ScheduleDeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ScheduleDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.ScheduleDeleteTransactionBody{}
+func (transaction *ScheduleDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.ScheduleDeleteTransactionBody{}
 	if transaction.scheduleID != nil {
 		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_ScheduleDelete{
+		Data: &services.SchedulableTransactionBody_ScheduleDelete{
 			ScheduleDelete: body,
 		},
 	}, nil

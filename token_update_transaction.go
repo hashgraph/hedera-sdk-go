@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // Updates an already created Token.
@@ -39,7 +39,7 @@ func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	return &transaction
 }
 
-func _TokenUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenUpdateTransaction {
+func _TokenUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetAdminKey())
 	kycKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetKycKey())
 	freezeKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFreezeKey())
@@ -277,8 +277,8 @@ func (transaction *TokenUpdateTransaction) _ValidateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *TokenUpdateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenUpdateTransactionBody{
+func (transaction *TokenUpdateTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenUpdateTransactionBody{
 		Name:   transaction.tokenName,
 		Symbol: transaction.tokenSymbol,
 		Memo:   &wrappers.StringValue{Value: transaction.memo},
@@ -328,12 +328,12 @@ func (transaction *TokenUpdateTransaction) _Build() *proto.TransactionBody {
 		body.SupplyKey = transaction.supplyKey._ToProtoKey()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenUpdate{
+		Data: &services.TransactionBody_TokenUpdate{
 			TokenUpdate: body,
 		},
 	}
@@ -350,8 +350,8 @@ func (transaction *TokenUpdateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenUpdateTransactionBody{
+func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenUpdateTransactionBody{
 		Name:   transaction.tokenName,
 		Symbol: transaction.tokenSymbol,
 		Memo:   &wrappers.StringValue{Value: transaction.memo},
@@ -401,10 +401,10 @@ func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*proto.
 		body.SupplyKey = transaction.supplyKey._ToProtoKey()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenUpdate{
+		Data: &services.SchedulableTransactionBody_TokenUpdate{
 			TokenUpdate: body,
 		},
 	}, nil
@@ -613,7 +613,7 @@ func (transaction *TokenUpdateTransaction) AddSignature(publicKey PublicKey, sig
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

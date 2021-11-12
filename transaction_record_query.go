@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionRecordQuery struct {
@@ -29,16 +29,16 @@ func (query *TransactionRecordQuery) _ValidateNetworkOnIDs(client *Client) error
 	return nil
 }
 
-func (query *TransactionRecordQuery) _Build() *proto.Query_TransactionGetRecord {
-	body := &proto.TransactionGetRecordQuery{
-		Header: &proto.QueryHeader{},
+func (query *TransactionRecordQuery) _Build() *services.Query_TransactionGetRecord {
+	body := &services.TransactionGetRecordQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.transactionID.AccountID != nil {
 		body.TransactionID = query.transactionID._ToProtobuf()
 	}
 
-	return &proto.Query_TransactionGetRecord{
+	return &services.Query_TransactionGetRecord{
 		TransactionGetRecord: body,
 	}
 }
@@ -48,10 +48,10 @@ func (query *TransactionRecordQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.TransactionGetRecord.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.TransactionGetRecord.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.TransactionGetRecord.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -66,10 +66,10 @@ func (query *TransactionRecordQuery) _CostQueryMakeRequest(client *Client) (_Pro
 	}
 
 	pb.TransactionGetRecord.Header.Payment = paymentTransaction
-	pb.TransactionGetRecord.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.TransactionGetRecord.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil
@@ -122,7 +122,7 @@ func _TransactionRecordQueryShouldRetry(request _Request, response _Response) _E
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
-		if response.query.GetTransactionGetRecord().GetHeader().ResponseType == proto.ResponseType_COST_ANSWER {
+		if response.query.GetTransactionGetRecord().GetHeader().ResponseType == services.ResponseType_COST_ANSWER {
 			return executionStateFinished
 		}
 	default:

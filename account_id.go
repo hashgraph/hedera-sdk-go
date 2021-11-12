@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -121,8 +121,8 @@ func (id AccountID) ToSolidityAddress() string {
 	return _IdToSolidityAddress(id.Shard, id.Realm, id.Account)
 }
 
-func (id AccountID) _ToProtobuf() *proto.AccountID {
-	return &proto.AccountID{
+func (id AccountID) _ToProtobuf() *services.AccountID {
+	return &services.AccountID{
 		ShardNum:   int64(id.Shard),
 		RealmNum:   int64(id.Realm),
 		AccountNum: int64(id.Account),
@@ -142,7 +142,7 @@ func (id *AccountID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func _AccountIDFromProtobuf(accountID *proto.AccountID) *AccountID {
+func _AccountIDFromProtobuf(accountID *services.AccountID) *AccountID {
 	if accountID == nil {
 		return nil
 	}
@@ -175,7 +175,7 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 	if data == nil {
 		return AccountID{}, errByteArrayNull
 	}
-	pb := proto.AccountID{}
+	pb := services.AccountID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return AccountID{}, err

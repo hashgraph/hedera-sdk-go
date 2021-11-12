@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
@@ -52,10 +52,10 @@ func (query *AccountRecordsQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountRecordsQuery) _Build() *proto.Query_CryptoGetAccountRecords {
-	pb := proto.Query_CryptoGetAccountRecords{
-		CryptoGetAccountRecords: &proto.CryptoGetAccountRecordsQuery{
-			Header: &proto.QueryHeader{},
+func (query *AccountRecordsQuery) _Build() *services.Query_CryptoGetAccountRecords {
+	pb := services.Query_CryptoGetAccountRecords{
+		CryptoGetAccountRecords: &services.CryptoGetAccountRecordsQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -126,9 +126,9 @@ func (query *AccountRecordsQuery) _QueryMakeRequest() _ProtoRequest {
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.CryptoGetAccountRecords.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.CryptoGetAccountRecords.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.CryptoGetAccountRecords.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
@@ -143,10 +143,10 @@ func (query *AccountRecordsQuery) _CostQueryMakeRequest(client *Client) (_ProtoR
 	}
 
 	pb.CryptoGetAccountRecords.Header.Payment = paymentTransaction
-	pb.CryptoGetAccountRecords.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.CryptoGetAccountRecords.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil

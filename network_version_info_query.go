@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type NetworkVersionInfoQuery struct {
@@ -17,27 +17,27 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 }
 
 func (query *NetworkVersionInfoQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := &proto.Query_NetworkGetVersionInfo{
-		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
-			Header: &proto.QueryHeader{},
+	pb := &services.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &services.NetworkGetVersionInfoQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
 		pb.NetworkGetVersionInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
 	}
-	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
+	pb.NetworkGetVersionInfo.Header.ResponseType = services.ResponseType_ANSWER_ONLY
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}
 }
 
 func (query *NetworkVersionInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := &proto.Query_NetworkGetVersionInfo{
-		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
-			Header: &proto.QueryHeader{},
+	pb := &services.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &services.NetworkGetVersionInfoQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -47,10 +47,10 @@ func (query *NetworkVersionInfoQuery) _CostQueryMakeRequest(client *Client) (_Pr
 	}
 
 	pb.NetworkGetVersionInfo.Header.Payment = paymentTransaction
-	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
+	pb.NetworkGetVersionInfo.Header.ResponseType = services.ResponseType_COST_ANSWER
 
 	return _ProtoRequest{
-		query: &proto.Query{
+		query: &services.Query{
 			Query: pb,
 		},
 	}, nil
