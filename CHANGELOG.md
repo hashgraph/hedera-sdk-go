@@ -1,3 +1,9 @@
+## v2.5.0
+
+### Fixed
+
+ * `TransactionReceiptQuery` should fill out `TransactionReceipt` even when a bad `Status` is returned
+
 ## v2.4.1
 
 ### Fixed
