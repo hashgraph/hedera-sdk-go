@@ -1,3 +1,9 @@
+## v2.6.0-beta.1
+
+### Added
+
+ * New smart contract response codes
+
 ## v2.5.0
 
 ### Fixed
