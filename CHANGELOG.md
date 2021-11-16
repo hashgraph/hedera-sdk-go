@@ -1,3 +1,9 @@
+## v2.5.1-beta.1
+
+### Changed
+
+ * Refactored and updated node account ID handling to err whenever a node account ID of 0.0.0 is being set
+
 ## v2.5.0
 
 ### Fixed
