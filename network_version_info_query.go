@@ -61,7 +61,12 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	var err error
+	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+	if err != nil {
+		return Hbar{}, err
+	}
+	query.SetNodeAccountIDs(nodeAccountIDs)
 
 	protoReq, err := query._CostQueryMakeRequest(client)
 	if err != nil {
@@ -114,10 +119,16 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		return NetworkVersionInfo{}, errNoClientProvided
 	}
 
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
-	}
+	var err error
 
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return NetworkVersionInfo{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
+	}
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -146,7 +157,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		cost = actualCost
 	}
 
-	err := _QueryGeneratePayments(&query.Query, client, cost)
+	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return NetworkVersionInfo{}, err
 	}

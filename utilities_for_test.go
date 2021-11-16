@@ -102,10 +102,14 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		SetInitialBalance(NewHbar(30)).
 		SetAutoRenewPeriod(time.Hour*24*81 + time.Minute*26 + time.Second*39).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	env.OriginalOperatorID = env.Client.GetOperatorAccountID()
 	env.OriginalOperatorKey = env.Client.GetOperatorPublicKey()

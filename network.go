@@ -3,6 +3,8 @@ package hedera
 import (
 	"io/ioutil"
 	"time"
+
+	"errors"
 )
 
 type _Network struct {
@@ -97,7 +99,7 @@ func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
 	return resultMap
 }
 
-func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
+func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) {
 	err := network._RemoveDeadNodes()
 	if err != nil {
 		panic(err)
@@ -106,6 +108,10 @@ func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
 	length := network._ManagedNetwork._GetNumberOfNodesForTransaction()
 	accountIDs := make([]AccountID, 0)
 
+	if length == 0 {
+		return accountIDs, errors.New("detected empty network")
+	}
+
 	for i := 0; i < length; i++ {
 		switch nod := network._ManagedNetwork.nodes[i].(type) { //nolint
 		case *_Node:
@@ -113,7 +119,7 @@ func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID {
 		}
 	}
 
-	return accountIDs
+	return accountIDs, nil
 }
 
 func (network *_Network) _SetMaxNodesPerTransaction(max int) {

@@ -35,7 +35,7 @@ type ErrInvalidNodeAccountIDSet struct {
 }
 
 func (err ErrInvalidNodeAccountIDSet) Error() string {
-	return fmt.Sprintf("Invalid _Node AccountID was set for transaction: %v", err.NodeAccountID.String())
+	return fmt.Sprintf("Invalid node AccountID was set for transaction: %v", err.NodeAccountID.String())
 }
 
 func (err ErrMaxChunksExceeded) Error() string {

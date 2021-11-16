@@ -245,7 +245,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 		)
 	}
 
-	size := len(transaction.signedTransactions) / len(transaction.nodeIDs)
+	size := len(transaction.signedTransactions) / len(transaction.nodeAccountIDs)
 	list := make([]TransactionResponse, size)
 
 	for i := 0; i < size; i++ {
@@ -292,12 +292,17 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 		return transaction, nil
 	}
 
-	if len(transaction.nodeIDs) == 0 {
+	if len(transaction.nodeAccountIDs) == 0 {
 		if client == nil {
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
 
-		transaction.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return transaction, err
+		}
+
+		transaction.SetNodeAccountIDs(nodeAccountIDs)
 	}
 
 	transaction._InitFee(client)
@@ -342,7 +347,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 				FileAppend: b.FileAppend,
 			}
 
-			for _, nodeAccountID := range transaction.nodeIDs {
+			for _, nodeAccountID := range transaction.nodeAccountIDs {
 				body.NodeAccountID = nodeAccountID._ToProtobuf()
 
 				bodyBytes, err := protobuf.Marshal(body)
@@ -411,9 +416,9 @@ func (transaction *FileAppendTransaction) SetTransactionID(transactionID Transac
 }
 
 // SetNodeAccountID sets the _Node AccountID for this FileAppendTransaction.
-func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeID []AccountID) *FileAppendTransaction {
+func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
-	transaction.Transaction.SetNodeAccountIDs(nodeID)
+	transaction.Transaction.SetNodeAccountIDs(nodeAccountIDs)
 	return transaction
 }
 

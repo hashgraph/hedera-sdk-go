@@ -237,7 +237,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		)
 	}
 
-	size := len(transaction.signedTransactions) / len(transaction.nodeIDs)
+	size := len(transaction.signedTransactions) / len(transaction.nodeAccountIDs)
 	list := make([]TransactionResponse, size)
 
 	for i := 0; i < size; i++ {
@@ -272,16 +272,20 @@ func (transaction *TopicMessageSubmitTransaction) Freeze() (*TopicMessageSubmitT
 }
 
 func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*TopicMessageSubmitTransaction, error) {
-	if len(transaction.nodeIDs) == 0 {
+	var err error
+	if len(transaction.nodeAccountIDs) == 0 {
 		if client == nil {
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
 
-		transaction.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+		transaction.nodeAccountIDs, err = client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return transaction, err
+		}
 	}
 
 	transaction._InitFee(client)
-	err := transaction._ValidateNetworkOnIDs(client)
+	err = transaction._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return &TopicMessageSubmitTransaction{}, err
 	}
@@ -327,7 +331,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 				ConsensusSubmitMessage: b.ConsensusSubmitMessage,
 			}
 
-			for _, nodeAccountID := range transaction.nodeIDs {
+			for _, nodeAccountID := range transaction.nodeAccountIDs {
 				body.NodeAccountID = nodeAccountID._ToProtobuf()
 
 				bodyBytes, err := protobuf.Marshal(body)

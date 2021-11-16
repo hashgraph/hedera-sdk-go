@@ -71,9 +71,14 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	query.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+	var err error
+	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+	if err != nil {
+		return Hbar{}, err
+	}
+	query.SetNodeAccountIDs(nodeAccountIDs)
 
-	err := query._ValidateNetworkOnIDs(client)
+	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
@@ -157,11 +162,17 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		return []TransactionRecord{}, errNoClientProvided
 	}
 
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		query.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
-	}
+	var err error
 
-	err := query._ValidateNetworkOnIDs(client)
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return []TransactionRecord{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
+	}
+	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return []TransactionRecord{}, err
 	}

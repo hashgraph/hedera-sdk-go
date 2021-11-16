@@ -32,7 +32,7 @@ type Transaction struct {
 	transactionIDs     []TransactionID
 	transactions       []*proto.Transaction
 	signedTransactions []*proto.SignedTransaction
-	nodeIDs            []AccountID
+	nodeAccountIDs     []AccountID
 
 	publicKeys         []PublicKey
 	transactionSigners []TransactionSigner
@@ -53,7 +53,7 @@ func _NewTransaction() Transaction {
 		transactionIDs:           make([]TransactionID, 0),
 		transactions:             make([]*proto.Transaction, 0),
 		signedTransactions:       make([]*proto.SignedTransaction, 0),
-		nodeIDs:                  make([]AccountID, 0),
+		nodeAccountIDs:           make([]AccountID, 0),
 		freezeError:              nil,
 	}
 }
@@ -132,7 +132,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 			tx.transactionIDs = append(tx.transactionIDs, transactionID)
 		}
 
-		for _, id := range tx.nodeIDs {
+		for _, id := range tx.nodeAccountIDs {
 			if id._Equals(nodeAccountID) {
 				found = true
 				break
@@ -140,7 +140,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		}
 
 		if !found {
-			tx.nodeIDs = append(tx.nodeIDs, nodeAccountID)
+			tx.nodeAccountIDs = append(tx.nodeAccountIDs, nodeAccountID)
 		}
 	}
 
@@ -233,13 +233,13 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 }
 
 func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
-	returnMap := make(map[AccountID]map[*PublicKey][]byte, len(transaction.nodeIDs))
+	returnMap := make(map[AccountID]map[*PublicKey][]byte, len(transaction.nodeAccountIDs))
 
 	if len(transaction.signedTransactions) == 0 {
 		return returnMap, nil
 	}
 
-	for i, nodeID := range transaction.nodeIDs {
+	for i, nodeID := range transaction.nodeAccountIDs {
 		inner := make(map[*PublicKey][]byte, len(transaction.signedTransactions[i].SigMap.SigPair))
 
 		for _, sigPair := range transaction.signedTransactions[i].SigMap.SigPair {
@@ -271,7 +271,7 @@ func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
 		return []byte{}, err
 	}
 
-	return hashes[transaction.nodeIDs[0]], nil
+	return hashes[transaction.nodeAccountIDs[0]], nil
 }
 
 func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
@@ -286,7 +286,7 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 		return transactionHash, err
 	}
 
-	for i, node := range transaction.nodeIDs {
+	for i, node := range transaction.nodeAccountIDs {
 		hash := sha512.New384()
 		_, err := hash.Write(transaction.transactions[i].GetSignedTransactionBytes())
 		if err != nil {
@@ -335,7 +335,7 @@ func (transaction *Transaction) _RequireNotFrozen() {
 }
 
 func (transaction *Transaction) _RequireOneNodeAccountID() {
-	if len(transaction.nodeIDs) != 1 {
+	if len(transaction.nodeAccountIDs) != 1 {
 		panic("Transaction has more than one _Node ID set")
 	}
 }
@@ -345,15 +345,20 @@ func _TransactionFreezeWith(
 	client *Client,
 	body *proto.TransactionBody,
 ) error {
-	if len(transaction.nodeIDs) == 0 {
+	if len(transaction.nodeAccountIDs) == 0 {
 		if client != nil {
-			transaction.nodeIDs = client.network._GetNodeAccountIDsForExecute()
+			nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+			if err != nil {
+				return err
+			}
+
+			transaction.SetNodeAccountIDs(nodeAccountIDs)
 		} else {
 			return errNoClientOrTransactionIDOrNodeId
 		}
 	}
 
-	for _, nodeAccountID := range transaction.nodeIDs {
+	for _, nodeAccountID := range transaction.nodeAccountIDs {
 		body.NodeAccountID = nodeAccountID._ToProtobuf()
 		bodyBytes, err := protobuf.Marshal(body)
 		if err != nil {
@@ -406,7 +411,7 @@ func _TransactionShouldRetry(_ _Request, response _Response) _ExecutionState {
 }
 
 func _TransactionMakeRequest(request _Request) _ProtoRequest {
-	index := len(request.transaction.nodeIDs)*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
+	index := len(request.transaction.nodeAccountIDs)*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
 	_ = request.transaction._BuildTransaction(index)
 
 	return _ProtoRequest{
@@ -415,13 +420,13 @@ func _TransactionMakeRequest(request _Request) _ProtoRequest {
 }
 
 func _TransactionAdvanceRequest(request _Request) {
-	length := len(request.transaction.nodeIDs)
+	length := len(request.transaction.nodeAccountIDs)
 	currentIndex := request.transaction.nextNodeIndex
 	request.transaction.nextNodeIndex = (currentIndex + 1) % length
 }
 
 func _TransactionGetNodeAccountID(request _Request) AccountID {
-	return request.transaction.nodeIDs[request.transaction.nextNodeIndex]
+	return request.transaction.nodeAccountIDs[request.transaction.nextNodeIndex]
 }
 
 func _TransactionMapStatusError(
@@ -590,19 +595,21 @@ func (transaction *Transaction) SetTransactionID(transactionID TransactionID) *T
 }
 
 func (transaction *Transaction) GetNodeAccountIDs() []AccountID {
-	if transaction.nodeIDs != nil {
-		return transaction.nodeIDs
+	if transaction.nodeAccountIDs != nil {
+		return transaction.nodeAccountIDs
 	}
 
 	return make([]AccountID, 0)
 }
 
-// SetNodeAccountID sets the _Node AccountID for this Transaction.
-func (transaction *Transaction) SetNodeAccountIDs(nodeID []AccountID) *Transaction {
-	if transaction.nodeIDs == nil {
-		transaction.nodeIDs = make([]AccountID, 0)
+// SetNodeAccountIDs sets the node AccountID for this Transaction.
+func (transaction *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transaction {
+	for _, nodeAccountID := range nodeAccountIDs {
+		if nodeAccountID._IsZero() {
+			panic("cannot set node account ID of 0.0.0")
+		}
 	}
-	transaction.nodeIDs = append(transaction.nodeIDs, nodeID...)
+	transaction.nodeAccountIDs = nodeAccountIDs
 	return transaction
 }
 

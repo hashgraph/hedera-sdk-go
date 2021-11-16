@@ -4,8 +4,6 @@ import (
 	"math"
 	"sort"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type _ManagedNetwork struct {
@@ -158,11 +156,9 @@ func (network *_ManagedNetwork) _GetNumberOfMostHealthyNodes(count int32) []_IMa
 func (network *_ManagedNetwork) _RemoveDeadNodes() error {
 	if network.maxNodeAttempts > 0 {
 		for i := len(network.nodes) - 1; i >= 0; i-- {
-			var node _IManagedNode
-			if network.nodes[i] != nil {
-				node = network.nodes[i]
-			} else {
-				return errors.New("null nodes can't be removed")
+			node := network.nodes[i]
+			if node == nil {
+				panic("found nil in network list")
 			}
 
 			if node._GetAttempts() >= int64(network.maxNodeAttempts) {

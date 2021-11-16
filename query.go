@@ -10,7 +10,7 @@ import (
 
 type Query struct {
 	paymentTransactionID        TransactionID
-	nodeIDs                     []AccountID
+	nodeAccountIDs              []AccountID
 	maxQueryPayment             Hbar
 	queryPayment                Hbar
 	nextPaymentTransactionIndex int
@@ -37,25 +37,34 @@ func _NewQuery(isPaymentRequired bool) Query {
 	}
 }
 
-func (query *Query) SetNodeAccountIDs(accountID []AccountID) *Query {
-	query.nodeIDs = append(query.nodeIDs, accountID...)
+func (query *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
+	for _, nodeAccountID := range nodeAccountIDs {
+		if nodeAccountID._IsZero() {
+			panic("cannot set node account ID of 0.0.0")
+		}
+	}
+	query.nodeAccountIDs = nodeAccountIDs
 	return query
 }
 
 func (query *Query) GetNodeAccountIDs() []AccountID {
-	return query.nodeIDs
+	return query.nodeAccountIDs
 }
 
 func _QueryGetNodeAccountID(request _Request) AccountID {
-	if len(request.query.nodeIDs) > 0 {
-		return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
+	if len(request.query.nodeAccountIDs) > 0 {
+		return request.query.nodeAccountIDs[request.query.nextPaymentTransactionIndex]
 	}
 
-	panic("Query _Node AccountID's not set before executing")
+	panic("Query node AccountID's not set before executing")
 }
 
 func _CostQueryGetNodeAccountID(request _Request) AccountID {
-	return request.query.nodeIDs[request.query.nextPaymentTransactionIndex]
+	if len(request.query.nodeAccountIDs) > 0 {
+		return request.query.nodeAccountIDs[request.query.nextPaymentTransactionIndex]
+	}
+
+	panic("Query node AccountID's not set before executing")
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
@@ -97,7 +106,7 @@ func _QueryAdvanceRequest(request _Request) {
 }
 
 func _CostQueryAdvanceRequest(request _Request) {
-	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeIDs)
+	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeAccountIDs)
 }
 
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
@@ -107,7 +116,7 @@ func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoR
 }
 
 func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
-	for _, nodeID := range query.nodeIDs {
+	for _, nodeID := range query.nodeAccountIDs {
 		transaction, err := _QueryMakePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,
