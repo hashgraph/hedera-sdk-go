@@ -271,17 +271,12 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 	if err != nil {
 		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
-			receipt := TransactionReceipt{}
-			if resp.query.GetTransactionGetReceipt() != nil {
-				receipt = _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt())
-			}
-
-			return receipt, ErrHederaReceiptStatus{
-				TxID:    precheckErr.TxID,
-				Status:  precheckErr.Status,
-				Receipt: receipt,
-			}
+			return TransactionReceipt{}, _NewErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
 		}
+		if respErr, ok := err.(ErrHederaReceiptStatus); ok {
+			return respErr.Receipt, nil
+		}
+
 		return TransactionReceipt{}, err
 	}
 
