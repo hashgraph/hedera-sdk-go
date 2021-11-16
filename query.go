@@ -56,9 +56,10 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 	return query.nodeAccountIDs
 }
 
-func _QueryGetNodeAccountID(request _Request) AccountID {
+func _QueryGetNodeAccountID(request _Request) []AccountID {
+	println("lennnn", len(request.query.nodeAccountIDs))
 	if len(request.query.nodeAccountIDs) > 0 {
-		return request.query.nodeAccountIDs[request.query.nextPaymentTransactionIndex]
+		return request.query.nodeAccountIDs
 	}
 
 	panic("Query node AccountID's not set before executing")

@@ -3,8 +3,6 @@ package hedera
 import (
 	"io/ioutil"
 	"time"
-
-	"errors"
 )
 
 type _Network struct {
@@ -21,9 +19,10 @@ func _NewNetwork() _Network {
 
 func (network *_Network) SetNetwork(net map[string]AccountID) error {
 	newNetwork := make(map[string]_IManagedNode)
+
 	for url, id := range net {
-		node := _NewNode(id, url, network._ManagedNetwork.nodeWaitTime.Milliseconds())
-		newNetwork[id.String()] = &node
+		node := _NewNode(id, url, network._ManagedNetwork.minBackOff.Milliseconds())
+		newNetwork[url] = &node
 	}
 
 	return network._ManagedNetwork._SetNetwork(newNetwork)
@@ -42,7 +41,8 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 }
 
 func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
-	for _, node := range network._ManagedNetwork.nodes {
+	println(" get node for", id.String(), "len", len(network.network[id.String()]))
+	for _, node := range network.network[id.String()] {
 		switch n := node.(type) { //nolint
 		case *_Node:
 			if n.accountID.String() == id.String() {
@@ -100,25 +100,26 @@ func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
 }
 
 func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) {
-	err := network._RemoveDeadNodes()
-	if err != nil {
-		panic(err)
-	}
-
-	length := network._ManagedNetwork._GetNumberOfNodesForTransaction()
+	nodes := network._GetNumberOfMostHealthyNodes(int32(network._ManagedNetwork._GetNumberOfNodesForTransaction()))
 	accountIDs := make([]AccountID, 0)
 
-	if length == 0 {
-		return accountIDs, errors.New("detected empty network")
-	}
-
-	for i := 0; i < length; i++ {
-		switch nod := network._ManagedNetwork.nodes[i].(type) { //nolint
+	for _, node := range nodes {
+		switch n := node.(type) { //nolint
 		case *_Node:
-			accountIDs = append(accountIDs, nod.accountID)
+			accountIDs = append(accountIDs, n.accountID)
 		}
 	}
 
+	//println()
+	//println("len", len(accountIDs))
+	//println("nodes len", len(nodes))
+	//for _, s := range nodes{
+	//	switch n := s.(type) { //nolint
+	//	case *_Node:
+	//		println(n._GetAddress(), n.accountID.String())
+	//	}
+	//}
+	//println()
 	return accountIDs, nil
 }
 
@@ -134,12 +135,20 @@ func (network *_Network) _GetMaxNodeAttempts() int {
 	return network._ManagedNetwork._GetMaxNodeAttempts()
 }
 
-func (network *_Network) _SetNodeWaitTime(waitTime time.Duration) {
-	network._ManagedNetwork._SetNodeWaitTime(waitTime)
+func (network *_Network) _SetNodeMinBackoff(waitTime time.Duration) {
+	network._ManagedNetwork._SetMinBackoff(waitTime)
 }
 
-func (network *_Network) _GetNodeWaitTime() time.Duration {
-	return network._ManagedNetwork._GetNodeWaitTime()
+func (network *_Network) _SetNodeMaxBackoff(waitTime time.Duration) {
+	network._ManagedNetwork._SetMaxBackoff(waitTime)
+}
+
+func (network *_Network) _GetNodeMinBackoff() time.Duration {
+	return network._ManagedNetwork._GetMinBackoff()
+}
+
+func (network *_Network) _GetNodeMaxBackoff() time.Duration {
+	return network._ManagedNetwork._GetMaxBackoff()
 }
 
 func (network *_Network) _SetTransportSecurity(transportSecurity bool) *_Network {

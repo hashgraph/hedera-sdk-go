@@ -66,7 +66,7 @@ func _Execute(
 	shouldRetry func(_Request, _Response) _ExecutionState,
 	makeRequest func(request _Request) _ProtoRequest,
 	advanceRequest func(_Request),
-	getNodeAccountID func(_Request) AccountID,
+	getNodeAccountID func(_Request) []AccountID,
 	getMethod func(_Request, *_Channel) _Method,
 	mapStatusError func(_Request, _Response) error,
 	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
@@ -111,21 +111,36 @@ func _Execute(
 
 	var attempt int64
 	var errPersistent error
+	nodeAccountID := getNodeAccountID(request)
+	count := 0
+	currentAccountID := nodeAccountID[count]
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
 		protoRequest := makeRequest(request)
 		nodeAccountID := getNodeAccountID(request)
 
-		node, ok := client.network._GetNodeForAccountID(nodeAccountID)
+		node, ok := client.network._GetNodeForAccountID(currentAccountID)
 		if !ok {
-			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{currentAccountID}
 		}
 
 		node._InUse()
 
+		if !node._IsHealthy() {
+			delay := node._Wait()
+			time.Sleep(delay)
+		}
+
 		channel, err := node._GetChannel()
 		if err != nil {
 			node._IncreaseDelay()
+			if count+1 == len(nodeAccountID) {
+				count = 0
+				currentAccountID = nodeAccountID[count]
+				continue
+			}
+			count = count + 1
+			currentAccountID = nodeAccountID[count]
 			continue
 		}
 
@@ -134,10 +149,6 @@ func _Execute(
 		advanceRequest(request)
 
 		resp := _Response{}
-
-		if !node._IsHealthy() {
-			node._Wait()
-		}
 
 		if method.query != nil {
 			resp.query, err = method.query(context.TODO(), protoRequest.query)
@@ -149,6 +160,13 @@ func _Execute(
 			errPersistent = err
 			if _ExecutableDefaultRetryHandler(err) {
 				node._IncreaseDelay()
+				if count+1 == len(nodeAccountID) {
+					count = 0
+					currentAccountID = nodeAccountID[count]
+					continue
+				}
+				count = count + 1
+				currentAccountID = nodeAccountID[count]
 				continue
 			}
 			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)

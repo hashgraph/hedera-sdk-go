@@ -84,6 +84,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 			Execute(env.Client)
 
 		if err != nil {
+			println(err.Error())
 			continue
 		}
 

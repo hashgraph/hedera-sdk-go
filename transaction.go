@@ -427,8 +427,9 @@ func _TransactionAdvanceRequest(request _Request) {
 	request.transaction.nextNodeIndex = (currentIndex + 1) % length
 }
 
-func _TransactionGetNodeAccountID(request _Request) AccountID {
-	return request.transaction.nodeAccountIDs[request.transaction.nextNodeIndex]
+func _TransactionGetNodeAccountID(request _Request) []AccountID {
+	println("lennnn", len(request.transaction.nodeAccountIDs))
+	return request.transaction.nodeAccountIDs
 }
 
 func _TransactionMapStatusError(

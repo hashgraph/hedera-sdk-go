@@ -44,6 +44,18 @@ func (node *_Node) _SetMinBackoff(waitTime int64) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
+func (node *_Node) _GetMinBackoff() int64 {
+	return node._ManagedNode._GetMinBackoff()
+}
+
+func (node *_Node) _SetMaxBackoff(waitTime int64) {
+	node._ManagedNode._SetMaxBackoff(waitTime)
+}
+
+func (node *_Node) _GetMaxBackoff() int64 {
+	return node._ManagedNode._GetMaxBackoff()
+}
+
 func (node *_Node) _InUse() {
 	node._ManagedNode._InUse()
 }
@@ -60,8 +72,8 @@ func (node *_Node) _DecreaseDelay() {
 	node._ManagedNode._DecreaseDelay()
 }
 
-func (node *_Node) _Wait() {
-	node._ManagedNode._Wait()
+func (node *_Node) _Wait() time.Duration {
+	return node._ManagedNode._Wait()
 }
 
 func (node *_Node) _GetUseCount() int64 {
@@ -91,7 +103,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 	var kacp = keepalive.ClientParameters{
 		Time:                10 * time.Second,
-		Timeout:             time.Second,
+		Timeout:             2 * time.Second,
 		PermitWithoutStream: true,
 	}
 

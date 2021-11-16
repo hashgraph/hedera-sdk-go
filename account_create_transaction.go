@@ -320,6 +320,8 @@ func (transaction *AccountCreateTransaction) Execute(
 		)
 	}
 
+	println(" create")
+
 	resp, err := _Execute(
 		client,
 		_Request{

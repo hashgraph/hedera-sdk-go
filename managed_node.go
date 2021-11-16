@@ -7,11 +7,14 @@ import (
 
 type _IManagedNode interface {
 	_SetMinBackoff(waitTime int64)
+	_GetMinBackoff() int64
+	_SetMaxBackoff(waitTime int64)
+	_GetMaxBackoff() int64
 	_InUse()
 	_IsHealthy() bool
 	_IncreaseDelay()
 	_DecreaseDelay()
-	_Wait()
+	_Wait() time.Duration
 	_GetUseCount() int64
 	_GetLastUsed() int64
 	_GetAttempts() int64
@@ -29,6 +32,7 @@ type _ManagedNode struct {
 	backoffUntil   int64
 	useCount       int64
 	minBackoff     int64
+	maxBackoff     int64
 	attempts       int64
 }
 
@@ -48,10 +52,9 @@ func _NewManagedNode(address string, minBackoff int64) _ManagedNode {
 	return _ManagedNode{
 		address:        _ManagedNodeAddressFromString(address),
 		currentBackoff: 250,
-		lastUsed:       time.Now().UTC().UnixNano(),
-		backoffUntil:   time.Now().UTC().UnixNano(),
 		useCount:       0,
 		minBackoff:     minBackoff,
+		maxBackoff:     8000,
 		attempts:       0,
 	}
 }
@@ -64,28 +67,41 @@ func (node *_ManagedNode) _SetMinBackoff(waitTime int64) {
 	node.minBackoff = waitTime
 }
 
+func (node *_ManagedNode) _GetMinBackoff() int64 {
+	return node.minBackoff
+}
+
+func (node *_ManagedNode) _SetMaxBackoff(waitTime int64) {
+	node.maxBackoff = waitTime
+}
+
+func (node *_ManagedNode) _GetMaxBackoff() int64 {
+	return node.maxBackoff
+}
+
 func (node *_ManagedNode) _InUse() {
 	node.useCount++
 	node.lastUsed = time.Now().UTC().UnixNano()
 }
 
 func (node *_ManagedNode) _IsHealthy() bool {
-	return node.backoffUntil <= time.Now().UTC().UnixNano()
+	return node.backoffUntil < time.Now().UTC().UnixNano()
 }
 
 func (node *_ManagedNode) _IncreaseDelay() {
 	node.attempts++
-	node.currentBackoff = int64(math.Min(float64(node.currentBackoff)*2, 8000))
-	node.backoffUntil = (node.currentBackoff * 100000) + time.Now().UTC().UnixNano()
+	node.backoffUntil = (node.currentBackoff * 1000000) + time.Now().UTC().UnixNano()
+	node.currentBackoff = int64(math.Min(float64(node.currentBackoff)*2, float64(node.maxBackoff)))
 }
 
 func (node *_ManagedNode) _DecreaseDelay() {
-	node.currentBackoff = int64(math.Max(float64(node.currentBackoff)/2, 250))
+	node.currentBackoff = int64(math.Max(float64(node.currentBackoff)/2, float64(node.minBackoff)))
 }
 
-func (node *_ManagedNode) _Wait() {
+func (node *_ManagedNode) _Wait() time.Duration {
 	delay := node.backoffUntil - node.lastUsed
-	time.Sleep(time.Duration(delay) * time.Nanosecond)
+	println(time.Duration(delay).String())
+	return time.Duration(delay)
 }
 
 func (node *_ManagedNode) _GetUseCount() int64 {
