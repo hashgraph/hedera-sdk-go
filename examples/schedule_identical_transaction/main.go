@@ -43,11 +43,11 @@ func main() {
 
 	var scheduleID *hedera.ScheduleID
 
-	// Loop to generate keys for the KeyList
+	// Loop to generate keys, clients, and accounts
 	for i := range pubKeys {
 		newKey, err := hedera.GeneratePrivateKey()
 		if err != nil {
-			println(err.Error(), ": error generating PrivateKey}")
+			println(err.Error(), ": error generating PrivateKey")
 			return
 		}
 
