@@ -1,3 +1,10 @@
+## Unreleased
+
+### Fixed
+
+ * `TransferTransaction.GetTokenTransfers()`
+ * `TransferTransaction.AddTokenTransfer()`
+
 ## v2.5.1-beta.1
 
 ### Changed
