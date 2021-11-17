@@ -33,23 +33,26 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 	tokenTransfers := tokenTransfer.GetTokenTransfers()
 	nftTransfers := tokenTransfer.GetNftTransfers()
 
-	assert.Equal(t, len(hbarTransfers), 2)
-	assert.Equal(t, hbarTransfers[accountID1], amount)
-	assert.Equal(t, hbarTransfers[accountID2], amount.Negated())
+	assert.Equal(t, hbarTransfers, map[AccountID]Hbar{
+		accountID1: amount,
+		accountID2: amount.Negated(),
+	})
 
-	assert.Equal(t, len(tokenTransfers), 2)
-	assert.Equal(t, len(tokenTransfers[tokenID1]), 2)
-	assert.Equal(t, tokenTransfers[tokenID1][0], TokenTransfer{AccountID: accountID1, Amount: 10})
-	assert.Equal(t, tokenTransfers[tokenID1][1], TokenTransfer{AccountID: accountID2, Amount: -10})
-	assert.Equal(t, len(tokenTransfers[tokenID2]), 2)
-	assert.Equal(t, tokenTransfers[tokenID2][0], TokenTransfer{AccountID: accountID1, Amount: 10})
-	assert.Equal(t, tokenTransfers[tokenID2][1], TokenTransfer{AccountID: accountID2, Amount: -10})
+	assert.Equal(t, tokenTransfers, map[TokenID][]TokenTransfer{
+		tokenID1: {
+			{AccountID: accountID1, Amount: 10},
+			{AccountID: accountID2, Amount: -10},
+		},
+		tokenID2: {
+			{AccountID: accountID1, Amount: 10},
+			{AccountID: accountID2, Amount: -10},
+		},
+	})
 
-	assert.Equal(t, len(nftTransfers), 2)
-	assert.Equal(t, len(nftTransfers[tokenID3]), 1)
-	assert.Equal(t, nftTransfers[tokenID3][0], TokenNftTransfer{SenderAccountID: accountID1, ReceiverAccountID: accountID2, SerialNumber: 9})
-	assert.Equal(t, len(nftTransfers[tokenID4]), 1)
-	assert.Equal(t, nftTransfers[tokenID4][0], TokenNftTransfer{SenderAccountID: accountID2, ReceiverAccountID: accountID1, SerialNumber: 10})
+	assert.Equal(t, nftTransfers, map[TokenID][]TokenNftTransfer{
+		tokenID3: {{SenderAccountID: accountID1, ReceiverAccountID: accountID2, SerialNumber: 9}},
+		tokenID4: {{SenderAccountID: accountID2, ReceiverAccountID: accountID1, SerialNumber: 10}},
+	})
 }
 
 func TestUnitTokenTransferTransactionValidate(t *testing.T) {
