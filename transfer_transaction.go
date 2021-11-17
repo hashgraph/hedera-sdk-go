@@ -105,7 +105,7 @@ func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenT
 	tokenTransferMap := make(map[TokenID][]TokenTransfer)
 
 	for _, tokenTransfer := range transaction.tokenTransfers {
-		if len(tokenTransfer.nftTransfers) > 0 {
+		if len(tokenTransfer.transfers) > 0 {
 			tokenTransferMap[tokenTransfer.tokenID] = tokenTransfer.transfers
 		}
 	}
@@ -149,7 +149,7 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 	if tokenIndex, ok := transaction.tokenTransferMap[tokenID]; ok {
 		tokenTransfer := transaction.tokenTransfers[tokenIndex]
 
-		if transferIndex, transferOk := tokenTransfer.transferMap[accountID]; transferOk {
+		if transferIndex, ok := tokenTransfer.transferMap[accountID]; ok {
 			tokenTransfer.transfers[transferIndex].Amount += value
 		} else {
 			transferIndex := len(tokenTransfer.transfers)
@@ -160,6 +160,8 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 				Amount:    value,
 			})
 		}
+
+		transaction.tokenTransfers[tokenIndex] = tokenTransfer
 	} else {
 		tokenIndex := len(transaction.tokenTransfers)
 
