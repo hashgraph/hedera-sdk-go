@@ -20,6 +20,8 @@ type ITransaction interface {
 }
 
 type Transaction struct {
+	pbBody *proto.TransactionBody
+
 	nextNodeIndex        int
 	nextTransactionIndex int
 	maxRetry             int
