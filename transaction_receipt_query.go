@@ -269,8 +269,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	)
 
 	if err != nil {
-		switch precheckErr := err.(type) {
-		case ErrHederaPreCheckStatus:
+		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
 			return TransactionReceipt{}, _NewErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
 		}
 		return TransactionReceipt{}, err
