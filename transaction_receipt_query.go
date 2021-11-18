@@ -137,10 +137,8 @@ func _TransactionReceiptQueryShouldRetry(request _Request, response _Response) _
 	switch Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()) {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
-	case StatusSuccess:
-		return executionStateFinished
 	default:
-		return executionStateError
+		return executionStateFinished
 	}
 }
 
@@ -154,10 +152,9 @@ func _TransactionReceiptQueryMapStatusError(request _Request, response _Response
 		}
 	}
 
-	return ErrHederaReceiptStatus{
-		Status:  Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
-		Receipt: _TransactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
-	}
+    return ErrHederaPreCheckStatus{
+        Status: Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
+    }
 }
 
 func _TransactionReceiptQueryGetMethod(_ _Request, channel *_Channel) _Method {
@@ -269,20 +266,12 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		_QueryMapResponse,
 	)
 
-	if err != nil {
-		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
-			receipt := TransactionReceipt{}
-			if resp.query.GetTransactionGetReceipt() != nil {
-				receipt = _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt())
-			}
-
-			return receipt, ErrHederaReceiptStatus{
-				TxID:    precheckErr.TxID,
-				Status:  precheckErr.Status,
-				Receipt: receipt,
-			}
+	if err, ok := err.(ErrHederaPreCheckStatus); ok {
+		if resp.query.GetTransactionGetReceipt() != nil {
+			return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), err
+		} else {
+			return TransactionReceipt{}, err
 		}
-		return TransactionReceipt{}, err
 	}
 
 	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
