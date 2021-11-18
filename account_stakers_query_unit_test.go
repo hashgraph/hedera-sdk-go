@@ -6,26 +6,28 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitAccountStakersQueryValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	stackersQuery := NewAccountStakersQuery().
 		SetAccountID(accountID)
 
 	err = stackersQuery._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitAccountStakersQueryValidateWrong(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	stackersQuery := NewAccountStakersQuery().
 		SetAccountID(accountID)

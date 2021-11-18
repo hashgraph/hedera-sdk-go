@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
@@ -17,10 +19,10 @@ func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 		SetSubmitKey(env.Client.GetOperatorPublicKey()).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -30,7 +32,7 @@ func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, info)
 
 	assert.Equal(t, topicMemo, info.TopicMemo)
@@ -41,13 +43,13 @@ func TestIntegrationTopicCreateTransactionCanExecute(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
@@ -58,7 +60,7 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 
 	for i := range keys {
 		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		keys[i] = newKey
 		pubKeys[i] = newKey.PublicKey()
@@ -70,16 +72,16 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 		SetSubmitKey(pubKeys[1]).
 		SetTopicMemo(topicMemo).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err = tx.SignWithOperator(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tx.Sign(keys[0])
 	resp, err := tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -89,7 +91,7 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, info)
 
 	assert.Equal(t, topicMemo, info.TopicMemo)
@@ -100,17 +102,17 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = txDelete.Sign(keys[0]).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
@@ -120,11 +122,11 @@ func TestIntegrationTopicCreateTransactionJustSetMemo(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
@@ -17,13 +17,13 @@ func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
 		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(-1)).
 		AddHbarTransfer(AccountID{Account: 3}, NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTransferTransactionTransferHbarNothingSet(t *testing.T) {
@@ -32,20 +32,20 @@ func TestIntegrationTransferTransactionTransferHbarNothingSet(t *testing.T) {
 	resp, err := NewTransferTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(10)
 
@@ -54,10 +54,10 @@ func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *test
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -67,18 +67,18 @@ func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *test
 		AddHbarTransfer(accountID, NewHbar(-10)).
 		SetMaxTransactionFee(NewHbar(1)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	frozen.Sign(newKey)
 
 	resp, err = frozen.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing.T) { // nolint

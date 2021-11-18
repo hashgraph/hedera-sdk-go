@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func DisabledTestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
@@ -28,10 +30,10 @@ func DisabledTestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // 
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 	metaData := []byte{50}
@@ -41,10 +43,10 @@ func DisabledTestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // 
 		SetTokenID(tokenID).
 		SetMetadata(metaData).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	mintReceipt, err := mint.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	nftID := tokenID.Nft(mintReceipt.SerialNumbers[0])
 
@@ -52,7 +54,7 @@ func DisabledTestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // 
 		SetNftID(nftID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	value := false
 	for _, nftInfo := range info {

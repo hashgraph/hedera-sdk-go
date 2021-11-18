@@ -7,13 +7,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -24,10 +26,10 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -45,10 +47,10 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -57,31 +59,31 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	check := false
 	for _, relation := range info.TokenRelationships {
@@ -98,16 +100,16 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err = NewAccountInfoQuery().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	check = false
 	for _, relation := range info.TokenRelationships {
@@ -123,25 +125,25 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -152,10 +154,10 @@ func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -173,10 +175,10 @@ func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -185,25 +187,25 @@ func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp2, err := NewTokenRevokeKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -218,25 +220,25 @@ func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -247,10 +249,10 @@ func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -268,10 +270,10 @@ func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -280,25 +282,25 @@ func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp2, err := NewTokenRevokeKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -313,16 +315,16 @@ func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

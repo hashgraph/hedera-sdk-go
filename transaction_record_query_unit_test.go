@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTransactionRecordQueryValidate(t *testing.T) {
@@ -13,13 +15,13 @@ func TestUnitTransactionRecordQueryValidate(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkyk")
 	transactionID := TransactionIDGenerate(accountID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	recordQuery := NewTransactionRecordQuery().
 		SetTransactionID(transactionID)
 
 	err = recordQuery._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitTransactionRecordQueryValidateWrong(t *testing.T) {
@@ -27,7 +29,7 @@ func TestUnitTransactionRecordQueryValidateWrong(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	transactionID := TransactionIDGenerate(accountID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	recordQuery := NewTransactionRecordQuery().
 		SetTransactionID(transactionID)

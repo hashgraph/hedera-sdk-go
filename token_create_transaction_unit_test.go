@@ -6,27 +6,29 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTokenCreateTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenCreate := NewTokenCreateTransaction().
 		SetAutoRenewAccount(accountID).
 		SetTreasuryAccountID(accountID)
 
 	err = tokenCreate._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitTokenCreateTransactionValidateWrong(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenCreate := NewTokenCreateTransaction().
 		SetAutoRenewAccount(accountID).

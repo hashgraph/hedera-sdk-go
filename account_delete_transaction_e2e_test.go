@@ -7,13 +7,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -24,13 +26,13 @@ func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(*accountID).
@@ -38,7 +40,7 @@ func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransactionID(TransactionIDGenerate(*accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx = tx.Sign(newKey)
 
@@ -46,20 +48,20 @@ func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 	assert.False(t, env.Client.GetOperatorPublicKey().VerifyTransaction(tx.Transaction))
 
 	resp, err = tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountDeleteTransactionNoTransferAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -70,19 +72,19 @@ func TestIntegrationAccountDeleteTransactionNoTransferAccountID(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(*accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.Sign(newKey).Execute(env.Client)
 	assert.Error(t, err)
@@ -91,14 +93,14 @@ func TestIntegrationAccountDeleteTransactionNoTransferAccountID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountDeleteTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -109,16 +111,16 @@ func TestIntegrationAccountDeleteTransactionNoAccountID(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.Sign(newKey).Execute(env.Client)
 	assert.Error(t, err)
@@ -127,14 +129,14 @@ func TestIntegrationAccountDeleteTransactionNoAccountID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -145,13 +147,13 @@ func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	acc := *accountID
 
@@ -160,7 +162,7 @@ func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -169,5 +171,5 @@ func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

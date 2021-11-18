@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationContractBytecodeQueryCanExecute(t *testing.T) {
@@ -18,10 +20,10 @@ func TestIntegrationContractBytecodeQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(smartContractBytecode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.FileID)
 	fileID := *receipt.FileID
@@ -34,10 +36,10 @@ func TestIntegrationContractBytecodeQueryCanExecute(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractReceipt, err := contractResponse.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, contractReceipt.ContractID)
 
@@ -51,7 +53,7 @@ func TestIntegrationContractBytecodeQueryCanExecute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(2)).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, len(bytecode), 798)
 
@@ -59,22 +61,22 @@ func TestIntegrationContractBytecodeQueryCanExecute(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractBytecodeQueryGetCostExecute(t *testing.T) {
@@ -87,10 +89,10 @@ func TestIntegrationContractBytecodeQueryGetCostExecute(t *testing.T) {
 		SetContents(smartContractBytecode).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.FileID)
 	fileID := *receipt.FileID
@@ -103,10 +105,10 @@ func TestIntegrationContractBytecodeQueryGetCostExecute(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractReceipt, err := contractResponse.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, contractReceipt.ContractID)
 
@@ -120,10 +122,10 @@ func TestIntegrationContractBytecodeQueryGetCostExecute(t *testing.T) {
 		SetContractID(contractID)
 
 	cost, err := bytecodeQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	bytecode, err := bytecodeQuery.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, len(bytecode), 798)
 
@@ -131,22 +133,22 @@ func TestIntegrationContractBytecodeQueryGetCostExecute(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractBytecodeQuerySetBigMaxPayment(t *testing.T) {
@@ -159,10 +161,10 @@ func TestIntegrationContractBytecodeQuerySetBigMaxPayment(t *testing.T) {
 		SetKeys(env.OperatorKey).
 		SetContents(smartContractBytecode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.FileID)
 	fileID := *receipt.FileID
@@ -175,10 +177,10 @@ func TestIntegrationContractBytecodeQuerySetBigMaxPayment(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractReceipt, err := contractResponse.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, contractReceipt.ContractID)
 
@@ -192,10 +194,10 @@ func TestIntegrationContractBytecodeQuerySetBigMaxPayment(t *testing.T) {
 		SetContractID(contractID)
 
 	cost, err := bytecodeQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	bytecode, err := bytecodeQuery.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, len(bytecode), 798)
 
@@ -203,22 +205,22 @@ func TestIntegrationContractBytecodeQuerySetBigMaxPayment(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractBytecodeQuerySetSmallMaxPayment(t *testing.T) {
@@ -231,10 +233,10 @@ func TestIntegrationContractBytecodeQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(smartContractBytecode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.FileID)
 	fileID := *receipt.FileID
@@ -247,10 +249,10 @@ func TestIntegrationContractBytecodeQuerySetSmallMaxPayment(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractReceipt, err := contractResponse.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, contractReceipt.ContractID)
 
@@ -264,7 +266,7 @@ func TestIntegrationContractBytecodeQuerySetSmallMaxPayment(t *testing.T) {
 		SetContractID(contractID)
 
 	cost, err := bytecodeQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = bytecodeQuery.Execute(env.Client)
 	if err != nil {
@@ -275,22 +277,22 @@ func TestIntegrationContractBytecodeQuerySetSmallMaxPayment(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractBytecodeQueryInsufficientFee(t *testing.T) {
@@ -303,10 +305,10 @@ func TestIntegrationContractBytecodeQueryInsufficientFee(t *testing.T) {
 		SetContents(smartContractBytecode).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.FileID)
 	fileID := *receipt.FileID
@@ -319,10 +321,10 @@ func TestIntegrationContractBytecodeQueryInsufficientFee(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractReceipt, err := contractResponse.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, contractReceipt.ContractID)
 
@@ -336,7 +338,7 @@ func TestIntegrationContractBytecodeQueryInsufficientFee(t *testing.T) {
 		SetContractID(contractID)
 
 	_, err = bytecodeQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = bytecodeQuery.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
@@ -347,22 +349,22 @@ func TestIntegrationContractBytecodeQueryInsufficientFee(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractBytecodeQueryNoContractID(t *testing.T) {
@@ -375,10 +377,10 @@ func TestIntegrationContractBytecodeQueryNoContractID(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(smartContractBytecode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -391,10 +393,10 @@ func TestIntegrationContractBytecodeQueryNoContractID(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("[e2e::ContractCreateTransaction]").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractReceipt, err := contractResponse.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, contractReceipt.ContractID)
 
@@ -416,20 +418,20 @@ func TestIntegrationContractBytecodeQueryNoContractID(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

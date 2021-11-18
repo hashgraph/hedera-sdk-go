@@ -20,8 +20,6 @@ type ITransaction interface {
 }
 
 type Transaction struct {
-	pbBody *proto.TransactionBody
-
 	nextNodeIndex        int
 	nextTransactionIndex int
 	maxRetry             int
@@ -427,9 +425,8 @@ func _TransactionAdvanceRequest(request _Request) {
 	request.transaction.nextNodeIndex = (currentIndex + 1) % length
 }
 
-func _TransactionGetNodeAccountID(request _Request) []AccountID {
-	println("lennnn", len(request.transaction.nodeAccountIDs))
-	return request.transaction.nodeAccountIDs
+func _TransactionGetNodeAccountID(request _Request) AccountID {
+	return request.transaction.nodeAccountIDs[request.transaction.nextNodeIndex]
 }
 
 func _TransactionMapStatusError(
@@ -438,7 +435,8 @@ func _TransactionMapStatusError(
 ) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.transaction.NodeTransactionPrecheckCode),
-		TxID:   request.transaction.GetTransactionID(),
+		//NodeID: request.transaction.nodeAccountIDs,
+		TxID: request.transaction.GetTransactionID(),
 	}
 }
 

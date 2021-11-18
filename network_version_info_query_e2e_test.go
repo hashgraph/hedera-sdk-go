@@ -5,7 +5,7 @@ package hedera
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
@@ -15,10 +15,10 @@ func TestIntegrationNetworkVersionInfoQueryCanExecute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationNetworkVersionInfoQueryGetCost(t *testing.T) {
@@ -27,11 +27,11 @@ func TestIntegrationNetworkVersionInfoQueryGetCost(t *testing.T) {
 	query := NewNetworkVersionQuery().SetNodeAccountIDs(env.NodeAccountIDs)
 
 	cost, err := query.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = query.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

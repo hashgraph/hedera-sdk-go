@@ -158,10 +158,33 @@ var testnetNodes = map[string]AccountID{
 
 var previewnetNodes = map[string]AccountID{
 	"0.previewnet.hedera.com:50211": {Account: 3},
+	"35.231.208.148:50211":          {Account: 3},
+	"3.211.248.172:50211":           {Account: 3},
+	"40.121.64.48:50211":            {Account: 3},
 	"1.previewnet.hedera.com:50211": {Account: 4},
+	"35.199.15.177:50211":           {Account: 4},
+	"3.133.213.146:50211":           {Account: 4},
+	"40.70.11.202:50211":            {Account: 4},
 	"2.previewnet.hedera.com:50211": {Account: 5},
+	"35.225.201.195:50211":          {Account: 5},
+	"52.15.105.130:50211":           {Account: 5},
+	"104.43.248.63:50211":           {Account: 5},
 	"3.previewnet.hedera.com:50211": {Account: 6},
+	"35.247.109.135:50211":          {Account: 6},
+	"54.241.38.1:50211":             {Account: 6},
+	"13.88.22.47:50211":             {Account: 6},
 	"4.previewnet.hedera.com:50211": {Account: 7},
+	"35.235.65.51:50211":            {Account: 7},
+	"54.177.51.127:50211":           {Account: 7},
+	"13.64.170.40:50211":            {Account: 7},
+	"5.previewnet.hedera.com:50211": {Account: 8},
+	"34.106.247.65:50211":           {Account: 8},
+	"35.83.89.171:50211":            {Account: 8},
+	"13.78.232.192:50211":           {Account: 8},
+	"6.previewnet.hedera.com:50211": {Account: 9},
+	"34.125.23.49:50211":            {Account: 9},
+	"50.18.17.93:50211":             {Account: 9},
+	"20.150.136.89:50211":           {Account: 9},
 }
 
 var mainnetMirror = []string{"hcs.mainnet.mirrornode.hedera.com:5600"}

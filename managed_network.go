@@ -1,8 +1,9 @@
 package hedera
 
 import (
+	"crypto/rand"
 	"math"
-	"math/rand"
+	"math/big"
 	"sort"
 	"time"
 )
@@ -62,8 +63,8 @@ func (network *_ManagedNetwork) _SetNetwork(net map[string]_IManagedNode) error 
 	}
 
 	for i := range network.nodes {
-		j := rand.Intn(i + 1)
-		network.nodes[i], network.nodes[j] = network.nodes[j], network.nodes[i]
+		j, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		network.nodes[i], network.nodes[j.Int64()] = network.nodes[j.Int64()], network.nodes[i]
 	}
 
 	return nil
@@ -149,27 +150,27 @@ func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 			network.nodes[i] = node
 		}
 
-		for id, nodes := range network.network {
+		for id := range network.network {
 			nodesForKey := network._GetNodesForKey(id)
 			tempArr := make([]_IManagedNode, 0)
 			if transportSecurity {
 				for _, tempNode := range *nodesForKey {
-					tempNode = tempNode._ToSecure()
+					temp := tempNode._ToSecure()
+					tempArr = append(tempArr, temp)
 				}
-				switch n := nodes[0].(type) {
+				switch n := tempArr[0].(type) {
 				case *_Node:
 					network.network[n.accountID.String()] = tempArr
 				case *_MirrorNode:
+					delete(network.network, id)
 					network.network[n._GetAddress()] = tempArr
 				}
 			} else {
-				for _, tempNode := range *nodesForKey {
-					tempNode = tempNode._ToInsecure()
-				}
-				switch n := nodes[0].(type) {
+				switch n := tempArr[0].(type) {
 				case *_Node:
 					network.network[n.accountID.String()] = tempArr
 				case *_MirrorNode:
+					delete(network.network, id)
 					network.network[n._GetAddress()] = tempArr
 				}
 			}
@@ -224,10 +225,10 @@ func (network *_ManagedNetwork) _RemoveDeadNodes() error {
 func (network *_ManagedNetwork) _RemoveNodeFromNetwork(node _IManagedNode) {
 	switch n := node.(type) {
 	case *_Node:
-		println("removing", n.accountID.String(), "len", len(network.network[n.accountID.String()]))
 		current := network.network[n.accountID.String()]
 		if len(current) == 0 {
 			delete(network.network, n.accountID.String())
+			return
 		}
 		index := -1
 		for i, n2 := range current {
@@ -240,6 +241,7 @@ func (network *_ManagedNetwork) _RemoveNodeFromNetwork(node _IManagedNode) {
 		}
 		if len(current) == 0 {
 			delete(network.network, n.accountID.String())
+			return
 		}
 		network.network[n.accountID.String()] = current
 	case *_MirrorNode:
@@ -248,9 +250,8 @@ func (network *_ManagedNetwork) _RemoveNodeFromNetwork(node _IManagedNode) {
 }
 
 func _AddressIsInNodeList(addressString string, nodeArray []_IManagedNode) bool {
-	address := _ManagedNodeAddressFromString(addressString)
 	for _, node := range nodeArray {
-		if node._GetManagedNode().address._Equals(*address) {
+		if node._GetManagedNode()._GetAddress() == addressString {
 			return true
 		}
 	}
@@ -258,7 +259,7 @@ func _AddressIsInNodeList(addressString string, nodeArray []_IManagedNode) bool 
 	return false
 }
 
-func (network *_ManagedNetwork) _CheckNetworkContainsEntry(node _IManagedNode) bool {
+func (network *_ManagedNetwork) _CheckNetworkContainsEntry(node _IManagedNode) bool { //nolint
 	for _, n := range network.network {
 		for _, nod := range n {
 			if nod._GetAddress() == node._GetAddress() {
@@ -274,11 +275,11 @@ func (network *_ManagedNetwork) _GetNodesForKey(key string) *[]_IManagedNode {
 	if len(network.network[key]) > 0 {
 		temp := network.network[key]
 		return &temp
-	} else {
-		temp := make([]_IManagedNode, 0)
-		network.network[key] = temp
-		return &temp
 	}
+
+	temp := make([]_IManagedNode, 0)
+	network.network[key] = temp
+	return &temp
 }
 
 func (network *_ManagedNetwork) _GetNodesToRemove(net map[string]_IManagedNode) []int {
@@ -299,19 +300,19 @@ func _NodeIsInGivenNetwork(node _IManagedNode, givenNetwork map[string]_IManaged
 	switch nodeType := node.(type) {
 	case *_Node:
 		for _, n := range givenNetwork {
-			switch n1 := n.(type) {
+			switch n1 := n.(type) { //nolint
 			case *_Node:
 				if nodeType.accountID.String() == n1.accountID.String() &&
-					nodeType.address._Equals(*n1.address) {
+					nodeType.address._String() == n1._GetAddress() {
 					return true
 				}
 			}
 		}
 	case *_MirrorNode:
 		for _, n := range givenNetwork {
-			switch n1 := n.(type) {
+			switch n1 := n.(type) { //nolint
 			case *_MirrorNode:
-				if nodeType.address._Equals(*n1.address) {
+				if nodeType.address._String() == n1._GetAddress() {
 					return true
 				}
 			}

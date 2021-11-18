@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
@@ -18,10 +20,10 @@ func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -34,16 +36,16 @@ func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
 		SetContents(newContents).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contents, err := NewFileContentsQuery().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, newContents, contents)
 
@@ -51,13 +53,13 @@ func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
@@ -70,10 +72,10 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -81,7 +83,7 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 	resp, err = NewFileUpdateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -93,10 +95,10 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

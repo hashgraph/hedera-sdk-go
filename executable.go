@@ -66,7 +66,7 @@ func _Execute(
 	shouldRetry func(_Request, _Response) _ExecutionState,
 	makeRequest func(request _Request) _ProtoRequest,
 	advanceRequest func(_Request),
-	getNodeAccountID func(_Request) []AccountID,
+	getNodeAccountID func(_Request) AccountID,
 	getMethod func(_Request, *_Channel) _Method,
 	mapStatusError func(_Request, _Response) error,
 	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
@@ -111,17 +111,14 @@ func _Execute(
 
 	var attempt int64
 	var errPersistent error
-	nodeAccountID := getNodeAccountID(request)
-	count := 0
-	currentAccountID := nodeAccountID[count]
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
 		protoRequest := makeRequest(request)
 		nodeAccountID := getNodeAccountID(request)
 
-		node, ok := client.network._GetNodeForAccountID(currentAccountID)
+		node, ok := client.network._GetNodeForAccountID(nodeAccountID)
 		if !ok {
-			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{currentAccountID}
+			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 		}
 
 		node._InUse()
@@ -134,13 +131,6 @@ func _Execute(
 		channel, err := node._GetChannel()
 		if err != nil {
 			node._IncreaseDelay()
-			if count+1 == len(nodeAccountID) {
-				count = 0
-				currentAccountID = nodeAccountID[count]
-				continue
-			}
-			count = count + 1
-			currentAccountID = nodeAccountID[count]
 			continue
 		}
 
@@ -160,14 +150,10 @@ func _Execute(
 			errPersistent = err
 			if _ExecutableDefaultRetryHandler(err) {
 				node._IncreaseDelay()
-				if count+1 == len(nodeAccountID) {
-					count = 0
-					currentAccountID = nodeAccountID[count]
-					continue
-				}
-				count = count + 1
-				currentAccountID = nodeAccountID[count]
 				continue
+			}
+			if errPersistent == nil {
+				errPersistent = errors.New("error")
 			}
 			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
@@ -186,6 +172,10 @@ func _Execute(
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
+	}
+
+	if errPersistent == nil {
+		errPersistent = errors.New("error")
 	}
 
 	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)

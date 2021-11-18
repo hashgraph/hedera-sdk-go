@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
@@ -27,13 +29,13 @@ func TestIntegrationTokenCreateTransactionCanExecute(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
@@ -44,7 +46,7 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 
 	for i := range keys {
 		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		keys[i] = newKey
 		pubKeys[i] = newKey.PublicKey()
@@ -59,10 +61,10 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -78,13 +80,13 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 		SetSupplyKey(pubKeys[4]).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
@@ -95,7 +97,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 
 	for i := range keys {
 		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		keys[i] = newKey
 		pubKeys[i] = newKey.PublicKey()
@@ -110,10 +112,10 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -121,10 +123,10 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -133,7 +135,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 		SetTokenID(tokenID).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, info.Name, "ffff")
 	assert.Equal(t, info.Symbol, "F")
 	assert.Equal(t, info.Decimals, uint32(0))
@@ -161,7 +163,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 
 	for i := range keys {
 		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		keys[i] = newKey
 		pubKeys[i] = newKey.PublicKey()
@@ -176,10 +178,10 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenCreate, err := NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -195,21 +197,21 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 		SetFreezeDefault(false).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tokenCreate.
 		Sign(keys[0]).
 		Sign(keys[1]).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.TokenID)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) { // nolint
@@ -231,13 +233,13 @@ func DisabledTestIntegrationTokenNftCreateTransaction(t *testing.T) { // nolint
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
@@ -269,13 +271,13 @@ func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero(t *testing.T) {
@@ -313,7 +315,7 @@ func TestIntegrationTokenCreateTransactionWithCustomFeesDenominatorZero(t *testi
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -348,7 +350,7 @@ func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *te
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -357,7 +359,7 @@ func TestIntegrationTokenCreateTransactionWithInvalidFeeCollectorAccountID(t *te
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
@@ -389,7 +391,7 @@ func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -398,7 +400,7 @@ func TestIntegrationTokenCreateTransactionWithMaxLessThanMin(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee(t *testing.T) {
@@ -429,13 +431,13 @@ func TestIntegrationTokenCreateTransactionWithRoyaltyCustomFee(t *testing.T) {
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne(t *testing.T) {
@@ -461,7 +463,7 @@ func TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne(t *testing.
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -470,7 +472,7 @@ func TestIntegrationTokenCreateTransactionWithRoyaltyCannotExceedOne(t *testing.
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionFeeCollectorMissing(t *testing.T) {
@@ -495,7 +497,7 @@ func TestIntegrationTokenCreateTransactionFeeCollectorMissing(t *testing.T) {
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -504,7 +506,7 @@ func TestIntegrationTokenCreateTransactionFeeCollectorMissing(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUnique(t *testing.T) {
@@ -530,7 +532,7 @@ func TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUni
 		}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -539,14 +541,14 @@ func TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUni
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -557,10 +559,10 @@ func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -580,15 +582,15 @@ func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
 		SetSupplyKey(newKey.PublicKey()).
 		SetFreezeDefault(false).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokTx.Sign(newKey)
 
 	resp, err = tokTx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 	metaData := make([]byte, 50, 101)
@@ -598,27 +600,27 @@ func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
 		SetTokenID(tokenID).
 		SetMetadata(metaData).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	mintTx.Sign(newKey)
 
 	mint, err := mintTx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = mint.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	deleteTx, err := NewTokenDeleteTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenID(tokenID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	deleteTx.Sign(newKey)
 
 	resp, err = deleteTx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

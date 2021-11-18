@@ -4,26 +4,41 @@ package hedera
 
 import (
 	"context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"net"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
 
 func TestUnitMock(t *testing.T) {
 	responses := []interface{}{
-		status.Error(codes.Unavailable, ""),
+		&proto.TransactionResponse{
+			NodeTransactionPrecheckCode: proto.ResponseCodeEnum_OK,
+		},
 		&proto.Response{
-			Response: &proto.Response_CryptogetAccountBalance{
-				CryptogetAccountBalance: &proto.CryptoGetAccountBalanceResponse{
+			Response: &proto.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &proto.TransactionGetReceiptResponse{
 					Header: &proto.ResponseHeader{
-						NodeTransactionPrecheckCode: 0,
+						Cost:         0,
+						ResponseType: proto.ResponseType_COST_ANSWER,
 					},
-					Balance: 10,
+				},
+			},
+		},
+		&proto.Response{
+			Response: &proto.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &proto.TransactionGetReceiptResponse{
+					Header: &proto.ResponseHeader{
+						Cost:         0,
+						ResponseType: proto.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &proto.TransactionReceipt{
+						Status:    proto.ResponseCodeEnum_SUCCESS,
+						AccountID: &proto.AccountID{AccountNum: 234},
+					},
 				},
 			},
 		},
@@ -31,9 +46,24 @@ func TestUnitMock(t *testing.T) {
 
 	client, server := NewMockClientAndServer(responses)
 
-	balance, err := NewAccountBalanceQuery().SetAccountID(AccountID{Account: 3}).Execute(client)
-	assert.NoError(t, err)
-	assert.Equal(t, balance.Hbars.tinybar, int64(10))
+	newKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	tran := TransactionIDGenerate(AccountID{Account: 3})
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetTransactionID(tran).
+		SetInitialBalance(newBalance).
+		SetMaxAutomaticTokenAssociations(100).
+		Execute(client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(client)
+	require.NoError(t, err)
+	//assert.Equal(t, balance.Hbars.tinybar, int64(10))
 
 	if server != nil {
 		server.GracefulStop()
@@ -42,7 +72,9 @@ func TestUnitMock(t *testing.T) {
 
 func NewMockClientAndServer(responses []interface{}) (*Client, *grpc.Server) {
 	client := ClientForNetwork(map[string]AccountID{
-		"localhost:50211": {Account: 3},
+		"0.localhost:50211": {Account: 3},
+		"2.localhost:50211": {Account: 4},
+		"3.localhost:50211": {Account: 5},
 	})
 
 	var server *grpc.Server
@@ -57,7 +89,7 @@ func NewMockHandler(responses []interface{}) func(interface{}, context.Context, 
 	index := 0
 	return func(_srv interface{}, _ctx context.Context, _dec func(interface{}) error, _interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 		response := responses[index]
-		index += 1
+		index = index + 1
 
 		switch response := response.(type) {
 		case error:

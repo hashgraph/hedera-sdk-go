@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationAccountStakersQueryCanExecute(t *testing.T) {
@@ -20,7 +22,7 @@ func TestIntegrationAccountStakersQueryCanExecute(t *testing.T) {
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQueryGetCost(t *testing.T) {
@@ -38,7 +40,7 @@ func TestIntegrationAccountStakersQueryGetCost(t *testing.T) {
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQuerySetBigMaxPayment(t *testing.T) {
@@ -56,7 +58,7 @@ func TestIntegrationAccountStakersQuerySetBigMaxPayment(t *testing.T) {
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQuerySetSmallMaxPayment(t *testing.T) {
@@ -74,7 +76,7 @@ func TestIntegrationAccountStakersQuerySetSmallMaxPayment(t *testing.T) {
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
@@ -94,7 +96,7 @@ func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountStakersQueryNoAccountID(t *testing.T) {
@@ -109,5 +111,5 @@ func TestIntegrationAccountStakersQueryNoAccountID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

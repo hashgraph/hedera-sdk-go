@@ -41,7 +41,6 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 }
 
 func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
-	println(" get node for", id.String(), "len", len(network.network[id.String()]))
 	for _, node := range network.network[id.String()] {
 		switch n := node.(type) { //nolint
 		case *_Node:
@@ -99,7 +98,7 @@ func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
 	return resultMap
 }
 
-func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) {
+func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { //nolint
 	nodes := network._GetNumberOfMostHealthyNodes(int32(network._ManagedNetwork._GetNumberOfNodesForTransaction()))
 	accountIDs := make([]AccountID, 0)
 
@@ -110,16 +109,6 @@ func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) {
 		}
 	}
 
-	//println()
-	//println("len", len(accountIDs))
-	//println("nodes len", len(nodes))
-	//for _, s := range nodes{
-	//	switch n := s.(type) { //nolint
-	//	case *_Node:
-	//		println(n._GetAddress(), n.accountID.String())
-	//	}
-	//}
-	//println()
 	return accountIDs, nil
 }
 

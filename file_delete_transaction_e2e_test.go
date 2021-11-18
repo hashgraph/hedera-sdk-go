@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
@@ -18,10 +20,10 @@ func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -30,13 +32,13 @@ func TestIntegrationFileDeleteTransactionCanExecute(t *testing.T) {
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
@@ -49,10 +51,10 @@ func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -60,7 +62,7 @@ func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 	resp, err = NewFileDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -69,5 +71,5 @@ func TestIntegrationFileDeleteTransactionNothingSet(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

@@ -22,7 +22,7 @@ func (network *_MirrorNetwork) _SetNetwork(newNetwork []string) {
 
 func (network *_MirrorNetwork) _GetNetwork() []string {
 	temp := make([]string, 0)
-	for url, _ := range network._ManagedNetwork.network { //nolint
+	for url := range network._ManagedNetwork.network { //nolint
 		temp = append(temp, url)
 	}
 

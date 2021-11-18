@@ -6,11 +6,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitAccountIDChecksumFromString(t *testing.T) {
 	id, err := AccountIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, id.Account, uint64(123))
 }
 

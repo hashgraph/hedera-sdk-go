@@ -70,7 +70,7 @@ func (address *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
 	}
 }
 
-func (address *_ManagedNodeAddress) _Equals(comp _ManagedNodeAddress) bool {
+func (address *_ManagedNodeAddress) _Equals(comp _ManagedNodeAddress) bool { //nolint
 	if address.address != nil && address.address == comp.address {
 		if address.port == comp.port {
 			return true

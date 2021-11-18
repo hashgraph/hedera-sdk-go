@@ -56,10 +56,9 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 	return query.nodeAccountIDs
 }
 
-func _QueryGetNodeAccountID(request _Request) []AccountID {
-	println("lennnn", len(request.query.nodeAccountIDs))
+func _QueryGetNodeAccountID(request _Request) AccountID {
 	if len(request.query.nodeAccountIDs) > 0 {
-		return request.query.nodeAccountIDs
+		return request.query.nodeAccountIDs[request.query.nextPaymentTransactionIndex]
 	}
 
 	panic("Query node AccountID's not set before executing")
@@ -102,6 +101,7 @@ func _QueryMakeRequest(request _Request) _ProtoRequest {
 		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
 	}
 	request.query.pbHeader.ResponseType = proto.ResponseType_ANSWER_ONLY
+
 	return _ProtoRequest{
 		query: request.query.pb,
 	}

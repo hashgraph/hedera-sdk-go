@@ -5,8 +5,10 @@ package hedera
 import (
 	"testing"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -14,108 +16,108 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(*receipt.AccountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	updateBytes, err := tx.ToBytes()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	sig1, err := newKey.SignTransaction(&tx.Transaction)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx2, err := TransactionFromBytes(updateBytes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionSignTransaction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(*receipt.AccountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = newKey.SignTransaction(&tx.Transaction)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionGetHash(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err = tx.SignWithOperator(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	hash, err := tx.GetTransactionHash()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	record, err := resp.GetRecord(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, hash, record.TransactionHash)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
@@ -163,7 +165,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	}
 
 	BodyBytes, err := protobuf.Marshal(&TransactionBody)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	key1, _ := PrivateKeyFromString("302e020100300506032b6570042204203e7fda6dde63c3cdb3cb5ecf5264324c5faad7c9847b6db093c088838b35a110")
 	key2, _ := PrivateKeyFromString("302e020100300506032b65700422042032d3d5a32e9d06776976b39c09a31fbda4a4a0208223da761c26a2ae560c1755")
@@ -222,17 +224,17 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	}
 
 	bytes, err := protobuf.Marshal(&signed)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	bytes, err = protobuf.Marshal(&proto.TransactionList{
 		TransactionList: []*proto.Transaction{{
 			SignedTransactionBytes: bytes,
 		}},
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	transaction, err := TransactionFromBytes(bytes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	env := NewIntegrationTestEnv(t)
 
@@ -242,7 +244,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil}].AsTinybar(), int64(10))
 
 		signatures, err := tx.GetSignatures()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey1)
 		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey2)
 		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey3)
@@ -253,10 +255,10 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 		assert.True(t, tx.GetNodeAccountIDs()[0]._Equals(AccountID{0, 0, 3, nil}))
 
 		resp, err := tx.Execute(env.Client)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		_, err = resp.GetReceipt(env.Client)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	default:
 		panic("Transaction was not a crypto transfer?")
 	}

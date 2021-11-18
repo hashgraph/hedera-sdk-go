@@ -6,45 +6,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
-
-const testClientJSONWithOperator string = `{
-    "network": {
-		"35.237.200.180:50211": "0.0.3",
-		"35.186.191.247:50211": "0.0.4",
-		"35.192.2.25:50211": "0.0.5",
-		"35.199.161.108:50211": "0.0.6",
-		"35.203.82.240:50211": "0.0.7",
-		"35.236.5.219:50211": "0.0.8",
-		"35.197.192.225:50211": "0.0.9",
-		"35.242.233.154:50211": "0.0.10",
-		"35.240.118.96:50211": "0.0.11",
-		"35.204.86.32:50211": "0.0.12"
-    },
-    "operator": {
-        "accountId": "0.0.3",
-        "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
-    },
-    "mirrorNetwork": "testnet"
-}`
-
-const testClientJSONWrongTypeMirror string = `{
-    "network": "testnet",
-    "operator": {
-        "accountId": "0.0.3",
-        "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
-    },
- 	"mirrorNetwork": 5
-}`
-
-const testClientJSONWrongTypeNetwork string = `{
-    "network": 1,
-    "operator": {
-        "accountId": "0.0.3",
-        "privateKey": "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
-    },
- 	"mirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
-}`
 
 const testClientJSON string = `{
     "network": {
@@ -64,7 +28,7 @@ const testClientJSON string = `{
 
 func TestUnitClientFromConfig(t *testing.T) {
 	client, err := ClientFromConfig([]byte(testClientJSON))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, client)
 	assert.Equal(t, 10, len(client.network.network))
@@ -73,12 +37,12 @@ func TestUnitClientFromConfig(t *testing.T) {
 
 func TestUnitClientFromConfigWithOperator(t *testing.T) {
 	client, err := ClientFromConfig([]byte(testClientJSONWithOperator))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, client)
 
 	testOperatorKey, err := PrivateKeyFromString("302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, 10, len(client.network.network))
 	assert.NotNil(t, client.operator)
@@ -105,7 +69,7 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil}
 
 	err := client.SetNetwork(nodes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	network := client.GetNetwork()
 	assert.Equal(t, 2, len(network))
 	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil})
@@ -117,7 +81,7 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil}
 
 	err = client.SetNetwork(nodes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	network = client.GetNetwork()
 	assert.Equal(t, 3, len(network))
 	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil})
@@ -128,7 +92,7 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil}
 
 	err = client.SetNetwork(nodes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	network = client.GetNetwork()
 	assert.Equal(t, 1, len(network))
 	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil})
@@ -141,7 +105,7 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	assert.Equal(t, networkTLSMirror[0], "hcs.testnet.mirrornode.hedera.com:433")
 
 	err = client.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitClientSetMirrorNetwork(t *testing.T) {
@@ -185,7 +149,7 @@ func TestUnitClientSetMirrorNetwork(t *testing.T) {
 	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:433", mirrorNetwork[0])
 
 	err := client.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitClientSetMultipleNetwork(t *testing.T) {
@@ -202,12 +166,23 @@ func TestUnitClientSetMultipleNetwork(t *testing.T) {
 	nodes["52.168.76.241:50211"] = AccountID{0, 0, 4, nil}
 
 	err := client.SetNetwork(nodes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	net := client.GetNetwork()
 
-	for url, id := range net {
-		println(url)
-		println(id.String())
+	if val, ok := net["0.testnet.hedera.com:50211"]; ok {
+		require.Equal(t, val.String(), "0.0.3")
 	}
-	//assert.Contains(t, net, nodes)
+
+	if val, ok := net["1.testnet.hedera.com:50211"]; ok {
+		require.Equal(t, val.String(), "0.0.4")
+	}
+
+	if val, ok := net["50.18.132.211:50211"]; ok {
+		require.Equal(t, val.String(), "0.0.3")
+	}
+
+	if val, ok := net["3.212.6.13:50211"]; ok {
+		require.Equal(t, val.String(), "0.0.4")
+	}
+
 }

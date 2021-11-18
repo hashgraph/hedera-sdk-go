@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
@@ -20,10 +22,10 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 		SetContents(testContractByteCode).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -36,10 +38,10 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -50,31 +52,31 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 		SetGas(75000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
@@ -85,7 +87,7 @@ func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	//if err != nil {
 	//	assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_CONTRACT_ID received for transaction %s", resp.TransactionID), err.Error())
 	//}
@@ -103,10 +105,10 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		SetContents(testContractByteCode).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -119,10 +121,10 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -132,7 +134,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -144,22 +146,22 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
@@ -174,10 +176,10 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		SetContents(testContractByteCode).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -190,10 +192,10 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -203,7 +205,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		SetGas(75000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -215,22 +217,22 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // nolint
@@ -244,10 +246,10 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(testContractByteCode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -266,10 +268,10 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractDeleteTransaction_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -280,35 +282,35 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 		SetGas(75000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	record, err := resp.GetRecord(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, record)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, err = record.GetContractExecuteResult()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
