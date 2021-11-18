@@ -186,14 +186,12 @@ func main() {
 				return
 			}
 
-			receipt, err := signTransaction.GetReceipt(client)
+			_, err = signTransaction.GetReceipt(client)
 			if err != nil {
-				println(err.Error(), ": error while getting scheduled sign with operator ", operator)
-				return
-			}
-
-			if receipt.Status == hedera.StatusScheduleAlreadyExecuted {
-				fmt.Printf("operator [%s], scheduleID [%s] already executed \n", operator, scheduleID)
+				if err.Error() != "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED" {
+					println(err.Error(), ": error while getting scheduled sign with operator ", operator)
+					return
+				}
 			}
 		}
 	}
