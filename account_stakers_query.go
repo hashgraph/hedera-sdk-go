@@ -19,8 +19,9 @@ type AccountStakersQuery struct {
 // It is recommended that you use this for creating new instances of an AccountStakersQuery
 // instead of manually creating an instance of the struct.
 func NewAccountStakersQuery() *AccountStakersQuery {
+	header := proto.QueryHeader{}
 	return &AccountStakersQuery{
-		Query: _NewQuery(true),
+		Query: _NewQuery(true, &header),
 	}
 }
 
@@ -66,57 +67,39 @@ func (query *AccountStakersQuery) _Build() *proto.Query_CryptoGetProxyStakers {
 	return &pb
 }
 
-func (query *AccountStakersQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := query._Build()
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		pb.CryptoGetProxyStakers.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
-	}
-	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}
-}
-
-func (query *AccountStakersQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query._Build()
-
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return _ProtoRequest{}, err
-	}
-
-	pb.CryptoGetProxyStakers.Header.Payment = paymentTransaction
-	pb.CryptoGetProxyStakers.Header.ResponseType = proto.ResponseType_COST_ANSWER
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}, nil
-}
-
 func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return Hbar{}, err
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return Hbar{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query._CostQueryMakeRequest(client)
-	if err != nil {
-		return Hbar{}, err
+	for range query.nodeAccountIDs {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return Hbar{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+	}
+
+	pb := query._Build()
+	pb.CryptoGetProxyStakers.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -125,9 +108,9 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		_AccountStakersQueryShouldRetry,
-		protoReq,
-		_CostQueryAdvanceRequest,
-		_CostQueryGetNodeAccountID,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,
 		_QueryMapResponse,
@@ -163,7 +146,6 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	}
 
 	var err error
-
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
 		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
 		if err != nil {
@@ -176,8 +158,6 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	if err != nil {
 		return []Transfer{}, err
 	}
-
-	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -207,9 +187,18 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		cost = actualCost
 	}
 
+	query.nextPaymentTransactionIndex = 0
+	query.paymentTransactions = make([]*proto.Transaction, 0)
+
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return []Transfer{}, err
+	}
+
+	pb := query._Build()
+	pb.CryptoGetProxyStakers.Header = query.pbHeader
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -218,7 +207,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 			query: &query.Query,
 		},
 		_AccountStakersQueryShouldRetry,
-		query._QueryMakeRequest(),
+		_QueryMakeRequest,
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountStakersQueryGetMethod,

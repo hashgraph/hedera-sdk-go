@@ -51,6 +51,10 @@ type _ProtoRequest struct {
 	transaction *proto.Transaction
 }
 
+type QueryHeader struct {
+	header *proto.QueryHeader//nolint
+}
+
 type _Request struct {
 	query       *Query
 	transaction *Transaction
@@ -60,7 +64,7 @@ func _Execute(
 	client *Client,
 	request _Request,
 	shouldRetry func(_Request, _Response) _ExecutionState,
-	protoReq _ProtoRequest,
+	makeRequest func(request _Request) _ProtoRequest,
 	advanceRequest func(_Request),
 	getNodeAccountID func(_Request) AccountID,
 	getMethod func(_Request, *_Channel) _Method,
@@ -109,7 +113,7 @@ func _Execute(
 	var errPersistent error
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
-		protoRequest := protoReq
+		protoRequest := makeRequest(request)
 		nodeAccountID := getNodeAccountID(request)
 
 		node, ok := client.network._GetNodeForAccountID(nodeAccountID)
@@ -156,13 +160,9 @@ func _Execute(
 
 		switch retry {
 		case executionStateRetry:
-			if attempt <= int64(maxAttempts) {
-				_DelayForAttempt(minBackoff, maxBackoff, attempt)
-				continue
-			} else {
-				errPersistent = mapStatusError(request, resp)
-				break
-			}
+			errPersistent = mapStatusError(request, resp)
+			_DelayForAttempt(minBackoff, maxBackoff, attempt)
+			continue
 		case executionStateError:
 			return _IntermediateResponse{}, mapStatusError(request, resp)
 		case executionStateFinished:

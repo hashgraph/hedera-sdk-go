@@ -11,49 +11,10 @@ type NetworkVersionInfoQuery struct {
 }
 
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
+	header := proto.QueryHeader{}
 	return &NetworkVersionInfoQuery{
-		Query: _NewQuery(true),
+		Query: _NewQuery(true, &header),
 	}
-}
-
-func (query *NetworkVersionInfoQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := &proto.Query_NetworkGetVersionInfo{
-		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
-			Header: &proto.QueryHeader{},
-		},
-	}
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		pb.NetworkGetVersionInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
-	}
-	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}
-}
-
-func (query *NetworkVersionInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := &proto.Query_NetworkGetVersionInfo{
-		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{
-			Header: &proto.QueryHeader{},
-		},
-	}
-
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return _ProtoRequest{}, err
-	}
-
-	pb.NetworkGetVersionInfo.Header.Payment = paymentTransaction
-	pb.NetworkGetVersionInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}, nil
 }
 
 func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -62,15 +23,28 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return Hbar{}, err
-	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return Hbar{}, err
+		}
 
-	protoReq, err := query._CostQueryMakeRequest(client)
-	if err != nil {
-		return Hbar{}, err
+		query.SetNodeAccountIDs(nodeAccountIDs)
+	}
+
+	for range query.nodeAccountIDs {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return Hbar{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+	}
+
+	pb := proto.Query_NetworkGetVersionInfo{}
+	pb.NetworkGetVersionInfo.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: &pb,
 	}
 
 	resp, err := _Execute(
@@ -79,9 +53,9 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		_NetworkVersionInfoQueryShouldRetry,
-		protoReq,
-		_CostQueryAdvanceRequest,
-		_CostQueryGetNodeAccountID,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,
 		_QueryMapResponse,
@@ -129,6 +103,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -150,16 +125,26 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 			return NetworkVersionInfo{}, ErrMaxQueryPaymentExceeded{
 				QueryCost:       actualCost,
 				MaxQueryPayment: cost,
-				query:           "NetworkVersionInfoQuery",
+				query:           "NetworkVersionInfo",
 			}
 		}
 
 		cost = actualCost
 	}
 
+	query.nextPaymentTransactionIndex = 0
+	query.paymentTransactions = make([]*proto.Transaction, 0)
+
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return NetworkVersionInfo{}, err
+	}
+
+	pb := proto.Query_NetworkGetVersionInfo{}
+	pb.NetworkGetVersionInfo.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: &pb,
 	}
 
 	resp, err := _Execute(
@@ -168,7 +153,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 			query: &query.Query,
 		},
 		_NetworkVersionInfoQueryShouldRetry,
-		query._QueryMakeRequest(),
+		_QueryMakeRequest,
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_NetworkVersionInfoQueryGetMethod,

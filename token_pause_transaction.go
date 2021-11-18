@@ -182,9 +182,7 @@ func (transaction *TokenPauseTransaction) Execute(
 			transaction: &transaction.Transaction,
 		},
 		_TransactionShouldRetry,
-		_TransactionMakeRequest(_Request{
-			transaction: &transaction.Transaction,
-		}),
+		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
 		_TransactionGetNodeAccountID,
 		_TokenPauseTransactionGetMethod,

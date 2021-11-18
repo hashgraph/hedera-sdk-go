@@ -25,7 +25,8 @@ type ContractCallQuery struct {
 // NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
 // Contract Call Local Query.
 func NewContractCallQuery() *ContractCallQuery {
-	query := _NewQuery(true)
+	header := proto.QueryHeader{}
+	query := _NewQuery(true, &header)
 	query.SetMaxQueryPayment(NewHbar(2))
 
 	return &ContractCallQuery{
@@ -115,57 +116,39 @@ func (query *ContractCallQuery) _Build() *proto.Query_ContractCallLocal {
 	return &pb
 }
 
-func (query *ContractCallQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := query._Build()
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		pb.ContractCallLocal.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
-	}
-	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}
-}
-
-func (query *ContractCallQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query._Build()
-
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return _ProtoRequest{}, err
-	}
-
-	pb.ContractCallLocal.Header.Payment = paymentTransaction
-	pb.ContractCallLocal.Header.ResponseType = proto.ResponseType_COST_ANSWER
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}, nil
-}
-
 func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return Hbar{}, err
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return Hbar{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query._CostQueryMakeRequest(client)
-	if err != nil {
-		return Hbar{}, err
+	for range query.nodeAccountIDs {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return Hbar{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+	}
+
+	pb := query._Build()
+	pb.ContractCallLocal.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -174,9 +157,9 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		_ContractCallQueryShouldRetry,
-		protoReq,
-		_CostQueryAdvanceRequest,
-		_CostQueryGetNodeAccountID,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,
 		_QueryMapResponse,
@@ -212,7 +195,6 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	}
 
 	var err error
-
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
 		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
 		if err != nil {
@@ -247,16 +229,25 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 			return ContractFunctionResult{}, ErrMaxQueryPaymentExceeded{
 				QueryCost:       actualCost,
 				MaxQueryPayment: cost,
-				query:           "ContractCallQuery",
+				query:           "ContractFunctionResultQuery",
 			}
 		}
 
 		cost = actualCost
 	}
 
+	query.nextPaymentTransactionIndex = 0
+	query.paymentTransactions = make([]*proto.Transaction, 0)
+
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return ContractFunctionResult{}, err
+	}
+
+	pb := query._Build()
+	pb.ContractCallLocal.Header = query.pbHeader
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -265,7 +256,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 			query: &query.Query,
 		},
 		_ContractCallQueryShouldRetry,
-		query._QueryMakeRequest(),
+		_QueryMakeRequest,
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_ContractCallQueryGetMethod,

@@ -9,6 +9,9 @@ import (
 )
 
 type Query struct {
+	pb       *proto.Query
+	pbHeader *proto.QueryHeader//nolint
+
 	paymentTransactionID        TransactionID
 	nodeAccountIDs              []AccountID
 	maxQueryPayment             Hbar
@@ -25,8 +28,10 @@ type Query struct {
 	minBackoff *time.Duration
 }
 
-func _NewQuery(isPaymentRequired bool) Query {
+func _NewQuery(isPaymentRequired bool, header *proto.QueryHeader) Query {
 	return Query{
+		pb:                   &proto.Query{},
+		pbHeader:             header,
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
 		maxRetry:             10,
@@ -52,14 +57,6 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 }
 
 func _QueryGetNodeAccountID(request _Request) AccountID {
-	if len(request.query.nodeAccountIDs) > 0 {
-		return request.query.nodeAccountIDs[request.query.nextPaymentTransactionIndex]
-	}
-
-	panic("Query node AccountID's not set before executing")
-}
-
-func _CostQueryGetNodeAccountID(request _Request) AccountID {
 	if len(request.query.nodeAccountIDs) > 0 {
 		return request.query.nodeAccountIDs[request.query.nextPaymentTransactionIndex]
 	}
@@ -99,14 +96,30 @@ func _QueryShouldRetry(status Status) _ExecutionState {
 	return executionStateError
 }
 
+func _QueryMakeRequest(request _Request) _ProtoRequest {
+	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
+		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
+	}
+	request.query.pbHeader.ResponseType = proto.ResponseType_ANSWER_ONLY
+	return _ProtoRequest{
+		query: request.query.pb,
+	}
+}
+
+func _CostQueryMakeRequest(request _Request) _ProtoRequest {
+	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
+		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
+	}
+	request.query.pbHeader.ResponseType = proto.ResponseType_COST_ANSWER
+	return _ProtoRequest{
+		query: request.query.pb,
+	}
+}
+
 func _QueryAdvanceRequest(request _Request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
 	}
-}
-
-func _CostQueryAdvanceRequest(request _Request) {
-	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeAccountIDs)
 }
 
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
