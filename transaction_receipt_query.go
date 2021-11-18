@@ -137,7 +137,7 @@ func _TransactionReceiptQueryShouldRetry(request _Request, response _Response) _
 	switch Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()) {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
-	case StatusSuccess:
+	case StatusSuccess, StatusIdenticalScheduleAlreadyCreated:
 		return executionStateFinished
 	default:
 		return executionStateError
@@ -155,8 +155,7 @@ func _TransactionReceiptQueryMapStatusError(request _Request, response _Response
 	}
 
 	return ErrHederaReceiptStatus{
-		Status:  Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
-		Receipt: _TransactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
+		Status: Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
 	}
 }
 
@@ -270,13 +269,10 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	)
 
 	if err != nil {
-		if precheckErr, ok := err.(ErrHederaPreCheckStatus); ok {
+		switch precheckErr := err.(type) {
+		case ErrHederaPreCheckStatus:
 			return TransactionReceipt{}, _NewErrHederaReceiptStatus(precheckErr.TxID, precheckErr.Status)
 		}
-		if respErr, ok := err.(ErrHederaReceiptStatus); ok {
-			return respErr.Receipt, nil
-		}
-
 		return TransactionReceipt{}, err
 	}
 

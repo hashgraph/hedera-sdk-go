@@ -143,7 +143,7 @@ func main() {
 		scheduledTx, err := hedera.NewScheduleCreateTransaction().
 			SetScheduledTransaction(signedTransaction)
 		if err != nil {
-			println(err.Error(),": error while setting scheduled transaction with operator client ", operator)
+			println(err.Error(),": error while setting scheduled transaction with operator client", operator)
 			return
 		}
 
@@ -152,13 +152,13 @@ func main() {
 
 		response, err := scheduledTx.Execute(client)
 		if err != nil {
-			println(err.Error(), ": error while executing schedule create transaction with operator ", operator)
+			println(err.Error(), ": error while executing schedule create transaction with operator", operator)
 			return
 		}
 
 		receipt, err := response.GetReceipt(client)
 		if err != nil {
-			println(err.Error(), ": error while getting schedule create receipt transaction with operator ", operator)
+			println(err.Error(), ": error while getting schedule create receipt transaction with operator", operator)
 			return
 		}
 
@@ -182,7 +182,7 @@ func main() {
 				Execute(client)
 
 			if err != nil {
-				println(err.Error(), ": error while executing scheduled sign with operator ", operator)
+				println(err.Error(), ": error while executing scheduled sign with operator", operator)
 				return
 			}
 
