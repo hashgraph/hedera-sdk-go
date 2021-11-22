@@ -152,9 +152,9 @@ func _TransactionReceiptQueryMapStatusError(request _Request, response _Response
 		}
 	}
 
-    return ErrHederaPreCheckStatus{
-        Status: Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
-    }
+	return ErrHederaPreCheckStatus{
+		Status: Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
+	}
 }
 
 func _TransactionReceiptQueryGetMethod(_ _Request, channel *_Channel) _Method {
@@ -269,9 +269,9 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {
 		if resp.query.GetTransactionGetReceipt() != nil {
 			return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), err
-		} else {
-			return TransactionReceipt{}, err
 		}
+
+		return TransactionReceipt{}, err
 	}
 
 	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
