@@ -19,8 +19,9 @@ type AccountBalanceQuery struct {
 // It is recommended that you use this for creating new instances of an AccountBalanceQuery
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
+	header := proto.QueryHeader{}
 	return &AccountBalanceQuery{
-		Query: _NewQuery(false),
+		Query: _NewQuery(false, &header),
 	}
 }
 
@@ -102,21 +103,35 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
+
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return Hbar{}, err
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return Hbar{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query._CostQueryMakeRequest(client)
-	if err != nil {
-		return Hbar{}, err
+	for range query.nodeAccountIDs {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return Hbar{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+	}
+
+	pb := query._Build()
+	pb.CryptogetAccountBalance.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -125,9 +140,9 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		_AccountBalanceQueryShouldRetry,
-		protoReq,
-		_CostQueryAdvanceRequest,
-		_CostQueryGetNodeAccountID,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,
 		_QueryMapResponse,
@@ -139,37 +154,6 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 
 	cost := int64(resp.query.GetCryptogetAccountBalance().Header.Cost)
 	return HbarFromTinybar(cost), nil
-}
-
-func (query *AccountBalanceQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := query._Build()
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		pb.CryptogetAccountBalance.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
-	}
-	pb.CryptogetAccountBalance.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}
-}
-
-func (query *AccountBalanceQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query._Build()
-
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return _ProtoRequest{}, err
-	}
-
-	pb.CryptogetAccountBalance.Header.Payment = paymentTransaction
-	pb.CryptogetAccountBalance.Header.ResponseType = proto.ResponseType_COST_ANSWER
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}, nil
 }
 
 func _AccountBalanceQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
@@ -194,15 +178,26 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	}
 
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return AccountBalance{}, err
-	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return AccountBalance{}, err
+		}
 
+		query.SetNodeAccountIDs(nodeAccountIDs)
+	}
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return AccountBalance{}, err
+	}
+
+	query.nextPaymentTransactionIndex = 0
+	query.paymentTransactions = make([]*proto.Transaction, 0)
+
+	pb := query._Build()
+	pb.CryptogetAccountBalance.Header = query.pbHeader
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -211,7 +206,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 			query: &query.Query,
 		},
 		_AccountBalanceQueryShouldRetry,
-		query._QueryMakeRequest(),
+		_QueryMakeRequest,
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountBalanceQueryGetMethod,

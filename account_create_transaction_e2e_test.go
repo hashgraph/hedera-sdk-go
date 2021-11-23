@@ -4,6 +4,8 @@ package hedera
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -263,4 +265,41 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 
 	err = CloseIntegrationTestEnv(env, nil)
 	assert.NoError(t, err)
+}
+
+func TestIntegrationAccountCreateTransactionBad(t *testing.T) {
+	var client *Client
+	var err error
+	client, err = ClientForName("testnet")
+	require.NoError(t, err)
+
+	operatorAccountID, err := AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	require.NoError(t, err)
+
+	operatorKey, err := PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	require.NoError(t, err)
+
+	client.SetOperator(operatorAccountID, operatorKey)
+
+	net := client.GetNetwork()
+	for i, k := range net {
+		println(i, k.String())
+	}
+
+	newKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	nodeAccountID, err := AccountIDFromString("0.0.3")
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+	accountResp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs([]AccountID{nodeAccountID}).
+		SetKey(newKey.PublicKey()).
+		SetInitialBalance(newBalance).
+		Execute(client)
+	require.NoError(t, err)
+
+	_, err = accountResp.GetReceipt(client)
+	require.NoError(t, err)
 }

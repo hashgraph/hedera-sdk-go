@@ -15,8 +15,9 @@ type FileContentsQuery struct {
 // NewFileContentsQuery creates a FileContentsQuery query which can be used to construct and execute a
 // File Get Contents Query.
 func NewFileContentsQuery() *FileContentsQuery {
+	header := proto.QueryHeader{}
 	return &FileContentsQuery{
-		Query: _NewQuery(true),
+		Query: _NewQuery(true, &header),
 	}
 }
 
@@ -62,58 +63,39 @@ func (query *FileContentsQuery) _Build() *proto.Query_FileGetContents {
 	}
 }
 
-func (query *FileContentsQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := query._Build()
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		pb.FileGetContents.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
-	}
-	pb.FileGetContents.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}
-}
-
-func (query *FileContentsQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query._Build()
-
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return _ProtoRequest{}, err
-	}
-
-	pb.FileGetContents.Header.Payment = paymentTransaction
-	pb.FileGetContents.Header.ResponseType = proto.ResponseType_COST_ANSWER
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}, nil
-}
-
 func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return Hbar{}, err
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return Hbar{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query._CostQueryMakeRequest(client)
-	if err != nil {
-		return Hbar{}, err
+	for range query.nodeAccountIDs {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return Hbar{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+	}
+
+	pb := query._Build()
+	pb.FileGetContents.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -122,9 +104,9 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		_FileContentsQueryShouldRetry,
-		protoReq,
-		_CostQueryAdvanceRequest,
-		_CostQueryGetNodeAccountID,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
 		_FileContentsQueryGetMethod,
 		_FileContentsQueryMapStatusError,
 		_QueryMapResponse,
@@ -160,7 +142,6 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	}
 
 	var err error
-
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
 		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
 		if err != nil {
@@ -173,8 +154,6 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-
-	query._Build()
 
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
@@ -204,9 +183,18 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		cost = actualCost
 	}
 
+	query.nextPaymentTransactionIndex = 0
+	query.paymentTransactions = make([]*proto.Transaction, 0)
+
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return []byte{}, err
+	}
+
+	pb := query._Build()
+	pb.FileGetContents.Header = query.pbHeader
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -215,7 +203,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 			query: &query.Query,
 		},
 		_FileContentsQueryShouldRetry,
-		query._QueryMakeRequest(),
+		_QueryMakeRequest,
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_FileContentsQueryGetMethod,

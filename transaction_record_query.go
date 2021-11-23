@@ -12,8 +12,9 @@ type TransactionRecordQuery struct {
 }
 
 func NewTransactionRecordQuery() *TransactionRecordQuery {
+	header := proto.QueryHeader{}
 	return &TransactionRecordQuery{
-		Query: _NewQuery(true),
+		Query: _NewQuery(true, &header),
 	}
 }
 
@@ -43,58 +44,39 @@ func (query *TransactionRecordQuery) _Build() *proto.Query_TransactionGetRecord 
 	}
 }
 
-func (query *TransactionRecordQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := query._Build()
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		pb.TransactionGetRecord.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
-	}
-	pb.TransactionGetRecord.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}
-}
-
-func (query *TransactionRecordQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	pb := query._Build()
-
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return _ProtoRequest{}, err
-	}
-
-	pb.TransactionGetRecord.Header.Payment = paymentTransaction
-	pb.TransactionGetRecord.Header.ResponseType = proto.ResponseType_COST_ANSWER
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}, nil
-}
-
 func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return Hbar{}, err
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return Hbar{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query._CostQueryMakeRequest(client)
-	if err != nil {
-		return Hbar{}, err
+	for range query.nodeAccountIDs {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return Hbar{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+	}
+
+	pb := query._Build()
+	pb.TransactionGetRecord.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -103,9 +85,9 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		_TransactionRecordQueryShouldRetry,
-		protoReq,
-		_CostQueryAdvanceRequest,
-		_CostQueryGetNodeAccountID,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
 		_TransactionRecordQueryGetMethod,
 		_TransactionRecordQueryMapStatusError,
 		_QueryMapResponse,
@@ -242,7 +224,6 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	}
 
 	var err error
-
 	if len(query.Query.GetNodeAccountIDs()) == 0 {
 		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
 		if err != nil {
@@ -256,9 +237,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	query._Build()
-
-	query.paymentTransactionID = TransactionIDGenerate(client.GetOperatorAccountID())
+	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -286,9 +265,18 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		cost = actualCost
 	}
 
+	query.nextPaymentTransactionIndex = 0
+	query.paymentTransactions = make([]*proto.Transaction, 0)
+
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return TransactionRecord{}, err
+	}
+
+	pb := query._Build()
+	pb.TransactionGetRecord.Header = query.pbHeader
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	resp, err := _Execute(
@@ -297,7 +285,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 			query: &query.Query,
 		},
 		_TransactionRecordQueryShouldRetry,
-		query._QueryMakeRequest(),
+		_QueryMakeRequest,
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TransactionRecordQueryGetMethod,

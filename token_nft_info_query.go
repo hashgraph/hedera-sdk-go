@@ -12,8 +12,9 @@ type TokenNftInfoQuery struct {
 }
 
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
+	header := proto.QueryHeader{}
 	return &TokenNftInfoQuery{
-		Query: _NewQuery(true),
+		Query: _NewQuery(true, &header),
 		nftID: nil,
 	}
 }
@@ -115,57 +116,39 @@ func (query *TokenNftInfoQuery) _BuildByNft() *proto.Query_TokenGetNftInfo {
 	}
 }
 
-func (query *TokenNftInfoQuery) _QueryMakeRequest() _ProtoRequest {
-	pb := query._BuildByNft()
-	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
-		pb.TokenGetNftInfo.Header.Payment = query.paymentTransactions[query.nextPaymentTransactionIndex]
-	}
-	pb.TokenGetNftInfo.Header.ResponseType = proto.ResponseType_ANSWER_ONLY
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}
-}
-
-func (query *TokenNftInfoQuery) _CostQueryMakeRequest(client *Client) (_ProtoRequest, error) {
-	paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-	if err != nil {
-		return _ProtoRequest{}, err
-	}
-
-	pb := query._BuildByNft()
-	pb.TokenGetNftInfo.Header.Payment = paymentTransaction
-	pb.TokenGetNftInfo.Header.ResponseType = proto.ResponseType_COST_ANSWER
-
-	return _ProtoRequest{
-		query: &proto.Query{
-			Query: pb,
-		},
-	}, nil
-}
-
 func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
 
 	var err error
-	nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-	if err != nil {
-		return Hbar{}, err
+	if len(query.Query.GetNodeAccountIDs()) == 0 {
+		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+		if err != nil {
+			return Hbar{}, err
+		}
+
+		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
-	query.SetNodeAccountIDs(nodeAccountIDs)
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	protoReq, err := query._CostQueryMakeRequest(client)
-	if err != nil {
-		return Hbar{}, err
+	for range query.nodeAccountIDs {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return Hbar{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
+	}
+
+	pb := query._BuildByNft()
+	pb.TokenGetNftInfo.Header = query.pbHeader
+
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	var resp _IntermediateResponse
@@ -175,9 +158,9 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 			query: &query.Query,
 		},
 		_TokenNftInfoQueryShouldRetry,
-		protoReq,
-		_CostQueryAdvanceRequest,
-		_CostQueryGetNodeAccountID,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
 		_TokenNftInfoQueryGetMethod,
 		_TokenNftInfoQueryMapStatusError,
 		_QueryMapResponse,
@@ -228,6 +211,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 	if err != nil {
 		return []TokenNftInfo{}, err
 	}
+
 	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
 
 	var cost Hbar
@@ -249,16 +233,25 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 			return []TokenNftInfo{}, ErrMaxQueryPaymentExceeded{
 				QueryCost:       actualCost,
 				MaxQueryPayment: cost,
-				query:           "TokenNftInfoQuery",
+				query:           "TokenNftInfo",
 			}
 		}
 
 		cost = actualCost
 	}
 
+	query.nextPaymentTransactionIndex = 0
+	query.paymentTransactions = make([]*proto.Transaction, 0)
+
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return []TokenNftInfo{}, err
+	}
+
+	pb := query._BuildByNft()
+	pb.TokenGetNftInfo.Header = query.pbHeader
+	query.pb = &proto.Query{
+		Query: pb,
 	}
 
 	var resp _IntermediateResponse
@@ -266,11 +259,10 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 	resp, err = _Execute(
 		client,
 		_Request{
-
 			query: &query.Query,
 		},
 		_TokenNftInfoQueryShouldRetry,
-		query._QueryMakeRequest(),
+		_QueryMakeRequest,
 		_QueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TokenNftInfoQueryGetMethod,

@@ -59,3 +59,93 @@ func TestUnitClientFromConfigWrongType(t *testing.T) {
 		assert.Equal(t, "network is expected to be map of string to string, or string", err.Error())
 	}
 }
+
+func TestUnitClientSetNetworkExtensive(t *testing.T) {
+	client := ClientForTestnet()
+	nodes := make(map[string]AccountID, 2)
+	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil}
+	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil}
+
+	err := client.SetNetwork(nodes)
+	assert.NoError(t, err)
+	network := client.GetNetwork()
+	assert.Equal(t, 2, len(network))
+	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil})
+	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil})
+
+	nodes = make(map[string]AccountID, 2)
+	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil}
+	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil}
+	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil}
+
+	err = client.SetNetwork(nodes)
+	assert.NoError(t, err)
+	network = client.GetNetwork()
+	assert.Equal(t, 3, len(network))
+	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil})
+	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil})
+	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil})
+
+	nodes = make(map[string]AccountID, 1)
+	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil}
+
+	err = client.SetNetwork(nodes)
+	assert.NoError(t, err)
+	network = client.GetNetwork()
+	assert.Equal(t, 1, len(network))
+	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil})
+
+	client.SetTransportSecurity(true)
+	client.SetCertificateVerification(true)
+	network = client.GetNetwork()
+	networkTLSMirror := client.GetMirrorNetwork()
+	assert.Equal(t, network["2.testnet.hedera.com:50212"], AccountID{0, 0, 5, nil})
+	assert.Equal(t, networkTLSMirror[0], "hcs.testnet.mirrornode.hedera.com:433")
+
+	err = client.Close()
+	assert.NoError(t, err)
+}
+
+func TestUnitClientSetMirrorNetwork(t *testing.T) {
+	defaultNetwork := make([]string, 0)
+	defaultNetwork = append(defaultNetwork, "hcs.testnet.mirrornode.hedera.com:5600")
+	client := ClientForTestnet()
+	client.SetMirrorNetwork(defaultNetwork)
+
+	mirrorNetwork := client.GetMirrorNetwork()
+	assert.Equal(t, 1, len(mirrorNetwork))
+	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
+
+	defaultNetworkWithExtraNode := make([]string, 0)
+	defaultNetworkWithExtraNode = append(defaultNetworkWithExtraNode, "hcs.testnet.mirrornode.hedera.com:5600")
+	defaultNetworkWithExtraNode = append(defaultNetworkWithExtraNode, "hcs.testnet1.mirrornode.hedera.com:5600")
+
+	client.SetMirrorNetwork(defaultNetworkWithExtraNode)
+	mirrorNetwork = client.GetMirrorNetwork()
+	assert.Equal(t, 2, len(mirrorNetwork))
+	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
+	assert.Equal(t, "hcs.testnet1.mirrornode.hedera.com:5600", mirrorNetwork[1])
+
+	defaultNetwork = make([]string, 0)
+	defaultNetwork = append(defaultNetwork, "hcs.testnet1.mirrornode.hedera.com:5600")
+
+	client.SetMirrorNetwork(defaultNetwork)
+	mirrorNetwork = client.GetMirrorNetwork()
+	assert.Equal(t, 1, len(mirrorNetwork))
+	assert.Equal(t, "hcs.testnet1.mirrornode.hedera.com:5600", mirrorNetwork[0])
+
+	defaultNetwork = make([]string, 0)
+	defaultNetwork = append(defaultNetwork, "hcs.testnet.mirrornode.hedera.com:5600")
+
+	client.SetMirrorNetwork(defaultNetwork)
+	mirrorNetwork = client.GetMirrorNetwork()
+	assert.Equal(t, 1, len(mirrorNetwork))
+	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
+
+	client.SetTransportSecurity(true)
+	mirrorNetwork = client.GetMirrorNetwork()
+	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:433", mirrorNetwork[0])
+
+	err := client.Close()
+	assert.NoError(t, err)
+}
