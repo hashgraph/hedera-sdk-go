@@ -20,7 +20,6 @@ func TestUnitMock(t *testing.T) {
 	}
 
 	client := ClientForNetwork(network)
-	server := grpc.NewServer()
 
 	responses := []interface{}{
 		status.Error(codes.Unavailable, ""),
@@ -36,18 +35,18 @@ func TestUnitMock(t *testing.T) {
 		},
 	}
 
+	var server *grpc.Server
 	go func() {
-		server.RegisterService(NewServiceDescription(responses), nil)
-		lis, err := net.Listen("tcp", "localhost:50211")
-		assert.NoError(t, err)
-
-		err = server.Serve(lis)
-		assert.NoError(t, err)
+		server = NewServer(responses)
 	}()
 
 	balance, err := NewAccountBalanceQuery().SetAccountID(AccountID{Account: 3}).Execute(client)
 	assert.NoError(t, err)
 	assert.Equal(t, balance.Hbars.tinybar, int64(10))
+
+	if server != nil {
+		server.GracefulStop()
+	}
 }
 
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -65,71 +64,44 @@ func NewMockHandler(responses []interface{}) func(interface{}, context.Context, 
 	}
 }
 
-// TODO: Create method that encompasses all services
-func NewServiceDescription(responses []interface{}) *grpc.ServiceDesc {
+func NewServer(responses []interface{}) *grpc.Server {
+	server := grpc.NewServer()
 	handler := NewMockHandler(responses)
+
+	server.RegisterService(NewServiceDescription(handler, &proto.CryptoService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &proto.FileService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &proto.SmartContractService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &proto.ConsensusService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &proto.TokenService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &proto.ScheduleService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &proto.FreezeService_ServiceDesc), nil)
+
+	lis, err := net.Listen("tcp", "localhost:50211")
+	if err != nil {
+		panic(err)
+	}
+
+	if err = server.Serve(lis); err != nil {
+		panic(err)
+	}
+
+	return server
+}
+
+func NewServiceDescription(handler func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error), service *grpc.ServiceDesc) *grpc.ServiceDesc {
+	var methods []grpc.MethodDesc
+	for _, desc := range service.Methods {
+		methods = append(methods, grpc.MethodDesc{
+			MethodName: desc.MethodName,
+			Handler:    handler,
+		})
+	}
+
 	return &grpc.ServiceDesc{
-		ServiceName: "proto.CryptoService",
-		HandlerType: (*proto.CryptoServiceServer)(nil),
-		Methods: []grpc.MethodDesc{
-			{
-				MethodName: "createAccount",
-				Handler:    handler,
-			},
-			{
-				MethodName: "updateAccount",
-				Handler:    handler,
-			},
-			{
-				MethodName: "cryptoTransfer",
-				Handler:    handler,
-			},
-			{
-				MethodName: "cryptoDelete",
-				Handler:    handler,
-			},
-			{
-				MethodName: "addLiveHash",
-				Handler:    handler,
-			},
-			{
-				MethodName: "deleteLiveHash",
-				Handler:    handler,
-			},
-			{
-				MethodName: "getLiveHash",
-				Handler:    handler,
-			},
-			{
-				MethodName: "getAccountRecords",
-				Handler:    handler,
-			},
-			{
-				MethodName: "cryptoGetBalance",
-				Handler:    handler,
-			},
-			{
-				MethodName: "getAccountInfo",
-				Handler:    handler,
-			},
-			{
-				MethodName: "getTransactionReceipts",
-				Handler:    handler,
-			},
-			{
-				MethodName: "getFastTransactionRecord",
-				Handler:    handler,
-			},
-			{
-				MethodName: "getTxRecordByTxID",
-				Handler:    handler,
-			},
-			{
-				MethodName: "getStakersByAccountID",
-				Handler:    handler,
-			},
-		},
-		Streams:  []grpc.StreamDesc{},
-		Metadata: "proto/crypto_service.proto",
+		ServiceName: service.ServiceName,
+		HandlerType: service.HandlerType,
+		Methods:     methods,
+		Streams:     []grpc.StreamDesc{},
+		Metadata:    service.Metadata,
 	}
 }
