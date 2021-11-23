@@ -16,6 +16,10 @@ type TokenID struct {
 	checksum *string
 }
 
+type _TokenIDs struct {
+	tokenIDs []TokenID
+}
+
 func _TokenIDFromProtobuf(tokenID *proto.TokenID) *TokenID {
 	if tokenID == nil {
 		return nil
@@ -147,4 +151,53 @@ func (id *TokenID) Validate(client *Client) error {
 
 func (id TokenID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Token == 0
+}
+
+func (id TokenID) Compare(given TokenID) int {
+	if id.Shard > given.Shard { //nolint
+		return 1
+	} else if id.Shard < given.Shard {
+		return -1
+	}
+
+	if id.Realm > given.Realm { //nolint
+		return 1
+	} else if id.Realm < given.Realm {
+		return -1
+	}
+
+	if id.Token > given.Token { //nolint
+		return 1
+	} else if id.Token < given.Token {
+		return -1
+	} else { //nolint
+		return 0
+	}
+}
+
+func (tokenIDs _TokenIDs) Len() int {
+	return len(tokenIDs.tokenIDs)
+}
+func (tokenIDs _TokenIDs) Swap(i, j int) {
+	tokenIDs.tokenIDs[i], tokenIDs.tokenIDs[j] = tokenIDs.tokenIDs[j], tokenIDs.tokenIDs[i]
+}
+
+func (tokenIDs _TokenIDs) Less(i, j int) bool {
+	if tokenIDs.tokenIDs[i].Shard < tokenIDs.tokenIDs[j].Shard { //nolint
+		return true
+	} else if tokenIDs.tokenIDs[i].Shard > tokenIDs.tokenIDs[j].Shard {
+		return false
+	}
+
+	if tokenIDs.tokenIDs[i].Realm < tokenIDs.tokenIDs[j].Realm { //nolint
+		return true
+	} else if tokenIDs.tokenIDs[i].Realm > tokenIDs.tokenIDs[j].Realm {
+		return false
+	}
+
+	if tokenIDs.tokenIDs[i].Token < tokenIDs.tokenIDs[j].Token { //nolint
+		return true
+	} else { //nolint
+		return false
+	}
 }
