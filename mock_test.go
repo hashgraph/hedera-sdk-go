@@ -15,12 +15,6 @@ import (
 )
 
 func TestUnitMock(t *testing.T) {
-	var network = map[string]AccountID{
-		"localhost:50211": {Account: 3},
-	}
-
-	client := ClientForNetwork(network)
-
 	responses := []interface{}{
 		status.Error(codes.Unavailable, ""),
 		&proto.Response{
@@ -35,10 +29,7 @@ func TestUnitMock(t *testing.T) {
 		},
 	}
 
-	var server *grpc.Server
-	go func() {
-		server = NewServer(responses)
-	}()
+	client, server := NewMockClientAndServer(responses)
 
 	balance, err := NewAccountBalanceQuery().SetAccountID(AccountID{Account: 3}).Execute(client)
 	assert.NoError(t, err)
@@ -47,6 +38,19 @@ func TestUnitMock(t *testing.T) {
 	if server != nil {
 		server.GracefulStop()
 	}
+}
+
+func NewMockClientAndServer(responses []interface{}) (*Client, *grpc.Server) {
+	client := ClientForNetwork(map[string]AccountID{
+		"localhost:50211": {Account: 3},
+	})
+
+	var server *grpc.Server
+	go func() {
+		server = NewServer(responses)
+	}()
+
+	return client, server
 }
 
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
