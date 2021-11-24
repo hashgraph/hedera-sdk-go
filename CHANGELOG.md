@@ -1,9 +1,12 @@
-## Unreleased
+## v2.5.1
 
 ### Fixed
 
  * `TransferTransaction.GetTokenTransfers()`
  * `TransferTransaction.AddTokenTransfer()`
+ * Persistent error not being handled correctly
+ * `TransactionReceiptQuery` should return even on a bad status codes.
+   Only *.GetReceipt()` should error on non `SUCCESS` status codes
 
 ## v2.5.1-beta.1
 
