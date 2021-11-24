@@ -10,7 +10,7 @@ import (
 
 type Query struct {
 	pb       *proto.Query
-	pbHeader *proto.QueryHeader//nolint
+	pbHeader *proto.QueryHeader //nolint
 
 	paymentTransactionID        TransactionID
 	nodeAccountIDs              []AccountID

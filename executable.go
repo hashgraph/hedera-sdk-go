@@ -52,7 +52,7 @@ type _ProtoRequest struct {
 }
 
 type QueryHeader struct {
-	header *proto.QueryHeader//nolint
+	header *proto.QueryHeader //nolint
 }
 
 type _Request struct {
