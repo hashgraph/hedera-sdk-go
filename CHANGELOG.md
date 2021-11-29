@@ -1,3 +1,14 @@
+## v2.6.0
+
+### Added
+
+ * New smart contract response codes
+
+### Deprecated
+
+ * `ContractCallQuery.[Set|Get]MaxResultSize()`
+ * `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
+
 ## v2.6.0-beta.1
 
 ### Added
