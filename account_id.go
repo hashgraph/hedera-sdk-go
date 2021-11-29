@@ -18,6 +18,10 @@ type AccountID struct {
 	checksum *string
 }
 
+type _AccountIDs struct {
+	accountIDs []AccountID
+}
+
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
@@ -182,4 +186,53 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 	}
 
 	return *_AccountIDFromProtobuf(&pb), nil
+}
+
+func (id AccountID) Compare(given AccountID) int {
+	if id.Shard > given.Shard { //nolint
+		return 1
+	} else if id.Shard < given.Shard {
+		return -1
+	}
+
+	if id.Realm > given.Realm { //nolint
+		return 1
+	} else if id.Realm < given.Realm {
+		return -1
+	}
+
+	if id.Account > given.Account { //nolint
+		return 1
+	} else if id.Account < given.Account {
+		return -1
+	} else { //nolint
+		return 0
+	}
+}
+
+func (accountIDs _AccountIDs) Len() int {
+	return len(accountIDs.accountIDs)
+}
+func (accountIDs _AccountIDs) Swap(i, j int) {
+	accountIDs.accountIDs[i], accountIDs.accountIDs[j] = accountIDs.accountIDs[j], accountIDs.accountIDs[i]
+}
+
+func (accountIDs _AccountIDs) Less(i, j int) bool {
+	if accountIDs.accountIDs[i].Shard < accountIDs.accountIDs[j].Shard { //nolint
+		return true
+	} else if accountIDs.accountIDs[i].Shard > accountIDs.accountIDs[j].Shard {
+		return false
+	}
+
+	if accountIDs.accountIDs[i].Realm < accountIDs.accountIDs[j].Realm { //nolint
+		return true
+	} else if accountIDs.accountIDs[i].Realm > accountIDs.accountIDs[j].Realm {
+		return false
+	}
+
+	if accountIDs.accountIDs[i].Account < accountIDs.accountIDs[j].Account { //nolint
+		return true
+	} else { //nolint
+		return false
+	}
 }
