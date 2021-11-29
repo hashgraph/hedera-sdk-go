@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenPauseTransaction struct {
@@ -20,7 +20,7 @@ func NewTokenPauseTransaction() *TokenPauseTransaction {
 	return &transaction
 }
 
-func _TokenPauseTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenPauseTransaction {
+func _TokenPauseTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenPauseTransaction {
 	return TokenPauseTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
@@ -55,18 +55,18 @@ func (transaction *TokenPauseTransaction) _ValidateNetworkOnIDs(client *Client) 
 	return nil
 }
 
-func (transaction *TokenPauseTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenPauseTransactionBody{}
+func (transaction *TokenPauseTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenPauseTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenPause{
+		Data: &services.TransactionBody_TokenPause{
 			TokenPause: body,
 		},
 	}
@@ -83,15 +83,15 @@ func (transaction *TokenPauseTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenPauseTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) { //nolint
-	body := &proto.TokenPauseTransactionBody{}
+func (transaction *TokenPauseTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) { //nolint
+	body := &services.TokenPauseTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenPause{
+		Data: &services.SchedulableTransactionBody_TokenPause{
 			TokenPause: body,
 		},
 	}, nil
@@ -298,7 +298,7 @@ func (transaction *TokenPauseTransaction) AddSignature(publicKey PublicKey, sign
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

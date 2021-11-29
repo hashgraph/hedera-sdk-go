@@ -5,9 +5,10 @@ package hedera
 import (
 	"testing"
 
+	"github.com/hashgraph/hedera-protobufs-go/sdk"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
 )
@@ -123,37 +124,37 @@ func TestIntegrationTransactionGetHash(t *testing.T) {
 func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil})
 
-	TransactionBody := proto.TransactionBody{
-		TransactionID: &proto.TransactionID{
-			AccountID: &proto.AccountID{
+	TransactionBody := services.TransactionBody{
+		TransactionID: &services.TransactionID{
+			AccountID: &services.AccountID{
 				AccountNum: 542348,
 			},
-			TransactionValidStart: &proto.Timestamp{
+			TransactionValidStart: &services.Timestamp{
 				Seconds: id.ValidStart.Unix(),
 				Nanos:   int32(id.ValidStart.Nanosecond()),
 			},
 		},
-		NodeAccountID: &proto.AccountID{
+		NodeAccountID: &services.AccountID{
 			AccountNum: 3,
 		},
 		TransactionFee: 200_000_000,
-		TransactionValidDuration: &proto.Duration{
+		TransactionValidDuration: &services.Duration{
 			Seconds: 120,
 		},
 		GenerateRecord: false,
 		Memo:           "",
-		Data: &proto.TransactionBody_CryptoTransfer{
-			CryptoTransfer: &proto.CryptoTransferTransactionBody{
-				Transfers: &proto.TransferList{
-					AccountAmounts: []*proto.AccountAmount{
+		Data: &services.TransactionBody_CryptoTransfer{
+			CryptoTransfer: &services.CryptoTransferTransactionBody{
+				Transfers: &services.TransferList{
+					AccountAmounts: []*services.AccountAmount{
 						{
-							AccountID: &proto.AccountID{
+							AccountID: &services.AccountID{
 								AccountNum: 47439,
 							},
 							Amount: 10,
 						},
 						{
-							AccountID: &proto.AccountID{
+							AccountID: &services.AccountID{
 								AccountNum: 542348,
 							},
 							Amount: -10,
@@ -185,37 +186,37 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	signature4 := key4.Sign(BodyBytes)
 	signature5 := key5.Sign(BodyBytes)
 
-	signed := proto.SignedTransaction{
+	signed := services.SignedTransaction{
 		BodyBytes: BodyBytes,
-		SigMap: &proto.SignatureMap{
-			SigPair: []*proto.SignaturePair{
+		SigMap: &services.SignatureMap{
+			SigPair: []*services.SignaturePair{
 				{
 					PubKeyPrefix: key1.PublicKey().Bytes(),
-					Signature: &proto.SignaturePair_Ed25519{
+					Signature: &services.SignaturePair_Ed25519{
 						Ed25519: signature1,
 					},
 				},
 				{
 					PubKeyPrefix: key2.PublicKey().Bytes(),
-					Signature: &proto.SignaturePair_Ed25519{
+					Signature: &services.SignaturePair_Ed25519{
 						Ed25519: signature2,
 					},
 				},
 				{
 					PubKeyPrefix: key3.PublicKey().Bytes(),
-					Signature: &proto.SignaturePair_Ed25519{
+					Signature: &services.SignaturePair_Ed25519{
 						Ed25519: signature3,
 					},
 				},
 				{
 					PubKeyPrefix: key4.PublicKey().Bytes(),
-					Signature: &proto.SignaturePair_Ed25519{
+					Signature: &services.SignaturePair_Ed25519{
 						Ed25519: signature4,
 					},
 				},
 				{
 					PubKeyPrefix: key5.PublicKey().Bytes(),
-					Signature: &proto.SignaturePair_Ed25519{
+					Signature: &services.SignaturePair_Ed25519{
 						Ed25519: signature5,
 					},
 				},
@@ -226,8 +227,8 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 	bytes, err := protobuf.Marshal(&signed)
 	require.NoError(t, err)
 
-	bytes, err = protobuf.Marshal(&proto.TransactionList{
-		TransactionList: []*proto.Transaction{{
+	bytes, err = protobuf.Marshal(&sdk.TransactionList{
+		TransactionList: []*services.Transaction{{
 			SignedTransactionBytes: bytes,
 		}},
 	})

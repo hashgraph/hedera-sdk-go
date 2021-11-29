@@ -3,7 +3,7 @@ package hedera
 import (
 	"encoding/binary"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractFunctionResult is the result returned by a call to a smart contract function. This is The _Response to
@@ -97,7 +97,7 @@ func (result ContractFunctionResult) AsBytes() []byte {
 	return result.ContractCallResult
 }
 
-func _ContractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) ContractFunctionResult {
+func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) ContractFunctionResult {
 	infos := make([]ContractLogInfo, len(pb.LogInfo))
 
 	for i, info := range pb.LogInfo {
@@ -119,20 +119,20 @@ func _ContractFunctionResultFromProtobuf(pb *proto.ContractFunctionResult) Contr
 	return result
 }
 
-func (result ContractFunctionResult) _ToProtobuf() *proto.ContractFunctionResult {
-	infos := make([]*proto.ContractLoginfo, len(result.LogInfo))
+func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionResult {
+	infos := make([]*services.ContractLoginfo, len(result.LogInfo))
 
 	for i, info := range result.LogInfo {
 		infos[i] = info._ToProtobuf()
 	}
 
-	contractIDs := make([]*proto.ContractID, len(result.CreatedContractIDs))
+	contractIDs := make([]*services.ContractID, len(result.CreatedContractIDs))
 
 	for i, contractID := range result.CreatedContractIDs {
 		contractIDs[i] = contractID._ToProtobuf()
 	}
 
-	return &proto.ContractFunctionResult{
+	return &services.ContractFunctionResult{
 		ContractID:         result.ContractID._ToProtobuf(),
 		ContractCallResult: result.ContractCallResult,
 		ErrorMessage:       result.ErrorMessage,

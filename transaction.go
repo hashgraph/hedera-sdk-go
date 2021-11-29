@@ -9,14 +9,15 @@ import (
 
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/sdk"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
 // Transaction contains the protobuf of a prepared transaction which can be signed and executed.
 
 type ITransaction interface {
-	_ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error)
+	_ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error)
 }
 
 type Transaction struct {
@@ -30,8 +31,8 @@ type Transaction struct {
 	transactionID            TransactionID
 
 	transactionIDs     []TransactionID
-	transactions       []*proto.Transaction
-	signedTransactions []*proto.SignedTransaction
+	transactions       []*services.Transaction
+	signedTransactions []*services.SignedTransaction
 	nodeAccountIDs     []AccountID
 
 	publicKeys         []PublicKey
@@ -51,15 +52,15 @@ func _NewTransaction() Transaction {
 		maxRetry:                 10,
 		transactionValidDuration: &duration,
 		transactionIDs:           make([]TransactionID, 0),
-		transactions:             make([]*proto.Transaction, 0),
-		signedTransactions:       make([]*proto.SignedTransaction, 0),
+		transactions:             make([]*services.Transaction, 0),
+		signedTransactions:       make([]*services.SignedTransaction, 0),
 		nodeAccountIDs:           make([]AccountID, 0),
 		freezeError:              nil,
 	}
 }
 
 func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
-	list := proto.TransactionList{}
+	list := sdk.TransactionList{}
 	err := protobuf.Unmarshal(data, &list)
 	if err != nil {
 		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to Transaction List")
@@ -71,15 +72,15 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		maxRetry:             10,
 		transactionIDs:       make([]TransactionID, 0),
 		transactions:         list.TransactionList,
-		signedTransactions:   make([]*proto.SignedTransaction, 0),
+		signedTransactions:   make([]*services.SignedTransaction, 0),
 		publicKeys:           make([]PublicKey, 0),
 		transactionSigners:   make([]TransactionSigner, 0),
 	}
 
-	var first *proto.TransactionBody = nil
+	var first *services.TransactionBody = nil
 
 	for i, transaction := range list.TransactionList {
-		var signedTransaction proto.SignedTransaction
+		var signedTransaction services.SignedTransaction
 		if err := protobuf.Unmarshal(transaction.SignedTransactionBytes, &signedTransaction); err != nil {
 			return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
 		}
@@ -98,7 +99,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 			}
 		}
 
-		var body proto.TransactionBody
+		var body services.TransactionBody
 		if err := protobuf.Unmarshal(signedTransaction.GetBodyBytes(), &body); err != nil {
 			return Transaction{}, errors.Wrap(err, "error deserializing BodyBytes in TransactionFromBytes")
 		}
@@ -149,83 +150,83 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	switch first.Data.(type) {
-	case *proto.TransactionBody_ContractCall:
+	case *services.TransactionBody_ContractCall:
 		return _ContractExecuteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ContractCreateInstance:
+	case *services.TransactionBody_ContractCreateInstance:
 		return _ContractCreateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ContractUpdateInstance:
+	case *services.TransactionBody_ContractUpdateInstance:
 		return _ContractUpdateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ContractDeleteInstance:
+	case *services.TransactionBody_ContractDeleteInstance:
 		return _ContractDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_CryptoAddLiveHash:
+	case *services.TransactionBody_CryptoAddLiveHash:
 		return _LiveHashAddTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_CryptoCreateAccount:
+	case *services.TransactionBody_CryptoCreateAccount:
 		return _AccountCreateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_CryptoDelete:
+	case *services.TransactionBody_CryptoDelete:
 		return _AccountDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_CryptoDeleteLiveHash:
+	case *services.TransactionBody_CryptoDeleteLiveHash:
 		return _LiveHashDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_CryptoTransfer:
+	case *services.TransactionBody_CryptoTransfer:
 		return _TransferTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_CryptoUpdateAccount:
+	case *services.TransactionBody_CryptoUpdateAccount:
 		return _AccountUpdateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_FileAppend:
+	case *services.TransactionBody_FileAppend:
 		return _FileAppendTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_FileCreate:
+	case *services.TransactionBody_FileCreate:
 		return _FileCreateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_FileDelete:
+	case *services.TransactionBody_FileDelete:
 		return _FileDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_FileUpdate:
+	case *services.TransactionBody_FileUpdate:
 		return _FileUpdateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_SystemDelete:
+	case *services.TransactionBody_SystemDelete:
 		return _SystemDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_SystemUndelete:
+	case *services.TransactionBody_SystemUndelete:
 		return _SystemUndeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_Freeze:
+	case *services.TransactionBody_Freeze:
 		return _FreezeTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ConsensusCreateTopic:
+	case *services.TransactionBody_ConsensusCreateTopic:
 		return _TopicCreateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ConsensusUpdateTopic:
+	case *services.TransactionBody_ConsensusUpdateTopic:
 		return _TopicUpdateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ConsensusDeleteTopic:
+	case *services.TransactionBody_ConsensusDeleteTopic:
 		return _TopicDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ConsensusSubmitMessage:
+	case *services.TransactionBody_ConsensusSubmitMessage:
 		return _TopicMessageSubmitTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenCreation:
+	case *services.TransactionBody_TokenCreation:
 		return _TokenCreateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenFreeze:
+	case *services.TransactionBody_TokenFreeze:
 		return _TokenFreezeTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenUnfreeze:
+	case *services.TransactionBody_TokenUnfreeze:
 		return _TokenUnfreezeTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenGrantKyc:
+	case *services.TransactionBody_TokenGrantKyc:
 		return _TokenGrantKycTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenRevokeKyc:
+	case *services.TransactionBody_TokenRevokeKyc:
 		return _TokenRevokeKycTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenDeletion:
+	case *services.TransactionBody_TokenDeletion:
 		return _TokenDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenUpdate:
+	case *services.TransactionBody_TokenUpdate:
 		return _TokenUpdateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenMint:
+	case *services.TransactionBody_TokenMint:
 		return _TokenMintTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenBurn:
+	case *services.TransactionBody_TokenBurn:
 		return _TokenBurnTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenWipe:
+	case *services.TransactionBody_TokenWipe:
 		return _TokenWipeTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenAssociate:
+	case *services.TransactionBody_TokenAssociate:
 		return _TokenAssociateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenDissociate:
+	case *services.TransactionBody_TokenDissociate:
 		return _TokenDissociateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ScheduleCreate:
+	case *services.TransactionBody_ScheduleCreate:
 		return _ScheduleCreateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ScheduleSign:
+	case *services.TransactionBody_ScheduleSign:
 		return _ScheduleSignTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_ScheduleDelete:
+	case *services.TransactionBody_ScheduleDelete:
 		return _ScheduleDeleteTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenFeeScheduleUpdate:
+	case *services.TransactionBody_TokenFeeScheduleUpdate:
 		return _TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenPause:
+	case *services.TransactionBody_TokenPause:
 		return _TokenPauseTransactionFromProtobuf(tx, first), nil
-	case *proto.TransactionBody_TokenUnpause:
+	case *services.TransactionBody_TokenUnpause:
 		return _TokenUnpauseTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
@@ -248,13 +249,13 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 				return make(map[AccountID]map[*PublicKey][]byte), err
 			}
 			switch sigPair.Signature.(type) {
-			case *proto.SignaturePair_Contract:
+			case *services.SignaturePair_Contract:
 				inner[&key] = sigPair.GetContract()
-			case *proto.SignaturePair_Ed25519:
+			case *services.SignaturePair_Ed25519:
 				inner[&key] = sigPair.GetEd25519()
-			case *proto.SignaturePair_RSA_3072:
+			case *services.SignaturePair_RSA_3072:
 				inner[&key] = sigPair.GetRSA_3072()
-			case *proto.SignaturePair_ECDSA_384:
+			case *services.SignaturePair_ECDSA_384:
 				inner[&key] = sigPair.GetECDSA_384()
 			}
 		}
@@ -343,7 +344,7 @@ func (transaction *Transaction) _RequireOneNodeAccountID() {
 func _TransactionFreezeWith(
 	transaction *Transaction,
 	client *Client,
-	body *proto.TransactionBody,
+	body *services.TransactionBody,
 ) error {
 	if len(transaction.nodeAccountIDs) == 0 {
 		if client != nil {
@@ -367,10 +368,10 @@ func _TransactionFreezeWith(
 			panic(err)
 		}
 
-		transaction.signedTransactions = append(transaction.signedTransactions, &proto.SignedTransaction{
+		transaction.signedTransactions = append(transaction.signedTransactions, &services.SignedTransaction{
 			BodyBytes: bodyBytes,
-			SigMap: &proto.SignatureMap{
-				SigPair: make([]*proto.SignaturePair, 0),
+			SigMap: &services.SignatureMap{
+				SigPair: make([]*services.SignaturePair, 0),
 			},
 		})
 	}
@@ -382,7 +383,7 @@ func (transaction *Transaction) _SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) {
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, signer)
 }
@@ -473,7 +474,7 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 		return make([]byte, 0), err
 	}
 
-	pbTransactionList, lastError := protobuf.Marshal(&proto.TransactionList{
+	pbTransactionList, lastError := protobuf.Marshal(&sdk.TransactionList{
 		TransactionList: transaction.transactions,
 	})
 
@@ -536,7 +537,7 @@ func (transaction *Transaction) _BuildTransaction(index int) error {
 		return errors.Wrap(err, "failed to serialize transactions for building")
 	}
 
-	transaction.transactions = append(transaction.transactions, &proto.Transaction{
+	transaction.transactions = append(transaction.transactions, &services.Transaction{
 		SignedTransactionBytes: data,
 	})
 

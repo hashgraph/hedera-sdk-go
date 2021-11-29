@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountRecordsQuery gets all of the records for an account for any transfers into it and out of
@@ -19,7 +19,7 @@ type AccountRecordsQuery struct {
 // It is recommended that you use this for creating new instances of an AccountRecordQuery
 // instead of manually creating an instance of the struct.
 func NewAccountRecordsQuery() *AccountRecordsQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &AccountRecordsQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -53,10 +53,10 @@ func (query *AccountRecordsQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountRecordsQuery) _Build() *proto.Query_CryptoGetAccountRecords {
-	pb := proto.Query_CryptoGetAccountRecords{
-		CryptoGetAccountRecords: &proto.CryptoGetAccountRecordsQuery{
-			Header: &proto.QueryHeader{},
+func (query *AccountRecordsQuery) _Build() *services.Query_CryptoGetAccountRecords {
+	pb := services.Query_CryptoGetAccountRecords{
+		CryptoGetAccountRecords: &services.CryptoGetAccountRecordsQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -98,7 +98,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.CryptoGetAccountRecords.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -188,7 +188,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -197,7 +197,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 
 	pb := query._Build()
 	pb.CryptoGetAccountRecords.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

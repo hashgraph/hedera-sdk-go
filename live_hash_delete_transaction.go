@@ -3,7 +3,7 @@ package hedera
 import (
 	"errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
@@ -23,7 +23,7 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	return &transaction
 }
 
-func _LiveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) LiveHashDeleteTransaction {
+func _LiveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) LiveHashDeleteTransaction {
 	return LiveHashDeleteTransaction{
 		Transaction: transaction,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
@@ -69,8 +69,8 @@ func (transaction *LiveHashDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *LiveHashDeleteTransaction) _Build() *proto.TransactionBody {
-	body := &proto.CryptoDeleteLiveHashTransactionBody{}
+func (transaction *LiveHashDeleteTransaction) _Build() *services.TransactionBody {
+	body := &services.CryptoDeleteLiveHashTransactionBody{}
 
 	if transaction.accountID != nil {
 		body.AccountOfLiveHash = transaction.accountID._ToProtobuf()
@@ -80,18 +80,18 @@ func (transaction *LiveHashDeleteTransaction) _Build() *proto.TransactionBody {
 		body.LiveHashToDelete = transaction.hash
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_CryptoDeleteLiveHash{
+		Data: &services.TransactionBody_CryptoDeleteLiveHash{
 			CryptoDeleteLiveHash: body,
 		},
 	}
 }
 
-func (transaction *LiveHashDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *LiveHashDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
@@ -296,7 +296,7 @@ func (transaction *LiveHashDeleteTransaction) AddSignature(publicKey PublicKey, 
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

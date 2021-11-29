@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type NetworkVersionInfoQuery struct {
@@ -11,7 +11,7 @@ type NetworkVersionInfoQuery struct {
 }
 
 func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &NetworkVersionInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -21,31 +21,12 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
 	}
-
-	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
-
-	for range query.nodeAccountIDs {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
-	}
-
-	pb := proto.Query_NetworkGetVersionInfo{
-		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{},
+	pb := services.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &services.NetworkGetVersionInfoQuery{},
 	}
 	pb.NetworkGetVersionInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: &pb,
 	}
 
@@ -135,19 +116,19 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
 		return NetworkVersionInfo{}, err
 	}
 
-	pb := proto.Query_NetworkGetVersionInfo{
-		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{},
+	pb := services.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &services.NetworkGetVersionInfoQuery{},
 	}
 	pb.NetworkGetVersionInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: &pb,
 	}
 

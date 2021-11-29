@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -22,7 +22,7 @@ type TransactionReceipt struct {
 	SerialNumbers           []int64
 }
 
-func _TransactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) TransactionReceipt {
+func _TransactionReceiptFromProtobuf(protoReceipt *services.TransactionReceipt) TransactionReceipt {
 	if protoReceipt == nil {
 		return TransactionReceipt{}
 	}
@@ -92,13 +92,13 @@ func _TransactionReceiptFromProtobuf(protoReceipt *proto.TransactionReceipt) Tra
 	}
 }
 
-func (receipt TransactionReceipt) _ToProtobuf() *proto.TransactionReceipt {
-	return &proto.TransactionReceipt{
-		Status:     proto.ResponseCodeEnum(receipt.Status),
+func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionReceipt {
+	return &services.TransactionReceipt{
+		Status:     services.ResponseCodeEnum(receipt.Status),
 		AccountID:  receipt.AccountID._ToProtobuf(),
 		FileID:     receipt.FileID._ToProtobuf(),
 		ContractID: receipt.ContractID._ToProtobuf(),
-		ExchangeRate: &proto.ExchangeRateSet{
+		ExchangeRate: &services.ExchangeRateSet{
 			CurrentRate: receipt.ExchangeRate._ToProtobuf(),
 			NextRate:    receipt.ExchangeRate._ToProtobuf(),
 		},
@@ -127,7 +127,7 @@ func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
 	if data == nil {
 		return TransactionReceipt{}, errByteArrayNull
 	}
-	pb := proto.TransactionReceipt{}
+	pb := services.TransactionReceipt{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionReceipt{}, err

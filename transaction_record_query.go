@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionRecordQuery struct {
@@ -12,7 +12,7 @@ type TransactionRecordQuery struct {
 }
 
 func NewTransactionRecordQuery() *TransactionRecordQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &TransactionRecordQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -30,16 +30,16 @@ func (query *TransactionRecordQuery) _ValidateNetworkOnIDs(client *Client) error
 	return nil
 }
 
-func (query *TransactionRecordQuery) _Build() *proto.Query_TransactionGetRecord {
-	body := &proto.TransactionGetRecordQuery{
-		Header: &proto.QueryHeader{},
+func (query *TransactionRecordQuery) _Build() *services.Query_TransactionGetRecord {
+	body := &services.TransactionGetRecordQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.transactionID.AccountID != nil {
 		body.TransactionID = query.transactionID._ToProtobuf()
 	}
 
-	return &proto.Query_TransactionGetRecord{
+	return &services.Query_TransactionGetRecord{
 		TransactionGetRecord: body,
 	}
 }
@@ -75,7 +75,7 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.TransactionGetRecord.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -109,7 +109,7 @@ func _TransactionRecordQueryShouldRetry(request _Request, response _Response) _E
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
-		if response.query.GetTransactionGetRecord().GetHeader().ResponseType == proto.ResponseType_COST_ANSWER {
+		if response.query.GetTransactionGetRecord().GetHeader().ResponseType == services.ResponseType_COST_ANSWER {
 			return executionStateFinished
 		}
 	default:
@@ -266,7 +266,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -275,7 +275,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 
 	pb := query._Build()
 	pb.TransactionGetRecord.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

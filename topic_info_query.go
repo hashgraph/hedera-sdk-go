@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TopicInfoQuery struct {
@@ -14,7 +14,7 @@ type TopicInfoQuery struct {
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &TopicInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -48,16 +48,16 @@ func (query *TopicInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TopicInfoQuery) _Build() *proto.Query_ConsensusGetTopicInfo {
-	body := &proto.ConsensusGetTopicInfoQuery{
-		Header: &proto.QueryHeader{},
+func (query *TopicInfoQuery) _Build() *services.Query_ConsensusGetTopicInfo {
+	body := &services.ConsensusGetTopicInfoQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.topicID != nil {
 		body.TopicID = query.topicID._ToProtobuf()
 	}
 
-	return &proto.Query_ConsensusGetTopicInfo{
+	return &services.Query_ConsensusGetTopicInfo{
 		ConsensusGetTopicInfo: body,
 	}
 }
@@ -93,7 +93,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.ConsensusGetTopicInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -187,7 +187,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -196,7 +196,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 
 	pb := query._Build()
 	pb.ConsensusGetTopicInfo.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

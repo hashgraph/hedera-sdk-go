@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // Deletes an already created Token.
@@ -24,7 +24,7 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	return &transaction
 }
 
-func _TokenDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenDeleteTransaction {
+func _TokenDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenDeleteTransaction {
 	return TokenDeleteTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
@@ -60,18 +60,18 @@ func (transaction *TokenDeleteTransaction) _ValidateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *TokenDeleteTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenDeleteTransactionBody{}
+func (transaction *TokenDeleteTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenDeleteTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenDeletion{
+		Data: &services.TransactionBody_TokenDeletion{
 			TokenDeletion: body,
 		},
 	}
@@ -88,15 +88,15 @@ func (transaction *TokenDeleteTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenDeleteTransactionBody{}
+func (transaction *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenDeleteTransactionBody{}
 	if transaction.tokenID != nil {
 		body.Token = transaction.tokenID._ToProtobuf()
 	}
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenDeletion{
+		Data: &services.SchedulableTransactionBody_TokenDeletion{
 			TokenDeletion: body,
 		},
 	}, nil
@@ -303,7 +303,7 @@ func (transaction *TokenDeleteTransaction) AddSignature(publicKey PublicKey, sig
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

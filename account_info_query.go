@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type AccountInfoQuery struct {
@@ -12,7 +12,7 @@ type AccountInfoQuery struct {
 }
 
 func NewAccountInfoQuery() *AccountInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &AccountInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -46,10 +46,10 @@ func (query *AccountInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountInfoQuery) _Build() *proto.Query_CryptoGetInfo {
-	pb := proto.Query_CryptoGetInfo{
-		CryptoGetInfo: &proto.CryptoGetInfoQuery{
-			Header: &proto.QueryHeader{},
+func (query *AccountInfoQuery) _Build() *services.Query_CryptoGetInfo {
+	pb := services.Query_CryptoGetInfo{
+		CryptoGetInfo: &services.CryptoGetInfoQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -107,7 +107,7 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.CryptoGetInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -208,7 +208,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -217,7 +217,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 	pb := query._Build()
 	pb.CryptoGetInfo.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

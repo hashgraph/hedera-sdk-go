@@ -5,9 +5,8 @@ package hedera
 import (
 	"testing"
 
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // TestStatusFromProtoToString tests pulling all codes from the proto generated code,
@@ -15,7 +14,7 @@ import (
 //
 // Ideally this will catch any changes to _Response codes when the protobufs get updated
 func TestUnitStatusFromProtoToString(t *testing.T) {
-	for _, code := range proto.ResponseCodeEnum_value {
+	for _, code := range services.ResponseCodeEnum_value {
 		status := Status(code)
 		assert.NotPanics(t, func() { _ = status.String() })
 	}

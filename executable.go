@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,33 +26,33 @@ const (
 type _Method struct {
 	query func(
 		context.Context,
-		*proto.Query,
+		*services.Query,
 		...grpc.CallOption,
-	) (*proto.Response, error)
+	) (*services.Response, error)
 	transaction func(
 		context.Context,
-		*proto.Transaction,
+		*services.Transaction,
 		...grpc.CallOption,
-	) (*proto.TransactionResponse, error)
+	) (*services.TransactionResponse, error)
 }
 
 type _Response struct {
-	query       *proto.Response
-	transaction *proto.TransactionResponse
+	query       *services.Response
+	transaction *services.TransactionResponse
 }
 
 type _IntermediateResponse struct {
-	query       *proto.Response
+	query       *services.Response
 	transaction TransactionResponse
 }
 
 type _ProtoRequest struct {
-	query       *proto.Query
-	transaction *proto.Transaction
+	query       *services.Query
+	transaction *services.Transaction
 }
 
 type QueryHeader struct {
-	header *proto.QueryHeader //nolint
+	header *services.QueryHeader //nolint
 }
 
 type _Request struct {

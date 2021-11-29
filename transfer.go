@@ -1,13 +1,15 @@
 package hedera
 
-import "github.com/hashgraph/hedera-sdk-go/v2/proto"
+import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 type Transfer struct {
 	AccountID AccountID
 	Amount    Hbar
 }
 
-func _TransferFromProtobuf(pb *proto.AccountAmount) Transfer {
+func _TransferFromProtobuf(pb *services.AccountAmount) Transfer {
 	if pb == nil {
 		return Transfer{}
 	}
@@ -23,14 +25,14 @@ func _TransferFromProtobuf(pb *proto.AccountAmount) Transfer {
 	}
 }
 
-func (transfer Transfer) _ToProtobuf() *proto.TransferList { // nolint
-	var ammounts = make([]*proto.AccountAmount, 0)
-	ammounts = append(ammounts, &proto.AccountAmount{
+func (transfer Transfer) _ToProtobuf() *services.TransferList { // nolint
+	var ammounts = make([]*services.AccountAmount, 0)
+	ammounts = append(ammounts, &services.AccountAmount{
 		AccountID: transfer.AccountID._ToProtobuf(),
 		Amount:    transfer.Amount.AsTinybar(),
 	})
 
-	return &proto.TransferList{
+	return &services.TransferList{
 		AccountAmounts: ammounts,
 	}
 }

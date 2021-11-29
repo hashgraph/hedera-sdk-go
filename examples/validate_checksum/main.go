@@ -2,9 +2,10 @@ package main
 
 import (
 	"bufio"
-	"github.com/hashgraph/hedera-sdk-go/v2"
 	"os"
 	"strings"
+
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {

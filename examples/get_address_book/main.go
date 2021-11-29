@@ -58,29 +58,9 @@ func main() {
 		return
 	}
 
-	// Create the file the address book will be read into
-	// For string
-	fileString, err := os.Create("address-book-string.proto.bin")
+	file, err := os.OpenFile("address-book.services.bin", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		println(err.Error(), ": error creating address-book-string.proto.bin")
-		return
-	}
-	// For []byte
-	fileByte, err := os.Create("address-book-byte.proto.bin")
-	if err != nil {
-		println(err.Error(), ": error creating address-book-byte.proto.bin")
-		return
-	}
-
-	// Make sure they are empty
-	err = fileString.Truncate(0)
-	if err != nil {
-		println(err.Error(), ": error emptying file")
-		return
-	}
-	err = fileByte.Truncate(0)
-	if err != nil {
-		println(err.Error(), ": error emptying file")
+		println(err.Error(), ": error opening address-book.services.bin")
 		return
 	}
 

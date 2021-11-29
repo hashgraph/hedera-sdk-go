@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // Create a new token. After the token is created, the Token ID for it is in the receipt.
@@ -60,7 +60,7 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	return &transaction
 }
 
-func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenCreateTransaction {
+func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenCreateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenCreation().GetCustomFees() {
@@ -294,14 +294,14 @@ func (transaction *TokenCreateTransaction) _ValidateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *TokenCreateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenCreateTransactionBody{
+func (transaction *TokenCreateTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenCreateTransactionBody{
 		Name:          transaction.tokenName,
 		Symbol:        transaction.tokenSymbol,
 		Memo:          transaction.memo,
 		Decimals:      transaction.decimals,
-		TokenType:     proto.TokenType(transaction.tokenType),
-		SupplyType:    proto.TokenSupplyType(transaction.tokenSupplyType),
+		TokenType:     services.TokenType(transaction.tokenType),
+		SupplyType:    services.TokenSupplyType(transaction.tokenSupplyType),
 		MaxSupply:     transaction.maxSupply,
 		InitialSupply: transaction.initialSupply,
 	}
@@ -323,7 +323,7 @@ func (transaction *TokenCreateTransaction) _Build() *proto.TransactionBody {
 	}
 
 	if body.CustomFees == nil {
-		body.CustomFees = make([]*proto.CustomFee, 0)
+		body.CustomFees = make([]*services.CustomFee, 0)
 	}
 	for _, customFee := range transaction.customFees {
 		body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
@@ -357,12 +357,12 @@ func (transaction *TokenCreateTransaction) _Build() *proto.TransactionBody {
 		body.PauseKey = transaction.pauseKey._ToProtoKey()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenCreation{
+		Data: &services.TransactionBody_TokenCreation{
 			TokenCreation: body,
 		},
 	}
@@ -379,13 +379,13 @@ func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.TokenCreateTransactionBody{
+func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.TokenCreateTransactionBody{
 		Name:          transaction.tokenName,
 		Memo:          transaction.memo,
 		Decimals:      transaction.decimals,
-		TokenType:     proto.TokenType(transaction.tokenType),
-		SupplyType:    proto.TokenSupplyType(transaction.tokenSupplyType),
+		TokenType:     services.TokenType(transaction.tokenType),
+		SupplyType:    services.TokenSupplyType(transaction.tokenSupplyType),
 		MaxSupply:     transaction.maxSupply,
 		InitialSupply: transaction.initialSupply,
 	}
@@ -407,7 +407,7 @@ func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*proto.
 	}
 
 	if body.CustomFees == nil {
-		body.CustomFees = make([]*proto.CustomFee, 0)
+		body.CustomFees = make([]*services.CustomFee, 0)
 	}
 	for _, customFee := range transaction.customFees {
 		body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
@@ -436,10 +436,10 @@ func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*proto.
 	if transaction.supplyKey != nil {
 		body.SupplyKey = transaction.supplyKey._ToProtoKey()
 	}
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_TokenCreation{
+		Data: &services.SchedulableTransactionBody_TokenCreation{
 			TokenCreation: body,
 		},
 	}, nil
@@ -731,7 +731,7 @@ func (transaction *TokenCreateTransaction) AddSignature(publicKey PublicKey, sig
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

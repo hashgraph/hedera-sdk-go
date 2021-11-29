@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type ScheduleSignTransaction struct {
@@ -23,7 +23,7 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	return &transaction
 }
 
-func _ScheduleSignTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleSignTransaction {
+func _ScheduleSignTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleSignTransaction {
 	return ScheduleSignTransaction{
 		Transaction: transaction,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
@@ -58,24 +58,24 @@ func (transaction *ScheduleSignTransaction) _ValidateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (transaction *ScheduleSignTransaction) _Build() *proto.TransactionBody {
-	body := &proto.ScheduleSignTransactionBody{}
+func (transaction *ScheduleSignTransaction) _Build() *services.TransactionBody {
+	body := &services.ScheduleSignTransactionBody{}
 	if transaction.scheduleID != nil {
 		body.ScheduleID = transaction.scheduleID._ToProtobuf()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ScheduleSign{
+		Data: &services.TransactionBody_ScheduleSign{
 			ScheduleSign: body,
 		},
 	}
 }
 
-func (transaction *ScheduleSignTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ScheduleSignTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 

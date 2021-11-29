@@ -9,35 +9,35 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"google.golang.org/grpc"
 )
 
 func TestUnitMock(t *testing.T) {
 	responses := []interface{}{
-		&proto.TransactionResponse{
-			NodeTransactionPrecheckCode: proto.ResponseCodeEnum_OK,
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
 		},
-		&proto.Response{
-			Response: &proto.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &proto.TransactionGetReceiptResponse{
-					Header: &proto.ResponseHeader{
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
 						Cost:         0,
-						ResponseType: proto.ResponseType_COST_ANSWER,
+						ResponseType: services.ResponseType_COST_ANSWER,
 					},
 				},
 			},
 		},
-		&proto.Response{
-			Response: &proto.Response_TransactionGetReceipt{
-				TransactionGetReceipt: &proto.TransactionGetReceiptResponse{
-					Header: &proto.ResponseHeader{
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
 						Cost:         0,
-						ResponseType: proto.ResponseType_ANSWER_ONLY,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
-					Receipt: &proto.TransactionReceipt{
-						Status:    proto.ResponseCodeEnum_SUCCESS,
-						AccountID: &proto.AccountID{AccountNum: 234},
+					Receipt: &services.TransactionReceipt{
+						Status:    services.ResponseCodeEnum_SUCCESS,
+						AccountID: &services.AccountID{AccountNum: 234},
 					},
 				},
 			},
@@ -104,13 +104,13 @@ func NewServer(responses []interface{}) *grpc.Server {
 	server := grpc.NewServer()
 	handler := NewMockHandler(responses)
 
-	server.RegisterService(NewServiceDescription(handler, &proto.CryptoService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &proto.FileService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &proto.SmartContractService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &proto.ConsensusService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &proto.TokenService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &proto.ScheduleService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &proto.FreezeService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &services.CryptoService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &services.FileService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &services.SmartContractService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &services.ConsensusService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &services.TokenService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &services.ScheduleService_ServiceDesc), nil)
+	server.RegisterService(NewServiceDescription(handler, &services.FreezeService_ServiceDesc), nil)
 
 	lis, err := net.Listen("tcp", "localhost:50211")
 	if err != nil {

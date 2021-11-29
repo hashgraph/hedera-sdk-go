@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -20,7 +20,7 @@ type _TokenIDs struct {
 	tokenIDs []TokenID
 }
 
-func _TokenIDFromProtobuf(tokenID *proto.TokenID) *TokenID {
+func _TokenIDFromProtobuf(tokenID *services.TokenID) *TokenID {
 	if tokenID == nil {
 		return nil
 	}
@@ -32,8 +32,8 @@ func _TokenIDFromProtobuf(tokenID *proto.TokenID) *TokenID {
 	}
 }
 
-func (id *TokenID) _ToProtobuf() *proto.TokenID {
-	return &proto.TokenID{
+func (id *TokenID) _ToProtobuf() *services.TokenID {
+	return &services.TokenID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
 		TokenNum: int64(id.Token),
@@ -68,7 +68,7 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 	if data == nil {
 		return TokenID{}, errByteArrayNull
 	}
-	pb := proto.TokenID{}
+	pb := services.TokenID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenID{}, err

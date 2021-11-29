@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractInfoQuery retrieves information about a smart contract instance. This includes the account that it uses, the
@@ -16,7 +16,7 @@ type ContractInfoQuery struct {
 // NewContractInfoQuery creates a ContractInfoQuery query which can be used to construct and execute a
 // Contract Get Info Query.
 func NewContractInfoQuery() *ContractInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := _NewQuery(true, &header)
 
 	query.SetMaxQueryPayment(NewHbar(2))
@@ -54,10 +54,10 @@ func (query *ContractInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractInfoQuery) _Build() *proto.Query_ContractGetInfo {
-	pb := proto.Query_ContractGetInfo{
-		ContractGetInfo: &proto.ContractGetInfoQuery{
-			Header: &proto.QueryHeader{},
+func (query *ContractInfoQuery) _Build() *services.Query_ContractGetInfo {
+	pb := services.Query_ContractGetInfo{
+		ContractGetInfo: &services.ContractGetInfoQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -99,7 +99,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.ContractGetInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -193,7 +193,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -202,7 +202,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 
 	pb := query._Build()
 	pb.ContractGetInfo.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

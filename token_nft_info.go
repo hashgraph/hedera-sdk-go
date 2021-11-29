@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -14,7 +14,7 @@ type TokenNftInfo struct {
 	Metadata     []byte
 }
 
-func _TokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
+func _TokenNftInfoFromProtobuf(pb *services.TokenNftInfo) TokenNftInfo {
 	if pb == nil {
 		return TokenNftInfo{}
 	}
@@ -32,8 +32,8 @@ func _TokenNftInfoFromProtobuf(pb *proto.TokenNftInfo) TokenNftInfo {
 	}
 }
 
-func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *proto.TokenNftInfo {
-	return &proto.TokenNftInfo{
+func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *services.TokenNftInfo {
+	return &services.TokenNftInfo{
 		NftID:        tokenNftInfo.NftID._ToProtobuf(),
 		AccountID:    tokenNftInfo.AccountID._ToProtobuf(),
 		CreationTime: _TimeToProtobuf(tokenNftInfo.CreationTime),
@@ -54,7 +54,7 @@ func TokenNftInfoFromBytes(data []byte) (TokenNftInfo, error) {
 	if data == nil {
 		return TokenNftInfo{}, errByteArrayNull
 	}
-	pb := proto.TokenNftInfo{}
+	pb := services.TokenNftInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TokenNftInfo{}, err

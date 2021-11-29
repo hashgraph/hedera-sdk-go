@@ -3,8 +3,9 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type AccountUpdateTransaction struct {
@@ -32,30 +33,30 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return &transaction
 }
 
-func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) AccountUpdateTransaction {
+func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) AccountUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var sendRecordThreshold uint64
 	var receiveRecordThreshold uint64
 	var receiverSignatureRequired bool
 
 	switch s := pb.GetCryptoUpdateAccount().GetSendRecordThresholdField().(type) {
-	case *proto.CryptoUpdateTransactionBody_SendRecordThreshold:
+	case *services.CryptoUpdateTransactionBody_SendRecordThreshold:
 		sendRecordThreshold = s.SendRecordThreshold // nolint
-	case *proto.CryptoUpdateTransactionBody_SendRecordThresholdWrapper:
+	case *services.CryptoUpdateTransactionBody_SendRecordThresholdWrapper:
 		sendRecordThreshold = s.SendRecordThresholdWrapper.Value // nolint
 	}
 
 	switch s := pb.GetCryptoUpdateAccount().GetReceiveRecordThresholdField().(type) {
-	case *proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold:
+	case *services.CryptoUpdateTransactionBody_ReceiveRecordThreshold:
 		receiveRecordThreshold = s.ReceiveRecordThreshold // nolint
-	case *proto.CryptoUpdateTransactionBody_ReceiveRecordThresholdWrapper:
+	case *services.CryptoUpdateTransactionBody_ReceiveRecordThresholdWrapper:
 		receiveRecordThreshold = s.ReceiveRecordThresholdWrapper.Value // nolint
 	}
 
 	switch s := pb.GetCryptoUpdateAccount().GetReceiverSigRequiredField().(type) {
-	case *proto.CryptoUpdateTransactionBody_ReceiverSigRequired:
+	case *services.CryptoUpdateTransactionBody_ReceiverSigRequired:
 		receiverSignatureRequired = s.ReceiverSigRequired // nolint
-	case *proto.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper:
+	case *services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper:
 		receiverSignatureRequired = s.ReceiverSigRequiredWrapper.Value // nolint
 	}
 
@@ -197,15 +198,15 @@ func (transaction *AccountUpdateTransaction) _ValidateNetworkOnIDs(client *Clien
 	return nil
 }
 
-func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.CryptoUpdateTransactionBody{
-		SendRecordThresholdField: &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
+func (transaction *AccountUpdateTransaction) _Build() *services.TransactionBody {
+	body := &services.CryptoUpdateTransactionBody{
+		SendRecordThresholdField: &services.CryptoUpdateTransactionBody_SendRecordThreshold{
 			SendRecordThreshold: transaction.sendRecordThreshold,
 		},
-		ReceiveRecordThresholdField: &proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
+		ReceiveRecordThresholdField: &services.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
 			ReceiveRecordThreshold: transaction.receiveRecordThreshold,
 		},
-		ReceiverSigRequiredField: &proto.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
+		ReceiverSigRequiredField: &services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
 			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: transaction.receiverSignatureRequired},
 		},
 		Memo:                          &wrapperspb.StringValue{Value: transaction.memo},
@@ -232,12 +233,12 @@ func (transaction *AccountUpdateTransaction) _Build() *proto.TransactionBody {
 		body.Key = transaction.key._ToProtoKey()
 	}
 
-	pb := proto.TransactionBody{
+	pb := services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_CryptoUpdateAccount{
+		Data: &services.TransactionBody_CryptoUpdateAccount{
 			CryptoUpdateAccount: body,
 		},
 	}
@@ -258,15 +259,15 @@ func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransact
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.CryptoUpdateTransactionBody{
-		SendRecordThresholdField: &proto.CryptoUpdateTransactionBody_SendRecordThreshold{
+func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.CryptoUpdateTransactionBody{
+		SendRecordThresholdField: &services.CryptoUpdateTransactionBody_SendRecordThreshold{
 			SendRecordThreshold: transaction.sendRecordThreshold,
 		},
-		ReceiveRecordThresholdField: &proto.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
+		ReceiveRecordThresholdField: &services.CryptoUpdateTransactionBody_ReceiveRecordThreshold{
 			ReceiveRecordThreshold: transaction.receiveRecordThreshold,
 		},
-		ReceiverSigRequiredField: &proto.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
+		ReceiverSigRequiredField: &services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper{
 			ReceiverSigRequiredWrapper: &wrapperspb.BoolValue{Value: transaction.receiverSignatureRequired},
 		},
 		Memo: &wrapperspb.StringValue{Value: transaction.memo},
@@ -292,10 +293,10 @@ func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*prot
 		body.Key = transaction.key._ToProtoKey()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_CryptoUpdateAccount{
+		Data: &services.SchedulableTransactionBody_CryptoUpdateAccount{
 			CryptoUpdateAccount: body,
 		},
 	}, nil
@@ -502,7 +503,7 @@ func (transaction *AccountUpdateTransaction) AddSignature(publicKey PublicKey, s
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

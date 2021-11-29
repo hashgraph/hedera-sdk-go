@@ -3,9 +3,9 @@ package hedera
 import (
 	"time"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // *TopicUpdateTransaction updates all fields on a Topic that are set in the transaction.
@@ -33,7 +33,7 @@ func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	return &transaction
 }
 
-func _TopicUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TopicUpdateTransaction {
+func _TopicUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TopicUpdateTransaction {
 	adminKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetAdminKey())
 	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetSubmitKey())
 
@@ -195,9 +195,9 @@ func (transaction *TopicUpdateTransaction) _ValidateNetworkOnIDs(client *Client)
 	return nil
 }
 
-func (transaction *TopicUpdateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.ConsensusUpdateTopicTransactionBody{
-		Memo: &wrappers.StringValue{Value: transaction.memo},
+func (transaction *TopicUpdateTransaction) _Build() *services.TransactionBody {
+	body := &services.ConsensusUpdateTopicTransactionBody{
+		Memo: &wrapperspb.StringValue{Value: transaction.memo},
 	}
 
 	if transaction.topicID != nil {
@@ -224,12 +224,12 @@ func (transaction *TopicUpdateTransaction) _Build() *proto.TransactionBody {
 		body.SubmitKey = transaction.submitKey._ToProtoKey()
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ConsensusUpdateTopic{
+		Data: &services.TransactionBody_ConsensusUpdateTopic{
 			ConsensusUpdateTopic: body,
 		},
 	}
@@ -246,9 +246,9 @@ func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransactio
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *TopicUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.ConsensusUpdateTopicTransactionBody{
-		Memo: &wrappers.StringValue{Value: transaction.memo},
+func (transaction *TopicUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.ConsensusUpdateTopicTransactionBody{
+		Memo: &wrapperspb.StringValue{Value: transaction.memo},
 	}
 
 	if transaction.topicID != nil {
@@ -275,10 +275,10 @@ func (transaction *TopicUpdateTransaction) _ConstructScheduleProtobuf() (*proto.
 		body.SubmitKey = transaction.submitKey._ToProtoKey()
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_ConsensusUpdateTopic{
+		Data: &services.SchedulableTransactionBody_ConsensusUpdateTopic{
 			ConsensusUpdateTopic: body,
 		},
 	}, nil
@@ -485,7 +485,7 @@ func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, sig
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

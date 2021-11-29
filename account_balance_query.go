@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountBalanceQuery gets the balance of a CryptoCurrency account. This returns only the balance, so it is a smaller
@@ -19,7 +19,7 @@ type AccountBalanceQuery struct {
 // It is recommended that you use this for creating new instances of an AccountBalanceQuery
 // instead of manually creating an instance of the struct.
 func NewAccountBalanceQuery() *AccountBalanceQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &AccountBalanceQuery{
 		Query: _NewQuery(false, &header),
 	}
@@ -79,22 +79,22 @@ func (query *AccountBalanceQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountBalanceQuery) _Build() *proto.Query_CryptogetAccountBalance {
-	pb := proto.CryptoGetAccountBalanceQuery{Header: &proto.QueryHeader{}}
+func (query *AccountBalanceQuery) _Build() *services.Query_CryptogetAccountBalance {
+	pb := services.CryptoGetAccountBalanceQuery{Header: &services.QueryHeader{}}
 
 	if query.accountID != nil {
-		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_AccountID{
+		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_AccountID{
 			AccountID: query.accountID._ToProtobuf(),
 		}
 	}
 
 	if query.contractID != nil {
-		pb.BalanceSource = &proto.CryptoGetAccountBalanceQuery_ContractID{
+		pb.BalanceSource = &services.CryptoGetAccountBalanceQuery_ContractID{
 			ContractID: query.contractID._ToProtobuf(),
 		}
 	}
 
-	return &proto.Query_CryptogetAccountBalance{
+	return &services.Query_CryptogetAccountBalance{
 		CryptogetAccountBalance: &pb,
 	}
 }
@@ -137,7 +137,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.CryptogetAccountBalance.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -207,11 +207,11 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	pb := query._Build()
 	pb.CryptogetAccountBalance.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type FileInfoQuery struct {
@@ -12,7 +12,7 @@ type FileInfoQuery struct {
 }
 
 func NewFileInfoQuery() *FileInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &FileInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -45,16 +45,16 @@ func (query *FileInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *FileInfoQuery) _Build() *proto.Query_FileGetInfo {
-	body := &proto.FileGetInfoQuery{
-		Header: &proto.QueryHeader{},
+func (query *FileInfoQuery) _Build() *services.Query_FileGetInfo {
+	body := &services.FileGetInfoQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.fileID != nil {
 		body.FileID = query.fileID._ToProtobuf()
 	}
 
-	return &proto.Query_FileGetInfo{
+	return &services.Query_FileGetInfo{
 		FileGetInfo: body,
 	}
 }
@@ -90,7 +90,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.FileGetInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -183,7 +183,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -192,7 +192,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 
 	pb := query._Build()
 	pb.FileGetInfo.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // ContractCallQuery calls a function of the given smart contract instance, giving it ContractFunctionParameters as its
@@ -25,7 +25,7 @@ type ContractCallQuery struct {
 // NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
 // Contract Call Local Query.
 func NewContractCallQuery() *ContractCallQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	query := _NewQuery(true, &header)
 	query.SetMaxQueryPayment(NewHbar(2))
 
@@ -97,10 +97,10 @@ func (query *ContractCallQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *ContractCallQuery) _Build() *proto.Query_ContractCallLocal {
-	pb := proto.Query_ContractCallLocal{
-		ContractCallLocal: &proto.ContractCallLocalQuery{
-			Header: &proto.QueryHeader{},
+func (query *ContractCallQuery) _Build() *services.Query_ContractCallLocal {
+	pb := services.Query_ContractCallLocal{
+		ContractCallLocal: &services.ContractCallLocalQuery{
+			Header: &services.QueryHeader{},
 			Gas:    int64(query.gas),
 		},
 	}
@@ -147,7 +147,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.ContractCallLocal.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -237,7 +237,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -246,7 +246,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 
 	pb := query._Build()
 	pb.ContractCallLocal.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

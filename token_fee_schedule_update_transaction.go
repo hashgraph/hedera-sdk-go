@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenFeeScheduleUpdateTransaction struct {
@@ -23,7 +23,7 @@ func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 	return &transaction
 }
 
-func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) TokenFeeScheduleUpdateTransaction {
+func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenFeeScheduleUpdateTransaction {
 	customFees := make([]Fee, 0)
 
 	for _, fee := range pb.GetTokenFeeScheduleUpdate().GetCustomFees() {
@@ -82,8 +82,8 @@ func (transaction *TokenFeeScheduleUpdateTransaction) _ValidateNetworkOnIDs(clie
 	return nil
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.TokenFeeScheduleUpdateTransactionBody{}
+func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *services.TransactionBody {
+	body := &services.TokenFeeScheduleUpdateTransactionBody{}
 	if transaction.tokenID != nil {
 		body.TokenId = transaction.tokenID._ToProtobuf()
 	}
@@ -91,24 +91,24 @@ func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *proto.Transactio
 	if len(transaction.customFees) > 0 {
 		for _, customFee := range transaction.customFees {
 			if body.CustomFees == nil {
-				body.CustomFees = make([]*proto.CustomFee, 0)
+				body.CustomFees = make([]*services.CustomFee, 0)
 			}
 			body.CustomFees = append(body.CustomFees, customFee._ToProtobuf())
 		}
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_TokenFeeScheduleUpdate{
+		Data: &services.TransactionBody_TokenFeeScheduleUpdate{
 			TokenFeeScheduleUpdate: body,
 		},
 	}
 }
 
-func (transaction *TokenFeeScheduleUpdateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *TokenFeeScheduleUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
 }
 
@@ -159,7 +159,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SignWith(
 	if !transaction.IsFrozen() {
 		_, _ = transaction.Freeze()
 	} else {
-		transaction.transactions = make([]*proto.Transaction, 0)
+		transaction.transactions = make([]*services.Transaction, 0)
 	}
 
 	if transaction._KeyAlreadySigned(publicKey) {
@@ -328,7 +328,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey Pub
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

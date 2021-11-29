@@ -3,14 +3,13 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 func TestUnitTransferTransactionValidate(t *testing.T) {
@@ -109,8 +108,8 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 	data := transferTransaction._Build()
 
 	switch d := data.Data.(type) {
-	case *proto.TransactionBody_CryptoTransfer:
-		require.Equal(t, d.CryptoTransfer.Transfers.AccountAmounts, []*proto.AccountAmount{
+	case *services.TransactionBody_CryptoTransfer:
+		require.Equal(t, d.CryptoTransfer.Transfers.AccountAmounts, []*services.AccountAmount{
 			{
 				AccountID: accoundID1._ToProtobuf(),
 				Amount:    int64(100000000),
@@ -121,10 +120,10 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 			},
 		})
 
-		require.Equal(t, d.CryptoTransfer.TokenTransfers, []*proto.TokenTransferList{
+		require.Equal(t, d.CryptoTransfer.TokenTransfers, []*services.TokenTransferList{
 			{
 				Token: tokenID1._ToProtobuf(),
-				Transfers: []*proto.AccountAmount{
+				Transfers: []*services.AccountAmount{
 					{
 						AccountID: accoundID1._ToProtobuf(),
 						Amount:    int64(-4),
@@ -136,7 +135,7 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 				}},
 			{
 				Token: tokenID2._ToProtobuf(),
-				Transfers: []*proto.AccountAmount{
+				Transfers: []*services.AccountAmount{
 					{
 						AccountID: accoundID3._ToProtobuf(),
 						Amount:    int64(2),
@@ -147,7 +146,7 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 				}},
 			{
 				Token: tokenID3._ToProtobuf(),
-				NftTransfers: []*proto.NftTransfer{
+				NftTransfers: []*services.NftTransfer{
 					{
 						SenderAccountID:   accoundID1._ToProtobuf(),
 						ReceiverAccountID: accoundID2._ToProtobuf(),
@@ -157,7 +156,7 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 			},
 			{
 				Token: tokenID4._ToProtobuf(),
-				NftTransfers: []*proto.NftTransfer{
+				NftTransfers: []*services.NftTransfer{
 					{
 						SenderAccountID:   accoundID1._ToProtobuf(),
 						ReceiverAccountID: accoundID3._ToProtobuf(),

@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
@@ -21,7 +21,7 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	return &transaction
 }
 
-func _SystemUndeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemUndeleteTransaction {
+func _SystemUndeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) SystemUndeleteTransaction {
 	return SystemUndeleteTransaction{
 		Transaction: transaction,
 		contractID:  _ContractIDFromProtobuf(pb.GetSystemUndelete().GetContractID()),
@@ -77,26 +77,26 @@ func (transaction *SystemUndeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *SystemUndeleteTransaction) _Build() *proto.TransactionBody {
-	body := &proto.SystemUndeleteTransactionBody{}
+func (transaction *SystemUndeleteTransaction) _Build() *services.TransactionBody {
+	body := &services.SystemUndeleteTransactionBody{}
 	if transaction.contractID != nil {
-		body.Id = &proto.SystemUndeleteTransactionBody_ContractID{
+		body.Id = &services.SystemUndeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
 	if transaction.fileID != nil {
-		body.Id = &proto.SystemUndeleteTransactionBody_FileID{
+		body.Id = &services.SystemUndeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_SystemUndelete{
+		Data: &services.TransactionBody_SystemUndelete{
 			SystemUndelete: body,
 		},
 	}
@@ -113,24 +113,24 @@ func (transaction *SystemUndeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *SystemUndeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.SystemUndeleteTransactionBody{}
+func (transaction *SystemUndeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.SystemUndeleteTransactionBody{}
 	if transaction.contractID != nil {
-		body.Id = &proto.SystemUndeleteTransactionBody_ContractID{
+		body.Id = &services.SystemUndeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
 	if transaction.fileID != nil {
-		body.Id = &proto.SystemUndeleteTransactionBody_FileID{
+		body.Id = &services.SystemUndeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_SystemUndelete{
+		Data: &services.SchedulableTransactionBody_SystemUndelete{
 			SystemUndelete: body,
 		},
 	}, nil
@@ -343,7 +343,7 @@ func (transaction *SystemUndeleteTransaction) AddSignature(publicKey PublicKey, 
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenInfoQuery struct {
@@ -14,7 +14,7 @@ type TokenInfoQuery struct {
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
 //  Get Topic Info Query.
 func NewTokenInfoQuery() *TokenInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &TokenInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -48,15 +48,15 @@ func (query *TokenInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TokenInfoQuery) _Build() *proto.Query_TokenGetInfo {
-	body := &proto.TokenGetInfoQuery{
-		Header: &proto.QueryHeader{},
+func (query *TokenInfoQuery) _Build() *services.Query_TokenGetInfo {
+	body := &services.TokenGetInfoQuery{
+		Header: &services.QueryHeader{},
 	}
 	if query.tokenID != nil {
 		body.Token = query.tokenID._ToProtobuf()
 	}
 
-	return &proto.Query_TokenGetInfo{
+	return &services.Query_TokenGetInfo{
 		TokenGetInfo: body,
 	}
 }
@@ -92,7 +92,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.TokenGetInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -187,7 +187,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -196,7 +196,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 
 	pb := query._Build()
 	pb.TokenGetInfo.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

@@ -4,14 +4,14 @@ import (
 	"errors"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type ScheduleCreateTransaction struct {
 	Transaction
 	payerAccountID  *AccountID
 	adminKey        Key
-	schedulableBody *proto.SchedulableTransactionBody
+	schedulableBody *services.SchedulableTransactionBody
 	memo            string
 }
 
@@ -25,7 +25,7 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	return &transaction
 }
 
-func _ScheduleCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ScheduleCreateTransaction {
+func _ScheduleCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetScheduleCreate().GetAdminKey())
 
 	return ScheduleCreateTransaction{
@@ -59,7 +59,7 @@ func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCrea
 	return transaction
 }
 
-func (transaction *ScheduleCreateTransaction) _SetSchedulableTransactionBody(txBody *proto.SchedulableTransactionBody) *ScheduleCreateTransaction {
+func (transaction *ScheduleCreateTransaction) _SetSchedulableTransactionBody(txBody *services.SchedulableTransactionBody) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.schedulableBody = txBody
 
@@ -110,8 +110,8 @@ func (transaction *ScheduleCreateTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *ScheduleCreateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.ScheduleCreateTransactionBody{
+func (transaction *ScheduleCreateTransaction) _Build() *services.TransactionBody {
+	body := &services.ScheduleCreateTransactionBody{
 		Memo: transaction.memo,
 	}
 
@@ -127,18 +127,18 @@ func (transaction *ScheduleCreateTransaction) _Build() *proto.TransactionBody {
 		body.ScheduledTransactionBody = transaction.schedulableBody
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ScheduleCreate{
+		Data: &services.TransactionBody_ScheduleCreate{
 			ScheduleCreate: body,
 		},
 	}
 }
 
-func (transaction *ScheduleCreateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
+func (transaction *ScheduleCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleCreateTransaction`")
 }
 func _ScheduleCreateTransactionGetMethod(request _Request, channel *_Channel) _Method {

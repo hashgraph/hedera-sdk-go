@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // FileCreateTransaction creates a new file, containing the given contents.  It is referenced by its FileID, and does
@@ -36,7 +36,7 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	return &transaction
 }
 
-func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) FileCreateTransaction {
+func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileCreateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileCreate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
@@ -121,8 +121,8 @@ func (transaction *FileCreateTransaction) GetMemo() string {
 	return transaction.memo
 }
 
-func (transaction *FileCreateTransaction) _Build() *proto.TransactionBody {
-	body := &proto.FileCreateTransactionBody{
+func (transaction *FileCreateTransaction) _Build() *services.TransactionBody {
+	body := &services.FileCreateTransactionBody{
 		Memo: transaction.memo,
 	}
 
@@ -138,12 +138,12 @@ func (transaction *FileCreateTransaction) _Build() *proto.TransactionBody {
 		body.Contents = transaction.contents
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_FileCreate{
+		Data: &services.TransactionBody_FileCreate{
 			FileCreate: body,
 		},
 	}
@@ -160,8 +160,8 @@ func (transaction *FileCreateTransaction) Schedule() (*ScheduleCreateTransaction
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *FileCreateTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.FileCreateTransactionBody{
+func (transaction *FileCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.FileCreateTransactionBody{
 		Memo: transaction.memo,
 	}
 
@@ -177,10 +177,10 @@ func (transaction *FileCreateTransaction) _ConstructScheduleProtobuf() (*proto.S
 		body.Contents = transaction.contents
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_FileCreate{
+		Data: &services.SchedulableTransactionBody_FileCreate{
 			FileCreate: body,
 		},
 	}, nil
@@ -382,7 +382,7 @@ func (transaction *FileCreateTransaction) AddSignature(publicKey PublicKey, sign
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TokenNftInfoQuery struct {
@@ -12,7 +12,7 @@ type TokenNftInfoQuery struct {
 }
 
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &TokenNftInfoQuery{
 		Query: _NewQuery(true, &header),
 		nftID: nil,
@@ -102,16 +102,16 @@ func (query *TokenNftInfoQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *TokenNftInfoQuery) _BuildByNft() *proto.Query_TokenGetNftInfo {
-	body := &proto.TokenGetNftInfoQuery{
-		Header: &proto.QueryHeader{},
+func (query *TokenNftInfoQuery) _BuildByNft() *services.Query_TokenGetNftInfo {
+	body := &services.TokenGetNftInfoQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.nftID != nil {
 		body.NftID = query.nftID._ToProtobuf()
 	}
 
-	return &proto.Query_TokenGetNftInfo{
+	return &services.Query_TokenGetNftInfo{
 		TokenGetNftInfo: body,
 	}
 }
@@ -147,7 +147,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._BuildByNft()
 	pb.TokenGetNftInfo.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -241,7 +241,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -250,7 +250,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 
 	pb := query._BuildByNft()
 	pb.TokenGetNftInfo.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

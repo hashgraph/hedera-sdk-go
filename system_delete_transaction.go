@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type SystemDeleteTransaction struct {
@@ -22,7 +22,7 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	return &transaction
 }
 
-func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) SystemDeleteTransaction {
+func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) SystemDeleteTransaction {
 	expiration := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		time.Now().Hour(), time.Now().Minute(),
@@ -98,33 +98,33 @@ func (transaction *SystemDeleteTransaction) _ValidateNetworkOnIDs(client *Client
 	return nil
 }
 
-func (transaction *SystemDeleteTransaction) _Build() *proto.TransactionBody {
-	body := &proto.SystemDeleteTransactionBody{}
+func (transaction *SystemDeleteTransaction) _Build() *services.TransactionBody {
+	body := &services.SystemDeleteTransactionBody{}
 
 	if transaction.expirationTime != nil {
-		body.ExpirationTime = &proto.TimestampSeconds{
+		body.ExpirationTime = &services.TimestampSeconds{
 			Seconds: transaction.expirationTime.Unix(),
 		}
 	}
 
 	if transaction.contractID != nil {
-		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
+		body.Id = &services.SystemDeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
 	if transaction.fileID != nil {
-		body.Id = &proto.SystemDeleteTransactionBody_FileID{
+		body.Id = &services.SystemDeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}
 	}
 
-	return &proto.TransactionBody{
+	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_SystemDelete{
+		Data: &services.TransactionBody_SystemDelete{
 			SystemDelete: body,
 		},
 	}
@@ -141,31 +141,31 @@ func (transaction *SystemDeleteTransaction) Schedule() (*ScheduleCreateTransacti
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.SystemDeleteTransactionBody{}
+func (transaction *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.SystemDeleteTransactionBody{}
 
 	if transaction.expirationTime != nil {
-		body.ExpirationTime = &proto.TimestampSeconds{
+		body.ExpirationTime = &services.TimestampSeconds{
 			Seconds: transaction.expirationTime.Unix(),
 		}
 	}
 
 	if transaction.contractID != nil {
-		body.Id = &proto.SystemDeleteTransactionBody_ContractID{
+		body.Id = &services.SystemDeleteTransactionBody_ContractID{
 			ContractID: transaction.contractID._ToProtobuf(),
 		}
 	}
 
 	if transaction.fileID != nil {
-		body.Id = &proto.SystemDeleteTransactionBody_FileID{
+		body.Id = &services.SystemDeleteTransactionBody_FileID{
 			FileID: transaction.fileID._ToProtobuf(),
 		}
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_SystemDelete{
+		Data: &services.SchedulableTransactionBody_SystemDelete{
 			SystemDelete: body,
 		},
 	}, nil
@@ -386,7 +386,7 @@ func (transaction *SystemDeleteTransaction) AddSignature(publicKey PublicKey, si
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

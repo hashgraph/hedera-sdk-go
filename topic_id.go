@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -101,15 +101,15 @@ func (id TopicID) ToStringWithChecksum(client Client) (string, error) {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Topic, checksum.correctChecksum), nil
 }
 
-func (id TopicID) _ToProtobuf() *proto.TopicID {
-	return &proto.TopicID{
+func (id TopicID) _ToProtobuf() *services.TopicID {
+	return &services.TopicID{
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
 		TopicNum: int64(id.Topic),
 	}
 }
 
-func _TopicIDFromProtobuf(topicID *proto.TopicID) *TopicID {
+func _TopicIDFromProtobuf(topicID *services.TopicID) *TopicID {
 	if topicID == nil {
 		return nil
 	}
@@ -134,7 +134,7 @@ func TopicIDFromBytes(data []byte) (TopicID, error) {
 	if data == nil {
 		return TopicID{}, errByteArrayNull
 	}
-	pb := proto.TopicID{}
+	pb := services.TopicID{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TopicID{}, err

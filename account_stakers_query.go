@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 // AccountStakersQuery gets all of the accounts that are proxy staking to this account. For each of  them, the amount
@@ -19,7 +19,7 @@ type AccountStakersQuery struct {
 // It is recommended that you use this for creating new instances of an AccountStakersQuery
 // instead of manually creating an instance of the struct.
 func NewAccountStakersQuery() *AccountStakersQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &AccountStakersQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -53,10 +53,10 @@ func (query *AccountStakersQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *AccountStakersQuery) _Build() *proto.Query_CryptoGetProxyStakers {
-	pb := proto.Query_CryptoGetProxyStakers{
-		CryptoGetProxyStakers: &proto.CryptoGetStakersQuery{
-			Header: &proto.QueryHeader{},
+func (query *AccountStakersQuery) _Build() *services.Query_CryptoGetProxyStakers {
+	pb := services.Query_CryptoGetProxyStakers{
+		CryptoGetProxyStakers: &services.CryptoGetStakersQuery{
+			Header: &services.QueryHeader{},
 		},
 	}
 
@@ -98,7 +98,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.CryptoGetProxyStakers.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -188,7 +188,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -197,7 +197,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	pb := query._Build()
 	pb.CryptoGetProxyStakers.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

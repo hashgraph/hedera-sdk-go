@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type TransactionReceiptQuery struct {
@@ -13,7 +13,7 @@ type TransactionReceiptQuery struct {
 }
 
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &TransactionReceiptQuery{
 		Query: _NewQuery(false, &header),
 	}
@@ -31,9 +31,9 @@ func (query *TransactionReceiptQuery) _ValidateNetworkOnIDs(client *Client) erro
 	return nil
 }
 
-func (query *TransactionReceiptQuery) _Build() *proto.Query_TransactionGetReceipt {
-	body := &proto.TransactionGetReceiptQuery{
-		Header: &proto.QueryHeader{},
+func (query *TransactionReceiptQuery) _Build() *services.Query_TransactionGetReceipt {
+	body := &services.TransactionGetReceiptQuery{
+		Header: &services.QueryHeader{},
 	}
 
 	if query.transactionID.AccountID != nil {
@@ -44,7 +44,7 @@ func (query *TransactionReceiptQuery) _Build() *proto.Query_TransactionGetReceip
 		body.IncludeDuplicates = *query.duplicates
 	}
 
-	return &proto.Query_TransactionGetReceipt{
+	return &services.Query_TransactionGetReceipt{
 		TransactionGetReceipt: body,
 	}
 }
@@ -80,7 +80,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.TransactionGetReceipt.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -235,11 +235,11 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	pb := query._Build()
 	pb.TransactionGetReceipt.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

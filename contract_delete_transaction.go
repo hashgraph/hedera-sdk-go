@@ -1,7 +1,7 @@
 package hedera
 
 import (
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
 )
@@ -22,7 +22,7 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	return &transaction
 }
 
-func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *proto.TransactionBody) ContractDeleteTransaction {
+func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractDeleteTransaction {
 	return ContractDeleteTransaction{
 		Transaction:       transaction,
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
@@ -103,31 +103,31 @@ func (transaction *ContractDeleteTransaction) _ValidateNetworkOnIDs(client *Clie
 	return nil
 }
 
-func (transaction *ContractDeleteTransaction) _Build() *proto.TransactionBody {
-	body := &proto.ContractDeleteTransactionBody{}
+func (transaction *ContractDeleteTransaction) _Build() *services.TransactionBody {
+	body := &services.ContractDeleteTransactionBody{}
 
 	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
 	if transaction.transferContactID != nil {
-		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferContractID{
 			TransferContractID: transaction.transferContactID._ToProtobuf(),
 		}
 	}
 
 	if transaction.transferAccountID != nil {
-		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferAccountID{
 			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
 		}
 	}
 
-	pb := proto.TransactionBody{
+	pb := services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &proto.TransactionBody_ContractDeleteInstance{
+		Data: &services.TransactionBody_ContractDeleteInstance{
 			ContractDeleteInstance: body,
 		},
 	}
@@ -146,29 +146,29 @@ func (transaction *ContractDeleteTransaction) Schedule() (*ScheduleCreateTransac
 	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
 }
 
-func (transaction *ContractDeleteTransaction) _ConstructScheduleProtobuf() (*proto.SchedulableTransactionBody, error) {
-	body := &proto.ContractDeleteTransactionBody{}
+func (transaction *ContractDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.ContractDeleteTransactionBody{}
 
 	if transaction.contractID != nil {
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
 	if transaction.transferContactID != nil {
-		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferContractID{
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferContractID{
 			TransferContractID: transaction.transferContactID._ToProtobuf(),
 		}
 	}
 
 	if transaction.transferAccountID != nil {
-		body.Obtainers = &proto.ContractDeleteTransactionBody_TransferAccountID{
+		body.Obtainers = &services.ContractDeleteTransactionBody_TransferAccountID{
 			TransferAccountID: transaction.transferAccountID._ToProtobuf(),
 		}
 	}
 
-	return &proto.SchedulableTransactionBody{
+	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &proto.SchedulableTransactionBody_ContractDeleteInstance{
+		Data: &services.SchedulableTransactionBody_ContractDeleteInstance{
 			ContractDeleteInstance: body,
 		},
 	}, nil
@@ -375,7 +375,7 @@ func (transaction *ContractDeleteTransaction) AddSignature(publicKey PublicKey, 
 		return transaction
 	}
 
-	transaction.transactions = make([]*proto.Transaction, 0)
+	transaction.transactions = make([]*services.Transaction, 0)
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 

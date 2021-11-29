@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
 type LiveHashQuery struct {
@@ -13,7 +13,7 @@ type LiveHashQuery struct {
 }
 
 func NewLiveHashQuery() *LiveHashQuery {
-	header := proto.QueryHeader{}
+	header := services.QueryHeader{}
 	return &LiveHashQuery{
 		Query: _NewQuery(true, &header),
 	}
@@ -55,9 +55,9 @@ func (query *LiveHashQuery) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
-func (query *LiveHashQuery) _Build() *proto.Query_CryptoGetLiveHash {
-	body := &proto.CryptoGetLiveHashQuery{
-		Header: &proto.QueryHeader{},
+func (query *LiveHashQuery) _Build() *services.Query_CryptoGetLiveHash {
+	body := &services.CryptoGetLiveHashQuery{
+		Header: &services.QueryHeader{},
 	}
 	if query.accountID != nil {
 		body.AccountID = query.accountID._ToProtobuf()
@@ -67,7 +67,7 @@ func (query *LiveHashQuery) _Build() *proto.Query_CryptoGetLiveHash {
 		body.Hash = query.hash
 	}
 
-	return &proto.Query_CryptoGetLiveHash{
+	return &services.Query_CryptoGetLiveHash{
 		CryptoGetLiveHash: body,
 	}
 }
@@ -103,7 +103,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	pb := query._Build()
 	pb.CryptoGetLiveHash.Header = query.pbHeader
 
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 
@@ -193,7 +193,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	}
 
 	query.nextPaymentTransactionIndex = 0
-	query.paymentTransactions = make([]*proto.Transaction, 0)
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	err = _QueryGeneratePayments(&query.Query, client, cost)
 	if err != nil {
@@ -202,7 +202,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 
 	pb := query._Build()
 	pb.CryptoGetLiveHash.Header = query.pbHeader
-	query.pb = &proto.Query{
+	query.pb = &services.Query{
 		Query: pb,
 	}
 

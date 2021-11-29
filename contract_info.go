@@ -3,7 +3,7 @@ package hedera
 import (
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 )
 
@@ -19,7 +19,7 @@ type ContractInfo struct {
 	Balance           uint64
 }
 
-func _ContractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
+func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
 	if contractInfo == nil {
 		return ContractInfo{}, errParameterNull
 	}
@@ -51,8 +51,8 @@ func _ContractInfoFromProtobuf(contractInfo *proto.ContractGetInfoResponse_Contr
 	}, nil
 }
 
-func (contractInfo *ContractInfo) _ToProtobuf() *proto.ContractGetInfoResponse_ContractInfo {
-	return &proto.ContractGetInfoResponse_ContractInfo{
+func (contractInfo *ContractInfo) _ToProtobuf() *services.ContractGetInfoResponse_ContractInfo {
+	return &services.ContractGetInfoResponse_ContractInfo{
 		ContractID:        contractInfo.ContractID._ToProtobuf(),
 		AccountID:         contractInfo.AccountID._ToProtobuf(),
 		ContractAccountID: contractInfo.ContractAccountID,
@@ -78,7 +78,7 @@ func ContractInfoFromBytes(data []byte) (ContractInfo, error) {
 	if data == nil {
 		return ContractInfo{}, errByteArrayNull
 	}
-	pb := proto.ContractGetInfoResponse_ContractInfo{}
+	pb := services.ContractGetInfoResponse_ContractInfo{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return ContractInfo{}, err
