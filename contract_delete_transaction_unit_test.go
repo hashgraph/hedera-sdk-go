@@ -6,15 +6,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitContractDeleteTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	contractID, err := ContractIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractDelete := NewContractDeleteTransaction().
 		SetTransferAccountID(accountID).
@@ -22,16 +24,16 @@ func TestUnitContractDeleteTransactionValidate(t *testing.T) {
 		SetTransferContractID(contractID)
 
 	err = contractDelete._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitContractDeleteTransactionValidateWrong(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	contractID, err := ContractIDFromString("0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	contractDelete := NewContractDeleteTransaction().
 		SetTransferAccountID(accountID).

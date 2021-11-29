@@ -276,10 +276,11 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
 
-		transaction.nodeAccountIDs, err = client.network._GetNodeAccountIDsForExecute()
+		accountIDs, err := client.network._GetNodeAccountIDsForExecute()
 		if err != nil {
 			return transaction, err
 		}
+		transaction.SetNodeAccountIDs(accountIDs)
 	}
 
 	transaction._InitFee(client)

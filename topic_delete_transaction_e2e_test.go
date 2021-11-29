@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
@@ -19,10 +21,10 @@ func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -32,16 +34,16 @@ func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTopicDeleteTransaction().
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewTopicInfoQuery().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -54,7 +56,7 @@ func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
@@ -68,10 +70,10 @@ func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -81,12 +83,12 @@ func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTopicDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -95,5 +97,5 @@ func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

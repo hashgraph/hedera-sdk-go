@@ -6,26 +6,28 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTokenBurnTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenBurn := NewTokenBurnTransaction().
 		SetTokenID(tokenID)
 
 	err = tokenBurn._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitTokenBurnTransactionValidateWrong(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenBurn := NewTokenBurnTransaction().
 		SetTokenID(tokenID)

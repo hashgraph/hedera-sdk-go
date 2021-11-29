@@ -228,6 +228,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
+
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TransactionReceipt{}, err

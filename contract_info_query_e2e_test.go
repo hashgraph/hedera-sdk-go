@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
@@ -19,16 +21,16 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		SetKeys(env.Client.GetOperatorPublicKey()).
 		SetContents(testContractByteCode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -38,10 +40,10 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractInfoQuery_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -52,7 +54,7 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		SetQueryPayment(HbarFromTinybar(25)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, contractID, info.ContractID)
 	assert.Equal(t, env.Client.GetOperatorPublicKey(), info.AdminKey)
@@ -62,22 +64,22 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
@@ -91,16 +93,16 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(testContractByteCode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -110,10 +112,10 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractInfoQuery_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -124,10 +126,10 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := contractInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := contractInfo.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, contractID, info.ContractID)
 	assert.Equal(t, env.Client.GetOperatorPublicKey(), info.AdminKey)
@@ -137,22 +139,22 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
@@ -166,16 +168,16 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(testContractByteCode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -185,10 +187,10 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractInfoQuery_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -199,10 +201,10 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := contractInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := contractInfo.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, contractID, info.ContractID)
 	assert.Equal(t, env.Client.GetOperatorPublicKey(), info.AdminKey)
@@ -212,22 +214,22 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
@@ -241,16 +243,16 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(testContractByteCode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -260,10 +262,10 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractInfoQuery_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -274,7 +276,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := contractInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = contractInfo.Execute(env.Client)
 	if err != nil {
@@ -285,22 +287,22 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
@@ -314,16 +316,16 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents(testContractByteCode).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -333,10 +335,10 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractInfoQuery_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -347,7 +349,7 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	_, err = contractInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = contractInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
@@ -358,22 +360,22 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractInfoQueryNoContractID(t *testing.T) {
@@ -389,5 +391,5 @@ func TestIntegrationContractInfoQueryNoContractID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

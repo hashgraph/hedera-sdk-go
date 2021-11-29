@@ -4,6 +4,7 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"testing"
 )
@@ -12,7 +13,7 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -41,5 +42,5 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 		SetKey(thresholdKey).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

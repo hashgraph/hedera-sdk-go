@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTransactionReceiptQueryValidate(t *testing.T) {
@@ -13,13 +15,13 @@ func TestUnitTransactionReceiptQueryValidate(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkyk")
 	transactionID := TransactionIDGenerate(accountID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receiptQuery := NewTransactionReceiptQuery().
 		SetTransactionID(transactionID)
 
 	err = receiptQuery._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitTransactionReceiptQueryValidateWrong(t *testing.T) {
@@ -27,7 +29,7 @@ func TestUnitTransactionReceiptQueryValidateWrong(t *testing.T) {
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
 	transactionID := TransactionIDGenerate(accountID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receiptQuery := NewTransactionReceiptQuery().
 		SetTransactionID(transactionID)

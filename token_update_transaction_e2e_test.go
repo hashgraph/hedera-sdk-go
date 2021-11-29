@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
@@ -26,10 +28,10 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -38,20 +40,20 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equalf(t, "A", info.Symbol, "token failed to update")
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
@@ -62,7 +64,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 
 	for i := range keys {
 		newKey, err := GeneratePrivateKey()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		keys[i] = newKey
 		pubKeys[i] = newKey.PublicKey()
@@ -77,10 +79,10 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		SetKey(pubKeys[0]).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -96,10 +98,10 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -115,16 +117,16 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		SetKycKey(pubKeys[3]).
 		SetSupplyKey(pubKeys[4]).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, "K", info.Symbol)
 	assert.Equal(t, "ffffc", info.Name)
@@ -133,7 +135,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		assert.Equal(t, pubKeys[1].String(), freezeKey.String())
 	}
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
@@ -153,10 +155,10 @@ func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp2, err := NewTokenUpdateTransaction().
 		Execute(env.Client)
@@ -166,14 +168,14 @@ func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -184,10 +186,10 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -206,12 +208,12 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		SetSupplyKey(newKey.PublicKey()).
 		SetFreezeDefault(false).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenCreate.Sign(newKey)
 
 	resp, err = tokenCreate.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -228,10 +230,10 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 	metaData := make([]byte, 50, 101)
@@ -241,10 +243,10 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		SetTokenID(tokenID).
 		SetMetadata(metaData).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = mint.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	update, err := NewTokenUpdateTransaction().
 		SetTokenID(tokenID).
@@ -252,23 +254,23 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTreasuryAccountID(accountID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	update.Sign(newKey)
 
 	resp, err = update.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equalf(t, "A", info.Symbol, "token failed to update")
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

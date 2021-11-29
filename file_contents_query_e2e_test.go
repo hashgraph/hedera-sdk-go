@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
@@ -20,16 +22,16 @@ func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	remoteContents, err := NewFileContentsQuery().
 		SetFileID(*fileID).
@@ -37,7 +39,7 @@ func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
 		SetQueryPayment(HbarFromTinybar(25)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, contents, remoteContents)
 
@@ -45,13 +47,13 @@ func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
@@ -66,16 +68,16 @@ func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
 		SetFileID(*fileID).
@@ -83,10 +85,10 @@ func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := fileContents.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	remoteContents, err := fileContents.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, contents, remoteContents)
 
@@ -94,13 +96,13 @@ func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
@@ -115,16 +117,16 @@ func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
 		SetFileID(*fileID).
@@ -132,10 +134,10 @@ func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := fileContents.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	remoteContents, err := fileContents.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, contents, remoteContents)
 
@@ -143,13 +145,13 @@ func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
@@ -164,16 +166,16 @@ func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
 		SetFileID(*fileID).
@@ -181,7 +183,7 @@ func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := fileContents.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = fileContents.Execute(env.Client)
 	if err != nil {
@@ -192,13 +194,13 @@ func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
@@ -213,16 +215,16 @@ func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
 		SetFileID(*fileID).
@@ -230,7 +232,7 @@ func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	_, err = fileContents.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = fileContents.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
@@ -241,13 +243,13 @@ func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 		SetFileID(*fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationFileContentsQueryNoFileID(t *testing.T) {
@@ -262,5 +264,5 @@ func TestIntegrationFileContentsQueryNoFileID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

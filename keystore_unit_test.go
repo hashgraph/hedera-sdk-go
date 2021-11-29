@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 const passphrase string = "HelloHashgraph!"
@@ -17,23 +19,23 @@ const testKeystore string = `{"version":1,"crypto":{"ciphertext":"9dfa728ba59e50
 
 func TestUnitDecryptKeyStore(t *testing.T) {
 	privateKey, err := PrivateKeyFromString(testKeystoreKeyString)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	ksPrivateKey, err := _ParseKeystore([]byte(testKeystore), passphrase)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
 }
 
 func TestUnitEncryptAndDecryptKeyStore(t *testing.T) {
 	privateKey, err := PrivateKeyFromString(testPrivateKeyStr)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	keyStore, err := _NewKeystore(privateKey.Bytes(), passphrase)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	ksPrivateKey, err := _ParseKeystore(keyStore, passphrase)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
 }

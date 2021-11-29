@@ -5,8 +5,9 @@ package hedera
 import (
 	"testing"
 
-	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hashgraph/hedera-sdk-go/v2/proto"
 )
 
 // TestStatusFromProtoToString tests pulling all codes from the proto generated code,

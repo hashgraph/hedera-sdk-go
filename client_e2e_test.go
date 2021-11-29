@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationClientPingAllGoodNetwork(t *testing.T) {
@@ -28,10 +30,10 @@ func TestIntegrationClientPingAllGoodNetwork(t *testing.T) {
 	_, err := NewAccountBalanceQuery().
 		SetAccountID(val[0]).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
@@ -60,7 +62,7 @@ func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	tempNet[keys[1]] = val[1]
 
 	err := tempClient.SetNetwork(tempNet)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tempClient.PingAll()
 
@@ -75,10 +77,10 @@ func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	_, err = NewAccountBalanceQuery().
 		SetAccountID(val[0]).
 		Execute(tempClient)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, 1, len(tempClient.GetNetwork()))
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

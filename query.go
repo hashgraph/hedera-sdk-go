@@ -101,6 +101,7 @@ func _QueryMakeRequest(request _Request) _ProtoRequest {
 		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
 	}
 	request.query.pbHeader.ResponseType = proto.ResponseType_ANSWER_ONLY
+
 	return _ProtoRequest{
 		query: request.query.pb,
 	}

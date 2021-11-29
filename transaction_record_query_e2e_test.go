@@ -6,13 +6,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -23,25 +25,25 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err = tx.SignWithOperator(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewTransactionReceiptQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	record, err := NewTransactionRecordQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *record.Receipt.AccountID
 	assert.NotNil(t, accountID)
@@ -51,25 +53,25 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -80,26 +82,26 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err = tx.SignWithOperator(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewTransactionReceiptQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(HbarFromTinybar(0)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	record, err := NewTransactionRecordQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *record.Receipt.AccountID
 	assert.NotNil(t, accountID)
@@ -109,25 +111,25 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -138,19 +140,19 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err = tx.SignWithOperator(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(resp.TransactionID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewTransactionRecordQuery().
 		SetTransactionID(resp.TransactionID).
@@ -170,25 +172,25 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 		SetAccountID(*accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -199,10 +201,10 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -229,10 +231,10 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		}}).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -241,38 +243,38 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		AddTokenTransfer(tokenID, env.Client.GetOperatorAccountID(), -10).
 		AddTokenTransfer(tokenID, accountID, 10).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	record, err := resp.GetRecord(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, len(record.TokenTransfers), 1)
 	assert.Equal(t, len(record.AssessedCustomFees), 0)
@@ -283,31 +285,31 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		SetAccountID(accountID).
 		SetAmount(10).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -318,10 +320,10 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -340,10 +342,10 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 	metaData := [][]byte{{50}, {50}}
@@ -353,48 +355,48 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		SetTokenID(tokenID).
 		SetMetadatas(metaData).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	mintReceipt, err := mint.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	transaction, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenIDs(tokenID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = transaction.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[0]), env.OperatorID, accountID).
 		AddNftTransfer(tokenID.Nft(mintReceipt.SerialNumbers[1]), env.OperatorID, accountID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	record, err := resp.GetRecord(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, len(record.NftTransfers), 1)
 
@@ -404,22 +406,22 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		SetAccountID(accountID).
 		SetSerialNumbers(mintReceipt.SerialNumbers).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

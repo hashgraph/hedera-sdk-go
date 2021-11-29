@@ -123,6 +123,11 @@ func _Execute(
 
 		node._InUse()
 
+		if !node._IsHealthy() {
+			delay := node._Wait()
+			time.Sleep(delay)
+		}
+
 		channel, err := node._GetChannel()
 		if err != nil {
 			node._IncreaseDelay()
@@ -135,10 +140,6 @@ func _Execute(
 
 		resp := _Response{}
 
-		if !node._IsHealthy() {
-			node._Wait()
-		}
-
 		if method.query != nil {
 			resp.query, err = method.query(context.TODO(), protoRequest.query)
 		} else {
@@ -150,6 +151,9 @@ func _Execute(
 			if _ExecutableDefaultRetryHandler(err) {
 				node._IncreaseDelay()
 				continue
+			}
+			if errPersistent == nil {
+				errPersistent = errors.New("error")
 			}
 			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
@@ -168,6 +172,10 @@ func _Execute(
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
+	}
+
+	if errPersistent == nil {
+		errPersistent = errors.New("error")
 	}
 
 	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)

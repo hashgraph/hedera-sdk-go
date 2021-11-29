@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
@@ -25,10 +27,10 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -38,7 +40,7 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 		SetTokenID(tokenID).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, info.TokenID, tokenID)
 	assert.Equal(t, info.Name, "ffff")
@@ -59,7 +61,7 @@ func TestIntegrationTokenInfoQueryCanExecute(t *testing.T) {
 	assert.False(t, *info.DefaultKycStatus)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
@@ -79,10 +81,10 @@ func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -92,13 +94,13 @@ func TestIntegrationTokenInfoQueryGetCost(t *testing.T) {
 		SetTokenID(tokenID)
 
 	cost, err := infoQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
@@ -118,10 +120,10 @@ func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -131,13 +133,13 @@ func TestIntegrationTokenInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetTokenID(tokenID)
 
 	cost, err := infoQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = infoQuery.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
@@ -157,10 +159,10 @@ func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -170,7 +172,7 @@ func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetTokenID(tokenID)
 
 	cost, err := infoQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = infoQuery.Execute(env.Client)
 	if err != nil {
@@ -178,7 +180,7 @@ func TestIntegrationTokenInfoQuerySetSmallMaxPayment(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
@@ -198,10 +200,10 @@ func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -211,7 +213,7 @@ func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 		SetTokenID(tokenID)
 
 	_, err = infoQuery.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = infoQuery.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
@@ -219,7 +221,7 @@ func TestIntegrationTokenInfoQueryInsufficientCost(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
@@ -237,10 +239,10 @@ func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 		SetKycKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -249,7 +251,7 @@ func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 		SetQueryPayment(NewHbar(1)).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, info.TokenID, tokenID)
 	assert.Equal(t, info.Name, "ffff")
@@ -260,7 +262,7 @@ func TestIntegrationTokenInfoQueryNoPayment(t *testing.T) {
 	assert.False(t, *info.DefaultKycStatus)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
@@ -276,5 +278,5 @@ func TestIntegrationTokenInfoQueryNoTokenID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

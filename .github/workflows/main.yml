@@ -75,4 +75,4 @@ jobs:
           cd hedera-services
           docker-compose up &
           cd ../hedera-sdk-go
-          go test -v -timeout 9999s -run TestIntegration
+          go test -tags="e2e" -v -timeout 9999s

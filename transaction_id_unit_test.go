@@ -5,7 +5,7 @@ package hedera
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTransactionID(t *testing.T) {
@@ -15,5 +15,5 @@ func TestUnitTransactionID(t *testing.T) {
 
 func TestUnitTransactionIDFromString(t *testing.T) {
 	_, err := TransactionIdFromString("0.0.3@1614997926.774912965?scheduled")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

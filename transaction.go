@@ -435,7 +435,8 @@ func _TransactionMapStatusError(
 ) error {
 	return ErrHederaPreCheckStatus{
 		Status: Status(response.transaction.NodeTransactionPrecheckCode),
-		TxID:   request.transaction.GetTransactionID(),
+		//NodeID: request.transaction.nodeAccountIDs,
+		TxID: request.transaction.GetTransactionID(),
 	}
 }
 

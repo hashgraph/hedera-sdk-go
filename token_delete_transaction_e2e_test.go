@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTokenDeleteTransactionCanExecute(t *testing.T) {
@@ -26,20 +28,20 @@ func TestIntegrationTokenDeleteTransactionCanExecute(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenDeleteTransactionNoKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenCreate, err := NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -51,22 +53,22 @@ func TestIntegrationTokenDeleteTransactionNoKeys(t *testing.T) {
 		SetAdminKey(env.OperatorKey.PublicKey()).
 		SetFreezeDefault(false).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenCreate, err = tokenCreate.
 		SignWithOperator(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := tokenCreate.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, receipt.TokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenDeleteTransactionNoTokenID(t *testing.T) {
@@ -81,5 +83,5 @@ func TestIntegrationTokenDeleteTransactionNoTokenID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

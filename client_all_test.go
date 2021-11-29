@@ -39,4 +39,3 @@ const testClientJSONWrongTypeNetwork string = `{
     },
  	"mirrorNetwork": ["hcs.testnet.mirrornode.hedera.com:5600"]
 }`
-

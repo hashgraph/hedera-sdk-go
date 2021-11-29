@@ -6,31 +6,33 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTokenRevokeKycTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenRevokeKyc := NewTokenRevokeKycTransaction().
 		SetAccountID(accountID).
 		SetTokenID(tokenID)
 
 	err = tokenRevokeKyc._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitTokenRevokeKycTransactionValidateWrong(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	accountID, err := AccountIDFromString("0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tokenID, err := TokenIDFromString("0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenRevokeKyc := NewTokenRevokeKycTransaction().
 		SetAccountID(accountID).

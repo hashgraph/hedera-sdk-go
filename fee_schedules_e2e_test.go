@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func DisabledTestIntegrationFeeSchedulesFromBytes(t *testing.T) { // nolint
@@ -14,16 +16,16 @@ func DisabledTestIntegrationFeeSchedulesFromBytes(t *testing.T) { // nolint
 	feeSchedulesBytes, err := NewFileContentsQuery().
 		SetFileID(FileID{Shard: 0, Realm: 0, File: 111}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	feeSchedules, err := FeeSchedulesFromBytes(feeSchedulesBytes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, feeSchedules)
 	assert.Equal(t, feeSchedules.current.TransactionFeeSchedules[0].FeeData.NodeData.Constant, int64(4498129603))
 	assert.Equal(t, feeSchedules.current.TransactionFeeSchedules[0].FeeData.ServiceData.Constant, int64(71970073651))
 	assert.Equal(t, feeSchedules.current.TransactionFeeSchedules[0].RequestType, RequestTypeCryptoCreate)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
@@ -32,9 +34,9 @@ func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
 	nodeAddressBookBytes, err := NewFileContentsQuery().
 		SetFileID(FileID{Shard: 0, Realm: 0, File: 101}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	nodeAddressbook, err := _NodeAddressBookFromBytes(nodeAddressBookBytes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, nodeAddressbook)
 
 	for _, ad := range nodeAddressbook.nodeAddresses {
@@ -43,5 +45,5 @@ func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

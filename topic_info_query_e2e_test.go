@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 const topicMemo = "go-sdk::topic memo"
@@ -18,10 +20,10 @@ func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := txID.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -31,7 +33,7 @@ func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 		SetTopicID(topicID).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, info)
 
 	assert.Equal(t, topicMemo, info.TopicMemo)
@@ -42,10 +44,10 @@ func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
@@ -56,10 +58,10 @@ func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -69,19 +71,19 @@ func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 		SetTopicID(topicID)
 
 	cost, err := topicInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = topicInfo.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewTopicDeleteTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
@@ -92,10 +94,10 @@ func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -105,19 +107,19 @@ func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetTopicID(topicID)
 
 	cost, err := topicInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = topicInfo.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewTopicDeleteTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
@@ -128,10 +130,10 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -142,7 +144,7 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetTopicID(topicID)
 
 	cost, err := topicInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = topicInfo.Execute(env.Client)
 	assert.Error(t, err)
@@ -154,10 +156,10 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
@@ -168,10 +170,10 @@ func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -182,7 +184,7 @@ func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 		SetTopicID(topicID)
 
 	_, err = topicInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = topicInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
@@ -193,10 +195,10 @@ func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
@@ -224,10 +226,10 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 		SetSubmitKey(thresholdKey).
 		SetTopicMemo(topicMemo).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := txID.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -237,7 +239,7 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 		SetTopicID(topicID).
 		SetMaxQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, info)
 
 	assert.Equal(t, topicMemo, info.TopicMemo)
@@ -249,10 +251,10 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicInfoQueryNoTopicID(t *testing.T) {
@@ -268,5 +270,5 @@ func TestIntegrationTopicInfoQueryNoTopicID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

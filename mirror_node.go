@@ -31,6 +31,18 @@ func (node *_MirrorNode) _SetMinBackoff(waitTime int64) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
+func (node *_MirrorNode) _GetMinBackoff() int64 {
+	return node._ManagedNode._GetMinBackoff()
+}
+
+func (node *_MirrorNode) _SetMaxBackoff(waitTime int64) {
+	node._ManagedNode._SetMaxBackoff(waitTime)
+}
+
+func (node *_MirrorNode) _GetMaxBackoff() int64 {
+	return node._ManagedNode._GetMaxBackoff()
+}
+
 func (node *_MirrorNode) _InUse() {
 	node._ManagedNode._InUse()
 }
@@ -47,8 +59,8 @@ func (node *_MirrorNode) _DecreaseDelay() {
 	node._ManagedNode._DecreaseDelay()
 }
 
-func (node *_MirrorNode) _Wait() {
-	node._ManagedNode._Wait()
+func (node *_MirrorNode) _Wait() time.Duration {
+	return node._ManagedNode._Wait()
 }
 
 func (node *_MirrorNode) _GetUseCount() int64 {

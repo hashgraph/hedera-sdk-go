@@ -5,7 +5,7 @@ package hedera
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationPreviewnetTls(t *testing.T) {
@@ -27,7 +27,7 @@ func TestIntegrationPreviewnetTls(t *testing.T) {
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
 			SetAccountID(nodeAccountID).
 			Execute(client)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 }
 
@@ -50,6 +50,6 @@ func TestIntegrationTestnetTls(t *testing.T) {
 			SetNodeAccountIDs([]AccountID{nodeAccountID}).
 			SetAccountID(nodeAccountID).
 			Execute(client)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 }

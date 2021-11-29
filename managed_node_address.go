@@ -70,6 +70,16 @@ func (address *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
 	}
 }
 
+func (address *_ManagedNodeAddress) _Equals(comp _ManagedNodeAddress) bool { //nolint
+	if address.address != nil && address.address == comp.address {
+		if address.port == comp.port {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (address *_ManagedNodeAddress) _String() string {
 	if address.address != nil {
 		return *address.address + ":" + strconv.FormatInt(int64(address.port), 10)

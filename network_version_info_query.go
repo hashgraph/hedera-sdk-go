@@ -40,7 +40,9 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
-	pb := proto.Query_NetworkGetVersionInfo{}
+	pb := proto.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{},
+	}
 	pb.NetworkGetVersionInfo.Header = query.pbHeader
 
 	query.pb = &proto.Query{
@@ -140,7 +142,9 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		return NetworkVersionInfo{}, err
 	}
 
-	pb := proto.Query_NetworkGetVersionInfo{}
+	pb := proto.Query_NetworkGetVersionInfo{
+		NetworkGetVersionInfo: &proto.NetworkGetVersionInfoQuery{},
+	}
 	pb.NetworkGetVersionInfo.Header = query.pbHeader
 
 	query.pb = &proto.Query{

@@ -6,13 +6,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
@@ -22,13 +24,13 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -36,7 +38,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
 	assert.Equal(t, false, info.IsDeleted)
@@ -49,25 +51,25 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
@@ -77,13 +79,13 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 		SetInitialBalance(newBalance).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -91,10 +93,10 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := accountInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := accountInfo.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
 	assert.Equal(t, false, info.IsDeleted)
@@ -107,25 +109,25 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
@@ -135,13 +137,13 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -149,7 +151,7 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	_, err = accountInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = accountInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	if err != nil {
@@ -162,25 +164,25 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
@@ -190,13 +192,13 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -204,10 +206,10 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	_, err = accountInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := accountInfo.SetQueryPayment(NewHbar(1)).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
 	assert.Equal(t, false, info.IsDeleted)
@@ -220,25 +222,25 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
@@ -248,13 +250,13 @@ func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountInfo := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -262,7 +264,7 @@ func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
 	cost, err := accountInfo.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = accountInfo.Execute(env.Client)
 	if err != nil {
@@ -275,18 +277,18 @@ func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
@@ -301,5 +303,5 @@ func TestIntegrationAccountInfoQueryNoAccountID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

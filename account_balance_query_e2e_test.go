@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
@@ -15,16 +17,16 @@ func TestIntegrationAccountBalanceQueryCanExecute(t *testing.T) {
 		SetAccountID(env.OriginalOperatorID).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewAccountBalanceQuery().
 		SetAccountID(env.OperatorID).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
@@ -45,10 +47,10 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := receipt.TokenID
 
@@ -56,13 +58,13 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(env.Client.GetOperatorAccountID()).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, balance.Tokens.Get(*tokenID), uint64(1000000))
 	assert.Equal(t, balance.TokenDecimals.Get(*tokenID), uint64(3))
 
 	err = CloseIntegrationTestEnv(env, tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
@@ -73,14 +75,14 @@ func TestIntegrationAccountBalanceQueryGetCost(t *testing.T) {
 		SetAccountID(env.Client.GetOperatorAccountID())
 
 	cost, err := balance.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = balance.SetMaxQueryPayment(cost).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
@@ -92,13 +94,13 @@ func TestIntegrationAccountBalanceQuerySetBigMaxPayment(t *testing.T) {
 		SetAccountID(env.Client.GetOperatorAccountID())
 
 	cost, err := balance.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = balance.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
@@ -110,13 +112,13 @@ func TestIntegrationAccountBalanceQuerySetSmallMaxPayment(t *testing.T) {
 		SetAccountID(env.Client.GetOperatorAccountID())
 
 	_, err := balance.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = balance.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
@@ -129,13 +131,13 @@ func TestIntegrationAccountBalanceQueryCanSetQueryPayment(t *testing.T) {
 		SetAccountID(env.OperatorID)
 
 	cost, err := balance.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = balance.SetQueryPayment(cost).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T) {
@@ -148,13 +150,13 @@ func TestIntegrationAccountBalanceQueryCostCanSetPaymentOneTinybar(t *testing.T)
 		SetAccountID(env.Client.GetOperatorAccountID())
 
 	_, err := balance.GetCost(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = balance.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
@@ -167,5 +169,5 @@ func TestIntegrationAccountBalanceQueryNoAccountIDError(t *testing.T) {
 	assert.True(t, err.Error() == "exceptional precheck status INVALID_ACCOUNT_ID")
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

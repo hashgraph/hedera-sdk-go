@@ -6,13 +6,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -23,38 +25,38 @@ func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err = tx.SignWithOperator(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := tx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetRecord(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	key, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(key).
 		SetInitialBalance(NewHbar(2)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -63,7 +65,7 @@ func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 		AddHbarTransfer(env.Client.GetOperatorAccountID(), NewHbar(1))
 
 	scheduleTx, err := tx.Schedule()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	scheduleTx = scheduleTx.
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -72,10 +74,10 @@ func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 		SetTransactionID(TransactionIDGenerate(env.Client.GetOperatorAccountID()))
 
 	resp, err = scheduleTx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	scheduleID := *receipt.ScheduleID
 
@@ -83,10 +85,10 @@ func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetScheduleID(scheduleID).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = scheduleSignTx.Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -99,5 +101,5 @@ func TestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

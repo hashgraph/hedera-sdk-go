@@ -6,26 +6,28 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTokenNftGetInfoByNftIDValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	nftID, err := NftIDFromString("2@0.0.123-rmkyk")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	nftInfo := NewTokenNftInfoQuery().
 		SetNftID(nftID)
 
 	err = nftInfo._ValidateNetworkOnIDs(client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
 	nftID, err := NftIDFromString("2@0.0.123-rmkykd")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	nftInfo := NewTokenNftInfoQuery().
 		SetNftID(nftID)

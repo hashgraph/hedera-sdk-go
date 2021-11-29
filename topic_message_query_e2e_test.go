@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 // nolint
@@ -67,10 +69,10 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -88,17 +90,17 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 		Subscribe(env.Client, func(message TopicMessage) {
 			// Do nothing
 		})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for {
 		if finished || uint64(time.Since(start).Seconds()) > 60 {
@@ -112,18 +114,18 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	if !finished {
 		err = errors.New("Message was not received within 30 seconds")
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
@@ -134,10 +136,10 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -153,13 +155,13 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 				wait = false
 			}
 		})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -179,10 +181,10 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	if wait {
 		err = errors.New("Message was not received within 30 seconds")
@@ -190,7 +192,7 @@ func TestIntegrationTopicMessageQueryNoTopicID(t *testing.T) {
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
@@ -201,10 +203,10 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -220,7 +222,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 				wait = false
 			}
 		})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -243,10 +245,10 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	if wait {
 		err = errors.New("Message was not received within 30 seconds")
@@ -254,7 +256,7 @@ func TestIntegrationTopicMessageQueryNoMessage(t *testing.T) {
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
@@ -265,10 +267,10 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
@@ -283,17 +285,17 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 				wait = false
 			}
 		})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).
 		SetTopicID(topicID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for {
 		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
@@ -307,10 +309,10 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 		SetTopicID(topicID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	if wait {
 		err = errors.New("Message was not received within 30 seconds")
@@ -318,5 +320,5 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	assert.Error(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

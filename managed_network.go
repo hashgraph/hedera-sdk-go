@@ -1,16 +1,19 @@
 package hedera
 
 import (
+	"crypto/rand"
 	"math"
+	"math/big"
 	"sort"
 	"time"
 )
 
 type _ManagedNetwork struct {
-	network                map[string]_IManagedNode
+	network                map[string][]_IManagedNode
 	nodes                  []_IManagedNode
 	maxNodeAttempts        int
-	nodeWaitTime           time.Duration
+	minBackOff             time.Duration
+	maxBackOff             time.Duration
 	maxNodesPerTransaction *int
 	networkName            *NetworkName
 	transportSecurity      bool
@@ -19,40 +22,49 @@ type _ManagedNetwork struct {
 
 func _NewManagedNetwork() _ManagedNetwork {
 	return _ManagedNetwork{
-		network:                make(map[string]_IManagedNode),
+		network:                make(map[string][]_IManagedNode),
 		nodes:                  make([]_IManagedNode, 0),
 		maxNodeAttempts:        -1,
-		nodeWaitTime:           250 * time.Millisecond,
+		minBackOff:             250 * time.Millisecond,
+		maxBackOff:             8 * time.Second,
 		maxNodesPerTransaction: nil,
+		networkName:            nil,
 		transportSecurity:      false,
+		verifyCertificate:      false,
 	}
 }
 
 func (network *_ManagedNetwork) _SetNetwork(net map[string]_IManagedNode) error {
-	if len(network.nodes) == 0 {
-		for url, originalNode := range net {
-			network.nodes = append(network.nodes, originalNode)
-			network.network[url] = originalNode
-		}
+	for _, index := range network._GetNodesToRemove(net) {
+		node := network.nodes[index]
 
-		return nil
-	}
-
-	for url, node := range network._GetNodesToRemove(net) {
-		for i, n := range network.nodes {
-			if n._GetAddress() == node._GetAddress() {
-				network.nodes = append(network.nodes[:i], network.nodes[i+1:]...)
-			}
-		}
+		network._RemoveNodeFromNetwork(node)
 		_ = node._Close()
-		delete(network.network, url)
+		network.nodes = append(network.nodes[:index], network.nodes[index+1:]...)
 	}
 
 	for url, originalNode := range net {
-		if !network._CheckNetworkContainsEntry(originalNode) {
-			network.nodes = append(network.nodes, originalNode)
-			network.network[url] = originalNode
+		switch n := originalNode.(type) {
+		case *_Node:
+			nodesForKey := network._GetNodesForKey(n.accountID.String())
+			if !_AddressIsInNodeList(url, *nodesForKey) {
+				*nodesForKey = append(*nodesForKey, n)
+				network.nodes = append(network.nodes, n)
+				network.network[n.accountID.String()] = *nodesForKey
+			}
+		case *_MirrorNode:
+			nodesForKey := network._GetNodesForKey(url)
+			if !_AddressIsInNodeList(url, *nodesForKey) {
+				*nodesForKey = append(*nodesForKey, n)
+				network.nodes = append(network.nodes, n)
+				network.network[url] = *nodesForKey
+			}
 		}
+	}
+
+	for i := range network.nodes {
+		j, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		network.nodes[i], network.nodes[j.Int64()] = network.nodes[j.Int64()], network.nodes[i]
 	}
 
 	return nil
@@ -60,10 +72,10 @@ func (network *_ManagedNetwork) _SetNetwork(net map[string]_IManagedNode) error 
 
 func (network *_ManagedNetwork) _GetNumberOfNodesForTransaction() int {
 	if network.maxNodesPerTransaction != nil {
-		return int(math.Min(float64(*network.maxNodesPerTransaction), float64(len(network.nodes))))
+		return int(math.Min(float64(*network.maxNodesPerTransaction), float64(len(network.network))))
 	}
 
-	return (len(network.nodes) + 3 - 1) / 3
+	return (len(network.network) + 3 - 1) / 3
 }
 
 func (network *_ManagedNetwork) _SetMaxNodesPerTransaction(max int) {
@@ -78,8 +90,8 @@ func (network *_ManagedNetwork) _GetMaxNodeAttempts() int {
 	return network.maxNodeAttempts
 }
 
-func (network *_ManagedNetwork) _SetNodeWaitTime(waitTime time.Duration) {
-	network.nodeWaitTime = waitTime
+func (network *_ManagedNetwork) _SetMinBackoff(waitTime time.Duration) {
+	network.minBackOff = waitTime
 	for _, nod := range network.nodes {
 		if nod != nil {
 			nod._SetMinBackoff(waitTime.Milliseconds())
@@ -87,8 +99,21 @@ func (network *_ManagedNetwork) _SetNodeWaitTime(waitTime time.Duration) {
 	}
 }
 
-func (network *_ManagedNetwork) _GetNodeWaitTime() time.Duration {
-	return network.nodeWaitTime
+func (network *_ManagedNetwork) _GetMinBackoff() time.Duration {
+	return network.minBackOff
+}
+
+func (network *_ManagedNetwork) _SetMaxBackoff(waitTime time.Duration) {
+	network.maxBackOff = waitTime
+	for _, nod := range network.nodes {
+		if nod != nil {
+			nod._SetMaxBackoff(waitTime.Milliseconds())
+		}
+	}
+}
+
+func (network *_ManagedNetwork) _GetMaxBackoff() time.Duration {
+	return network.maxBackOff
 }
 
 func (network *_ManagedNetwork) _GetNetworkName() *NetworkName {
@@ -115,7 +140,6 @@ func (network *_ManagedNetwork) _Close() error {
 func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 	if network.transportSecurity != transportSecurity {
 		_ = network._Close()
-		network.network = make(map[string]_IManagedNode)
 
 		for i, node := range network.nodes {
 			if transportSecurity {
@@ -124,11 +148,31 @@ func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 				node = node._ToInsecure()
 			}
 			network.nodes[i] = node
-			switch n := node.(type) {
-			case *_Node:
-				network.network[n.accountID.String()] = n._ToSecure()
-			case *_MirrorNode:
-				network.network[n._GetAddress()] = n
+		}
+
+		for id := range network.network {
+			nodesForKey := network._GetNodesForKey(id)
+			tempArr := make([]_IManagedNode, 0)
+			if transportSecurity {
+				for _, tempNode := range *nodesForKey {
+					temp := tempNode._ToSecure()
+					tempArr = append(tempArr, temp)
+				}
+				switch n := tempArr[0].(type) {
+				case *_Node:
+					network.network[n.accountID.String()] = tempArr
+				case *_MirrorNode:
+					delete(network.network, id)
+					network.network[n._GetAddress()] = tempArr
+				}
+			} else {
+				switch n := tempArr[0].(type) {
+				case *_Node:
+					network.network[n.accountID.String()] = tempArr
+				case *_MirrorNode:
+					delete(network.network, id)
+					network.network[n._GetAddress()] = tempArr
+				}
 			}
 		}
 	}
@@ -139,6 +183,9 @@ func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 func (network *_ManagedNetwork) _GetNumberOfMostHealthyNodes(count int32) []_IManagedNode {
 	sort.Sort(_Nodes{nodes: network.nodes})
 	err := network._RemoveDeadNodes()
+	for _, n := range network.network {
+		sort.Sort(_Nodes{nodes: n})
+	}
 	if err != nil {
 		return []_IManagedNode{}
 	}
@@ -178,15 +225,33 @@ func (network *_ManagedNetwork) _RemoveDeadNodes() error {
 func (network *_ManagedNetwork) _RemoveNodeFromNetwork(node _IManagedNode) {
 	switch n := node.(type) {
 	case *_Node:
-		delete(network.network, n.accountID.String())
+		current := network.network[n.accountID.String()]
+		if len(current) == 0 {
+			delete(network.network, n.accountID.String())
+			return
+		}
+		index := -1
+		for i, n2 := range current {
+			if n._GetAddress() == n2._GetAddress() {
+				index = i
+			}
+		}
+		if index != -1 {
+			current = append(current[:index], current[index+1:]...)
+		}
+		if len(current) == 0 {
+			delete(network.network, n.accountID.String())
+			return
+		}
+		network.network[n.accountID.String()] = current
 	case *_MirrorNode:
 		delete(network.network, n._GetAddress())
 	}
 }
 
-func (network *_ManagedNetwork) _CheckNetworkContainsEntry(node _IManagedNode) bool {
-	for _, n := range network.network {
-		if n._GetAddress() == node._GetAddress() {
+func _AddressIsInNodeList(addressString string, nodeArray []_IManagedNode) bool {
+	for _, node := range nodeArray {
+		if node._GetManagedNode()._GetAddress() == addressString {
 			return true
 		}
 	}
@@ -194,23 +259,67 @@ func (network *_ManagedNetwork) _CheckNetworkContainsEntry(node _IManagedNode) b
 	return false
 }
 
-func (network *_ManagedNetwork) _GetNodesToRemove(net map[string]_IManagedNode) map[string]_IManagedNode {
-	nodes := make(map[string]_IManagedNode)
-
-	var b bool
-	for url, node := range network.network {
-		b = false
-		for _, n := range net {
-			if n._GetAddress() == node._GetAddress() {
-				b = true
+func (network *_ManagedNetwork) _CheckNetworkContainsEntry(node _IManagedNode) bool { //nolint
+	for _, n := range network.network {
+		for _, nod := range n {
+			if nod._GetAddress() == node._GetAddress() {
+				return true
 			}
 		}
-		if !b {
-			nodes[url] = node
+	}
+
+	return false
+}
+
+func (network *_ManagedNetwork) _GetNodesForKey(key string) *[]_IManagedNode {
+	if len(network.network[key]) > 0 {
+		temp := network.network[key]
+		return &temp
+	}
+
+	temp := make([]_IManagedNode, 0)
+	network.network[key] = temp
+	return &temp
+}
+
+func (network *_ManagedNetwork) _GetNodesToRemove(net map[string]_IManagedNode) []int {
+	nodes := make([]int, 0)
+
+	for i := len(network.nodes) - 1; i >= 0; i-- {
+		node := network.nodes[i]
+
+		if !_NodeIsInGivenNetwork(node, net) {
+			nodes = append(nodes, i)
 		}
 	}
 
 	return nodes
+}
+
+func _NodeIsInGivenNetwork(node _IManagedNode, givenNetwork map[string]_IManagedNode) bool {
+	switch nodeType := node.(type) {
+	case *_Node:
+		for _, n := range givenNetwork {
+			switch n1 := n.(type) { //nolint
+			case *_Node:
+				if nodeType.accountID.String() == n1.accountID.String() &&
+					nodeType.address._String() == n1._GetAddress() {
+					return true
+				}
+			}
+		}
+	case *_MirrorNode:
+		for _, n := range givenNetwork {
+			switch n1 := n.(type) { //nolint
+			case *_MirrorNode:
+				if nodeType.address._String() == n1._GetAddress() {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 func (network *_ManagedNetwork) _SetVerifyCertificate(verify bool) *_ManagedNetwork {

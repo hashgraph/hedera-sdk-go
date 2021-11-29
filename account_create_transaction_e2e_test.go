@@ -4,18 +4,19 @@ package hedera
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -28,10 +29,10 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 		SetMaxAutomaticTokenAssociations(100).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -41,25 +42,25 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(1)
 
@@ -72,10 +73,10 @@ func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -86,7 +87,7 @@ func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 		SetMaxTransactionFee(NewHbar(1)).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx = tx.SetAccountID(accountID)
 
@@ -99,7 +100,7 @@ func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
@@ -114,57 +115,57 @@ func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(*receipt.AccountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	updateBytes, err := tx.ToBytes()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	sig1, err := newKey.SignTransaction(&tx.Transaction)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tx2, err := TransactionFromBytes(updateBytes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	if newTx, ok := tx2.(AccountDeleteTransaction); ok {
 		resp, err = newTx.AddSignature(newKey.PublicKey(), sig1).Execute(env.Client)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -176,10 +177,10 @@ func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
@@ -190,17 +191,17 @@ func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 		SetProxyAccountID(accountID).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID2 := *receipt.AccountID
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID2).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, accountID.String(), info.ProxyAccountID.String())
 
@@ -210,25 +211,25 @@ func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
 		FreezeWith(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
 
@@ -240,18 +241,18 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 	env.Client.SetAutoValidateChecksums(true)
 
 	accountIDString, err := accountID.ToStringWithChecksum(ClientForMainnet())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	accountID, err = AccountIDFromString(accountIDString)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = NewAccountDeleteTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -264,7 +265,7 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	env.Client.SetAutoValidateChecksums(false)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionBad(t *testing.T) {
@@ -280,11 +281,6 @@ func TestIntegrationAccountCreateTransactionBad(t *testing.T) {
 	require.NoError(t, err)
 
 	client.SetOperator(operatorAccountID, operatorKey)
-
-	net := client.GetNetwork()
-	for i, k := range net {
-		println(i, k.String())
-	}
 
 	newKey, err := GeneratePrivateKey()
 	require.NoError(t, err)

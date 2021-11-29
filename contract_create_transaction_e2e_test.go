@@ -4,6 +4,7 @@ package hedera
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"testing"
 )
@@ -20,10 +21,10 @@ func TestIntegrationContractCreateTransactionCanExecute(t *testing.T) {
 		SetContents(testContractByteCode).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -36,10 +37,10 @@ func TestIntegrationContractCreateTransactionCanExecute(t *testing.T) {
 		SetBytecodeFileID(fileID).
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -48,22 +49,22 @@ func TestIntegrationContractCreateTransactionCanExecute(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
@@ -78,10 +79,10 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 		SetContents(testContractByteCode).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -91,10 +92,10 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 		SetGas(75000).
 		SetBytecodeFileID(fileID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
 	contractID := *receipt.ContractID
@@ -104,7 +105,7 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 		SetContractID(contractID).
 		SetQueryPayment(NewHbar(1)).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, info.ContractID, contractID)
 	assert.NotNil(t, info.AccountID)
@@ -116,7 +117,7 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -128,13 +129,13 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractCreateTransactionNoGas(t *testing.T) {
@@ -149,10 +150,10 @@ func TestIntegrationContractCreateTransactionNoGas(t *testing.T) {
 		SetContents(testContractByteCode).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -162,7 +163,7 @@ func TestIntegrationContractCreateTransactionNoGas(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetBytecodeFileID(fileID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -174,13 +175,13 @@ func TestIntegrationContractCreateTransactionNoGas(t *testing.T) {
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationContractCreateTransactionNoBytecodeFileID(t *testing.T) {
@@ -195,10 +196,10 @@ func TestIntegrationContractCreateTransactionNoBytecodeFileID(t *testing.T) {
 		SetContents(testContractByteCode).
 		Execute(env.Client)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
@@ -208,7 +209,7 @@ func TestIntegrationContractCreateTransactionNoBytecodeFileID(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetGas(75000).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -220,11 +221,11 @@ func TestIntegrationContractCreateTransactionNoBytecodeFileID(t *testing.T) {
 		SetFileID(fileID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

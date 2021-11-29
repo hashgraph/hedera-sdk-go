@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTokenIDFromString(t *testing.T) {
@@ -16,6 +18,6 @@ func TestUnitTokenIDFromString(t *testing.T) {
 	}
 
 	gotTokID, err := TokenIDFromString(tokID.String())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, tokID.Token, gotTokID.Token)
 }

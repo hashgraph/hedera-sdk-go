@@ -6,26 +6,28 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 	transaction, err := _NewMockTransaction()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = transaction.Freeze()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = transaction.GetSignatures()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = transaction.GetTransactionHash()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	txBytes, err := transaction.ToBytes()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	deserializedTX, err := TransactionFromBytes(txBytes)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var deserializedTXTyped TransferTransaction
 	switch tx := deserializedTX.(type) {

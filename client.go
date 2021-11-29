@@ -41,40 +41,150 @@ type _Operator struct {
 }
 
 var mainnetNodes = map[string]AccountID{
-	"35.237.200.180:50211": {Account: 3},
-	"35.186.191.247:50211": {Account: 4},
-	"35.192.2.25:50211":    {Account: 5},
-	"35.199.161.108:50211": {Account: 6},
-	"35.203.82.240:50211":  {Account: 7},
-	"35.236.5.219:50211":   {Account: 8},
-	"35.197.192.225:50211": {Account: 9},
-	"35.242.233.154:50211": {Account: 10},
-	"35.240.118.96:50211":  {Account: 11},
-	"35.204.86.32:50211":   {Account: 12},
-	"35.234.132.107:50211": {Account: 13},
-	"35.236.2.27:50211":    {Account: 14},
-	"35.228.11.53:50211":   {Account: 15},
-	"34.91.181.183:50211":  {Account: 16},
-	"34.86.212.247:50211":  {Account: 17},
-	"172.105.247.67:50211": {Account: 18},
-	"34.89.87.138:50211":   {Account: 19},
-	"34.82.78.255:50211":   {Account: 20},
+	"35.237.200.180:50211":  {Account: 3},
+	"34.239.82.6:50211":     {Account: 3},
+	"13.82.40.153:50211":    {Account: 3},
+	"13.124.142.126:50211":  {Account: 3},
+	"15.164.44.66:50211":    {Account: 3},
+	"15.165.118.251:50211":  {Account: 3},
+	"35.186.191.247:50211":  {Account: 4},
+	"3.130.52.236:50211":    {Account: 4},
+	"137.116.36.18:50211":   {Account: 4},
+	"35.192.2.25:50211":     {Account: 5},
+	"3.18.18.254:50211":     {Account: 5},
+	"104.43.194.202:50211":  {Account: 5},
+	"23.111.186.250:50211":  {Account: 5},
+	"74.50.117.35:50211":    {Account: 5},
+	"107.155.64.98:50211":   {Account: 5},
+	"35.199.161.108:50211":  {Account: 6},
+	"13.52.108.243:50211":   {Account: 6},
+	"13.64.151.232:50211":   {Account: 6},
+	"13.235.15.32:50211":    {Account: 6},
+	"104.211.205.124:50211": {Account: 6},
+	"13.71.90.154:50211":    {Account: 6},
+	"35.203.82.240:50211":   {Account: 7},
+	"3.114.54.4:50211":      {Account: 7},
+	"23.102.74.34:50211":    {Account: 7},
+	"35.236.5.219:50211":    {Account: 8},
+	"35.183.66.150:50211":   {Account: 8},
+	"23.96.185.18:50211":    {Account: 8},
+	"35.197.192.225:50211":  {Account: 9},
+	"35.181.158.250:50211":  {Account: 9},
+	"23.97.237.125:50211":   {Account: 9},
+	"31.214.8.131:50211":    {Account: 9},
+	"35.242.233.154:50211":  {Account: 10},
+	"3.248.27.48:50211":     {Account: 10},
+	"65.52.68.254:50211":    {Account: 10},
+	"179.190.33.184:50211":  {Account: 10},
+	"35.240.118.96:50211":   {Account: 11},
+	"13.53.119.185:50211":   {Account: 11},
+	"23.97.247.27:50211":    {Account: 11},
+	"69.87.222.61:50211":    {Account: 11},
+	"96.126.72.172:50211":   {Account: 11},
+	"69.87.221.231:50211":   {Account: 11},
+	"35.204.86.32:50211":    {Account: 12},
+	"35.177.162.180:50211":  {Account: 12},
+	"51.140.102.228:50211":  {Account: 12},
+	"35.234.132.107:50211":  {Account: 13},
+	"34.215.192.104:50211":  {Account: 13},
+	"13.77.158.252:50211":   {Account: 13},
+	"35.236.2.27:50211":     {Account: 14},
+	"52.8.21.141:50211":     {Account: 14},
+	"40.114.107.85:50211":   {Account: 14},
+	"35.228.11.53:50211":    {Account: 15},
+	"3.121.238.26:50211":    {Account: 15},
+	"40.89.139.247:50211":   {Account: 15},
+	"34.91.181.183:50211":   {Account: 16},
+	"18.157.223.230:50211":  {Account: 16},
+	"13.69.120.73:50211":    {Account: 16},
+	"50.7.176.235:50211":    {Account: 16},
+	"198.16.99.40:50211":    {Account: 16},
+	"50.7.124.46:50211":     {Account: 16},
+	"34.86.212.247:50211":   {Account: 17},
+	"18.232.251.19:50211":   {Account: 17},
+	"40.114.92.39:50211":    {Account: 17},
+	"172.105.247.67:50211":  {Account: 18},
+	"172.104.150.132:50211": {Account: 18},
+	"139.162.156.222:50211": {Account: 18},
+	"34.89.87.138:50211":    {Account: 19},
+	"18.168.4.59:50211":     {Account: 19},
+	"51.140.43.81:50211":    {Account: 19},
+	"34.82.78.255:50211":    {Account: 20},
+	"13.77.151.212:50211":   {Account: 20},
+	"34.76.140.109:50211":   {Account: 21},
+	"13.36.123.209:50211":   {Account: 21},
+	"34.64.141.166:50211":   {Account: 22},
+	"52.78.202.34:50211":    {Account: 22},
+	"35.232.244.145:50211":  {Account: 23},
+	"3.18.91.176:50211":     {Account: 23},
+	"34.89.103.38:50211":    {Account: 24},
+	"18.135.7.211:50211":    {Account: 24},
+	"34.93.112.7:50211":     {Account: 25},
+	"13.232.240.207:50211":  {Account: 25},
+	"34.87.150.174:50211":   {Account: 25},
+	"13.228.103.14:50211":   {Account: 25},
 }
 
 var testnetNodes = map[string]AccountID{
 	"0.testnet.hedera.com:50211": {Account: 3},
+	"34.94.106.61:50211":         {Account: 3},
+	"50.18.132.211:50211":        {Account: 3},
+	"138.91.142.219:50211":       {Account: 3},
 	"1.testnet.hedera.com:50211": {Account: 4},
+	"35.237.119.55:50211":        {Account: 4},
+	"3.212.6.13:50211":           {Account: 4},
+	"52.168.76.241:50211":        {Account: 4},
 	"2.testnet.hedera.com:50211": {Account: 5},
+	"35.245.27.193:50211":        {Account: 5},
+	"52.20.18.86:50211":          {Account: 5},
+	"40.79.83.124:50211":         {Account: 5},
 	"3.testnet.hedera.com:50211": {Account: 6},
+	"34.83.112.116:50211":        {Account: 6},
+	"54.70.192.33:50211":         {Account: 6},
+	"52.183.45.65:50211":         {Account: 6},
 	"4.testnet.hedera.com:50211": {Account: 7},
+	"34.94.160.4:50211":          {Account: 7},
+	"54.176.199.109:50211":       {Account: 7},
+	"13.64.181.136:50211":        {Account: 7},
+	"5.testnet.hedera.com:50211": {Account: 8},
+	"34.106.102.218:50211":       {Account: 8},
+	"35.155.49.147:50211":        {Account: 8},
+	"13.78.238.32:50211":         {Account: 8},
+	"6.testnet.hedera.com:50211": {Account: 9},
+	"34.133.197.230:50211":       {Account: 9},
+	"52.14.252.207:50211":        {Account: 9},
+	"52.165.17.231:50211":        {Account: 9},
 }
 
 var previewnetNodes = map[string]AccountID{
 	"0.previewnet.hedera.com:50211": {Account: 3},
+	"35.231.208.148:50211":          {Account: 3},
+	"3.211.248.172:50211":           {Account: 3},
+	"40.121.64.48:50211":            {Account: 3},
 	"1.previewnet.hedera.com:50211": {Account: 4},
+	"35.199.15.177:50211":           {Account: 4},
+	"3.133.213.146:50211":           {Account: 4},
+	"40.70.11.202:50211":            {Account: 4},
 	"2.previewnet.hedera.com:50211": {Account: 5},
+	"35.225.201.195:50211":          {Account: 5},
+	"52.15.105.130:50211":           {Account: 5},
+	"104.43.248.63:50211":           {Account: 5},
 	"3.previewnet.hedera.com:50211": {Account: 6},
+	"35.247.109.135:50211":          {Account: 6},
+	"54.241.38.1:50211":             {Account: 6},
+	"13.88.22.47:50211":             {Account: 6},
 	"4.previewnet.hedera.com:50211": {Account: 7},
+	"35.235.65.51:50211":            {Account: 7},
+	"54.177.51.127:50211":           {Account: 7},
+	"13.64.170.40:50211":            {Account: 7},
+	"5.previewnet.hedera.com:50211": {Account: 8},
+	"34.106.247.65:50211":           {Account: 8},
+	"35.83.89.171:50211":            {Account: 8},
+	"13.78.232.192:50211":           {Account: 8},
+	"6.previewnet.hedera.com:50211": {Account: 9},
+	"34.125.23.49:50211":            {Account: 9},
+	"50.18.17.93:50211":             {Account: 9},
+	"20.150.136.89:50211":           {Account: 9},
 }
 
 var mainnetMirror = []string{"hcs.mainnet.mirrornode.hedera.com:5600"}
@@ -342,12 +452,30 @@ func (client *Client) GetMaxNodeAttempts() int {
 	return client.network._GetMaxNodeAttempts()
 }
 
+// Deprecated use SetNodeMinBackoff
 func (client *Client) SetNodeWaitTime(nodeWait time.Duration) {
-	client.network._SetNodeWaitTime(nodeWait)
+	client.network._SetNodeMinBackoff(nodeWait)
 }
 
+// Deprecated use GetNodeMinBackoff
 func (client *Client) GetNodeWaitTime() time.Duration {
-	return client.network._GetNodeWaitTime()
+	return client.network._GetNodeMinBackoff()
+}
+
+func (client *Client) SetNodeMinBackoff(nodeWait time.Duration) {
+	client.network._SetNodeMinBackoff(nodeWait)
+}
+
+func (client *Client) GetNodeMinBackoff() time.Duration {
+	return client.network._GetNodeMinBackoff()
+}
+
+func (client *Client) SetNodeMaxBackoff(nodeWait time.Duration) {
+	client.network._SetNodeMaxBackoff(nodeWait)
+}
+
+func (client *Client) GetNodeMaxBackoff() time.Duration {
+	return client.network._GetNodeMaxBackoff()
 }
 
 func (client *Client) SetMaxNodesPerTransaction(max int) {

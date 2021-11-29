@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 var mockPrivateKey string = "302e020100300506032b6570042204203b054fade7a2b0869c6bd4a63b7017cbae7855d12acc357bea718e2c3e805962"
@@ -58,10 +60,10 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 
 	if configOperatorID != "" && configOperatorKey != "" {
 		env.OperatorID, err = AccountIDFromString(configOperatorID)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		env.OperatorKey, err = PrivateKeyFromString(configOperatorKey)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		env.Client.SetOperator(env.OperatorID, env.OperatorKey)
 	}
@@ -70,9 +72,10 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	assert.NotNil(t, env.Client.GetOperatorPublicKey())
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	env.Client.SetMaxNodeAttempts(1)
+	env.Client.SetMaxBackoff(time.Duration(1) * time.Second)
 	env.Client.PingAll()
 
 	network := make(map[string]AccountID)
@@ -84,6 +87,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 			Execute(env.Client)
 
 		if err != nil {
+			println(err.Error())
 			continue
 		}
 

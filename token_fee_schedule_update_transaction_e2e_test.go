@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
@@ -26,10 +28,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -38,10 +40,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
 		CustomFee: CustomFee{
@@ -55,20 +57,20 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 		SetTokenID(tokenID).
 		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, len(info.CustomFees) > 0)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T) {
@@ -89,10 +91,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -101,10 +103,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customFee := CustomFractionalFee{
 		CustomFee: CustomFee{
@@ -121,20 +123,20 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 		SetTokenID(tokenID).
 		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, len(info.CustomFees) > 0)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing.T) {
@@ -154,10 +156,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -166,10 +168,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
 		CustomFee: CustomFee{
@@ -183,7 +185,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 		SetTokenID(tokenID).
 		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -192,14 +194,14 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := GeneratePrivateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err := NewTokenCreateTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
@@ -216,10 +218,10 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 		SetFeeScheduleKey(newKey.PublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -228,10 +230,10 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
 		CustomFee: CustomFee{
@@ -245,7 +247,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 		SetTokenID(tokenID).
 		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -257,11 +259,11 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 		SetTokenID(tokenID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, len(info.CustomFees) > 0)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t *testing.T) {
@@ -282,10 +284,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -294,21 +296,21 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibleCommon(t *testing.T) {
@@ -330,10 +332,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -342,10 +344,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customFee := CustomFractionalFee{
 		CustomFee: CustomFee{
@@ -362,7 +364,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 		SetTokenID(tokenID).
 		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -371,7 +373,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleCommon(t *testing.T) {
@@ -392,10 +394,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -415,10 +417,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenIDNonFungible := *receipt.TokenID
 
@@ -427,10 +429,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
 		CustomFee: CustomFee{
@@ -444,7 +446,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		SetTokenID(tokenID).
 		SetCustomFees([]Fee{customFee}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -471,10 +473,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeDefault(false).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	receipt, err := resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
@@ -483,10 +485,10 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 		SetTokenSymbol("A").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
 		CustomFee: CustomFee{
@@ -506,7 +508,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 		SetTokenID(tokenID).
 		SetCustomFees(feeArr).
 		Execute(env.Client)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
@@ -515,5 +517,5 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 	}
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
