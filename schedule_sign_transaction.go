@@ -23,8 +23,8 @@ func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	return &transaction
 }
 
-func _ScheduleSignTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleSignTransaction {
-	return ScheduleSignTransaction{
+func _ScheduleSignTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ScheduleSignTransaction {
+	return &ScheduleSignTransaction{
 		Transaction: transaction,
 		scheduleID:  _ScheduleIDFromProtobuf(pb.GetScheduleSign().GetScheduleID()),
 	}

@@ -40,10 +40,10 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	return &transaction
 }
 
-func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) AccountCreateTransaction {
+func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *AccountCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
-	return AccountCreateTransaction{
+	return &AccountCreateTransaction{
 		Transaction:               transaction,
 		proxyAccountID:            _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
 		key:                       key,

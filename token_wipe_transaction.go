@@ -40,8 +40,8 @@ func NewTokenWipeTransaction() *TokenWipeTransaction {
 	return &transaction
 }
 
-func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenWipeTransaction {
-	return TokenWipeTransaction{
+func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenWipeTransaction {
+	return &TokenWipeTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenWipe().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenWipe().GetAccount()),

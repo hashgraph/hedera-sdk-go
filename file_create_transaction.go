@@ -36,11 +36,11 @@ func NewFileCreateTransaction() *FileCreateTransaction {
 	return &transaction
 }
 
-func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileCreateTransaction {
+func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *FileCreateTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetFileCreate().GetKeys())
 	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
-	return FileCreateTransaction{
+	return &FileCreateTransaction{
 		Transaction:    transaction,
 		keys:           &keys,
 		expirationTime: &expiration,

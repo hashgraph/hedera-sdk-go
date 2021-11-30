@@ -22,13 +22,13 @@ func NewSystemDeleteTransaction() *SystemDeleteTransaction {
 	return &transaction
 }
 
-func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) SystemDeleteTransaction {
+func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *SystemDeleteTransaction {
 	expiration := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		time.Now().Hour(), time.Now().Minute(),
 		int(pb.GetSystemDelete().ExpirationTime.Seconds), time.Now().Nanosecond(), time.Now().Location(),
 	)
-	return SystemDeleteTransaction{
+	return &SystemDeleteTransaction{
 		Transaction:    transaction,
 		contractID:     _ContractIDFromProtobuf(pb.GetSystemDelete().GetContractID()),
 		fileID:         _FileIDFromProtobuf(pb.GetSystemDelete().GetFileID()),

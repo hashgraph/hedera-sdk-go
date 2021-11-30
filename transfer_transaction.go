@@ -26,7 +26,7 @@ func NewTransferTransaction() *TransferTransaction {
 	return &transaction
 }
 
-func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TransferTransaction {
+func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TransferTransaction {
 	hbarTransfers := make(map[AccountID]Hbar)
 	tokenTransfers := make(map[TokenID]map[AccountID]int64)
 	nftTransfers := make(map[TokenID][]TokenNftTransfer)
@@ -77,7 +77,7 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 		}
 	}
 
-	return TransferTransaction{
+	return &TransferTransaction{
 		Transaction:    transaction,
 		hbarTransfers:  hbarTransfers,
 		tokenTransfers: tokenTransfers,

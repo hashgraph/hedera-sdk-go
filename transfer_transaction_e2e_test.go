@@ -115,3 +115,142 @@ func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing
 		fmt.Printf("\r%v", i)
 	}
 }
+
+func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(10)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	transferTx, err := NewTransferTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		AddHbarTransfer(accountID, NewHbar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, NewHbar(1)).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	transferTx.Sign(newKey)
+
+	transferTxBytes, err := transferTx.ToBytes()
+	require.NoError(t, err)
+
+	transactionInterface, err := TransactionFromBytes(transferTxBytes)
+	require.NoError(t, err)
+
+	resp, err = TransactionExecute(transactionInterface, env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(10)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	transferTx, err := NewTransferTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		AddHbarTransfer(accountID, NewHbar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, NewHbar(1)).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	transferTxBytes, err := transferTx.ToBytes()
+	require.NoError(t, err)
+
+	transactionInterface, err := TransactionFromBytes(transferTxBytes)
+	require.NoError(t, err)
+
+	signedTx, err := TransactionSign(transactionInterface, newKey)
+	require.NoError(t, err)
+
+	resp, err = TransactionExecute(signedTx, env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(10)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	transferTx, err := NewTransferTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		AddHbarTransfer(accountID, NewHbar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, NewHbar(1)).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	transferTxBytes, err := transferTx.ToBytes()
+	require.NoError(t, err)
+
+	signature, err := newKey.SignTransaction(&transferTx.Transaction)
+
+	transactionInterface, err := TransactionFromBytes(transferTxBytes)
+	require.NoError(t, err)
+
+	signedTx, err := TransactionAddSignature(transactionInterface, newKey.PublicKey(), signature)
+	require.NoError(t, err)
+
+	resp, err = TransactionExecute(signedTx, env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}

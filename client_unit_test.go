@@ -109,8 +109,8 @@ func TestUnitClientSetMirrorNetwork(t *testing.T) {
 	client.SetMirrorNetwork(defaultNetworkWithExtraNode)
 	mirrorNetwork = client.GetMirrorNetwork()
 	assert.Equal(t, 2, len(mirrorNetwork))
-	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
-	assert.Equal(t, "hcs.testnet1.mirrornode.hedera.com:5600", mirrorNetwork[1])
+	require.True(t, contains(mirrorNetwork, "hcs.testnet.mirrornode.hedera.com:5600"))
+	require.True(t, contains(mirrorNetwork, "hcs.testnet1.mirrornode.hedera.com:5600"))
 
 	defaultNetwork = make([]string, 0)
 	defaultNetwork = append(defaultNetwork, "hcs.testnet1.mirrornode.hedera.com:5600")
@@ -134,6 +134,15 @@ func TestUnitClientSetMirrorNetwork(t *testing.T) {
 
 	err := client.Close()
 	require.NoError(t, err)
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 func TestUnitClientSetMultipleNetwork(t *testing.T) {

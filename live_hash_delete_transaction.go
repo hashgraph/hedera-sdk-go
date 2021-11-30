@@ -23,8 +23,8 @@ func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	return &transaction
 }
 
-func _LiveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) LiveHashDeleteTransaction {
-	return LiveHashDeleteTransaction{
+func _LiveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *LiveHashDeleteTransaction {
+	return &LiveHashDeleteTransaction{
 		Transaction: transaction,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
 		hash:        pb.GetCryptoDeleteLiveHash().LiveHashToDelete,

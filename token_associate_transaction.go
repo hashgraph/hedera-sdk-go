@@ -38,7 +38,7 @@ func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 	return &transaction
 }
 
-func _TokenAssociateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenAssociateTransaction {
+func _TokenAssociateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenAssociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenAssociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -46,7 +46,7 @@ func _TokenAssociateTransactionFromProtobuf(transaction Transaction, pb *service
 		}
 	}
 
-	return TokenAssociateTransaction{
+	return &TokenAssociateTransaction{
 		Transaction: transaction,
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
 		tokens:      tokens,

@@ -24,8 +24,8 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	return &transaction
 }
 
-func _TokenDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenDeleteTransaction {
-	return TokenDeleteTransaction{
+func _TokenDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenDeleteTransaction {
+	return &TokenDeleteTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}

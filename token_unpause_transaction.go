@@ -20,8 +20,8 @@ func NewTokenUnpauseTransaction() *TokenUnpauseTransaction {
 	return &transaction
 }
 
-func _TokenUnpauseTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenUnpauseTransaction {
-	return TokenUnpauseTransaction{
+func _TokenUnpauseTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenUnpauseTransaction {
+	return &TokenUnpauseTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}

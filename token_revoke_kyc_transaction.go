@@ -30,8 +30,8 @@ func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 	return &transaction
 }
 
-func _TokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenRevokeKycTransaction {
-	return TokenRevokeKycTransaction{
+func _TokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenRevokeKycTransaction {
+	return &TokenRevokeKycTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),

@@ -29,11 +29,11 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 	return &transaction
 }
 
-func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractCreateTransaction {
+func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ContractCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractCreateInstance().GetAdminKey())
 	autoRenew := _DurationFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewPeriod())
 
-	return ContractCreateTransaction{
+	return &ContractCreateTransaction{
 		Transaction:     transaction,
 		byteCodeFileID:  _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
 		proxyAccountID:  _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID()),

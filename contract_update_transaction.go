@@ -43,7 +43,7 @@ func NewContractUpdateTransaction() *ContractUpdateTransaction {
 	return &transaction
 }
 
-func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractUpdateTransaction {
+func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ContractUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractUpdateInstance().AdminKey)
 	autoRenew := _DurationFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewPeriod())
 	expiration := _TimeFromProtobuf(pb.GetContractUpdateInstance().GetExpirationTime())
@@ -56,7 +56,7 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *service
 		memo = m.MemoWrapper.Value
 	}
 
-	return ContractUpdateTransaction{
+	return &ContractUpdateTransaction{
 		Transaction:     transaction,
 		contractID:      _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
 		proxyAccountID:  _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID()),
