@@ -14,7 +14,7 @@ import (
 func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -150,7 +150,7 @@ func TestIntegrationTokenWipeTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -261,7 +261,7 @@ func TestIntegrationTokenWipeTransactionNoAmount(t *testing.T) {
 func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -370,7 +370,7 @@ func TestIntegrationTokenWipeTransactionNoTokenID(t *testing.T) {
 func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -481,7 +481,7 @@ func TestIntegrationTokenWipeTransactionNoAccountID(t *testing.T) {
 func TestIntegrationTokenWipeTransactionNotZeroTokensAtDelete(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -657,7 +657,7 @@ func DisabledTestIntegrationTokenWipeTransactionNftsIfNotOwned(t *testing.T) { /
 	_, err = mint.GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err = NewAccountCreateTransaction().

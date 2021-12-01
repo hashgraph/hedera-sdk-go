@@ -14,7 +14,7 @@ import (
 func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -93,7 +93,7 @@ func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -163,7 +163,7 @@ func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -233,7 +233,7 @@ func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

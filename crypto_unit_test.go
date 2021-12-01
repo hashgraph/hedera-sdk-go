@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
@@ -74,7 +76,7 @@ func TestUnitPrivateKeyExternalSerialization(t *testing.T) {
 
 func TestUnitPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
-	key, err := PrivateKeyFromString(keyStr)
+	key, err := PrivateKeyFromStringEd25519(keyStr)
 
 	require.NoError(t, err)
 	assert.Equal(t, testPrivateKeyStr, key.String())
@@ -111,7 +113,7 @@ func TestUnitLegacyPrivateKeyFromMnemonicDerive(t *testing.T) {
 
 func TestUnitPrivateKeyExternalSerializationForRawHex(t *testing.T) {
 	keyStr := "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
-	key, err := PrivateKeyFromString(keyStr)
+	key, err := PrivateKeyFromStringEd25519(keyStr)
 
 	require.NoError(t, err)
 	assert.Equal(t, testPrivateKeyStr, key.String())
@@ -126,7 +128,7 @@ func TestUnitPublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
 
 func TestUnitPublicKeyExternalSerializationForRawHex(t *testing.T) {
 	keyStr := "e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7"
-	key, err := PublicKeyFromString(keyStr)
+	key, err := PublicKeyFromStringEd25519(keyStr)
 
 	require.NoError(t, err)
 	assert.Equal(t, testPublicKeyStr, key.String())
@@ -169,7 +171,7 @@ func TestUnitIOSPrivateKeyFromMnemonic(t *testing.T) {
 	expectedKey, err := PrivateKeyFromString(iosDefaultPrivateKey)
 	require.NoError(t, err)
 
-	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
+	assert.Equal(t, expectedKey.ed25519PrivateKey.keyData, derivedKey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitAndroidPrivateKeyFromMnemonic(t *testing.T) {
@@ -185,7 +187,7 @@ func TestUnitAndroidPrivateKeyFromMnemonic(t *testing.T) {
 	expectedKey, err := PrivateKeyFromString(androidDefaultPrivateKey)
 	require.NoError(t, err)
 
-	assert.Equal(t, expectedKey.keyData, derivedKey.keyData)
+	assert.Equal(t, expectedKey.ed25519PrivateKey.keyData, derivedKey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitMnemonic3(t *testing.T) {
@@ -253,10 +255,10 @@ func TestUnitPrivateKeyFromKeystore(t *testing.T) {
 	privatekey, err := PrivateKeyFromKeystore([]byte(testKeystore), passphrase)
 	require.NoError(t, err)
 
-	actualPrivateKey, err := PrivateKeyFromString(testKeystoreKeyString)
+	actualPrivateKey, err := PrivateKeyFromStringEd25519(testKeystoreKeyString)
 	require.NoError(t, err)
 
-	assert.Equal(t, actualPrivateKey.keyData, privatekey.keyData)
+	assert.Equal(t, actualPrivateKey.ed25519PrivateKey.keyData, privatekey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitPrivateKeyKeystore(t *testing.T) {
@@ -269,11 +271,11 @@ func TestUnitPrivateKeyKeystore(t *testing.T) {
 	ksPrivateKey, err := _ParseKeystore(keystore, passphrase)
 	require.NoError(t, err)
 
-	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
+	assert.Equal(t, privateKey.ed25519PrivateKey.keyData, ksPrivateKey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitPrivateKeyReadKeystore(t *testing.T) {
-	actualPrivateKey, err := PrivateKeyFromString(testKeystoreKeyString)
+	actualPrivateKey, err := PrivateKeyFromStringEd25519(testKeystoreKeyString)
 	require.NoError(t, err)
 
 	keystoreReader := bytes.NewReader([]byte(testKeystore))
@@ -281,7 +283,7 @@ func TestUnitPrivateKeyReadKeystore(t *testing.T) {
 	privateKey, err := PrivateKeyReadKeystore(keystoreReader, passphrase)
 	require.NoError(t, err)
 
-	assert.Equal(t, actualPrivateKey.keyData, privateKey.keyData)
+	assert.Equal(t, actualPrivateKey.ed25519PrivateKey.keyData, privateKey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitPrivateKeyFromPem(t *testing.T) {
@@ -307,4 +309,73 @@ func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, actualPrivateKey, privateKey)
+}
+
+func TestUnitPrivateKeyECDSASign(t *testing.T) {
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	hash := crypto.Keccak256Hash([]byte("aaa"))
+	sig := key.Sign([]byte("aaa"))
+	s2 := crypto.VerifySignature(key.ecdsaPrivateKey._PublicKey()._BytesRaw(), hash.Bytes(), sig)
+	require.True(t, s2)
+}
+
+func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromString(key.String())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringECSDA(key.StringRaw())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.String(), key.String())
+}
+
+func TestUnitPublicKeyECDSAFromString(t *testing.T) {
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := key.PublicKey()
+	publicKey2, err := PublicKeyFromStringECDSA(publicKey.String())
+	require.NoError(t, err)
+
+	require.Equal(t, publicKey2.String(), publicKey.String())
+}
+
+func TestUnitPublicKeyECDSAFromStringRaw(t *testing.T) {
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	publicKey := key.PublicKey()
+	publicKey2, err := PublicKeyFromStringECDSA(publicKey.StringRaw())
+	require.NoError(t, err)
+
+	require.Equal(t, publicKey2.String(), publicKey.String())
+}
+
+func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
+	newKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	txID := TransactionIDGenerate(AccountID{Account: 123})
+
+	tx, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetTransactionID(txID).
+		SetInitialBalance(newBalance).
+		SetMaxAutomaticTokenAssociations(100).
+		Freeze()
+	require.NoError(t, err)
+
+	_, err = newKey.SignTransaction(&tx.Transaction)
+	require.NoError(t, err)
 }

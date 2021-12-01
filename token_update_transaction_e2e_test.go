@@ -63,7 +63,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 	pubKeys := make([]PublicKey, 5)
 
 	for i := range keys {
-		newKey, err := GeneratePrivateKey()
+		newKey, err := PrivateKeyGenerateEd25519()
 		require.NoError(t, err)
 
 		keys[i] = newKey
@@ -174,7 +174,7 @@ func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

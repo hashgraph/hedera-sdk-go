@@ -30,7 +30,7 @@ func TestUnitClientFromConfigWithOperator(t *testing.T) {
 
 	assert.Equal(t, 10, len(client.network.network))
 	assert.NotNil(t, client.operator)
-	assert.Equal(t, testOperatorKey.keyData, client.operator.privateKey.keyData)
+	assert.Equal(t, testOperatorKey.ed25519PrivateKey.keyData, client.operator.privateKey.ed25519PrivateKey.keyData)
 	assert.Equal(t, AccountID{Account: 3}.Account, client.operator.accountID.Account)
 }
 

@@ -15,7 +15,7 @@ import (
 func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -59,7 +59,7 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(1)
@@ -121,7 +121,7 @@ func TestIntegrationAccountCreateTransactionNoKey(t *testing.T) {
 func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
@@ -164,7 +164,7 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -228,7 +228,7 @@ func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -282,7 +282,7 @@ func TestIntegrationAccountCreateTransactionBad(t *testing.T) {
 
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	nodeAccountID, err := AccountIDFromString("0.0.3")

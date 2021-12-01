@@ -12,7 +12,7 @@ import (
 func TestSetKeyUsesAnyKey(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -23,7 +23,7 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 	pubKeys := make([]PublicKey, 3)
 
 	for i := range keys {
-		newKey, err := GeneratePrivateKey()
+		newKey, err := PrivateKeyGenerateEd25519()
 		if err != nil {
 			panic(err)
 		}
@@ -42,5 +42,48 @@ func TestSetKeyUsesAnyKey(t *testing.T) {
 		SetKey(thresholdKey).
 		SetInitialBalance(newBalance).
 		Execute(env.Client)
+	require.NoError(t, err)
+}
+
+func DisabledTestECDSAPrivateKey(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	newKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		SetMaxAutomaticTokenAssociations(100).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	tx, err := NewAccountDeleteTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetAccountID(accountID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		SetTransactionID(TransactionIDGenerate(accountID)).
+		FreezeWith(env.Client)
+	require.NoError(t, err)
+
+	resp, err = tx.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
