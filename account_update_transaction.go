@@ -33,7 +33,7 @@ func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	return &transaction
 }
 
-func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) AccountUpdateTransaction {
+func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *AccountUpdateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoUpdateAccount().GetKey())
 	var sendRecordThreshold uint64
 	var receiveRecordThreshold uint64
@@ -63,7 +63,7 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 	autoRenew := _DurationFromProtobuf(pb.GetCryptoUpdateAccount().AutoRenewPeriod)
 	expiration := _TimeFromProtobuf(pb.GetCryptoUpdateAccount().ExpirationTime)
 
-	return AccountUpdateTransaction{
+	return &AccountUpdateTransaction{
 		Transaction:               transaction,
 		accountID:                 _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
 		proxyAccountID:            _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID()),

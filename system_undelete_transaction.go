@@ -21,8 +21,8 @@ func NewSystemUndeleteTransaction() *SystemUndeleteTransaction {
 	return &transaction
 }
 
-func _SystemUndeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) SystemUndeleteTransaction {
-	return SystemUndeleteTransaction{
+func _SystemUndeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *SystemUndeleteTransaction {
+	return &SystemUndeleteTransaction{
 		Transaction: transaction,
 		contractID:  _ContractIDFromProtobuf(pb.GetSystemUndelete().GetContractID()),
 		fileID:      _FileIDFromProtobuf(pb.GetSystemUndelete().GetFileID()),

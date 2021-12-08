@@ -31,8 +31,8 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 	return &transaction
 }
 
-func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileAppendTransaction {
-	return FileAppendTransaction{
+func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *FileAppendTransaction {
+	return &FileAppendTransaction{
 		Transaction: transaction,
 		maxChunks:   20,
 		contents:    make([]byte, 0),

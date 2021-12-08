@@ -25,7 +25,7 @@ func NewFreezeTransaction() *FreezeTransaction {
 	return &transaction
 }
 
-func _FreezeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FreezeTransaction {
+func _FreezeTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *FreezeTransaction {
 	startTime := time.Date(
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		int(pb.GetFreeze().GetStartHour()), int(pb.GetFreeze().GetStartMin()), // nolint
@@ -38,7 +38,7 @@ func _FreezeTransactionFromProtobuf(transaction Transaction, pb *services.Transa
 		0, time.Now().Nanosecond(), time.Now().Location(),
 	)
 
-	return FreezeTransaction{
+	return &FreezeTransaction{
 		Transaction: transaction,
 		startTime:   startTime,
 		endTime:     endTime,

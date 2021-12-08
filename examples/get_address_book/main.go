@@ -58,9 +58,15 @@ func main() {
 		return
 	}
 
-	file, err := os.OpenFile("address-book.services.bin", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	fileByte, err := os.OpenFile("address-book-byte.pb", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		println(err.Error(), ": error opening address-book.services.bin")
+		println(err.Error(), ": error opening address-book-byte.pb")
+		return
+	}
+
+	fileString, err := os.OpenFile("address-book-string.pb", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		println(err.Error(), ": error opening address-book-string.pb")
 		return
 	}
 

@@ -22,8 +22,8 @@ func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	return &transaction
 }
 
-func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractDeleteTransaction {
-	return ContractDeleteTransaction{
+func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ContractDeleteTransaction {
+	return &ContractDeleteTransaction{
 		Transaction:       transaction,
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),

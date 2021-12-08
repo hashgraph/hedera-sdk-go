@@ -20,8 +20,8 @@ func NewFileDeleteTransaction() *FileDeleteTransaction {
 	return &transaction
 }
 
-func _FileDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) FileDeleteTransaction {
-	return FileDeleteTransaction{
+func _FileDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *FileDeleteTransaction {
+	return &FileDeleteTransaction{
 		Transaction: transaction,
 		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}

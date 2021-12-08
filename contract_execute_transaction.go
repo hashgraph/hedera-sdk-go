@@ -32,8 +32,8 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	return &transaction
 }
 
-func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ContractExecuteTransaction {
-	return ContractExecuteTransaction{
+func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ContractExecuteTransaction {
+	return &ContractExecuteTransaction{
 		Transaction: transaction,
 		contractID:  _ContractIDFromProtobuf(pb.GetContractCall().GetContractID()),
 		gas:         pb.GetContractCall().GetGas(),

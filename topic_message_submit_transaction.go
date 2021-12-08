@@ -29,8 +29,8 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	return &transaction
 }
 
-func _TopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TopicMessageSubmitTransaction {
-	tx := TopicMessageSubmitTransaction{
+func _TopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TopicMessageSubmitTransaction {
+	tx := &TopicMessageSubmitTransaction{
 		Transaction: transaction,
 		maxChunks:   20,
 		message:     make([]byte, 0),

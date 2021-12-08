@@ -25,10 +25,10 @@ func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	return &transaction
 }
 
-func _ScheduleCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) ScheduleCreateTransaction {
+func _ScheduleCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ScheduleCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetScheduleCreate().GetAdminKey())
 
-	return ScheduleCreateTransaction{
+	return &ScheduleCreateTransaction{
 		Transaction:     transaction,
 		payerAccountID:  _AccountIDFromProtobuf(pb.GetScheduleCreate().GetPayerAccountID()),
 		adminKey:        key,

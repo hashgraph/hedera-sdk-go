@@ -24,11 +24,11 @@ func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	return &transaction
 }
 
-func _LiveHashAddTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) LiveHashAddTransaction {
+func _LiveHashAddTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *LiveHashAddTransaction {
 	keys, _ := _KeyListFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.GetKeys())
 	duration := _DurationFromProtobuf(pb.GetCryptoAddLiveHash().LiveHash.Duration)
 
-	return LiveHashAddTransaction{
+	return &LiveHashAddTransaction{
 		Transaction: transaction,
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoAddLiveHash().GetLiveHash().GetAccountId()),
 		hash:        pb.GetCryptoAddLiveHash().LiveHash.Hash,

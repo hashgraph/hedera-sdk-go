@@ -29,8 +29,8 @@ func NewTokenBurnTransaction() *TokenBurnTransaction {
 	return &transaction
 }
 
-func _TokenBurnTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenBurnTransaction {
-	return TokenBurnTransaction{
+func _TokenBurnTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenBurnTransaction {
+	return &TokenBurnTransaction{
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenBurn().Token),
 		amount:      pb.GetTokenBurn().GetAmount(),

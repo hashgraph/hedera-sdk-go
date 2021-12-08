@@ -21,7 +21,7 @@ func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	return &transaction
 }
 
-func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) TokenDissociateTransaction {
+func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenDissociateTransaction {
 	tokens := make([]TokenID, 0)
 	for _, token := range pb.GetTokenDissociate().Tokens {
 		if tokenID := _TokenIDFromProtobuf(token); tokenID != nil {
@@ -29,7 +29,7 @@ func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *servic
 		}
 	}
 
-	return TokenDissociateTransaction{
+	return &TokenDissociateTransaction{
 		Transaction: transaction,
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenDissociate().GetAccount()),
 		tokens:      tokens,
