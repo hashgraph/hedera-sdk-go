@@ -431,6 +431,31 @@ func (sk PrivateKey) PublicKey() PublicKey {
 	return PublicKey{}
 }
 
+func (sk PrivateKey) ToAccountID(shard uint64, realm uint64) *AccountID {
+	temp := sk.PublicKey()
+
+	return &AccountID{
+		Shard:    shard,
+		Realm:    realm,
+		Account:  0,
+		AliasKey: &temp,
+		checksum: nil,
+	}
+}
+
+func (pk PublicKey) ToAccountID(shard uint64, realm uint64) *AccountID {
+	temp := pk
+
+	return &AccountID{
+		Shard:    shard,
+		Realm:    realm,
+		Account:  0,
+		AliasKey: &temp,
+		checksum: nil,
+	}
+}
+
+// String returns the text-encoded representation of the PrivateKey.
 func (sk PrivateKey) String() string {
 	if sk.ecdsaPrivateKey != nil {
 		return sk.ecdsaPrivateKey._StringDer()

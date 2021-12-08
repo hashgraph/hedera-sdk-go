@@ -26,6 +26,7 @@ type AccountInfo struct {
 	AccountMemo                    string
 	OwnedNfts                      int64
 	MaxAutomaticTokenAssociations  uint32
+	AliasKey                       *PublicKey
 }
 
 func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
@@ -69,6 +70,17 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		accountID = *_AccountIDFromProtobuf(pb.AccountID)
 	}
 
+	var alias *PublicKey
+	if len(pb.Alias) != 0 {
+		pbKey := services.Key{}
+		_ = protobuf.Unmarshal(pb.Alias, &pbKey)
+		initialKey, _ := _KeyFromProtobuf(&pbKey)
+		switch t2 := initialKey.(type) {//nolint
+		case PublicKey:
+			alias = &t2
+		}
+	}
+
 	return AccountInfo{
 		AccountID:                      accountID,
 		ContractAccountID:              pb.ContractAccountID,
@@ -87,6 +99,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		LiveHashes:                     liveHashes,
 		OwnedNfts:                      pb.OwnedNfts,
 		MaxAutomaticTokenAssociations:  uint32(pb.MaxAutomaticTokenAssociations),
+		AliasKey:                       alias,
 	}, nil
 }
 
@@ -103,6 +116,11 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 	for i, liveHash := range info.LiveHashes {
 		singleRelationship := liveHash._ToProtobuf()
 		liveHashes[i] = singleRelationship
+	}
+
+	var alias []byte
+	if info.AliasKey != nil {
+		alias, _ = protobuf.Marshal(info.AliasKey._ToProtoKey())
 	}
 
 	return &services.CryptoGetInfoResponse_AccountInfo{
@@ -123,6 +141,7 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		Memo:                           info.AccountMemo,
 		OwnedNfts:                      info.OwnedNfts,
 		MaxAutomaticTokenAssociations:  int32(info.MaxAutomaticTokenAssociations),
+		Alias:                          alias,
 	}
 }
 

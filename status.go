@@ -243,6 +243,9 @@ const (
 	StatusUpdateFileIDDoesNotMatchPrepared                         Status = 277
 	StatusUpdateFileHashDoesNotMatchPrepared                       Status = 278
 	StatusConsensusGasExhausted                                    Status = 279
+	StatusRevertedSuccess                                          Status = 280
+	StatusMaxStorageInPriceRegimeHasBeenUsed                       Status = 281
+	StatusInvalidAliasKey                                          Status = 282
 )
 
 // String() returns a string representation of the status
@@ -724,6 +727,12 @@ func (status Status) String() string { // nolint
 		return "UPDATE_FILE_HASH_DOES_NOT_MATCH_PREPARED"
 	case StatusConsensusGasExhausted:
 		return "CONSENSUS_GAS_EXHAUSTED"
+	case StatusRevertedSuccess:
+		return "REVERTED_SUCCESS"
+	case StatusMaxStorageInPriceRegimeHasBeenUsed:
+		return "MAX_STORAGE_IN_PRICE_REGIME_HAS_BEEN_USED"
+	case StatusInvalidAliasKey:
+		return "INVALID_ALIAS_KEY"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

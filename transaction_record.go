@@ -23,6 +23,7 @@ type TransactionRecord struct {
 	CallResultIsCreate         bool
 	AssessedCustomFees         []AssessedCustomFee
 	AutomaticTokenAssociations []TokenAssociation
+	AliasKey                   *PublicKey
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -77,6 +78,17 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 		tokenAssociation = append(tokenAssociation, tokenAssociationFromProtobuf(association))
 	}
 
+	var alias *PublicKey
+	if len(pb.Alias) != 0 {
+		pbKey := services.Key{}
+		_ = protobuf.Unmarshal(pb.Alias, &pbKey)
+		initialKey, _ := _KeyFromProtobuf(&pbKey)
+		switch t2 := initialKey.(type) {//nolint
+		case PublicKey:
+			alias = &t2
+		}
+	}
+
 	txRecord := TransactionRecord{
 		Receipt:                    _TransactionReceiptFromProtobuf(pb.Receipt),
 		TransactionHash:            pb.TransactionHash,
@@ -90,6 +102,7 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 		CallResultIsCreate:         true,
 		AssessedCustomFees:         assessedCustomFees,
 		AutomaticTokenAssociations: tokenAssociation,
+		AliasKey:                   alias,
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -157,6 +170,11 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionRecord, erro
 		tokenAssociation = append(tokenAssociation, association.toProtobuf())
 	}
 
+	var alias []byte
+	if record.AliasKey != nil {
+		alias, _ = protobuf.Marshal(record.AliasKey._ToProtoKey())
+	}
+
 	var tRecord = services.TransactionRecord{
 		Receipt:         record.Receipt._ToProtobuf(),
 		TransactionHash: record.TransactionHash,
@@ -171,6 +189,7 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionRecord, erro
 		TokenTransferLists:         tokenTransfers,
 		AssessedCustomFees:         assessedCustomFees,
 		AutomaticTokenAssociations: tokenAssociation,
+		Alias:                      alias,
 	}
 
 	var err error
