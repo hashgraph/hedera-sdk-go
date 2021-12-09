@@ -9,6 +9,7 @@ import (
 type TransactionReceiptQuery struct {
 	Query
 	transactionID *TransactionID
+	childReceipts *bool
 	duplicates    *bool
 }
 
@@ -17,6 +18,32 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	return &TransactionReceiptQuery{
 		Query: _NewQuery(false, &header),
 	}
+}
+
+func (query *TransactionReceiptQuery) SetIncludeChildReceipts(includeChildReceipts bool) *TransactionReceiptQuery {
+	query.childReceipts = &includeChildReceipts
+	return query
+}
+
+func (query *TransactionReceiptQuery) GetIncludeChildReceipts() bool {
+	if query.childReceipts != nil {
+		return *query.childReceipts
+	}
+
+	return false
+}
+
+func (query *TransactionReceiptQuery) SetIncludeDuplicates(includeDuplicates bool) *TransactionReceiptQuery {
+	query.duplicates = &includeDuplicates
+	return query
+}
+
+func (query *TransactionReceiptQuery) GetIncludeDuplicates() bool {
+	if query.duplicates != nil {
+		return *query.duplicates
+	}
+
+	return false
 }
 
 func (query *TransactionReceiptQuery) _ValidateNetworkOnIDs(client *Client) error {
@@ -42,6 +69,10 @@ func (query *TransactionReceiptQuery) _Build() *services.Query_TransactionGetRec
 
 	if query.duplicates != nil {
 		body.IncludeDuplicates = *query.duplicates
+	}
+
+	if query.childReceipts != nil {
+		body.IncludeChildReceipts = query.GetIncludeChildReceipts()
 	}
 
 	return &services.Query_TransactionGetReceipt{

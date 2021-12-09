@@ -8,7 +8,9 @@ import (
 
 type TransactionRecordQuery struct {
 	Query
-	transactionID *TransactionID
+	transactionID       *TransactionID
+	includeChildRecords *bool
+	duplicates          *bool
 }
 
 func NewTransactionRecordQuery() *TransactionRecordQuery {
@@ -16,6 +18,32 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	return &TransactionRecordQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *TransactionRecordQuery) SetIncludeChildRecords(includeChildRecords bool) *TransactionRecordQuery {
+	query.includeChildRecords = &includeChildRecords
+	return query
+}
+
+func (query *TransactionRecordQuery) GetIncludeChildRecords() bool {
+	if query.includeChildRecords != nil {
+		return *query.includeChildRecords
+	}
+
+	return false
+}
+
+func (query *TransactionRecordQuery) SetIncludeDuplicates(includeDuplicates bool) *TransactionRecordQuery {
+	query.duplicates = &includeDuplicates
+	return query
+}
+
+func (query *TransactionRecordQuery) GetIncludeDuplicates() bool {
+	if query.duplicates != nil {
+		return *query.duplicates
+	}
+
+	return false
 }
 
 func (query *TransactionRecordQuery) _ValidateNetworkOnIDs(client *Client) error {
@@ -33,6 +61,14 @@ func (query *TransactionRecordQuery) _ValidateNetworkOnIDs(client *Client) error
 func (query *TransactionRecordQuery) _Build() *services.Query_TransactionGetRecord {
 	body := &services.TransactionGetRecordQuery{
 		Header: &services.QueryHeader{},
+	}
+
+	if query.includeChildRecords != nil {
+		body.IncludeChildRecords = query.GetIncludeChildRecords()
+	}
+
+	if query.duplicates != nil {
+		body.IncludeDuplicates = query.GetIncludeDuplicates()
 	}
 
 	if query.transactionID.AccountID != nil {

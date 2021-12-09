@@ -56,6 +56,9 @@ func _KeyFromProtobuf(pbKey *services.Key) (Key, error) {
 	case *services.Key_ECDSASecp256K1:
 		return PublicKeyFromBytesECDSA(key.ECDSASecp256K1)
 
+	case *services.Key_DelegatableContractId:
+		return _ContractIDFromProtobuf(key.DelegatableContractId), nil
+
 	default:
 		return nil, _NewErrBadKeyf("key type not implemented: %v", key)
 	}

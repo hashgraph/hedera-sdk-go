@@ -75,7 +75,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		pbKey := services.Key{}
 		_ = protobuf.Unmarshal(pb.Alias, &pbKey)
 		initialKey, _ := _KeyFromProtobuf(&pbKey)
-		switch t2 := initialKey.(type) {//nolint
+		switch t2 := initialKey.(type) { //nolint
 		case PublicKey:
 			alias = &t2
 		}

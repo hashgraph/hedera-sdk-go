@@ -19,6 +19,7 @@ type TransactionID struct {
 	AccountID  *AccountID
 	ValidStart *time.Time
 	scheduled  bool
+	Nonce      *int32
 }
 
 // NewTransactionID constructs a new Transaction id struct with the provided AccountID and the valid start time set
@@ -27,13 +28,13 @@ func TransactionIDGenerate(accountID AccountID) TransactionID {
 	allowance := -(time.Duration(rand.Int63n(5*int64(time.Second))) + (8 * time.Second)) // nolint
 	validStart := time.Now().UTC().Add(allowance)
 
-	return TransactionID{&accountID, &validStart, false}
+	return TransactionID{&accountID, &validStart, false, nil}
 }
 
 // NewTransactionIDWithValidStart constructs a new Transaction id struct with the provided AccountID and the valid start
 // time set to a provided time.
 func NewTransactionIDWithValidStart(accountID AccountID, validStart time.Time) TransactionID {
-	return TransactionID{&accountID, &validStart, false}
+	return TransactionID{&accountID, &validStart, false, nil}
 }
 
 // GetReceipt queries the _Network for a receipt corresponding to the TransactionID's transaction. If the status of the
@@ -63,7 +64,7 @@ func (id TransactionID) GetRecord(client *Client) (TransactionRecord, error) {
 		Execute(client)
 }
 
-// String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos` format
+// String returns a string representation of the TransactionID in `AccountID@ValidStartSeconds.ValidStartNanos?scheduled_bool/nonce` format
 func (id TransactionID) String() string {
 	var pb *services.Timestamp
 	var returnString string
@@ -76,11 +77,23 @@ func (id TransactionID) String() string {
 		returnString += "?scheduled"
 	}
 
+	if id.Nonce != nil {
+		returnString += "/" + fmt.Sprint(*id.Nonce)
+	}
+
 	return returnString
 }
 
 func TransactionIdFromString(data string) (TransactionID, error) { // nolint
-	parts := strings.SplitN(data, "?", 2)
+	parts := strings.SplitN(data, "/", 2)
+
+	var nonce *int32
+	if len(parts) == 2 {
+		temp, _ := strconv.ParseInt(parts[1], 10, 32)
+		temp32 := int32(temp)
+		nonce = &temp32
+	}
+	parts = strings.SplitN(parts[0], "?", 2)
 
 	var accountID *AccountID
 	var validStart *time.Time
@@ -121,6 +134,7 @@ func TransactionIdFromString(data string) (TransactionID, error) { // nolint
 		AccountID:  accountID,
 		ValidStart: validStart,
 		scheduled:  scheduled,
+		Nonce:      nonce,
 	}, nil
 }
 
@@ -135,10 +149,16 @@ func (id TransactionID) _ToProtobuf() *services.TransactionID {
 		accountID = id.AccountID._ToProtobuf()
 	}
 
+	var nonce int32
+	if id.Nonce != nil {
+		nonce = *id.Nonce
+	}
+
 	return &services.TransactionID{
 		TransactionValidStart: validStart,
 		AccountID:             accountID,
 		Scheduled:             id.scheduled,
+		Nonce:                 nonce,
 	}
 }
 
@@ -156,7 +176,12 @@ func _TransactionIDFromProtobuf(pb *services.TransactionID) TransactionID {
 		accountID = *_AccountIDFromProtobuf(pb.AccountID)
 	}
 
-	return TransactionID{&accountID, &validStart, pb.Scheduled}
+	var nonce *int32
+	if pb.Nonce != 0 {
+		nonce = &pb.Nonce
+	}
+
+	return TransactionID{&accountID, &validStart, pb.Scheduled, nonce}
 }
 
 func (id TransactionID) ToBytes() []byte {

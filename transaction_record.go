@@ -23,6 +23,7 @@ type TransactionRecord struct {
 	CallResultIsCreate         bool
 	AssessedCustomFees         []AssessedCustomFee
 	AutomaticTokenAssociations []TokenAssociation
+	ParentConsensusTimestamp   time.Time
 	AliasKey                   *PublicKey
 }
 
@@ -83,7 +84,7 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 		pbKey := services.Key{}
 		_ = protobuf.Unmarshal(pb.Alias, &pbKey)
 		initialKey, _ := _KeyFromProtobuf(&pbKey)
-		switch t2 := initialKey.(type) {//nolint
+		switch t2 := initialKey.(type) { //nolint
 		case PublicKey:
 			alias = &t2
 		}
@@ -102,6 +103,7 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 		CallResultIsCreate:         true,
 		AssessedCustomFees:         assessedCustomFees,
 		AutomaticTokenAssociations: tokenAssociation,
+		ParentConsensusTimestamp:   _TimeFromProtobuf(pb.ParentConsensusTimestamp),
 		AliasKey:                   alias,
 	}
 
@@ -189,7 +191,11 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionRecord, erro
 		TokenTransferLists:         tokenTransfers,
 		AssessedCustomFees:         assessedCustomFees,
 		AutomaticTokenAssociations: tokenAssociation,
-		Alias:                      alias,
+		ParentConsensusTimestamp: &services.Timestamp{
+			Seconds: int64(record.ParentConsensusTimestamp.Second()),
+			Nanos:   int32(record.ParentConsensusTimestamp.Nanosecond()),
+		},
+		Alias: alias,
 	}
 
 	var err error
