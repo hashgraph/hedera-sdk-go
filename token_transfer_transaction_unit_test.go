@@ -5,6 +5,8 @@ package hedera
 import (
 	"testing"
 
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
@@ -21,6 +23,8 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 	nftID1 := NftID{TokenID: tokenID3, SerialNumber: 9}
 	nftID2 := NftID{TokenID: tokenID4, SerialNumber: 10}
 
+	transactionID := TransactionIDGenerate(AccountID{Account: 1111})
+
 	tokenTransfer := NewTransferTransaction().
 		AddHbarTransfer(accountID1, amount).
 		AddHbarTransfer(accountID2, amount.Negated()).
@@ -28,32 +32,68 @@ func TestUnitTokenTransferTransactionTransfers(t *testing.T) {
 		AddTokenTransfer(tokenID1, accountID2, -10).
 		AddTokenTransfer(tokenID2, accountID1, 10).
 		AddTokenTransfer(tokenID2, accountID2, -10).
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		AddNftTransfer(nftID1, accountID1, accountID2).
-		AddNftTransfer(nftID2, accountID2, accountID1)
+		AddNftTransfer(nftID2, accountID2, accountID1).
+		_Build()
 
-	hbarTransfers := tokenTransfer.GetHbarTransfers()
-	tokenTransfers := tokenTransfer.GetTokenTransfers()
-	nftTransfers := tokenTransfer.GetNftTransfers()
-
-	assert.Equal(t, hbarTransfers, map[AccountID]Hbar{
-		accountID1: amount,
-		accountID2: amount.Negated(),
-	})
-
-	assert.Equal(t, tokenTransfers, map[TokenID][]TokenTransfer{
-		tokenID1: {
-			{AccountID: accountID1, Amount: 10},
-			{AccountID: accountID2, Amount: -10},
+	require.Equal(t, tokenTransfer.GetCryptoTransfer().Transfers.AccountAmounts, []*services.AccountAmount{
+		{
+			AccountID: accountID1._ToProtobuf(),
+			Amount:    amount.AsTinybar(),
 		},
-		tokenID2: {
-			{AccountID: accountID1, Amount: 10},
-			{AccountID: accountID2, Amount: -10},
+		{
+			AccountID: accountID2._ToProtobuf(),
+			Amount:    amount.Negated().AsTinybar(),
 		},
 	})
 
-	assert.Equal(t, nftTransfers, map[TokenID][]TokenNftTransfer{
-		tokenID3: {{SenderAccountID: accountID1, ReceiverAccountID: accountID2, SerialNumber: 9}},
-		tokenID4: {{SenderAccountID: accountID2, ReceiverAccountID: accountID1, SerialNumber: 10}},
+	require.Equal(t, tokenTransfer.GetCryptoTransfer().TokenTransfers, []*services.TokenTransferList{
+		{
+			Token: tokenID1._ToProtobuf(),
+			Transfers: []*services.AccountAmount{
+				{
+					AccountID: accountID1._ToProtobuf(),
+					Amount:    10,
+				},
+				{
+					AccountID: accountID2._ToProtobuf(),
+					Amount:    -10,
+				},
+			}},
+		{
+			Token: tokenID2._ToProtobuf(),
+			Transfers: []*services.AccountAmount{
+				{
+					AccountID: accountID1._ToProtobuf(),
+					Amount:    10,
+				},
+				{
+					AccountID: accountID2._ToProtobuf(),
+					Amount:    -10,
+				},
+			}},
+		{
+			Token: tokenID3._ToProtobuf(),
+			NftTransfers: []*services.NftTransfer{
+				{
+					SenderAccountID:   accountID1._ToProtobuf(),
+					ReceiverAccountID: accountID2._ToProtobuf(),
+					SerialNumber:      int64(9),
+				},
+			},
+		},
+		{
+			Token: tokenID4._ToProtobuf(),
+			NftTransfers: []*services.NftTransfer{
+				{
+					SenderAccountID:   accountID2._ToProtobuf(),
+					ReceiverAccountID: accountID1._ToProtobuf(),
+					SerialNumber:      int64(10),
+				},
+			},
+		},
 	})
 }
 

@@ -205,9 +205,9 @@ func (id AccountID) Compare(given AccountID) int {
 		return 1
 	} else if id.Account < given.Account {
 		return -1
-	} else { //nolint
-		return 0
 	}
+
+	return 0
 }
 
 func (accountIDs _AccountIDs) Len() int {

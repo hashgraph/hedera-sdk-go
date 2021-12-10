@@ -480,8 +480,8 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
 	tempTokenTransfers := make(map[TokenID][]AccountID)
-	for _, k := range tempTokenIDarray {
-		initialAccountMap := transaction.tokenTransfers[k]
+	for _, tokenID := range tempTokenIDarray {
+		initialAccountMap := transaction.tokenTransfers[tokenID]
 
 		tempAccountIDarray2 := make([]AccountID, 0)
 		for k2 := range initialAccountMap {
@@ -489,7 +489,7 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 		}
 		sort.Sort(_AccountIDs{accountIDs: tempAccountIDarray2})
 
-		tempTokenTransfers[k] = tempAccountIDarray2
+		tempTokenTransfers[tokenID] = tempAccountIDarray2
 	}
 
 	if len(tempTokenIDarray) > 0 {
