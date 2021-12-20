@@ -435,15 +435,7 @@ func (sk PrivateKey) PublicKey() PublicKey {
 }
 
 func (sk PrivateKey) ToAccountID(shard uint64, realm uint64) *AccountID {
-	temp := sk.PublicKey()
-
-	return &AccountID{
-		Shard:    shard,
-		Realm:    realm,
-		Account:  0,
-		AliasKey: &temp,
-		checksum: nil,
-	}
+	return sk.PublicKey().ToAccountID(shard, realm)
 }
 
 func (pk PublicKey) ToAccountID(shard uint64, realm uint64) *AccountID {
