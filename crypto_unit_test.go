@@ -5,10 +5,10 @@ package hedera
 import (
 	"bytes"
 	"crypto/ed25519"
+	"encoding/hex"
+	"github.com/ethereum/go-ethereum/crypto"
 	"strings"
 	"testing"
-
-	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/stretchr/testify/assert"
 
@@ -319,6 +319,17 @@ func TestUnitPrivateKeyECDSASign(t *testing.T) {
 	sig := key.Sign([]byte("aaa"))
 	s2 := crypto.VerifySignature(key.ecdsaPrivateKey._PublicKey()._BytesRaw(), hash.Bytes(), sig)
 	require.True(t, s2)
+}
+
+func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
+	message := []byte("hello world")
+	key, err := PrivateKeyFromStringECSDA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
+	require.NoError(t, err)
+
+	sig := key.Sign(message)
+
+	require.Equal(t, hex.EncodeToString(sig), "f3a13a555f1f8cd6532716b8f388bd4e9d8ed0b252743e923114c0c6cbfe414cf791c8e859afd3c12009ecf2cb20dacf01636d80823bcdbd9ec1ce59afe008f0")
+	require.True(t, key.PublicKey().Verify(message, sig))
 }
 
 func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
