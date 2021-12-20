@@ -34,7 +34,7 @@ func FileIDForExchangeRate() FileID {
 // FileIDFromString returns a FileID parsed from the given string.
 // A malformatted string will cause this to return an error instead.
 func FileIDFromString(data string) (FileID, error) {
-	shard, realm, num, checksum, err := _IdFromString(data)
+	shard, realm, num, checksum, _, err := _IdFromString(data)
 	if err != nil {
 		return FileID{}, err
 	}

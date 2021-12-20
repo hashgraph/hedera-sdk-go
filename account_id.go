@@ -15,6 +15,7 @@ type AccountID struct {
 	Shard    uint64
 	Realm    uint64
 	Account  uint64
+	AliasKey *PublicKey
 	checksum *string
 }
 
@@ -25,15 +26,26 @@ type _AccountIDs struct {
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
-	shard, realm, num, checksum, err := _IdFromString(data)
+	shard, realm, num, checksum, alias, err := _IdFromString(data)
 	if err != nil {
 		return AccountID{}, err
+	}
+
+	if num == -1 {
+		return AccountID{
+			Shard:    uint64(shard),
+			Realm:    uint64(realm),
+			Account:  0,
+			AliasKey: alias,
+			checksum: checksum,
+		}, nil
 	}
 
 	return AccountID{
 		Shard:    uint64(shard),
 		Realm:    uint64(realm),
 		Account:  uint64(num),
+		AliasKey: nil,
 		checksum: checksum,
 	}, nil
 }
@@ -55,6 +67,9 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 }
 
 func (id *AccountID) ValidateChecksum(client *Client) error {
+	if id.AliasKey != nil {
+		return errors.New("Account ID contains alias key, unable to validate")
+	}
 	if !id._IsZero() && client != nil && client.network.networkName != nil {
 		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
@@ -80,6 +95,9 @@ func (id *AccountID) ValidateChecksum(client *Client) error {
 
 // Deprecated
 func (id *AccountID) Validate(client *Client) error {
+	if id.AliasKey != nil {
+		return errors.New("Account ID contains alias key, unable to validate")
+	}
 	if !id._IsZero() && client != nil && client.network.networkName != nil {
 		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
@@ -101,10 +119,17 @@ func (id *AccountID) Validate(client *Client) error {
 // String returns the string representation of an AccountID in
 // `Shard.Realm.Account` (for example "0.0.3")
 func (id AccountID) String() string {
+	if id.AliasKey != nil {
+		return fmt.Sprintf("%d.%d.%s", id.Shard, id.Realm, id.AliasKey.String())
+	}
+
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 }
 
 func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
+	if id.AliasKey != nil {
+		return "", errors.New("Account ID contains alias key, unable get checksum")
+	}
 	if client.GetNetworkName() == nil {
 		return "", errNetworkNameMissing
 	}
@@ -112,6 +137,7 @@ func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, checksum.correctChecksum), nil
 }
 
@@ -126,11 +152,24 @@ func (id AccountID) ToSolidityAddress() string {
 }
 
 func (id AccountID) _ToProtobuf() *services.AccountID {
-	return &services.AccountID{
-		ShardNum:   int64(id.Shard),
-		RealmNum:   int64(id.Realm),
-		AccountNum: int64(id.Account),
+	resultID := &services.AccountID{
+		ShardNum: int64(id.Shard),
+		RealmNum: int64(id.Realm),
 	}
+	if id.AliasKey == nil {
+		resultID.Account = &services.AccountID_AccountNum{
+			AccountNum: int64(id.Account),
+		}
+
+		return resultID
+	}
+
+	data, _ := protobuf.Marshal(id.AliasKey._ToProtoKey())
+	resultID.Account = &services.AccountID_Alias{
+		Alias: data,
+	}
+
+	return resultID
 }
 
 // UnmarshalJSON implements the encoding.JSON interface.
@@ -150,20 +189,46 @@ func _AccountIDFromProtobuf(accountID *services.AccountID) *AccountID {
 	if accountID == nil {
 		return nil
 	}
+	resultAccountID := &AccountID{
+		Shard: uint64(accountID.ShardNum),
+		Realm: uint64(accountID.RealmNum),
+	}
 
-	return &AccountID{
-		Shard:   uint64(accountID.ShardNum),
-		Realm:   uint64(accountID.RealmNum),
-		Account: uint64(accountID.AccountNum),
+	switch t := accountID.Account.(type) {
+	case *services.AccountID_Alias:
+		pb := services.Key{}
+		_ = protobuf.Unmarshal(t.Alias, &pb)
+		initialKey, _ := _KeyFromProtobuf(&pb)
+		switch t2 := initialKey.(type) {
+		case PublicKey:
+			resultAccountID.Account = 0
+			resultAccountID.AliasKey = &t2
+			return resultAccountID
+		default:
+			return &AccountID{}
+		}
+	case *services.AccountID_AccountNum:
+		resultAccountID.Account = uint64(t.AccountNum)
+		resultAccountID.AliasKey = nil
+		return resultAccountID
+	default:
+		return &AccountID{}
 	}
 }
 
 func (id AccountID) _IsZero() bool {
-	return id.Shard == 0 && id.Realm == 0 && id.Account == 0
+	return id.Shard == 0 && id.Realm == 0 && id.Account == 0 && id.AliasKey == nil
 }
 
 func (id AccountID) _Equals(other AccountID) bool {
-	return id.Shard == other.Shard && id.Realm == other.Realm && id.Account == other.Account
+	initialAlias := ""
+	otherAlias := ""
+	if id.AliasKey != nil && other.AliasKey != nil {
+		initialAlias = id.AliasKey.String()
+		otherAlias = other.AliasKey.String()
+	}
+
+	return id.Shard == other.Shard && id.Realm == other.Realm && id.Account == other.Account && initialAlias == otherAlias
 }
 
 func (id AccountID) ToBytes() []byte {
@@ -201,10 +266,20 @@ func (id AccountID) Compare(given AccountID) int {
 		return -1
 	}
 
+	if id.AliasKey != nil && given.AliasKey != nil {
+		if id.AliasKey.String() > given.AliasKey.String() { //nolint
+			return 1
+		} else if id.AliasKey.String() < given.AliasKey.String() {
+			return -1
+		}
+	}
+
 	if id.Account > given.Account { //nolint
 		return 1
 	} else if id.Account < given.Account {
 		return -1
+	} else {
+		return 0
 	}
 
 	return 0
@@ -228,6 +303,14 @@ func (accountIDs _AccountIDs) Less(i, j int) bool {
 		return true
 	} else if accountIDs.accountIDs[i].Realm > accountIDs.accountIDs[j].Realm {
 		return false
+	}
+
+	if accountIDs.accountIDs[i].AliasKey != nil && accountIDs.accountIDs[j].AliasKey != nil {
+		if accountIDs.accountIDs[i].String() < accountIDs.accountIDs[j].String() { //nolint
+			return true
+		} else if accountIDs.accountIDs[i].String() > accountIDs.accountIDs[j].String() {
+			return false
+		}
 	}
 
 	if accountIDs.accountIDs[i].Account < accountIDs.accountIDs[j].Account { //nolint

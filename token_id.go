@@ -87,7 +87,7 @@ func (id *TokenID) Nft(serial int64) NftID {
 // TokenIDFromString constructs an TokenID from a string formatted as
 // `Shard.Realm.TokenID` (for example "0.0.3")
 func TokenIDFromString(data string) (TokenID, error) {
-	shard, realm, num, checksum, err := _IdFromString(data)
+	shard, realm, num, checksum, _, err := _IdFromString(data)
 	if err != nil {
 		return TokenID{}, err
 	}
