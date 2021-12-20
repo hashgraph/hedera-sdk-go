@@ -14,7 +14,7 @@ import (
 func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -133,7 +133,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -209,7 +209,7 @@ func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -308,7 +308,7 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

@@ -18,7 +18,7 @@ func TestIntegrationLiveHashAddTransactionCanExecute(t *testing.T) {
 
 	_hash, _ := hex.DecodeString("100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002")
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().

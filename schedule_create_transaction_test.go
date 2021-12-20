@@ -12,7 +12,7 @@ package hedera
 // func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
-//	newKey, err := GeneratePrivateKey()
+//	newKey, err := PrivateKeyGenerateEd25519()
 //	require.NoError(t, err)
 //
 //	newBalance := NewHbar(1)
@@ -76,7 +76,7 @@ package hedera
 //	pubKeys := make([]PublicKey, 3)
 //
 //	for i := range keys {
-//		newKey, err := GeneratePrivateKey()
+//		newKey, err := PrivateKeyGenerateEd25519()
 //		require.NoError(t, err)
 //
 //		keys[i] = newKey
@@ -226,7 +226,7 @@ package hedera
 // func DisabledTestIntegrationScheduleCreateTransactionCheckValidGetTransaction(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
-//	newKey, err := GeneratePrivateKey()
+//	newKey, err := PrivateKeyGenerateEd25519()
 //	require.NoError(t, err)
 //
 //	newBalance := NewHbar(1)
@@ -406,7 +406,7 @@ package hedera
 //	pubKeys := make([]PublicKey, 3)
 //
 //	for i := range keys {
-//		newKey, err := GeneratePrivateKey()
+//		newKey, err := PrivateKeyGenerateEd25519()
 //		require.NoError(t, err)
 //
 //		keys[i] = newKey
@@ -563,7 +563,7 @@ package hedera
 //	pubKeys := make([]PublicKey, 3)
 //
 //	for i := range keys {
-//		newKey, err := GeneratePrivateKey()
+//		newKey, err := PrivateKeyGenerateEd25519()
 //		require.NoError(t, err)
 //
 //		keys[i] = newKey

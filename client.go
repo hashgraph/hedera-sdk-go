@@ -346,6 +346,7 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 	}
 
 	operatorKey, err := PrivateKeyFromString(clientConfig.Operator.PrivateKey)
+
 	if err != nil {
 		return client, err
 	}

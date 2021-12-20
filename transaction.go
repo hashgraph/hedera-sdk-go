@@ -488,8 +488,17 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 func (transaction *Transaction) _SignTransaction(index int) {
 	if len(transaction.signedTransactions[index].SigMap.SigPair) != 0 {
 		for i, key := range transaction.publicKeys {
-			if transaction.transactionSigners[i] != nil && bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.keyData) {
-				return
+			if transaction.transactionSigners[i] != nil {
+				if key.ed25519PublicKey != nil {
+					if bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.ed25519PublicKey.keyData) {
+						return
+					}
+				}
+				if key.ecdsaPublicKey != nil {
+					if bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.ecdsaPublicKey._BytesRaw()) {
+						return
+					}
+				}
 			}
 		}
 	}

@@ -14,7 +14,7 @@ import (
 func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -142,7 +142,7 @@ func TestIntegrationTokenRevokeKycTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -237,7 +237,7 @@ func TestIntegrationTokenRevokeKycTransactionNoTokenID(t *testing.T) {
 func TestIntegrationTokenRevokeKycTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

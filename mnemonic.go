@@ -165,7 +165,7 @@ func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
 		return PrivateKey{}, errors.New("not a legacy key")
 	}
 
-	return PrivateKeyFromBytes(entropy)
+	return PrivateKeyFromBytesEd25519(entropy)
 }
 
 func bytesToBits(dat []uint8) []bool {

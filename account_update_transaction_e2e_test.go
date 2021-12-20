@@ -14,7 +14,7 @@ import (
 func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newKey2, err := GeneratePrivateKey()
@@ -88,7 +88,7 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newKey2, err := GeneratePrivateKey()
@@ -172,7 +172,7 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 // func TestAccountUpdateTransactionAddSignature_Execute(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)
 //
-//	newKey, err := GeneratePrivateKey()
+//	newKey, err := PrivateKeyGenerateEd25519()
 //	require.NoError(t, err)
 //
 //	newKey2, err := GeneratePrivateKey()

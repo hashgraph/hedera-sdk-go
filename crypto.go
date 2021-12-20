@@ -1,29 +1,23 @@
 package hedera
 
 import (
-	"bytes"
 	"crypto/hmac"
-	"crypto/rand"
 	"crypto/sha512"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/pem"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"golang.org/x/crypto/ed25519"
-	"golang.org/x/crypto/pbkdf2"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
-	"github.com/youmark/pkcs8"
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
+
+const _ECDSAPrivateKeyPrefix = "3030020100300706052b8104000a04220420"
+const _ECDSAPubKeyPrefix = "302f300706052b8104000a0324000421"
 
 type Key interface {
 	_ToProtoKey() *services.Key
@@ -36,7 +30,7 @@ func _KeyFromProtobuf(pbKey *services.Key) (Key, error) {
 	}
 	switch key := pbKey.GetKey().(type) {
 	case *services.Key_Ed25519:
-		return PublicKeyFromBytes(key.Ed25519)
+		return PublicKeyFromBytesEd25519(key.Ed25519)
 
 	case *services.Key_ThresholdKey:
 		threshold := int(key.ThresholdKey.GetThreshold())
@@ -59,194 +53,311 @@ func _KeyFromProtobuf(pbKey *services.Key) (Key, error) {
 	case *services.Key_ContractID:
 		return _ContractIDFromProtobuf(key.ContractID), nil
 
+	case *services.Key_ECDSASecp256K1:
+		return PublicKeyFromBytesECDSA(key.ECDSASecp256K1)
+
 	default:
 		return nil, _NewErrBadKeyf("key type not implemented: %v", key)
 	}
 }
 
-// PrivateKey is an ed25519 private key.
 type PrivateKey struct {
-	keyData   []byte
-	chainCode []byte
+	ecdsaPrivateKey   *_ECDSAPrivateKey
+	ed25519PrivateKey *_Ed25519PrivateKey
 }
 
-// PublicKey is an ed25519 public key.
 type PublicKey struct {
-	keyData []byte
+	ecdsaPublicKey   *_ECDSAPublicKey
+	ed25519PublicKey *_Ed25519PublicKey
 }
 
-// GeneratePrivateKey generates a random new PrivateKey.
-func GeneratePrivateKey() (PrivateKey, error) {
-	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
+func PrivateKeyGenerateEcdsa() (PrivateKey, error) {
+	key, err := _GenerateECDSAPrivateKey()
+	if err != nil {
+		return PrivateKey{}, err
+	}
+	return PrivateKey{
+		ecdsaPrivateKey: key,
+	}, nil
+}
+
+func PrivateKeyGenerateEd25519() (PrivateKey, error) {
+	key, err := _GenerateEd25519PrivateKey()
+	if err != nil {
+		return PrivateKey{}, err
+	}
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
+}
+
+// Deprecated the use of raw bytes for a Ed25519 private key is deprecated; use PrivateKeyFromBytesEd25519() instead.
+func PrivateKeyFromBytes(bytes []byte) (PrivateKey, error) {
+	key, err := _Ed25519PrivateKeyFromBytes(bytes)
+	if err != nil {
+		key2, err2 := _ECDSAPrivateKeyFromBytes(bytes)
+		if err2 != nil {
+			return PrivateKey{}, err2
+		}
+
+		return PrivateKey{
+			ecdsaPrivateKey: key2,
+		}, nil
+	}
+
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
+}
+
+func PrivateKeyFromBytesDer(bytes []byte) (PrivateKey, error) {
+	key, err := _Ed25519PrivateKeyFromBytes(bytes)
+	if err != nil {
+		key2, err2 := _ECDSAPrivateKeyFromBytes(bytes)
+		if err2 != nil {
+			return PrivateKey{}, err2
+		}
+
+		return PrivateKey{
+			ecdsaPrivateKey: key2,
+		}, nil
+	}
+
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
+}
+
+func PrivateKeyFromBytesEd25519(bytes []byte) (PrivateKey, error) {
+	key, err := _Ed25519PrivateKeyFromBytes(bytes)
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
 	return PrivateKey{
-		keyData: privateKey,
+		ed25519PrivateKey: key,
 	}, nil
 }
 
-// PrivateKeyFromBytes constructs an PrivateKey from a raw slice of either 32 or 64 bytes.
-func PrivateKeyFromBytes(bytes []byte) (PrivateKey, error) {
-	length := len(bytes)
-	if length != 32 && length != 64 {
-		return PrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(bytes))
+func PrivateKeyFromBytesECDSA(bytes []byte) (PrivateKey, error) {
+	key, err := _ECDSAPrivateKeyFromBytes(bytes)
+	if err != nil {
+		return PrivateKey{}, err
 	}
 
 	return PrivateKey{
-		keyData: ed25519.NewKeyFromSeed(bytes[0:32]),
+		ecdsaPrivateKey: key,
 	}, nil
 }
 
-// PrivateKeyFromMnemonic recovers an PrivateKey from a valid 24 word length mnemonic phrase and a
+func PublicKeyFromBytesEd25519(bytes []byte) (PublicKey, error) {
+	key, err := _Ed25519PublicKeyFromBytes(bytes)
+	if err != nil {
+		return PublicKey{}, err
+	}
+
+	return PublicKey{
+		ed25519PublicKey: key,
+	}, nil
+}
+
+func PublicKeyFromBytesECDSA(bytes []byte) (PublicKey, error) {
+	key, err := _ECDSAPublicKeyFromBytes(bytes)
+	if err != nil {
+		return PublicKey{}, err
+	}
+
+	return PublicKey{
+		ecdsaPublicKey: key,
+	}, nil
+}
+
+// Deprecated the use of raw bytes for a Ed25519 private key is deprecated; use PublicKeyFromBytesEd25519() instead.
+func PublicKeyFromBytes(bytes []byte) (PublicKey, error) {
+	key, err := _Ed25519PublicKeyFromBytes(bytes)
+	if err != nil {
+		key2, err2 := _ECDSAPublicKeyFromBytes(bytes)
+		if err2 != nil {
+			return PublicKey{}, err2
+		}
+
+		return PublicKey{
+			ecdsaPublicKey: key2,
+		}, nil
+	}
+
+	return PublicKey{
+		ed25519PublicKey: key,
+	}, nil
+}
+
+func PublicKeyFromBytesDer(bytes []byte) (PublicKey, error) {
+	key, err := _Ed25519PublicKeyFromBytes(bytes)
+	if err != nil {
+		key2, err2 := _ECDSAPublicKeyFromBytes(bytes)
+		if err2 != nil {
+			return PublicKey{}, err2
+		}
+
+		return PublicKey{
+			ecdsaPublicKey: key2,
+		}, nil
+	}
+
+	return PublicKey{
+		ed25519PublicKey: key,
+	}, nil
+}
+
+// PrivateKeyFromMnemonic recovers an _Ed25519PrivateKey from a valid 24 word length mnemonic phrase and a
 // passphrase.
 //
 // An empty string can be passed for passPhrase If the mnemonic phrase wasn't generated with a passphrase. This is
 // required to recover a private key from a mnemonic generated by the Android and iOS wallets.
 func PrivateKeyFromMnemonic(mnemonic Mnemonic, passPhrase string) (PrivateKey, error) {
-	salt := []byte("mnemonic" + passPhrase)
-	seed := pbkdf2.Key([]byte(mnemonic.String()), salt, 2048, 64, sha512.New)
-
-	h := hmac.New(sha512.New, []byte("ed25519 seed"))
-
-	_, err := h.Write(seed)
+	key, err := _Ed25519PrivateKeyFromMnemonic(mnemonic, passPhrase)
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
-	digest := h.Sum(nil)
-
-	keyBytes := digest[0:32]
-	chainCode := digest[32:]
-
-	// note the index is for derivation, not the index of the slice
-	for _, index := range []uint32{44, 3030, 0, 0} {
-		keyBytes, chainCode = _DeriveChildKey(keyBytes, chainCode, index)
-	}
-
-	privateKey, err := PrivateKeyFromBytes(keyBytes)
-
-	if err != nil {
-		return PrivateKey{}, err
-	}
-
-	privateKey.chainCode = chainCode
-
-	return privateKey, nil
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
 }
 
-// PrivateKeyFromString recovers an PrivateKey from its text-encoded representation.
+// The use of raw bytes for a Ed25519 private key is deprecated; use PrivateKeyFromStringEd25519() instead.
 func PrivateKeyFromString(s string) (PrivateKey, error) {
-	sLen := len(s)
-	if sLen != 64 && sLen != 96 && sLen != 128 {
-		return PrivateKey{}, _NewErrBadKeyf("invalid private key string with length %v", len(s))
-	}
-
-	bytes, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(s), ed25519PrivateKeyPrefix))
+	byt, err := hex.DecodeString(s)
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
-	return PrivateKeyFromBytes(bytes)
+	return PrivateKeyFromBytes(byt)
 }
 
-// PrivateKeyFromKeystore recovers an PrivateKey from an encrypted _Keystore encoded as a byte slice.
+func PrivateKeyFromStringDer(s string) (PrivateKey, error) {
+	if strings.Contains(s, _ECDSAPrivateKeyPrefix) {
+		key, err := _ECDSAPrivateKeyFromString(s)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+
+		return PrivateKey{
+			ecdsaPrivateKey: key,
+		}, nil
+	} else if strings.Contains(s, ed25519PrivateKeyPrefix) {
+		key, err := _Ed25519PrivateKeyFromString(s)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+
+		return PrivateKey{
+			ed25519PrivateKey: key,
+		}, nil
+	}
+
+	return PrivateKey{}, nil
+}
+
+func PrivateKeyFromStringEd25519(s string) (PrivateKey, error) {
+	key, err := _Ed25519PrivateKeyFromString(s)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
+}
+
+func PrivateKeyFromStringECSDA(s string) (PrivateKey, error) {
+	key, err := _ECDSAPrivateKeyFromString(s)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	return PrivateKey{
+		ecdsaPrivateKey: key,
+	}, nil
+}
+
 func PrivateKeyFromKeystore(ks []byte, passphrase string) (PrivateKey, error) {
-	return _ParseKeystore(ks, passphrase)
-}
-
-// PrivateKeyReadKeystore recovers an PrivateKey from an encrypted _Keystore file.
-func PrivateKeyReadKeystore(source io.Reader, passphrase string) (PrivateKey, error) {
-	keystoreBytes, err := ioutil.ReadAll(source)
+	key, err := _Ed25519PrivateKeyFromKeystore(ks, passphrase)
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
-	return PrivateKeyFromKeystore(keystoreBytes, passphrase)
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
+}
+
+// PrivateKeyReadKeystore recovers an _Ed25519PrivateKey from an encrypted _Keystore file.
+func PrivateKeyReadKeystore(source io.Reader, passphrase string) (PrivateKey, error) {
+	key, err := _Ed25519PrivateKeyReadKeystore(source, passphrase)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
 }
 
 func PrivateKeyFromPem(bytes []byte, passphrase string) (PrivateKey, error) {
-	var blockType string
-
-	if len(passphrase) == 0 {
-		blockType = "PRIVATE KEY"
-	} else {
-		// the pem is encrypted
-		blockType = "ENCRYPTED PRIVATE KEY"
-	}
-
-	var pk *pem.Block
-	for block, rest := pem.Decode(bytes); block != nil; {
-		if block.Type == blockType {
-			pk = block
-			break
-		}
-
-		bytes = rest
-		if len(bytes) == 0 {
-			// no key was found
-			return PrivateKey{}, _NewErrBadKeyf("pem file did not contain a private key")
-		}
-	}
-
-	if pk == nil {
-		// no key was found
-		return PrivateKey{}, _NewErrBadKeyf("no PEM data is found")
-	}
-
-	if len(passphrase) == 0 {
-		// key does not need decrypted, end here
-		return PrivateKeyFromString(hex.EncodeToString(pk.Bytes))
-	}
-
-	keyI, err := pkcs8.ParsePKCS8PrivateKey(pk.Bytes, []byte(passphrase))
+	key, err := _Ed25519PrivateKeyFromPem(bytes, passphrase)
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
-	return PrivateKeyFromBytes(keyI.(ed25519.PrivateKey))
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
 }
 
 func PrivateKeyReadPem(source io.Reader, passphrase string) (PrivateKey, error) {
 	// note: Passphrases are currently not supported, but included in the function definition to avoid breaking
 	// changes in the future.
 
-	pemFileBytes, err := ioutil.ReadAll(source)
+	key, err := _Ed25519PrivateKeyReadPem(source, passphrase)
 	if err != nil {
 		return PrivateKey{}, err
 	}
 
-	return PrivateKeyFromPem(pemFileBytes, passphrase)
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
 }
 
-// PublicKeyFromString recovers an PublicKey from its text-encoded representation.
+// The use of raw bytes for a Ed25519 public key is deprecated; use PublicKeyFromStringEd25519/ECDSA() instead.
 func PublicKeyFromString(s string) (PublicKey, error) {
-	sLen := len(s)
-	if sLen != 64 && sLen != 88 {
-		return PublicKey{}, _NewErrBadKeyf("invalid public key '%v' string with length %v", s, sLen)
-	}
-
-	keyStr := strings.TrimPrefix(strings.ToLower(s), ed25519PubKeyPrefix)
-	bytes, err := hex.DecodeString(keyStr)
+	byt, err := hex.DecodeString(s)
 	if err != nil {
 		return PublicKey{}, err
 	}
 
-	return PublicKey{bytes}, nil
+	return PublicKeyFromBytes(byt)
 }
 
-// PublicKeyFromBytes constructs a known PublicKey from its text-encoded representation.
-func PublicKeyFromBytes(bytes []byte) (PublicKey, error) {
-	if bytes == nil {
-		return PublicKey{}, errByteArrayNull
-	}
-	if len(bytes) != ed25519.PublicKeySize {
-		return PublicKey{}, _NewErrBadKeyf("invalid public key length: %v bytes", len(bytes))
+func PublicKeyFromStringECDSA(s string) (PublicKey, error) {
+	key, err := _ECDSAPublicKeyFromString(s)
+	if err != nil {
+		return PublicKey{}, err
 	}
 
 	return PublicKey{
-		keyData: bytes,
+		ecdsaPublicKey: key,
+	}, nil
+}
+
+func PublicKeyFromStringEd25519(s string) (PublicKey, error) {
+	key, err := _Ed25519PublicKeyFromString(s)
+	if err != nil {
+		return PublicKey{}, err
+	}
+
+	return PublicKey{
+		ed25519PublicKey: key,
 	}, nil
 }
 
@@ -304,158 +415,322 @@ func _DeriveLegacyChildKey(parentKey []byte, index int64) []byte {
 	return pbkdf2.Key(password, salt, 2048, 32, sha512.New)
 }
 
-// PublicKey returns the PublicKey associated with this PrivateKey.
 func (sk PrivateKey) PublicKey() PublicKey {
-	return PublicKey{
-		keyData: sk.keyData[32:],
+	if sk.ecdsaPrivateKey != nil {
+		return PublicKey{
+			ecdsaPublicKey: sk.ecdsaPrivateKey._PublicKey(),
+		}
 	}
+
+	if sk.ed25519PrivateKey != nil {
+		return PublicKey{
+			ed25519PublicKey: sk.ed25519PrivateKey._PublicKey(),
+		}
+	}
+
+	return PublicKey{}
 }
 
-// String returns the text-encoded representation of the PrivateKey.
 func (sk PrivateKey) String() string {
-	return fmt.Sprint(ed25519PrivateKeyPrefix, hex.EncodeToString(sk.keyData[:32]))
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._StringDer()
+	}
+
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._StringDer()
+	}
+
+	return ""
 }
 
-// String returns the text-encoded representation of the PublicKey.
+func (sk PrivateKey) StringRaw() string {
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._StringRaw()
+	}
+
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._StringRaw()
+	}
+
+	return ""
+}
+
+func (sk PrivateKey) StringDer() string {
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._StringDer()
+	}
+
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._StringDer()
+	}
+
+	return ""
+}
+
 func (pk PublicKey) String() string {
-	return fmt.Sprint(ed25519PubKeyPrefix, hex.EncodeToString(pk.keyData))
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._StringDer()
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._StringDer()
+	}
+
+	return ""
 }
 
-// Bytes returns the byte slice representation of the PrivateKey.
+func (pk PublicKey) StringDer() string {
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._StringDer()
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._StringDer()
+	}
+
+	return ""
+}
+
+func (pk PublicKey) StringRaw() string {
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._StringRaw()
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._StringRaw()
+	}
+
+	return ""
+}
+
+/*
+ * For `Ed25519` the result of this method call is identical to `toBytesRaw()` while for `ECDSA`
+ * this method is identical to `toBytesDer()`.
+ *
+ * We strongly recommend using `toBytesRaw()` or `toBytesDer()` instead.
+ */
 func (sk PrivateKey) Bytes() []byte {
-	return sk.keyData[0:32]
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._BytesDer()
+	}
+
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._BytesRaw()
+	}
+
+	return []byte{}
 }
 
-// Keystore returns an encrypted _Keystore containing the PrivateKey.
+func (sk PrivateKey) BytesDer() []byte {
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._BytesDer()
+	}
+
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._BytesDer()
+	}
+
+	return []byte{}
+}
+
+func (sk PrivateKey) BytesRaw() []byte {
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._BytesRaw()
+	}
+
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._BytesRaw()
+	}
+
+	return []byte{}
+}
+
+/*
+ * For `Ed25519` the result of this method call is identical to `toBytesRaw()` while for `ECDSA`
+ * this method is identical to `toBytesDer()`.
+ *
+ * We strongly recommend using `toBytesRaw()` or `toBytesDer()` instead.
+ */
+func (pk PublicKey) Bytes() []byte {
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._BytesDer()
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._BytesRaw()
+	}
+
+	return []byte{}
+}
+
+func (pk PublicKey) BytesRaw() []byte {
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._BytesRaw()
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._BytesRaw()
+	}
+
+	return []byte{}
+}
+
+func (pk PublicKey) BytesDer() []byte {
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._BytesDer()
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._BytesDer()
+	}
+
+	return []byte{}
+}
+
 func (sk PrivateKey) Keystore(passphrase string) ([]byte, error) {
-	return _NewKeystore(sk.keyData, passphrase)
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._Keystore(passphrase)
+	}
+
+	return []byte{}, errors.New("only ed25519 keystore is supported right now")
 }
 
-// WriteKeystore writes an encrypted _Keystore containing the PrivateKey to the provided destination.
 func (sk PrivateKey) WriteKeystore(destination io.Writer, passphrase string) error {
-	keystore, err := sk.Keystore(passphrase)
-	if err != nil {
-		return err
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._WriteKeystore(destination, passphrase)
 	}
 
-	_, err = destination.Write(keystore)
-
-	return err
+	return errors.New("only writing ed25519 keystore is supported right now")
 }
 
-// Sign signs the provided message with the PrivateKey.
+// Sign signs the provided message with the Ed25519PrivateKey.
 func (sk PrivateKey) Sign(message []byte) []byte {
-	return ed25519.Sign(sk.keyData, message)
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._Sign(message)
+	}
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._Sign(message)
+	}
+
+	return []byte{}
 }
 
-// SupportsDerivation returns true if the PrivateKey supports derivation.
 func (sk PrivateKey) SupportsDerivation() bool {
-	return sk.chainCode != nil
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._SupportsDerivation()
+	}
+
+	return false
 }
 
-// Derive a child key compatible with the iOS and Android wallets using a provided wallet/account index. Use index 0 for
-// the default account.
-//
-// This will fail if the key does not support derivation which can be checked by calling SupportsDerivation()
 func (sk PrivateKey) Derive(index uint32) (PrivateKey, error) {
-	if !sk.SupportsDerivation() {
-		return PrivateKey{}, _NewErrBadKeyf("child key cannot be derived from this key")
+	if sk.ed25519PrivateKey != nil {
+		key, err := sk.ed25519PrivateKey._Derive(index)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+
+		return PrivateKey{
+			ed25519PrivateKey: key,
+		}, nil
 	}
 
-	derivedKeyBytes, chainCode := _DeriveChildKey(sk.Bytes(), sk.chainCode, index)
-
-	derivedKey, err := PrivateKeyFromBytes(derivedKeyBytes)
-
-	if err != nil {
-		return PrivateKey{}, err
-	}
-
-	derivedKey.chainCode = chainCode
-
-	return derivedKey, nil
+	return PrivateKey{}, errors.New("only ed25519 derivation is supported right now")
 }
 
 func (sk PrivateKey) LegacyDerive(index int64) (PrivateKey, error) {
-	keyData := _DeriveLegacyChildKey(sk.Bytes(), index)
+	if sk.ed25519PrivateKey != nil {
+		key, err := sk.ed25519PrivateKey._LegacyDerive(index)
+		if err != nil {
+			return PrivateKey{}, err
+		}
 
-	return PrivateKeyFromBytes(keyData)
-}
+		return PrivateKey{
+			ed25519PrivateKey: key,
+		}, nil
+	}
 
-// Bytes returns the byte slice representation of the PublicKey.
-func (pk PublicKey) Bytes() []byte {
-	return pk.keyData
+	return PrivateKey{}, errors.New("only ed25519 legacy derivation is supported")
 }
 
 func (sk PrivateKey) _ToProtoKey() *services.Key {
-	return sk.PublicKey()._ToProtoKey()
+	if sk.ecdsaPrivateKey != nil {
+		return sk.ecdsaPrivateKey._ToProtoKey()
+	}
+
+	if sk.ed25519PrivateKey != nil {
+		return sk.ed25519PrivateKey._ToProtoKey()
+	}
+
+	return &services.Key{}
 }
 
 func (pk PublicKey) _ToProtoKey() *services.Key {
-	return &services.Key{Key: &services.Key_Ed25519{Ed25519: pk.keyData}}
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._ToProtoKey()
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._ToProtoKey()
+	}
+
+	return &services.Key{}
 }
 
 func (pk PublicKey) _ToSignaturePairProtobuf(signature []byte) *services.SignaturePair {
-	return &services.SignaturePair{
-		PubKeyPrefix: pk.keyData,
-		Signature: &services.SignaturePair_Ed25519{
-			Ed25519: signature,
-		},
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._ToSignaturePairProtobuf(signature)
 	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._ToSignaturePairProtobuf(signature)
+	}
+
+	return &services.SignaturePair{}
 }
 
 func (sk PrivateKey) SignTransaction(transaction *Transaction) ([]byte, error) {
-	transaction._RequireOneNodeAccountID()
+	if sk.ecdsaPrivateKey != nil {
+		b, err := sk.ecdsaPrivateKey._SignTransaction(transaction)
+		if err != nil {
+			return []byte{}, err
+		}
 
-	if len(transaction.signedTransactions) == 0 {
-		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
+		return b, nil
 	}
 
-	signature := sk.Sign(transaction.signedTransactions[0].GetBodyBytes())
+	if sk.ed25519PrivateKey != nil {
+		b, err := sk.ed25519PrivateKey._SignTransaction(transaction)
+		if err != nil {
+			return []byte{}, err
+		}
 
-	if transaction._KeyAlreadySigned(sk.PublicKey()) {
-		return []byte{}, nil
+		return b, nil
 	}
 
-	transaction.transactions = make([]*services.Transaction, 0)
-	transaction.publicKeys = append(transaction.publicKeys, sk.PublicKey())
-	transaction.transactionSigners = append(transaction.transactionSigners, nil)
-
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
-			sk.PublicKey()._ToSignaturePairProtobuf(signature),
-		)
-	}
-
-	return signature, nil
+	return []byte{}, errors.New("key type not supported, only ed25519 and ECDSASecp256K1 are supported right now")
 }
 
 func (pk PublicKey) Verify(message []byte, signature []byte) bool {
-	return ed25519.Verify(pk.Bytes(), message, signature)
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._Verify(message, signature)
+	}
+
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._Verify(message, signature)
+	}
+
+	return false
 }
 
 func (pk PublicKey) VerifyTransaction(transaction Transaction) bool {
-	if len(transaction.signedTransactions) == 0 {
-		return false
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._VerifyTransaction(transaction)
 	}
 
-	_ = transaction._BuildAllTransactions()
-
-	for _, transaction := range transaction.signedTransactions {
-		found := false
-		for _, sigPair := range transaction.SigMap.GetSigPair() {
-			if bytes.Equal(sigPair.GetPubKeyPrefix(), pk.Bytes()) {
-				found = true
-				if !pk.Verify(transaction.BodyBytes, sigPair.GetEd25519()) {
-					return false
-				}
-			}
-		}
-
-		if !found {
-			return false
-		}
+	if pk.ed25519PublicKey != nil {
+		return pk.ed25519PublicKey._VerifyTransaction(transaction)
 	}
 
-	return true
+	return false
 }

@@ -14,7 +14,7 @@ import (
 func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -116,7 +116,7 @@ func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenFreezeTransactionNoAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

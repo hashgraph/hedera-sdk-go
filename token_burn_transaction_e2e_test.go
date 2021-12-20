@@ -14,7 +14,7 @@ import (
 func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -93,7 +93,7 @@ func TestIntegrationTokenBurnTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenBurnTransactionNoAmount(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -165,7 +165,7 @@ func TestIntegrationTokenBurnTransactionNoAmount(t *testing.T) {
 func TestIntegrationTokenBurnTransactionNoTokenID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -272,7 +272,7 @@ func DisabledTestIntegrationTokenBurnTransactionTreasuryMustOwnBurnedNft(t *test
 	mintReceipt, err := mint.GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err = NewAccountCreateTransaction().

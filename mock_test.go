@@ -46,7 +46,7 @@ func TestUnitMock(t *testing.T) {
 
 	client, server := NewMockClientAndServer(responses)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

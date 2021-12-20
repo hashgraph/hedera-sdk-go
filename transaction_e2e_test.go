@@ -16,7 +16,7 @@ import (
 func TestIntegrationTransactionAddSignature(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
@@ -59,7 +59,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 func TestIntegrationTransactionSignTransaction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
@@ -94,7 +94,7 @@ func TestIntegrationTransactionSignTransaction(t *testing.T) {
 func TestIntegrationTransactionGetHash(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	tx, err := NewAccountCreateTransaction().

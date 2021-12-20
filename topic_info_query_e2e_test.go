@@ -208,7 +208,7 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 	pubKeys := make([]PublicKey, 3)
 
 	for i := range keys {
-		newKey, err := GeneratePrivateKey()
+		newKey, err := PrivateKeyGenerateEd25519()
 		if err != nil {
 			panic(err)
 		}
