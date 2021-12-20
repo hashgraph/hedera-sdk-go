@@ -102,7 +102,10 @@ func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenT
 			})
 		}
 
-		transfers[tokenID] = tokenTransfersList
+		tempTokenTransferList := _TokenTransfers{tokenTransfersList}
+		sort.Sort(tempTokenTransferList)
+
+		transfers[tokenID] = tempTokenTransferList.transfers
 	}
 
 	return transfers

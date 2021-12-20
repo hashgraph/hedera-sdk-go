@@ -12,6 +12,10 @@ type TokenTransfer struct {
 	Amount    int64
 }
 
+type _TokenTransfers struct {
+	transfers []TokenTransfer
+}
+
 func NewTokenTransfer(accountID AccountID, amount int64) TokenTransfer {
 	return TokenTransfer{
 		AccountID: accountID,
@@ -66,4 +70,39 @@ func TokenTransferFromBytes(data []byte) (TokenTransfer, error) {
 
 func (transfer TokenTransfer) String() string {
 	return fmt.Sprintf("accountID: %s, amount: %d", transfer.AccountID.String(), transfer.Amount)
+}
+
+func (transfers _TokenTransfers) Len() int {
+	return len(transfers.transfers)
+}
+func (transfers _TokenTransfers) Swap(i, j int) {
+	transfers.transfers[i], transfers.transfers[j] = transfers.transfers[j], transfers.transfers[i]
+}
+
+func (transfers _TokenTransfers) Less(i, j int) bool {
+	if transfers.transfers[i].AccountID.Shard < transfers.transfers[j].AccountID.Shard { //nolint
+		return true
+	} else if transfers.transfers[i].AccountID.Shard > transfers.transfers[j].AccountID.Shard {
+		return false
+	}
+
+	if transfers.transfers[i].AccountID.Realm < transfers.transfers[j].AccountID.Realm { //nolint
+		return true
+	} else if transfers.transfers[i].AccountID.Realm > transfers.transfers[j].AccountID.Realm {
+		return false
+	}
+
+	if transfers.transfers[i].AccountID.AliasKey != nil && transfers.transfers[j].AccountID.AliasKey != nil {
+		if transfers.transfers[i].AccountID.String() < transfers.transfers[j].AccountID.String() { //nolint
+			return true
+		} else if transfers.transfers[i].AccountID.String() > transfers.transfers[j].AccountID.String() {
+			return false
+		}
+	}
+
+	if transfers.transfers[i].AccountID.Account < transfers.transfers[j].AccountID.Account { //nolint
+		return true
+	} else { //nolint
+		return false
+	}
 }
