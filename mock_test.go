@@ -36,8 +36,10 @@ func TestUnitMock(t *testing.T) {
 						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
 					Receipt: &services.TransactionReceipt{
-						Status:    services.ResponseCodeEnum_SUCCESS,
-						AccountID: &services.AccountID{AccountNum: 234},
+						Status: services.ResponseCodeEnum_SUCCESS,
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
+							AccountNum: 234,
+						}},
 					},
 				},
 			},

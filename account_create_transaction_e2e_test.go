@@ -52,8 +52,8 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
+	//err = CloseIntegrationTestEnv(env, nil)
+	//require.NoError(t, err)
 }
 
 func TestIntegrationAccountCreateTransactionCanFreezeModify(t *testing.T) {

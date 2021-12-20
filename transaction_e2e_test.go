@@ -122,12 +122,12 @@ func TestIntegrationTransactionGetHash(t *testing.T) {
 }
 
 func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
-	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil})
+	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil, nil})
 
 	TransactionBody := services.TransactionBody{
 		TransactionID: &services.TransactionID{
 			AccountID: &services.AccountID{
-				AccountNum: 542348,
+				Account: &services.AccountID_AccountNum{AccountNum: 542348},
 			},
 			TransactionValidStart: &services.Timestamp{
 				Seconds: id.ValidStart.Unix(),
@@ -135,7 +135,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 			},
 		},
 		NodeAccountID: &services.AccountID{
-			AccountNum: 3,
+			Account: &services.AccountID_AccountNum{AccountNum: 3},
 		},
 		TransactionFee: 200_000_000,
 		TransactionValidDuration: &services.Duration{
@@ -149,13 +149,13 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 					AccountAmounts: []*services.AccountAmount{
 						{
 							AccountID: &services.AccountID{
-								AccountNum: 47439,
+								Account: &services.AccountID_AccountNum{AccountNum: 47439},
 							},
 							Amount: 10,
 						},
 						{
 							AccountID: &services.AccountID{
-								AccountNum: 542348,
+								Account: &services.AccountID_AccountNum{AccountNum: 542348},
 							},
 							Amount: -10,
 						},
@@ -241,19 +241,19 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 
 	switch tx := transaction.(type) {
 	case TransferTransaction:
-		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348, nil}].AsTinybar(), int64(-10))
-		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil}].AsTinybar(), int64(10))
+		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348, nil, nil}].AsTinybar(), int64(-10))
+		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil, nil}].AsTinybar(), int64(10))
 
 		signatures, err := tx.GetSignatures()
 		require.NoError(t, err)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey1)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey2)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey3)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey4)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil}], &publicKey5)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey1)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey2)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey3)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey4)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey5)
 
 		assert.Equal(t, len(tx.GetNodeAccountIDs()), 1)
-		assert.True(t, tx.GetNodeAccountIDs()[0]._Equals(AccountID{0, 0, 3, nil}))
+		assert.True(t, tx.GetNodeAccountIDs()[0]._Equals(AccountID{0, 0, 3, nil, nil}))
 
 		resp, err := tx.Execute(env.Client)
 		require.NoError(t, err)

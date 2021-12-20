@@ -254,3 +254,23 @@ func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+
+func TestIntegrationTransferTransactionCanTransferHbarWithAliasID(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+	aliasAccountID := key.ToAccountID(0, 0)
+
+	resp, err := NewTransferTransaction().
+		AddHbarTransfer(env.OperatorID, NewHbar(1).Negated()).
+		AddHbarTransfer(*aliasAccountID, NewHbar(1)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}

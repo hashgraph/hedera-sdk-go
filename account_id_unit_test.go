@@ -24,3 +24,13 @@ func TestUnitAccountIDChecksumToString(t *testing.T) {
 	}
 	assert.Equal(t, "50.150.520", id.String())
 }
+
+func TestUnitAccountIDFromStringAlias(t *testing.T) {
+	key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+	id, err := AccountIDFromString("0.0." + key.PublicKey().String())
+	require.NoError(t, err)
+	id2 := key.ToAccountID(0, 0)
+
+	assert.Equal(t, id.String(), id2.String())
+}
