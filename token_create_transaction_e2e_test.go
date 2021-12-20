@@ -45,7 +45,7 @@ func TestIntegrationTokenCreateTransactionMultipleKeys(t *testing.T) {
 	pubKeys := make([]PublicKey, 5)
 
 	for i := range keys {
-		newKey, err := GeneratePrivateKey()
+		newKey, err := PrivateKeyGenerateEd25519()
 		require.NoError(t, err)
 
 		keys[i] = newKey
@@ -96,7 +96,7 @@ func TestIntegrationTokenCreateTransactionNoKeys(t *testing.T) {
 	pubKeys := make([]PublicKey, 6)
 
 	for i := range keys {
-		newKey, err := GeneratePrivateKey()
+		newKey, err := PrivateKeyGenerateEd25519()
 		require.NoError(t, err)
 
 		keys[i] = newKey
@@ -162,7 +162,7 @@ func TestIntegrationTokenCreateTransactionAdminSign(t *testing.T) {
 	pubKeys := make([]PublicKey, 6)
 
 	for i := range keys {
-		newKey, err := GeneratePrivateKey()
+		newKey, err := PrivateKeyGenerateEd25519()
 		require.NoError(t, err)
 
 		keys[i] = newKey
@@ -547,7 +547,7 @@ func TestIntegrationTokenCreateTransactionRoyaltyFeeOnlyAllowedForNonFungibleUni
 func TestIntegrationTokenAccountStillOwnsNfts(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

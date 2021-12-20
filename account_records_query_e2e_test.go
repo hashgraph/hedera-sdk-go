@@ -13,7 +13,7 @@ import (
 func TestIntegrationAccountRecordQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
@@ -52,7 +52,7 @@ func TestIntegrationAccountRecordQueryCanExecute(t *testing.T) {
 func TestIntegrationAccountRecordQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
@@ -93,7 +93,7 @@ func TestIntegrationAccountRecordQueryGetCost(t *testing.T) {
 func TestIntegrationAccountRecordQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
@@ -135,7 +135,7 @@ func TestIntegrationAccountRecordQuerySetBigMaxPayment(t *testing.T) {
 func TestIntegrationAccountRecordQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
@@ -177,7 +177,7 @@ func TestIntegrationAccountRecordQuerySetSmallMaxPayment(t *testing.T) {
 func TestIntegrationAccountRecordQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().

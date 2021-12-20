@@ -200,7 +200,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	resp, err := NewTokenCreateTransaction().

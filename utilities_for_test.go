@@ -87,7 +87,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	assert.NotNil(t, env.Client.GetOperatorAccountID())
 	assert.NotNil(t, env.Client.GetOperatorPublicKey())
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	env.Client.SetMaxNodeAttempts(1)

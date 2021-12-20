@@ -40,7 +40,7 @@ func TestIntegrationTokenDeleteTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenDeleteTransactionNoKeys(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	tokenCreate, err := NewTokenCreateTransaction().

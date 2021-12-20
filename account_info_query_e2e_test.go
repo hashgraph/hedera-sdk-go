@@ -13,7 +13,7 @@ import (
 func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -68,7 +68,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -126,7 +126,7 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -181,7 +181,7 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -239,7 +239,7 @@ func TestIntegrationAccountInfoQuerySetBigMaxPayment(t *testing.T) {
 func TestIntegrationAccountInfoQuerySetSmallMaxPayment(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

@@ -161,12 +161,12 @@ func (transaction *TopicUpdateTransaction) ClearTopicMemo() *TopicUpdateTransact
 
 // ClearAdminKey explicitly clears any admin key on the topic by sending an empty key list as the key
 func (transaction *TopicUpdateTransaction) ClearAdminKey() *TopicUpdateTransaction {
-	return transaction.SetAdminKey(PublicKey{nil})
+	return transaction.SetAdminKey(PublicKey{nil, nil})
 }
 
 // ClearSubmitKey explicitly clears any submit key on the topic by sending an empty key list as the key
 func (transaction *TopicUpdateTransaction) ClearSubmitKey() *TopicUpdateTransaction {
-	return transaction.SetSubmitKey(PublicKey{nil})
+	return transaction.SetSubmitKey(PublicKey{nil, nil})
 }
 
 // ClearAutoRenewAccountID explicitly clears any auto renew account ID on the topic by sending an empty accountID

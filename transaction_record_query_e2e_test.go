@@ -13,7 +13,7 @@ import (
 func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -70,7 +70,7 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -128,7 +128,7 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -189,7 +189,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -308,7 +308,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

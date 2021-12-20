@@ -204,5 +204,5 @@ func _ParseKeystore(keystoreBytes []byte, passphrase string) (PrivateKey, error)
 
 	decipher.XORKeyStream(pkBytes, cipherBytes)
 
-	return PrivateKeyFromBytes(pkBytes)
+	return PrivateKeyFromBytesEd25519(pkBytes)
 }

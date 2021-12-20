@@ -54,8 +54,8 @@ func TestUnitNew24MnemonicFromGeneratedMnemonic(t *testing.T) {
 	stKey, err := generatedMnemonic.ToPrivateKey(passphrase)
 	require.NoError(t, err)
 
-	assert.Equal(t, gKey.keyData, slKey.keyData)
-	assert.Equal(t, gKey.keyData, stKey.keyData)
+	assert.Equal(t, gKey.ed25519PrivateKey.keyData, slKey.ed25519PrivateKey.keyData)
+	assert.Equal(t, gKey.ed25519PrivateKey.keyData, stKey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitNew12MnemonicFromGeneratedMnemonic(t *testing.T) {
@@ -79,8 +79,8 @@ func TestUnitNew12MnemonicFromGeneratedMnemonic(t *testing.T) {
 	stKey, err := mnemonicFromString.ToPrivateKey(passphrase)
 	require.NoError(t, err)
 
-	assert.Equal(t, gKey.keyData, slKey.keyData)
-	assert.Equal(t, gKey.keyData, stKey.keyData)
+	assert.Equal(t, gKey.ed25519PrivateKey.keyData, slKey.ed25519PrivateKey.keyData)
+	assert.Equal(t, gKey.ed25519PrivateKey.keyData, stKey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitNewMnemonic(t *testing.T) {
@@ -116,8 +116,8 @@ func TestUnitLegacyMnemonic(t *testing.T) {
 	stKey, err := mnemonicLegacy.ToLegacyPrivateKey()
 	require.NoError(t, err)
 
-	assert.Equal(t, gKey.keyData, slKey.keyData)
-	assert.Equal(t, gKey.keyData, stKey.keyData)
+	assert.Equal(t, gKey.ed25519PrivateKey.keyData, slKey.ed25519PrivateKey.keyData)
+	assert.Equal(t, gKey.ed25519PrivateKey.keyData, stKey.ed25519PrivateKey.keyData)
 	assert.Equal(t, gKey.String(), "302e020100300506032b65700422042000c2f59212cb3417f0ee0d38e7bd876810d04f2dd2cb5c2d8f26ff406573f2bd")
 }
 

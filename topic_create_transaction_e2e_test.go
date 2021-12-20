@@ -59,7 +59,7 @@ func TestIntegrationTopicCreateTransactionDifferentKeys(t *testing.T) {
 	pubKeys := make([]PublicKey, 2)
 
 	for i := range keys {
-		newKey, err := GeneratePrivateKey()
+		newKey, err := PrivateKeyGenerateEd25519()
 		require.NoError(t, err)
 
 		keys[i] = newKey

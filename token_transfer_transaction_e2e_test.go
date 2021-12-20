@@ -13,7 +13,7 @@ import (
 func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -134,7 +134,7 @@ func TestIntegrationTokenTransferTransactionCanExecute(t *testing.T) {
 func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -243,7 +243,7 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 func DisabledTestIntegrationNftTransferTransaction(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -375,7 +375,7 @@ func DisabledTestIntegrationNftTransferTransaction(t *testing.T) { // nolint
 func DisabledTestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(10)
@@ -481,7 +481,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateRecursionDepthTransaction(t *t
 func TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -582,7 +582,7 @@ func TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction(t *testing.T) {
 func TestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -695,7 +695,7 @@ func TestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *testing.T)
 func TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleCommon(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -809,7 +809,7 @@ func TestIntegrationNftTransferTransactionAccountAmountTransfersOnlyForFungibleC
 func DisabledTestIntegrationNftAccountStillOwnsNfts(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -929,7 +929,7 @@ func DisabledTestIntegrationNftAccountStillOwnsNfts(t *testing.T) { // nolint
 func TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)
@@ -990,7 +990,7 @@ func TestIntegrationTokenFeeScheduleUpdateTokenNotAssociatedToFeeCollector(t *te
 func DisabledTestIntegrationTokenFeeScheduleUpdateCustomFeeChargingExceededMax(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
-	newKey, err := GeneratePrivateKey()
+	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
 	newBalance := NewHbar(2)

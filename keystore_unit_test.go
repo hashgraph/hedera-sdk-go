@@ -24,7 +24,7 @@ func TestUnitDecryptKeyStore(t *testing.T) {
 	ksPrivateKey, err := _ParseKeystore([]byte(testKeystore), passphrase)
 	require.NoError(t, err)
 
-	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
+	assert.Equal(t, privateKey.ed25519PrivateKey.keyData, ksPrivateKey.ed25519PrivateKey.keyData)
 }
 
 func TestUnitEncryptAndDecryptKeyStore(t *testing.T) {
@@ -37,5 +37,5 @@ func TestUnitEncryptAndDecryptKeyStore(t *testing.T) {
 	ksPrivateKey, err := _ParseKeystore(keyStore, passphrase)
 	require.NoError(t, err)
 
-	assert.Equal(t, privateKey.keyData, ksPrivateKey.keyData)
+	assert.Equal(t, privateKey.ed25519PrivateKey.keyData, ksPrivateKey.ed25519PrivateKey.keyData)
 }
