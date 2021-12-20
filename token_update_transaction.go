@@ -26,6 +26,7 @@ type TokenUpdateTransaction struct {
 	wipeKey            Key
 	scheduleKey        Key
 	supplyKey          Key
+	pauseKey           Key
 	expirationTime     *time.Time
 	autoRenewPeriod    *time.Duration
 }
@@ -46,6 +47,7 @@ func _TokenUpdateTransactionFromProtobuf(transaction Transaction, pb *services.T
 	wipeKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetWipeKey())
 	scheduleKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFeeScheduleKey())
 	supplyKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetSupplyKey())
+	pauseKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetPauseKey())
 
 	expirationTime := _TimeFromProtobuf(pb.GetTokenUpdate().GetExpiry())
 	autoRenew := _DurationFromProtobuf(pb.GetTokenUpdate().GetAutoRenewPeriod())
@@ -64,6 +66,7 @@ func _TokenUpdateTransactionFromProtobuf(transaction Transaction, pb *services.T
 		wipeKey:            wipeKey,
 		scheduleKey:        scheduleKey,
 		supplyKey:          supplyKey,
+		pauseKey:           pauseKey,
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
@@ -133,6 +136,16 @@ func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey Key) *TokenUpda
 
 func (transaction *TokenUpdateTransaction) GetAdminKey() Key {
 	return transaction.adminKey
+}
+
+func (transaction *TokenUpdateTransaction) SetPauseKey(publicKey Key) *TokenUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.pauseKey = publicKey
+	return transaction
+}
+
+func (transaction *TokenUpdateTransaction) GetPauseKey() Key {
+	return transaction.pauseKey
 }
 
 // The new KYC key of the Token. If Token does not have currently a KYC key, transaction will
@@ -328,6 +341,10 @@ func (transaction *TokenUpdateTransaction) _Build() *services.TransactionBody {
 		body.SupplyKey = transaction.supplyKey._ToProtoKey()
 	}
 
+	if transaction.pauseKey != nil {
+		body.PauseKey = transaction.pauseKey._ToProtoKey()
+	}
+
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
@@ -399,6 +416,10 @@ func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*servic
 
 	if transaction.supplyKey != nil {
 		body.SupplyKey = transaction.supplyKey._ToProtoKey()
+	}
+
+	if transaction.pauseKey != nil {
+		body.PauseKey = transaction.pauseKey._ToProtoKey()
 	}
 
 	return &services.SchedulableTransactionBody{
