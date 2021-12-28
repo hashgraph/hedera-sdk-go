@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	"sort"
 	"time"
 
@@ -9,9 +10,10 @@ import (
 
 type TransferTransaction struct {
 	Transaction
-	tokenTransfers map[TokenID]map[AccountID]int64
-	hbarTransfers  map[AccountID]Hbar
-	nftTransfers   map[TokenID][]TokenNftTransfer
+	tokenTransfers   map[TokenID]map[AccountID]int64
+	hbarTransfers    map[AccountID]Hbar
+	nftTransfers     map[TokenID][]TokenNftTransfer
+	expectedDecimals map[TokenID]uint32
 }
 
 func NewTransferTransaction() *TransferTransaction {
@@ -123,6 +125,32 @@ func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amo
 	} else {
 		transaction.hbarTransfers[accountID] = amount
 	}
+
+	return transaction
+}
+
+func (transaction *TransferTransaction) AddTokenTransferWithDecimal(tokenID TokenID, accountID AccountID, value int64, decimal uint32) *TransferTransaction {
+	transaction._RequireNotFrozen()
+
+	var tokenTransfers map[AccountID]int64
+	var amount int64
+
+	if value, ok := transaction.tokenTransfers[tokenID]; ok {
+		tokenTransfers = value
+	} else {
+		tokenTransfers = make(map[AccountID]int64)
+	}
+
+	transaction.expectedDecimals[tokenID] = decimal
+
+	if transfer, ok := tokenTransfers[accountID]; ok {
+		amount = transfer + value
+	} else {
+		amount = value
+	}
+
+	tokenTransfers[accountID] = amount
+	transaction.tokenTransfers[tokenID] = tokenTransfers
 
 	return transaction
 }
@@ -265,10 +293,16 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 				})
 			}
 
-			body.TokenTransfers = append(body.TokenTransfers, &services.TokenTransferList{
+			bod := &services.TokenTransferList{
 				Token:     tokenID._ToProtobuf(),
 				Transfers: transfers,
-			})
+			}
+
+			if decimal, ok := transaction.expectedDecimals[tokenID]; ok {
+				bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: decimal}
+			}
+
+			body.TokenTransfers = append(body.TokenTransfers, bod)
 		}
 	}
 
@@ -511,10 +545,16 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 				})
 			}
 
-			body.TokenTransfers = append(body.TokenTransfers, &services.TokenTransferList{
+			bod := &services.TokenTransferList{
 				Token:     tokenID._ToProtobuf(),
 				Transfers: transfers,
-			})
+			}
+
+			if decimal, ok := transaction.expectedDecimals[tokenID]; ok {
+				bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: decimal}
+			}
+
+			body.TokenTransfers = append(body.TokenTransfers, bod)
 		}
 	}
 

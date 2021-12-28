@@ -246,6 +246,7 @@ const (
 	StatusRevertedSuccess                                          Status = 280
 	StatusMaxStorageInPriceRegimeHasBeenUsed                       Status = 281
 	StatusInvalidAliasKey                                          Status = 282
+	StatusUnexpectedTokenDecimals                                  Status = 283
 )
 
 // String() returns a string representation of the status
@@ -733,6 +734,8 @@ func (status Status) String() string { // nolint
 		return "MAX_STORAGE_IN_PRICE_REGIME_HAS_BEEN_USED"
 	case StatusInvalidAliasKey:
 		return "INVALID_ALIAS_KEY"
+	case StatusUnexpectedTokenDecimals:
+		return "UNEXPECTED_TOKEN_DECIMALS"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
