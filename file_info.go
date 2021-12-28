@@ -14,6 +14,7 @@ type FileInfo struct {
 	IsDeleted      bool
 	Keys           KeyList
 	FileMemo       string
+	LedgerID       []byte
 }
 
 func _FileInfoFromProtobuf(fileInfo *services.FileGetInfoResponse_FileInfo) (FileInfo, error) {
@@ -41,6 +42,7 @@ func _FileInfoFromProtobuf(fileInfo *services.FileGetInfoResponse_FileInfo) (Fil
 		IsDeleted:      fileInfo.Deleted,
 		Keys:           keys,
 		FileMemo:       fileInfo.Memo,
+		LedgerID:       fileInfo.LedgerId,
 	}, nil
 }
 
@@ -52,9 +54,10 @@ func (fileInfo *FileInfo) _ToProtobuf() *services.FileGetInfoResponse_FileInfo {
 			Seconds: int64(fileInfo.ExpirationTime.Second()),
 			Nanos:   int32(fileInfo.ExpirationTime.Nanosecond()),
 		},
-		Deleted: fileInfo.IsDeleted,
-		Keys:    fileInfo.Keys._ToProtoKeyList(),
-		Memo:    fileInfo.FileMemo,
+		Deleted:  fileInfo.IsDeleted,
+		Keys:     fileInfo.Keys._ToProtoKeyList(),
+		Memo:     fileInfo.FileMemo,
+		LedgerId: fileInfo.LedgerID,
 	}
 }
 

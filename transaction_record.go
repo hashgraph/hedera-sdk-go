@@ -2,8 +2,9 @@ package hedera
 
 import (
 	"fmt"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 	"time"
+
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	protobuf "google.golang.org/protobuf/proto"
 

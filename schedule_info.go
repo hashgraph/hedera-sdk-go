@@ -21,6 +21,7 @@ type ScheduleInfo struct {
 	Memo                     string
 	ScheduledTransactionID   *TransactionID
 	scheduledTransactionBody *services.SchedulableTransactionBody
+	LedgerID                 []byte
 }
 
 func _ScheduleInfoFromProtobuf(pb *services.ScheduleInfo) ScheduleInfo {
@@ -81,6 +82,7 @@ func _ScheduleInfoFromProtobuf(pb *services.ScheduleInfo) ScheduleInfo {
 		Memo:                     pb.Memo,
 		ScheduledTransactionID:   &scheduledTransactionID,
 		scheduledTransactionBody: pb.ScheduledTransactionBody,
+		LedgerID:                 pb.LedgerId,
 	}
 }
 
@@ -107,6 +109,7 @@ func (scheduleInfo *ScheduleInfo) _ToProtobuf() *services.ScheduleInfo { // noli
 		CreatorAccountID:         scheduleInfo.CreatorAccountID._ToProtobuf(),
 		PayerAccountID:           scheduleInfo.PayerAccountID._ToProtobuf(),
 		ScheduledTransactionID:   scheduleInfo.ScheduledTransactionID._ToProtobuf(),
+		LedgerId:                 scheduleInfo.LedgerID,
 	}
 
 	if scheduleInfo.ExecutedAt != nil {

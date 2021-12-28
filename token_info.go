@@ -33,6 +33,7 @@ type TokenInfo struct {
 	CustomFees          []Fee
 	PauseKey            Key
 	PauseStatus         *bool
+	LedgerID            []byte
 }
 
 func _FreezeStatusFromProtobuf(pb services.TokenFreezeStatus) *bool {
@@ -230,6 +231,7 @@ func _TokenInfoFromProtobuf(pb *services.TokenInfo) TokenInfo {
 		CustomFees:          customFees,
 		PauseKey:            pauseKey,
 		PauseStatus:         _PauseStatusFromProtobuf(pb.PauseStatus),
+		LedgerID:            pb.LedgerId,
 	}
 }
 
@@ -312,6 +314,7 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *services.TokenInfo {
 		CustomFees:          customFees,
 		PauseKey:            pauseKey,
 		PauseStatus:         *tokenInfo.PauseStatusToProtobuf(),
+		LedgerId:            tokenInfo.LedgerID,
 	}
 }
 

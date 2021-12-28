@@ -12,6 +12,7 @@ type TokenNftInfo struct {
 	AccountID    AccountID
 	CreationTime time.Time
 	Metadata     []byte
+	LedgerID     []byte
 }
 
 func _TokenNftInfoFromProtobuf(pb *services.TokenNftInfo) TokenNftInfo {
@@ -29,6 +30,7 @@ func _TokenNftInfoFromProtobuf(pb *services.TokenNftInfo) TokenNftInfo {
 		AccountID:    accountID,
 		CreationTime: _TimeFromProtobuf(pb.CreationTime),
 		Metadata:     pb.Metadata,
+		LedgerID:     pb.LedgerId,
 	}
 }
 
@@ -38,6 +40,7 @@ func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *services.TokenNftInfo {
 		AccountID:    tokenNftInfo.AccountID._ToProtobuf(),
 		CreationTime: _TimeToProtobuf(tokenNftInfo.CreationTime),
 		Metadata:     tokenNftInfo.Metadata,
+		LedgerId:     tokenNftInfo.LedgerID,
 	}
 }
 
