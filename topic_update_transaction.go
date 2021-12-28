@@ -459,6 +459,7 @@ func (transaction *TopicUpdateTransaction) SetTransactionID(transactionID Transa
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

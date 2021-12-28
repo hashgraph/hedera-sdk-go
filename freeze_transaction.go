@@ -322,6 +322,7 @@ func (transaction *FreezeTransaction) SetTransactionID(transactionID Transaction
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

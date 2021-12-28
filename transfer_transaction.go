@@ -631,6 +631,7 @@ func (transaction *TransferTransaction) SetTransactionID(transactionID Transacti
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

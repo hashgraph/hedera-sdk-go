@@ -127,6 +127,11 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	}
 
 	receipt, err := resp.GetReceipt(env.Client)
+	switch e := err.(type) {
+	case ErrHederaReceiptStatus:
+		println(e.Status.String(), e.TxID.String())
+		panic(err)
+	}
 	if err != nil {
 		panic(err)
 	}

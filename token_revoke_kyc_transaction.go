@@ -314,6 +314,7 @@ func (transaction *TokenRevokeKycTransaction) SetTransactionID(transactionID Tra
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

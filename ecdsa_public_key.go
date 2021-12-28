@@ -119,7 +119,7 @@ func (pk _ECDSAPublicKey) _VerifyTransaction(transaction Transaction) bool {
 		return false
 	}
 
-	_ = transaction._BuildAllTransactions()
+	_, _ = transaction._BuildAllTransactions()
 
 	for _, tx := range transaction.signedTransactions {
 		found := false

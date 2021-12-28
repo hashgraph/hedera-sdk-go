@@ -370,6 +370,7 @@ func (transaction *FileUpdateTransaction) SetTransactionID(transactionID Transac
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

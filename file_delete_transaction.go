@@ -273,6 +273,7 @@ func (transaction *FileDeleteTransaction) SetTransactionID(transactionID Transac
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

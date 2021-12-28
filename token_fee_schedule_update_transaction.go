@@ -302,6 +302,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionID(transacti
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

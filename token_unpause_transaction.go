@@ -272,6 +272,7 @@ func (transaction *TokenUnpauseTransaction) SetTransactionID(transactionID Trans
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

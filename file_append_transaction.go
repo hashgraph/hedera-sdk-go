@@ -410,6 +410,7 @@ func (transaction *FileAppendTransaction) SetTransactionID(transactionID Transac
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

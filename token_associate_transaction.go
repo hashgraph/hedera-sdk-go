@@ -356,6 +356,7 @@ func (transaction *TokenAssociateTransaction) SetTransactionID(transactionID Tra
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

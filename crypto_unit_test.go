@@ -6,9 +6,10 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/crypto"
 	"strings"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/stretchr/testify/assert"
 

@@ -24,6 +24,8 @@ type Transaction struct {
 	nextNodeIndex        int
 	nextTransactionIndex int
 	maxRetry             int
+	operatorID           AccountID
+	userSetTransactionID bool
 
 	transactionFee           uint64
 	memo                     string
@@ -56,6 +58,7 @@ func _NewTransaction() Transaction {
 		signedTransactions:       make([]*services.SignedTransaction, 0),
 		nodeAccountIDs:           make([]AccountID, 0),
 		freezeError:              nil,
+		userSetTransactionID:     false,
 	}
 }
 
@@ -282,14 +285,14 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 		return transactionHash, errTransactionIsNotFrozen
 	}
 
-	err := transaction._BuildAllTransactions()
+	allTx, err := transaction._BuildAllTransactions()
 	if err != nil {
 		return transactionHash, err
 	}
 
 	for i, node := range transaction.nodeAccountIDs {
 		hash := sha512.New384()
-		_, err := hash.Write(transaction.transactions[i].GetSignedTransactionBytes())
+		_, err := hash.Write(allTx[i].GetSignedTransactionBytes())
 		if err != nil {
 			return transactionHash, err
 		}
@@ -312,7 +315,7 @@ func (transaction *Transaction) _InitTransactionID(client *Client) error {
 	if len(transaction.transactionIDs) == 0 {
 		if client != nil {
 			if client.operator != nil {
-				transaction.SetTransactionID(TransactionIDGenerate(client.operator.accountID))
+				transaction.transactionIDs = []TransactionID{TransactionIDGenerate(client.operator.accountID)}
 			} else {
 				return errNoClientOrTransactionID
 			}
@@ -348,6 +351,7 @@ func _TransactionFreezeWith(
 ) error {
 	if len(transaction.nodeAccountIDs) == 0 {
 		if client != nil {
+			transaction.operatorID = client.GetOperatorAccountID()
 			nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
 			if err != nil {
 				return err
@@ -413,10 +417,13 @@ func _TransactionShouldRetry(_ _Request, response _Response) _ExecutionState {
 
 func _TransactionMakeRequest(request _Request) _ProtoRequest {
 	index := len(request.transaction.nodeAccountIDs)*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
-	_ = request.transaction._BuildTransaction(index)
+	if !request.transaction.operatorID._IsZero() && !request.transaction.userSetTransactionID {
+		request.transaction.transactionIDs[request.transaction.nextTransactionIndex] = TransactionIDGenerate(request.transaction.operatorID)
+	}
+	tx, _ := request.transaction._BuildTransaction(index)
 
 	return _ProtoRequest{
-		transaction: request.transaction.transactions[index],
+		transaction: tx,
 	}
 }
 
@@ -469,13 +476,13 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 		return make([]byte, 0), errTransactionIsNotFrozen
 	}
 
-	err := transaction._BuildAllTransactions()
+	allTx, err := transaction._BuildAllTransactions()
 	if err != nil {
 		return make([]byte, 0), err
 	}
 
 	pbTransactionList, lastError := protobuf.Marshal(&sdk.TransactionList{
-		TransactionList: transaction.transactions,
+		TransactionList: allTx,
 	})
 
 	if lastError != nil {
@@ -486,24 +493,38 @@ func (transaction *Transaction) ToBytes() ([]byte, error) {
 }
 
 func (transaction *Transaction) _SignTransaction(index int) {
+	bodyBytes := transaction.signedTransactions[index].GetBodyBytes()
 	if len(transaction.signedTransactions[index].SigMap.SigPair) != 0 {
 		for i, key := range transaction.publicKeys {
 			if transaction.transactionSigners[i] != nil {
 				if key.ed25519PublicKey != nil {
-					if bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.ed25519PublicKey.keyData) {
-						return
+					if bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[i].PubKeyPrefix, key.ed25519PublicKey.keyData) {
+						if transaction.userSetTransactionID {
+							return
+						}
+						switch t := transaction.signedTransactions[index].SigMap.SigPair[i].Signature.(type) { //nolint
+						case *services.SignaturePair_Ed25519:
+							if bytes.Equal(t.Ed25519, transaction.transactionSigners[i](bodyBytes)) && len(t.Ed25519) > 0 {
+								return
+							}
+						}
 					}
-				}
-				if key.ecdsaPublicKey != nil {
-					if bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[0].PubKeyPrefix, key.ecdsaPublicKey._BytesRaw()) {
-						return
+				} else if key.ecdsaPublicKey != nil {
+					if bytes.Equal(transaction.signedTransactions[index].SigMap.SigPair[i].PubKeyPrefix, key.ecdsaPublicKey._BytesRaw()) {
+						if transaction.userSetTransactionID {
+							return
+						}
+						switch t := transaction.signedTransactions[index].SigMap.SigPair[i].Signature.(type) { //nolint
+						case *services.SignaturePair_ECDSASecp256K1:
+							if bytes.Equal(t.ECDSASecp256K1, transaction.transactionSigners[i](bodyBytes)) {
+								return
+							}
+						}
 					}
 				}
 			}
 		}
 	}
-
-	bodyBytes := transaction.signedTransactions[index].GetBodyBytes()
 
 	for i := 0; i < len(transaction.publicKeys); i++ {
 		publicKey := transaction.publicKeys[i]
@@ -513,22 +534,27 @@ func (transaction *Transaction) _SignTransaction(index int) {
 			continue
 		}
 
+		if !transaction.userSetTransactionID {
+			transaction.signedTransactions[index].SigMap.SigPair = make([]*services.SignaturePair, 0)
+		}
 		transaction.signedTransactions[index].SigMap.SigPair = append(transaction.signedTransactions[index].SigMap.SigPair, publicKey._ToSignaturePairProtobuf(signer(bodyBytes)))
 	}
 }
 
-func (transaction *Transaction) _BuildAllTransactions() error {
+func (transaction *Transaction) _BuildAllTransactions() ([]*services.Transaction, error) {
+	allTransactions := make([]*services.Transaction, 0)
 	for i := 0; i < len(transaction.signedTransactions); i++ {
-		err := transaction._BuildTransaction(i)
+		temp, err := transaction._BuildTransaction(i)
+		allTransactions = append(allTransactions, temp)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return allTransactions, nil
 }
 
-func (transaction *Transaction) _BuildTransaction(index int) error {
+func (transaction *Transaction) _BuildTransaction(index int) (*services.Transaction, error) {
 	if len(transaction.transactions) < index {
 		for i := len(transaction.transactions); i < index; i++ {
 			transaction.transactions = append(transaction.transactions, nil)
@@ -536,21 +562,32 @@ func (transaction *Transaction) _BuildTransaction(index int) error {
 	} else if len(transaction.transactions) > index &&
 		transaction.transactions[index] != nil &&
 		transaction.transactions[index].SignedTransactionBytes != nil {
-		return nil
+		return transaction.transactions[index], nil
 	}
+
+	originalBody := services.TransactionBody{}
+	_ = protobuf.Unmarshal(transaction.signedTransactions[index].BodyBytes, &originalBody)
+	if originalBody.TransactionID.String() != transaction.transactionIDs[transaction.nextTransactionIndex]._ToProtobuf().String() {
+		originalBody.TransactionID = transaction.transactionIDs[transaction.nextTransactionIndex]._ToProtobuf()
+	}
+
+	updatedBody, err := protobuf.Marshal(&originalBody)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to update transaction ID")
+	}
+
+	transaction.signedTransactions[index].BodyBytes = updatedBody
 
 	transaction._SignTransaction(index)
 
 	data, err := protobuf.Marshal(transaction.signedTransactions[index])
 	if err != nil {
-		return errors.Wrap(err, "failed to serialize transactions for building")
+		return nil, errors.Wrap(err, "failed to serialize transactions for building")
 	}
 
-	transaction.transactions = append(transaction.transactions, &services.Transaction{
+	return &services.Transaction{
 		SignedTransactionBytes: data,
-	})
-
-	return nil
+	}, nil
 }
 
 //
@@ -602,6 +639,7 @@ func (transaction *Transaction) GetTransactionID() TransactionID {
 // SetTransactionID sets the TransactionID for this Transaction.
 func (transaction *Transaction) SetTransactionID(transactionID TransactionID) *Transaction {
 	transaction.transactionIDs = []TransactionID{transactionID}
+	transaction.userSetTransactionID = true
 	return transaction
 }
 

@@ -1,4 +1,5 @@
-//+build all unit
+//go:build all || unit
+// +build all unit
 
 package hedera
 
@@ -6,6 +7,8 @@ import (
 	"context"
 	"net"
 	"testing"
+
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/stretchr/testify/require"
 
@@ -68,7 +71,148 @@ func TestUnitMock(t *testing.T) {
 	//assert.Equal(t, balance.Hbars.tinybar, int64(10))
 
 	if server != nil {
-		server.GracefulStop()
+		server.Stop()
+	}
+}
+
+func TestGenerateTransactionIDsPerExecution(t *testing.T) {
+	count := 0
+	transactionIds := make(map[string]bool)
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		var response *services.TransactionResponse
+
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+		require.False(t, transactionIds[transactionId])
+		transactionIds[transactionId] = true
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+		require.NotEqual(t, 0, len(sigMap.SigPair))
+
+		for _, sigPair := range sigMap.SigPair {
+			verified := false
+
+			switch k := sigPair.Signature.(type) {
+			case *services.SignaturePair_Ed25519:
+				pbTemp, _ := PublicKeyFromBytesEd25519(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.Ed25519)
+			case *services.SignaturePair_ECDSASecp256K1:
+				pbTemp, _ := PublicKeyFromBytesECDSA(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.ECDSASecp256K1)
+			}
+			require.True(t, verified)
+		}
+
+		if count < 2 {
+			response = &services.TransactionResponse{
+				NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+			}
+		} else {
+			response = &services.TransactionResponse{
+				NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+			}
+		}
+
+		count += 1
+
+		return response
+	}
+	responses := []interface{}{
+		call, call, call,
+	}
+
+	client, server := NewMockClientAndServer(responses)
+
+	_, err := NewFileCreateTransaction().
+		SetContents([]byte("hello")).
+		Execute(client)
+	require.NoError(t, err)
+
+	if server != nil {
+		server.Stop()
+	}
+}
+
+func TestSingleTransactionIDForExecutions(t *testing.T) {
+	count := 0
+	tran := TransactionIDGenerate(AccountID{Account: 1800})
+	transactionIds := make(map[string]bool)
+	transactionIds[tran._ToProtobuf().String()] = true
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		var response *services.TransactionResponse
+
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+		require.True(t, transactionIds[transactionId])
+		transactionIds[transactionId] = true
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+		require.NotEqual(t, 0, len(sigMap.SigPair))
+
+		for _, sigPair := range sigMap.SigPair {
+			verified := false
+
+			switch k := sigPair.Signature.(type) {
+			case *services.SignaturePair_Ed25519:
+				pbTemp, _ := PublicKeyFromBytesEd25519(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.Ed25519)
+			case *services.SignaturePair_ECDSASecp256K1:
+				pbTemp, _ := PublicKeyFromBytesECDSA(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.ECDSASecp256K1)
+			}
+			require.True(t, verified)
+		}
+
+		if count < 2 {
+			response = &services.TransactionResponse{
+				NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+			}
+		} else {
+			response = &services.TransactionResponse{
+				NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+			}
+		}
+
+		count += 1
+
+		return response
+	}
+	responses := []interface{}{
+		call, call, call,
+	}
+
+	client, server := NewMockClientAndServer(responses)
+
+	_, err := NewFileCreateTransaction().
+		SetTransactionID(tran).
+		SetContents([]byte("hello")).
+		Execute(client)
+	require.NoError(t, err)
+
+	if server != nil {
+		server.Stop()
 	}
 }
 
@@ -78,6 +222,9 @@ func NewMockClientAndServer(responses []interface{}) (*Client, *grpc.Server) {
 		"2.localhost:50211": {Account: 4},
 		"3.localhost:50211": {Account: 5},
 	})
+
+	key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
+	client.SetOperator(AccountID{Account: 1800}, key)
 
 	var server *grpc.Server
 	go func() {
@@ -89,13 +236,29 @@ func NewMockClientAndServer(responses []interface{}) (*Client, *grpc.Server) {
 
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
 	index := 0
-	return func(_srv interface{}, _ctx context.Context, _dec func(interface{}) error, _interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	return func(_srv interface{}, _ctx context.Context, dec func(interface{}) error, _interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 		response := responses[index]
 		index = index + 1
 
 		switch response := response.(type) {
 		case error:
 			return nil, response
+		case *services.TransactionResponse:
+			return response, nil
+		case *services.Response:
+			return response, nil
+		case func(request *services.Transaction) *services.TransactionResponse:
+			request := new(services.Transaction)
+			if err := dec(request); err != nil {
+				return nil, err
+			}
+			return response(request), nil
+		case func(request *services.Query) *services.Response:
+			request := new(services.Query)
+			if err := dec(request); err != nil {
+				return nil, err
+			}
+			return response(request), nil
 		default:
 			return response, nil
 		}

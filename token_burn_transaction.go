@@ -340,6 +340,7 @@ func (transaction *TokenBurnTransaction) SetTransactionID(transactionID Transact
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
+	transaction.userSetTransactionID = true
 	return transaction
 }
 
