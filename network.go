@@ -54,14 +54,27 @@ func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
 }
 
 func (network *_Network) _GetNetworkName() *NetworkName {
-	return network._ManagedNetwork._GetNetworkName()
+	if network._ManagedNetwork._GetLedgerID() != nil {
+		temp, _ := network._ManagedNetwork._GetLedgerID().ToNetworkName()
+		return &temp
+	}
+
+	return nil
 }
 
-func (network *_Network) _SetNetworkName(net NetworkName) {
-	network._ManagedNetwork._SetNetworkName(net)
+func (network *_Network) _GetLedgerID() *LedgerID {
+	if network._ManagedNetwork._GetLedgerID() != nil {
+		return network._ManagedNetwork._GetLedgerID()
+	}
+
+	return &LedgerID{}
+}
+
+func (network *_Network) _SetLedgerID(id LedgerID) {
+	network._ManagedNetwork._SetLedgerID(id)
 
 	if network._ManagedNetwork.transportSecurity {
-		network.addressBook = _ReadAddressBookResource("addressbook/" + net.String() + ".pb")
+		network.addressBook = _ReadAddressBookResource("addressbook/" + id.String() + ".pb")
 
 		if network.addressBook != nil {
 			for _, nod := range network._ManagedNetwork.nodes {
@@ -73,6 +86,15 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 			}
 		}
 	}
+}
+
+func (network *_Network) _SetNetworkName(net NetworkName) {
+	ledger, err := LedgerIDFromNetworkName(net)
+	if err != nil {
+		panic(err)
+	}
+
+	network._SetLedgerID(*ledger)
 }
 
 func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {

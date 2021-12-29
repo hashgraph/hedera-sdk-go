@@ -15,7 +15,7 @@ type _ManagedNetwork struct {
 	minBackOff             time.Duration
 	maxBackOff             time.Duration
 	maxNodesPerTransaction *int
-	networkName            *NetworkName
+	ledgerID               *LedgerID
 	transportSecurity      bool
 	verifyCertificate      bool
 }
@@ -28,7 +28,7 @@ func _NewManagedNetwork() _ManagedNetwork {
 		minBackOff:             250 * time.Millisecond,
 		maxBackOff:             8 * time.Second,
 		maxNodesPerTransaction: nil,
-		networkName:            nil,
+		ledgerID:               nil,
 		transportSecurity:      false,
 		verifyCertificate:      false,
 	}
@@ -116,12 +116,12 @@ func (network *_ManagedNetwork) _GetMaxBackoff() time.Duration {
 	return network.maxBackOff
 }
 
-func (network *_ManagedNetwork) _GetNetworkName() *NetworkName {
-	return network.networkName
+func (network *_ManagedNetwork) _GetLedgerID() *LedgerID {
+	return network.ledgerID
 }
 
-func (network *_ManagedNetwork) _SetNetworkName(net NetworkName) *_ManagedNetwork {
-	network.networkName = &net
+func (network *_ManagedNetwork) _SetLedgerID(id LedgerID) *_ManagedNetwork {
+	network.ledgerID = &id
 
 	return network
 }

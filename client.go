@@ -518,6 +518,14 @@ func (client *Client) GetNetworkName() *NetworkName {
 	return client.network._GetNetworkName()
 }
 
+func (client *Client) SetLedgerID(id LedgerID) {
+	client.network._SetLedgerID(id)
+}
+
+func (client *Client) GetLedgerID() *LedgerID {
+	return client.network._GetLedgerID()
+}
+
 func (client *Client) SetAutoValidateChecksums(validate bool) {
 	client.autoValidateChecksums = validate
 }

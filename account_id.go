@@ -70,8 +70,11 @@ func (id *AccountID) ValidateChecksum(client *Client) error {
 	if id.AliasKey != nil {
 		return errors.New("Account ID contains alias key, unable to validate")
 	}
-	if !id._IsZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
+		var tempChecksum _ParseAddressResult
+		var err error
+		println(client.GetLedgerID()._ForChecksum())
+		tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err
 		}
@@ -83,10 +86,11 @@ func (id *AccountID) ValidateChecksum(client *Client) error {
 			return errChecksumMissing
 		}
 		if tempChecksum.correctChecksum != *id.checksum {
+			temp, _ := client.network.ledgerID.ToNetworkName()
 			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
 				*id.checksum,
 				tempChecksum.correctChecksum,
-				*client.network.networkName))
+				temp))
 		}
 	}
 
@@ -98,8 +102,8 @@ func (id *AccountID) Validate(client *Client) error {
 	if id.AliasKey != nil {
 		return errors.New("Account ID contains alias key, unable to validate")
 	}
-	if !id._IsZero() && client != nil && client.network.networkName != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.network.networkName._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	if !id._IsZero() && client != nil && client.network.ledgerID == nil {
+		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err
 		}
@@ -130,10 +134,14 @@ func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
 	if id.AliasKey != nil {
 		return "", errors.New("Account ID contains alias key, unable get checksum")
 	}
-	if client.GetNetworkName() == nil {
+	if client.GetNetworkName() == nil && client.GetLedgerID() == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := _ChecksumParseAddress(client.GetNetworkName()._LedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	var checksum _ParseAddressResult
+	var err error
+	if client.network.ledgerID != nil {
+		checksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
+	}
 	if err != nil {
 		return "", err
 	}

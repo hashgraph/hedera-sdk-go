@@ -130,7 +130,11 @@ func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amo
 	return transaction
 }
 
-func (transaction *TransferTransaction) AddTokenTransferWithDecimal(tokenID TokenID, accountID AccountID, value int64, decimal uint32) *TransferTransaction {
+func (transaction *TransferTransaction) GetTokenDecimals() map[TokenID]uint32 {
+	return transaction.expectedDecimals
+}
+
+func (transaction *TransferTransaction) AddTokenTransferWithDecimals(tokenID TokenID, accountID AccountID, value int64, decimal uint32) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
 	var tokenTransfers map[AccountID]int64
