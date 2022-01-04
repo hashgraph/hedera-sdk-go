@@ -21,10 +21,11 @@ type Client struct {
 
 	operator *_Operator
 
-	network               _Network
-	mirrorNetwork         *_MirrorNetwork
-	autoValidateChecksums bool
-	maxAttempts           *int
+	network                         _Network
+	mirrorNetwork                   *_MirrorNetwork
+	autoValidateChecksums           bool
+	defaultRegenerateTransactionIDs bool
+	maxAttempts                     *int
 
 	maxBackoff time.Duration
 	minBackoff time.Duration
@@ -223,14 +224,15 @@ func ClientForPreviewnet() *Client {
 // and returns a Client instance which can be used to
 func _NewClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
 	client := Client{
-		maxQueryPayment:       defaultMaxQueryPayment,
-		maxTransactionFee:     defaultMaxTransactionFee,
-		network:               _NewNetwork(),
-		mirrorNetwork:         _NewMirrorNetwork(),
-		autoValidateChecksums: false,
-		maxAttempts:           nil,
-		minBackoff:            250 * time.Millisecond,
-		maxBackoff:            8 * time.Second,
+		maxQueryPayment:                 defaultMaxQueryPayment,
+		maxTransactionFee:               defaultMaxTransactionFee,
+		network:                         _NewNetwork(),
+		mirrorNetwork:                   _NewMirrorNetwork(),
+		autoValidateChecksums:           false,
+		maxAttempts:                     nil,
+		minBackoff:                      250 * time.Millisecond,
+		maxBackoff:                      8 * time.Second,
+		defaultRegenerateTransactionIDs: true,
 	}
 
 	_ = client.SetNetwork(network)
@@ -523,6 +525,14 @@ func (client *Client) SetAutoValidateChecksums(validate bool) {
 }
 
 func (client *Client) GetAutoValidateChecksums() bool {
+	return client.autoValidateChecksums
+}
+
+func (client *Client) SetDefaultRegenerateTransactionIDs(regen bool) {
+	client.defaultRegenerateTransactionIDs = regen
+}
+
+func (client *Client) GetDefaultRegenerateTransactionIDs() bool {
 	return client.autoValidateChecksums
 }
 

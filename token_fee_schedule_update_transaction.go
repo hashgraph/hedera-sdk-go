@@ -156,23 +156,8 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) *TokenFeeScheduleUpdateTransaction {
-	if !transaction.IsFrozen() {
-		_, _ = transaction.Freeze()
-	} else {
-		transaction.transactions = make([]*services.Transaction, 0)
-	}
-
-	if transaction._KeyAlreadySigned(publicKey) {
-		return transaction
-	}
-
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		signature := signer(transaction.signedTransactions[index].GetBodyBytes())
-
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
-			publicKey._ToSignaturePairProtobuf(signature),
-		)
+	if !transaction._KeyAlreadySigned(publicKey) {
+		transaction._SignWith(publicKey, signer)
 	}
 
 	return transaction
@@ -190,6 +175,10 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
+	if transaction.lockError != nil {
+		return TransactionResponse{}, transaction.lockError
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
@@ -197,7 +186,13 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 		}
 	}
 
-	transactionID := transaction.GetTransactionID()
+	var transactionID TransactionID
+	if transaction.transactionIDs._Length() > 0 {
+		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
+		case TransactionID:
+			transactionID = t
+		}
+	}
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
@@ -324,19 +319,29 @@ func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey Pub
 		return transaction
 	}
 
-	if len(transaction.signedTransactions) == 0 {
+	if transaction.signedTransactions._Length() == 0 {
 		return transaction
 	}
 
-	transaction.transactions = make([]*services.Transaction, 0)
+	transaction.transactions = _NewLockedSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+	transaction.transactionIDs.locked = true
 
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
+	for index := 0; index < transaction.signedTransactions._Length(); index++ {
+		var temp *services.SignedTransaction
+		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
+		case *services.SignedTransaction:
+			temp = t
+		}
+		temp.SigMap.SigPair = append(
+			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
+		_, err := transaction.signedTransactions._Set(index, temp)
+		if err != nil {
+			transaction.lockError = err
+		}
 	}
 
 	return transaction

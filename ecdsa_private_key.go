@@ -171,11 +171,11 @@ func (sk _ECDSAPrivateKey) _ToProtoKey() *services.Key {
 func (sk _ECDSAPrivateKey) _SignTransaction(transaction *Transaction) ([]byte, error) {
 	transaction._RequireOneNodeAccountID()
 
-	if len(transaction.signedTransactions) == 0 {
+	if transaction.signedTransactions._Length() == 0 {
 		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
 	}
 
-	signature := sk._Sign(transaction.signedTransactions[0].GetBodyBytes())
+	signature := sk._Sign(transaction.signedTransactions._GetSignedTransactions()[0].GetBodyBytes())
 
 	publicKey := sk._PublicKey()
 	if publicKey == nil {
@@ -190,15 +190,22 @@ func (sk _ECDSAPrivateKey) _SignTransaction(transaction *Transaction) ([]byte, e
 		return []byte{}, nil
 	}
 
-	transaction.transactions = make([]*services.Transaction, 0)
+	transaction.transactions = _NewLockedSlice()
 	transaction.publicKeys = append(transaction.publicKeys, wrappedPublicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+	transaction.transactionIDs.locked = true
 
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
+	for index := 0; index < transaction.signedTransactions._Length(); index++ {
+		temp := transaction.signedTransactions._GetSignedTransactions()[index]
+
+		temp.SigMap.SigPair = append(
+			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
+		_, err := transaction.signedTransactions._Set(index, temp)
+		if err != nil {
+			transaction.lockError = err
+		}
 	}
 
 	return signature, nil

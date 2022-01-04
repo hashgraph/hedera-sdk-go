@@ -21,6 +21,7 @@ const (
 	executionStateRetry    _ExecutionState = 0
 	executionStateFinished _ExecutionState = 1
 	executionStateError    _ExecutionState = 2
+	executionStateExpired  _ExecutionState = 3
 )
 
 type _Method struct {
@@ -167,6 +168,16 @@ func _Execute(
 			errPersistent = mapStatusError(request, resp)
 			_DelayForAttempt(minBackoff, maxBackoff, attempt)
 			continue
+		case executionStateExpired:
+			if !client.GetOperatorAccountID()._IsZero() && request.transaction.defaultRegenerateTransactionIDs && !request.transaction.transactionIDs.locked {
+				_, err = request.transaction.transactionIDs._Set(request.transaction.nextTransactionIndex, TransactionIDGenerate(client.GetOperatorAccountID()))
+				if err != nil {
+					panic(err)
+				}
+				continue
+			} else {
+				return _IntermediateResponse{}, mapStatusError(request, resp)
+			}
 		case executionStateError:
 			return _IntermediateResponse{}, mapStatusError(request, resp)
 		case executionStateFinished:

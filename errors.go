@@ -29,6 +29,7 @@ var errParameterNull = errors.New("the parameter can't be null")
 var errNetworkMismatch = errors.New("network mismatch; some IDs have different networks set")
 var errNetworkNameMissing = errors.New("can't derive checksum for ID without knowing which _Network the ID is for")
 var errChecksumMissing = errors.New("no checksum provided")
+var errLockedSlice = errors.New("slice is locked")
 
 type ErrInvalidNodeAccountIDSet struct {
 	NodeAccountID AccountID
