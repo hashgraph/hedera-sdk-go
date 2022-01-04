@@ -3,11 +3,9 @@ package hedera
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -51,19 +49,13 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 
 	b := bytes.Trim(byt, "\x00")
 
-	d := new(big.Int)
-	d.SetBytes(b)
-
-	privateKey := new(ecdsa.PrivateKey)
-	privateKey.D = d
-
-	x, y := elliptic.P256().ScalarBaseMult(b)
-	privateKey.Curve = elliptic.P256()
-	privateKey.X = x
-	privateKey.Y = y
+	key, err := crypto.ToECDSA(b)
+	if err != nil {
+		return nil, err
+	}
 
 	return &_ECDSAPrivateKey{
-		privateKey,
+		key,
 	}, nil
 }
 
@@ -82,19 +74,13 @@ func _ECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
 
 	b := bytes.Trim(decoded, "\x00")
 
-	d := new(big.Int)
-	d.SetBytes(b)
-
-	privateKey := new(ecdsa.PrivateKey)
-	privateKey.D = d
-
-	x, y := elliptic.P256().ScalarBaseMult(b)
-	privateKey.Curve = elliptic.P256()
-	privateKey.X = x
-	privateKey.Y = y
+	key, err := crypto.ToECDSA(b)
+	if err != nil {
+		return nil, err
+	}
 
 	return &_ECDSAPrivateKey{
-		privateKey,
+		key,
 	}, nil
 }
 

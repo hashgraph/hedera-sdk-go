@@ -6,9 +6,10 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/crypto"
 	"strings"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/stretchr/testify/assert"
 
@@ -389,4 +390,10 @@ func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
 
 	_, err = newKey.SignTransaction(&tx.Transaction)
 	require.NoError(t, err)
+}
+
+func TestUnitPublicKeyFromPrivateKeyString(t *testing.T) {
+	key, err := PrivateKeyFromStringECSDA("3030020100300706052b8104000a04220420d790c27a81d745ad3340e27dacedc982d1f9252c0d7a4582da9847e2094603d4")
+	require.NoError(t, err)
+	require.Equal(t, "302f300706052b8104000a032400042102b46925b64940f5d7d3f394aba914c05f1607fa42e9e721afee0770cb55797d99", key.PublicKey().String())
 }
