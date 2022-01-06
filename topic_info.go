@@ -16,7 +16,7 @@ type TopicInfo struct {
 	SubmitKey          Key
 	AutoRenewPeriod    time.Duration
 	AutoRenewAccountID *AccountID
-	LedgerID           []byte
+	LedgerID           LedgerID
 }
 
 func _TopicInfoFromProtobuf(topicInfo *services.ConsensusTopicInfo) (TopicInfo, error) {
@@ -32,7 +32,7 @@ func _TopicInfoFromProtobuf(topicInfo *services.ConsensusTopicInfo) (TopicInfo, 
 			time.Now().Hour(), time.Now().Minute(), int(topicInfo.ExpirationTime.Seconds),
 			int(topicInfo.ExpirationTime.Nanos), time.Now().Location()),
 		AutoRenewPeriod: _DurationFromProtobuf(topicInfo.AutoRenewPeriod),
-		LedgerID:        topicInfo.LedgerId,
+		LedgerID:        LedgerID{topicInfo.LedgerId},
 	}
 
 	if adminKey := topicInfo.AdminKey; adminKey != nil {
@@ -63,7 +63,7 @@ func (topicInfo *TopicInfo) _ToProtobuf() *services.ConsensusTopicInfo {
 		SubmitKey:        topicInfo.SubmitKey._ToProtoKey(),
 		AutoRenewPeriod:  _DurationToProtobuf(topicInfo.AutoRenewPeriod),
 		AutoRenewAccount: topicInfo.AutoRenewAccountID._ToProtobuf(),
-		LedgerId:         topicInfo.LedgerID,
+		LedgerId:         topicInfo.LedgerID.ToBytes(),
 	}
 }
 

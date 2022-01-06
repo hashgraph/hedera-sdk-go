@@ -130,7 +130,7 @@ func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amo
 	return transaction
 }
 
-func (transaction *TransferTransaction) GetTokenDecimals() map[TokenID]uint32 {
+func (transaction *TransferTransaction) GetTokenIDDecimals() map[TokenID]uint32 {
 	return transaction.expectedDecimals
 }
 

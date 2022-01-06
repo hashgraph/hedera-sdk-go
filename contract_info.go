@@ -17,7 +17,7 @@ type ContractInfo struct {
 	Storage           uint64
 	ContractMemo      string
 	Balance           uint64
-	LedgerID          []byte
+	LedgerID          LedgerID
 }
 
 func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
@@ -49,7 +49,7 @@ func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_Co
 		Storage:           uint64(contractInfo.Storage),
 		ContractMemo:      contractInfo.Memo,
 		Balance:           contractInfo.Balance,
-		LedgerID:          contractInfo.LedgerId,
+		LedgerID:          LedgerID{contractInfo.LedgerId},
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func (contractInfo *ContractInfo) _ToProtobuf() *services.ContractGetInfoRespons
 		Storage:           int64(contractInfo.Storage),
 		Memo:              contractInfo.ContractMemo,
 		Balance:           contractInfo.Balance,
-		LedgerId:          contractInfo.LedgerID,
+		LedgerId:          contractInfo.LedgerID.ToBytes(),
 	}
 }
 

@@ -397,12 +397,12 @@ func (client *Client) Close() error {
 	return nil
 }
 
-// SetNetwork replaces all _Nodes in the Client with a new set of _Nodes.
-// (e.g. for an Address Book update).
+// Deprecated: Use SetLedgerID instead
 func (client *Client) SetNetwork(network map[string]AccountID) error {
 	return client.network.SetNetwork(network)
 }
 
+// Deprecated: Use GetLedgerID instead
 func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network._GetNetwork()
 }

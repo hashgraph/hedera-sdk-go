@@ -1,8 +1,8 @@
 package hedera
 
 import (
+	"bytes"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -14,28 +14,16 @@ type LedgerID struct {
 func LedgerIDFromString(id string) (*LedgerID, error) {
 	switch id {
 	case "mainnet": //nolint
-		temp, err := hex.DecodeString("00")
-		if err != nil {
-			return &LedgerID{}, err
-		}
 		return &LedgerID{
-			LedgerID: temp,
+			LedgerID: []byte{0},
 		}, nil
 	case "testnet": //nolint
-		temp, err := hex.DecodeString("01")
-		if err != nil {
-			return &LedgerID{}, err
-		}
 		return &LedgerID{
-			LedgerID: temp,
+			LedgerID: []byte{1},
 		}, nil
 	case "previewnet": //nolint
-		temp, err := hex.DecodeString("02")
-		if err != nil {
-			return &LedgerID{}, err
-		}
 		return &LedgerID{
-			LedgerID: temp,
+			LedgerID: []byte{2},
 		}, nil
 	default:
 		temp, err := hex.DecodeString(id)
@@ -57,28 +45,16 @@ func LedgerIDFromBytes(byt []byte) *LedgerID {
 func LedgerIDFromNetworkName(network NetworkName) (*LedgerID, error) {
 	switch network.String() {
 	case "mainnet": //nolint
-		temp, err := hex.DecodeString("00")
-		if err != nil {
-			return &LedgerID{}, err
-		}
 		return &LedgerID{
-			LedgerID: temp,
+			LedgerID: []byte{0},
 		}, nil
 	case "testnet": //nolint
-		temp, err := hex.DecodeString("01")
-		if err != nil {
-			return &LedgerID{}, err
-		}
 		return &LedgerID{
-			LedgerID: temp,
+			LedgerID: []byte{1},
 		}, nil
 	case "previewnet": //nolint
-		temp, err := hex.DecodeString("02")
-		if err != nil {
-			return &LedgerID{}, err
-		}
 		return &LedgerID{
-			LedgerID: temp,
+			LedgerID: []byte{2},
 		}, nil
 	default:
 		return &LedgerID{}, errors.New("unknown network in network name")
@@ -86,23 +62,20 @@ func LedgerIDFromNetworkName(network NetworkName) (*LedgerID, error) {
 }
 
 func NewLedgerIDMainnet() *LedgerID {
-	temp, _ := hex.DecodeString("00")
 	return &LedgerID{
-		LedgerID: temp,
+		LedgerID: []byte{0},
 	}
 }
 
 func NewLedgerIDTestnet() *LedgerID {
-	temp, _ := hex.DecodeString("01")
 	return &LedgerID{
-		LedgerID: temp,
+		LedgerID: []byte{1},
 	}
 }
 
 func NewLedgerIDPreviewnet() *LedgerID {
-	temp, _ := hex.DecodeString("02")
 	return &LedgerID{
-		LedgerID: temp,
+		LedgerID: []byte{2},
 	}
 }
 
@@ -119,7 +92,8 @@ func (id *LedgerID) IsPreviewnet() bool {
 }
 
 func (id *LedgerID) String() string {
-	switch hex.EncodeToString(id.LedgerID) {
+	h := hex.EncodeToString(id.LedgerID)
+	switch h {
 	case "00":
 		return "mainnet"
 	case "01":
@@ -127,21 +101,19 @@ func (id *LedgerID) String() string {
 	case "02":
 		return "previewnet"
 	default:
-		return hex.EncodeToString(id.LedgerID)
+		return h
 	}
 }
 
 func (id *LedgerID) _ForChecksum() string {
-	h := hex.EncodeToString(id.LedgerID)
-	switch h {
-	case "00":
+	if bytes.Equal(id.LedgerID, []byte{0}) { //nolint
 		return "0"
-	case "01":
+	} else if bytes.Equal(id.LedgerID, []byte{1}) {
 		return "1"
-	case "02":
+	} else if bytes.Equal(id.LedgerID, []byte{2}) {
 		return "2"
-	default:
-		return h
+	} else {
+		return hex.EncodeToString(id.LedgerID)
 	}
 }
 
@@ -157,7 +129,7 @@ func (id *LedgerID) ToNetworkName() (NetworkName, error) {
 		return NetworkNameTestnet, nil
 	case "02":
 		return NetworkNamePreviewnet, nil
+	default:
+		return NetworkNameOther, nil
 	}
-
-	panic(fmt.Sprintf("unreachable: LedgerID.ToNetworkName() switch statement is non-exhaustive. LederID: %s", hex.EncodeToString(id.LedgerID)))
 }

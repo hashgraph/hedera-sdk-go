@@ -6,9 +6,11 @@ const (
 	NetworkNameMainnet    NetworkName = "mainnet"
 	NetworkNameTestnet    NetworkName = "testnet"
 	NetworkNamePreviewnet NetworkName = "previewnet"
+	NetworkNameOther      NetworkName = "other"
 )
 
-func (networkName NetworkName) String() string {
+// Deprecated
+func (networkName NetworkName) String() string { //nolint
 	switch networkName {
 	case NetworkNameMainnet:
 		return "mainnet"
@@ -16,11 +18,14 @@ func (networkName NetworkName) String() string {
 		return "testnet"
 	case NetworkNamePreviewnet:
 		return "previewnet"
+	case NetworkNameOther:
+		return "other"
 	}
 
 	panic("unreachable: NetworkName.String() switch statement is non-exhaustive.")
 }
 
+// Deprecated
 func NetworkNameFromString(s string) NetworkName { //nolint
 	switch s {
 	case "mainnet":
@@ -29,6 +34,8 @@ func NetworkNameFromString(s string) NetworkName { //nolint
 		return NetworkNameTestnet
 	case "previewnet":
 		return NetworkNamePreviewnet
+	case "other":
+		return NetworkNameOther
 	}
 
 	panic("unreachable: NetworkName.String() switch statement is non-exhaustive.")
