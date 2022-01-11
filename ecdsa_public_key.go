@@ -3,7 +3,6 @@ package hedera
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"encoding/hex"
 	"strings"
 
@@ -97,7 +96,7 @@ func (pk _ECDSAPublicKey) _StringDer() string {
 }
 
 func (pk _ECDSAPublicKey) _ToProtoKey() *services.Key {
-	b := elliptic.MarshalCompressed(crypto.S256(), pk.X, pk.Y)
+	b := crypto.CompressPubkey(pk.PublicKey)
 	return &services.Key{Key: &services.Key_ECDSASecp256K1{ECDSASecp256K1: b}}
 }
 
