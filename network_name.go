@@ -1,29 +1,16 @@
 package hedera
 
-import "fmt"
-
 type NetworkName string
 
 const (
 	NetworkNameMainnet    NetworkName = "mainnet"
 	NetworkNameTestnet    NetworkName = "testnet"
 	NetworkNamePreviewnet NetworkName = "previewnet"
+	NetworkNameOther      NetworkName = "other"
 )
 
-func (networkName NetworkName) _LedgerID() string {
-	switch networkName {
-	case NetworkNameMainnet:
-		return "0"
-	case NetworkNameTestnet:
-		return "1"
-	case NetworkNamePreviewnet:
-		return "2"
-	}
-
-	panic(fmt.Sprintf("unreachable: NetworkName._LedgerID() switch statement is non-exhaustive. NetworkName: %s", networkName))
-}
-
-func (networkName NetworkName) String() string {
+// Deprecated
+func (networkName NetworkName) String() string { //nolint
 	switch networkName {
 	case NetworkNameMainnet:
 		return "mainnet"
@@ -31,6 +18,24 @@ func (networkName NetworkName) String() string {
 		return "testnet"
 	case NetworkNamePreviewnet:
 		return "previewnet"
+	case NetworkNameOther:
+		return "other"
+	}
+
+	panic("unreachable: NetworkName.String() switch statement is non-exhaustive.")
+}
+
+// Deprecated
+func NetworkNameFromString(s string) NetworkName { //nolint
+	switch s {
+	case "mainnet":
+		return NetworkNameMainnet
+	case "testnet":
+		return NetworkNameTestnet
+	case "previewnet":
+		return NetworkNamePreviewnet
+	case "other":
+		return NetworkNameOther
 	}
 
 	panic("unreachable: NetworkName.String() switch statement is non-exhaustive.")

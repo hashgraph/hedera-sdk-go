@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/protobuf/types/known/wrapperspb"
+
 	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -19,6 +21,7 @@ type TransactionRecord struct {
 	Transfers                  []Transfer
 	TokenTransfers             map[TokenID][]TokenTransfer
 	NftTransfers               map[TokenID][]TokenNftTransfer
+	ExpectedDecimals           map[TokenID]uint32
 	CallResult                 *ContractFunctionResult
 	CallResultIsCreate         bool
 	AssessedCustomFees         []AssessedCustomFee
@@ -50,6 +53,7 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 	var accountTransfers = make([]Transfer, len(pb.TransferList.AccountAmounts))
 	var tokenTransfers = make(map[TokenID][]TokenTransfer)
 	var nftTransfers = make(map[TokenID][]TokenNftTransfer)
+	var expectedDecimals = make(map[TokenID]uint32)
 
 	for i, element := range pb.TransferList.AccountAmounts {
 		accountTransfers[i] = _TransferFromProtobuf(element)
@@ -65,6 +69,12 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 		for _, accountAmount := range tokenTransfer.Transfers {
 			if token := _TokenIDFromProtobuf(tokenTransfer.Token); token != nil {
 				tokenTransfers[*token] = append(tokenTransfers[*token], _TokenTransferFromProtobuf(accountAmount))
+			}
+		}
+
+		if tokenTransfer.ExpectedDecimals != nil {
+			if token := _TokenIDFromProtobuf(tokenTransfer.Token); token != nil {
+				expectedDecimals[*token] = tokenTransfer.ExpectedDecimals.Value
 			}
 		}
 	}
@@ -143,10 +153,16 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionRecord, erro
 			tokenTemp = append(tokenTemp, accountAmount._ToProtobuf())
 		}
 
-		tokenTransfers = append(tokenTransfers, &services.TokenTransferList{
+		bod := &services.TokenTransferList{
 			Token:     tokenID._ToProtobuf(),
 			Transfers: tokenTemp,
-		})
+		}
+
+		if decimal, ok := record.ExpectedDecimals[tokenID]; ok {
+			bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: decimal}
+		}
+
+		tokenTransfers = append(tokenTransfers, bod)
 	}
 
 	for tokenID, nftTransfers := range record.NftTransfers {

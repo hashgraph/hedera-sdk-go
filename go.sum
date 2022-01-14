@@ -197,6 +197,8 @@ github.com/graph-gophers/graphql-go v0.0.0-20201113091052-beb923fada29/go.mod h1
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20211208075821-eefdb77448d9 h1:MLRRxY3hR4UCpHZLCJiXP8W2w49sRbvhUQqSYeoSaq8=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20211208075821-eefdb77448d9/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20211228072109-84b5087d2be4 h1:gunO98zmBMAkXgJlsV4QDp7mGuwib0wFTauaDstkigU=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20211228072109-84b5087d2be4/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
 github.com/hashicorp/go-bexpr v0.1.10/go.mod h1:oxlubA2vC/gFVfX1A6JGp7ls7uCDlfJn732ehYYg+g0=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=

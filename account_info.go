@@ -27,6 +27,7 @@ type AccountInfo struct {
 	OwnedNfts                      int64
 	MaxAutomaticTokenAssociations  uint32
 	AliasKey                       *PublicKey
+	LedgerID                       LedgerID
 }
 
 func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
@@ -100,6 +101,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		OwnedNfts:                      pb.OwnedNfts,
 		MaxAutomaticTokenAssociations:  uint32(pb.MaxAutomaticTokenAssociations),
 		AliasKey:                       alias,
+		LedgerID:                       LedgerID{pb.LedgerId},
 	}, nil
 }
 
@@ -142,6 +144,7 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		OwnedNfts:                      info.OwnedNfts,
 		MaxAutomaticTokenAssociations:  int32(info.MaxAutomaticTokenAssociations),
 		Alias:                          alias,
+		LedgerId:                       info.LedgerID.ToBytes(),
 	}
 }
 
