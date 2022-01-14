@@ -142,3 +142,25 @@ func TopicIDFromBytes(data []byte) (TopicID, error) {
 
 	return *_TopicIDFromProtobuf(&pb), nil
 }
+
+// TopicIDFromSolidityAddress constructs an TopicID from a string
+// representation of a _Solidity address
+func TopicIDFromSolidityAddress(s string) (TopicID, error) {
+	shard, realm, topic, err := _IdFromSolidityAddress(s)
+	if err != nil {
+		return TopicID{}, err
+	}
+
+	return TopicID{
+		Shard:    shard,
+		Realm:    realm,
+		Topic:  topic,
+		checksum: nil,
+	}, nil
+}
+
+// ToSolidityAddress returns the string representation of the TopicID as a
+// _Solidity address.
+func (id TopicID) ToSolidityAddress() string {
+	return _IdToSolidityAddress(id.Shard, id.Realm, id.Topic)
+}
