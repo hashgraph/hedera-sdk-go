@@ -580,7 +580,7 @@ func TestIntegrationTokenFeeScheduleUpdateHugeAmountTransaction(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *testing.T) {
+func DisabledTestIntegrationTokenFeeScheduleUpdateHugeAmountOneTransaction(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()

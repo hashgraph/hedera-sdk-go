@@ -119,13 +119,13 @@ func (pk _Ed25519PublicKey) _Verify(message []byte, signature []byte) bool {
 }
 
 func (pk _Ed25519PublicKey) _VerifyTransaction(transaction Transaction) bool {
-	if len(transaction.signedTransactions) == 0 {
+	if transaction.signedTransactions._Length() == 0 {
 		return false
 	}
 
-	_ = transaction._BuildAllTransactions()
+	_, _ = transaction._BuildAllTransactions()
 
-	for _, tx := range transaction.signedTransactions {
+	for _, tx := range transaction.signedTransactions._GetSignedTransactions() {
 		found := false
 		for _, sigPair := range tx.SigMap.GetSigPair() {
 			if bytes.Equal(sigPair.GetPubKeyPrefix(), pk._Bytes()) {
