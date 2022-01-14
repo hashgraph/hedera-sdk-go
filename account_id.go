@@ -73,7 +73,6 @@ func (id *AccountID) ValidateChecksum(client *Client) error {
 	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
 		var tempChecksum _ParseAddressResult
 		var err error
-		println(client.GetLedgerID()._ForChecksum())
 		tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err
