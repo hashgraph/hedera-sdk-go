@@ -124,6 +124,28 @@ func (id *TokenID) ValidateChecksum(client *Client) error {
 	return nil
 }
 
+// TokenIDFromSolidityAddress constructs a TokenID from a string
+// representation of a _Solidity address
+func TokenIDFromSolidityAddress(s string) (TokenID, error) {
+	shard, realm, account, err := _IdFromSolidityAddress(s)
+	if err != nil {
+		return AccountID{}, err
+	}
+
+	return TokenID{
+		Shard:    shard,
+		Realm:    realm,
+		Account:  account,
+		checksum: nil,
+	}, nil
+}
+
+// ToSolidityAddress returns the string representation of the TokenID as a
+// _Solidity address.
+func (id TokenID) ToSolidityAddress() string {
+	return _IdToSolidityAddress(id.Shard, id.Realm, id.Token)
+}
+
 // Deprecated
 func (id *TokenID) Validate(client *Client) error {
 	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
