@@ -154,7 +154,7 @@ func TopicIDFromSolidityAddress(s string) (TopicID, error) {
 	return TopicID{
 		Shard:    shard,
 		Realm:    realm,
-		Account:  topic,
+		Topic:  topic,
 		checksum: nil,
 	}, nil
 }
