@@ -127,15 +127,15 @@ func (id *TokenID) ValidateChecksum(client *Client) error {
 // TokenIDFromSolidityAddress constructs a TokenID from a string
 // representation of a _Solidity address
 func TokenIDFromSolidityAddress(s string) (TokenID, error) {
-	shard, realm, account, err := _IdFromSolidityAddress(s)
+	shard, realm, token, err := _IdFromSolidityAddress(s)
 	if err != nil {
-		return AccountID{}, err
+		return TokenID{}, err
 	}
 
 	return TokenID{
 		Shard:    shard,
 		Realm:    realm,
-		Account:  account,
+		Account:  token,
 		checksum: nil,
 	}, nil
 }
