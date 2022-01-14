@@ -142,3 +142,25 @@ func (id ScheduleID) _IsZero() bool {
 func (id ScheduleID) _Equals(other ScheduleID) bool { // nolint
 	return id.Shard == other.Shard && id.Realm == other.Realm && id.Schedule == other.Schedule
 }
+
+// ToSolidityAddress returns the string representation of the ScheduleID as a
+// _Solidity address.
+func (id ScheduleID) ToSolidityAddress() string {
+	return _IdToSolidityAddress(id.Shard, id.Realm, id.Schedule)
+}
+
+// ScheduleIDFromSolidityAddress constructs an ScheduleID from a string
+// representation of a _Solidity address
+func ScheduleIDFromSolidityAddress(s string) (ScheduleID, error) {
+	shard, realm, schedule, err := _IdFromSolidityAddress(s)
+	if err != nil {
+		return ScheduleID{}, err
+	}
+
+	return ScheduleID{
+		Shard:    shard,
+		Realm:    realm,
+		Schedule: schedule,
+		checksum: nil,
+	}, nil
+}
