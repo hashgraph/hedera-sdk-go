@@ -232,6 +232,18 @@ func (transaction *ScheduleSignTransaction) SetMaxTransactionFee(fee Hbar) *Sche
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *ScheduleSignTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ScheduleSignTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *ScheduleSignTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *ScheduleSignTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }

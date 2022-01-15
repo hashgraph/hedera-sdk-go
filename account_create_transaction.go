@@ -395,6 +395,18 @@ func (transaction *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *Acc
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *AccountCreateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *AccountCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *AccountCreateTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *AccountCreateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }

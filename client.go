@@ -541,7 +541,7 @@ func (client *Client) SetDefaultRegenerateTransactionIDs(regen bool) {
 }
 
 func (client *Client) GetDefaultRegenerateTransactionIDs() bool {
-	return client.autoValidateChecksums
+	return client.defaultRegenerateTransactionIDs
 }
 
 // SetOperator sets that account that will, by default, be paying for

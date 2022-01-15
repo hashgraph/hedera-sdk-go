@@ -328,6 +328,18 @@ func (transaction *ContractDeleteTransaction) SetMaxTransactionFee(fee Hbar) *Co
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *ContractDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ContractDeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *ContractDeleteTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *ContractDeleteTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }

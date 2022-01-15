@@ -296,6 +296,18 @@ func (transaction *SystemUndeleteTransaction) SetMaxTransactionFee(fee Hbar) *Sy
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *SystemUndeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *SystemUndeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *SystemUndeleteTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *SystemUndeleteTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }

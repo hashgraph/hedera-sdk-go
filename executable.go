@@ -169,7 +169,7 @@ func _Execute(
 			_DelayForAttempt(minBackoff, maxBackoff, attempt)
 			continue
 		case executionStateExpired:
-			if !client.GetOperatorAccountID()._IsZero() && request.transaction.defaultRegenerateTransactionIDs && !request.transaction.transactionIDs.locked {
+			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
 				_, err = request.transaction.transactionIDs._Set(request.transaction.nextTransactionIndex, TransactionIDGenerate(client.GetOperatorAccountID()))
 				if err != nil {
 					panic(err)

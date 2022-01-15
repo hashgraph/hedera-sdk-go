@@ -395,6 +395,18 @@ func (transaction *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAp
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *FileAppendTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileAppendTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *FileAppendTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *FileAppendTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }

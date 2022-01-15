@@ -41,24 +41,24 @@ type Transaction struct {
 	freezeError error
 	lockError   error
 
-	maxBackoff                      *time.Duration
-	minBackoff                      *time.Duration
-	defaultRegenerateTransactionIDs bool
+	maxBackoff              *time.Duration
+	minBackoff              *time.Duration
+	regenerateTransactionID bool
 }
 
 func _NewTransaction() Transaction {
 	duration := 120 * time.Second
 	return Transaction{
-		nextNodeIndex:                   0,
-		nextTransactionIndex:            0,
-		maxRetry:                        10,
-		transactionValidDuration:        &duration,
-		transactionIDs:                  _NewLockedSlice(),
-		transactions:                    _NewLockedSlice(),
-		signedTransactions:              _NewLockedSlice(),
-		nodeAccountIDs:                  _NewLockedSlice(),
-		freezeError:                     nil,
-		defaultRegenerateTransactionIDs: true,
+		nextNodeIndex:            0,
+		nextTransactionIndex:     0,
+		maxRetry:                 10,
+		transactionValidDuration: &duration,
+		transactionIDs:           _NewLockedSlice(),
+		transactions:             _NewLockedSlice(),
+		signedTransactions:       _NewLockedSlice(),
+		nodeAccountIDs:           _NewLockedSlice(),
+		freezeError:              nil,
+		regenerateTransactionID:  true,
 	}
 }
 
@@ -404,8 +404,8 @@ func _TransactionFreezeWith(
 	}
 
 	if client != nil {
-		if client.defaultRegenerateTransactionIDs != transaction.defaultRegenerateTransactionIDs {
-			transaction.defaultRegenerateTransactionIDs = client.defaultRegenerateTransactionIDs
+		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
+			transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
 		}
 	}
 
@@ -564,7 +564,7 @@ func (transaction *Transaction) _SignTransaction(index int) {
 			if transaction.transactionSigners[i] != nil {
 				if key.ed25519PublicKey != nil {
 					if bytes.Equal(initialTx.SigMap.SigPair[0].PubKeyPrefix, key.ed25519PublicKey.keyData) {
-						if !transaction.defaultRegenerateTransactionIDs {
+						if !transaction.regenerateTransactionID {
 							return
 						}
 						switch t := initialTx.SigMap.SigPair[0].Signature.(type) { //nolint
@@ -577,7 +577,7 @@ func (transaction *Transaction) _SignTransaction(index int) {
 				}
 				if key.ecdsaPublicKey != nil {
 					if bytes.Equal(initialTx.SigMap.SigPair[0].PubKeyPrefix, key.ecdsaPublicKey._BytesRaw()) {
-						if !transaction.defaultRegenerateTransactionIDs {
+						if !transaction.regenerateTransactionID {
 							return
 						}
 						switch t := initialTx.SigMap.SigPair[0].Signature.(type) { //nolint
@@ -592,7 +592,7 @@ func (transaction *Transaction) _SignTransaction(index int) {
 		}
 	}
 
-	if transaction.defaultRegenerateTransactionIDs && !transaction.transactionIDs.locked {
+	if transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
 		modifiedTx := transaction.signedTransactions._GetSignedTransactions()[index]
 		modifiedTx.SigMap.SigPair = make([]*services.SignaturePair, 0)
 		_, err := transaction.signedTransactions._Set(index, modifiedTx)
@@ -688,6 +688,17 @@ func (transaction *Transaction) GetMaxTransactionFee() Hbar {
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
 func (transaction *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
 	transaction.transactionFee = uint64(fee.AsTinybar())
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled
+func (transaction *Transaction) GetRegenerateTransactionID() bool {
+	return transaction.regenerateTransactionID
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when \`TRANSACTION_EXPIRED\` is received
+func (transaction *Transaction) SetRegenerateTransactionID(regenerateTransactionID bool) *Transaction {
+	transaction.regenerateTransactionID = regenerateTransactionID
 	return transaction
 }
 

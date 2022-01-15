@@ -252,6 +252,18 @@ func (transaction *TopicDeleteTransaction) SetMaxTransactionFee(fee Hbar) *Topic
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *TopicDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicDeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *TopicDeleteTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 // SetTransactionMemo sets the memo for this TopicDeleteTransaction.
 func (transaction *TopicDeleteTransaction) SetTransactionMemo(memo string) *TopicDeleteTransaction {
 	transaction._RequireNotFrozen()

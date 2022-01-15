@@ -658,18 +658,30 @@ func (transaction *TransferTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenUpdateTransaction.
+// SetMaxTransactionFee sets the max transaction fee for this TransferTransaction.
 func (transaction *TransferTransaction) SetMaxTransactionFee(fee Hbar) *TransferTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *TransferTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TransferTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *TransferTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *TransferTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
 
-// SetTransactionMemo sets the memo for this TokenUpdateTransaction.
+// SetTransactionMemo sets the memo for this TransferTransaction.
 func (transaction *TransferTransaction) SetTransactionMemo(memo string) *TransferTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
@@ -680,7 +692,7 @@ func (transaction *TransferTransaction) GetTransactionValidDuration() time.Durat
 	return transaction.Transaction.GetTransactionValidDuration()
 }
 
-// SetTransactionValidDuration sets the valid duration for this TokenUpdateTransaction.
+// SetTransactionValidDuration sets the valid duration for this TransferTransaction.
 func (transaction *TransferTransaction) SetTransactionValidDuration(duration time.Duration) *TransferTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
@@ -691,7 +703,7 @@ func (transaction *TransferTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
 
-// SetTransactionID sets the TransactionID for this TokenUpdateTransaction.
+// SetTransactionID sets the TransactionID for this TransferTransaction.
 func (transaction *TransferTransaction) SetTransactionID(transactionID TransactionID) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
@@ -699,7 +711,7 @@ func (transaction *TransferTransaction) SetTransactionID(transactionID Transacti
 	return transaction
 }
 
-// SetNodeTokenID sets the _Node TokenID for this TokenUpdateTransaction.
+// SetNodeTokenID sets the _Node TokenID for this TransferTransaction.
 func (transaction *TransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *TransferTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)

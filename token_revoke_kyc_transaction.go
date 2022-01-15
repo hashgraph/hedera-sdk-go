@@ -293,6 +293,18 @@ func (transaction *TokenRevokeKycTransaction) SetMaxTransactionFee(fee Hbar) *To
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *TokenRevokeKycTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenRevokeKycTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *TokenRevokeKycTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *TokenRevokeKycTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }

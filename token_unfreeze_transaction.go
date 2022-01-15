@@ -294,6 +294,18 @@ func (transaction *TokenUnfreezeTransaction) SetMaxTransactionFee(fee Hbar) *Tok
 	return transaction
 }
 
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *TokenUnfreezeTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenUnfreezeTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *TokenUnfreezeTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
+}
+
 func (transaction *TokenUnfreezeTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
