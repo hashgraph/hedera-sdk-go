@@ -1,3 +1,27 @@
+## v2.7.0
+
+### Added
+
+ * `AccountId.AliasKey`, including `AccountId.[From]String()` support.
+ * `[PublicKey|PrivateKey].ToAccountId()`.
+ * `AliasKey` fields in `TransactionRecord` and `AccountInfo`.
+ * `Nonce` field in `TransactionId`, including `TransactionId.[set|get]Nonce()`
+ * `Children` fields in `TransactionRecord` and `TransactionReceipt`
+ * `Duplicates` field in `TransactionReceipt`
+ * `[TransactionReceiptQuery|TransactionRecordQuery].[Set|Get]IncludeChildren()`
+ * `TransactionReceiptQuery.[Set|Get]IncludeDuplicates()`
+ * New response codes.
+ * Support for ECDSA SecP256K1 keys.
+ * `PrivateKeyGenerate[ED25519|ECDSA]()`
+ * `[Private|Public]KeyFrom[Bytes|String][DER|ED25519|ECDSA]()`
+ * `[Private|Public]Key.[Bytes|String][Raw|DER]()`
+ * `DelegateContractId`
+ * `*Id.[from|to]SolidityAddress()`
+
+### Deprecated
+
+ * `PrivateKeyGenerate()`, use `PrivateKeyGenerate[ED25519|ECDSA]()` instead.
+
 ## v2.7.0-beta.1
 
 ### Added

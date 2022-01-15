@@ -142,7 +142,7 @@ func TokenIDFromSolidityAddress(s string) (TokenID, error) {
 	return TokenID{
 		Shard:    shard,
 		Realm:    realm,
-		Token:  token,
+		Token:    token,
 		checksum: nil,
 	}, nil
 }

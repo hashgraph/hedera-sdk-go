@@ -1,4 +1,5 @@
-//+build all unit e2e
+//go:build all || unit || e2e
+// +build all unit e2e
 
 package hedera
 
