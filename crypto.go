@@ -86,7 +86,7 @@ func PrivateKeyGenerateEcdsa() (PrivateKey, error) {
 
 // Deprecated use `PrivateKeyGenerateEd25519()` instead
 func PrivateKeyGenerate() (PrivateKey, error) {
-    return PrivateKeyGenerateEd25519()
+	return PrivateKeyGenerateEd25519()
 }
 
 func PrivateKeyGenerateEd25519() (PrivateKey, error) {
