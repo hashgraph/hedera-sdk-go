@@ -20,12 +20,12 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	}
 }
 
-func (query *TransactionRecordQuery) SetIncludeChildRecords(includeChildRecords bool) *TransactionRecordQuery {
+func (query *TransactionRecordQuery) SetIncludeChildren(includeChildRecords bool) *TransactionRecordQuery {
 	query.includeChildRecords = &includeChildRecords
 	return query
 }
 
-func (query *TransactionRecordQuery) GetIncludeChildRecords() bool {
+func (query *TransactionRecordQuery) GetIncludeChildren() bool {
 	if query.includeChildRecords != nil {
 		return *query.includeChildRecords
 	}
@@ -64,7 +64,7 @@ func (query *TransactionRecordQuery) _Build() *services.Query_TransactionGetReco
 	}
 
 	if query.includeChildRecords != nil {
-		body.IncludeChildRecords = query.GetIncludeChildRecords()
+		body.IncludeChildRecords = query.GetIncludeChildren()
 	}
 
 	if query.duplicates != nil {

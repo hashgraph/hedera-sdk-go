@@ -20,12 +20,12 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	}
 }
 
-func (query *TransactionReceiptQuery) SetIncludeChildReceipts(includeChildReceipts bool) *TransactionReceiptQuery {
+func (query *TransactionReceiptQuery) SetIncludeChildren(includeChildReceipts bool) *TransactionReceiptQuery {
 	query.childReceipts = &includeChildReceipts
 	return query
 }
 
-func (query *TransactionReceiptQuery) GetIncludeChildReceipts() bool {
+func (query *TransactionReceiptQuery) GetIncludeChildren() bool {
 	if query.childReceipts != nil {
 		return *query.childReceipts
 	}
@@ -72,7 +72,7 @@ func (query *TransactionReceiptQuery) _Build() *services.Query_TransactionGetRec
 	}
 
 	if query.childReceipts != nil {
-		body.IncludeChildReceipts = query.GetIncludeChildReceipts()
+		body.IncludeChildReceipts = query.GetIncludeChildren()
 	}
 
 	return &services.Query_TransactionGetReceipt{

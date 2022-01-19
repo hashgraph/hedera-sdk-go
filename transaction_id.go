@@ -214,3 +214,15 @@ func (id TransactionID) SetScheduled(scheduled bool) TransactionID {
 func (id TransactionID) GetScheduled() bool {
 	return id.scheduled
 }
+
+func (id TransactionID) SetNonce(nonce int32) TransactionID {
+	id.Nonce = &nonce
+	return id
+}
+
+func (id TransactionID) GetNonce() int32 {
+	if id.Nonce != nil {
+		return *id.Nonce
+	}
+	return 0
+}
