@@ -28,6 +28,8 @@ type TransactionRecord struct {
 	AutomaticTokenAssociations []TokenAssociation
 	ParentConsensusTimestamp   time.Time
 	AliasKey                   *PublicKey
+	Duplicates                 []TransactionRecord
+	Children                   []TransactionRecord
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -46,7 +48,11 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 	return *record.CallResult, nil
 }
 
-func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionRecord {
+func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecordResponse) TransactionRecord {
+	if protoResponse == nil {
+		return TransactionRecord{}
+	}
+	pb := protoResponse.GetTransactionRecord()
 	if pb == nil {
 		return TransactionRecord{}
 	}
@@ -100,8 +106,22 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 		}
 	}
 
+	childReceipts := make([]TransactionRecord, 0)
+	if len(protoResponse.ChildTransactionRecords) > 0 {
+		for _, r := range protoResponse.ChildTransactionRecords {
+			childReceipts = append(childReceipts, _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: r}))
+		}
+	}
+
+	duplicateReceipts := make([]TransactionRecord, 0)
+	if len(protoResponse.DuplicateTransactionRecords) > 0 {
+		for _, r := range protoResponse.DuplicateTransactionRecords {
+			duplicateReceipts = append(duplicateReceipts, _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: r}))
+		}
+	}
+
 	txRecord := TransactionRecord{
-		Receipt:                    _TransactionReceiptFromProtobuf(pb.Receipt),
+		Receipt:                    _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: pb.GetReceipt()}),
 		TransactionHash:            pb.TransactionHash,
 		ConsensusTimestamp:         _TimeFromProtobuf(pb.ConsensusTimestamp),
 		TransactionID:              _TransactionIDFromProtobuf(pb.TransactionID),
@@ -115,6 +135,8 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 		AutomaticTokenAssociations: tokenAssociation,
 		ParentConsensusTimestamp:   _TimeFromProtobuf(pb.ParentConsensusTimestamp),
 		AliasKey:                   alias,
+		Children:                   childReceipts,
+		Duplicates:                 duplicateReceipts,
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -131,7 +153,7 @@ func _TransactionRecordFromProtobuf(pb *services.TransactionRecord) TransactionR
 	return txRecord
 }
 
-func (record TransactionRecord) _ToProtobuf() (*services.TransactionRecord, error) {
+func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordResponse, error) {
 	var amounts = make([]*services.AccountAmount, 0)
 	for _, amount := range record.Transfers {
 		amounts = append(amounts, &services.AccountAmount{
@@ -194,7 +216,7 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionRecord, erro
 	}
 
 	var tRecord = services.TransactionRecord{
-		Receipt:         record.Receipt._ToProtobuf(),
+		Receipt:         record.Receipt._ToProtobuf().GetReceipt(),
 		TransactionHash: record.TransactionHash,
 		ConsensusTimestamp: &services.Timestamp{
 			Seconds: int64(record.ConsensusTimestamp.Second()),
@@ -237,7 +259,33 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionRecord, erro
 		}
 	}
 
-	return &tRecord, err
+	childReceipts := make([]*services.TransactionRecord, 0)
+	if len(record.Children) > 0 {
+		for _, r := range record.Children {
+			temp, err := r._ToProtobuf()
+			if err != nil {
+				return nil, err
+			}
+			childReceipts = append(childReceipts, temp.GetTransactionRecord())
+		}
+	}
+
+	duplicateReceipts := make([]*services.TransactionRecord, 0)
+	if len(record.Duplicates) > 0 {
+		for _, r := range record.Duplicates {
+			temp, err := r._ToProtobuf()
+			if err != nil {
+				return nil, err
+			}
+			duplicateReceipts = append(duplicateReceipts, temp.GetTransactionRecord())
+		}
+	}
+
+	return &services.TransactionGetRecordResponse{
+		TransactionRecord:           &tRecord,
+		ChildTransactionRecords:     childReceipts,
+		DuplicateTransactionRecords: duplicateReceipts,
+	}, err
 }
 
 func (record TransactionRecord) ToBytes() []byte {
@@ -257,7 +305,7 @@ func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
 	if data == nil {
 		return TransactionRecord{}, errByteArrayNull
 	}
-	pb := services.TransactionRecord{}
+	pb := services.TransactionGetRecordResponse{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionRecord{}, err

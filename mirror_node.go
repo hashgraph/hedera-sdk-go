@@ -99,7 +99,7 @@ func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
 	if node._ManagedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
-		security = grpc.WithInsecure()
+		security = grpc.WithInsecure() //nolint
 	}
 
 	conn, err := grpc.Dial(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())

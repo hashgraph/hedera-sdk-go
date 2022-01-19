@@ -175,7 +175,7 @@ func _TransactionRecordQueryMapStatusError(request _Request, response _Response)
 	return ErrHederaReceiptStatus{
 		Status: Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
 		// TxID:    _TransactionIDFromProtobuf(_Request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
-		Receipt: _TransactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt().GetReceipt()),
+		Receipt: _TransactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt()),
 	}
 }
 
@@ -336,5 +336,5 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	return _TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord().TransactionRecord), nil
+	return _TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord()), nil
 }

@@ -20,9 +20,15 @@ type TransactionReceipt struct {
 	ScheduleID              *ScheduleID
 	ScheduledTransactionID  *TransactionID
 	SerialNumbers           []int64
+	Duplicates              []TransactionReceipt
+	Children                []TransactionReceipt
 }
 
-func _TransactionReceiptFromProtobuf(protoReceipt *services.TransactionReceipt) TransactionReceipt {
+func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetReceiptResponse) TransactionReceipt {
+	if protoResponse == nil {
+		return TransactionReceipt{}
+	}
+	protoReceipt := protoResponse.GetReceipt()
 	if protoReceipt == nil {
 		return TransactionReceipt{}
 	}
@@ -74,6 +80,20 @@ func _TransactionReceiptFromProtobuf(protoReceipt *services.TransactionReceipt) 
 		scheduledTransactionID = &scheduledTransactionIDValue
 	}
 
+	childReceipts := make([]TransactionReceipt, 0)
+	if len(protoResponse.ChildTransactionReceipts) > 0 {
+		for _, r := range protoResponse.ChildTransactionReceipts {
+			childReceipts = append(childReceipts, _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: r}))
+		}
+	}
+
+	duplicateReceipts := make([]TransactionReceipt, 0)
+	if len(protoResponse.DuplicateTransactionReceipts) > 0 {
+		for _, r := range protoResponse.DuplicateTransactionReceipts {
+			duplicateReceipts = append(duplicateReceipts, _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: r}))
+		}
+	}
+
 	return TransactionReceipt{
 		Status:                  Status(protoReceipt.Status),
 		ExchangeRate:            rate,
@@ -89,11 +109,13 @@ func _TransactionReceiptFromProtobuf(protoReceipt *services.TransactionReceipt) 
 		ScheduleID:              scheduleID,
 		ScheduledTransactionID:  scheduledTransactionID,
 		SerialNumbers:           protoReceipt.SerialNumbers,
+		Children:                childReceipts,
+		Duplicates:              duplicateReceipts,
 	}
 }
 
-func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionReceipt {
-	return &services.TransactionReceipt{
+func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptResponse {
+	receiptFinal := services.TransactionReceipt{
 		Status:     services.ResponseCodeEnum(receipt.Status),
 		AccountID:  receipt.AccountID._ToProtobuf(),
 		FileID:     receipt.FileID._ToProtobuf(),
@@ -112,6 +134,26 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionReceipt {
 		ScheduledTransactionID:  receipt.ScheduledTransactionID._ToProtobuf(),
 		SerialNumbers:           receipt.SerialNumbers,
 	}
+
+	childReceipts := make([]*services.TransactionReceipt, 0)
+	if len(receipt.Children) > 0 {
+		for _, r := range receipt.Children {
+			childReceipts = append(childReceipts, r._ToProtobuf().GetReceipt())
+		}
+	}
+
+	duplicateReceipts := make([]*services.TransactionReceipt, 0)
+	if len(receipt.Duplicates) > 0 {
+		for _, r := range receipt.Duplicates {
+			duplicateReceipts = append(duplicateReceipts, r._ToProtobuf().GetReceipt())
+		}
+	}
+
+	return &services.TransactionGetReceiptResponse{
+		Receipt:                      &receiptFinal,
+		ChildTransactionReceipts:     childReceipts,
+		DuplicateTransactionReceipts: duplicateReceipts,
+	}
 }
 
 func (receipt TransactionReceipt) ToBytes() []byte {
@@ -127,7 +169,7 @@ func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
 	if data == nil {
 		return TransactionReceipt{}, errByteArrayNull
 	}
-	pb := services.TransactionReceipt{}
+	pb := services.TransactionGetReceiptResponse{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
 		return TransactionReceipt{}, err

@@ -290,11 +290,11 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {
 		if resp.query.GetTransactionGetReceipt() != nil {
-			return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), err
+			return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt()), err
 		}
 
 		return TransactionReceipt{}, err
 	}
 
-	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt().GetReceipt()), nil
+	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt()), nil
 }

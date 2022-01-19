@@ -288,8 +288,6 @@ func (id AccountID) Compare(given AccountID) int {
 	} else {
 		return 0
 	}
-
-	return 0
 }
 
 func (accountIDs _AccountIDs) Len() int {

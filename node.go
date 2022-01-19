@@ -110,7 +110,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 	var conn *grpc.ClientConn
 	var err error
-	security := grpc.WithInsecure()
+	security := grpc.WithInsecure() //nolint
 	if !node.verifyCertificate {
 		println("skipping certificate check")
 	}

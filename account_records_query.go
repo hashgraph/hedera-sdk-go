@@ -222,7 +222,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 	}
 
 	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {
-		record := _TransactionRecordFromProtobuf(element)
+		record := _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: element})
 		records = append(records, record)
 	}
 
