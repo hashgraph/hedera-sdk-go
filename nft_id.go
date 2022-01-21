@@ -20,7 +20,7 @@ func NftIDFromString(s string) (NftID, error) {
 	if len(split) < 2 {
 		panic(errors.New("wrong NftID format"))
 	}
-	shard, realm, num, checksum, _, err := _IdFromString(split[1])
+	shard, realm, num, checksum, err := _IdFromString(split[1])
 	if err != nil {
 		return NftID{}, err
 	}

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func _IdFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, err error) {
+func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, err error) {
 	if strings.Contains(s, "-") {
 		values := strings.SplitN(s, "-", 2)
 
@@ -47,6 +47,82 @@ func _IdFromString(s string) (shard int, realm int, num int, checksum *string, a
 	}
 
 	return shard, realm, -1, checksum, &key, nil
+}
+
+func _ContractIDFromString(s string) (shard int, realm int, num int, checksum *string, evmAddress []byte, err error) {
+	if strings.Contains(s, "-") {
+		values := strings.SplitN(s, "-", 2)
+
+		if len(values) > 2 {
+			return 0, 0, 0, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}-{checksum}")
+		}
+
+		checksum = &values[1]
+		s = values[0]
+	}
+
+	values := strings.SplitN(s, ".", 3)
+	if len(values) != 3 {
+		// Was not three values separated by periods
+		return 0, 0, 0, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}")
+	}
+
+	shard, err = strconv.Atoi(values[0])
+	if err != nil {
+		return 0, 0, 0, nil, nil, err
+	}
+
+	realm, err = strconv.Atoi(values[1])
+	if err != nil {
+		return 0, 0, 0, nil, nil, err
+	}
+
+	num, err = strconv.Atoi(values[2])
+	if err != nil {
+		temp, err2 := hex.DecodeString(values[2])
+		if err2 != nil {
+			return 0, 0, 0, nil, []byte{}, err
+		}
+		return shard, realm, -1, checksum, temp, nil
+	}
+
+	return shard, realm, num, checksum, nil, nil
+}
+
+func _IdFromString(s string) (shard int, realm int, num int, checksum *string, err error) {
+	if strings.Contains(s, "-") {
+		values := strings.SplitN(s, "-", 2)
+
+		if len(values) > 2 {
+			return 0, 0, 0, nil, fmt.Errorf("expected {shard}.{realm}.{num}-{checksum}")
+		}
+
+		checksum = &values[1]
+		s = values[0]
+	}
+
+	values := strings.SplitN(s, ".", 3)
+	if len(values) != 3 {
+		// Was not three values separated by periods
+		return 0, 0, 0, nil, fmt.Errorf("expected {shard}.{realm}.{num}")
+	}
+
+	shard, err = strconv.Atoi(values[0])
+	if err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	realm, err = strconv.Atoi(values[1])
+	if err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	num, err = strconv.Atoi(values[2])
+	if err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	return shard, realm, num, checksum, nil
 }
 
 func _IdFromSolidityAddress(s string) (uint64, uint64, uint64, error) {

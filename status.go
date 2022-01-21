@@ -247,6 +247,10 @@ const (
 	StatusMaxStorageInPriceRegimeHasBeenUsed                       Status = 281
 	StatusInvalidAliasKey                                          Status = 282
 	StatusUnexpectedTokenDecimals                                  Status = 283
+	StatusInvalidProxyAccountID                                    Status = 284
+	StatusInvalidTransferAccountID                                 Status = 285
+	StatusInvalidFeeCollectorAccountID                             Status = 286
+	StatusAliasIsImmutable                                         Status = 287
 )
 
 // String() returns a string representation of the status
@@ -736,6 +740,14 @@ func (status Status) String() string { // nolint
 		return "INVALID_ALIAS_KEY"
 	case StatusUnexpectedTokenDecimals:
 		return "UNEXPECTED_TOKEN_DECIMALS"
+	case StatusInvalidProxyAccountID:
+		return "INVALID_PROXY_ACCOUNT_ID"
+	case StatusInvalidTransferAccountID:
+		return "INVALID_TRANSFER_ACCOUNT_ID"
+	case StatusInvalidFeeCollectorAccountID:
+		return "INVALID_FEE_COLLECTOR_ACCOUNT_ID"
+	case StatusAliasIsImmutable:
+		return "ALIAS_IS_IMMUTABLE"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
