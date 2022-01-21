@@ -20,7 +20,7 @@ type ScheduleID struct {
 // ScheduleIDFromString constructs an ScheduleID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func ScheduleIDFromString(data string) (ScheduleID, error) {
-	shard, realm, num, checksum, _, err := _IdFromString(data)
+	shard, realm, num, checksum, err := _IdFromString(data)
 	if err != nil {
 		return ScheduleID{}, err
 	}

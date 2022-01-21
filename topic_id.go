@@ -19,7 +19,7 @@ type TopicID struct {
 
 // TopicIDFromString constructs a TopicID from a string formatted as `Shard.Realm.Topic` (for example "0.0.3")
 func TopicIDFromString(data string) (TopicID, error) {
-	shard, realm, num, checksum, _, err := _IdFromString(data)
+	shard, realm, num, checksum, err := _IdFromString(data)
 	if err != nil {
 		return TopicID{}, err
 	}

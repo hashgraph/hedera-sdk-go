@@ -21,8 +21,9 @@ type ContractFunctionResult struct {
 	GasUsed uint64
 	// LogInfo is the log info for events returned by the function
 	LogInfo []ContractLogInfo
-
+	// Deprecated
 	CreatedContractIDs []ContractID
+	EvmAddress         ContractID
 }
 
 // GetBool gets a _Solidity bool from the result at the given index
@@ -104,12 +105,24 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		infos[i] = _ContractLogInfoFromProtobuf(info)
 	}
 
+	var evm ContractID
+	if len(pb.EvmAddress) > 0 {
+		evm = ContractID{
+			Shard:      0,
+			Realm:      0,
+			Contract:   0,
+			EvmAddress: pb.EvmAddress,
+			checksum:   nil,
+		}
+	}
+
 	result := ContractFunctionResult{
 		ContractCallResult: pb.ContractCallResult,
 		ErrorMessage:       pb.ErrorMessage,
 		Bloom:              pb.Bloom,
 		GasUsed:            pb.GasUsed,
 		LogInfo:            infos,
+		EvmAddress:         evm,
 	}
 
 	if pb.ContractID != nil {
@@ -140,5 +153,6 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		GasUsed:            result.GasUsed,
 		LogInfo:            infos,
 		CreatedContractIDs: contractIDs,
+		EvmAddress:         result.EvmAddress.EvmAddress,
 	}
 }
