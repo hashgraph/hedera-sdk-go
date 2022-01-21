@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
@@ -21,8 +22,9 @@ type ContractFunctionResult struct {
 	GasUsed uint64
 	// LogInfo is the log info for events returned by the function
 	LogInfo []ContractLogInfo
-
+	// Deprecated
 	CreatedContractIDs []ContractID
+	EvmAddress         *string
 }
 
 // GetBool gets a _Solidity bool from the result at the given index
@@ -103,6 +105,11 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 	for i, info := range pb.LogInfo {
 		infos[i] = _ContractLogInfoFromProtobuf(info)
 	}
+	var evm *string
+	if len(pb.EvmAddress) > 0 {
+		temp := hex.EncodeToString(pb.EvmAddress)
+		evm = &temp
+	}
 
 	result := ContractFunctionResult{
 		ContractCallResult: pb.ContractCallResult,
@@ -110,6 +117,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		Bloom:              pb.Bloom,
 		GasUsed:            pb.GasUsed,
 		LogInfo:            infos,
+		EvmAddress:         evm,
 	}
 
 	if pb.ContractID != nil {

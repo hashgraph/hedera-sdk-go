@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-func _IdFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, err error) {
+func _IdFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, evmAddress *string, err error) {
 	if strings.Contains(s, "-") {
 		values := strings.SplitN(s, "-", 2)
 
 		if len(values) > 2 {
-			return 0, 0, 0, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}-{checksum}")
+			return 0, 0, 0, nil, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}-{checksum}")
 		}
 
 		checksum = &values[1]
@@ -23,30 +23,31 @@ func _IdFromString(s string) (shard int, realm int, num int, checksum *string, a
 	values := strings.SplitN(s, ".", 3)
 	if len(values) != 3 {
 		// Was not three values separated by periods
-		return 0, 0, 0, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}")
+		return 0, 0, 0, nil, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}")
 	}
 
 	shard, err = strconv.Atoi(values[0])
 	if err != nil {
-		return 0, 0, 0, nil, nil, err
+		return 0, 0, 0, nil, nil, nil, err
 	}
 
 	realm, err = strconv.Atoi(values[1])
 	if err != nil {
-		return 0, 0, 0, nil, nil, err
+		return 0, 0, 0, nil, nil, nil, err
 	}
 
 	key, err := PublicKeyFromString(values[2])
 	if err != nil {
 		num, err = strconv.Atoi(values[2])
 		if err != nil {
-			return 0, 0, 0, nil, nil, err
+			temp := values[2]
+			return shard, realm, -1, checksum, nil, &temp, nil
 		}
 
-		return shard, realm, num, checksum, nil, nil
+		return shard, realm, num, checksum, nil, nil, nil
 	}
 
-	return shard, realm, -1, checksum, &key, nil
+	return shard, realm, -1, checksum, &key, nil, nil
 }
 
 func _IdFromSolidityAddress(s string) (uint64, uint64, uint64, error) {

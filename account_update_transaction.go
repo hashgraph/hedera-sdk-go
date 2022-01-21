@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	protobuf "google.golang.org/protobuf/proto"
 	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -20,6 +21,7 @@ type AccountUpdateTransaction struct {
 	receiverSignatureRequired     bool
 	expirationTime                *time.Time
 	maxAutomaticTokenAssociations uint32
+	aliasKey                      *PublicKey
 }
 
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
@@ -101,6 +103,20 @@ func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
 	}
 
 	return *transaction.accountID
+}
+
+func (transaction *AccountUpdateTransaction) SetAliasKey(alias PublicKey) *AccountUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.aliasKey = &alias
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) GetAliasKey() PublicKey {
+	if transaction.aliasKey == nil {
+		return PublicKey{}
+	}
+
+	return *transaction.aliasKey
 }
 
 func (transaction *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountUpdateTransaction {
@@ -231,6 +247,11 @@ func (transaction *AccountUpdateTransaction) _Build() *services.TransactionBody 
 
 	if transaction.key != nil {
 		body.Key = transaction.key._ToProtoKey()
+	}
+
+	if transaction.aliasKey != nil {
+		data, _ := protobuf.Marshal(transaction.aliasKey._ToProtoKey())
+		body.Alias = data
 	}
 
 	pb := services.TransactionBody{
