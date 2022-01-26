@@ -251,6 +251,13 @@ const (
 	StatusInvalidTransferAccountID                                 Status = 285
 	StatusInvalidFeeCollectorAccountID                             Status = 286
 	StatusAliasIsImmutable                                         Status = 287
+	StatusSpenderAccountSameAsOwner                                Status = 288
+	StatusAmountExceedsTokenMaxSupply                              Status = 289
+	StatusNegativeAllowanceAmount                                  Status = 290
+	StatusCannotApproveForAllFungibleCommon                        Status = 291
+	StatusSpenderDoesNotHaveAllowance                              Status = 292
+	StatusAmountExceedsAllowance                                   Status = 293
+	StatusMaxAllowancesExceeded                                    Status = 294
 )
 
 // String() returns a string representation of the status
@@ -748,6 +755,20 @@ func (status Status) String() string { // nolint
 		return "INVALID_FEE_COLLECTOR_ACCOUNT_ID"
 	case StatusAliasIsImmutable:
 		return "ALIAS_IS_IMMUTABLE"
+	case StatusSpenderAccountSameAsOwner:
+		return "SPENDER_ACCOUNT_SAME_AS_OWNER"
+	case StatusAmountExceedsTokenMaxSupply:
+		return "AMOUNT_EXCEEDS_TOKEN_MAX_SUPPLY"
+	case StatusNegativeAllowanceAmount:
+		return "NEGATIVE_ALLOWANCE_AMOUNT"
+	case StatusCannotApproveForAllFungibleCommon:
+		return "CANNOT_APPROVE_FOR_ALL_FUNGIBLE_COMMON"
+	case StatusSpenderDoesNotHaveAllowance:
+		return "SPENDER_DOES_NOT_HAVE_ALLOWANCE"
+	case StatusAmountExceedsAllowance:
+		return "AMOUNT_EXCEEDS_ALLOWANCE"
+	case StatusMaxAllowancesExceeded:
+		return "MAX_ALLOWANCES_EXCEEDED"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

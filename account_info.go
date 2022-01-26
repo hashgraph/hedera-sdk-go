@@ -28,6 +28,9 @@ type AccountInfo struct {
 	MaxAutomaticTokenAssociations  uint32
 	AliasKey                       *PublicKey
 	LedgerID                       LedgerID
+	HbarAllowances                 []HbarAllowance
+	NftAllowances                  []TokenNftAllowance
+	TokenAllowances                []TokenAllowance
 }
 
 func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
@@ -82,6 +85,27 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		}
 	}
 
+	hbarAllowances := make([]HbarAllowance, 0)
+	if len(pb.CryptoAllowances) > 0 {
+		for _, allowance := range pb.CryptoAllowances {
+			hbarAllowances = append(hbarAllowances, _HbarAllowanceFromProtobuf(allowance))
+		}
+	}
+
+	tokenAllowances := make([]TokenAllowance, 0)
+	if len(pb.TokenAllowances) > 0 {
+		for _, allowance := range pb.TokenAllowances {
+			tokenAllowances = append(tokenAllowances, _TokenAllowanceFromProtobuf(allowance))
+		}
+	}
+
+	nftAllowances := make([]TokenNftAllowance, 0)
+	if len(pb.NftAllowances) > 0 {
+		for _, allowance := range pb.NftAllowances {
+			nftAllowances = append(nftAllowances, _TokenNftAllowanceFromProtobuf(allowance))
+		}
+	}
+
 	return AccountInfo{
 		AccountID:                      accountID,
 		ContractAccountID:              pb.ContractAccountID,
@@ -102,6 +126,9 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		MaxAutomaticTokenAssociations:  uint32(pb.MaxAutomaticTokenAssociations),
 		AliasKey:                       alias,
 		LedgerID:                       LedgerID{pb.LedgerId},
+		HbarAllowances:                 hbarAllowances,
+		NftAllowances:                  nftAllowances,
+		TokenAllowances:                tokenAllowances,
 	}, nil
 }
 
@@ -125,7 +152,7 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		alias, _ = protobuf.Marshal(info.AliasKey._ToProtoKey())
 	}
 
-	return &services.CryptoGetInfoResponse_AccountInfo{
+	body := &services.CryptoGetInfoResponse_AccountInfo{
 		AccountID:                      info.AccountID._ToProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
 		Deleted:                        info.IsDeleted,
@@ -146,6 +173,32 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		Alias:                          alias,
 		LedgerId:                       info.LedgerID.ToBytes(),
 	}
+
+	hbarAllowances := make([]*services.CryptoAllowance, 0)
+	if len(info.HbarAllowances) > 0 {
+		for _, allowance := range info.HbarAllowances {
+			hbarAllowances = append(hbarAllowances, allowance._ToProtobuf())
+		}
+		body.CryptoAllowances = hbarAllowances
+	}
+
+	tokenAllowances := make([]*services.TokenAllowance, 0)
+	if len(info.TokenAllowances) > 0 {
+		for _, allowance := range info.TokenAllowances {
+			tokenAllowances = append(tokenAllowances, allowance._ToProtobuf())
+		}
+		body.TokenAllowances = tokenAllowances
+	}
+
+	nftAllowances := make([]*services.NftAllowance, 0)
+	if len(info.NftAllowances) > 0 {
+		for _, allowance := range info.NftAllowances {
+			nftAllowances = append(nftAllowances, allowance._ToProtobuf())
+		}
+		body.NftAllowances = nftAllowances
+	}
+
+	return body
 }
 
 func (info AccountInfo) ToBytes() []byte {

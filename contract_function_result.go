@@ -3,8 +3,8 @@ package hedera
 import (
 	"encoding/binary"
 
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	protobuf "google.golang.org/protobuf/proto"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -122,12 +122,12 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 	}
 
 	var evm ContractID
-	if len(pb.EvmAddress) > 0 {
+	if len(pb.EvmAddress.GetValue()) > 0 {
 		evm = ContractID{
 			Shard:      0,
 			Realm:      0,
 			Contract:   0,
-			EvmAddress: pb.EvmAddress,
+			EvmAddress: pb.EvmAddress.GetValue(),
 			checksum:   nil,
 		}
 	}
@@ -182,7 +182,7 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		LogInfo:            infos,
 		CreatedContractIDs: contractIDs,
 		StateChanges:       stateChanges,
-		EvmAddress:         result.EvmAddress.EvmAddress,
+		EvmAddress:         &wrapperspb.BytesValue{Value: result.EvmAddress.EvmAddress},
 	}
 }
 
