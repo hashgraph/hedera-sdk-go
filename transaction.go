@@ -151,83 +151,83 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 	switch first.Data.(type) {
 	case *services.TransactionBody_ContractCall:
-		return _ContractExecuteTransactionFromProtobuf(tx, first), nil
+		return *_ContractExecuteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ContractCreateInstance:
-		return _ContractCreateTransactionFromProtobuf(tx, first), nil
+		return *_ContractCreateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ContractUpdateInstance:
-		return _ContractUpdateTransactionFromProtobuf(tx, first), nil
+		return *_ContractUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ContractDeleteInstance:
-		return _ContractDeleteTransactionFromProtobuf(tx, first), nil
+		return *_ContractDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoAddLiveHash:
-		return _LiveHashAddTransactionFromProtobuf(tx, first), nil
+		return *_LiveHashAddTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoCreateAccount:
-		return _AccountCreateTransactionFromProtobuf(tx, first), nil
+		return *_AccountCreateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoDelete:
-		return _AccountDeleteTransactionFromProtobuf(tx, first), nil
+		return *_AccountDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoDeleteLiveHash:
-		return _LiveHashDeleteTransactionFromProtobuf(tx, first), nil
+		return *_LiveHashDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoTransfer:
-		return _TransferTransactionFromProtobuf(tx, first), nil
+		return *_TransferTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoUpdateAccount:
-		return _AccountUpdateTransactionFromProtobuf(tx, first), nil
+		return *_AccountUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileAppend:
-		return _FileAppendTransactionFromProtobuf(tx, first), nil
+		return *_FileAppendTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileCreate:
-		return _FileCreateTransactionFromProtobuf(tx, first), nil
+		return *_FileCreateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileDelete:
-		return _FileDeleteTransactionFromProtobuf(tx, first), nil
+		return *_FileDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileUpdate:
-		return _FileUpdateTransactionFromProtobuf(tx, first), nil
+		return *_FileUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_SystemDelete:
-		return _SystemDeleteTransactionFromProtobuf(tx, first), nil
+		return *_SystemDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_SystemUndelete:
-		return _SystemUndeleteTransactionFromProtobuf(tx, first), nil
+		return *_SystemUndeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_Freeze:
-		return _FreezeTransactionFromProtobuf(tx, first), nil
+		return *_FreezeTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ConsensusCreateTopic:
-		return _TopicCreateTransactionFromProtobuf(tx, first), nil
+		return *_TopicCreateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ConsensusUpdateTopic:
-		return _TopicUpdateTransactionFromProtobuf(tx, first), nil
+		return *_TopicUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ConsensusDeleteTopic:
-		return _TopicDeleteTransactionFromProtobuf(tx, first), nil
+		return *_TopicDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ConsensusSubmitMessage:
-		return _TopicMessageSubmitTransactionFromProtobuf(tx, first), nil
+		return *_TopicMessageSubmitTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenCreation:
-		return _TokenCreateTransactionFromProtobuf(tx, first), nil
+		return *_TokenCreateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenFreeze:
-		return _TokenFreezeTransactionFromProtobuf(tx, first), nil
+		return *_TokenFreezeTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenUnfreeze:
-		return _TokenUnfreezeTransactionFromProtobuf(tx, first), nil
+		return *_TokenUnfreezeTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenGrantKyc:
-		return _TokenGrantKycTransactionFromProtobuf(tx, first), nil
+		return *_TokenGrantKycTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenRevokeKyc:
-		return _TokenRevokeKycTransactionFromProtobuf(tx, first), nil
+		return *_TokenRevokeKycTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenDeletion:
-		return _TokenDeleteTransactionFromProtobuf(tx, first), nil
+		return *_TokenDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenUpdate:
-		return _TokenUpdateTransactionFromProtobuf(tx, first), nil
+		return *_TokenUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenMint:
-		return _TokenMintTransactionFromProtobuf(tx, first), nil
+		return *_TokenMintTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenBurn:
-		return _TokenBurnTransactionFromProtobuf(tx, first), nil
+		return *_TokenBurnTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenWipe:
-		return _TokenWipeTransactionFromProtobuf(tx, first), nil
+		return *_TokenWipeTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenAssociate:
-		return _TokenAssociateTransactionFromProtobuf(tx, first), nil
+		return *_TokenAssociateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenDissociate:
-		return _TokenDissociateTransactionFromProtobuf(tx, first), nil
+		return *_TokenDissociateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ScheduleCreate:
-		return _ScheduleCreateTransactionFromProtobuf(tx, first), nil
+		return *_ScheduleCreateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ScheduleSign:
-		return _ScheduleSignTransactionFromProtobuf(tx, first), nil
+		return *_ScheduleSignTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_ScheduleDelete:
-		return _ScheduleDeleteTransactionFromProtobuf(tx, first), nil
+		return *_ScheduleDeleteTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenFeeScheduleUpdate:
-		return _TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
+		return *_TokenFeeScheduleUpdateTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenPause:
-		return _TokenPauseTransactionFromProtobuf(tx, first), nil
+		return *_TokenPauseTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_TokenUnpause:
-		return _TokenUnpauseTransactionFromProtobuf(tx, first), nil
+		return *_TokenUnpauseTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
