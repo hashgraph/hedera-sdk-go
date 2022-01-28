@@ -5,6 +5,7 @@ package hedera
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync"
 	"testing"
@@ -18,8 +19,8 @@ import (
 
 var wg sync.WaitGroup
 
-func DisabledTestUnitMock(t *testing.T) {
-	responses := []interface{}{
+func TestUnitMock(t *testing.T) {
+	responses := [][]interface{}{{
 		&services.TransactionResponse{
 			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
 		},
@@ -49,7 +50,7 @@ func DisabledTestUnitMock(t *testing.T) {
 				},
 			},
 		},
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -71,9 +72,7 @@ func DisabledTestUnitMock(t *testing.T) {
 	_, err = resp.GetReceipt(client)
 	require.NoError(t, err)
 	//assert.Equal(t, balance.Hbars.tinybar, int64(10))
-	if server != nil {
-		server.Stop()
-	}
+	server.Close()
 }
 
 func TestGenerateTransactionIDsPerExecution(t *testing.T) {
@@ -129,9 +128,9 @@ func TestGenerateTransactionIDsPerExecution(t *testing.T) {
 
 		return response
 	}
-	responses := []interface{}{
+	responses := [][]interface{}{{
 		call, call, call,
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -140,9 +139,7 @@ func TestGenerateTransactionIDsPerExecution(t *testing.T) {
 		Execute(client)
 	require.NoError(t, err)
 
-	if server != nil {
-		server.Stop()
-	}
+	server.Close()
 }
 
 func DisabledTestSingleTransactionIDForExecutions(t *testing.T) {
@@ -200,9 +197,9 @@ func DisabledTestSingleTransactionIDForExecutions(t *testing.T) {
 
 		return response
 	}
-	responses := []interface{}{
+	responses := [][]interface{}{{
 		call, call, call,
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -212,9 +209,7 @@ func DisabledTestSingleTransactionIDForExecutions(t *testing.T) {
 		Execute(client)
 	require.NoError(t, err)
 
-	if server != nil {
-		server.Stop()
-	}
+	server.Close()
 }
 
 func DisabledTestSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
@@ -272,9 +267,9 @@ func DisabledTestSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
 
 		return response
 	}
-	responses := []interface{}{
+	responses := [][]interface{}{{
 		call, call, call,
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -284,30 +279,39 @@ func DisabledTestSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
 		Execute(client)
 	require.Error(t, err)
 
-	if server != nil {
+	server.Close()
+}
+
+type MockServers struct {
+	servers []*grpc.Server
+}
+
+func (servers MockServers) Close() {
+	for _, server := range servers.servers {
 		server.Stop()
-		wg.Wait()
 	}
 }
 
-func NewMockClientAndServer(responses []interface{}) (*Client, *grpc.Server) {
-	client := ClientForNetwork(map[string]AccountID{
-		"0.localhost:50211": {Account: 3},
-		"2.localhost:50211": {Account: 4},
-		"3.localhost:50211": {Account: 5},
-	})
+func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, MockServers) {
+	network := map[string]AccountID{}
+	servers := make([]*grpc.Server, 0)
+
+	for i, responses := range allNodeResponses {
+		address := fmt.Sprintf("localhost:%d", 50213+i)
+		nodeAccountID := AccountID{Account: uint64(3 + i)}
+
+		network[address] = nodeAccountID
+
+		server := NewServer(responses, address)
+		servers = append(servers, server)
+	}
+
+	client := ClientForNetwork(network)
 
 	key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
 	client.SetOperator(AccountID{Account: 1800}, key)
 
-	var server *grpc.Server
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		server = NewServer(responses)
-	}()
-
-	return client, server
+	return client, MockServers{servers}
 }
 
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -341,7 +345,7 @@ func NewMockHandler(responses []interface{}) func(interface{}, context.Context, 
 	}
 }
 
-func NewServer(responses []interface{}) *grpc.Server {
+func NewServer(responses []interface{}, address string) *grpc.Server {
 	server := grpc.NewServer()
 	handler := NewMockHandler(responses)
 
@@ -353,7 +357,7 @@ func NewServer(responses []interface{}) *grpc.Server {
 	server.RegisterService(NewServiceDescription(handler, &services.ScheduleService_ServiceDesc), nil)
 	server.RegisterService(NewServiceDescription(handler, &services.FreezeService_ServiceDesc), nil)
 
-	lis, err := net.Listen("tcp", "localhost:50211")
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		panic(err)
 	}
