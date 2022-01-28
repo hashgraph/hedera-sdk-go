@@ -6,6 +6,8 @@ package hedera
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net"
 	"sync"
 	"testing"
@@ -21,6 +23,12 @@ var wg sync.WaitGroup
 
 func TestUnitMock(t *testing.T) {
 	responses := [][]interface{}{{
+		status.New(codes.Unavailable, "node is UNAVAILABLE").Err(),
+		status.New(codes.Internal, "Received RST_STREAM with code 0").Err(),
+	}, {
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
 		&services.TransactionResponse{
 			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
 		},
@@ -30,6 +38,19 @@ func TestUnitMock(t *testing.T) {
 					Header: &services.ResponseHeader{
 						Cost:         0,
 						ResponseType: services.ResponseType_COST_ANSWER,
+					},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_RECEIPT_NOT_FOUND,
 					},
 				},
 			},
@@ -62,6 +83,7 @@ func TestUnitMock(t *testing.T) {
 	tran := TransactionIDGenerate(AccountID{Account: 3})
 
 	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}, {Account: 4}}).
 		SetKey(newKey).
 		SetTransactionID(tran).
 		SetInitialBalance(newBalance).
@@ -69,9 +91,9 @@ func TestUnitMock(t *testing.T) {
 		Execute(client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	require.NoError(t, err)
-	//assert.Equal(t, balance.Hbars.tinybar, int64(10))
+	require.Equal(t, receipt.AccountID, &AccountID{Account: 234})
 	server.Close()
 }
 
@@ -288,7 +310,9 @@ type MockServers struct {
 
 func (servers MockServers) Close() {
 	for _, server := range servers.servers {
-		server.Stop()
+		if server != nil {
+			server.Stop()
+		}
 	}
 }
 
@@ -302,8 +326,12 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, MockServ
 
 		network[address] = nodeAccountID
 
-		server := NewServer(responses, address)
-		servers = append(servers, server)
+		responses := responses
+
+		go func() {
+			server := NewServer(responses, address)
+			servers = append(servers, server)
+		}()
 	}
 
 	client := ClientForNetwork(network)
