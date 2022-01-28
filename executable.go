@@ -211,7 +211,7 @@ func _ExecutableDefaultRetryHandler(err error) bool {
 			return false
 		}
 
-		return rstStream.FindIndex([]byte(grpcErr.Message())) != nil
+		return rstStream.Match([]byte(grpcErr.Message()))
 	default:
 		return false
 	}
