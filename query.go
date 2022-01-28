@@ -17,6 +17,7 @@ type Query struct {
 	maxQueryPayment             Hbar
 	queryPayment                Hbar
 	nextPaymentTransactionIndex int
+	nextNodeIndex               int
 	nextTransactionIndex        int
 	maxRetry                    int
 
@@ -34,6 +35,7 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		pbHeader:             header,
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
+		nextNodeIndex:        0,
 		maxRetry:             10,
 		paymentTransactions:  make([]*services.Transaction, 0),
 		isPaymentRequired:    isPaymentRequired,
@@ -58,7 +60,7 @@ func (query *Query) GetNodeAccountIDs() []AccountID {
 
 func _QueryGetNodeAccountID(request _Request) AccountID {
 	if len(request.query.nodeAccountIDs) > 0 {
-		return request.query.nodeAccountIDs[request.query.nextPaymentTransactionIndex]
+		return request.query.nodeAccountIDs[request.query.nextNodeIndex]
 	}
 
 	panic("Query node AccountID's not set before executing")
@@ -121,6 +123,9 @@ func _QueryAdvanceRequest(request _Request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
 	}
+	length := len(request.query.nodeAccountIDs)
+	currentIndex := request.query.nextNodeIndex
+	request.query.nextNodeIndex = (currentIndex + 1) % length
 }
 
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
