@@ -258,6 +258,7 @@ const (
 	StatusSpenderDoesNotHaveAllowance                              Status = 292
 	StatusAmountExceedsAllowance                                   Status = 293
 	StatusMaxAllowancesExceeded                                    Status = 294
+	StatusEmptyAllowances                                          Status = 295
 )
 
 // String() returns a string representation of the status
@@ -769,6 +770,8 @@ func (status Status) String() string { // nolint
 		return "AMOUNT_EXCEEDS_ALLOWANCE"
 	case StatusMaxAllowancesExceeded:
 		return "MAX_ALLOWANCES_EXCEEDED"
+	case StatusEmptyAllowances:
+		return "EMPTY_ALLOWANCES"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
