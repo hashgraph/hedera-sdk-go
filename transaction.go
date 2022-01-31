@@ -4118,6 +4118,8 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 		return i.Execute(client)
 	case FileUpdateTransaction:
 		return i.Execute(client)
+	case FreezeTransaction:
+		return i.Execute(client)
 	case LiveHashAddTransaction:
 		return i.Execute(client)
 	case LiveHashDeleteTransaction:
@@ -4150,9 +4152,13 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 		return i.Execute(client)
 	case TokenMintTransaction:
 		return i.Execute(client)
+	case TokenPauseTransaction:
+		return i.Execute(client)
 	case TokenRevokeKycTransaction:
 		return i.Execute(client)
 	case TokenUnfreezeTransaction:
+		return i.Execute(client)
+	case TokenUnpauseTransaction:
 		return i.Execute(client)
 	case TokenUpdateTransaction:
 		return i.Execute(client)
@@ -4190,6 +4196,8 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 		return i.Execute(client)
 	case *FileUpdateTransaction:
 		return i.Execute(client)
+	case *FreezeTransaction:
+		return i.Execute(client)
 	case *LiveHashAddTransaction:
 		return i.Execute(client)
 	case *LiveHashDeleteTransaction:
@@ -4222,9 +4230,13 @@ func TransactionExecute(transaction interface{}, client *Client) (TransactionRes
 		return i.Execute(client)
 	case *TokenMintTransaction:
 		return i.Execute(client)
+	case *TokenPauseTransaction:
+		return i.Execute(client)
 	case *TokenRevokeKycTransaction:
 		return i.Execute(client)
 	case *TokenUnfreezeTransaction:
+		return i.Execute(client)
+	case *TokenUnpauseTransaction:
 		return i.Execute(client)
 	case *TokenUpdateTransaction:
 		return i.Execute(client)
