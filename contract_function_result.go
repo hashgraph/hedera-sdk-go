@@ -3,9 +3,9 @@ package hedera
 import (
 	"encoding/binary"
 
-	"google.golang.org/protobuf/types/known/wrapperspb"
-	protobuf "google.golang.org/protobuf/proto"
 	"github.com/hashgraph/hedera-protobufs-go/services"
+	protobuf "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // ContractFunctionResult is the result returned by a call to a smart contract function. This is The _Response to
@@ -24,9 +24,9 @@ type ContractFunctionResult struct {
 	// LogInfo is the log info for events returned by the function
 	LogInfo []ContractLogInfo
 	// Deprecated
-	CreatedContractIDs []ContractID
+	CreatedContractIDs   []ContractID
 	ContractStateChanges []ContractStateChange
-	EvmAddress         ContractID
+	EvmAddress           ContractID
 }
 
 // GetBool gets a _Solidity bool from the result at the given index
@@ -140,12 +140,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		LogInfo:              infos,
 		CreatedContractIDs:   createdContractIDs,
 		ContractStateChanges: csc,
-		ContractCallResult: pb.ContractCallResult,
-		ErrorMessage:       pb.ErrorMessage,
-		Bloom:              pb.Bloom,
-		GasUsed:            pb.GasUsed,
-		LogInfo:            infos,
-		EvmAddress:         evm,
+		EvmAddress:           evm,
 	}
 
 	if pb.ContractID != nil {
