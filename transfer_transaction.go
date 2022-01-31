@@ -26,6 +26,8 @@ func NewTransferTransaction() *TransferTransaction {
 		hbarTransfers:    make(map[AccountID]Hbar),
 		nftTransfers:     make(map[TokenID][]TokenNftTransfer),
 		expectedDecimals: make(map[TokenID]uint32),
+		hbarApprovals:    make(map[AccountID]bool),
+		tokenApprovals:   make(map[TokenID]map[AccountID]bool),
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(1))
