@@ -195,6 +195,20 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 
 		tx2 := _AccountUpdateTransactionFromProtobuf(tx, pbBody)
 		return tx2, nil
+	case *services.SchedulableTransactionBody_CryptoAdjustAllowance:
+		pbBody.Data = &services.TransactionBody_CryptoAdjustAllowance{
+			CryptoAdjustAllowance: pb.GetCryptoAdjustAllowance(),
+		}
+
+		tx2 := _AccountAllowanceAdjustTransactionFromProtobuf(tx, pbBody)
+		return tx2, nil
+	case *services.SchedulableTransactionBody_CryptoApproveAllowance:
+		pbBody.Data = &services.TransactionBody_CryptoApproveAllowance{
+			CryptoApproveAllowance: pb.GetCryptoApproveAllowance(),
+		}
+
+		tx2 := _AccountAllowanceApproveTransactionFromProtobuf(tx, pbBody)
+		return tx2, nil
 	case *services.SchedulableTransactionBody_FileAppend:
 		pbBody.Data = &services.TransactionBody_FileAppend{
 			FileAppend: pb.GetFileAppend(),
@@ -292,6 +306,13 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 		}
 
 		tx2 := _TokenUnfreezeTransactionFromProtobuf(tx, pbBody)
+		return tx2, nil
+	case *services.SchedulableTransactionBody_TokenFeeScheduleUpdate:
+		pbBody.Data = &services.TransactionBody_TokenFeeScheduleUpdate{
+			TokenFeeScheduleUpdate: pb.GetTokenFeeScheduleUpdate(),
+		}
+
+		tx2 := _TokenFeeScheduleUpdateTransactionFromProtobuf(tx, pbBody)
 		return tx2, nil
 	case *services.SchedulableTransactionBody_TokenGrantKyc:
 		pbBody.Data = &services.TransactionBody_TokenGrantKyc{

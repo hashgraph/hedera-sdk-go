@@ -187,7 +187,11 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	case *services.TransactionBody_CryptoTransfer:
 		return *_TransferTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_CryptoUpdateAccount:
-		return *_AccountUpdateTransactionFromProtobuf(tx, first), nil
+		return _AccountUpdateTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_CryptoAdjustAllowance:
+		return _AccountAllowanceAdjustTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_CryptoApproveAllowance:
+		return _AccountAllowanceApproveTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileAppend:
 		return *_FileAppendTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_FileCreate:

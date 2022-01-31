@@ -3,6 +3,8 @@ package hedera
 import (
 	"time"
 
+	protobuf "google.golang.org/protobuf/proto"
+
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -20,6 +22,7 @@ type AccountUpdateTransaction struct {
 	receiverSignatureRequired     bool
 	expirationTime                *time.Time
 	maxAutomaticTokenAssociations uint32
+	aliasKey                      *PublicKey
 }
 
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
@@ -63,6 +66,17 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 	autoRenew := _DurationFromProtobuf(pb.GetCryptoUpdateAccount().AutoRenewPeriod)
 	expiration := _TimeFromProtobuf(pb.GetCryptoUpdateAccount().ExpirationTime)
 
+	var aliasKey *PublicKey
+	if len(pb.GetCryptoUpdateAccount().Alias) > 0 {
+		k := services.Key{}
+		_ = protobuf.Unmarshal(pb.GetCryptoUpdateAccount().Alias, &k)
+		initialKey, _ := _KeyFromProtobuf(&k)
+		switch t2 := initialKey.(type) { //nolint
+		case PublicKey:
+			aliasKey = &t2
+		}
+	}
+
 	return &AccountUpdateTransaction{
 		Transaction:               transaction,
 		accountID:                 _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
@@ -74,6 +88,7 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 		memo:                      pb.GetCryptoUpdateAccount().GetMemo().Value,
 		receiverSignatureRequired: receiverSignatureRequired,
 		expirationTime:            &expiration,
+		aliasKey:                  aliasKey,
 	}
 }
 
@@ -101,6 +116,20 @@ func (transaction *AccountUpdateTransaction) GetAccountID() AccountID {
 	}
 
 	return *transaction.accountID
+}
+
+func (transaction *AccountUpdateTransaction) SetAliasKey(alias PublicKey) *AccountUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.aliasKey = &alias
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) GetAliasKey() PublicKey {
+	if transaction.aliasKey == nil {
+		return PublicKey{}
+	}
+
+	return *transaction.aliasKey
 }
 
 func (transaction *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountUpdateTransaction {
@@ -233,6 +262,11 @@ func (transaction *AccountUpdateTransaction) _Build() *services.TransactionBody 
 		body.Key = transaction.key._ToProtoKey()
 	}
 
+	if transaction.aliasKey != nil {
+		data, _ := protobuf.Marshal(transaction.aliasKey._ToProtoKey())
+		body.Alias = data
+	}
+
 	pb := services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
@@ -291,6 +325,11 @@ func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*serv
 
 	if transaction.key != nil {
 		body.Key = transaction.key._ToProtoKey()
+	}
+
+	if transaction.aliasKey != nil {
+		data, _ := protobuf.Marshal(transaction.aliasKey._ToProtoKey())
+		body.Alias = data
 	}
 
 	return &services.SchedulableTransactionBody{

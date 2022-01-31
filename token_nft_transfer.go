@@ -9,6 +9,7 @@ type TokenNftTransfer struct {
 	SenderAccountID   AccountID
 	ReceiverAccountID AccountID
 	SerialNumber      int64
+	IsApproved        bool
 }
 
 type _TokenNftTransfers struct {
@@ -34,6 +35,7 @@ func _NftTransferFromProtobuf(pb *services.NftTransfer) TokenNftTransfer {
 		SenderAccountID:   senderAccountID,
 		ReceiverAccountID: receiverAccountID,
 		SerialNumber:      pb.SerialNumber,
+		IsApproved:        pb.IsApproval,
 	}
 }
 
@@ -42,6 +44,7 @@ func (transfer *TokenNftTransfer) _ToProtobuf() *services.NftTransfer {
 		SenderAccountID:   transfer.SenderAccountID._ToProtobuf(),
 		ReceiverAccountID: transfer.ReceiverAccountID._ToProtobuf(),
 		SerialNumber:      transfer.SerialNumber,
+		IsApproval:        transfer.IsApproved,
 	}
 }
 

@@ -3,9 +3,9 @@ package hedera
 import (
 	"encoding/binary"
 
-	protobuf "google.golang.org/protobuf/proto"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
+	protobuf "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // ContractFunctionResult is the result returned by a call to a smart contract function. This is The _Response to
@@ -23,9 +23,10 @@ type ContractFunctionResult struct {
 	GasUsed uint64
 	// LogInfo is the log info for events returned by the function
 	LogInfo []ContractLogInfo
-
+	// Deprecated
 	CreatedContractIDs   []ContractID
 	ContractStateChanges []ContractStateChange
+	EvmAddress           ContractID
 }
 
 // GetBool gets a _Solidity bool from the result at the given index
@@ -120,6 +121,17 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		csc = append(csc, _ContractStateChangeFromProtobuf(sc))
 	}
 
+	var evm ContractID
+	if len(pb.EvmAddress.GetValue()) > 0 {
+		evm = ContractID{
+			Shard:      0,
+			Realm:      0,
+			Contract:   0,
+			EvmAddress: pb.EvmAddress.GetValue(),
+			checksum:   nil,
+		}
+	}
+
 	result := ContractFunctionResult{
 		ContractCallResult:   pb.ContractCallResult,
 		ErrorMessage:         pb.ErrorMessage,
@@ -128,6 +140,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		LogInfo:              infos,
 		CreatedContractIDs:   createdContractIDs,
 		ContractStateChanges: csc,
+		EvmAddress:           evm,
 	}
 
 	if pb.ContractID != nil {
@@ -164,6 +177,7 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		LogInfo:            infos,
 		CreatedContractIDs: contractIDs,
 		StateChanges:       stateChanges,
+		EvmAddress:         &wrapperspb.BytesValue{Value: result.EvmAddress.EvmAddress},
 	}
 }
 
