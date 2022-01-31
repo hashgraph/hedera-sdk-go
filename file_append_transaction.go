@@ -16,6 +16,7 @@ type FileAppendTransaction struct {
 	maxChunks uint64
 	contents  []byte
 	fileID    *FileID
+	chunkSize int
 }
 
 // NewFileAppendTransaction creates a FileAppendTransaction transaction which can be
@@ -25,6 +26,7 @@ func NewFileAppendTransaction() *FileAppendTransaction {
 		Transaction: _NewTransaction(),
 		maxChunks:   20,
 		contents:    make([]byte, 0),
+		chunkSize:   2048,
 	}
 	transaction.SetMaxTransactionFee(NewHbar(5))
 
@@ -36,6 +38,7 @@ func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 		Transaction: transaction,
 		maxChunks:   20,
 		contents:    make([]byte, 0),
+		chunkSize:   2048,
 		fileID:      _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
 }
@@ -53,6 +56,16 @@ func (transaction *FileAppendTransaction) GetFileID() FileID {
 	}
 
 	return *transaction.fileID
+}
+
+func (transaction *FileAppendTransaction) SetMaxChunkSize(size int) *FileAppendTransaction {
+	transaction._RequireNotFrozen()
+	transaction.chunkSize = size
+	return transaction
+}
+
+func (transaction *FileAppendTransaction) GetMaxChunkSize() int {
+	return transaction.chunkSize
 }
 
 // SetContents sets the bytes to append to the contents of the file.
@@ -100,7 +113,7 @@ func (transaction *FileAppendTransaction) _Build() *services.TransactionBody {
 func (transaction *FileAppendTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction._RequireNotFrozen()
 
-	chunks := uint64((len(transaction.contents) + (chunkSize - 1)) / chunkSize)
+	chunks := uint64((len(transaction.contents) + (transaction.chunkSize - 1)) / transaction.chunkSize)
 	if chunks > 1 {
 		return &ScheduleCreateTransaction{}, ErrMaxChunksExceeded{
 			Chunks:    chunks,
@@ -313,7 +326,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 	}
 	body := transaction._Build()
 
-	chunks := uint64((len(transaction.contents) + (chunkSize - 1)) / chunkSize)
+	chunks := uint64((len(transaction.contents) + (transaction.chunkSize - 1)) / transaction.chunkSize)
 	if chunks > transaction.maxChunks {
 		return transaction, ErrMaxChunksExceeded{
 			Chunks:    chunks,
@@ -330,8 +343,8 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 
 	if b, ok := body.Data.(*services.TransactionBody_FileAppend); ok {
 		for i := 0; uint64(i) < chunks; i++ {
-			start := i * chunkSize
-			end := start + chunkSize
+			start := i * transaction.chunkSize
+			end := start + transaction.chunkSize
 
 			if end > len(transaction.contents) {
 				end = len(transaction.contents)
