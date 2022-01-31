@@ -97,7 +97,55 @@ func TestUnitMock(t *testing.T) {
 	server.Close()
 }
 
-func TestGenerateTransactionIDsPerExecution(t *testing.T) {
+func DisabledTestUnitMockQuery(t *testing.T) {
+	responses := [][]interface{}{{
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+				},
+			},
+		},
+	}, {
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_ANSWER_ONLY, Cost: 0},
+					AccountID: &services.AccountID{ShardNum: 0, RealmNum: 0, Account: &services.AccountID_AccountNum{
+						AccountNum: 1800,
+					}},
+					Balance: 2000,
+				},
+			},
+		},
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+
+	_, err := NewAccountBalanceQuery().
+		SetAccountID(AccountID{Account: 1800}).
+		SetNodeAccountIDs([]AccountID{{Account: 3}, {Account: 4}}).
+		Execute(client)
+	require.NoError(t, err)
+
+	server.Close()
+}
+
+func DisabledTestGenerateTransactionIDsPerExecution(t *testing.T) {
 	count := 0
 	transactionIds := make(map[string]bool)
 
