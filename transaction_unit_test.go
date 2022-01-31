@@ -30,9 +30,9 @@ func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 	deserializedTX, err := TransactionFromBytes(txBytes)
 	require.NoError(t, err)
 
-	var deserializedTXTyped *TransferTransaction
+	var deserializedTXTyped TransferTransaction
 	switch tx := deserializedTX.(type) {
-	case *TransferTransaction:
+	case TransferTransaction:
 		deserializedTXTyped = tx
 	default:
 		panic("Transaction was not TransferTransaction")
