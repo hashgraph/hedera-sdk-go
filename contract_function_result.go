@@ -3,6 +3,8 @@ package hedera
 import (
 	"encoding/binary"
 
+	protobuf "google.golang.org/protobuf/proto"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -22,7 +24,8 @@ type ContractFunctionResult struct {
 	// LogInfo is the log info for events returned by the function
 	LogInfo []ContractLogInfo
 
-	CreatedContractIDs []ContractID
+	CreatedContractIDs   []ContractID
+	ContractStateChanges []ContractStateChange
 }
 
 // GetBool gets a _Solidity bool from the result at the given index
@@ -104,12 +107,27 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		infos[i] = _ContractLogInfoFromProtobuf(info)
 	}
 
+	createdContractIDs := make([]ContractID, 0)
+	for _, id := range pb.CreatedContractIDs {
+		temp := _ContractIDFromProtobuf(id)
+		if temp != nil {
+			createdContractIDs = append(createdContractIDs, *temp)
+		}
+	}
+
+	csc := make([]ContractStateChange, 0)
+	for _, sc := range pb.StateChanges {
+		csc = append(csc, _ContractStateChangeFromProtobuf(sc))
+	}
+
 	result := ContractFunctionResult{
-		ContractCallResult: pb.ContractCallResult,
-		ErrorMessage:       pb.ErrorMessage,
-		Bloom:              pb.Bloom,
-		GasUsed:            pb.GasUsed,
-		LogInfo:            infos,
+		ContractCallResult:   pb.ContractCallResult,
+		ErrorMessage:         pb.ErrorMessage,
+		Bloom:                pb.Bloom,
+		GasUsed:              pb.GasUsed,
+		LogInfo:              infos,
+		CreatedContractIDs:   createdContractIDs,
+		ContractStateChanges: csc,
 	}
 
 	if pb.ContractID != nil {
@@ -132,6 +150,11 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		contractIDs[i] = contractID._ToProtobuf()
 	}
 
+	stateChanges := make([]*services.ContractStateChange, 0)
+	for _, change := range result.ContractStateChanges {
+		stateChanges = append(stateChanges, change._ToProtobuf())
+	}
+
 	return &services.ContractFunctionResult{
 		ContractID:         result.ContractID._ToProtobuf(),
 		ContractCallResult: result.ContractCallResult,
@@ -140,5 +163,28 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		GasUsed:            result.GasUsed,
 		LogInfo:            infos,
 		CreatedContractIDs: contractIDs,
+		StateChanges:       stateChanges,
 	}
+}
+
+func (result *ContractFunctionResult) ToBytes() []byte {
+	data, err := protobuf.Marshal(result._ToProtobuf())
+	if err != nil {
+		return make([]byte, 0)
+	}
+
+	return data
+}
+
+func ContractFunctionResultFromBytes(data []byte) (ContractFunctionResult, error) {
+	if data == nil {
+		return ContractFunctionResult{}, errByteArrayNull
+	}
+	pb := services.ContractFunctionResult{}
+	err := protobuf.Unmarshal(data, &pb)
+	if err != nil {
+		return ContractFunctionResult{}, err
+	}
+
+	return _ContractFunctionResultFromProtobuf(&pb), nil
 }
