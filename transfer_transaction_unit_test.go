@@ -13,6 +13,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestUnitTransferTransactionSetTokenTransferWithDecimals(t *testing.T) {
+	tokenID := TokenID{Token: 1}
+	senderAccountID := AccountID{Account: 2}
+	amount := int64(10)
+	decimals := uint32(5)
+
+	transaction := NewTransferTransaction().
+		AddTokenTransferWithDecimals(tokenID, senderAccountID, amount, decimals)
+
+	require.Equal(t, transaction.GetTokenIDDecimals()[tokenID], decimals)
+}
+
 func TestUnitTransferTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
