@@ -384,7 +384,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
-		SetDecimals(3).
+		SetDecimals(6).
 		SetInitialSupply(1000000).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
@@ -408,7 +408,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		SetTokenSymbol("F").
 		SetTokenType(TokenTypeNonFungibleUnique).
 		SetSupplyType(TokenSupplyTypeFinite).
-		SetMaxSupply(5).
+		SetMaxSupply(6).
 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetFreezeKey(env.Client.GetOperatorPublicKey()).

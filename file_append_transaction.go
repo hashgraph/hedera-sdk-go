@@ -210,6 +210,10 @@ func (transaction *FileAppendTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
+	if transaction.lockError != nil {
+		return TransactionResponse{}, transaction.lockError
+	}
+
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
@@ -245,7 +249,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 	}
 
 	var transactionID TransactionID
-	if len(transaction.transactionIDs) > 0 {
+	if transaction.transactionIDs._Length() > 0 {
 		transactionID = transaction.GetTransactionID()
 	} else {
 		return []TransactionResponse{}, errors.New("transactionID list is empty")
@@ -258,7 +262,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 		)
 	}
 
-	size := len(transaction.signedTransactions) / len(transaction.nodeAccountIDs)
+	size := transaction.signedTransactions._Length() / transaction.nodeAccountIDs._Length()
 	list := make([]TransactionResponse, size)
 
 	for i := 0; i < size; i++ {
@@ -303,7 +307,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 		return transaction, nil
 	}
 
-	if len(transaction.nodeAccountIDs) == 0 {
+	if transaction.nodeAccountIDs._Length() == 0 {
 		if client == nil {
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
@@ -334,12 +338,18 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 		}
 	}
 
-	initialTransactionID := transaction.GetTransactionID()
+	var initialTransactionID TransactionID
+	if transaction.transactionIDs._Length() > 0 {
+		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
+		case TransactionID:
+			initialTransactionID = t
+		}
+	}
 	nextTransactionID := initialTransactionID
 
-	transaction.transactionIDs = []TransactionID{}
-	transaction.transactions = []*services.Transaction{}
-	transaction.signedTransactions = []*services.SignedTransaction{}
+	transaction.transactionIDs = _NewLockedSlice()
+	transaction.transactions = _NewLockedSlice()
+	transaction.signedTransactions = _NewLockedSlice()
 
 	if b, ok := body.Data.(*services.TransactionBody_FileAppend); ok {
 		for i := 0; uint64(i) < chunks; i++ {
@@ -350,7 +360,10 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 				end = len(transaction.contents)
 			}
 
-			transaction.transactionIDs = append(transaction.transactionIDs, _TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
+			_, err = transaction.transactionIDs._PushTransactionIDs(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
+			if err != nil {
+				panic(err)
+			}
 			b.FileAppend.Contents = transaction.contents[start:end]
 
 			body.TransactionID = nextTransactionID._ToProtobuf()
@@ -358,7 +371,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 				FileAppend: b.FileAppend,
 			}
 
-			for _, nodeAccountID := range transaction.nodeAccountIDs {
+			for _, nodeAccountID := range transaction.GetNodeAccountIDs() {
 				body.NodeAccountID = nodeAccountID._ToProtobuf()
 
 				bodyBytes, err := protobuf.Marshal(body)
@@ -366,10 +379,13 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 					return transaction, errors.Wrap(err, "error serializing body for file append")
 				}
 
-				transaction.signedTransactions = append(transaction.signedTransactions, &services.SignedTransaction{
+				_, err = transaction.signedTransactions._PushSignedTransactions(&services.SignedTransaction{
 					BodyBytes: bodyBytes,
 					SigMap:    &services.SignatureMap{},
 				})
+				if err != nil {
+					panic(err)
+				}
 			}
 
 			validStart := *nextTransactionID.ValidStart
@@ -390,6 +406,18 @@ func (transaction *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAp
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *FileAppendTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *FileAppendTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *FileAppendTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
 func (transaction *FileAppendTransaction) GetTransactionMemo() string {
@@ -445,19 +473,29 @@ func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, sign
 		return transaction
 	}
 
-	if len(transaction.signedTransactions) == 0 {
+	if transaction.signedTransactions._Length() == 0 {
 		return transaction
 	}
 
-	transaction.transactions = make([]*services.Transaction, 0)
+	transaction.transactions = _NewLockedSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+	transaction.transactionIDs.locked = true
 
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
+	for index := 0; index < transaction.signedTransactions._Length(); index++ {
+		var temp *services.SignedTransaction
+		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
+		case *services.SignedTransaction:
+			temp = t
+		}
+		temp.SigMap.SigPair = append(
+			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
+		_, err := transaction.signedTransactions._Set(index, temp)
+		if err != nil {
+			transaction.lockError = err
+		}
 	}
 
 	return transaction

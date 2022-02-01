@@ -200,6 +200,10 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
+	if transaction.lockError != nil {
+		return TransactionResponse{}, transaction.lockError
+	}
+
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
@@ -224,7 +228,13 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		}
 	}
 
-	transactionID := transaction.GetTransactionID()
+	var transactionID TransactionID
+	if transaction.transactionIDs._Length() > 0 {
+		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
+		case TransactionID:
+			transactionID = t
+		}
+	}
 	accountID := AccountID{}
 	if transactionID.AccountID != nil {
 		accountID = *transactionID.AccountID
@@ -237,7 +247,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		)
 	}
 
-	size := len(transaction.signedTransactions) / len(transaction.nodeAccountIDs)
+	size := transaction.signedTransactions._Length() / transaction.nodeAccountIDs._Length()
 	list := make([]TransactionResponse, size)
 
 	for i := 0; i < size; i++ {
@@ -271,7 +281,7 @@ func (transaction *TopicMessageSubmitTransaction) Freeze() (*TopicMessageSubmitT
 
 func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*TopicMessageSubmitTransaction, error) {
 	var err error
-	if len(transaction.nodeAccountIDs) == 0 {
+	if transaction.nodeAccountIDs._Length() == 0 {
 		if client == nil {
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
@@ -301,12 +311,18 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		}
 	}
 
-	initialTransactionID := transaction.GetTransactionID()
+	var initialTransactionID TransactionID
+	if transaction.transactionIDs._Length() > 0 {
+		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
+		case TransactionID:
+			initialTransactionID = t
+		}
+	}
 	nextTransactionID := _TransactionIDFromProtobuf(initialTransactionID._ToProtobuf())
 
-	transaction.transactionIDs = make([]TransactionID, 0)
-	transaction.transactions = make([]*services.Transaction, 0)
-	transaction.signedTransactions = make([]*services.SignedTransaction, 0)
+	transaction.transactionIDs = _NewLockedSlice()
+	transaction.transactions = _NewLockedSlice()
+	transaction.signedTransactions = _NewLockedSlice()
 	if b, ok := body.Data.(*services.TransactionBody_ConsensusSubmitMessage); ok {
 		for i := 0; uint64(i) < chunks; i++ {
 			start := i * chunkSize
@@ -316,7 +332,10 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 				end = len(transaction.message)
 			}
 
-			transaction.transactionIDs = append(transaction.transactionIDs, _TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
+			_, err = transaction.transactionIDs._PushTransactionIDs(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
+			if err != nil {
+				panic(err)
+			}
 
 			b.ConsensusSubmitMessage.Message = transaction.message[start:end]
 			b.ConsensusSubmitMessage.ChunkInfo = &services.ConsensusMessageChunkInfo{
@@ -330,7 +349,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 				ConsensusSubmitMessage: b.ConsensusSubmitMessage,
 			}
 
-			for _, nodeAccountID := range transaction.nodeAccountIDs {
+			for _, nodeAccountID := range transaction.nodeAccountIDs._GetNodeAccountIDs() {
 				body.NodeAccountID = nodeAccountID._ToProtobuf()
 
 				bodyBytes, err := protobuf.Marshal(body)
@@ -338,10 +357,13 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 					return transaction, errors.Wrap(err, "error serializing transaction body for topic submission")
 				}
 
-				transaction.signedTransactions = append(transaction.signedTransactions, &services.SignedTransaction{
+				_, err = transaction.signedTransactions._PushSignedTransactions(&services.SignedTransaction{
 					BodyBytes: bodyBytes,
 					SigMap:    &services.SignatureMap{},
 				})
+				if err != nil {
+					panic(err)
+				}
 			}
 
 			validStart := *nextTransactionID.ValidStart
@@ -368,6 +390,18 @@ func (transaction *TopicMessageSubmitTransaction) SetMaxTransactionFee(fee Hbar)
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *TopicMessageSubmitTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicMessageSubmitTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *TopicMessageSubmitTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
 func (transaction *TopicMessageSubmitTransaction) GetTransactionMemo() string {
@@ -423,19 +457,29 @@ func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicK
 		return transaction
 	}
 
-	if len(transaction.signedTransactions) == 0 {
+	if transaction.signedTransactions._Length() == 0 {
 		return transaction
 	}
 
-	transaction.transactions = make([]*services.Transaction, 0)
+	transaction.transactions = _NewLockedSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+	transaction.transactionIDs.locked = true
 
-	for index := 0; index < len(transaction.signedTransactions); index++ {
-		transaction.signedTransactions[index].SigMap.SigPair = append(
-			transaction.signedTransactions[index].SigMap.SigPair,
+	for index := 0; index < transaction.signedTransactions._Length(); index++ {
+		var temp *services.SignedTransaction
+		switch t := transaction.signedTransactions._Get(index).(type) { //nolint
+		case *services.SignedTransaction:
+			temp = t
+		}
+		temp.SigMap.SigPair = append(
+			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
+		_, err := transaction.signedTransactions._Set(index, temp)
+		if err != nil {
+			transaction.lockError = err
+		}
 	}
 
 	return transaction

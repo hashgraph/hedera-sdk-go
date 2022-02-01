@@ -161,6 +161,10 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
+	if transaction.lockError != nil {
+		return TransactionResponse{}, transaction.lockError
+	}
+
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
@@ -168,7 +172,13 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 		}
 	}
 
-	transactionID := transaction.GetTransactionID()
+	var transactionID TransactionID
+	if transaction.transactionIDs._Length() > 0 {
+		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
+		case TransactionID:
+			transactionID = t
+		}
+	}
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
@@ -240,6 +250,18 @@ func (transaction *ScheduleDeleteTransaction) SetMaxTransactionFee(fee Hbar) *Sc
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
+}
+
+// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
+func (transaction *ScheduleDeleteTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *ScheduleDeleteTransaction {
+	transaction._RequireNotFrozen()
+	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+	return transaction
+}
+
+// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
+func (transaction *ScheduleDeleteTransaction) GetRegenerateTransactionID() bool {
+	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
 func (transaction *ScheduleDeleteTransaction) GetTransactionMemo() string {
