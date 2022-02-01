@@ -1,3 +1,26 @@
+## v2.9.0-beta.1
+
+### Added
+
+* CREATE2 Solidity addresses can now be represented by a `ContractId` with `EvmAddress` set.
+* `ContractId.FromEvmAddress()`
+* `ContractFunctionResult.StateChanges`
+* `ContractFunctionResult.EvmAddress`
+* `ContractStateChange`
+* `StorageChange`
+* New response codes.
+* `ChunkedTransaction.[Set|Get]ChunkSize()`, and changed default chunk size for `FileAppendTransaction` to 2048.
+
+### Fixed
+
+* Requests not cycling though nodes.
+* Free queries not attempting to retry on different nodes.
+
+### Deprecated
+
+* `ContractId.FromSolidityAddress()`, use `ContractId.FromEvmAddress()` instead.
+* `ContractFunctionResult.CreatedContractIDs`.
+
 ## v2.8.0
 
 ### Added

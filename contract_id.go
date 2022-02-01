@@ -115,6 +115,7 @@ func ContractIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (Co
 
 // ContractIDFromSolidityAddress constructs a ContractID from a string representation of a _Solidity address
 // Does not populate ContractID.EvmAddress
+// Deprecated
 func ContractIDFromSolidityAddress(s string) (ContractID, error) {
 	shard, realm, contract, err := _IdFromSolidityAddress(s)
 	if err != nil {
