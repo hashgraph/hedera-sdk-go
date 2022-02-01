@@ -1,8 +1,15 @@
+## v2.8.0
+
+### Added
+
+* Support for regenerating transaction IDs on demand if a request
+  responses with `TRANSACITON_EXPIRED`
+
 ## v2.8.0-beta.1
 
 ### Added
 
- * Support for regenerating transaction IDs on demand if a request 
+ * Support for regenerating transaction IDs on demand if a request
    responses with `TRANSACITON_EXPIRED`
 
 ## v2.7.0
