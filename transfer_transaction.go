@@ -19,9 +19,11 @@ type TransferTransaction struct {
 
 func NewTransferTransaction() *TransferTransaction {
 	transaction := TransferTransaction{
-		Transaction:    _NewTransaction(),
-		tokenTransfers: make(map[TokenID]map[AccountID]int64),
-		hbarTransfers:  make(map[AccountID]Hbar),
+		Transaction:      _NewTransaction(),
+		tokenTransfers:   make(map[TokenID]map[AccountID]int64),
+		hbarTransfers:    make(map[AccountID]Hbar),
+		nftTransfers:     make(map[TokenID][]TokenNftTransfer),
+		expectedDecimals: make(map[TokenID]uint32),
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(1))
