@@ -14,16 +14,17 @@ import (
 
 type _MirrorNode struct {
 	*_ManagedNode
-	channel *mirror.ConsensusServiceClient
-	client  *grpc.ClientConn
+	consensusServiceClient *mirror.ConsensusServiceClient
+	networkServiceClient   *mirror.NetworkServiceClient
+	client                 *grpc.ClientConn
 }
 
 func _NewMirrorNode(address string) _MirrorNode {
 	wait := 250 * time.Millisecond
 	temp := _NewManagedNode(address, wait.Milliseconds())
 	return _MirrorNode{
-		_ManagedNode: &temp,
-		channel:      nil,
+		_ManagedNode:           &temp,
+		consensusServiceClient: nil,
 	}
 }
 
@@ -83,9 +84,13 @@ func (node *_MirrorNode) _GetAddress() string {
 	return node._ManagedNode._GetAddress()
 }
 
-func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
-	if node.channel != nil {
-		return node.channel, nil
+func (node *_MirrorNode) _GetConsensusServiceClient() (*mirror.ConsensusServiceClient, error) {
+	if node.consensusServiceClient != nil {
+		return node.consensusServiceClient, nil
+	} else if node.client != nil {
+		channel := mirror.NewConsensusServiceClient(node.client)
+		node.consensusServiceClient = &channel
+		return node.consensusServiceClient, nil
 	}
 
 	var kacp = keepalive.ClientParameters{
@@ -108,10 +113,45 @@ func (node *_MirrorNode) _GetChannel() (*mirror.ConsensusServiceClient, error) {
 	}
 
 	channel := mirror.NewConsensusServiceClient(conn)
-	node.channel = &channel
+	node.consensusServiceClient = &channel
 	node.client = conn
 
-	return node.channel, nil
+	return node.consensusServiceClient, nil
+}
+
+func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClient, error) {
+	if node.networkServiceClient != nil {
+		return node.networkServiceClient, nil
+	} else if node.client != nil {
+		channel := mirror.NewNetworkServiceClient(node.client)
+		node.networkServiceClient = &channel
+		return node.networkServiceClient, nil
+	}
+
+	var kacp = keepalive.ClientParameters{
+		Time:                10 * time.Second,
+		Timeout:             time.Second,
+		PermitWithoutStream: true,
+	}
+
+	var security grpc.DialOption
+
+	if node._ManagedNode.address._IsTransportSecurity() {
+		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
+	} else {
+		security = grpc.WithInsecure() //nolint
+	}
+
+	conn, err := grpc.Dial(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
+	if err != nil {
+		return nil, errors.Wrapf(err, "error connecting to mirror at %s", node._ManagedNode.address._String())
+	}
+
+	channel := mirror.NewNetworkServiceClient(conn)
+	node.networkServiceClient = &channel
+	node.client = conn
+
+	return node.networkServiceClient, nil
 }
 
 func (node *_MirrorNode) _ToSecure() _IManagedNode {
@@ -126,9 +166,9 @@ func (node *_MirrorNode) _ToSecure() _IManagedNode {
 	}
 
 	return &_MirrorNode{
-		_ManagedNode: &managed,
-		channel:      node.channel,
-		client:       node.client,
+		_ManagedNode:           &managed,
+		consensusServiceClient: node.consensusServiceClient,
+		client:                 node.client,
 	}
 }
 
@@ -144,14 +184,14 @@ func (node *_MirrorNode) _ToInsecure() _IManagedNode {
 	}
 
 	return &_MirrorNode{
-		_ManagedNode: &managed,
-		channel:      node.channel,
-		client:       node.client,
+		_ManagedNode:           &managed,
+		consensusServiceClient: node.consensusServiceClient,
+		client:                 node.client,
 	}
 }
 
 func (node *_MirrorNode) _Close() error {
-	if node.channel != nil {
+	if node.consensusServiceClient != nil {
 		return node.client.Close()
 	}
 

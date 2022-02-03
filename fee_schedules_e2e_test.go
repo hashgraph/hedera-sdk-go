@@ -36,13 +36,13 @@ func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
 		SetFileID(FileID{Shard: 0, Realm: 0, File: 101}).
 		Execute(env.Client)
 	require.NoError(t, err)
-	nodeAddressbook, err := _NodeAddressBookFromBytes(nodeAddressBookBytes)
+	nodeAddressbook, err := NodeAddressBookFromBytes(nodeAddressBookBytes)
 	require.NoError(t, err)
 	assert.NotNil(t, nodeAddressbook)
 
-	for _, ad := range nodeAddressbook.nodeAddresses {
-		println(ad.nodeID)
-		println(string(ad.certHash))
+	for _, ad := range nodeAddressbook.NodeAddresses {
+		println(ad.NodeID)
+		println(string(ad.CertHash))
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

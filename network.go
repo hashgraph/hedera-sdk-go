@@ -7,7 +7,7 @@ import (
 
 type _Network struct {
 	_ManagedNetwork
-	addressBook map[AccountID]_NodeAddress
+	addressBook map[AccountID]NodeAddress
 }
 
 func _NewNetwork() _Network {
@@ -97,24 +97,24 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 	network._SetLedgerID(*ledger)
 }
 
-func _ReadAddressBookResource(ad string) map[AccountID]_NodeAddress {
+func _ReadAddressBookResource(ad string) map[AccountID]NodeAddress {
 	f, err := ioutil.ReadFile(ad)
 	if err != nil {
 		panic(err)
 	}
 
-	nodeAB, err := _NodeAddressBookFromBytes(f)
+	nodeAB, err := NodeAddressBookFromBytes(f)
 	if err != nil {
 		panic(err)
 	}
 
-	resultMap := make(map[AccountID]_NodeAddress)
-	for _, nodeAd := range nodeAB.nodeAddresses {
-		if nodeAd.accountID == nil {
+	resultMap := make(map[AccountID]NodeAddress)
+	for _, nodeAd := range nodeAB.NodeAddresses {
+		if nodeAd.AccountID == nil {
 			continue
 		}
 
-		resultMap[*nodeAd.accountID] = nodeAd
+		resultMap[*nodeAd.AccountID] = nodeAd
 	}
 
 	return resultMap
