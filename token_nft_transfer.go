@@ -13,7 +13,7 @@ type TokenNftTransfer struct {
 }
 
 type _TokenNftTransfers struct {
-	tokenNftTransfers []TokenNftTransfer
+	tokenNftTransfers []*TokenNftTransfer
 }
 
 func _NftTransferFromProtobuf(pb *services.NftTransfer) TokenNftTransfer {
@@ -70,14 +70,14 @@ func NftTransferFromBytes(data []byte) (TokenNftTransfer, error) {
 	return _NftTransferFromProtobuf(&pb), nil
 }
 
-func (tokenNftTransfers _TokenNftTransfers) Len() int {
+func (tokenNftTransfers *_TokenNftTransfers) Len() int {
 	return len(tokenNftTransfers.tokenNftTransfers)
 }
-func (tokenNftTransfers _TokenNftTransfers) Swap(i, j int) {
+func (tokenNftTransfers *_TokenNftTransfers) Swap(i, j int) {
 	tokenNftTransfers.tokenNftTransfers[i], tokenNftTransfers.tokenNftTransfers[j] = tokenNftTransfers.tokenNftTransfers[j], tokenNftTransfers.tokenNftTransfers[i]
 }
 
-func (tokenNftTransfers _TokenNftTransfers) Less(i, j int) bool {
+func (tokenNftTransfers *_TokenNftTransfers) Less(i, j int) bool {
 	if tokenNftTransfers.tokenNftTransfers[i].SenderAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].SenderAccountID) < 0 { //nolint
 		return true
 	} else if tokenNftTransfers.tokenNftTransfers[i].SenderAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].SenderAccountID) > 0 {

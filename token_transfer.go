@@ -8,8 +8,9 @@ import (
 )
 
 type TokenTransfer struct {
-	AccountID AccountID
-	Amount    int64
+	AccountID  AccountID
+	Amount     int64
+	IsApproved bool
 }
 
 type _TokenTransfers struct {
@@ -34,15 +35,17 @@ func _TokenTransferFromProtobuf(pb *services.AccountAmount) TokenTransfer {
 	}
 
 	return TokenTransfer{
-		AccountID: accountID,
-		Amount:    pb.Amount,
+		AccountID:  accountID,
+		Amount:     pb.Amount,
+		IsApproved: pb.IsApproval,
 	}
 }
 
 func (transfer *TokenTransfer) _ToProtobuf() *services.AccountAmount {
 	return &services.AccountAmount{
-		AccountID: transfer.AccountID._ToProtobuf(),
-		Amount:    transfer.Amount,
+		AccountID:  transfer.AccountID._ToProtobuf(),
+		Amount:     transfer.Amount,
+		IsApproval: transfer.IsApproved,
 	}
 }
 
@@ -80,29 +83,9 @@ func (transfers _TokenTransfers) Swap(i, j int) {
 }
 
 func (transfers _TokenTransfers) Less(i, j int) bool {
-	if transfers.transfers[i].AccountID.Shard < transfers.transfers[j].AccountID.Shard { //nolint
+	if transfers.transfers[i].AccountID.Compare(transfers.transfers[j].AccountID) < 0 { //nolint
 		return true
-	} else if transfers.transfers[i].AccountID.Shard > transfers.transfers[j].AccountID.Shard {
-		return false
 	}
 
-	if transfers.transfers[i].AccountID.Realm < transfers.transfers[j].AccountID.Realm { //nolint
-		return true
-	} else if transfers.transfers[i].AccountID.Realm > transfers.transfers[j].AccountID.Realm {
-		return false
-	}
-
-	if transfers.transfers[i].AccountID.AliasKey != nil && transfers.transfers[j].AccountID.AliasKey != nil {
-		if transfers.transfers[i].AccountID.String() < transfers.transfers[j].AccountID.String() { //nolint
-			return true
-		} else if transfers.transfers[i].AccountID.String() > transfers.transfers[j].AccountID.String() {
-			return false
-		}
-	}
-
-	if transfers.transfers[i].AccountID.Account < transfers.transfers[j].AccountID.Account { //nolint
-		return true
-	} else { //nolint
-		return false
-	}
+	return false
 }
