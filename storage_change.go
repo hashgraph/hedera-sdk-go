@@ -1,10 +1,11 @@
 package hedera
 
 import (
+	"math/big"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"math/big"
 )
 
 type StorageChange struct {
