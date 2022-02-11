@@ -6,6 +6,8 @@ package hedera
 import (
 	"testing"
 
+	"github.com/hashgraph/hedera-protobufs-go/services"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
@@ -38,4 +40,53 @@ func TestUnitAccountRecordQueryValidateWrong(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
 	}
+}
+
+func TestUnitMockAccountRecordsQuery(t *testing.T) {
+	responses := [][]interface{}{{
+		&services.Response{
+			Response: &services.Response_CryptoGetAccountRecords{
+				CryptoGetAccountRecords: &services.CryptoGetAccountRecordsResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptoGetAccountRecords{
+				CryptoGetAccountRecords: &services.CryptoGetAccountRecordsResponse{
+					Header:    &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_ANSWER_ONLY, Cost: 1},
+					AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 1800}},
+					Records: []*services.TransactionRecord{
+						{
+							TransactionHash:    []byte{1},
+							ConsensusTimestamp: &services.Timestamp{Nanos: 12313123, Seconds: 2313},
+							TransactionID: &services.TransactionID{
+								TransactionValidStart: &services.Timestamp{Nanos: 12313123, Seconds: 2313},
+								AccountID:             &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 1800}},
+								Scheduled:             false,
+								Nonce:                 0,
+							},
+							Memo:           "",
+							TransactionFee: 0,
+						},
+					},
+				},
+			},
+		},
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+
+	recordsQuery, err := NewAccountRecordsQuery().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetAccountID(AccountID{Account: 1800}).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		Execute(client)
+	require.NoError(t, err)
+
+	require.Equal(t, len(recordsQuery), 1)
+	require.Equal(t, recordsQuery[0].TransactionID.AccountID.Account, uint64(1800))
+
+	server.Close()
 }
