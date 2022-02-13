@@ -140,6 +140,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		LogInfo:              infos,
 		ContractStateChanges: csc,
 		EvmAddress:           evm,
+		CreatedContractIDs:   createdContractIDs,
 	}
 
 	if pb.ContractID != nil {
