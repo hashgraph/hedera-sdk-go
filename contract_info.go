@@ -24,9 +24,14 @@ func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_Co
 	if contractInfo == nil {
 		return ContractInfo{}, errParameterNull
 	}
-	adminKey, err := _KeyFromProtobuf(contractInfo.GetAdminKey())
-	if err != nil {
-		return ContractInfo{}, err
+
+	var adminKey Key
+	var err error
+	if contractInfo.GetAdminKey() != nil {
+		adminKey, err = _KeyFromProtobuf(contractInfo.GetAdminKey())
+		if err != nil {
+			return ContractInfo{}, err
+		}
 	}
 
 	accountID := AccountID{}

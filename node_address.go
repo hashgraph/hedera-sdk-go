@@ -4,59 +4,51 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-type _NodeAddress struct {
-	publicKey   string
-	accountID   *AccountID
-	nodeID      int64
-	certHash    []byte
-	addresses   []_Endpoint
-	description string
-	stake       int64
+type NodeAddress struct {
+	PublicKey   string
+	AccountID   *AccountID
+	NodeID      int64
+	CertHash    []byte
+	Addresses   []_Endpoint
+	Description string
+	Stake       int64
 }
 
-func _NodeAddressFromProtobuf(nodeAd *services.NodeAddress) _NodeAddress {
+func _NodeAddressFromProtobuf(nodeAd *services.NodeAddress) NodeAddress {
 	address := make([]_Endpoint, 0)
-
-	if len(nodeAd.GetIpAddress()) > 0 { // nolint
-		address = append(address, _EndpointFromProtobuf(
-			&services.ServiceEndpoint{
-				IpAddressV4: nodeAd.GetIpAddress(), // nolint
-				Port:        nodeAd.GetPortno(),    // nolint
-			}))
-	}
 
 	for _, end := range nodeAd.GetServiceEndpoint() {
 		address = append(address, _EndpointFromProtobuf(end))
 	}
 
-	return _NodeAddress{
-		publicKey:   nodeAd.GetRSA_PubKey(),
-		accountID:   _AccountIDFromProtobuf(nodeAd.GetNodeAccountId()),
-		nodeID:      nodeAd.GetNodeId(),
-		certHash:    nodeAd.GetNodeCertHash(),
-		addresses:   address,
-		description: nodeAd.GetDescription(),
-		stake:       nodeAd.GetStake(),
+	return NodeAddress{
+		PublicKey:   nodeAd.GetRSA_PubKey(),
+		AccountID:   _AccountIDFromProtobuf(nodeAd.GetNodeAccountId()),
+		NodeID:      nodeAd.GetNodeId(),
+		CertHash:    nodeAd.GetNodeCertHash(),
+		Addresses:   address,
+		Description: nodeAd.GetDescription(),
+		Stake:       nodeAd.GetStake(),
 	}
 }
 
-func (nodeAdd *_NodeAddress) _ToProtobuf() *services.NodeAddress {
+func (nodeAdd *NodeAddress) _ToProtobuf() *services.NodeAddress {
 	build := &services.NodeAddress{
-		RSA_PubKey:      nodeAdd.publicKey,
-		NodeId:          nodeAdd.nodeID,
+		RSA_PubKey:      nodeAdd.PublicKey,
+		NodeId:          nodeAdd.NodeID,
 		NodeAccountId:   nil,
-		NodeCertHash:    nodeAdd.certHash,
+		NodeCertHash:    nodeAdd.CertHash,
 		ServiceEndpoint: nil,
-		Description:     nodeAdd.description,
-		Stake:           nodeAdd.stake,
+		Description:     nodeAdd.Description,
+		Stake:           nodeAdd.Stake,
 	}
 
-	if nodeAdd.accountID != nil {
-		build.NodeAccountId = nodeAdd.accountID._ToProtobuf()
+	if nodeAdd.AccountID != nil {
+		build.NodeAccountId = nodeAdd.AccountID._ToProtobuf()
 	}
 
 	serviceEndpoint := make([]*services.ServiceEndpoint, 0)
-	for _, k := range nodeAdd.addresses {
+	for _, k := range nodeAdd.Addresses {
 		serviceEndpoint = append(serviceEndpoint, k._ToProtobuf())
 	}
 	build.ServiceEndpoint = serviceEndpoint
@@ -64,10 +56,10 @@ func (nodeAdd *_NodeAddress) _ToProtobuf() *services.NodeAddress {
 	return build
 }
 
-func (nodeAdd _NodeAddress) String() string {
-	addresses := ""
-	for _, k := range nodeAdd.addresses {
-		addresses += k.String()
+func (nodeAdd NodeAddress) String() string {
+	Addresses := ""
+	for _, k := range nodeAdd.Addresses {
+		Addresses += k.String()
 	}
-	return nodeAdd.accountID.String() + " " + addresses + "\n" + "certHash " + string(nodeAdd.certHash)
+	return nodeAdd.AccountID.String() + " " + Addresses + "\n" + "CertHash " + string(nodeAdd.CertHash)
 }

@@ -150,7 +150,7 @@ func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessa
 
 	messages := make(map[string][]*mirror.ConsensusTopicResponse)
 
-	channel, err := client.mirrorNetwork._GetNextMirrorNode()._GetChannel()
+	channel, err := client.mirrorNetwork._GetNextMirrorNode()._GetConsensusServiceClient()
 	if err != nil {
 		return handle, err
 	}

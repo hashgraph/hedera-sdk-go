@@ -125,6 +125,9 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 }
 
 func _AccountRecordsQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
+	if response.query.GetCryptoGetAccountRecords() == nil {
+		println("nil adf")
+	}
 	return _QueryShouldRetry(Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
 }
 
