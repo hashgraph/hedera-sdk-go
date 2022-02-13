@@ -109,7 +109,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 	}
 
 	createdContractIDs := make([]ContractID, 0)
-	for _, id := range pb.CreatedContractIDs {
+	for _, id := range pb.CreatedContractIDs { // nolint
 		temp := _ContractIDFromProtobuf(id)
 		if temp != nil {
 			createdContractIDs = append(createdContractIDs, *temp)

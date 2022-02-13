@@ -259,6 +259,11 @@ const (
 	StatusAmountExceedsAllowance                                   Status = 293
 	StatusMaxAllowancesExceeded                                    Status = 294
 	StatusEmptyAllowances                                          Status = 295
+	StatusSpenderAccountRepeatedInAllowance                        Status = 296
+	StatusRepeatedSerialNumsInNftAllowances                        Status = 297
+	StatusFungibleTokenInNftAllowances                             Status = 298
+	StatusNftInFungibleTokenAllowances                             Status = 299
+	StatusPayerAndOwnerNotEqual                                    Status = 300
 )
 
 // String() returns a string representation of the status
@@ -772,6 +777,16 @@ func (status Status) String() string { // nolint
 		return "MAX_ALLOWANCES_EXCEEDED"
 	case StatusEmptyAllowances:
 		return "EMPTY_ALLOWANCES"
+	case StatusSpenderAccountRepeatedInAllowance:
+		return "SPENDER_ACCOUNT_REPEATED_IN_ALLOWANCES"
+	case StatusRepeatedSerialNumsInNftAllowances:
+		return "REPEATED_SERIAL_NUMS_IN_NFT_ALLOWANCES"
+	case StatusFungibleTokenInNftAllowances:
+		return "FUNGIBLE_TOKEN_IN_NFT_ALLOWANCES"
+	case StatusNftInFungibleTokenAllowances:
+		return "NFT_IN_FUNGIBLE_TOKEN_ALLOWANCES"
+	case StatusPayerAndOwnerNotEqual:
+		return "PAYER_AND_OWNER_NOT_EQUAL"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
