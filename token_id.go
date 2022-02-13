@@ -213,21 +213,9 @@ func (tokenIDs _TokenIDs) Swap(i, j int) {
 }
 
 func (tokenIDs _TokenIDs) Less(i, j int) bool {
-	if tokenIDs.tokenIDs[i].Shard < tokenIDs.tokenIDs[j].Shard { //nolint
+	if tokenIDs.tokenIDs[i].Compare(tokenIDs.tokenIDs[j]) < 0 { //nolint
 		return true
-	} else if tokenIDs.tokenIDs[i].Shard > tokenIDs.tokenIDs[j].Shard {
-		return false
 	}
 
-	if tokenIDs.tokenIDs[i].Realm < tokenIDs.tokenIDs[j].Realm { //nolint
-		return true
-	} else if tokenIDs.tokenIDs[i].Realm > tokenIDs.tokenIDs[j].Realm {
-		return false
-	}
-
-	if tokenIDs.tokenIDs[i].Token < tokenIDs.tokenIDs[j].Token { //nolint
-		return true
-	} else { //nolint
-		return false
-	}
+	return false
 }

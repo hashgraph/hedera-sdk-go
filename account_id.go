@@ -19,7 +19,7 @@ type AccountID struct {
 	checksum *string
 }
 
-type _AccountIDs struct {
+type _AccountIDs struct { //nolint
 	accountIDs []AccountID
 }
 
@@ -290,37 +290,17 @@ func (id AccountID) Compare(given AccountID) int {
 	}
 }
 
-func (accountIDs _AccountIDs) Len() int {
+func (accountIDs _AccountIDs) Len() int { //nolint
 	return len(accountIDs.accountIDs)
 }
-func (accountIDs _AccountIDs) Swap(i, j int) {
+func (accountIDs _AccountIDs) Swap(i, j int) { //nolint
 	accountIDs.accountIDs[i], accountIDs.accountIDs[j] = accountIDs.accountIDs[j], accountIDs.accountIDs[i]
 }
 
-func (accountIDs _AccountIDs) Less(i, j int) bool {
-	if accountIDs.accountIDs[i].Shard < accountIDs.accountIDs[j].Shard { //nolint
+func (accountIDs _AccountIDs) Less(i, j int) bool { //nolint
+	if accountIDs.accountIDs[i].Compare(accountIDs.accountIDs[j]) < 0 { //nolint
 		return true
-	} else if accountIDs.accountIDs[i].Shard > accountIDs.accountIDs[j].Shard {
-		return false
 	}
 
-	if accountIDs.accountIDs[i].Realm < accountIDs.accountIDs[j].Realm { //nolint
-		return true
-	} else if accountIDs.accountIDs[i].Realm > accountIDs.accountIDs[j].Realm {
-		return false
-	}
-
-	if accountIDs.accountIDs[i].AliasKey != nil && accountIDs.accountIDs[j].AliasKey != nil {
-		if accountIDs.accountIDs[i].String() < accountIDs.accountIDs[j].String() { //nolint
-			return true
-		} else if accountIDs.accountIDs[i].String() > accountIDs.accountIDs[j].String() {
-			return false
-		}
-	}
-
-	if accountIDs.accountIDs[i].Account < accountIDs.accountIDs[j].Account { //nolint
-		return true
-	} else { //nolint
-		return false
-	}
+	return false
 }

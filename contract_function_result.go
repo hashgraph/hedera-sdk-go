@@ -138,9 +138,9 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		Bloom:                pb.Bloom,
 		GasUsed:              pb.GasUsed,
 		LogInfo:              infos,
-		CreatedContractIDs:   createdContractIDs,
 		ContractStateChanges: csc,
 		EvmAddress:           evm,
+		CreatedContractIDs:   createdContractIDs,
 	}
 
 	if pb.ContractID != nil {
@@ -157,12 +157,6 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		infos[i] = info._ToProtobuf()
 	}
 
-	contractIDs := make([]*services.ContractID, len(result.CreatedContractIDs))
-
-	for i, contractID := range result.CreatedContractIDs {
-		contractIDs[i] = contractID._ToProtobuf()
-	}
-
 	stateChanges := make([]*services.ContractStateChange, 0)
 	for _, change := range result.ContractStateChanges {
 		stateChanges = append(stateChanges, change._ToProtobuf())
@@ -175,7 +169,6 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		Bloom:              result.Bloom,
 		GasUsed:            result.GasUsed,
 		LogInfo:            infos,
-		CreatedContractIDs: contractIDs,
 		StateChanges:       stateChanges,
 		EvmAddress:         &wrapperspb.BytesValue{Value: result.EvmAddress.EvmAddress},
 	}

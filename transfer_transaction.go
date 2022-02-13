@@ -11,23 +11,17 @@ import (
 
 type TransferTransaction struct {
 	Transaction
-	tokenTransfers   map[TokenID]map[AccountID]int64
-	hbarTransfers    map[AccountID]Hbar
-	nftTransfers     map[TokenID][]TokenNftTransfer
-	expectedDecimals map[TokenID]uint32
-	hbarApprovals    map[AccountID]bool
-	tokenApprovals   map[TokenID]map[AccountID]bool
+	tokenTransfers map[TokenID]*_TokenTransfer
+	hbarTransfers  []*_HbarTransfer
+	nftTransfers   map[TokenID][]*TokenNftTransfer
 }
 
 func NewTransferTransaction() *TransferTransaction {
 	transaction := TransferTransaction{
-		Transaction:      _NewTransaction(),
-		tokenTransfers:   make(map[TokenID]map[AccountID]int64),
-		hbarTransfers:    make(map[AccountID]Hbar),
-		nftTransfers:     make(map[TokenID][]TokenNftTransfer),
-		expectedDecimals: make(map[TokenID]uint32),
-		hbarApprovals:    make(map[AccountID]bool),
-		tokenApprovals:   make(map[TokenID]map[AccountID]bool),
+		Transaction:    _NewTransaction(),
+		tokenTransfers: make(map[TokenID]*_TokenTransfer),
+		hbarTransfers:  make([]*_HbarTransfer, 0),
+		nftTransfers:   make(map[TokenID][]*TokenNftTransfer),
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(1))
@@ -36,79 +30,64 @@ func NewTransferTransaction() *TransferTransaction {
 }
 
 func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TransferTransaction {
-	hbarTransfers := make(map[AccountID]Hbar)
-	tokenTransfers := make(map[TokenID]map[AccountID]int64)
-	nftTransfers := make(map[TokenID][]TokenNftTransfer)
-
-	for _, aa := range pb.GetCryptoTransfer().GetTransfers().AccountAmounts {
-		accountID := _AccountIDFromProtobuf(aa.AccountID)
-		amount := HbarFromTinybar(aa.Amount)
-
-		if value, ok := hbarTransfers[*accountID]; ok {
-			hbarTransfers[*accountID] = HbarFromTinybar(amount.AsTinybar() + value.AsTinybar())
-		} else {
-			hbarTransfers[*accountID] = amount
-		}
-	}
+	tokenTransfers := make(map[TokenID]*_TokenTransfer)
+	nftTransfers := make(map[TokenID][]*TokenNftTransfer)
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
-		if tokenID := _TokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
-			var currentTokenTransfers map[AccountID]int64
-
-			if value, ok := tokenTransfers[*tokenID]; ok {
-				currentTokenTransfers = value
-			} else {
-				currentTokenTransfers = make(map[AccountID]int64)
-			}
-
-			for _, aa := range tokenTransfersList.GetTransfers() {
-				if accountID := _AccountIDFromProtobuf(aa.AccountID); accountID != nil {
-					if value, ok := currentTokenTransfers[*accountID]; ok {
-						currentTokenTransfers[*accountID] = aa.Amount + value
-					} else {
-						currentTokenTransfers[*accountID] = aa.Amount
-					}
-				}
-			}
-
-			tokenTransfers[*tokenID] = currentTokenTransfers
-		}
+		tok := _TokenIDFromProtobuf(tokenTransfersList.Token)
+		tokenTransfers[*tok] = _TokenTransferPrivateFromProtobuf(tokenTransfersList)
 	}
 
 	for _, tokenTransfersList := range pb.GetCryptoTransfer().GetTokenTransfers() {
 		if tokenID := _TokenIDFromProtobuf(tokenTransfersList.Token); tokenID != nil {
 			for _, aa := range tokenTransfersList.GetNftTransfers() {
 				if nftTransfers[*tokenID] == nil {
-					nftTransfers[*tokenID] = make([]TokenNftTransfer, 0)
+					nftTransfers[*tokenID] = make([]*TokenNftTransfer, 0)
 				}
-				nftTransfers[*tokenID] = append(nftTransfers[*tokenID], _NftTransferFromProtobuf(aa))
+				nftTransfer := _NftTransferFromProtobuf(aa)
+				nftTransfers[*tokenID] = append(nftTransfers[*tokenID], &nftTransfer)
 			}
 		}
 	}
 
 	return &TransferTransaction{
 		Transaction:    transaction,
-		hbarTransfers:  hbarTransfers,
+		hbarTransfers:  _HbarTransferFromProtobuf(pb.GetCryptoTransfer().GetTransfers().GetAccountAmounts()),
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
 }
 
-func (transaction *TransferTransaction) SetTokenTransferApproval(tokenID TokenID, accountID AccountID, approval bool) *TransferTransaction {
-	transaction.tokenApprovals[tokenID][accountID] = approval
+func (transaction *TransferTransaction) SetTokenTransferApproval(tokenID TokenID, accountID AccountID, approval bool) *TransferTransaction { //nolint
+	for token, tokenTransfer := range transaction.tokenTransfers {
+		if token.Compare(tokenID) == 0 {
+			for _, transfer := range tokenTransfer.Transfers {
+				if transfer.accountID.Compare(accountID) == 0 {
+					transfer.IsApproved = approval
+				}
+			}
+		}
+	}
+
 	return transaction
 }
 
-func (transaction *TransferTransaction) SetHbarTransferApproval(spenderAccountID AccountID, approval bool) *TransferTransaction {
-	transaction.hbarApprovals[spenderAccountID] = approval
+func (transaction *TransferTransaction) SetHbarTransferApproval(spenderAccountID AccountID, approval bool) *TransferTransaction { //nolint
+	for _, k := range transaction.hbarTransfers {
+		if k.accountID.String() == spenderAccountID.String() {
+			k.IsApproved = approval
+		}
+	}
 	return transaction
 }
 
 func (transaction *TransferTransaction) SetNftTransferApproval(nftID NftID, approval bool) *TransferTransaction {
-	if transfers, ok := transaction.nftTransfers[nftID.TokenID]; ok {
-		for _, t := range transfers {
-			if t.SerialNumber == nftID.SerialNumber {
-				t.IsApproved = approval
+	for token, nftTransfers := range transaction.nftTransfers {
+		if token.Compare(nftID.TokenID) == 0 {
+			for _, nftTransfer := range nftTransfers {
+				if nftTransfer.SerialNumber == nftID.SerialNumber {
+					nftTransfer.IsApproved = approval
+				}
 			}
 		}
 	}
@@ -116,19 +95,33 @@ func (transaction *TransferTransaction) SetNftTransferApproval(nftID NftID, appr
 }
 
 func (transaction *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNftTransfer {
-	return transaction.nftTransfers
+	nftResult := make(map[TokenID][]TokenNftTransfer)
+	for token, nftTransfers := range transaction.nftTransfers {
+		tempArray := make([]TokenNftTransfer, 0)
+		for _, nftTransfer := range nftTransfers {
+			tempArray = append(tempArray, *nftTransfer)
+		}
+
+		nftResult[token] = tempArray
+	}
+
+	return nftResult
 }
 
 func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenTransfer {
 	transfers := make(map[TokenID][]TokenTransfer)
-
 	for tokenID, tokenTransfers := range transaction.tokenTransfers {
 		tokenTransfersList := make([]TokenTransfer, 0)
 
-		for accountID, amount := range tokenTransfers {
+		for _, transfer := range tokenTransfers.Transfers {
+			var acc AccountID
+			if transfer.accountID != nil {
+				acc = *transfer.accountID
+			}
 			tokenTransfersList = append(tokenTransfersList, TokenTransfer{
-				AccountID: accountID,
-				Amount:    amount,
+				AccountID:  acc,
+				Amount:     transfer.Amount.AsTinybar(),
+				IsApproved: transfer.IsApproved,
 			})
 		}
 
@@ -142,71 +135,113 @@ func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenT
 }
 
 func (transaction *TransferTransaction) GetHbarTransfers() map[AccountID]Hbar {
-	return transaction.hbarTransfers
+	result := make(map[AccountID]Hbar)
+	for _, hbarTransfers := range transaction.hbarTransfers {
+		result[*hbarTransfers.accountID] = hbarTransfers.Amount
+	}
+	return result
 }
 
 func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amount Hbar) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
-	if value, ok := transaction.hbarTransfers[accountID]; ok {
-		transaction.hbarTransfers[accountID] = HbarFromTinybar(amount.AsTinybar() + value.AsTinybar())
-	} else {
-		transaction.hbarTransfers[accountID] = amount
+	for _, transfer := range transaction.hbarTransfers {
+		if transfer.accountID.Compare(accountID) == 0 {
+			transfer.Amount = HbarFromTinybar(amount.AsTinybar() + transfer.Amount.AsTinybar())
+			return transaction
+		}
 	}
+
+	transaction.hbarTransfers = append(transaction.hbarTransfers, &_HbarTransfer{
+		accountID:  &accountID,
+		Amount:     amount,
+		IsApproved: false,
+	})
 
 	return transaction
 }
 
 func (transaction *TransferTransaction) GetTokenIDDecimals() map[TokenID]uint32 {
-	return transaction.expectedDecimals
+	result := make(map[TokenID]uint32)
+	for token, tokenTransfer := range transaction.tokenTransfers {
+		if tokenTransfer.ExpectedDecimals != nil {
+			result[token] = *tokenTransfer.ExpectedDecimals
+		}
+	}
+	return result
 }
 
-func (transaction *TransferTransaction) AddTokenTransferWithDecimals(tokenID TokenID, accountID AccountID, value int64, decimal uint32) *TransferTransaction {
+func (transaction *TransferTransaction) AddTokenTransferWithDecimals(tokenID TokenID, accountID AccountID, value int64, decimal uint32) *TransferTransaction { //nolint
 	transaction._RequireNotFrozen()
 
-	var tokenTransfers map[AccountID]int64
-	var amount int64
+	for token, tokenTransfer := range transaction.tokenTransfers {
+		if token.Compare(tokenID) == 0 {
+			for _, transfer := range tokenTransfer.Transfers {
+				if transfer.accountID.Compare(accountID) == 0 {
+					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
+					tokenTransfer.ExpectedDecimals = &decimal
 
-	if value, ok := transaction.tokenTransfers[tokenID]; ok {
-		tokenTransfers = value
-	} else {
-		tokenTransfers = make(map[AccountID]int64)
+					return transaction
+				}
+			}
+		}
 	}
 
-	transaction.expectedDecimals[tokenID] = decimal
+	if v, ok := transaction.tokenTransfers[tokenID]; ok {
+		v.Transfers = append(v.Transfers, &_HbarTransfer{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: false,
+		})
+		v.ExpectedDecimals = &decimal
 
-	if transfer, ok := tokenTransfers[accountID]; ok {
-		amount = transfer + value
-	} else {
-		amount = value
+		return transaction
 	}
 
-	tokenTransfers[accountID] = amount
-	transaction.tokenTransfers[tokenID] = tokenTransfers
+	transaction.tokenTransfers[tokenID] = &_TokenTransfer{
+		Transfers: []*_HbarTransfer{{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: false,
+		}},
+		ExpectedDecimals: &decimal,
+	}
 
 	return transaction
 }
 
-func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, value int64) *TransferTransaction {
+func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, value int64) *TransferTransaction { //nolint
 	transaction._RequireNotFrozen()
 
-	var tokenTransfers map[AccountID]int64
-	var amount int64
+	for token, tokenTransfer := range transaction.tokenTransfers {
+		if token.Compare(tokenID) == 0 {
+			for _, transfer := range tokenTransfer.Transfers {
+				if transfer.accountID.Compare(accountID) == 0 {
+					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
 
-	if value, ok := transaction.tokenTransfers[tokenID]; ok {
-		tokenTransfers = value
-	} else {
-		tokenTransfers = make(map[AccountID]int64)
+					return transaction
+				}
+			}
+		}
 	}
 
-	if transfer, ok := tokenTransfers[accountID]; ok {
-		amount = transfer + value
-	} else {
-		amount = value
+	if v, ok := transaction.tokenTransfers[tokenID]; ok {
+		v.Transfers = append(v.Transfers, &_HbarTransfer{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: false,
+		})
+
+		return transaction
 	}
 
-	tokenTransfers[accountID] = amount
-	transaction.tokenTransfers[tokenID] = tokenTransfers
+	transaction.tokenTransfers[tokenID] = &_TokenTransfer{
+		Transfers: []*_HbarTransfer{{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: false,
+		}},
+	}
 
 	return transaction
 }
@@ -215,14 +250,14 @@ func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender Accou
 	transaction._RequireNotFrozen()
 
 	if transaction.nftTransfers == nil {
-		transaction.nftTransfers = make(map[TokenID][]TokenNftTransfer)
+		transaction.nftTransfers = make(map[TokenID][]*TokenNftTransfer)
 	}
 
 	if transaction.nftTransfers[nftID.TokenID] == nil {
-		transaction.nftTransfers[nftID.TokenID] = make([]TokenNftTransfer, 0)
+		transaction.nftTransfers[nftID.TokenID] = make([]*TokenNftTransfer, 0)
 	}
 
-	transaction.nftTransfers[nftID.TokenID] = append(transaction.nftTransfers[nftID.TokenID], TokenNftTransfer{
+	transaction.nftTransfers[nftID.TokenID] = append(transaction.nftTransfers[nftID.TokenID], &TokenNftTransfer{
 		SenderAccountID:   sender,
 		ReceiverAccountID: receiver,
 		SerialNumber:      nftID.SerialNumber,
@@ -236,20 +271,39 @@ func (transaction *TransferTransaction) _ValidateNetworkOnIDs(client *Client) er
 		return nil
 	}
 	var err error
-	for tokenID, accountMap := range transaction.tokenTransfers {
-		err = tokenID.ValidateChecksum(client)
-		for accountID := range accountMap {
-			err = accountID.ValidateChecksum(client)
+	for token, tokenTransfer := range transaction.tokenTransfers {
+		err = token.ValidateChecksum(client)
+		for _, transfer := range tokenTransfer.Transfers {
+			err = transfer.accountID.ValidateChecksum(client)
+			if err != nil {
+				return err
+			}
+		}
+		if err != nil {
+			return err
 		}
 	}
-	for nftID := range transaction.nftTransfers {
-		err = nftID.ValidateChecksum(client)
+	for token, nftTransfers := range transaction.nftTransfers {
+		err = token.ValidateChecksum(client)
+		if err != nil {
+			return err
+		}
+		for _, nftTransfer := range nftTransfers {
+			err = nftTransfer.SenderAccountID.ValidateChecksum(client)
+			if err != nil {
+				return err
+			}
+			err = nftTransfer.ReceiverAccountID.ValidateChecksum(client)
+			if err != nil {
+				return err
+			}
+		}
 	}
-	for accountID := range transaction.hbarTransfers {
-		err = accountID.ValidateChecksum(client)
-	}
-	if err != nil {
-		return err
+	for _, hbarTransfer := range transaction.hbarTransfers {
+		err = hbarTransfer.accountID.ValidateChecksum(client)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -274,23 +328,15 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 		TokenTransfers: []*services.TokenTransferList{},
 	}
 
-	tempAccountIDarray := make([]AccountID, 0)
-	for k := range transaction.hbarTransfers {
-		tempAccountIDarray = append(tempAccountIDarray, k)
-	}
-	sort.Sort(_AccountIDs{accountIDs: tempAccountIDarray})
+	sort.Sort(&_HbarTransfers{transaction.hbarTransfers})
 
-	if len(tempAccountIDarray) > 0 {
+	if len(transaction.hbarTransfers) > 0 {
 		body.Transfers.AccountAmounts = make([]*services.AccountAmount, 0)
-		for _, accountID := range tempAccountIDarray {
-			approve := false
-			if a, ok := transaction.hbarApprovals[accountID]; ok {
-				approve = a
-			}
+		for _, hbarTransfer := range transaction.hbarTransfers {
 			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &services.AccountAmount{
-				AccountID:  accountID._ToProtobuf(),
-				Amount:     transaction.hbarTransfers[accountID].AsTinybar(),
-				IsApproval: approve,
+				AccountID:  hbarTransfer.accountID._ToProtobuf(),
+				Amount:     hbarTransfer.Amount.AsTinybar(),
+				IsApproval: hbarTransfer.IsApproved,
 			})
 		}
 	}
@@ -301,17 +347,8 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 	}
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
-	tempTokenTransfers := make(map[TokenID][]AccountID)
 	for _, k := range tempTokenIDarray {
-		initialAccountMap := transaction.tokenTransfers[k]
-
-		tempAccountIDarray2 := make([]AccountID, 0)
-		for k2 := range initialAccountMap {
-			tempAccountIDarray2 = append(tempAccountIDarray2, k2)
-		}
-		sort.Sort(_AccountIDs{accountIDs: tempAccountIDarray2})
-
-		tempTokenTransfers[k] = tempAccountIDarray2
+		sort.Sort(&_HbarTransfers{transfers: transaction.tokenTransfers[k].Transfers})
 	}
 
 	if len(tempTokenIDarray) > 0 {
@@ -320,28 +357,15 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 		}
 
 		for _, tokenID := range tempTokenIDarray {
-			transfers := make([]*services.AccountAmount, 0)
-
-			for _, accountID := range tempTokenTransfers[tokenID] {
-				temp := transaction.tokenTransfers[tokenID]
-				approve := false
-				if a, ok := transaction.tokenApprovals[tokenID][accountID]; ok {
-					approve = a
-				}
-				transfers = append(transfers, &services.AccountAmount{
-					AccountID:  accountID._ToProtobuf(),
-					Amount:     temp[accountID],
-					IsApproval: approve,
-				})
-			}
+			transfers := transaction.tokenTransfers[tokenID]._ToProtobuf()
 
 			bod := &services.TokenTransferList{
 				Token:     tokenID._ToProtobuf(),
 				Transfers: transfers,
 			}
 
-			if decimal, ok := transaction.expectedDecimals[tokenID]; ok {
-				bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: decimal}
+			if transaction.tokenTransfers[tokenID].ExpectedDecimals != nil {
+				bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: *transaction.tokenTransfers[tokenID].ExpectedDecimals}
 			}
 
 			body.TokenTransfers = append(body.TokenTransfers, bod)
@@ -354,11 +378,11 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 	}
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
-	tempNftTransfers := make(map[TokenID][]TokenNftTransfer)
+	tempNftTransfers := make(map[TokenID][]*TokenNftTransfer)
 	for _, k := range tempTokenIDarray {
 		tempTokenNftTransfer := transaction.nftTransfers[k]
 
-		sort.Sort(_TokenNftTransfers{tempTokenNftTransfer})
+		sort.Sort(&_TokenNftTransfers{tempTokenNftTransfer})
 
 		tempNftTransfers[k] = tempTokenNftTransfer
 	}
@@ -556,18 +580,15 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 		TokenTransfers: []*services.TokenTransferList{},
 	}
 
-	tempAccountIDarray := make([]AccountID, 0)
-	for k := range transaction.hbarTransfers {
-		tempAccountIDarray = append(tempAccountIDarray, k)
-	}
-	sort.Sort(_AccountIDs{accountIDs: tempAccountIDarray})
+	sort.Sort(&_HbarTransfers{transaction.hbarTransfers})
 
-	if len(tempAccountIDarray) > 0 {
+	if len(transaction.hbarTransfers) > 0 {
 		body.Transfers.AccountAmounts = make([]*services.AccountAmount, 0)
-		for _, accountID := range tempAccountIDarray {
+		for _, hbarTransfer := range transaction.hbarTransfers {
 			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &services.AccountAmount{
-				AccountID: accountID._ToProtobuf(),
-				Amount:    transaction.hbarTransfers[accountID].AsTinybar(),
+				AccountID:  hbarTransfer.accountID._ToProtobuf(),
+				Amount:     hbarTransfer.Amount.AsTinybar(),
+				IsApproval: hbarTransfer.IsApproved,
 			})
 		}
 	}
@@ -578,17 +599,8 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 	}
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
-	tempTokenTransfers := make(map[TokenID][]AccountID)
-	for _, tokenID := range tempTokenIDarray {
-		initialAccountMap := transaction.tokenTransfers[tokenID]
-
-		tempAccountIDarray2 := make([]AccountID, 0)
-		for k2 := range initialAccountMap {
-			tempAccountIDarray2 = append(tempAccountIDarray2, k2)
-		}
-		sort.Sort(_AccountIDs{accountIDs: tempAccountIDarray2})
-
-		tempTokenTransfers[tokenID] = tempAccountIDarray2
+	for _, k := range tempTokenIDarray {
+		sort.Sort(&_HbarTransfers{transfers: transaction.tokenTransfers[k].Transfers})
 	}
 
 	if len(tempTokenIDarray) > 0 {
@@ -597,23 +609,15 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 		}
 
 		for _, tokenID := range tempTokenIDarray {
-			transfers := make([]*services.AccountAmount, 0)
-
-			for _, accountID := range tempTokenTransfers[tokenID] {
-				temp := transaction.tokenTransfers[tokenID]
-				transfers = append(transfers, &services.AccountAmount{
-					AccountID: accountID._ToProtobuf(),
-					Amount:    temp[accountID],
-				})
-			}
+			transfers := transaction.tokenTransfers[tokenID]._ToProtobuf()
 
 			bod := &services.TokenTransferList{
 				Token:     tokenID._ToProtobuf(),
 				Transfers: transfers,
 			}
 
-			if decimal, ok := transaction.expectedDecimals[tokenID]; ok {
-				bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: decimal}
+			if transaction.tokenTransfers[tokenID].ExpectedDecimals != nil {
+				bod.ExpectedDecimals = &wrapperspb.UInt32Value{Value: *transaction.tokenTransfers[tokenID].ExpectedDecimals}
 			}
 
 			body.TokenTransfers = append(body.TokenTransfers, bod)
@@ -626,11 +630,11 @@ func (transaction *TransferTransaction) _Build() *services.TransactionBody {
 	}
 	sort.Sort(_TokenIDs{tokenIDs: tempTokenIDarray})
 
-	tempNftTransfers := make(map[TokenID][]TokenNftTransfer)
+	tempNftTransfers := make(map[TokenID][]*TokenNftTransfer)
 	for _, k := range tempTokenIDarray {
 		tempTokenNftTransfer := transaction.nftTransfers[k]
 
-		sort.Sort(_TokenNftTransfers{tempTokenNftTransfer})
+		sort.Sort(&_TokenNftTransfers{tempTokenNftTransfer})
 
 		tempNftTransfers[k] = tempTokenNftTransfer
 	}
