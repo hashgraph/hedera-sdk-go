@@ -108,6 +108,14 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		infos[i] = _ContractLogInfoFromProtobuf(info)
 	}
 
+	createdContractIDs := make([]ContractID, 0)
+	for _, id := range pb.CreatedContractIDs { // nolint
+		temp := _ContractIDFromProtobuf(id)
+		if temp != nil {
+			createdContractIDs = append(createdContractIDs, *temp)
+		}
+	}
+
 	csc := make([]ContractStateChange, 0)
 	for _, sc := range pb.StateChanges {
 		csc = append(csc, _ContractStateChangeFromProtobuf(sc))
@@ -130,6 +138,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		Bloom:                pb.Bloom,
 		GasUsed:              pb.GasUsed,
 		LogInfo:              infos,
+		CreatedContractIDs:   createdContractIDs,
 		ContractStateChanges: csc,
 		EvmAddress:           evm,
 	}
@@ -148,6 +157,12 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		infos[i] = info._ToProtobuf()
 	}
 
+	contractIDs := make([]*services.ContractID, len(result.CreatedContractIDs))
+
+	for i, contractID := range result.CreatedContractIDs {
+		contractIDs[i] = contractID._ToProtobuf()
+	}
+
 	stateChanges := make([]*services.ContractStateChange, 0)
 	for _, change := range result.ContractStateChanges {
 		stateChanges = append(stateChanges, change._ToProtobuf())
@@ -160,6 +175,7 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		Bloom:              result.Bloom,
 		GasUsed:            result.GasUsed,
 		LogInfo:            infos,
+		CreatedContractIDs: contractIDs,
 		StateChanges:       stateChanges,
 		EvmAddress:         &wrapperspb.BytesValue{Value: result.EvmAddress.EvmAddress},
 	}
