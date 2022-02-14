@@ -29,7 +29,7 @@ func _ManagedNodeAddressFromString(str string) *_ManagedNodeAddress {
 }
 
 func (address *_ManagedNodeAddress) _IsTransportSecurity() bool {
-	return address.port == 50212 || address.port == 433
+	return address.port == 50212 || address.port == 443
 }
 
 func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
@@ -38,7 +38,7 @@ func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
 	switch address.port {
 	case 50212:
 		port = 50211
-	case 433:
+	case 443:
 		port = 5600
 	}
 
@@ -60,7 +60,7 @@ func (address *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
 	case 5600:
 		return &_ManagedNodeAddress{
 			address: address.address,
-			port:    433,
+			port:    443,
 		}
 	}
 
