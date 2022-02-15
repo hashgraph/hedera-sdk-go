@@ -5,9 +5,10 @@ package hedera
 
 import (
 	"encoding/hex"
+	"testing"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 
