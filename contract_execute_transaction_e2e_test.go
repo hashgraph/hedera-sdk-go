@@ -33,7 +33,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -50,7 +50,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(75000).
+		SetGas(100000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -84,7 +84,7 @@ func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	_, err := NewContractExecuteTransaction().
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
@@ -116,7 +116,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -187,7 +187,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -203,7 +203,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -263,7 +263,7 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -280,7 +280,7 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 	resp, err = NewContractExecuteTransaction().
 		SetContractID(contractID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(75000).
+		SetGas(100000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(env.Client)
 	require.NoError(t, err)

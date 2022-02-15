@@ -107,7 +107,7 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 	_, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		SetGas(75000).
+		SetGas(100000).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(FileID{File: 123}).
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").

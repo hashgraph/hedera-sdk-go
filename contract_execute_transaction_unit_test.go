@@ -97,7 +97,7 @@ func TestUnitMockContractExecuteTransaction(t *testing.T) {
 	_, err := NewContractExecuteTransaction().
 		SetContractID(ContractID{Contract: 123}).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		SetGas(75000).
+		SetGas(100000).
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(client)
 	require.NoError(t, err)
