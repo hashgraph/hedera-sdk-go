@@ -26,6 +26,34 @@
 * `ContractId.FromSolidityAddress()`, use `ContractId.FromEvmAddress()` instead.
 * `ContractFunctionResult.CreatedContractIDs`.
 
+## v2.9.0-beta.2
+
+### Added
+
+* CREATE2 Solidity addresses can now be represented by a `ContractId` with `EvmAddress` set.
+* `ContractId.FromEvmAddress()`
+* `ContractFunctionResult.StateChanges`
+* `ContractFunctionResult.EvmAddress`
+* `ContractStateChange`
+* `StorageChange`
+* New response codes.
+* `ChunkedTransaction.[Set|Get]ChunkSize()`, and changed default chunk size for `FileAppendTransaction` to 2048.
+* `AccountAllowance[Adjust|Approve]Transaction`
+* `AccountInfo.[hbar|token|tokenNft]Allowances`
+* `[Hbar|Token|TokenNft]Allowance`
+* `[Hbar|Token|TokenNft]Allowance`
+* `TransferTransaction.set[Hbar|Token|TokenNft]TransferApproval()`
+
+### Fixed
+
+* Requests not cycling though nodes.
+* Free queries not attempting to retry on different nodes.
+
+### Deprecated
+
+* `ContractId.FromSolidityAddress()`, use `ContractId.FromEvmAddress()` instead.
+* `ContractFunctionResult.CreatedContractIDs`.
+
 ## v2.9.0-beta.1
 
 ### Added
