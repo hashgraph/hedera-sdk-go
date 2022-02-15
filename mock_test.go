@@ -5,6 +5,9 @@ package hedera
 
 import (
 	"context"
+	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net"
 	"sync"
 	"testing"
@@ -18,8 +21,14 @@ import (
 
 var wg sync.WaitGroup
 
-func DisabledTestUnitMock(t *testing.T) {
-	responses := []interface{}{
+func TestUnitMock(t *testing.T) {
+	responses := [][]interface{}{{
+		status.New(codes.Unavailable, "node is UNAVAILABLE").Err(),
+		status.New(codes.Internal, "Received RST_STREAM with code 0").Err(),
+	}, {
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
 		&services.TransactionResponse{
 			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
 		},
@@ -41,6 +50,19 @@ func DisabledTestUnitMock(t *testing.T) {
 						ResponseType: services.ResponseType_ANSWER_ONLY,
 					},
 					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_RECEIPT_NOT_FOUND,
+					},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
 						Status: services.ResponseCodeEnum_SUCCESS,
 						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{
 							AccountNum: 234,
@@ -49,7 +71,7 @@ func DisabledTestUnitMock(t *testing.T) {
 				},
 			},
 		},
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -61,6 +83,7 @@ func DisabledTestUnitMock(t *testing.T) {
 	tran := TransactionIDGenerate(AccountID{Account: 3})
 
 	resp, err := NewAccountCreateTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}, {Account: 4}}).
 		SetKey(newKey).
 		SetTransactionID(tran).
 		SetInitialBalance(newBalance).
@@ -68,15 +91,61 @@ func DisabledTestUnitMock(t *testing.T) {
 		Execute(client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(client)
 	require.NoError(t, err)
-	//assert.Equal(t, balance.Hbars.tinybar, int64(10))
-	if server != nil {
-		server.Stop()
-	}
+	require.Equal(t, receipt.AccountID, &AccountID{Account: 234})
+	server.Close()
 }
 
-func TestGenerateTransactionIDsPerExecution(t *testing.T) {
+func DisabledTestUnitMockQuery(t *testing.T) {
+	responses := [][]interface{}{{
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+				},
+			},
+		},
+	}, {
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptogetAccountBalance{
+				CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_ANSWER_ONLY, Cost: 0},
+					AccountID: &services.AccountID{ShardNum: 0, RealmNum: 0, Account: &services.AccountID_AccountNum{
+						AccountNum: 1800,
+					}},
+					Balance: 2000,
+				},
+			},
+		},
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+
+	_, err := NewAccountBalanceQuery().
+		SetAccountID(AccountID{Account: 1800}).
+		SetNodeAccountIDs([]AccountID{{Account: 3}, {Account: 4}}).
+		Execute(client)
+	require.NoError(t, err)
+
+	server.Close()
+}
+
+func DisabledTestGenerateTransactionIDsPerExecution(t *testing.T) {
 	count := 0
 	transactionIds := make(map[string]bool)
 
@@ -129,9 +198,9 @@ func TestGenerateTransactionIDsPerExecution(t *testing.T) {
 
 		return response
 	}
-	responses := []interface{}{
+	responses := [][]interface{}{{
 		call, call, call,
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -140,9 +209,7 @@ func TestGenerateTransactionIDsPerExecution(t *testing.T) {
 		Execute(client)
 	require.NoError(t, err)
 
-	if server != nil {
-		server.Stop()
-	}
+	server.Close()
 }
 
 func DisabledTestSingleTransactionIDForExecutions(t *testing.T) {
@@ -200,9 +267,9 @@ func DisabledTestSingleTransactionIDForExecutions(t *testing.T) {
 
 		return response
 	}
-	responses := []interface{}{
+	responses := [][]interface{}{{
 		call, call, call,
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -212,9 +279,7 @@ func DisabledTestSingleTransactionIDForExecutions(t *testing.T) {
 		Execute(client)
 	require.NoError(t, err)
 
-	if server != nil {
-		server.Stop()
-	}
+	server.Close()
 }
 
 func DisabledTestSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
@@ -272,9 +337,9 @@ func DisabledTestSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
 
 		return response
 	}
-	responses := []interface{}{
+	responses := [][]interface{}{{
 		call, call, call,
-	}
+	}}
 
 	client, server := NewMockClientAndServer(responses)
 
@@ -284,30 +349,45 @@ func DisabledTestSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
 		Execute(client)
 	require.Error(t, err)
 
-	if server != nil {
-		server.Stop()
-		wg.Wait()
+	server.Close()
+}
+
+type MockServers struct {
+	servers []*grpc.Server
+}
+
+func (servers MockServers) Close() {
+	for _, server := range servers.servers {
+		if server != nil {
+			server.Stop()
+		}
 	}
 }
 
-func NewMockClientAndServer(responses []interface{}) (*Client, *grpc.Server) {
-	client := ClientForNetwork(map[string]AccountID{
-		"0.localhost:50211": {Account: 3},
-		"2.localhost:50211": {Account: 4},
-		"3.localhost:50211": {Account: 5},
-	})
+func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, MockServers) {
+	network := map[string]AccountID{}
+	servers := make([]*grpc.Server, 0)
+
+	for i, responses := range allNodeResponses {
+		address := fmt.Sprintf("localhost:%d", 50213+i)
+		nodeAccountID := AccountID{Account: uint64(3 + i)}
+
+		network[address] = nodeAccountID
+
+		responses := responses
+
+		go func() {
+			server := NewServer(responses, address)
+			servers = append(servers, server)
+		}()
+	}
+
+	client := ClientForNetwork(network)
 
 	key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
 	client.SetOperator(AccountID{Account: 1800}, key)
 
-	var server *grpc.Server
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		server = NewServer(responses)
-	}()
-
-	return client, server
+	return client, MockServers{servers}
 }
 
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -341,7 +421,7 @@ func NewMockHandler(responses []interface{}) func(interface{}, context.Context, 
 	}
 }
 
-func NewServer(responses []interface{}) *grpc.Server {
+func NewServer(responses []interface{}, address string) *grpc.Server {
 	server := grpc.NewServer()
 	handler := NewMockHandler(responses)
 
@@ -353,7 +433,7 @@ func NewServer(responses []interface{}) *grpc.Server {
 	server.RegisterService(NewServiceDescription(handler, &services.ScheduleService_ServiceDesc), nil)
 	server.RegisterService(NewServiceDescription(handler, &services.FreezeService_ServiceDesc), nil)
 
-	lis, err := net.Listen("tcp", "localhost:50211")
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		panic(err)
 	}

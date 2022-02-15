@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"encoding/hex"
 	"fmt"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -8,32 +9,48 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-// DelegatableContractID is the ID for a Hedera smart contract
+// ContractID is the ID for a Hedera smart contract
 type DelegatableContractID struct {
-	Shard    uint64
-	Realm    uint64
-	Contract uint64
-	checksum *string
+	Shard      uint64
+	Realm      uint64
+	Contract   uint64
+	EvmAddress []byte
+	checksum   *string
 }
 
 // DelegatableContractIDFromString constructs a DelegatableContractID from a string formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func DelegatableContractIDFromString(data string) (DelegatableContractID, error) {
-	shard, realm, num, checksum, _, err := _IdFromString(data)
+	shard, realm, num, checksum, evm, err := _ContractIDFromString(data)
 	if err != nil {
 		return DelegatableContractID{}, err
 	}
 
+	if num == -1 {
+		return DelegatableContractID{
+			Shard:      uint64(shard),
+			Realm:      uint64(realm),
+			Contract:   0,
+			EvmAddress: evm,
+			checksum:   checksum,
+		}, nil
+	}
+
 	return DelegatableContractID{
-		Shard:    uint64(shard),
-		Realm:    uint64(realm),
-		Contract: uint64(num),
-		checksum: checksum,
+		Shard:      uint64(shard),
+		Realm:      uint64(realm),
+		Contract:   uint64(num),
+		EvmAddress: []byte{},
+		checksum:   checksum,
 	}, nil
 }
 
 func (id *DelegatableContractID) ValidateChecksum(client *Client) error {
-	if !id._IsZero() && client != nil && client.network._GetLedgerID() != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.network._GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
+		var tempChecksum _ParseAddressResult
+		var err error
+		if client.network.ledgerID != nil {
+			tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+		}
 		if err != nil {
 			return err
 		}
@@ -45,42 +62,33 @@ func (id *DelegatableContractID) ValidateChecksum(client *Client) error {
 			return errChecksumMissing
 		}
 		if tempChecksum.correctChecksum != *id.checksum {
+			temp, _ := client.network.ledgerID.ToNetworkName()
 			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
 				*id.checksum,
 				tempChecksum.correctChecksum,
-				*client.network._GetLedgerID()))
+				temp))
 		}
 	}
 
 	return nil
 }
 
-// Deprecated
-func (id *DelegatableContractID) Validate(client *Client) error {
-	if !id._IsZero() && client != nil && client.network._GetLedgerID() != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.network._GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
-		if err != nil {
-			return err
-		}
-		err = _ChecksumVerify(tempChecksum.status)
-		if err != nil {
-			return err
-		}
-		if id.checksum == nil {
-			return errChecksumMissing
-		}
-		if tempChecksum.correctChecksum != *id.checksum {
-			return errors.New(fmt.Sprintf("network mismatch or wrong checksum given, given checksum: %s, correct checksum %s, network: %s",
-				*id.checksum,
-				tempChecksum.correctChecksum,
-				*client.network._GetLedgerID()))
-		}
+func DelegatableContractIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (DelegatableContractID, error) {
+	temp, err := hex.DecodeString(evmAddress)
+	if err != nil {
+		return DelegatableContractID{}, err
 	}
-
-	return nil
+	return DelegatableContractID{
+		Shard:      shard,
+		Realm:      realm,
+		Contract:   0,
+		EvmAddress: temp,
+		checksum:   nil,
+	}, nil
 }
 
 // DelegatableContractIDFromSolidityAddress constructs a DelegatableContractID from a string representation of a _Solidity address
+// Does not populate DelegatableContractID.EvmAddress
 func DelegatableContractIDFromSolidityAddress(s string) (DelegatableContractID, error) {
 	shard, realm, contract, err := _IdFromSolidityAddress(s)
 	if err != nil {
@@ -96,17 +104,29 @@ func DelegatableContractIDFromSolidityAddress(s string) (DelegatableContractID, 
 
 // String returns the string representation of a DelegatableContractID formatted as `Shard.Realm.Contract` (for example "0.0.3")
 func (id DelegatableContractID) String() string {
+	if len(id.EvmAddress) > 0 {
+		temp := hex.EncodeToString(id.EvmAddress)
+		return fmt.Sprintf("%d.%d.%s", id.Shard, id.Realm, temp)
+	}
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
 }
 
 func (id DelegatableContractID) ToStringWithChecksum(client Client) (string, error) {
-	if client.GetLedgerID() == nil {
+	if id.EvmAddress != nil {
+		return "", errors.New("EvmAddress doesn't support checksums")
+	}
+	if client.GetNetworkName() == nil && client.GetLedgerID() == nil {
 		return "", errNetworkNameMissing
 	}
-	checksum, err := _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	var checksum _ParseAddressResult
+	var err error
+	if client.network.ledgerID != nil {
+		checksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+	}
 	if err != nil {
 		return "", err
 	}
+
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Contract, checksum.correctChecksum), nil
 }
 
@@ -116,22 +136,41 @@ func (id DelegatableContractID) ToSolidityAddress() string {
 }
 
 func (id DelegatableContractID) _ToProtobuf() *services.ContractID {
-	return &services.ContractID{
-		ShardNum:    int64(id.Shard),
-		RealmNum:    int64(id.Realm),
-		ContractNum: int64(id.Contract),
+	resultID := services.ContractID{
+		ShardNum: int64(id.Shard),
+		RealmNum: int64(id.Realm),
 	}
+
+	if id.EvmAddress != nil {
+		resultID.Contract = &services.ContractID_EvmAddress{EvmAddress: id.EvmAddress}
+		return &resultID
+	}
+
+	resultID.Contract = &services.ContractID_ContractNum{ContractNum: int64(id.Contract)}
+
+	return &resultID
 }
 
-func _DelegatableContractIDFromProtobuf(delegatableContractID *services.ContractID) *DelegatableContractID {
-	if delegatableContractID == nil {
+func _DelegatableContractIDFromProtobuf(contractID *services.ContractID) *DelegatableContractID {
+	if contractID == nil {
 		return nil
 	}
+	resultID := DelegatableContractID{
+		Shard: uint64(contractID.ShardNum),
+		Realm: uint64(contractID.RealmNum),
+	}
 
-	return &DelegatableContractID{
-		Shard:    uint64(delegatableContractID.ShardNum),
-		Realm:    uint64(delegatableContractID.RealmNum),
-		Contract: uint64(delegatableContractID.ContractNum),
+	switch id := contractID.Contract.(type) {
+	case *services.ContractID_ContractNum:
+		resultID.Contract = uint64(id.ContractNum)
+		resultID.EvmAddress = nil
+		return &resultID
+	case *services.ContractID_EvmAddress:
+		resultID.EvmAddress = id.EvmAddress
+		resultID.Contract = 0
+		return &resultID
+	default:
+		return &resultID
 	}
 }
 
@@ -140,7 +179,7 @@ func (id DelegatableContractID) _IsZero() bool {
 }
 
 func (id DelegatableContractID) _ToProtoKey() *services.Key {
-	return &services.Key{Key: &services.Key_DelegatableContractId{DelegatableContractId: id._ToProtobuf()}}
+	return &services.Key{Key: &services.Key_ContractID{ContractID: id._ToProtobuf()}}
 }
 
 func (id DelegatableContractID) ToBytes() []byte {

@@ -15,6 +15,8 @@ type TransferTransaction struct {
 	hbarTransfers    map[AccountID]Hbar
 	nftTransfers     map[TokenID][]TokenNftTransfer
 	expectedDecimals map[TokenID]uint32
+	hbarApprovals    map[AccountID]bool
+	tokenApprovals   map[TokenID]map[AccountID]bool
 }
 
 func NewTransferTransaction() *TransferTransaction {
@@ -24,6 +26,8 @@ func NewTransferTransaction() *TransferTransaction {
 		hbarTransfers:    make(map[AccountID]Hbar),
 		nftTransfers:     make(map[TokenID][]TokenNftTransfer),
 		expectedDecimals: make(map[TokenID]uint32),
+		hbarApprovals:    make(map[AccountID]bool),
+		tokenApprovals:   make(map[TokenID]map[AccountID]bool),
 	}
 
 	transaction.SetMaxTransactionFee(NewHbar(1))
@@ -88,6 +92,27 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
+}
+
+func (transaction *TransferTransaction) SetTokenTransferApproval(tokenID TokenID, accountID AccountID, approval bool) *TransferTransaction {
+	transaction.tokenApprovals[tokenID][accountID] = approval
+	return transaction
+}
+
+func (transaction *TransferTransaction) SetHbarTransferApproval(spenderAccountID AccountID, approval bool) *TransferTransaction {
+	transaction.hbarApprovals[spenderAccountID] = approval
+	return transaction
+}
+
+func (transaction *TransferTransaction) SetNftTransferApproval(nftID NftID, approval bool) *TransferTransaction {
+	if transfers, ok := transaction.nftTransfers[nftID.TokenID]; ok {
+		for _, t := range transfers {
+			if t.SerialNumber == nftID.SerialNumber {
+				t.IsApproved = approval
+			}
+		}
+	}
+	return transaction
 }
 
 func (transaction *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNftTransfer {
@@ -258,9 +283,14 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 	if len(tempAccountIDarray) > 0 {
 		body.Transfers.AccountAmounts = make([]*services.AccountAmount, 0)
 		for _, accountID := range tempAccountIDarray {
+			approve := false
+			if a, ok := transaction.hbarApprovals[accountID]; ok {
+				approve = a
+			}
 			body.Transfers.AccountAmounts = append(body.Transfers.AccountAmounts, &services.AccountAmount{
-				AccountID: accountID._ToProtobuf(),
-				Amount:    transaction.hbarTransfers[accountID].AsTinybar(),
+				AccountID:  accountID._ToProtobuf(),
+				Amount:     transaction.hbarTransfers[accountID].AsTinybar(),
+				IsApproval: approve,
 			})
 		}
 	}
@@ -294,9 +324,14 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 
 			for _, accountID := range tempTokenTransfers[tokenID] {
 				temp := transaction.tokenTransfers[tokenID]
+				approve := false
+				if a, ok := transaction.tokenApprovals[tokenID][accountID]; ok {
+					approve = a
+				}
 				transfers = append(transfers, &services.AccountAmount{
-					AccountID: accountID._ToProtobuf(),
-					Amount:    temp[accountID],
+					AccountID:  accountID._ToProtobuf(),
+					Amount:     temp[accountID],
+					IsApproval: approve,
 				})
 			}
 

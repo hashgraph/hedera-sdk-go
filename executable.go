@@ -129,6 +129,8 @@ func _Execute(
 			time.Sleep(delay)
 		}
 
+		advanceRequest(request)
+
 		channel, err := node._GetChannel()
 		if err != nil {
 			node._IncreaseDelay()
@@ -136,8 +138,6 @@ func _Execute(
 		}
 
 		method := getMethod(request, channel)
-
-		advanceRequest(request)
 
 		resp := _Response{}
 
@@ -211,7 +211,7 @@ func _ExecutableDefaultRetryHandler(err error) bool {
 			return false
 		}
 
-		return rstStream.FindIndex([]byte(grpcErr.Message())) != nil
+		return rstStream.Match([]byte(grpcErr.Message()))
 	default:
 		return false
 	}

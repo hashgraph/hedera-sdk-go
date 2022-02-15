@@ -26,7 +26,7 @@ type _AccountIDs struct {
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
-	shard, realm, num, checksum, alias, err := _IdFromString(data)
+	shard, realm, num, checksum, alias, err := _AccountIDFromString(data)
 	if err != nil {
 		return AccountID{}, err
 	}

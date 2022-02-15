@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var rstStream = regexp.MustCompile("/\brst[^0-9a-zA-Z]stream\b/gi")
+var rstStream = regexp.MustCompile("(?i)\\brst[^0-9a-zA-Z]stream\\b") //nolint
 
 type TopicMessageQuery struct {
 	errorHandler      func(stat status.Status)
