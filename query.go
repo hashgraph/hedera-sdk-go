@@ -12,6 +12,7 @@ type Query struct {
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
 
+	lockedTransactionID         bool
 	paymentTransactionID        TransactionID
 	nodeAccountIDs              []AccountID
 	maxQueryPayment             Hbar
@@ -33,6 +34,7 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	return Query{
 		pb:                   &services.Query{},
 		pbHeader:             header,
+		lockedTransactionID:  false,
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
 		nextNodeIndex:        0,
@@ -195,4 +197,17 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 			SigPair: sigPairs,
 		},
 	}, nil
+}
+
+func (query *Query) GetTransactionID() TransactionID {
+	return query.paymentTransactionID
+}
+
+func (query *Query) SetTransactionID(transactionID TransactionID) *Query {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

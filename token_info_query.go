@@ -160,7 +160,9 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -287,4 +289,13 @@ func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
 func (query *TokenInfoQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("TokenInfoQuery:%d", timestamp.UnixNano())
+}
+
+func (query *TokenInfoQuery) SetTransactionID(transactionID TransactionID) *TokenInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

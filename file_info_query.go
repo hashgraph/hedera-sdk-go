@@ -156,7 +156,9 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -290,4 +292,13 @@ func (query *FileInfoQuery) GetMinBackoff() time.Duration {
 func (query *FileInfoQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("FileInfoQuery:%d", timestamp.UnixNano())
+}
+
+func (query *FileInfoQuery) SetTransactionID(transactionID TransactionID) *FileInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

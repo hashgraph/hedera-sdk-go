@@ -157,7 +157,9 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -283,4 +285,13 @@ func (query *ContractBytecodeQuery) GetMinBackoff() time.Duration {
 func (query *ContractBytecodeQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("ContractBytecodeQuery:%d", timestamp.UnixNano())
+}
+
+func (query *ContractBytecodeQuery) SetTransactionID(transactionID TransactionID) *ContractBytecodeQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

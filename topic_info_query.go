@@ -160,7 +160,9 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {

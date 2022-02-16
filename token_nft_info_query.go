@@ -214,7 +214,9 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		return []TokenNftInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -342,4 +344,13 @@ func (query *TokenNftInfoQuery) GetMinBackoff() time.Duration {
 func (query *TokenNftInfoQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("TokenNftInfoQuery:%d", timestamp.UnixNano())
+}
+
+func (query *TokenNftInfoQuery) SetTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

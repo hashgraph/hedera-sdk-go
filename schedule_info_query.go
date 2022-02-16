@@ -157,7 +157,9 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		return ScheduleInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -286,4 +288,13 @@ func (query *ScheduleInfoQuery) GetMinBackoff() time.Duration {
 func (query *ScheduleInfoQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("ScheduleInfoQuery:%d", timestamp.UnixNano())
+}
+
+func (query *ScheduleInfoQuery) SetTransactionID(transactionID TransactionID) *ScheduleInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

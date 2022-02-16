@@ -305,3 +305,12 @@ func (query *AccountBalanceQuery) GetMinBackoff() time.Duration {
 func (query *AccountBalanceQuery) _GetLogID() string {
 	return fmt.Sprintf("AccountBalanceQuery:%d", query.timestamp.UnixNano())
 }
+
+func (query *AccountBalanceQuery) SetTransactionID(transactionID TransactionID) *AccountBalanceQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
+}

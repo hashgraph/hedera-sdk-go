@@ -166,7 +166,9 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -291,4 +293,13 @@ func (query *LiveHashQuery) GetMinBackoff() time.Duration {
 func (query *LiveHashQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("LiveHashQuery:%d", timestamp.UnixNano())
+}
+
+func (query *LiveHashQuery) SetTransactionID(transactionID TransactionID) *LiveHashQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }
