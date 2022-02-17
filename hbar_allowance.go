@@ -14,28 +14,6 @@ func NewHbarAllowance(id AccountID, amount int64) HbarAllowance {
 	}
 }
 
-func (approval *HbarAllowance) _SetSpender(id AccountID) *HbarAllowance {
-	approval.SpenderAccountID = &id
-	return approval
-}
-
-func (approval *HbarAllowance) _GetSpender() AccountID {
-	if approval.SpenderAccountID != nil {
-		return *approval.SpenderAccountID
-	}
-
-	return AccountID{}
-}
-
-func (approval *HbarAllowance) _SetAmount(amount int64) *HbarAllowance {
-	approval.Amount = amount
-	return approval
-}
-
-func (approval *HbarAllowance) _GetAmount() int64 {
-	return approval.Amount
-}
-
 func _HbarAllowanceFromProtobuf(pb *services.CryptoAllowance) HbarAllowance {
 	return HbarAllowance{
 		SpenderAccountID: _AccountIDFromProtobuf(pb.Spender),
