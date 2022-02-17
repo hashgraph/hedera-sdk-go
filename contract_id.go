@@ -39,7 +39,7 @@ func ContractIDFromString(data string) (ContractID, error) {
 		Shard:      uint64(shard),
 		Realm:      uint64(realm),
 		Contract:   uint64(num),
-		EvmAddress: []byte{},
+		EvmAddress: nil,
 		checksum:   checksum,
 	}, nil
 }
