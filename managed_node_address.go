@@ -49,9 +49,9 @@ func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
 }
 
 func (address *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
-	var port uint32
+	port := address.port
 
-	switch address.port {
+	switch port {
 	case 50211:
 		return &_ManagedNodeAddress{
 			address: address.address,

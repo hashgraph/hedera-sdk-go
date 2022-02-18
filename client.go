@@ -188,7 +188,7 @@ var previewnetNodes = map[string]AccountID{
 	"20.150.136.89:50211":           {Account: 9},
 }
 
-var mainnetMirror = []string{"hcs.mainnet.mirrornode.hedera.com:5600"}
+var mainnetMirror = []string{"mainnet-public.mirrornode.hedera.com:5600"}
 var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
@@ -399,12 +399,10 @@ func (client *Client) Close() error {
 	return nil
 }
 
-// Deprecated: Use SetLedgerID instead
 func (client *Client) SetNetwork(network map[string]AccountID) error {
 	return client.network.SetNetwork(network)
 }
 
-// Deprecated: Use GetLedgerID instead
 func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network._GetNetwork()
 }
@@ -512,10 +510,12 @@ func (client *Client) GetCertificateVerification() bool {
 	return client.network._GetVerifyCertificate()
 }
 
+// Deprecated: Use SetLedgerID instead
 func (client *Client) SetNetworkName(name NetworkName) {
 	client.network._SetNetworkName(name)
 }
 
+// Deprecated: Use GetLedgerID instead
 func (client *Client) GetNetworkName() *NetworkName {
 	return client.network._GetNetworkName()
 }

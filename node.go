@@ -132,7 +132,6 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 					}
 
 					var encodedBuf bytes.Buffer
-
 					_ = pem.Encode(&encodedBuf, block)
 					digest := sha512.New384()
 

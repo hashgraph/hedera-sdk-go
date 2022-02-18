@@ -10,12 +10,11 @@ import (
 )
 
 func TestIntegrationAddressBookQueryCanExecute(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
+	client := ClientForPreviewnet()
 
 	result, err := NewAddressBookQuery().
-		SetFileID(FileID{0, 0, 101, nil}).
-		SetLimit(14).
-		Execute(env.Client)
+		SetFileID(FileID{0, 0, 102, nil}).
+		Execute(client)
 	require.NoError(t, err)
 
 	//for _, k := range result.NodeAddresses {
@@ -26,7 +25,4 @@ func TestIntegrationAddressBookQueryCanExecute(t *testing.T) {
 	//}
 
 	require.NotEqual(t, len(result.NodeAddresses), 0)
-
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
 }

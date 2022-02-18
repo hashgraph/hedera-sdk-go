@@ -323,3 +323,34 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+
+func TestIntegrationTopicMessageQueryCanExecuteWithTls(t *testing.T) {
+	client := ClientForMainnet()
+
+	finished := false
+	start := time.Now()
+	end := start.Add(5000)
+
+	_, err := NewTopicMessageQuery().
+		SetTopicID(TopicID{0, 0, 120438, nil}).
+		SetStartTime(time.Unix(0, 0)).
+		SetLimit(1).
+		SetCompletionHandler(func() {
+			finished = true
+		}).
+		Subscribe(client, func(message TopicMessage) {
+
+		})
+	require.NoError(t, err)
+
+	for {
+		if finished && time.Now().After(end) {
+			break
+		}
+	}
+
+	if !finished {
+		err = errors.New("Did not receive message from query")
+	}
+	require.NoError(t, err)
+}

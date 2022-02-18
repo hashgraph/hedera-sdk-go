@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"time"
 
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/hashgraph/hedera-protobufs-go/mirror"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/credentials"
@@ -104,7 +106,7 @@ func (node *_MirrorNode) _GetConsensusServiceClient() (*mirror.ConsensusServiceC
 	if node._ManagedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
-		security = grpc.WithInsecure() //nolint
+		security = grpc.WithTransportCredentials(insecure.NewCredentials()) //nolint
 	}
 
 	conn, err := grpc.Dial(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
@@ -139,7 +141,7 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 	if node._ManagedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
-		security = grpc.WithInsecure() //nolint
+		security = grpc.WithTransportCredentials(insecure.NewCredentials()) //nolint
 	}
 
 	conn, err := grpc.Dial(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())

@@ -1,8 +1,11 @@
 package hedera
 
 import (
+	"fmt"
 	"io/ioutil"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type _Network struct {
@@ -72,9 +75,17 @@ func (network *_Network) _GetLedgerID() *LedgerID {
 
 func (network *_Network) _SetLedgerID(id LedgerID) {
 	network._ManagedNetwork._SetLedgerID(id)
+	var err error
 
-	if network._ManagedNetwork.transportSecurity {
-		network.addressBook = _ReadAddressBookResource("addressbook/" + id.String() + ".pb")
+	if network._ManagedNetwork.transportSecurity && network.ledgerID != nil {
+		network.addressBook, err = _GetAddressBookFromMirrorNode(*network.ledgerID)
+		if err != nil {
+			var err2 error
+			network.addressBook, err2 = _ReadAddressBookResource("addressbook/" + id.String() + ".pb")
+			if err2 != nil {
+				panic(err)
+			}
+		}
 
 		if network.addressBook != nil {
 			for _, nod := range network._ManagedNetwork.nodes {
@@ -82,6 +93,15 @@ func (network *_Network) _SetLedgerID(id LedgerID) {
 				case *_Node:
 					temp := network.addressBook[n.accountID]
 					n.addressBook = &temp
+				}
+			}
+			for _, nodeArray := range network._ManagedNetwork.network {
+				for _, nod := range nodeArray {
+					switch n := nod.(type) { //nolint
+					case *_Node:
+						temp := network.addressBook[n.accountID]
+						n.addressBook = &temp
+					}
 				}
 			}
 		}
@@ -97,15 +117,15 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 	network._SetLedgerID(*ledger)
 }
 
-func _ReadAddressBookResource(ad string) map[AccountID]NodeAddress {
+func _ReadAddressBookResource(ad string) (map[AccountID]NodeAddress, error) {
 	f, err := ioutil.ReadFile(ad)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	nodeAB, err := NodeAddressBookFromBytes(f)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	resultMap := make(map[AccountID]NodeAddress)
@@ -117,7 +137,37 @@ func _ReadAddressBookResource(ad string) map[AccountID]NodeAddress {
 		resultMap[*nodeAd.AccountID] = nodeAd
 	}
 
-	return resultMap
+	return resultMap, nil
+}
+
+func _GetAddressBookFromMirrorNode(networkName LedgerID) (map[AccountID]NodeAddress, error) {
+	var pbAddressBook *NodeAddressBook
+	var err error
+	switch networkName.String() {
+	case "mainnet":
+		pbAddressBook, err = GetMainnetAddressBook()
+	case "testnet":
+		pbAddressBook, err = GetTestnetAddressBook()
+	case "previewnet":
+		pbAddressBook, err = GetPreviewnetAddressBook()
+	default:
+		return nil, errors.New(fmt.Sprintf("no address book found for LedgerID %s", networkName.String()))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	resultMap := make(map[AccountID]NodeAddress)
+	for _, nodeAd := range pbAddressBook.NodeAddresses {
+		if nodeAd.AccountID == nil {
+			continue
+		}
+
+		resultMap[*nodeAd.AccountID] = nodeAd
+	}
+
+	return resultMap, nil
 }
 
 func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { //nolint
