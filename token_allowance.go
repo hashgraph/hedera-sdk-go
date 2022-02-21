@@ -18,41 +18,6 @@ func NewTokenAllowance(tokenID TokenID, spender AccountID, amount int64) TokenAl
 	}
 }
 
-func (approval *TokenAllowance) _SetTokenID(id TokenID) *TokenAllowance {
-	approval.TokenID = &id
-	return approval
-}
-
-func (approval *TokenAllowance) _GetTokenID() TokenID {
-	if approval.TokenID != nil {
-		return *approval.TokenID
-	}
-
-	return TokenID{}
-}
-
-func (approval *TokenAllowance) _SetSpenderAccountID(id AccountID) *TokenAllowance {
-	approval.SpenderAccountID = &id
-	return approval
-}
-
-func (approval *TokenAllowance) _GetSpenderAccountID() AccountID {
-	if approval.SpenderAccountID != nil {
-		return *approval.SpenderAccountID
-	}
-
-	return AccountID{}
-}
-
-func (approval *TokenAllowance) _SetAmount(amount int64) *TokenAllowance {
-	approval.Amount = amount
-	return approval
-}
-
-func (approval *TokenAllowance) _GetAmount() int64 {
-	return approval.Amount
-}
-
 func _TokenAllowanceFromProtobuf(pb *services.TokenAllowance) TokenAllowance {
 	body := TokenAllowance{
 		Amount: pb.Amount,

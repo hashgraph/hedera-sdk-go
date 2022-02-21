@@ -21,50 +21,6 @@ func NewTokenNftAllowance(tokenID TokenID, spender AccountID, serialNumbers []in
 	}
 }
 
-func (approval *TokenNftAllowance) _SetTokenID(id TokenID) *TokenNftAllowance {
-	approval.TokenID = &id
-	return approval
-}
-
-func (approval *TokenNftAllowance) _GetTokenID() TokenID {
-	if approval.TokenID != nil {
-		return *approval.TokenID
-	}
-
-	return TokenID{}
-}
-
-func (approval *TokenNftAllowance) _SetSpenderAccountID(id AccountID) *TokenNftAllowance {
-	approval.SpenderAccountID = &id
-	return approval
-}
-
-func (approval *TokenNftAllowance) _GetSpenderAccountID() AccountID {
-	if approval.SpenderAccountID != nil {
-		return *approval.SpenderAccountID
-	}
-
-	return AccountID{}
-}
-
-func (approval *TokenNftAllowance) _SetSerialNumbers(serials []int64) *TokenNftAllowance {
-	approval.SerialNumbers = serials
-	return approval
-}
-
-func (approval *TokenNftAllowance) _GetSerialNumbers() []int64 {
-	return approval.SerialNumbers
-}
-
-func (approval *TokenNftAllowance) _SetApprovedForAll(approvedForAll bool) *TokenNftAllowance {
-	approval.ApprovedForAll = approvedForAll
-	return approval
-}
-
-func (approval *TokenNftAllowance) _GetApprovedForAll() bool {
-	return approval.ApprovedForAll
-}
-
 func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance {
 	body := TokenNftAllowance{
 		ApprovedForAll: pb.ApprovedForAll.GetValue(),
