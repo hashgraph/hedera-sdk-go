@@ -49,14 +49,24 @@ and `OPERATOR_KEY` and `OPERATOR_ID` **must** be provided.
 
 [Example Config File](./client-config-with-operator.json)
 
-## Contributing to this Project
+## Support
 
-We welcome participation from all developers!
-For instructions on how to contribute to this repo, please
-review the [Contributing Guide](CONTRIBUTING.md).
+If you have a question on how to use the product, please see our
+[support guide](https://github.com/hashgraph/.github/blob/main/SUPPORT.md).
 
-## License Information
+## Contributing
 
-Licensed under Apache License,
-Version 2.0 – see [LICENSE](LICENSE) in this repo
-or [apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+Contributions are welcome. Please see the
+[contributing guide](https://github.com/hashgraph/.github/blob/main/CONTRIBUTING.md)
+to see how you can get involved.
+
+## Code of Conduct
+
+This project is governed by the
+[Contributor Covenant Code of Conduct](https://github.com/hashgraph/.github/blob/main/CODE_OF_CONDUCT.md). By
+participating, you are expected to uphold this code of conduct. Please report unacceptable behavior
+to [oss@hedera.com](mailto:oss@hedera.com).
+
+## License
+
+[Apache License 2.0](LICENSE)
