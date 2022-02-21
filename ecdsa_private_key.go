@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"encoding/hex"
@@ -47,9 +46,7 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
 	}
 
-	b := bytes.Trim(byt, "\x00")
-
-	key, err := crypto.ToECDSA(b)
+	key, err := crypto.ToECDSA(byt)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +69,7 @@ func _ECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
 		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
 	}
 
-	b := bytes.Trim(decoded, "\x00")
-
-	key, err := crypto.ToECDSA(b)
+	key, err := crypto.ToECDSA(decoded)
 	if err != nil {
 		return nil, err
 	}
