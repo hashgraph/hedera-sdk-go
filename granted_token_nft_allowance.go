@@ -2,10 +2,9 @@ package hedera
 
 import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-type TokenNftAllowance struct {
+type GrantedTokenNftAllowance struct {
 	TokenID          *TokenID
 	SpenderAccountID *AccountID
 	OwnerAccountID   *AccountID
@@ -13,8 +12,8 @@ type TokenNftAllowance struct {
 	ApprovedForAll   bool
 }
 
-func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, serialNumbers []int64, approvedForAll bool) TokenNftAllowance {
-	return TokenNftAllowance{
+func NewGrantedTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, serialNumbers []int64, approvedForAll bool) GrantedTokenNftAllowance {
+	return GrantedTokenNftAllowance{
 		TokenID:          &tokenID,
 		SpenderAccountID: &spender,
 		OwnerAccountID:   &owner,
@@ -23,9 +22,9 @@ func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, s
 	}
 }
 
-func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance {
-	body := TokenNftAllowance{
-		ApprovedForAll: pb.ApprovedForAll.GetValue(),
+func _GrantedTokenNftAllowanceFromProtobuf(pb *services.GrantedNftAllowance) GrantedTokenNftAllowance {
+	body := GrantedTokenNftAllowance{
+		ApprovedForAll: pb.ApprovedForAll,
 		SerialNumbers:  pb.SerialNumbers,
 	}
 
@@ -37,25 +36,17 @@ func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance
 		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
 	}
 
-	if pb.Owner != nil {
-		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
-	}
-
 	return body
 }
 
-func (approval *TokenNftAllowance) _ToProtobuf() *services.NftAllowance {
-	body := &services.NftAllowance{
-		ApprovedForAll: &wrapperspb.BoolValue{Value: approval.ApprovedForAll},
+func (approval *GrantedTokenNftAllowance) _ToProtobuf() *services.GrantedNftAllowance {
+	body := &services.GrantedNftAllowance{
+		ApprovedForAll: approval.ApprovedForAll,
 		SerialNumbers:  approval.SerialNumbers,
 	}
 
 	if approval.SpenderAccountID != nil {
 		body.Spender = approval.SpenderAccountID._ToProtobuf()
-	}
-
-	if approval.OwnerAccountID != nil {
-		body.Owner = approval.OwnerAccountID._ToProtobuf()
 	}
 
 	if approval.TokenID != nil {

@@ -4,15 +4,15 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-type TokenAllowance struct {
+type GrantedTokenAllowance struct {
 	TokenID          *TokenID
 	SpenderAccountID *AccountID
 	OwnerAccountID   *AccountID
 	Amount           int64
 }
 
-func NewTokenAllowance(tokenID TokenID, owner AccountID, spender AccountID, amount int64) TokenAllowance { //nolint
-	return TokenAllowance{
+func NewGrantedTokenAllowance(tokenID TokenID, owner AccountID, spender AccountID, amount int64) GrantedTokenAllowance { //nolint
+	return GrantedTokenAllowance{
 		TokenID:          &tokenID,
 		SpenderAccountID: &spender,
 		OwnerAccountID:   &owner,
@@ -20,8 +20,8 @@ func NewTokenAllowance(tokenID TokenID, owner AccountID, spender AccountID, amou
 	}
 }
 
-func _TokenAllowanceFromProtobuf(pb *services.TokenAllowance) TokenAllowance {
-	body := TokenAllowance{
+func _GrantedTokenAllowanceFromProtobuf(pb *services.GrantedTokenAllowance) GrantedTokenAllowance {
+	body := GrantedTokenAllowance{
 		Amount: pb.Amount,
 	}
 
@@ -33,15 +33,11 @@ func _TokenAllowanceFromProtobuf(pb *services.TokenAllowance) TokenAllowance {
 		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
 	}
 
-	if pb.Owner != nil {
-		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
-	}
-
 	return body
 }
 
-func (approval *TokenAllowance) _ToProtobuf() *services.TokenAllowance {
-	body := &services.TokenAllowance{
+func (approval *GrantedTokenAllowance) _ToProtobuf() *services.GrantedTokenAllowance {
+	body := &services.GrantedTokenAllowance{
 		Amount: approval.Amount,
 	}
 
@@ -51,10 +47,6 @@ func (approval *TokenAllowance) _ToProtobuf() *services.TokenAllowance {
 
 	if approval.TokenID != nil {
 		body.TokenId = approval.TokenID._ToProtobuf()
-	}
-
-	if approval.OwnerAccountID != nil {
-		body.Owner = approval.OwnerAccountID._ToProtobuf()
 	}
 
 	return body

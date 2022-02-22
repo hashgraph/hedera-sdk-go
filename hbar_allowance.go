@@ -8,7 +8,7 @@ type HbarAllowance struct {
 	Amount           int64
 }
 
-func NewHbarAllowance(ownerAccountID AccountID, spenderAccountID AccountID, amount int64) HbarAllowance {
+func NewHbarAllowance(ownerAccountID AccountID, spenderAccountID AccountID, amount int64) HbarAllowance { //nolint
 	return HbarAllowance{
 		OwnerAccountID:   &ownerAccountID,
 		SpenderAccountID: &spenderAccountID,
@@ -16,44 +16,9 @@ func NewHbarAllowance(ownerAccountID AccountID, spenderAccountID AccountID, amou
 	}
 }
 
-func (approval *HbarAllowance) _SetSpender(id AccountID) *HbarAllowance { //nolint
-	approval.SpenderAccountID = &id
-	return approval
-}
-
-func (approval *HbarAllowance) _GetSpender() AccountID { //nolint
-	if approval.SpenderAccountID != nil {
-		return *approval.SpenderAccountID
-	}
-
-	return AccountID{}
-}
-
-func (approval *HbarAllowance) _SetOwner(id AccountID) *HbarAllowance { //nolint
-	approval.OwnerAccountID = &id
-	return approval
-}
-
-func (approval *HbarAllowance) _GetOwner() AccountID { //nolint
-	if approval.OwnerAccountID != nil {
-		return *approval.OwnerAccountID
-	}
-
-	return AccountID{}
-}
-
-func (approval *HbarAllowance) _SetAmount(amount int64) *HbarAllowance { //nolint
-	approval.Amount = amount
-	return approval
-}
-
-func (approval *HbarAllowance) _GetAmount() int64 { //nolint
-	return approval.Amount
-}
-
 func _HbarAllowanceFromProtobuf(pb *services.CryptoAllowance) HbarAllowance {
 	return HbarAllowance{
-
+		OwnerAccountID:   _AccountIDFromProtobuf(pb.Owner),
 		SpenderAccountID: _AccountIDFromProtobuf(pb.Spender),
 		Amount:           pb.Amount,
 	}

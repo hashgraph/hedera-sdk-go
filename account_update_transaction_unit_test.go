@@ -4,7 +4,6 @@
 package hedera
 
 import (
-	"encoding/hex"
 	"testing"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -78,9 +77,9 @@ func TestUnitMockAccountUpdateTransaction(t *testing.T) {
 		if bod, ok := transactionBody.Data.(*services.TransactionBody_CryptoUpdateAccount); ok {
 			require.Equal(t, bod.CryptoUpdateAccount.Memo.Value, "no")
 			require.Equal(t, bod.CryptoUpdateAccount.AccountIDToUpdate.GetAccountNum(), int64(123))
-			alias := services.Key{}
-			_ = protobuf.Unmarshal(bod.CryptoUpdateAccount.Alias, &alias)
-			require.Equal(t, hex.EncodeToString(alias.GetEd25519()), "1480272863d39c42f902bc11601a968eaf30ad662694e3044c86d5df46fabfd2")
+			//alias := services.Key{}
+			//_ = protobuf.Unmarshal(bod.CryptoUpdateAccount.Alias, &alias)
+			//require.Equal(t, hex.EncodeToString(alias.GetEd25519()), "1480272863d39c42f902bc11601a968eaf30ad662694e3044c86d5df46fabfd2")
 		}
 
 		return &services.TransactionResponse{
