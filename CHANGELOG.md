@@ -1,3 +1,18 @@
+## v2.11.0-beta.1
+
+### Added
+
+* `AccountInfoQuery` now returns`[]GrantedGrantedHbarAllowance`, `[]GrantedTokenNftAllowance`, and `[]GrantedTokenAllowance` instead of `[]HbarAllowance`, `[]TokenNftAllowance`, and `[]TokenAllowance`.
+* Added the option to payment `[Set|Get]TransactionID` for Queries.
+
+### Fixed
+
+* `HbarAllowance.OwnerAccountID`, wasn't being set.
+
+### Deprecated
+
+* `AccountUpdateTransaction.[Set|Get]AliasKey`
+
 ## v2.10.0
 
 ### Added
