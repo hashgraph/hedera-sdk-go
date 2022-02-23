@@ -1,3 +1,27 @@
+## v2.10.0
+
+### Added
+
+* `owner` field to `*Allowance`.
+* Added free `AddressBookQuery`.
+
+### Fixed
+
+* Changed mirror node port to correct one, 443.
+* Occasional ECDSA invalid length error.
+* ContractIDFromString() now sets EvmAddress correctly to nil, when evm address is not detected
+
+## v2.10.0-beta.1
+
+### Added
+
+* `owner` field to `*Allowance`.
+* Added free `AddressBookQuery`.
+
+### Fixed
+
+* Changed mirror node port to correct one, 443.
+
 ## v2.9.0
 
 ### Added
