@@ -42,6 +42,20 @@ func (book NodeAddressBook) ToBytes() []byte {
 	return data
 }
 
+func (book NodeAddressBook) _ToMap() (result map[AccountID]NodeAddress) {
+	result = map[AccountID]NodeAddress{}
+
+	for _, node := range book.NodeAddresses {
+		if node.AccountID == nil {
+			continue
+		}
+
+		result[*node.AccountID] = node
+	}
+
+	return result
+}
+
 func NodeAddressBookFromBytes(data []byte) (NodeAddressBook, error) {
 	if data == nil {
 		return NodeAddressBook{}, errByteArrayNull

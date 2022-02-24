@@ -21,13 +21,10 @@ type _MirrorNode struct {
 	client                 *grpc.ClientConn
 }
 
-func _NewMirrorNode(address string) _MirrorNode {
-	wait := 250 * time.Millisecond
-	temp := _NewManagedNode(address, wait)
-	return _MirrorNode{
-		_ManagedNode:           &temp,
-		consensusServiceClient: nil,
-	}
+func _NewMirrorNode(address string) (node *_MirrorNode, err error) {
+	node = &_MirrorNode{}
+	node._ManagedNode, err = _NewManagedNode(address, 250*time.Millisecond)
+	return node, err
 }
 
 func (node *_MirrorNode) _SetMinBackoff(waitTime time.Duration) {

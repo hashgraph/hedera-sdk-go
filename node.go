@@ -26,15 +26,13 @@ type _Node struct {
 	verifyCertificate bool
 }
 
-func _NewNode(accountID AccountID, address string, minBackoff time.Duration) _Node {
-	temp := _NewManagedNode(address, minBackoff)
-	return _Node{
+func _NewNode(accountID AccountID, address string, minBackoff time.Duration) (node *_Node, err error) {
+	node = &_Node{
 		accountID:         accountID,
-		channel:           nil,
-		_ManagedNode:      &temp,
-		addressBook:       nil,
 		verifyCertificate: true,
 	}
+	node._ManagedNode, err = _NewManagedNode(address, minBackoff)
+	return node, err
 }
 
 func (node *_Node) _SetMinBackoff(waitTime time.Duration) {
