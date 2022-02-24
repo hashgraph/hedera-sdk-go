@@ -325,32 +325,29 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 }
 
 func TestIntegrationTopicMessageQueryCanExecuteWithTls(t *testing.T) {
-	client := ClientForMainnet()
+	client := ClientForNetwork(map[string]AccountID{})
+	client.SetMirrorNetwork([]string{"mainnet-public.mirrornode.hedera.com:443"})
 
 	finished := false
 	start := time.Now()
-	end := start.Add(5000)
+	end := start.Add(5 * time.Second)
 
 	_, err := NewTopicMessageQuery().
-		SetTopicID(TopicID{0, 0, 120438, nil}).
+		SetTopicID(TopicID{Topic: 120438}).
 		SetStartTime(time.Unix(0, 0)).
 		SetLimit(1).
-		SetCompletionHandler(func() {
-			finished = true
-		}).
 		Subscribe(client, func(message TopicMessage) {
-
+			finished = true
 		})
 	require.NoError(t, err)
 
 	for {
-		if finished && time.Now().After(end) {
+		if finished || time.Now().After(end) {
 			break
 		}
+
+		time.Sleep(2 * time.Second)
 	}
 
-	if !finished {
-		err = errors.New("Did not receive message from query")
-	}
-	require.NoError(t, err)
+	require.True(t, finished)
 }
