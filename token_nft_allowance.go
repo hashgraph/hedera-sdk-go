@@ -44,6 +44,23 @@ func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance
 	return body
 }
 
+func _TokenNftAllowanceFromGrantedProtobuf(pb *services.GrantedNftAllowance) TokenNftAllowance {
+	body := TokenNftAllowance{
+		ApprovedForAll: pb.ApprovedForAll,
+		SerialNumbers:  pb.SerialNumbers,
+	}
+
+	if pb.TokenId != nil {
+		body.TokenID = _TokenIDFromProtobuf(pb.TokenId)
+	}
+
+	if pb.Spender != nil {
+		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
+	}
+
+	return body
+}
+
 func (approval *TokenNftAllowance) _ToProtobuf() *services.NftAllowance {
 	body := &services.NftAllowance{
 		ApprovedForAll: &wrapperspb.BoolValue{Value: approval.ApprovedForAll},
@@ -56,6 +73,23 @@ func (approval *TokenNftAllowance) _ToProtobuf() *services.NftAllowance {
 
 	if approval.OwnerAccountID != nil {
 		body.Owner = approval.OwnerAccountID._ToProtobuf()
+	}
+
+	if approval.TokenID != nil {
+		body.TokenId = approval.TokenID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (approval *TokenNftAllowance) _ToGrantedProtobuf() *services.GrantedNftAllowance {
+	body := &services.GrantedNftAllowance{
+		ApprovedForAll: approval.ApprovedForAll,
+		SerialNumbers:  approval.SerialNumbers,
+	}
+
+	if approval.SpenderAccountID != nil {
+		body.Spender = approval.SpenderAccountID._ToProtobuf()
 	}
 
 	if approval.TokenID != nil {

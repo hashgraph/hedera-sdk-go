@@ -40,6 +40,22 @@ func _TokenAllowanceFromProtobuf(pb *services.TokenAllowance) TokenAllowance {
 	return body
 }
 
+func _TokenAllowanceFromGrantedProtobuf(pb *services.GrantedTokenAllowance) TokenAllowance {
+	body := TokenAllowance{
+		Amount: pb.Amount,
+	}
+
+	if pb.TokenId != nil {
+		body.TokenID = _TokenIDFromProtobuf(pb.TokenId)
+	}
+
+	if pb.Spender != nil {
+		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
+	}
+
+	return body
+}
+
 func (approval *TokenAllowance) _ToProtobuf() *services.TokenAllowance {
 	body := &services.TokenAllowance{
 		Amount: approval.Amount,
@@ -55,6 +71,22 @@ func (approval *TokenAllowance) _ToProtobuf() *services.TokenAllowance {
 
 	if approval.OwnerAccountID != nil {
 		body.Owner = approval.OwnerAccountID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (approval *TokenAllowance) _ToGrantedProtobuf() *services.GrantedTokenAllowance {
+	body := &services.GrantedTokenAllowance{
+		Amount: approval.Amount,
+	}
+
+	if approval.SpenderAccountID != nil {
+		body.Spender = approval.SpenderAccountID._ToProtobuf()
+	}
+
+	if approval.TokenID != nil {
+		body.TokenId = approval.TokenID._ToProtobuf()
 	}
 
 	return body
