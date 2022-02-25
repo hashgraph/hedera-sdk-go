@@ -75,6 +75,7 @@ func TestUnitMockContractInfoQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	result, err := NewContractInfoQuery().
 		SetContractID(ContractID{Contract: 3}).
@@ -87,6 +88,4 @@ func TestUnitMockContractInfoQuery(t *testing.T) {
 	require.Equal(t, result.ContractID.Contract, uint64(3))
 	require.Equal(t, result.AccountID.Account, uint64(4))
 	require.Equal(t, result.ContractMemo, "yes")
-
-	server.Close()
 }

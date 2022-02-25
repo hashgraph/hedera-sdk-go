@@ -59,6 +59,7 @@ func TestUnitMockFileCreateTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 
@@ -69,6 +70,4 @@ func TestUnitMockFileCreateTransaction(t *testing.T) {
 		SetMemo("go sdk e2e tests").
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

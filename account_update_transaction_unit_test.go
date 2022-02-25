@@ -91,6 +91,7 @@ func TestUnitMockAccountUpdateTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 	//302a300506032b65700321001480272863d39c42f902bc11601a968eaf30ad662694e3044c86d5df46fabfd2
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420278184257eb568d0e5fcfc1df99828b039b4776da05855dc5af105996e6200d1")
 	require.NoError(t, err)
@@ -105,6 +106,4 @@ func TestUnitMockAccountUpdateTransaction(t *testing.T) {
 		SetAliasKey(newKey.PublicKey()).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

@@ -98,6 +98,7 @@ func TestUnitMockFileUpdateTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	freez, err := NewFileUpdateTransaction().
 		SetFileID(FileID{File: 3}).
@@ -110,6 +111,4 @@ func TestUnitMockFileUpdateTransaction(t *testing.T) {
 
 	_, err = freez.Sign(newKey).Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

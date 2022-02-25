@@ -64,6 +64,7 @@ func TestUnitMockContractBytecodeQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	bytecode, err := NewContractBytecodeQuery().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
@@ -74,6 +75,4 @@ func TestUnitMockContractBytecodeQuery(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, bytes.Compare(bytecode, smartContractBytecode), 0)
-
-	server.Close()
 }

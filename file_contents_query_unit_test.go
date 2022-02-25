@@ -66,6 +66,7 @@ func TestUnitMockContractContentsQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	result, err := NewFileContentsQuery().
 		SetFileID(FileID{File: 3}).
@@ -76,6 +77,4 @@ func TestUnitMockContractContentsQuery(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, bytes.Compare(result, []byte{123}), 0)
-
-	server.Close()
 }
