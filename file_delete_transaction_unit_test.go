@@ -89,12 +89,11 @@ func TestUnitMockFileDeleteTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewFileDeleteTransaction().
 		SetFileID(FileID{File: 3}).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

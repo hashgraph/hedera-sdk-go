@@ -97,6 +97,7 @@ func TestUnitMockAccountCreateTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -117,5 +118,4 @@ func TestUnitMockAccountCreateTransaction(t *testing.T) {
 	receipt, err := resp.GetReceipt(client)
 	require.NoError(t, err)
 	require.Equal(t, receipt.AccountID, &AccountID{Account: 234})
-	server.Close()
 }

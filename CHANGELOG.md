@@ -2,6 +2,7 @@
 
 ### Added
 
+* `Account[Approve|Adjust]AllowanceTransaction.add[Hbar|Token|TokenNft]AllowanceWithOwner()`
 * `AccountInfoQuery` now returns`[]GrantedGrantedHbarAllowance`, `[]GrantedTokenNftAllowance`, and `[]GrantedTokenAllowance` instead of `[]HbarAllowance`, `[]TokenNftAllowance`, and `[]TokenAllowance`.
 * Added the option to payment `[Set|Get]TransactionID` for Queries.
 
