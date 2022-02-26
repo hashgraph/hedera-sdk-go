@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -108,6 +109,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_TokenInfoQueryGetMethod,
 		_TokenInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -121,8 +123,8 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+func _TokenInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TokenInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -212,6 +214,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		_TokenInfoQueryGetMethod,
 		_TokenInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -279,4 +282,9 @@ func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *TokenInfoQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("TokenInfoQuery:%d", timestamp.UnixNano())
 }

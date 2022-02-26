@@ -1,7 +1,10 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/ethereum/go-ethereum/log"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
@@ -11,6 +14,7 @@ type TransactionReceiptQuery struct {
 	transactionID *TransactionID
 	childReceipts *bool
 	duplicates    *bool
+	timestamp     time.Time
 }
 
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
@@ -100,6 +104,8 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
+	query.timestamp = time.Now()
+
 	for range query.nodeAccountIDs {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
@@ -127,6 +133,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		_TransactionReceiptQueryGetMethod,
 		_TransactionReceiptQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -137,8 +144,11 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TransactionReceiptQueryShouldRetry(request _Request, response _Response) _ExecutionState {
-	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
+func _TransactionReceiptQueryShouldRetry(logID string, request _Request, response _Response) _ExecutionState {
+	status := Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
+	log.Trace("[%s] Transaction receipt precheck status received: %s", logID, status.String())
+
+	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
@@ -147,7 +157,10 @@ func _TransactionReceiptQueryShouldRetry(request _Request, response _Response) _
 		return executionStateError
 	}
 
-	switch Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()) {
+	status = Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
+	log.Trace("[%s] Transaction receipt status received: %s", logID, status.String())
+
+	switch status {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	default:
@@ -265,6 +278,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		return TransactionReceipt{}, err
 	}
 
+	query.timestamp = time.Now()
 	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
@@ -286,6 +300,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		_TransactionReceiptQueryGetMethod,
 		_TransactionReceiptQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {
@@ -297,4 +312,8 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	}
 
 	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt()), nil
+}
+
+func (query *TransactionReceiptQuery) _GetLogID() string {
+	return fmt.Sprintf("TransactionReceiptQuery:%d", query.timestamp.UnixNano())
 }

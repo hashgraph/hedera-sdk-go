@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -114,6 +115,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -124,8 +126,8 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountStakersQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
+func _AccountStakersQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountStakersQueryMapStatusError(_ _Request, response _Response) error {
@@ -213,6 +215,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -296,4 +299,9 @@ func (query *AccountStakersQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountStakersQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("AccountStakersQuery:%d", timestamp.UnixNano())
 }

@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -213,6 +214,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 		_TokenFeeScheduleUpdateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
 	)
 
 	if err != nil {
@@ -393,4 +395,9 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetMinBackoff() time.Durat
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenFeeScheduleUpdateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenFeeScheduleUpdateTransaction:%d", timestamp.UnixNano())
 }

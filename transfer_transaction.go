@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -551,6 +552,7 @@ func (transaction *TransferTransaction) Execute(
 		_TransferTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
 	)
 
 	if err != nil {
@@ -798,4 +800,9 @@ func (transaction *TransferTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TransferTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TransferTransaction:%d", timestamp.UnixNano())
 }

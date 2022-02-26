@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -42,6 +43,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -55,8 +57,8 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _NetworkVersionInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+func _NetworkVersionInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _NetworkVersionInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -144,6 +146,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -209,4 +212,9 @@ func (query *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *NetworkVersionInfoQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp.UnixNano())
 }

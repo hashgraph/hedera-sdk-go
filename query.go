@@ -3,6 +3,8 @@ package hedera
 import (
 	"time"
 
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
@@ -87,7 +89,8 @@ func (query *Query) SetMaxRetry(count int) *Query {
 	return query
 }
 
-func _QueryShouldRetry(status Status) _ExecutionState {
+func _QueryShouldRetry(logID string, status Status) _ExecutionState {
+	log.Trace("[%s] Status received: %s", logID, status.String())
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry

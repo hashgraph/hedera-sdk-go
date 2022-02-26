@@ -5,7 +5,6 @@ package hedera
 
 import (
 	"context"
-	"github.com/hashgraph/hedera-protobufs-go/mirror"
 	"net"
 	"testing"
 

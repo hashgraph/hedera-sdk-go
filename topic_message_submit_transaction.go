@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -263,6 +264,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 			_TopicMessageSubmitTransactionGetMethod,
 			_TransactionMapStatusError,
 			_TransactionMapResponse,
+			transaction._GetLogID(),
 		)
 
 		if err != nil {
@@ -519,4 +521,9 @@ func (transaction *TopicMessageSubmitTransaction) GetMinBackoff() time.Duration 
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TopicMessageSubmitTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TopicMessageSubmitTransaction:%d", timestamp.UnixNano())
 }

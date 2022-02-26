@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -445,6 +446,7 @@ func (transaction *AccountAllowanceApproveTransaction) Execute(
 		_AccountApproveAllowanceTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
 	)
 
 	if err != nil {
@@ -625,4 +627,9 @@ func (transaction *AccountAllowanceApproveTransaction) GetMinBackoff() time.Dura
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *AccountAllowanceApproveTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("AccountAllowanceApproveTransaction:%d", timestamp.UnixNano())
 }

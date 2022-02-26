@@ -5,6 +5,8 @@ import (
 	"math"
 	"time"
 
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/pkg/errors"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -64,13 +66,14 @@ type _Request struct {
 func _Execute(
 	client *Client,
 	request _Request,
-	shouldRetry func(_Request, _Response) _ExecutionState,
+	shouldRetry func(string, _Request, _Response) _ExecutionState,
 	makeRequest func(request _Request) _ProtoRequest,
 	advanceRequest func(_Request),
 	getNodeAccountID func(_Request) AccountID,
 	getMethod func(_Request, *_Channel) _Method,
 	mapStatusError func(_Request, _Response) error,
 	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
+	logID string,
 ) (_IntermediateResponse, error) {
 	var maxAttempts int
 	var minBackoff *time.Duration
@@ -124,11 +127,15 @@ func _Execute(
 
 		node._InUse()
 
+		log.Trace("[%s] [Node] AccountID: %s, IP: %s", logID, node.accountID.String(), node.address._String())
+
 		if !node._IsHealthy() {
+			log.Trace("[%s] [Node] Is unhealthy waiting %s before continuing", logID, node._Wait().String())
 			delay := node._Wait()
 			time.Sleep(delay)
 		}
 
+		log.Trace("[%s] [Node] Updating node account ID index", logID)
 		advanceRequest(request)
 
 		channel, err := node._GetChannel()
@@ -141,6 +148,7 @@ func _Execute(
 
 		resp := _Response{}
 
+		log.Trace("[%s] Executing gRPC call", logID)
 		if method.query != nil {
 			resp.query, err = method.query(context.TODO(), protoRequest.query)
 		} else {
@@ -149,7 +157,7 @@ func _Execute(
 
 		if err != nil {
 			errPersistent = err
-			if _ExecutableDefaultRetryHandler(err) {
+			if _ExecutableDefaultRetryHandler(logID, err) {
 				node._IncreaseDelay()
 				continue
 			}
@@ -161,15 +169,16 @@ func _Execute(
 
 		node._DecreaseDelay()
 
-		retry := shouldRetry(request, resp)
+		retry := shouldRetry(logID, request, resp)
 
 		switch retry {
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
-			_DelayForAttempt(minBackoff, maxBackoff, attempt)
+			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
 			continue
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
+				log.Trace("[%s] Received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating", logID)
 				_, err = request.transaction.transactionIDs._Set(request.transaction.nextTransactionIndex, TransactionIDGenerate(client.GetOperatorAccountID()))
 				if err != nil {
 					panic(err)
@@ -192,14 +201,16 @@ func _Execute(
 	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func _DelayForAttempt(minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
+func _DelayForAttempt(logID string, minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
 	// 0.1s, 0.2s, 0.4s, 0.8s, ...
 	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
+	log.Trace("[%s] Waiting %sms before retrying attempt %d", logID, ms, attempt+1)
 	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
 
-func _ExecutableDefaultRetryHandler(err error) bool {
+func _ExecutableDefaultRetryHandler(logID string, err error) bool {
 	code := status.Code(err)
+	log.Trace("[%s] Received gRPC error with status code %s", logID, code.String())
 
 	switch code {
 	case codes.ResourceExhausted, codes.Unavailable:

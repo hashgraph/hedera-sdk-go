@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -163,6 +164,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -173,8 +175,8 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractCallQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
+func _ContractCallQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
 }
 
 func _ContractCallQueryMapStatusError(_ _Request, response _Response) error {
@@ -262,6 +264,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -328,4 +331,9 @@ func (query *ContractCallQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *ContractCallQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("ContractCallQuery:%d", timestamp.UnixNano())
 }

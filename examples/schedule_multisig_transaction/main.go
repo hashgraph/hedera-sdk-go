@@ -186,7 +186,6 @@ func main() {
 		return
 	}
 
-
 	// Getting the receipt to make sure the signing executed properly
 	_, err = resp.GetReceipt(client)
 	if err != nil {
