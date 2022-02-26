@@ -30,7 +30,7 @@ type _Nodes struct {
 	nodes []_IManagedNode
 }
 
-func _NewNode(accountID AccountID, address string, minBackoff int64) _Node {
+func _NewNode(accountID AccountID, address string, minBackoff time.Duration) _Node {
 	temp := _NewManagedNode(address, minBackoff)
 	return _Node{
 		accountID:         accountID,
@@ -41,19 +41,19 @@ func _NewNode(accountID AccountID, address string, minBackoff int64) _Node {
 	}
 }
 
-func (node *_Node) _SetMinBackoff(waitTime int64) {
+func (node *_Node) _SetMinBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
-func (node *_Node) _GetMinBackoff() int64 {
+func (node *_Node) _GetMinBackoff() time.Duration {
 	return node._ManagedNode._GetMinBackoff()
 }
 
-func (node *_Node) _SetMaxBackoff(waitTime int64) {
+func (node *_Node) _SetMaxBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMaxBackoff(waitTime)
 }
 
-func (node *_Node) _GetMaxBackoff() int64 {
+func (node *_Node) _GetMaxBackoff() time.Duration {
 	return node._ManagedNode._GetMaxBackoff()
 }
 
@@ -185,13 +185,13 @@ func (node *_Node) _Close() error {
 
 func (node *_Node) _ToSecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToSecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToSecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_Node{
@@ -205,13 +205,13 @@ func (node *_Node) _ToSecure() _IManagedNode {
 
 func (node *_Node) _ToInsecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToInsecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToInsecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_Node{
@@ -228,6 +228,32 @@ func (nodes _Nodes) Len() int {
 }
 func (nodes _Nodes) Swap(i, j int) {
 	nodes.nodes[i], nodes.nodes[j] = nodes.nodes[j], nodes.nodes[i]
+}
+
+func _NodeCompare(i *_ManagedNode, j *_ManagedNode) int64 {
+	iRemainingTime := i._Wait()
+	jRemainingTime := j._Wait()
+	comparison := iRemainingTime.Milliseconds() - jRemainingTime.Milliseconds()
+	if iRemainingTime > 0 && jRemainingTime > 0 && comparison != 0 {
+		return comparison
+	}
+
+	comparison = i.currentBackoff.Milliseconds() - j.currentBackoff.Milliseconds()
+	if comparison != 0 {
+		return comparison
+	}
+
+	comparison = i.badGrpcStatusCount - j.badGrpcStatusCount
+	if comparison != 0 {
+		return comparison
+	}
+
+	comparison = i.useCount - j.useCount
+	if comparison != 0 {
+		return comparison
+	}
+
+	return i.lastUsed - j.lastUsed
 }
 
 func (nodes _Nodes) Less(i, j int) bool {

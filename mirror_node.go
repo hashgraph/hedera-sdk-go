@@ -21,26 +21,26 @@ type _MirrorNode struct {
 
 func _NewMirrorNode(address string) _MirrorNode {
 	wait := 250 * time.Millisecond
-	temp := _NewManagedNode(address, wait.Milliseconds())
+	temp := _NewManagedNode(address, wait)
 	return _MirrorNode{
 		_ManagedNode:           &temp,
 		consensusServiceClient: nil,
 	}
 }
 
-func (node *_MirrorNode) _SetMinBackoff(waitTime int64) {
+func (node *_MirrorNode) _SetMinBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
-func (node *_MirrorNode) _GetMinBackoff() int64 {
+func (node *_MirrorNode) _GetMinBackoff() time.Duration {
 	return node._ManagedNode._GetMinBackoff()
 }
 
-func (node *_MirrorNode) _SetMaxBackoff(waitTime int64) {
+func (node *_MirrorNode) _SetMaxBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMaxBackoff(waitTime)
 }
 
-func (node *_MirrorNode) _GetMaxBackoff() int64 {
+func (node *_MirrorNode) _GetMaxBackoff() time.Duration {
 	return node._ManagedNode._GetMaxBackoff()
 }
 
@@ -156,13 +156,13 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 
 func (node *_MirrorNode) _ToSecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToSecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToSecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_MirrorNode{
@@ -174,13 +174,13 @@ func (node *_MirrorNode) _ToSecure() _IManagedNode {
 
 func (node *_MirrorNode) _ToInsecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToInsecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToInsecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_MirrorNode{

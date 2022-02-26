@@ -21,7 +21,7 @@ func (network *_Network) SetNetwork(net map[string]AccountID) error {
 	newNetwork := make(map[string]_IManagedNode)
 
 	for url, id := range net {
-		node := _NewNode(id, url, network._ManagedNetwork.minBackOff.Milliseconds())
+		node := _NewNode(id, url, network._ManagedNetwork.minBackoff)
 		newNetwork[url] = &node
 	}
 
@@ -146,12 +146,12 @@ func (network *_Network) _GetMaxNodeAttempts() int {
 	return network._ManagedNetwork._GetMaxNodeAttempts()
 }
 
-func (network *_Network) _SetNodeMinBackoff(waitTime time.Duration) {
-	network._ManagedNetwork._SetMinBackoff(waitTime)
+func (network *_Network) _SetNodeMinBackoff(backoff time.Duration) {
+	network._ManagedNetwork._SetMinBackoff(backoff)
 }
 
-func (network *_Network) _SetNodeMaxBackoff(waitTime time.Duration) {
-	network._ManagedNetwork._SetMaxBackoff(waitTime)
+func (network *_Network) _SetNodeMaxBackoff(backoff time.Duration) {
+	network._ManagedNetwork._SetMaxBackoff(backoff)
 }
 
 func (network *_Network) _GetNodeMinBackoff() time.Duration {
