@@ -36,7 +36,7 @@ func (address *_ManagedNodeAddress) _IsTransportSecurity() bool {
 }
 
 func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
-	var port uint32
+	port := address.port
 
 	switch address.port {
 	case 50212:

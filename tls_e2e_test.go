@@ -4,19 +4,10 @@
 package hedera
 
 import (
-	"encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
-
-func TestFetchCurrentBalance(t *testing.T) {
-	book, _ := NewAddressBookQuery().
-		SetFileID(FileIDForAddressBook()).
-		Execute(ClientForPreviewnet())
-
-	print(hex.EncodeToString(book.ToBytes()))
-}
 
 func TestIntegrationPreviewnetTls(t *testing.T) {
 	var network = map[string]AccountID{
