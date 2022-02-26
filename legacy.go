@@ -2080,7 +2080,7 @@ var legacy = [...]string{
 	"lodge",
 	"loft",
 	"lofty",
-	"log",
+	"github.com/rs/zerolog/log",
 	"logic",
 	"logo",
 	"london",
