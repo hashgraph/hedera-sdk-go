@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -12,6 +13,7 @@ type AccountBalanceQuery struct {
 	Query
 	accountID  *AccountID
 	contractID *ContractID
+	timestamp  time.Time
 }
 
 // NewAccountBalanceQuery creates an AccountBalanceQuery query which can be used to construct and execute
@@ -126,6 +128,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
+	query.timestamp = time.Now()
+
 	for range query.nodeAccountIDs {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
@@ -153,6 +157,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -163,8 +168,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountBalanceQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
+func _AccountBalanceQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountBalanceQueryMapStatusError(_ _Request, response _Response) error {
@@ -206,6 +211,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, err
 	}
 
+	query.timestamp = time.Now()
 	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
@@ -227,6 +233,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -293,4 +300,8 @@ func (query *AccountBalanceQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountBalanceQuery) _GetLogID() string {
+	return fmt.Sprintf("AccountBalanceQuery:%d", query.timestamp.UnixNano())
 }

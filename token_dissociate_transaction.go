@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -266,6 +267,7 @@ func (transaction *TokenDissociateTransaction) Execute(
 		_TokenDissociateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
 	)
 
 	if err != nil {
@@ -446,4 +448,9 @@ func (transaction *TokenDissociateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenDissociateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenDissociateTransaction:%d", timestamp.UnixNano())
 }

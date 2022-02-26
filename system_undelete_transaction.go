@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -243,6 +245,7 @@ func (transaction *SystemUndeleteTransaction) Execute(
 		_SystemUndeleteTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
 	)
 
 	if err != nil {
@@ -423,4 +426,9 @@ func (transaction *SystemUndeleteTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *SystemUndeleteTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("SystemUndeleteTransaction:%d", timestamp.UnixNano())
 }

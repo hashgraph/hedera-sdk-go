@@ -186,14 +186,15 @@ func (network *_ManagedNetwork) _GetNumberOfMostHealthyNodes(count int32) []_IMa
 	})
 
 	err := network._RemoveDeadNodes()
-	for _, n := range network.network {
-		sort.Slice(n, func(i int, j int) bool {
-			return _ManagedNodeCompare(n[i].(*_Node)._ManagedNode, n[j].(*_Node)._ManagedNode) < 0
-		})
-
-	}
 	if err != nil {
 		return []_IManagedNode{}
+	}
+
+	for _, networkPerNodeAccountID := range network.network {
+		net := networkPerNodeAccountID
+		sort.Slice(net, func(i int, j int) bool {
+			return _ManagedNodeCompare(net[i].(*_Node)._ManagedNode, net[j].(*_Node)._ManagedNode) < 0
+		})
 	}
 
 	nodes := make([]_IManagedNode, 0)

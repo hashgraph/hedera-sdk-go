@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -60,8 +61,8 @@ func (query *AccountInfoQuery) _Build() *services.Query_CryptoGetInfo {
 	return &pb
 }
 
-func _AccountInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
+func _AccountInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -123,6 +124,7 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountInfoQueryGetMethod,
 		_AccountInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -233,6 +235,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		_AccountInfoQueryGetMethod,
 		_AccountInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -276,4 +279,9 @@ func (query *AccountInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountInfoQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("AccountInfoQuery:%d", timestamp.UnixNano())
 }

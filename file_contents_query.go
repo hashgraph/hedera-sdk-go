@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -110,6 +111,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		_FileContentsQueryGetMethod,
 		_FileContentsQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -120,8 +122,8 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _FileContentsQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode))
+func _FileContentsQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode))
 }
 
 func _FileContentsQueryMapStatusError(_ _Request, response _Response) error {
@@ -209,6 +211,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		_FileContentsQueryGetMethod,
 		_FileContentsQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -274,4 +277,9 @@ func (query *FileContentsQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *FileContentsQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("FileContentsQuery:%d", timestamp.UnixNano())
 }

@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -119,6 +120,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		_LiveHashQueryGetMethod,
 		_LiveHashQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -129,8 +131,8 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _LiveHashQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
+func _LiveHashQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
 }
 
 func _LiveHashQueryMapStatusError(_ _Request, response _Response) error {
@@ -218,6 +220,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		_LiveHashQueryGetMethod,
 		_LiveHashQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -283,4 +286,9 @@ func (query *LiveHashQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *LiveHashQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("LiveHashQuery:%d", timestamp.UnixNano())
 }

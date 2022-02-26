@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 
@@ -247,6 +249,7 @@ func (transaction *LiveHashAddTransaction) Execute(
 		_LiveHashAddTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
 	)
 
 	if err != nil {
@@ -427,4 +430,9 @@ func (transaction *LiveHashAddTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *LiveHashAddTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("LiveHashAddTransaction:%d", timestamp.UnixNano())
 }

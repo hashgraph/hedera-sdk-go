@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -275,6 +277,7 @@ func (transaction *ContractDeleteTransaction) Execute(
 		_ContractDeleteTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
 	)
 
 	if err != nil {
@@ -455,4 +458,9 @@ func (transaction *ContractDeleteTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *ContractDeleteTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ContractDeleteTransaction:%d", timestamp.UnixNano())
 }

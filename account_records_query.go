@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -114,6 +115,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountRecordsQueryGetMethod,
 		_AccountRecordsQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -124,11 +126,8 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountRecordsQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	if response.query.GetCryptoGetAccountRecords() == nil {
-		println("nil adf")
-	}
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
+func _AccountRecordsQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountRecordsQueryMapStatusError(_ _Request, response _Response) error {
@@ -218,6 +217,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		_AccountRecordsQueryGetMethod,
 		_AccountRecordsQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -289,4 +289,9 @@ func (query *AccountRecordsQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountRecordsQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("AccountRecordsQuery:%d", timestamp.UnixNano())
 }

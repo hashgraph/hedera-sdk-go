@@ -5,6 +5,8 @@ import (
 	"crypto/sha512"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/pkg/errors"
 
 	"time"
@@ -457,8 +459,10 @@ func (transaction *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(_ _Request, response _Response) _ExecutionState {
-	switch Status(response.transaction.NodeTransactionPrecheckCode) {
+func _TransactionShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	status := Status(response.transaction.NodeTransactionPrecheckCode)
+	log.Trace("[%s] Status received: %s", logID, status.String())
+	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
 	case StatusTransactionExpired:

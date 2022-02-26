@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -106,6 +107,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_ScheduleInfoQueryGetMethod,
 		_ScheduleInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -119,8 +121,8 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ScheduleInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
+func _ScheduleInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _ScheduleInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -209,6 +211,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		_ScheduleInfoQueryGetMethod,
 		_ScheduleInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
 	)
 
 	if err != nil {
@@ -278,4 +281,9 @@ func (query *ScheduleInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *ScheduleInfoQuery) _GetLogID() string {
+	timestamp := query.paymentTransactionID.ValidStart
+	return fmt.Sprintf("ScheduleInfoQuery:%d", timestamp.UnixNano())
 }

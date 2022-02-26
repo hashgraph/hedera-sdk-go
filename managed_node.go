@@ -90,21 +90,21 @@ func (node *_ManagedNode) _IsHealthy() bool {
 func (node *_ManagedNode) _IncreaseDelay() {
 	node.badGrpcStatusCount++
 	node.backoffUntil = time.Now().Add(node.currentBackoff)
-	node.currentBackoff = node.currentBackoff * 2
+	node.currentBackoff *= 2
 	if node.currentBackoff > node.maxBackoff {
 		node.currentBackoff = node.maxBackoff
 	}
 }
 
 func (node *_ManagedNode) _DecreaseDelay() {
-	node.currentBackoff = node.currentBackoff / 2
+	node.currentBackoff /= 2
 	if node.currentBackoff < node.minBackoff {
 		node.currentBackoff = node.minBackoff
 	}
 }
 
 func (node *_ManagedNode) _Wait() time.Duration {
-	return time.Now().Sub(node.backoffUntil)
+	return time.Until(node.backoffUntil)
 }
 
 func (node *_ManagedNode) _GetUseCount() int64 {
