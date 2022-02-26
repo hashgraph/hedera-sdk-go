@@ -181,10 +181,16 @@ func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 }
 
 func (network *_ManagedNetwork) _GetNumberOfMostHealthyNodes(count int32) []_IManagedNode {
-	sort.Sort(_Nodes{nodes: network.nodes})
+	sort.Slice(network.nodes, func(i int, j int) bool {
+		return _ManagedNodeCompare(network.nodes[i].(*_Node)._ManagedNode, network.nodes[j].(*_Node)._ManagedNode) < 0
+	})
+
 	err := network._RemoveDeadNodes()
 	for _, n := range network.network {
-		sort.Sort(_Nodes{nodes: n})
+		sort.Slice(n, func(i int, j int) bool {
+			return _ManagedNodeCompare(n[i].(*_Node)._ManagedNode, n[j].(*_Node)._ManagedNode) < 0
+		})
+
 	}
 	if err != nil {
 		return []_IManagedNode{}
