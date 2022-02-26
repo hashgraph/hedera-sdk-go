@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var logCtx zerolog.Logger = log.With().Str("hedera-sdk-go", "module").Logger()
+var logCtx zerolog.Logger = log.With().Str("module", "hedera-sdk-go").Logger()
 
 const maxAttempts = 10
 
@@ -130,15 +130,15 @@ func _Execute(
 
 		node._InUse()
 
-		log.Trace().Str("requestId", logID).Str("nodeAccountID", node.accountID.String()).Str("nodeIPAddress", node.address._String())
+		logCtx.Trace().Str("requestId", logID).Str("nodeAccountID", node.accountID.String()).Str("nodeIPAddress", node.address._String())
 
 		if !node._IsHealthy() {
-			log.Trace().Str("requestId", logID).Str("delay", node._Wait().String()).Msg("node is unhealthy, waiting before continuing")
+			logCtx.Trace().Str("requestId", logID).Str("delay", node._Wait().String()).Msg("node is unhealthy, waiting before continuing")
 			delay := node._Wait()
 			time.Sleep(delay)
 		}
 
-		log.Trace().Str("requestId", logID).Msg("updating node account ID index")
+		logCtx.Trace().Str("requestId", logID).Msg("updating node account ID index")
 		advanceRequest(request)
 
 		channel, err := node._GetChannel()
@@ -151,7 +151,7 @@ func _Execute(
 
 		resp := _Response{}
 
-		log.Trace().Str("requestId", logID).Msg("executing gRPC call")
+		logCtx.Trace().Str("requestId", logID).Msg("executing gRPC call")
 		if method.query != nil {
 			resp.query, err = method.query(context.TODO(), protoRequest.query)
 		} else {
@@ -181,7 +181,7 @@ func _Execute(
 			continue
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
-				log.Trace().Str("requestId", logID).Msg("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating")
+				logCtx.Trace().Str("requestId", logID).Msg("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating")
 				_, err = request.transaction.transactionIDs._Set(request.transaction.nextTransactionIndex, TransactionIDGenerate(client.GetOperatorAccountID()))
 				if err != nil {
 					panic(err)
@@ -207,13 +207,13 @@ func _Execute(
 func _DelayForAttempt(logID string, minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
 	// 0.1s, 0.2s, 0.4s, 0.8s, ...
 	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
-	log.Trace().Str("requestId", logID).Dur("delay", time.Duration(ms)).Int64("attempt", attempt+1).Msg("retrying  request attempt")
+	logCtx.Trace().Str("requestId", logID).Dur("delay", time.Duration(ms)).Int64("attempt", attempt+1).Msg("retrying  request attempt")
 	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
 
 func _ExecutableDefaultRetryHandler(logID string, err error) bool {
 	code := status.Code(err)
-	log.Trace().Str("requestId", logID).Str("status", code.String()).Msg("received gRPC error with status code")
+	logCtx.Trace().Str("requestId", logID).Str("status", code.String()).Msg("received gRPC error with status code")
 
 	switch code {
 	case codes.ResourceExhausted, codes.Unavailable:

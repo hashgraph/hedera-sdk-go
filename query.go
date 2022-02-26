@@ -3,8 +3,6 @@ package hedera
 import (
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	protobuf "google.golang.org/protobuf/proto"
@@ -90,7 +88,7 @@ func (query *Query) SetMaxRetry(count int) *Query {
 }
 
 func _QueryShouldRetry(logID string, status Status) _ExecutionState {
-	log.Trace().Str("requestId", logID).Str("status", status.String()).Msg("query precheck status received")
+	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("query precheck status received")
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
