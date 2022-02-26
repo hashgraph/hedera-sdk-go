@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/rs/zerolog/log"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
@@ -146,7 +146,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 
 func _TransactionReceiptQueryShouldRetry(logID string, request _Request, response _Response) _ExecutionState {
 	status := Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
-	log.Trace("[%s] Transaction receipt precheck status received: %s", logID, status.String())
+	log.Trace().Str("requestId", logID).Str("status", status.String()).Msg("receipt precheck status received")
 
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
@@ -158,7 +158,7 @@ func _TransactionReceiptQueryShouldRetry(logID string, request _Request, respons
 	}
 
 	status = Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
-	log.Trace("[%s] Transaction receipt status received: %s", logID, status.String())
+	log.Trace().Str("requestId", logID).Str("status", status.String()).Msg("receipt status received")
 
 	switch status {
 	case StatusBusy, StatusUnknown, StatusOk, StatusReceiptNotFound, StatusRecordNotFound:

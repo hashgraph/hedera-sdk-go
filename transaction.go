@@ -5,7 +5,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/rs/zerolog/log"
 
 	"github.com/pkg/errors"
 
@@ -461,7 +461,7 @@ func (transaction *Transaction) _KeyAlreadySigned(
 
 func _TransactionShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
 	status := Status(response.transaction.NodeTransactionPrecheckCode)
-	log.Trace("[%s] Status received: %s", logID, status.String())
+	log.Trace().Str("requestId", logID).Str("status", status.String()).Msg("transaction precheck status received")
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
