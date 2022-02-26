@@ -26,10 +26,6 @@ type _Node struct {
 	verifyCertificate bool
 }
 
-type _Nodes struct {
-	nodes []_IManagedNode
-}
-
 func _NewNode(accountID AccountID, address string, minBackoff time.Duration) _Node {
 	temp := _NewManagedNode(address, minBackoff)
 	return _Node{
@@ -220,63 +216,6 @@ func (node *_Node) _ToInsecure() _IManagedNode {
 		channel:           node.channel,
 		addressBook:       node.addressBook,
 		verifyCertificate: node.verifyCertificate,
-	}
-}
-
-func (nodes _Nodes) Len() int {
-	return len(nodes.nodes)
-}
-func (nodes _Nodes) Swap(i, j int) {
-	nodes.nodes[i], nodes.nodes[j] = nodes.nodes[j], nodes.nodes[i]
-}
-
-func _NodeCompare(i *_ManagedNode, j *_ManagedNode) int64 {
-	iRemainingTime := i._Wait()
-	jRemainingTime := j._Wait()
-	comparison := iRemainingTime.Milliseconds() - jRemainingTime.Milliseconds()
-	if iRemainingTime > 0 && jRemainingTime > 0 && comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.currentBackoff.Milliseconds() - j.currentBackoff.Milliseconds()
-	if comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.badGrpcStatusCount - j.badGrpcStatusCount
-	if comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.useCount - j.useCount
-	if comparison != 0 {
-		return comparison
-	}
-
-	return i.lastUsed - j.lastUsed
-}
-
-func (nodes _Nodes) Less(i, j int) bool {
-	if nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() { // nolint
-		if nodes.nodes[i]._GetUseCount() < nodes.nodes[j]._GetUseCount() { // nolint
-			return true
-		} else if nodes.nodes[i]._GetUseCount() > nodes.nodes[j]._GetUseCount() {
-			return false
-		} else {
-			return nodes.nodes[i]._GetLastUsed() < nodes.nodes[j]._GetLastUsed()
-		}
-	} else if nodes.nodes[i]._IsHealthy() && !nodes.nodes[j]._IsHealthy() {
-		return true
-	} else if !nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() {
-		return false
-	} else {
-		if nodes.nodes[i]._GetUseCount() < nodes.nodes[j]._GetUseCount() { // nolint
-			return true
-		} else if nodes.nodes[i]._GetUseCount() > nodes.nodes[j]._GetUseCount() {
-			return false
-		} else {
-			return nodes.nodes[i]._GetLastUsed() < nodes.nodes[j]._GetLastUsed()
-		}
 	}
 }
 
