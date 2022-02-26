@@ -102,6 +102,7 @@ func TestUnitMockTokenAssociateTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	freez, err := NewTokenAssociateTransaction().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
@@ -114,6 +115,4 @@ func TestUnitMockTokenAssociateTransaction(t *testing.T) {
 		Sign(newKey).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

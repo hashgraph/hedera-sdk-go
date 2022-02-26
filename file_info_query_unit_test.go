@@ -82,6 +82,7 @@ func TestUnitMockFileInfoQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	result, err := NewFileInfoQuery().
 		SetFileID(FileID{File: 3}).
@@ -95,6 +96,4 @@ func TestUnitMockFileInfoQuery(t *testing.T) {
 	require.Equal(t, result.FileMemo, "no memo")
 	require.Equal(t, result.IsDeleted, false)
 	require.True(t, result.LedgerID.IsMainnet())
-
-	server.Close()
 }

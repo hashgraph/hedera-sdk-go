@@ -61,6 +61,17 @@ func (transaction *AccountAllowanceAdjustTransaction) AddHbarAllowance(id Accoun
 	return transaction
 }
 
+func (transaction *AccountAllowanceAdjustTransaction) AddHbarAllowanceWithOwner(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
+	transaction._RequireNotFrozen()
+	transaction.hbarAllowances = append(transaction.hbarAllowances, &HbarAllowance{
+		SpenderAccountID: &id,
+		Amount:           amount.AsTinybar(),
+		OwnerAccountID:   &ownerAccountID,
+	})
+
+	return transaction
+}
+
 func (transaction *AccountAllowanceAdjustTransaction) GetHbarAllowances() []*HbarAllowance {
 	return transaction.hbarAllowances
 }
@@ -71,6 +82,19 @@ func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowance(tokenID 
 		TokenID:          &tokenID,
 		SpenderAccountID: &accountID,
 		Amount:           amount,
+	}
+
+	transaction.tokenAllowances = append(transaction.tokenAllowances, &tokenApproval)
+	return transaction
+}
+
+func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowanceWithOwner(ownerAccountID AccountID, tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
+	transaction._RequireNotFrozen()
+	tokenApproval := TokenAllowance{
+		TokenID:          &tokenID,
+		SpenderAccountID: &accountID,
+		Amount:           amount,
+		OwnerAccountID:   &ownerAccountID,
 	}
 
 	transaction.tokenAllowances = append(transaction.tokenAllowances, &tokenApproval)
@@ -110,6 +134,36 @@ func (transaction *AccountAllowanceAdjustTransaction) AddTokenNftAllowance(nftID
 	return transaction
 }
 
+func (transaction *AccountAllowanceAdjustTransaction) AddTokenNftAllowanceWithOwner(ownerAccountID AccountID, nftID NftID, accountID AccountID) *AccountAllowanceAdjustTransaction {
+	transaction._RequireNotFrozen()
+
+	for _, t := range transaction.nftAllowances {
+		if t.TokenID.String() == nftID.TokenID.String() {
+			if t.SpenderAccountID.String() == accountID.String() {
+				b := false
+				for _, s := range t.SerialNumbers {
+					if s == nftID.SerialNumber {
+						b = true
+					}
+				}
+				if !b {
+					t.SerialNumbers = append(t.SerialNumbers, nftID.SerialNumber)
+				}
+				return transaction
+			}
+		}
+	}
+
+	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
+		TokenID:          &nftID.TokenID,
+		SpenderAccountID: &accountID,
+		SerialNumbers:    []int64{nftID.SerialNumber},
+		ApprovedForAll:   false,
+		OwnerAccountID:   &ownerAccountID,
+	})
+	return transaction
+}
+
 func (transaction *AccountAllowanceAdjustTransaction) AddAllTokenNftAllowance(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
 	for _, t := range transaction.nftAllowances {
 		if t.TokenID.String() == tokenID.String() {
@@ -130,6 +184,27 @@ func (transaction *AccountAllowanceAdjustTransaction) AddAllTokenNftAllowance(to
 	return transaction
 }
 
+func (transaction *AccountAllowanceAdjustTransaction) AddAllTokenNftAllowanceWithOwner(ownerAccountID AccountID, tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
+	for _, t := range transaction.nftAllowances {
+		if t.TokenID.String() == tokenID.String() {
+			if t.SpenderAccountID.String() == spenderAccount.String() {
+				t.SerialNumbers = []int64{}
+				t.ApprovedForAll = true
+				return transaction
+			}
+		}
+	}
+
+	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
+		TokenID:          &tokenID,
+		SpenderAccountID: &spenderAccount,
+		SerialNumbers:    []int64{},
+		ApprovedForAll:   true,
+		OwnerAccountID:   &ownerAccountID,
+	})
+	return transaction
+}
+
 func (transaction *AccountAllowanceAdjustTransaction) GetTokenNftAllowances() []*TokenNftAllowance {
 	return transaction.nftAllowances
 }
@@ -142,6 +217,12 @@ func (transaction *AccountAllowanceAdjustTransaction) _ValidateNetworkOnIDs(clie
 	for _, ap := range transaction.hbarAllowances {
 		if ap.SpenderAccountID != nil {
 			if err := ap.SpenderAccountID.ValidateChecksum(client); err != nil {
+				return err
+			}
+		}
+
+		if ap.OwnerAccountID != nil {
+			if err := ap.OwnerAccountID.ValidateChecksum(client); err != nil {
 				return err
 			}
 		}
@@ -159,6 +240,12 @@ func (transaction *AccountAllowanceAdjustTransaction) _ValidateNetworkOnIDs(clie
 				return err
 			}
 		}
+
+		if ap.OwnerAccountID != nil {
+			if err := ap.OwnerAccountID.ValidateChecksum(client); err != nil {
+				return err
+			}
+		}
 	}
 
 	for _, ap := range transaction.nftAllowances {
@@ -170,6 +257,12 @@ func (transaction *AccountAllowanceAdjustTransaction) _ValidateNetworkOnIDs(clie
 
 		if ap.TokenID != nil {
 			if err := ap.TokenID.ValidateChecksum(client); err != nil {
+				return err
+			}
+		}
+
+		if ap.OwnerAccountID != nil {
+			if err := ap.OwnerAccountID.ValidateChecksum(client); err != nil {
 				return err
 			}
 		}

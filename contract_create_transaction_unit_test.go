@@ -103,6 +103,7 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -113,6 +114,4 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

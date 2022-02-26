@@ -76,6 +76,7 @@ func TestUnitMockAccountRecordsQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	recordsQuery, err := NewAccountRecordsQuery().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
@@ -87,6 +88,4 @@ func TestUnitMockAccountRecordsQuery(t *testing.T) {
 
 	require.Equal(t, len(recordsQuery), 1)
 	require.Equal(t, recordsQuery[0].TransactionID.AccountID.Account, uint64(1800))
-
-	server.Close()
 }

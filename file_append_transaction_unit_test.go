@@ -105,6 +105,7 @@ func TestUnitMockFileAppendTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewFileAppendTransaction().
 		SetFileID(FileID{File: 3}).
@@ -112,6 +113,4 @@ func TestUnitMockFileAppendTransaction(t *testing.T) {
 		SetContents(fil).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

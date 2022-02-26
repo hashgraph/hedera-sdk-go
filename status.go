@@ -263,7 +263,8 @@ const (
 	StatusRepeatedSerialNumsInNftAllowances                        Status = 297
 	StatusFungibleTokenInNftAllowances                             Status = 298
 	StatusNftInFungibleTokenAllowances                             Status = 299
-	StatusPayerAndOwnerNotEqual                                    Status = 300
+	StatusInvalidAllowanceOwnerID                                  Status = 300
+	StatusInvalidAllowanceSpenderID                                Status = 301
 )
 
 // String() returns a string representation of the status
@@ -785,8 +786,10 @@ func (status Status) String() string { // nolint
 		return "FUNGIBLE_TOKEN_IN_NFT_ALLOWANCES"
 	case StatusNftInFungibleTokenAllowances:
 		return "NFT_IN_FUNGIBLE_TOKEN_ALLOWANCES"
-	case StatusPayerAndOwnerNotEqual:
-		return "PAYER_AND_OWNER_NOT_EQUAL"
+	case StatusInvalidAllowanceOwnerID:
+		return "INVALID_ALLOWANCE_OWNER_ID"
+	case StatusInvalidAllowanceSpenderID:
+		return "INVALID_ALLOWANCE_SPENDER_ID"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

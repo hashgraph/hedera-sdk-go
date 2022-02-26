@@ -5,12 +5,9 @@ package hedera
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
+	"github.com/hashgraph/hedera-protobufs-go/mirror"
 	"net"
 	"testing"
-
-	"github.com/hashgraph/hedera-protobufs-go/mirror"
 
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
@@ -57,14 +54,13 @@ func TestUnitMockQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewAccountBalanceQuery().
 		SetAccountID(AccountID{Account: 1800}).
 		SetNodeAccountIDs([]AccountID{{Account: 3}, {Account: 4}}).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }
 
 func TestUnitMockAddressBookQuery(t *testing.T) {
@@ -117,6 +113,7 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 	}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	result, err := NewAddressBookQuery().
 		SetFileID(FileID{0, 0, 101, nil}).
@@ -130,8 +127,6 @@ func TestUnitMockAddressBookQuery(t *testing.T) {
 	require.Equal(t, result.NodeAddresses[1].AccountID.String(), "0.0.4")
 	require.Equal(t, result.NodeAddresses[1].Addresses[0].String(), "1.2.2.9:50123")
 	require.Equal(t, result.NodeAddresses[1].Addresses[1].String(), "2.1.2.9:50123")
-
-	server.Close()
 }
 
 func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
@@ -192,13 +187,12 @@ func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewFileCreateTransaction().
 		SetContents([]byte("hello")).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }
 
 func TestUnitMockSingleTransactionIDForExecutions(t *testing.T) {
@@ -261,14 +255,13 @@ func TestUnitMockSingleTransactionIDForExecutions(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewFileCreateTransaction().
 		SetTransactionID(tran).
 		SetContents([]byte("hello")).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }
 
 func TestUnitMockSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
@@ -331,66 +324,54 @@ func TestUnitMockSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewFileCreateTransaction().
 		SetTransactionID(tran).
 		SetContents([]byte("hello")).
 		Execute(client)
 	require.Error(t, err)
-
-	server.Close()
 }
 
 type MockServers struct {
-	servers []*grpc.Server
+	servers []*MockServer
 }
 
-func (servers MockServers) Close() {
+func (servers *MockServers) Close() {
 	for _, server := range servers.servers {
 		if server != nil {
-			server.Stop()
+			server.Close()
 		}
 	}
 }
 
-func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, MockServers) {
+func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockServers) {
 	network := map[string]AccountID{}
-	mirrowNetwork := make([]string, 0)
-	servers := make([]*grpc.Server, 0)
+	mirrorNetwork := make([]string, len(allNodeResponses))
+	servers := make([]*MockServer, len(allNodeResponses))
 
 	for i, responses := range allNodeResponses {
-		address := fmt.Sprintf("localhost:%d", 5000+rand.Intn(999))
+		responses := responses
+
 		nodeAccountID := AccountID{Account: uint64(3 + i)}
 
-		network[address] = nodeAccountID
-
-		responses := responses
-
 		go func() {
-			server := NewServer(responses, address)
-			servers = append(servers, server)
+			servers[i] = NewMockServer(responses)
 		}()
+
+		for servers[i] == nil {
+		}
+
+		network[servers[i].listener.Addr().String()] = nodeAccountID
+		mirrorNetwork[i] = servers[i].listener.Addr().String()
 	}
 
-	for _, responses := range allNodeResponses {
-		address := fmt.Sprintf("localhost:%d", 5000+rand.Intn(999))
-
-		mirrowNetwork = append(mirrowNetwork, address)
-
-		responses := responses
-
-		go func() {
-			server := NewServer(responses, address)
-			servers = append(servers, server)
-		}()
-	}
-
-	client := _NewClient(network, mirrowNetwork, "mainnet")
+	client := _NewClient(network, mirrorNetwork, "mainnet")
 
 	key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
 	client.SetOperator(AccountID{Account: 1800}, key)
 
-	return client, MockServers{servers}
+	return client, &MockServers{servers}
 }
 
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -445,30 +426,46 @@ func NewMockStreamHandler(responses []interface{}) func(interface{}, grpc.Server
 	}
 }
 
-func NewServer(responses []interface{}, address string) *grpc.Server {
-	server := grpc.NewServer()
+type MockServer struct {
+	listener net.Listener
+	server   *grpc.Server
+}
+
+func NewMockServer(responses []interface{}) (server *MockServer) {
+	var err error
+	server = &MockServer{
+		server: grpc.NewServer(),
+	}
 	handler := NewMockHandler(responses)
 	streamHandler := NewMockStreamHandler(responses)
 
-	server.RegisterService(NewServiceDescription(handler, &services.CryptoService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &services.FileService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &services.SmartContractService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &services.ConsensusService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &services.TokenService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &services.ScheduleService_ServiceDesc), nil)
-	server.RegisterService(NewServiceDescription(handler, &services.FreezeService_ServiceDesc), nil)
-	server.RegisterService(NewMirrorServiceDescription(streamHandler, &mirror.NetworkService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.CryptoService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.FileService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.SmartContractService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.ConsensusService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.TokenService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.ScheduleService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.FreezeService_ServiceDesc), nil)
+	server.server.RegisterService(NewMirrorServiceDescription(streamHandler, &mirror.NetworkService_ServiceDesc), nil)
 
-	lis, err := net.Listen("tcp", address)
+	server.listener, err = net.Listen("tcp", "localhost:0")
 	if err != nil {
 		panic(err)
 	}
 
-	if err = server.Serve(lis); err != nil {
-		panic(err)
-	}
+	go func() {
+		if err = server.server.Serve(server.listener); err != nil {
+			panic(err)
+		}
+	}()
 
 	return server
+}
+
+func (server *MockServer) Close() {
+	if server.server != nil {
+		server.server.GracefulStop()
+	}
 }
 
 func NewServiceDescription(handler func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error), service *grpc.ServiceDesc) *grpc.ServiceDesc {
