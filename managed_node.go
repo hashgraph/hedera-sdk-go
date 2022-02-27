@@ -47,15 +47,16 @@ func (node *_ManagedNode) _GetAddress() string {
 	return ""
 }
 
-func _NewManagedNode(address string, minBackoff time.Duration) _ManagedNode {
-	return _ManagedNode{
-		address:            _ManagedNodeAddressFromString(address),
+func _NewManagedNode(address string, minBackoff time.Duration) (node *_ManagedNode, err error) {
+	node = &_ManagedNode{
 		currentBackoff:     minBackoff,
 		useCount:           0,
 		minBackoff:         minBackoff,
 		maxBackoff:         1 * time.Hour,
 		badGrpcStatusCount: 0,
 	}
+	node.address, err = _ManagedNodeAddressFromString(address)
+	return node, err
 }
 
 func (node *_ManagedNode) _SetMinBackoff(waitTime time.Duration) {
