@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 )
@@ -12,20 +13,22 @@ type _ManagedNodeAddress struct {
 	port    uint32
 }
 
-func _ManagedNodeAddressFromString(str string) *_ManagedNodeAddress {
+func _ManagedNodeAddressFromString(str string) (*_ManagedNodeAddress, error) {
 	hostAndPortMatch := hostAndPort.FindStringSubmatch(str)
 
 	if len(hostAndPortMatch) > 1 {
-		temp, err := strconv.ParseUint(hostAndPortMatch[2], 10, 64)
+		port, err := strconv.ParseUint(hostAndPortMatch[2], 10, 64)
 		if err != nil {
-			return &_ManagedNodeAddress{}
+			return nil, err
 		}
+
 		return &_ManagedNodeAddress{
 			address: &hostAndPortMatch[1],
-			port:    uint32(temp)}
+			port:    uint32(port),
+		}, nil
 	}
 
-	panic("failed to parse node address")
+	return nil, fmt.Errorf("failed to parse node address")
 }
 
 func (address *_ManagedNodeAddress) _IsTransportSecurity() bool {
@@ -33,7 +36,7 @@ func (address *_ManagedNodeAddress) _IsTransportSecurity() bool {
 }
 
 func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
-	var port uint32
+	port := address.port
 
 	switch address.port {
 	case 50212:
@@ -49,9 +52,9 @@ func (address *_ManagedNodeAddress) _ToInsecure() *_ManagedNodeAddress {
 }
 
 func (address *_ManagedNodeAddress) _ToSecure() *_ManagedNodeAddress {
-	var port uint32
+	port := address.port
 
-	switch address.port {
+	switch port {
 	case 50211:
 		return &_ManagedNodeAddress{
 			address: address.address,

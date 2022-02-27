@@ -10,14 +10,15 @@ func _NewMirrorNetwork() *_MirrorNetwork {
 	}
 }
 
-func (network *_MirrorNetwork) _SetNetwork(newNetwork []string) {
+func (network *_MirrorNetwork) _SetNetwork(newNetwork []string) (err error) {
 	newMirrorNetwork := make(map[string]_IManagedNode)
 	for _, url := range newNetwork {
-		mir := _NewMirrorNode(url)
-		newMirrorNetwork[url] = &mir
+		if newMirrorNetwork[url], err = _NewMirrorNode(url); err != nil {
+			return err
+		}
 	}
 
-	_ = network._ManagedNetwork._SetNetwork(newMirrorNetwork)
+	return network._ManagedNetwork._SetNetwork(newMirrorNetwork)
 }
 
 func (network *_MirrorNetwork) _GetNetwork() []string {

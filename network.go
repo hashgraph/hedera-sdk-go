@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"io/ioutil"
 	"time"
 )
 
@@ -17,12 +16,13 @@ func _NewNetwork() _Network {
 	}
 }
 
-func (network *_Network) SetNetwork(net map[string]AccountID) error {
+func (network *_Network) SetNetwork(net map[string]AccountID) (err error) {
 	newNetwork := make(map[string]_IManagedNode)
 
 	for url, id := range net {
-		node := _NewNode(id, url, network._ManagedNetwork.minBackoff)
-		newNetwork[url] = &node
+		if newNetwork[url], err = _NewNode(id, url, network._ManagedNetwork.minBackoff); err != nil {
+			return err
+		}
 	}
 
 	return network._ManagedNetwork._SetNetwork(newNetwork)
@@ -73,15 +73,29 @@ func (network *_Network) _GetLedgerID() *LedgerID {
 func (network *_Network) _SetLedgerID(id LedgerID) {
 	network._ManagedNetwork._SetLedgerID(id)
 
-	if network._ManagedNetwork.transportSecurity {
-		network.addressBook = _ReadAddressBookResource("addressbook/" + id.String() + ".pb")
+	if network._ManagedNetwork.transportSecurity && network.ledgerID != nil {
+		switch {
+		case id.IsMainnet():
+			network.addressBook = mainnetAddressBook._ToMap()
+		case id.IsTestnet():
+			network.addressBook = testnetAddressBook._ToMap()
+		case id.IsPreviewnet():
+			network.addressBook = previewnetAddressBook._ToMap()
+		}
 
 		if network.addressBook != nil {
-			for _, nod := range network._ManagedNetwork.nodes {
-				switch n := nod.(type) { //nolint
-				case *_Node:
-					temp := network.addressBook[n.accountID]
-					n.addressBook = &temp
+			for _, node := range network._ManagedNetwork.nodes {
+				if node, ok := node.(*_Node); ok {
+					temp := network.addressBook[node.accountID]
+					node.addressBook = &temp
+				}
+			}
+			for _, nodes := range network._ManagedNetwork.network {
+				for _, node := range nodes {
+					if node, ok := node.(*_Node); ok {
+						temp := network.addressBook[node.accountID]
+						node.addressBook = &temp
+					}
 				}
 			}
 		}
@@ -95,29 +109,6 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 	}
 
 	network._SetLedgerID(*ledger)
-}
-
-func _ReadAddressBookResource(ad string) map[AccountID]NodeAddress {
-	f, err := ioutil.ReadFile(ad)
-	if err != nil {
-		panic(err)
-	}
-
-	nodeAB, err := NodeAddressBookFromBytes(f)
-	if err != nil {
-		panic(err)
-	}
-
-	resultMap := make(map[AccountID]NodeAddress)
-	for _, nodeAd := range nodeAB.NodeAddresses {
-		if nodeAd.AccountID == nil {
-			continue
-		}
-
-		resultMap[*nodeAd.AccountID] = nodeAd
-	}
-
-	return resultMap
 }
 
 func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { //nolint
