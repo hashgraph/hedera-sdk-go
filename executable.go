@@ -17,11 +17,14 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var logCtx zerolog.Logger = log.With().Str("module", "hedera-sdk-go").Logger()
+var logCtx zerolog.Logger
 
 func init() {
     zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-    log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+    if os.Getenv("HEDERA_SDK_GO_LOG_PRETTY") != "" {
+        log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+    }
 
     switch os.Getenv("HEDERA_SDK_GO_LOG_LEVEL") {
     case "DEBUG": 
@@ -33,6 +36,8 @@ func init() {
     default:
         zerolog.SetGlobalLevel(zerolog.Disabled)
     }
+
+    logCtx = log.With().Str("module", "hedera-sdk-go").Logger()
 }
 
 const maxAttempts = 10
