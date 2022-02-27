@@ -181,7 +181,9 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -284,4 +286,13 @@ func (query *AccountInfoQuery) GetMinBackoff() time.Duration {
 func (query *AccountInfoQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("AccountInfoQuery:%d", timestamp.UnixNano())
+}
+
+func (query *AccountInfoQuery) SetTransactionID(transactionID TransactionID) *AccountInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

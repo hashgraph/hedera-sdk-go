@@ -270,7 +270,9 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -340,4 +342,13 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 func (query *TransactionRecordQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("TransactionRecordQuery:%d", timestamp.UnixNano())
+}
+
+func (query *TransactionReceiptQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

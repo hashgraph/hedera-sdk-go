@@ -89,7 +89,9 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -217,4 +219,13 @@ func (query *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
 func (query *NetworkVersionInfoQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp.UnixNano())
+}
+
+func (query *NetworkVersionInfoQuery) SetTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

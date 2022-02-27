@@ -210,7 +210,9 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		return ContractFunctionResult{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -336,4 +338,13 @@ func (query *ContractCallQuery) GetMinBackoff() time.Duration {
 func (query *ContractCallQuery) _GetLogID() string {
 	timestamp := query.paymentTransactionID.ValidStart
 	return fmt.Sprintf("ContractCallQuery:%d", timestamp.UnixNano())
+}
+
+func (query *ContractCallQuery) SetTransactionID(transactionID TransactionID) *ContractCallQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }
