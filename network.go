@@ -74,11 +74,12 @@ func (network *_Network) _SetLedgerID(id LedgerID) {
 	network._ManagedNetwork._SetLedgerID(id)
 
 	if network._ManagedNetwork.transportSecurity && network.ledgerID != nil {
-		if id.IsMainnet() {
+		switch {
+		case id.IsMainnet():
 			network.addressBook = mainnetAddressBook._ToMap()
-		} else if id.IsTestnet() {
+		case id.IsTestnet():
 			network.addressBook = testnetAddressBook._ToMap()
-		} else if id.IsPreviewnet() {
+		case id.IsPreviewnet():
 			network.addressBook = previewnetAddressBook._ToMap()
 		}
 

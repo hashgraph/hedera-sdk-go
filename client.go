@@ -486,7 +486,7 @@ func (client *Client) SetMaxNodesPerTransaction(max int) {
 // SetNetwork replaces all _Nodes in the Client with a new set of _Nodes.
 // (e.g. for an Address Book update).
 func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
-	client.mirrorNetwork._SetNetwork(mirrorNetwork)
+	_ = client.mirrorNetwork._SetNetwork(mirrorNetwork)
 }
 
 func (client *Client) GetMirrorNetwork() []string {
