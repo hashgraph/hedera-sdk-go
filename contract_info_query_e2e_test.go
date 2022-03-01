@@ -35,7 +35,7 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -63,6 +63,7 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -107,7 +108,7 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -138,6 +139,7 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -182,7 +184,7 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -213,6 +215,7 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -257,7 +260,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -286,6 +289,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -330,7 +334,7 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -359,6 +363,7 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)

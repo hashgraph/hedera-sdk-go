@@ -48,6 +48,7 @@ func TestIntegrationContractCreateTransactionCanExecute(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -116,6 +117,7 @@ func TestIntegrationContractCreateTransactionNoAdminKey(t *testing.T) {
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -208,7 +210,7 @@ func TestIntegrationContractCreateTransactionNoBytecodeFileID(t *testing.T) {
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetGas(75000).
+		SetGas(100000).
 		Execute(env.Client)
 	require.NoError(t, err)
 
