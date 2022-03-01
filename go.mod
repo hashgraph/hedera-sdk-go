@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ethereum/go-ethereum v1.10.16
-	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220204040204-50a9ffe2cb34
+	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220222084737-119eab707793
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.7.0
