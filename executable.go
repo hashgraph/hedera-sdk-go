@@ -189,7 +189,9 @@ func _Execute(
 			resp.transaction, err = method.transaction(ctx, protoRequest.transaction)
 		}
 
-		cancel()
+		if cancel != nil {
+			cancel()
+		}
 
 		if err != nil {
 			errPersistent = err
