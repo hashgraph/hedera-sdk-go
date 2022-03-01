@@ -51,6 +51,11 @@ func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 	}
 }
 
+func (transaction *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenWipeTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The token for which the account will be wiped. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeTransaction {
@@ -287,6 +292,7 @@ func (transaction *TokenWipeTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

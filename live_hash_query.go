@@ -20,6 +20,11 @@ func NewLiveHashQuery() *LiveHashQuery {
 	}
 }
 
+func (query *LiveHashQuery) SetGrpcDeadline(deadline *time.Duration) *LiveHashQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 func (query *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
 	query.accountID = &accountID
 	return query
@@ -121,6 +126,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		_LiveHashQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -223,6 +229,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		_LiveHashQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

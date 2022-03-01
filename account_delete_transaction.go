@@ -29,6 +29,11 @@ func _AccountDeleteTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+func (transaction *AccountDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	transaction := AccountDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -244,6 +249,7 @@ func (transaction *AccountDeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

@@ -51,6 +51,11 @@ func _TopicCreateTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *TopicCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
 // expirationTime.
 func (transaction *TopicCreateTransaction) SetAdminKey(publicKey Key) *TopicCreateTransaction {
@@ -311,6 +316,7 @@ func (transaction *TopicCreateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

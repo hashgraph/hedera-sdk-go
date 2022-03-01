@@ -44,6 +44,11 @@ func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *servic
 	}
 }
 
+func (transaction *ContractExecuteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractExecuteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetContractID sets the contract instance to call.
 func (transaction *ContractExecuteTransaction) SetContractID(contractID ContractID) *ContractExecuteTransaction {
 	transaction._RequireNotFrozen()
@@ -272,6 +277,7 @@ func (transaction *ContractExecuteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

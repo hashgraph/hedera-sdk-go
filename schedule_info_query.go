@@ -19,6 +19,11 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	}
 }
 
+func (query *ScheduleInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ScheduleInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 func (query *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
 	query.scheduleID = &scheduleID
 	return query
@@ -108,6 +113,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_ScheduleInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -214,6 +220,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		_ScheduleInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

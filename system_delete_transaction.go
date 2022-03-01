@@ -37,6 +37,11 @@ func _SystemDeleteTransactionFromProtobuf(transaction Transaction, pb *services.
 	}
 }
 
+func (transaction *SystemDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *SystemDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *SystemDeleteTransaction) SetExpirationTime(expiration time.Time) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.expirationTime = &expiration
@@ -292,6 +297,7 @@ func (transaction *SystemDeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

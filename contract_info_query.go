@@ -27,6 +27,11 @@ func NewContractInfoQuery() *ContractInfoQuery {
 	}
 }
 
+func (query *ContractInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ContractInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetContractID sets the contract for which information is requested
 func (query *ContractInfoQuery) SetContractID(contractID ContractID) *ContractInfoQuery {
 	query.contractID = &contractID
@@ -117,6 +122,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_ContractInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -223,6 +229,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		_ContractInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

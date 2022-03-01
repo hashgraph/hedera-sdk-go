@@ -38,6 +38,11 @@ func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb 
 	}
 }
 
+func (transaction *TokenFeeScheduleUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFeeScheduleUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The account to be associated with the provided tokens
 func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(tokenID TokenID) *TokenFeeScheduleUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -215,6 +220,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

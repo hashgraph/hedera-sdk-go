@@ -54,6 +54,11 @@ func _TokenAssociateTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *TokenAssociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenAssociateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The account to be associated with the provided tokens
 func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) *TokenAssociateTransaction {
 	transaction._RequireNotFrozen()
@@ -284,6 +289,7 @@ func (transaction *TokenAssociateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

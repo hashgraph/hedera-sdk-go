@@ -41,6 +41,11 @@ func _TopicMessageSubmitTransactionFromProtobuf(transaction Transaction, pb *ser
 	return tx
 }
 
+func (transaction *TopicMessageSubmitTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicMessageSubmitTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *TopicMessageSubmitTransaction) SetTopicID(topicID TopicID) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
 	transaction.topicID = &topicID
@@ -265,6 +270,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 			_TransactionMapStatusError,
 			_TransactionMapResponse,
 			transaction._GetLogID(),
+			transaction.grpcDeadline,
 		)
 
 		if err != nil {

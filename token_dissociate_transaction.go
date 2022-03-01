@@ -37,6 +37,11 @@ func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *servic
 	}
 }
 
+func (transaction *TokenDissociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDissociateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The account to be dissociated with the provided tokens
 func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
 	transaction._RequireNotFrozen()
@@ -268,6 +273,7 @@ func (transaction *TokenDissociateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

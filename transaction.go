@@ -44,6 +44,8 @@ type Transaction struct {
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
 	regenerateTransactionID bool
+
+	grpcDeadline *time.Duration
 }
 
 func _NewTransaction() Transaction {
@@ -344,6 +346,15 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 	}
 
 	return transactionHash, nil
+}
+
+func (transaction *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
+	transaction.grpcDeadline = deadline
+	return transaction
+}
+
+func (transaction *Transaction) GetGrpcDeadline() *time.Duration {
+	return transaction.grpcDeadline
 }
 
 func (transaction *Transaction) _InitFee(client *Client) {

@@ -27,6 +27,11 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 	}
 }
 
+func (query *AccountBalanceQuery) SetGrpcDeadline(deadline *time.Duration) *AccountBalanceQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetAccountID sets the AccountID for which you wish to query the balance.
 //
 // Note: you can only query an Account or Contract but not both -- if a Contract ID or Account ID has already been set,
@@ -158,6 +163,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountBalanceQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -234,6 +240,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		_AccountBalanceQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

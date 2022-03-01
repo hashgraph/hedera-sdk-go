@@ -100,6 +100,7 @@ func _Execute(
 	mapStatusError func(_Request, _Response) error,
 	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
 	logID string,
+	deadline *time.Duration,
 ) (_IntermediateResponse, error) {
 	var maxAttempts int
 	var minBackoff *time.Duration
@@ -174,12 +175,21 @@ func _Execute(
 
 		resp := _Response{}
 
+		ctx := context.TODO()
+		var cancel context.CancelFunc
+		if deadline != nil {
+			grpcDeadline := time.Now().Add(*deadline)
+			ctx, cancel = context.WithDeadline(ctx, grpcDeadline)
+		}
+
 		logCtx.Trace().Str("requestId", logID).Msg("executing gRPC call")
 		if method.query != nil {
-			resp.query, err = method.query(context.TODO(), protoRequest.query)
+			resp.query, err = method.query(ctx, protoRequest.query)
 		} else {
-			resp.transaction, err = method.transaction(context.TODO(), protoRequest.transaction)
+			resp.transaction, err = method.transaction(ctx, protoRequest.transaction)
 		}
+
+		cancel()
 
 		if err != nil {
 			errPersistent = err

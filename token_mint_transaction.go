@@ -39,6 +39,11 @@ func _TokenMintTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 	}
 }
 
+func (transaction *TokenMintTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenMintTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The token for which to mint tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintTransaction {
@@ -258,6 +263,7 @@ func (transaction *TokenMintTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

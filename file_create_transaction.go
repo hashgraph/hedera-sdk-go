@@ -50,6 +50,11 @@ func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
+func (transaction *FileCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
 // create or modify a file, but only one of them needs to sign in order to delete the file. Each of those "keys" may
 // itself be threshold key containing other keys (including other threshold keys). In other words, the behavior is an
@@ -288,6 +293,7 @@ func (transaction *FileCreateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

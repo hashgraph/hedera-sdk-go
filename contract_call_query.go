@@ -35,6 +35,11 @@ func NewContractCallQuery() *ContractCallQuery {
 	}
 }
 
+func (query *ContractCallQuery) SetGrpcDeadline(deadline *time.Duration) *ContractCallQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetContractID sets the contract instance to call
 func (query *ContractCallQuery) SetContractID(contractID ContractID) *ContractCallQuery {
 	query.contractID = &contractID
@@ -165,6 +170,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		_ContractCallQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -267,6 +273,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		_ContractCallQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

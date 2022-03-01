@@ -19,6 +19,11 @@ func NewFileInfoQuery() *FileInfoQuery {
 	}
 }
 
+func (query *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 func (query *FileInfoQuery) SetFileID(fileID FileID) *FileInfoQuery {
 	query.fileID = &fileID
 	return query
@@ -108,6 +113,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_FileInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -213,6 +219,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		_FileInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

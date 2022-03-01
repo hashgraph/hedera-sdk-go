@@ -22,6 +22,11 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	}
 }
 
+func (query *TransactionReceiptQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionReceiptQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 func (query *TransactionReceiptQuery) SetIncludeChildren(includeChildReceipts bool) *TransactionReceiptQuery {
 	query.childReceipts = &includeChildReceipts
 	return query
@@ -132,6 +137,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		_TransactionReceiptQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -299,6 +305,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		_TransactionReceiptQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {

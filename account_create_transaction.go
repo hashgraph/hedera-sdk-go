@@ -57,6 +57,11 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+func (transaction *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
 // must also sign any transfer into the account.
 func (transaction *AccountCreateTransaction) SetKey(key Key) *AccountCreateTransaction {
@@ -331,6 +336,10 @@ func (transaction *AccountCreateTransaction) Execute(
 		)
 	}
 
+	if transaction.grpcDeadline == nil {
+		transaction.grpcDeadline = client.requestTimeout
+	}
+
 	resp, err := _Execute(
 		client,
 		_Request{
@@ -344,6 +353,7 @@ func (transaction *AccountCreateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

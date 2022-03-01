@@ -19,6 +19,11 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 	}
 }
 
+func (query *AccountInfoQuery) SetGrpcDeadline(deadline *time.Duration) *AccountInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetAccountID sets the AccountID for this AccountInfoQuery.
 func (query *AccountInfoQuery) SetAccountID(accountID AccountID) *AccountInfoQuery {
 	query.accountID = &accountID
@@ -125,6 +130,7 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -238,6 +244,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		_AccountInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

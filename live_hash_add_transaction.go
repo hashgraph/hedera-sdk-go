@@ -39,6 +39,11 @@ func _LiveHashAddTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *LiveHashAddTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashAddTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *LiveHashAddTransaction) SetHash(hash []byte) *LiveHashAddTransaction {
 	transaction._RequireNotFrozen()
 	transaction.hash = hash
@@ -250,6 +255,7 @@ func (transaction *LiveHashAddTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

@@ -40,6 +40,11 @@ func _TokenFreezeTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *TokenFreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFreezeTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The token for which this account will be frozen. If token does not exist, transaction results
 // in INVALID_TOKEN_ID
 func (transaction *TokenFreezeTransaction) SetTokenID(tokenID TokenID) *TokenFreezeTransaction {
@@ -244,6 +249,7 @@ func (transaction *TokenFreezeTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

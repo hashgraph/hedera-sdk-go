@@ -31,6 +31,11 @@ func _ScheduleSignTransactionFromProtobuf(transaction Transaction, pb *services.
 	}
 }
 
+func (transaction *ScheduleSignTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleSignTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *ScheduleSignTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleSignTransaction {
 	transaction._RequireNotFrozen()
 	transaction.scheduleID = &scheduleID
@@ -181,6 +186,7 @@ func (transaction *ScheduleSignTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

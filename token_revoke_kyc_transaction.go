@@ -39,6 +39,11 @@ func _TokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *TokenRevokeKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenRevokeKycTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *TokenRevokeKycTransaction {
 	transaction._RequireNotFrozen()
@@ -242,6 +247,7 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

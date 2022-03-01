@@ -26,6 +26,11 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 	}
 }
 
+func (query *AccountRecordsQuery) SetGrpcDeadline(deadline *time.Duration) *AccountRecordsQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetAccountID sets the account ID for which the records should be retrieved.
 func (query *AccountRecordsQuery) SetAccountID(accountID AccountID) *AccountRecordsQuery {
 	query.accountID = &accountID
@@ -116,6 +121,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountRecordsQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -220,6 +226,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		_AccountRecordsQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

@@ -26,8 +26,9 @@ type Query struct {
 
 	isPaymentRequired bool
 
-	maxBackoff *time.Duration
-	minBackoff *time.Duration
+	maxBackoff   *time.Duration
+	minBackoff   *time.Duration
+	grpcDeadline *time.Duration
 }
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
@@ -44,6 +45,15 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		maxQueryPayment:      NewHbar(0),
 		queryPayment:         NewHbar(0),
 	}
+}
+
+func (query *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
+	query.grpcDeadline = deadline
+	return query
+}
+
+func (query *Query) GetGrpcDeadline() *time.Duration {
+	return query.grpcDeadline
 }
 
 func (query *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {

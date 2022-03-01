@@ -39,6 +39,11 @@ func _TokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+func (transaction *TokenGrantKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenGrantKycTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenGrantKycTransaction {
 	transaction._RequireNotFrozen()
@@ -242,6 +247,7 @@ func (transaction *TokenGrantKycTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

@@ -32,6 +32,11 @@ func _TopicDeleteTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *TopicDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetTopicID sets the topic IDentifier.
 func (transaction *TopicDeleteTransaction) SetTopicID(topicID TopicID) *TopicDeleteTransaction {
 	transaction._RequireNotFrozen()
@@ -206,6 +211,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

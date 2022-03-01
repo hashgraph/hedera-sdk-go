@@ -22,6 +22,11 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	}
 }
 
+func (query *ContractBytecodeQuery) SetGrpcDeadline(deadline *time.Duration) *ContractBytecodeQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetContractID sets the contract for which the bytecode is requested
 func (query *ContractBytecodeQuery) SetContractID(contractID ContractID) *ContractBytecodeQuery {
 	query.contractID = &contractID
@@ -112,6 +117,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		_ContractBytecodeQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -214,6 +220,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		_ContractBytecodeQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

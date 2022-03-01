@@ -21,6 +21,11 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	}
 }
 
+func (query *TransactionRecordQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionRecordQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 func (query *TransactionRecordQuery) SetIncludeChildren(includeChildRecords bool) *TransactionRecordQuery {
 	query.includeChildRecords = &includeChildRecords
 	return query
@@ -116,9 +121,21 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 		Query: pb,
 	}
 
-	resp, err := _Execute(client, _Request{
-		query: &query.Query,
-	}, _TransactionRecordQueryShouldRetry, _CostQueryMakeRequest, _QueryAdvanceRequest, _QueryGetNodeAccountID, _TransactionRecordQueryGetMethod, _TransactionRecordQueryMapStatusError, _QueryMapResponse, "")
+	resp, err := _Execute(
+		client,
+		_Request{
+			query: &query.Query,
+		},
+		_TransactionRecordQueryShouldRetry,
+		_CostQueryMakeRequest,
+		_QueryAdvanceRequest,
+		_QueryGetNodeAccountID,
+		_TransactionRecordQueryGetMethod,
+		_TransactionRecordQueryMapStatusError,
+		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
+	)
 
 	if err != nil {
 		return Hbar{}, err
@@ -327,6 +344,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		_TransactionRecordQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

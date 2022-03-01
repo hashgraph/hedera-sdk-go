@@ -20,6 +20,11 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	}
 }
 
+func (query *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenNftInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 func (query *TokenNftInfoQuery) SetNftID(nftID NftID) *TokenNftInfoQuery {
 	query.nftID = &nftID
 	return query
@@ -166,6 +171,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_TokenNftInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 	if err != nil {
 		return Hbar{}, err
@@ -273,6 +279,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		_TokenNftInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

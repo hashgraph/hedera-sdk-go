@@ -18,6 +18,11 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	}
 }
 
+func (query *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *NetworkVersionInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -44,6 +49,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_NetworkVersionInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -149,6 +155,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		_NetworkVersionInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

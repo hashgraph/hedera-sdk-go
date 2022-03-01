@@ -47,6 +47,11 @@ func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *ContractCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *ContractCreateTransaction) SetBytecodeFileID(byteCodeFileID FileID) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.byteCodeFileID = &byteCodeFileID
@@ -371,6 +376,7 @@ func (transaction *ContractCreateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

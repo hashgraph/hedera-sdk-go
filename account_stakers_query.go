@@ -26,6 +26,11 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 	}
 }
 
+func (query *AccountStakersQuery) SetGrpcDeadline(deadline *time.Duration) *AccountStakersQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetAccountID sets the Account ID for which the stakers should be retrieved
 func (query *AccountStakersQuery) SetAccountID(accountID AccountID) *AccountStakersQuery {
 	query.accountID = &accountID
@@ -116,6 +121,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountStakersQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -218,6 +224,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		_AccountStakersQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

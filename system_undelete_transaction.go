@@ -31,6 +31,11 @@ func _SystemUndeleteTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *SystemUndeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *SystemUndeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *SystemUndeleteTransaction) SetContractID(contractID ContractID) *SystemUndeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.contractID = &contractID
@@ -246,6 +251,7 @@ func (transaction *SystemUndeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

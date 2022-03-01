@@ -106,6 +106,11 @@ func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *TokenCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The publicly visible name of the token, specified as a string of only ASCII characters
 func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
@@ -629,6 +634,7 @@ func (transaction *TokenCreateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

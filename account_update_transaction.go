@@ -79,6 +79,11 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+func (transaction *AccountUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // Sets the new key.
 func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -422,6 +427,7 @@ func (transaction *AccountUpdateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

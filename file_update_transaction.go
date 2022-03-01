@@ -41,6 +41,11 @@ func _FileUpdateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
+func (transaction *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.fileID = &fileID
@@ -298,6 +303,7 @@ func (transaction *FileUpdateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

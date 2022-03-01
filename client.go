@@ -29,6 +29,8 @@ type Client struct {
 
 	maxBackoff time.Duration
 	minBackoff time.Duration
+
+	requestTimeout *time.Duration
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -570,6 +572,14 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, 
 	}
 
 	return client
+}
+
+func (client *Client) SetRequestTimeout(timeout *time.Duration) {
+	client.requestTimeout = timeout
+}
+
+func (client *Client) GetRequestTimeout() *time.Duration {
+	return client.requestTimeout
 }
 
 // GetOperatorAccountID returns the ID for the _Operator

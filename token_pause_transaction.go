@@ -28,6 +28,11 @@ func _TokenPauseTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
+func (transaction *TokenPauseTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenPauseTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *TokenPauseTransaction) SetTokenID(tokenID TokenID) *TokenPauseTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
@@ -200,6 +205,7 @@ func (transaction *TokenPauseTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

@@ -68,6 +68,11 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *ContractUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
 func (transaction *ContractUpdateTransaction) SetContractID(contractID ContractID) *ContractUpdateTransaction {
 	transaction.contractID = &contractID
@@ -415,6 +420,7 @@ func (transaction *ContractUpdateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

@@ -44,6 +44,11 @@ func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
+func (transaction *FileAppendTransaction) SetGrpcDeadline(deadline *time.Duration) *FileAppendTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetFileID sets the FileID of the file to which the bytes are appended to.
 func (transaction *FileAppendTransaction) SetFileID(fileID FileID) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
@@ -280,6 +285,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 			_TransactionMapStatusError,
 			_TransactionMapResponse,
 			transaction._GetLogID(),
+			transaction.grpcDeadline,
 		)
 
 		if err != nil {

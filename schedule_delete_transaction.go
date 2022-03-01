@@ -29,6 +29,11 @@ func _ScheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *ScheduleDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.scheduleID = &scheduleID
@@ -202,6 +207,7 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

@@ -29,6 +29,11 @@ func _FileDeleteTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
+func (transaction *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *FileDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.fileID = &fileID
@@ -201,6 +206,7 @@ func (transaction *FileDeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

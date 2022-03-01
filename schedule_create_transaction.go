@@ -38,6 +38,11 @@ func _ScheduleCreateTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *ScheduleCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *ScheduleCreateTransaction) SetPayerAccountID(payerAccountID AccountID) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.payerAccountID = &payerAccountID
@@ -243,6 +248,7 @@ func (transaction *ScheduleCreateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

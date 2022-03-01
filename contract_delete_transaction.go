@@ -33,6 +33,11 @@ func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+func (transaction *ContractDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // Sets the contract ID which should be deleted.
 func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
 	transaction._RequireNotFrozen()
@@ -278,6 +283,7 @@ func (transaction *ContractDeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

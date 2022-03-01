@@ -22,6 +22,11 @@ func NewFileContentsQuery() *FileContentsQuery {
 	}
 }
 
+func (query *FileContentsQuery) SetGrpcDeadline(deadline *time.Duration) *FileContentsQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetFileID sets the FileID of the file whose contents are requested.
 func (query *FileContentsQuery) SetFileID(fileID FileID) *FileContentsQuery {
 	query.fileID = &fileID
@@ -112,6 +117,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		_FileContentsQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -214,6 +220,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		_FileContentsQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

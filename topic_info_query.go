@@ -21,6 +21,11 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 	}
 }
 
+func (query *TopicInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TopicInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
+}
+
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
 func (query *TopicInfoQuery) SetTopicID(topicID TopicID) *TopicInfoQuery {
 	query.topicID = &topicID
@@ -111,6 +116,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_TopicInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -217,6 +223,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		_TopicInfoQueryMapStatusError,
 		_QueryMapResponse,
 		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {

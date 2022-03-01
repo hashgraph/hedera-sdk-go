@@ -32,6 +32,11 @@ func _TokenDeleteTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *TokenDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The Token to be deleted
 func (transaction *TokenDeleteTransaction) SetTokenID(tokenID TokenID) *TokenDeleteTransaction {
 	transaction._RequireNotFrozen()
@@ -205,6 +210,7 @@ func (transaction *TokenDeleteTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

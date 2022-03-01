@@ -39,6 +39,11 @@ func _TokenBurnTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 	}
 }
 
+func (transaction *TokenBurnTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenBurnTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The token for which to burn tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenBurnTransaction) SetTokenID(tokenID TokenID) *TokenBurnTransaction {
@@ -272,6 +277,7 @@ func (transaction *TokenBurnTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

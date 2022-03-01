@@ -59,6 +59,11 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 	}
 }
 
+func (transaction *TransferTransaction) SetGrpcDeadline(deadline *time.Duration) *TransferTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 func (transaction *TransferTransaction) SetTokenTransferApproval(tokenID TokenID, accountID AccountID, approval bool) *TransferTransaction { //nolint
 	for token, tokenTransfer := range transaction.tokenTransfers {
 		if token.Compare(tokenID) == 0 {
@@ -553,6 +558,7 @@ func (transaction *TransferTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

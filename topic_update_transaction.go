@@ -52,6 +52,11 @@ func _TopicUpdateTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *TopicUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetTopicID sets the topic to be updated.
 func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -387,6 +392,7 @@ func (transaction *TopicUpdateTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {

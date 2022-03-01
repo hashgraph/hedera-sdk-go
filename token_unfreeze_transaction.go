@@ -40,6 +40,11 @@ func _TokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+func (transaction *TokenUnfreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUnfreezeTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // The token for which this account will be unfrozen. If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenUnfreezeTransaction) SetTokenID(tokenID TokenID) *TokenUnfreezeTransaction {
 	transaction._RequireNotFrozen()
@@ -243,6 +248,7 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
 		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
