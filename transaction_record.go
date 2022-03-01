@@ -56,13 +56,15 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 	if pb == nil {
 		return TransactionRecord{}
 	}
-	var accountTransfers = make([]Transfer, len(pb.TransferList.AccountAmounts))
+	var accountTransfers = make([]Transfer, 0)
 	var tokenTransfers = make(map[TokenID][]TokenTransfer)
 	var nftTransfers = make(map[TokenID][]TokenNftTransfer)
 	var expectedDecimals = make(map[TokenID]uint32)
 
-	for i, element := range pb.TransferList.AccountAmounts {
-		accountTransfers[i] = _TransferFromProtobuf(element)
+	if pb.TransferList != nil {
+		for _, element := range pb.TransferList.AccountAmounts {
+			accountTransfers = append(accountTransfers, _TransferFromProtobuf(element))
+		}
 	}
 
 	for _, tokenTransfer := range pb.TokenTransferLists {

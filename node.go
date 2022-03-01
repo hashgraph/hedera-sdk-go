@@ -22,7 +22,7 @@ type _Node struct {
 	*_ManagedNode
 	accountID         AccountID
 	channel           *_Channel
-	addressBook       *_NodeAddress
+	addressBook       *NodeAddress
 	verifyCertificate bool
 }
 
@@ -146,7 +146,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 
 					certHash = digest.Sum(nil)
 
-					if string(node.addressBook.certHash) == hex.EncodeToString(certHash) {
+					if string(node.addressBook.CertHash) == hex.EncodeToString(certHash) {
 						return nil
 					}
 				}

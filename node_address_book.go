@@ -5,26 +5,26 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-type _NodeAddressBook struct {
-	nodeAddresses []_NodeAddress
+type NodeAddressBook struct {
+	NodeAddresses []NodeAddress
 }
 
-func _NodeAddressBookFromProtobuf(book *services.NodeAddressBook) _NodeAddressBook {
-	addresses := make([]_NodeAddress, 0)
+func _NodeAddressBookFromProtobuf(book *services.NodeAddressBook) NodeAddressBook {
+	addresses := make([]NodeAddress, 0)
 
 	for _, k := range book.NodeAddress {
 		addresses = append(addresses, _NodeAddressFromProtobuf(k))
 	}
 
-	return _NodeAddressBook{
-		nodeAddresses: addresses,
+	return NodeAddressBook{
+		NodeAddresses: addresses,
 	}
 }
 
-func (book _NodeAddressBook) _ToProtobuf() *services.NodeAddressBook {
+func (book NodeAddressBook) _ToProtobuf() *services.NodeAddressBook {
 	addresses := make([]*services.NodeAddress, 0)
 
-	for _, k := range book.nodeAddresses {
+	for _, k := range book.NodeAddresses {
 		addresses = append(addresses, k._ToProtobuf())
 	}
 
@@ -33,7 +33,7 @@ func (book _NodeAddressBook) _ToProtobuf() *services.NodeAddressBook {
 	}
 }
 
-func (book _NodeAddressBook) ToBytes() []byte {
+func (book NodeAddressBook) ToBytes() []byte {
 	data, err := protobuf.Marshal(book._ToProtobuf())
 	if err != nil {
 		return make([]byte, 0)
@@ -42,14 +42,14 @@ func (book _NodeAddressBook) ToBytes() []byte {
 	return data
 }
 
-func _NodeAddressBookFromBytes(data []byte) (_NodeAddressBook, error) {
+func NodeAddressBookFromBytes(data []byte) (NodeAddressBook, error) {
 	if data == nil {
-		return _NodeAddressBook{}, errByteArrayNull
+		return NodeAddressBook{}, errByteArrayNull
 	}
 	pb := services.NodeAddressBook{}
 	err := protobuf.Unmarshal(data, &pb)
 	if err != nil {
-		return _NodeAddressBook{}, err
+		return NodeAddressBook{}, err
 	}
 
 	derivedBytes := _NodeAddressBookFromProtobuf(&pb)

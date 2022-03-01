@@ -84,7 +84,16 @@ func TestUnitTransferTransactionOrdered(t *testing.T) {
 	transfer.AddHbarTransfer(accountID, NewHbar(1))
 	transfer.AddHbarTransfer(AccountID{Account: 1}, NewHbar(1))
 
-	require.Equal(t, transfer.hbarTransfers[accountID].As("hbar"), NewHbar(expectedHbar).As("hbar"))
+	found := false
+	for _, s := range transfer.hbarTransfers {
+		if s.accountID.Compare(accountID) == 0 {
+			if s.Amount.As("hbar") == expectedHbar {
+				found = true
+			}
+		}
+	}
+
+	require.True(t, found)
 
 	transferTransaction, err := NewTransferTransaction().
 		AddNftTransfer(tokenID1.Nft(serialNum1), accountID1, accountID2).

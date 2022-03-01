@@ -87,7 +87,7 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	network = client.GetNetwork()
 	networkTLSMirror := client.GetMirrorNetwork()
 	assert.Equal(t, network["2.testnet.hedera.com:50212"], AccountID{0, 0, 5, nil, nil})
-	assert.Equal(t, networkTLSMirror[0], "hcs.testnet.mirrornode.hedera.com:433")
+	assert.Equal(t, networkTLSMirror[0], "hcs.testnet.mirrornode.hedera.com:443")
 
 	err = client.Close()
 	require.NoError(t, err)
@@ -131,7 +131,7 @@ func TestUnitClientSetMirrorNetwork(t *testing.T) {
 
 	client.SetTransportSecurity(true)
 	mirrorNetwork = client.GetMirrorNetwork()
-	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:433", mirrorNetwork[0])
+	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:443", mirrorNetwork[0])
 
 	err := client.Close()
 	require.NoError(t, err)

@@ -108,6 +108,14 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		infos[i] = _ContractLogInfoFromProtobuf(info)
 	}
 
+	createdContractIDs := make([]ContractID, 0)
+	for _, id := range pb.CreatedContractIDs { // nolint
+		temp := _ContractIDFromProtobuf(id)
+		if temp != nil {
+			createdContractIDs = append(createdContractIDs, *temp)
+		}
+	}
+
 	csc := make([]ContractStateChange, 0)
 	for _, sc := range pb.StateChanges {
 		csc = append(csc, _ContractStateChangeFromProtobuf(sc))
@@ -132,6 +140,7 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		LogInfo:              infos,
 		ContractStateChanges: csc,
 		EvmAddress:           evm,
+		CreatedContractIDs:   createdContractIDs,
 	}
 
 	if pb.ContractID != nil {
