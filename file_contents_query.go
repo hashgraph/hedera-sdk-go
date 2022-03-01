@@ -286,7 +286,7 @@ func (query *FileContentsQuery) _GetLogID() string {
 	return fmt.Sprintf("FileContentsQuery:%d", timestamp.UnixNano())
 }
 
-func (query *FileContentsQuery) SetTransactionID(transactionID TransactionID) *FileContentsQuery {
+func (query *FileContentsQuery) SetPaymentTransactionID(transactionID TransactionID) *FileContentsQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

@@ -290,7 +290,7 @@ func (query *ScheduleInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("ScheduleInfoQuery:%d", timestamp.UnixNano())
 }
 
-func (query *ScheduleInfoQuery) SetTransactionID(transactionID TransactionID) *ScheduleInfoQuery {
+func (query *ScheduleInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *ScheduleInfoQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

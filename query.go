@@ -199,11 +199,11 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 	}, nil
 }
 
-func (query *Query) GetTransactionID() TransactionID {
+func (query *Query) GetPaymentTransactionID() TransactionID {
 	return query.paymentTransactionID
 }
 
-func (query *Query) SetTransactionID(transactionID TransactionID) *Query {
+func (query *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

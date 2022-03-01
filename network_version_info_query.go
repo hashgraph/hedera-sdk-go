@@ -221,7 +221,7 @@ func (query *NetworkVersionInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp.UnixNano())
 }
 
-func (query *NetworkVersionInfoQuery) SetTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
+func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

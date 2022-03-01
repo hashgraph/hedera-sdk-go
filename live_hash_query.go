@@ -295,7 +295,7 @@ func (query *LiveHashQuery) _GetLogID() string {
 	return fmt.Sprintf("LiveHashQuery:%d", timestamp.UnixNano())
 }
 
-func (query *LiveHashQuery) SetTransactionID(transactionID TransactionID) *LiveHashQuery {
+func (query *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID) *LiveHashQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

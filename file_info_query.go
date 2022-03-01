@@ -294,7 +294,7 @@ func (query *FileInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("FileInfoQuery:%d", timestamp.UnixNano())
 }
 
-func (query *FileInfoQuery) SetTransactionID(transactionID TransactionID) *FileInfoQuery {
+func (query *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *FileInfoQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

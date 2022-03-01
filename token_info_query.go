@@ -291,7 +291,7 @@ func (query *TokenInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("TokenInfoQuery:%d", timestamp.UnixNano())
 }
 
-func (query *TokenInfoQuery) SetTransactionID(transactionID TransactionID) *TokenInfoQuery {
+func (query *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

@@ -344,7 +344,7 @@ func (query *TransactionRecordQuery) _GetLogID() string {
 	return fmt.Sprintf("TransactionRecordQuery:%d", timestamp.UnixNano())
 }
 
-func (query *TransactionReceiptQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
+func (query *TransactionRecordQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionRecordQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

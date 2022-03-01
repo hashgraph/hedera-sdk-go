@@ -137,7 +137,7 @@ func TestUnitMockContractInfoQueryGetTransactionID(t *testing.T) {
 	result, err := NewContractInfoQuery().
 		SetContractID(ContractID{Contract: 3}).
 		SetMaxQueryPayment(NewHbar(1)).
-		SetTransactionID(transactionID).
+		SetPaymentTransactionID(transactionID).
 		SetQueryPayment(HbarFromTinybar(25)).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		Execute(client)

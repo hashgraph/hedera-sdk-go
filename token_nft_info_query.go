@@ -346,7 +346,7 @@ func (query *TokenNftInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("TokenNftInfoQuery:%d", timestamp.UnixNano())
 }
 
-func (query *TokenNftInfoQuery) SetTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
+func (query *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
 	if query.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}

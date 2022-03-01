@@ -315,3 +315,12 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 func (query *TransactionReceiptQuery) _GetLogID() string {
 	return fmt.Sprintf("TransactionReceiptQuery:%d", query.timestamp.UnixNano())
 }
+
+func (query *TransactionReceiptQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
+}

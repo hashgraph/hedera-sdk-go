@@ -1,9 +1,9 @@
 package hedera
 
 import (
-    "os"
 	"context"
 	"math"
+	"os"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -19,25 +19,26 @@ import (
 
 var logCtx zerolog.Logger
 
-func init() {
-    zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+// A required init function to setup logging at the correct level
+func init() { // nolint
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-    if os.Getenv("HEDERA_SDK_GO_LOG_PRETTY") != "" {
-        log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-    }
+	if os.Getenv("HEDERA_SDK_GO_LOG_PRETTY") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
-    switch os.Getenv("HEDERA_SDK_GO_LOG_LEVEL") {
-    case "DEBUG": 
-        zerolog.SetGlobalLevel(zerolog.DebugLevel)
-    case "TRACE": 
-        zerolog.SetGlobalLevel(zerolog.TraceLevel)
-    case "INFO": 
-        zerolog.SetGlobalLevel(zerolog.InfoLevel)
-    default:
-        zerolog.SetGlobalLevel(zerolog.Disabled)
-    }
+	switch os.Getenv("HEDERA_SDK_GO_LOG_LEVEL") {
+	case "DEBUG":
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case "TRACE":
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	case "INFO":
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	default:
+		zerolog.SetGlobalLevel(zerolog.Disabled)
+	}
 
-    logCtx = log.With().Str("module", "hedera-sdk-go").Logger()
+	logCtx = log.With().Str("module", "hedera-sdk-go").Logger()
 }
 
 const maxAttempts = 10
