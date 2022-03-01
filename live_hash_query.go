@@ -298,8 +298,11 @@ func (query *LiveHashQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *LiveHashQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("LiveHashQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("LiveHashQuery:%d", timestamp)
 }
 
 func (query *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID) *LiveHashQuery {

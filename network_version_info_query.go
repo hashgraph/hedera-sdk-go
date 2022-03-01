@@ -224,8 +224,11 @@ func (query *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *NetworkVersionInfoQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp)
 }
 
 func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {

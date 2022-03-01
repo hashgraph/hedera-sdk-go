@@ -291,8 +291,11 @@ func (query *AccountInfoQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *AccountInfoQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("AccountInfoQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("AccountInfoQuery:%d", timestamp)
 }
 
 func (query *AccountInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountInfoQuery {

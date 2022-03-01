@@ -349,8 +349,11 @@ func (query *TokenNftInfoQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *TokenNftInfoQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("TokenNftInfoQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("TokenNftInfoQuery:%d", timestamp)
 }
 
 func (query *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenNftInfoQuery {

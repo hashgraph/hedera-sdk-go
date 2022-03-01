@@ -294,8 +294,11 @@ func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *TokenInfoQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("TokenInfoQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("TokenInfoQuery:%d", timestamp)
 }
 
 func (query *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {

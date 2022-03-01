@@ -311,8 +311,11 @@ func (query *AccountStakersQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *AccountStakersQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("AccountStakersQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("AccountStakersQuery:%d", timestamp)
 }
 
 func (query *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {

@@ -358,8 +358,11 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 }
 
 func (query *TransactionRecordQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("TransactionRecordQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("TransactionRecordQuery:%d", timestamp)
 }
 
 func (query *TransactionRecordQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionRecordQuery {

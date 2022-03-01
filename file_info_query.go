@@ -297,8 +297,11 @@ func (query *FileInfoQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *FileInfoQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("FileInfoQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("FileInfoQuery:%d", timestamp)
 }
 
 func (query *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *FileInfoQuery {

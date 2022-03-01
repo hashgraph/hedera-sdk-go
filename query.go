@@ -29,6 +29,7 @@ type Query struct {
 	maxBackoff   *time.Duration
 	minBackoff   *time.Duration
 	grpcDeadline *time.Duration
+	timestamp    time.Time
 }
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
@@ -44,6 +45,7 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		isPaymentRequired:    isPaymentRequired,
 		maxQueryPayment:      NewHbar(0),
 		queryPayment:         NewHbar(0),
+		timestamp:            time.Now(),
 	}
 }
 

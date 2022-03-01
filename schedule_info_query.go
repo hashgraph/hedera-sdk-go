@@ -293,8 +293,11 @@ func (query *ScheduleInfoQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *ScheduleInfoQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("ScheduleInfoQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("ScheduleInfoQuery:%d", timestamp)
 }
 
 func (query *ScheduleInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *ScheduleInfoQuery {

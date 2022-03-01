@@ -320,7 +320,8 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 }
 
 func (query *TransactionReceiptQuery) _GetLogID() string {
-	return fmt.Sprintf("TransactionReceiptQuery:%d", query.timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	return fmt.Sprintf("TransactionReceiptQuery:%d", timestamp)
 }
 
 func (query *TransactionReceiptQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionReceiptQuery {

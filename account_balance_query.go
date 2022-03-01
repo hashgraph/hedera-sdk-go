@@ -310,7 +310,8 @@ func (query *AccountBalanceQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *AccountBalanceQuery) _GetLogID() string {
-	return fmt.Sprintf("AccountBalanceQuery:%d", query.timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	return fmt.Sprintf("AccountBalanceQuery:%d", timestamp)
 }
 
 func (query *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {

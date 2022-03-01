@@ -290,8 +290,11 @@ func (query *ContractBytecodeQuery) GetMinBackoff() time.Duration {
 }
 
 func (query *ContractBytecodeQuery) _GetLogID() string {
-	timestamp := query.paymentTransactionID.ValidStart
-	return fmt.Sprintf("ContractBytecodeQuery:%d", timestamp.UnixNano())
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("ContractBytecodeQuery:%d", timestamp)
 }
 
 func (query *ContractBytecodeQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractBytecodeQuery {
