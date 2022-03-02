@@ -24,10 +24,21 @@ available in the [hashgraph/hedera-protobuf] repository.
 $ go get github.com/hashgraph/hedera-sdk-go/v2
 ```
 
+#### Note
+
+google.golang.org/protobuf v1.27.1 Breaks the SDK as it contains multiple protobuf files
+with the same name. Make sure to use v1.26.1 instead. The follow snippet can be used in 
+`go.mod` to force the project to use v1.26.1
+
+```
+replace (
+	google.golang.org/protobuf v1.27.1 => google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85
+)
+```
+
 ## Running Integration Tests
 ```bash
-$ env CONFIG_FILE="<your_config_file>" go test -v Integration -timeout 9999s
-```
+$ env CONFIG_FILE="<your_config_file>" go test -v Integration -timeout 9999s ```
 
 or
 
