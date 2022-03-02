@@ -18,9 +18,9 @@ import (
 func TestUnitTokenAssociateTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
-	tokenID, err := TokenIDFromString("0.0.123-rmkyk")
+	tokenID, err := TokenIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	tokenAssociate := NewTokenAssociateTransaction().
@@ -46,7 +46,7 @@ func TestUnitTokenAssociateTransactionValidateWrong(t *testing.T) {
 	err = tokenAssociate._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 

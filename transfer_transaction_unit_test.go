@@ -28,7 +28,7 @@ func TestUnitTransferTransactionSetTokenTransferWithDecimals(t *testing.T) {
 func TestUnitTransferTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	transfer := NewTransferTransaction().
@@ -50,7 +50,7 @@ func TestUnitTransferTransactionValidateWrong(t *testing.T) {
 	err = transfer._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
