@@ -12,9 +12,6 @@ import (
 
 	"github.com/hashgraph/hedera-protobufs-go/mirror"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
 
