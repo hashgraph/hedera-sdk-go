@@ -188,7 +188,7 @@ var previewnetNodes = map[string]AccountID{
 	"20.150.136.89:50211":           {Account: 9},
 }
 
-var mainnetMirror = []string{"hcs.mainnet.mirrornode.hedera.com:5600"}
+var mainnetMirror = []string{"mainnet-public.mirrornode.hedera.com:443"}
 var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
