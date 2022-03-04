@@ -44,6 +44,10 @@ func (result ContractFunctionResult) GetInt8(index uint64) int8 {
 	return int8(result.ContractCallResult[index*32+31])
 }
 
+func (result ContractFunctionResult) GetInt24(index uint64) []byte {
+	return result.ContractCallResult[index*32 : index*32+24]
+}
+
 // GetInt32 gets a _Solidity int32 from the result at the given index
 func (result ContractFunctionResult) GetInt32(index uint64) int32 {
 	return int32(binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32]))
@@ -62,6 +66,10 @@ func (result ContractFunctionResult) GetInt256(index uint64) []byte {
 // GetUint8 gets a _Solidity uint8 from the result at the given index
 func (result ContractFunctionResult) GetUint8(index uint64) uint8 {
 	return result.ContractCallResult[index*32+31]
+}
+
+func (result ContractFunctionResult) GetUint24(index uint64) []byte {
+	return result.ContractCallResult[index*32 : index*32+24]
 }
 
 // GetUint32 gets a _Solidity uint32 from the result at the given index

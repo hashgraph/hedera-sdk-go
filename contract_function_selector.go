@@ -21,10 +21,12 @@ const (
 	aBool     argument = "bool"
 	aString   argument = "string"
 	aInt8     argument = "int8"
+	aInt24    argument = "int24"
 	aInt32    argument = "int32"
 	aInt64    argument = "int64"
 	aInt256   argument = "int256"
 	aUint8    argument = "uint8"
+	aUint24   argument = "uint24"
 	aUint32   argument = "uint32"
 	aUint64   argument = "uint64"
 	aUint256  argument = "uint256"
@@ -99,6 +101,13 @@ func (selector *ContractFunctionSelector) AddInt8() *ContractFunctionSelector {
 	})
 }
 
+func (selector *ContractFunctionSelector) AddInt24() *ContractFunctionSelector {
+	return selector._AddParam(_Solidity{
+		ty:    aInt24,
+		array: false,
+	})
+}
+
 func (selector *ContractFunctionSelector) AddInt32() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aInt32,
@@ -123,6 +132,13 @@ func (selector *ContractFunctionSelector) AddInt256() *ContractFunctionSelector 
 func (selector *ContractFunctionSelector) AddUint8() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint8,
+		array: false,
+	})
+}
+
+func (selector *ContractFunctionSelector) AddUint24() *ContractFunctionSelector {
+	return selector._AddParam(_Solidity{
+		ty:    aUint24,
 		array: false,
 	})
 }
