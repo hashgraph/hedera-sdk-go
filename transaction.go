@@ -84,6 +84,15 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		transactionSigners:   make([]TransactionSigner, 0),
 	}
 
+	comp, err := _TransactionCompare(&list)
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	if !comp {
+		return Transaction{}, errors.New("failed to validate transaction bodies")
+	}
+
 	var first *services.TransactionBody = nil
 
 	for i, transaction := range list.TransactionList {
@@ -253,6 +262,60 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
+}
+
+func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
+	signed := make([]*services.SignedTransaction, 0)
+	var err error
+	for _, s := range list.TransactionList {
+		temp := services.SignedTransaction{}
+		err = protobuf.Unmarshal(s.SignedTransactionBytes, &temp)
+		if err != nil {
+			return false, err
+		}
+		signed = append(signed, &temp)
+	}
+	body := make([]*services.TransactionBody, 0)
+	for _, s := range signed {
+		temp := services.TransactionBody{}
+		err = protobuf.Unmarshal(s.BodyBytes, &temp)
+		if err != nil {
+			return false, err
+		}
+		body = append(body, &temp)
+	}
+
+	tx := services.TransactionBody{
+		TransactionFee:           body[0].TransactionFee,
+		TransactionValidDuration: body[0].TransactionValidDuration,
+		Memo:                     body[0].Memo,
+		Data:                     body[0].Data,
+	}
+
+	txBytes, err := protobuf.Marshal(&tx)
+	if err != nil {
+		return false, err
+	}
+
+	for i := 1; i < len(body); i++ {
+		tx2 := services.TransactionBody{
+			TransactionFee:           body[i].TransactionFee,
+			TransactionValidDuration: body[i].TransactionValidDuration,
+			Memo:                     body[i].Memo,
+			Data:                     body[i].Data,
+		}
+
+		txBytes2, err := protobuf.Marshal(&tx2)
+		if err != nil {
+			return false, err
+		}
+
+		if !bytes.Equal(txBytes, txBytes2) {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
