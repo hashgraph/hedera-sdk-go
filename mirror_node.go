@@ -83,6 +83,10 @@ func (node *_MirrorNode) _GetAddress() string {
 	return node._ManagedNode._GetAddress()
 }
 
+func (node *_MirrorNode) _GetReadmitTime() int64 {
+	return node._ManagedNode._GetReadmitTime()
+}
+
 func (node *_MirrorNode) _GetConsensusServiceClient() (*mirror.ConsensusServiceClient, error) {
 	if node.consensusServiceClient != nil {
 		return node.consensusServiceClient, nil
@@ -155,13 +159,13 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 
 func (node *_MirrorNode) _ToSecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:            node.address._ToSecure(),
-		currentBackoff:     node.currentBackoff,
-		lastUsed:           node.lastUsed,
-		backoffUntil:       node.backoffUntil,
-		useCount:           node.useCount,
-		minBackoff:         node.minBackoff,
-		badGrpcStatusCount: node.badGrpcStatusCount,
+		address:        node.address._ToSecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		readmitTime:    node.readmitTime,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
 	}
 
 	return &_MirrorNode{
@@ -173,13 +177,13 @@ func (node *_MirrorNode) _ToSecure() _IManagedNode {
 
 func (node *_MirrorNode) _ToInsecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:            node.address._ToInsecure(),
-		currentBackoff:     node.currentBackoff,
-		lastUsed:           node.lastUsed,
-		backoffUntil:       node.backoffUntil,
-		useCount:           node.useCount,
-		minBackoff:         node.minBackoff,
-		badGrpcStatusCount: node.badGrpcStatusCount,
+		address:        node.address._ToInsecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		readmitTime:    node.readmitTime,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
 	}
 
 	return &_MirrorNode{

@@ -140,7 +140,7 @@ func (s *_LockedSlice) _Set(index int, item interface{}) (*_LockedSlice, error) 
 			}
 		}
 	} else {
-		s.slice[index] = item
+		s.slice = append(s.slice, item)
 	}
 
 	return s, nil
@@ -150,8 +150,10 @@ func (s *_LockedSlice) _SetIfAbsent(index int32, item interface{}) (*_LockedSlic
 	if s.locked {
 		return &_LockedSlice{}, errLockedSlice
 	}
-	if s.slice[index] == nil {
-		s.slice[index] = item
+	if int32(s._Length()) > index {
+		if s.slice[index] == nil {
+			s.slice[index] = item
+		}
 	}
 
 	return s, nil

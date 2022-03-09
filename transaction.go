@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha512"
 	"fmt"
-
 	"github.com/pkg/errors"
 
 	"time"
@@ -469,17 +468,18 @@ func _TransactionFreezeWith(
 	client *Client,
 	body *services.TransactionBody,
 ) error {
-	if transaction.nodeAccountIDs._Length() == 0 {
-		if client != nil {
-			nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-			if err != nil {
-				return err
-			}
-			transaction.SetNodeAccountIDs(nodeAccountIDs)
-		} else {
-			return errNoClientOrTransactionIDOrNodeId
-		}
-	}
+	//if transaction.nodeAccountIDs._Length() == 0 {
+	//	if client != nil {
+	//		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
+	//		if err != nil {
+	//			return err
+	//		}
+	//		transaction.nodeAccountIDs = _NewLockedSlice()
+	//		transaction.nodeAccountIDs, _ = transaction.nodeAccountIDs._PushNodeAccountIDs(nodeAccountIDs...)
+	//	} else {
+	//		return errNoClientOrTransactionIDOrNodeId
+	//	}
+	//}
 
 	if client != nil {
 		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
@@ -487,24 +487,20 @@ func _TransactionFreezeWith(
 		}
 	}
 
-	for _, nodeAccountID := range transaction.nodeAccountIDs._GetNodeAccountIDs() {
-		body.NodeAccountID = nodeAccountID._ToProtobuf()
-		bodyBytes, err := protobuf.Marshal(body)
-		if err != nil {
-			// This should be unreachable
-			// From the documentation this appears to only be possible if there are missing proto types
-			panic(err)
-		}
-
-		transaction.signedTransactions, err = transaction.signedTransactions._PushSignedTransactions(&services.SignedTransaction{
-			BodyBytes: bodyBytes,
-			SigMap: &services.SignatureMap{
-				SigPair: make([]*services.SignaturePair, 0),
-			},
-		})
-		if err != nil {
-			return err
-		}
+	bodyBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		// This should be unreachable
+		// From the documentation this appears to only be possible if there are missing proto types
+		panic(err)
+	}
+	transaction.signedTransactions, err = transaction.signedTransactions._PushSignedTransactions(&services.SignedTransaction{
+		BodyBytes: bodyBytes,
+		SigMap: &services.SignatureMap{
+			SigPair: make([]*services.SignaturePair, 0),
+		},
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -729,6 +725,16 @@ func (transaction *Transaction) _BuildTransaction(index int) (*services.Transact
 	txID := transaction.transactionIDs._GetTransactionIDs()[transaction.nextTransactionIndex]
 	originalBody := services.TransactionBody{}
 	_ = protobuf.Unmarshal(signedTx.BodyBytes, &originalBody)
+	if !transaction.nodeAccountIDs.locked && transaction.nodeAccountIDs._Length() > index {
+		if originalBody.NodeAccountID.String() != transaction.nodeAccountIDs._GetNodeAccountIDs()[index]._ToProtobuf().String() {
+			originalBody.NodeAccountID = transaction.nodeAccountIDs._GetNodeAccountIDs()[index]._ToProtobuf()
+		}
+	}
+
+	if originalBody.NodeAccountID == nil {
+		originalBody.NodeAccountID = transaction.nodeAccountIDs._GetNodeAccountIDs()[index]._ToProtobuf()
+	}
+
 	if originalBody.TransactionID.String() != txID._ToProtobuf().String() {
 		originalBody.TransactionID = txID._ToProtobuf()
 	}
@@ -849,6 +855,7 @@ func (transaction *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *T
 	}
 	transaction.nodeAccountIDs = _NewLockedSlice()
 	transaction.nodeAccountIDs, _ = transaction.nodeAccountIDs._PushNodeAccountIDs(nodeAccountIDs...)
+	transaction.nodeAccountIDs.locked = true
 	return transaction
 }
 

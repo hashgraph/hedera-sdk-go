@@ -78,27 +78,18 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
-
-	err = query._ValidateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-
-	for range query.nodeAccountIDs {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
+	if query.Query.nodeAccountIDs.locked {
+		for range query.nodeAccountIDs._GetNodeAccountIDs() {
+			paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+			if err != nil {
+				return Hbar{}, err
+			}
+			query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
 	pb := query._Build()
@@ -200,9 +191,17 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
-	err = _QueryGeneratePayments(&query.Query, client, cost)
-	if err != nil {
-		return []Transfer{}, err
+	if query.nodeAccountIDs.locked {
+		err = _QueryGeneratePayments(&query.Query, client, cost)
+		if err != nil {
+			return []Transfer{}, err
+		}
+	} else {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return []Transfer{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
 	pb := query._Build()

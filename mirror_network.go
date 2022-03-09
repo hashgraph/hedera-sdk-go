@@ -1,5 +1,7 @@
 package hedera
 
+import "math/rand"
+
 type _MirrorNetwork struct {
 	_ManagedNetwork
 }
@@ -37,9 +39,9 @@ func (network *_MirrorNetwork) _SetTransportSecurity(transportSecurity bool) *_M
 }
 
 func (network *_MirrorNetwork) _GetNextMirrorNode() *_MirrorNode {
-	switch n := network._ManagedNetwork._GetNumberOfMostHealthyNodes(1)[0].(type) { //nolint
-	case *_MirrorNode:
-		return n
+	node := network._ManagedNetwork.goodNodes[rand.Intn(len(network.goodNodes))]
+	if node, ok := node.(*_MirrorNode); ok {
+		return node
 	}
 
 	return &_MirrorNode{}

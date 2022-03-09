@@ -522,10 +522,12 @@ func (client *Client) GetNetworkName() *NetworkName {
 	return client.network._GetNetworkName()
 }
 
+// Deprecated: Use SetLedgerID instead
 func (client *Client) SetLedgerID(id LedgerID) {
 	client.network._SetLedgerID(id)
 }
 
+// Deprecated: Use SetLedgerID instead
 func (client *Client) GetLedgerID() *LedgerID {
 	return client.network._GetLedgerID()
 }
@@ -544,6 +546,22 @@ func (client *Client) SetDefaultRegenerateTransactionIDs(regen bool) {
 
 func (client *Client) GetDefaultRegenerateTransactionIDs() bool {
 	return client.defaultRegenerateTransactionIDs
+}
+
+func (client *Client) SetNodeMinReadmitPeriod(period time.Duration) {
+	client.network._SetNodeMinReadmitPeriod(period)
+}
+
+func (client *Client) SetNodeMaxReadmitPeriod(period time.Duration) {
+	client.network._SetNodeMaxReadmitPeriod(period)
+}
+
+func (client *Client) GetNodeMinReadmitPeriod() time.Duration {
+	return client.network._GetNodeMinReadmitPeriod()
+}
+
+func (client *Client) GetNodeMaxReadmitPeriod() time.Duration {
+	return client.network._GetNodeMaxReadmitPeriod()
 }
 
 // SetOperator sets that account that will, by default, be paying for

@@ -17,6 +17,7 @@ type _IManagedNode interface {
 	_GetUseCount() int64
 	_GetLastUsed() int64
 	_GetAttempts() int64
+	_GetReadmitTime() int64
 	_GetAddress() string
 	_ToSecure() _IManagedNode
 	_ToInsecure() _IManagedNode
@@ -25,14 +26,14 @@ type _IManagedNode interface {
 }
 
 type _ManagedNode struct {
-	address            *_ManagedNodeAddress
-	currentBackoff     time.Duration
-	lastUsed           int64
-	backoffUntil       time.Time
-	useCount           int64
-	minBackoff         time.Duration
-	maxBackoff         time.Duration
-	badGrpcStatusCount int64
+	address        *_ManagedNodeAddress
+	currentBackoff int64
+	lastUsed       int64
+	useCount       int64
+	minBackoff     int64
+	maxBackoff     int64
+	attempts       int64
+	readmitTime    int64
 }
 
 func (node *_ManagedNode) _GetAttempts() int64 {
@@ -47,13 +48,20 @@ func (node *_ManagedNode) _GetAddress() string {
 	return ""
 }
 
-func _NewManagedNode(address string, minBackoff time.Duration) (node *_ManagedNode, err error) {
-	node = &_ManagedNode{
-		currentBackoff:     minBackoff,
-		useCount:           0,
-		minBackoff:         minBackoff,
-		maxBackoff:         1 * time.Hour,
-		badGrpcStatusCount: 0,
+func (node *_ManagedNode) _GetReadmitTime() int64 {
+	return node.readmitTime
+}
+
+func _NewManagedNode(address string, minBackoff int64) _ManagedNode {
+	return _ManagedNode{
+		address:        _ManagedNodeAddressFromString(address),
+		currentBackoff: minBackoff,
+		lastUsed:       time.Now().UnixNano(),
+		useCount:       0,
+		minBackoff:     minBackoff,
+		maxBackoff:     1000 * 60 * 60 * time.Millisecond.Nanoseconds(),
+		attempts:       0,
+		readmitTime:    time.Now().UnixNano(),
 	}
 	node.address, err = _ManagedNodeAddressFromString(address)
 	return node, err
@@ -82,19 +90,17 @@ func (node *_ManagedNode) _GetMaxBackoff() time.Duration {
 func (node *_ManagedNode) _InUse() {
 	node.useCount++
 	node.lastUsed = time.Now().UTC().UnixNano()
+	node.readmitTime = time.Now().UTC().UnixNano()
 }
 
 func (node *_ManagedNode) _IsHealthy() bool {
-	return node.backoffUntil.UnixNano() < time.Now().UTC().UnixNano()
+	return node.readmitTime < time.Now().UTC().UnixNano()
 }
 
 func (node *_ManagedNode) _IncreaseDelay() {
-	node.badGrpcStatusCount++
-	node.backoffUntil = time.Now().Add(node.currentBackoff)
-	node.currentBackoff *= 2
-	if node.currentBackoff > node.maxBackoff {
-		node.currentBackoff = node.maxBackoff
-	}
+	node.attempts++
+	node.currentBackoff = int64(math.Min(float64(node.currentBackoff)*2, float64(node.maxBackoff)))
+	node.readmitTime = time.Now().UTC().UnixNano() + node.currentBackoff
 }
 
 func (node *_ManagedNode) _DecreaseDelay() {
@@ -105,7 +111,8 @@ func (node *_ManagedNode) _DecreaseDelay() {
 }
 
 func (node *_ManagedNode) _Wait() time.Duration {
-	return time.Until(node.backoffUntil)
+	delay := node.readmitTime - node.lastUsed
+	return time.Duration(delay)
 }
 
 func (node *_ManagedNode) _GetUseCount() int64 {

@@ -91,6 +91,10 @@ func (node *_Node) _GetAddress() string {
 	return node._ManagedNode._GetAddress()
 }
 
+func (node *_Node) _GetReadmitTime() int64 {
+	return node._ManagedNode._GetReadmitTime()
+}
+
 func (node *_Node) _GetChannel() (*_Channel, error) {
 	if node.channel != nil {
 		return node.channel, nil
@@ -178,13 +182,13 @@ func (node *_Node) _Close() error {
 
 func (node *_Node) _ToSecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:            node.address._ToSecure(),
-		currentBackoff:     node.currentBackoff,
-		lastUsed:           node.lastUsed,
-		backoffUntil:       node.backoffUntil,
-		useCount:           node.useCount,
-		minBackoff:         node.minBackoff,
-		badGrpcStatusCount: node.badGrpcStatusCount,
+		address:        node.address._ToSecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		readmitTime:    node.readmitTime,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
 	}
 
 	return &_Node{
@@ -198,13 +202,13 @@ func (node *_Node) _ToSecure() _IManagedNode {
 
 func (node *_Node) _ToInsecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:            node.address._ToInsecure(),
-		currentBackoff:     node.currentBackoff,
-		lastUsed:           node.lastUsed,
-		backoffUntil:       node.backoffUntil,
-		useCount:           node.useCount,
-		minBackoff:         node.minBackoff,
-		badGrpcStatusCount: node.badGrpcStatusCount,
+		address:        node.address._ToInsecure(),
+		currentBackoff: node.currentBackoff,
+		lastUsed:       node.lastUsed,
+		readmitTime:    node.readmitTime,
+		useCount:       node.useCount,
+		minBackoff:     node.minBackoff,
+		attempts:       node.attempts,
 	}
 
 	return &_Node{

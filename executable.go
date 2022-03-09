@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"context"
+	protobuf "google.golang.org/protobuf/proto"
 	"math"
 	"os"
 	"time"
@@ -144,12 +145,53 @@ func _Execute(
 	var errPersistent error
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
-		protoRequest := makeRequest(request)
-		nodeAccountID := getNodeAccountID(request)
-
-		node, ok := client.network._GetNodeForAccountID(nodeAccountID)
-		if !ok {
-			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+		var protoRequest _ProtoRequest
+		var node *_Node
+		var ok bool
+		if request.transaction != nil {
+			if request.transaction.nodeAccountIDs.locked && request.transaction.nodeAccountIDs._Length() > 0 {
+				protoRequest = makeRequest(request)
+				nodeAccountID := getNodeAccountID(request)
+				node, ok = client.network._GetNodeForAccountID(nodeAccountID)
+				if !ok {
+					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+				}
+				advanceRequest(request)
+			} else {
+				node = client.network._GetNode()
+				request.transaction.nodeAccountIDs._Set(0, node.accountID)
+				tx, _ := request.transaction._BuildTransaction(0)
+				protoRequest = _ProtoRequest{
+					transaction: tx,
+				}
+			}
+		} else {
+			if request.query.nodeAccountIDs.locked && request.query.nodeAccountIDs._Length() > 0 {
+				protoRequest = makeRequest(request)
+				nodeAccountID := getNodeAccountID(request)
+				node, ok = client.network._GetNodeForAccountID(nodeAccountID)
+				advanceRequest(request)
+			} else {
+				node = client.network._GetNode()
+				if len(request.query.paymentTransactions) > 0 {
+					var paymentTransaction services.TransactionBody
+					protobuf.Unmarshal(request.query.paymentTransactions[0].BodyBytes, &paymentTransaction)
+					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
+					request.query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction)
+				}
+				//for _, s := range client.network.nodes {
+				//	if node, ok := s.(*_Node); ok {
+				//		println(node.accountID.String(), "node", node.readmitTime)
+				//	}
+				//}
+				//for _, s := range client.network.goodNodes {
+				//	if node, ok := s.(*_Node); ok {
+				//		println(node.accountID.String(), "good node", node.readmitTime)
+				//	}
+				//}
+				request.query.nodeAccountIDs._Set(0, node.accountID)
+				protoRequest = makeRequest(request)
+			}
 		}
 
 		node._InUse()
@@ -167,7 +209,7 @@ func _Execute(
 
 		channel, err := node._GetChannel()
 		if err != nil {
-			node._IncreaseDelay()
+			client.network._IncreaseDelay(node)
 			continue
 		}
 
@@ -196,7 +238,7 @@ func _Execute(
 		if err != nil {
 			errPersistent = err
 			if _ExecutableDefaultRetryHandler(logID, err) {
-				node._IncreaseDelay()
+				client.network._IncreaseDelay(node)
 				continue
 			}
 			if errPersistent == nil {
@@ -213,6 +255,7 @@ func _Execute(
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
 			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
+			client.network._IncreaseDelay(node)
 			continue
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {

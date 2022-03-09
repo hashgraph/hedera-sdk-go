@@ -14,7 +14,7 @@ type Query struct {
 
 	lockedTransactionID         bool
 	paymentTransactionID        TransactionID
-	nodeAccountIDs              []AccountID
+	nodeAccountIDs              *_LockedSlice
 	maxQueryPayment             Hbar
 	queryPayment                Hbar
 	nextPaymentTransactionIndex int
@@ -41,6 +41,7 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		nextTransactionIndex: 0,
 		nextNodeIndex:        0,
 		maxRetry:             10,
+		nodeAccountIDs:       _NewLockedSlice(),
 		paymentTransactions:  make([]*services.Transaction, 0),
 		isPaymentRequired:    isPaymentRequired,
 		maxQueryPayment:      NewHbar(0),
@@ -64,17 +65,27 @@ func (query *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
 			panic("cannot set node account ID of 0.0.0")
 		}
 	}
-	query.nodeAccountIDs = nodeAccountIDs
+	if query.nodeAccountIDs.locked {
+		panic(errLockedSlice)
+	}
+	query.nodeAccountIDs = _NewLockedSlice()
+	query.nodeAccountIDs, _ = query.nodeAccountIDs._PushNodeAccountIDs(nodeAccountIDs...)
+	query.nodeAccountIDs.locked = true
 	return query
 }
 
 func (query *Query) GetNodeAccountIDs() []AccountID {
-	return query.nodeAccountIDs
+	if query.nodeAccountIDs._Length() != 0 {
+		return query.nodeAccountIDs._GetNodeAccountIDs()
+	}
+
+	return make([]AccountID, 0)
 }
 
 func _QueryGetNodeAccountID(request _Request) AccountID {
-	if len(request.query.nodeAccountIDs) > 0 {
-		return request.query.nodeAccountIDs[request.query.nextNodeIndex]
+	switch node := request.query.nodeAccountIDs._Get(request.query.nextNodeIndex).(type) { //nolint
+	case AccountID:
+		return node
 	}
 
 	panic("Query node AccountID's not set before executing")
@@ -138,7 +149,7 @@ func _QueryAdvanceRequest(request _Request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
 		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
 	}
-	length := len(request.query.nodeAccountIDs)
+	length := request.query.nodeAccountIDs._Length()
 	currentIndex := request.query.nextNodeIndex
 	request.query.nextNodeIndex = (currentIndex + 1) % length
 }
@@ -154,7 +165,7 @@ func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoR
 }
 
 func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
-	for _, nodeID := range query.nodeAccountIDs {
+	for _, nodeID := range query.nodeAccountIDs._GetNodeAccountIDs() {
 		transaction, err := _QueryMakePaymentTransaction(
 			query.paymentTransactionID,
 			nodeID,

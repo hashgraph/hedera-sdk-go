@@ -112,21 +112,6 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	} else if len(query.Query.GetNodeAccountIDs()) == 1 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.nodeAccountIDs = append(query.nodeAccountIDs, nodeAccountIDs[0])
-	}
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -134,8 +119,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.timestamp = time.Now()
-
-	for range query.nodeAccountIDs {
+	
+	for range query.nodeAccountIDs._GetNodeAccountIDs() {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
@@ -196,21 +181,6 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return AccountBalance{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	} else if len(query.Query.GetNodeAccountIDs()) == 1 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return AccountBalance{}, err
-		}
-
-		query.nodeAccountIDs = append(query.nodeAccountIDs, nodeAccountIDs[0])
-	}
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {

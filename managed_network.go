@@ -4,13 +4,14 @@ import (
 	"crypto/rand"
 	"math"
 	"math/big"
-	"sort"
+	"reflect"
 	"time"
 )
 
 type _ManagedNetwork struct {
 	network                map[string][]_IManagedNode
 	nodes                  []_IManagedNode
+	goodNodes              []_IManagedNode
 	maxNodeAttempts        int
 	minBackoff             time.Duration
 	maxBackoff             time.Duration
@@ -18,19 +19,26 @@ type _ManagedNetwork struct {
 	ledgerID               *LedgerID
 	transportSecurity      bool
 	verifyCertificate      bool
+	nodeMinReadmitPeriod   time.Duration
+	nodeMaxReadmitPeriod   time.Duration
+	earliestReadmitTime    int64
 }
 
 func _NewManagedNetwork() _ManagedNetwork {
 	return _ManagedNetwork{
 		network:                make(map[string][]_IManagedNode),
 		nodes:                  make([]_IManagedNode, 0),
+		goodNodes:              make([]_IManagedNode, 0),
 		maxNodeAttempts:        -1,
-		minBackoff:             250 * time.Millisecond,
-		maxBackoff:             8 * time.Second,
+		minBackOff:             8 * time.Second,
+		maxBackOff:             1000 * 60 * 60 * time.Millisecond,
 		maxNodesPerTransaction: nil,
 		ledgerID:               nil,
 		transportSecurity:      false,
 		verifyCertificate:      false,
+		nodeMinReadmitPeriod:   8 * time.Second,
+		nodeMaxReadmitPeriod:   1000 * 60 * 60 * time.Millisecond,
+		earliestReadmitTime:    time.Now().UnixNano() + 1000*60*60*time.Millisecond.Milliseconds(),
 	}
 }
 
@@ -40,7 +48,19 @@ func (network *_ManagedNetwork) _SetNetwork(net map[string]_IManagedNode) error 
 
 		network._RemoveNodeFromNetwork(node)
 		_ = node._Close()
-		network.nodes = append(network.nodes[:index], network.nodes[index+1:]...)
+		if index == len(network.nodes)-1 {
+			network.nodes = network.nodes[:index]
+		} else {
+			network.nodes = append(network.nodes[:index], network.nodes[index+1:]...)
+		}
+	}
+
+	for _, index := range network._GetGoodNodesToRemove(net) {
+		if index == len(network.goodNodes)-1 {
+			network.goodNodes = network.goodNodes[:index]
+		} else {
+			network.goodNodes = append(network.goodNodes[:index], network.goodNodes[index+1:]...)
+		}
 	}
 
 	for url, originalNode := range net {
@@ -49,6 +69,7 @@ func (network *_ManagedNetwork) _SetNetwork(net map[string]_IManagedNode) error 
 			nodesForKey := network._GetNodesForKey(n.accountID.String())
 			if !_AddressIsInNodeList(url, *nodesForKey) {
 				*nodesForKey = append(*nodesForKey, n)
+				network.goodNodes = append(network.goodNodes, n)
 				network.nodes = append(network.nodes, n)
 				network.network[n.accountID.String()] = *nodesForKey
 			}
@@ -56,18 +77,51 @@ func (network *_ManagedNetwork) _SetNetwork(net map[string]_IManagedNode) error 
 			nodesForKey := network._GetNodesForKey(url)
 			if !_AddressIsInNodeList(url, *nodesForKey) {
 				*nodesForKey = append(*nodesForKey, n)
+				network.goodNodes = append(network.goodNodes, n)
 				network.nodes = append(network.nodes, n)
 				network.network[url] = *nodesForKey
 			}
 		}
 	}
 
-	for i := range network.nodes {
+	for i := range network.goodNodes {
 		j, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
-		network.nodes[i], network.nodes[j.Int64()] = network.nodes[j.Int64()], network.nodes[i]
+		network.goodNodes[i], network.goodNodes[j.Int64()] = network.goodNodes[j.Int64()], network.goodNodes[i]
 	}
 
 	return nil
+}
+
+func (network *_ManagedNetwork) _ReadmitNodes() {
+	now := time.Now().UnixNano()
+
+	if network.earliestReadmitTime <= now {
+		nextEarliestReadmitTime := int64(math.MaxInt64)
+		searchForNextEarliestReadmitTime := true
+
+	outer:
+		for _, node := range network.nodes {
+			for _, node2 := range network.goodNodes {
+				if searchForNextEarliestReadmitTime && node._GetReadmitTime() > now {
+					nextEarliestReadmitTime = int64(math.Min(float64(node._GetReadmitTime()), float64(nextEarliestReadmitTime)))
+				}
+
+				if reflect.DeepEqual(node, node2) {
+					continue outer
+				}
+			}
+
+			searchForNextEarliestReadmitTime = false
+
+			if node._GetReadmitTime() <= now {
+				network.goodNodes = append(network.goodNodes, node)
+			}
+		}
+
+		network.earliestReadmitTime = int64(math.Min(
+			math.Max(float64(nextEarliestReadmitTime), float64(network.nodeMinReadmitPeriod)),
+			float64(network.nodeMaxReadmitPeriod)))
+	}
 }
 
 func (network *_ManagedNetwork) _GetNumberOfNodesForTransaction() int {
@@ -90,22 +144,56 @@ func (network *_ManagedNetwork) _GetMaxNodeAttempts() int {
 	return network.maxNodeAttempts
 }
 
-func (network *_ManagedNetwork) _SetMinBackoff(backoff time.Duration) {
-	network.minBackoff = backoff
-	for _, nod := range network.nodes {
+func (network *_ManagedNetwork) _SetNodeMinReadmitPeriod(min time.Duration) {
+	network.nodeMinReadmitPeriod = min
+	network.earliestReadmitTime = time.Now().UnixNano() + network.nodeMinReadmitPeriod.Nanoseconds()
+}
+
+func (network *_ManagedNetwork) _GetNodeMinReadmitPeriod() time.Duration {
+	return network.nodeMinReadmitPeriod
+}
+
+func (network *_ManagedNetwork) _SetNodeMaxReadmitPeriod(max time.Duration) {
+	network.nodeMaxReadmitPeriod = max
+}
+
+func (network *_ManagedNetwork) _GetNodeMaxReadmitPeriod() time.Duration {
+	return network.nodeMaxReadmitPeriod
+}
+
+func (network *_ManagedNetwork) _SetMinBackoff(waitTime time.Duration) {
+	network.minBackOff = waitTime
+	for _, nod := range network.goodNodes {
 		if nod != nil {
 			nod._SetMinBackoff(backoff)
 		}
 	}
 }
 
+func (network *_ManagedNetwork) _GetNode() _IManagedNode {
+	network._ReadmitNodes()
+
+	if len(network.goodNodes) == 0 {
+		panic("failed to find a healthy working node")
+	}
+
+	bg := big.NewInt(int64(len(network.goodNodes)))
+
+	n, err := rand.Int(rand.Reader, bg)
+	if err != nil {
+		panic(err)
+	}
+
+	return network.goodNodes[n.Int64()]
+}
+
 func (network *_ManagedNetwork) _GetMinBackoff() time.Duration {
 	return network.minBackoff
 }
 
-func (network *_ManagedNetwork) _SetMaxBackoff(backoff time.Duration) {
-	network.maxBackoff = backoff
-	for _, nod := range network.nodes {
+func (network *_ManagedNetwork) _SetMaxBackoff(waitTime time.Duration) {
+	network.maxBackOff = waitTime
+	for _, nod := range network.goodNodes {
 		if nod != nil {
 			nod._SetMaxBackoff(backoff)
 		}
@@ -127,7 +215,7 @@ func (network *_ManagedNetwork) _SetLedgerID(id LedgerID) *_ManagedNetwork {
 }
 
 func (network *_ManagedNetwork) _Close() error {
-	for _, conn := range network.nodes {
+	for _, conn := range network.goodNodes {
 		err := conn._Close()
 		if err != nil {
 			return err
@@ -141,13 +229,13 @@ func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 	if network.transportSecurity != transportSecurity {
 		_ = network._Close()
 
-		for i, node := range network.nodes {
+		for i, node := range network.goodNodes {
 			if transportSecurity {
 				node = node._ToSecure()
 			} else {
 				node = node._ToInsecure()
 			}
-			network.nodes[i] = node
+			network.goodNodes[i] = node
 		}
 
 		for id := range network.network {
@@ -180,55 +268,48 @@ func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 	network.transportSecurity = transportSecurity
 }
 
-func (network *_ManagedNetwork) _GetNumberOfMostHealthyNodes(count int32) []_IManagedNode {
-	sort.Slice(network.nodes, func(i int, j int) bool {
-		return _ManagedNodeCompare(network.nodes[i].(*_Node)._ManagedNode, network.nodes[j].(*_Node)._ManagedNode) < 0
-	})
-
-	err := network._RemoveDeadNodes()
-	if err != nil {
-		return []_IManagedNode{}
-	}
-
-	for _, networkPerNodeAccountID := range network.network {
-		net := networkPerNodeAccountID
-		sort.Slice(net, func(i int, j int) bool {
-			return _ManagedNodeCompare(net[i].(*_Node)._ManagedNode, net[j].(*_Node)._ManagedNode) < 0
-		})
-	}
-
-	nodes := make([]_IManagedNode, 0)
-
-	size := math.Min(float64(count), float64(len(network.nodes)))
-	for i := 0; i < int(size); i++ {
-		nodes = append(nodes, network.nodes[i])
-	}
-
-	return nodes
-}
-
-func (network *_ManagedNetwork) _RemoveDeadNodes() error {
-	if network.maxNodeAttempts > 0 {
-		for i := len(network.nodes) - 1; i >= 0; i-- {
-			node := network.nodes[i]
-			if node == nil {
-				panic("found nil in network list")
-			}
-
-			if node._GetAttempts() >= int64(network.maxNodeAttempts) {
-				err := node._Close()
-				if err != nil {
-					return err
-				}
-				network._RemoveNodeFromNetwork(node)
-				network.nodes = append(network.nodes[:i], network.nodes[i+1:]...)
-			}
-		}
-	}
-
-	return nil
-}
-
+//func (network *_ManagedNetwork) _GetNumberOfMostHealthyNodes(count int32) []_IManagedNode {
+//	sort.Sort(_Nodes{nodes: network.goodNodes})
+//	err := network._RemoveDeadNodes()
+//	for _, n := range network.network {
+//		sort.Sort(_Nodes{nodes: n})
+//	}
+//	if err != nil {
+//		return []_IManagedNode{}
+//	}
+//
+//	nodes := make([]_IManagedNode, 0)
+//
+//	size := math.Min(float64(count), float64(len(network.goodNodes)))
+//	for i := 0; i < int(size); i++ {
+//		nodes = append(nodes, network.goodNodes[i])
+//	}
+//
+//	return nodes
+//}
+//
+//func (network *_ManagedNetwork) _RemoveDeadNodes() error {
+//	if network.maxNodeAttempts > 0 {
+//		for i := len(network.goodNodes) - 1; i >= 0; i-- {
+//			node := network.goodNodes[i]
+//			if node == nil {
+//				panic("found nil in network list")
+//			}
+//
+//			if node._GetAttempts() >= int64(network.maxNodeAttempts) {
+//				err := node._Close()
+//				if err != nil {
+//					return err
+//				}
+//				network._RemoveNodeFromNetwork(node)
+//				network.goodNodes = append(network.goodNodes[:i], network.goodNodes[i+1:]...)
+//			}
+//		}
+//	}
+//
+//	return nil
+//}
+//
 func (network *_ManagedNetwork) _RemoveNodeFromNetwork(node _IManagedNode) {
 	switch n := node.(type) {
 	case *_Node:
@@ -244,7 +325,11 @@ func (network *_ManagedNetwork) _RemoveNodeFromNetwork(node _IManagedNode) {
 			}
 		}
 		if index != -1 {
-			current = append(current[:index], current[index+1:]...)
+			if len(current)-1 == index {
+				current = current[:index]
+			} else {
+				current = append(current[:index], current[index+1:]...)
+			}
 		}
 		if len(current) == 0 {
 			delete(network.network, n.accountID.String())
@@ -289,6 +374,20 @@ func (network *_ManagedNetwork) _GetNodesForKey(key string) *[]_IManagedNode {
 	return &temp
 }
 
+func (network *_ManagedNetwork) _GetGoodNodesToRemove(net map[string]_IManagedNode) []int {
+	nodes := make([]int, 0)
+
+	for i := len(network.goodNodes) - 1; i >= 0; i-- {
+		node := network.goodNodes[i]
+
+		if !_NodeIsInGivenNetwork(node, net) {
+			nodes = append(nodes, i)
+		}
+	}
+
+	return nodes
+}
+
 func (network *_ManagedNetwork) _GetNodesToRemove(net map[string]_IManagedNode) []int {
 	nodes := make([]int, 0)
 
@@ -330,12 +429,12 @@ func _NodeIsInGivenNetwork(node _IManagedNode, givenNetwork map[string]_IManaged
 }
 
 func (network *_ManagedNetwork) _SetVerifyCertificate(verify bool) *_ManagedNetwork {
-	if len(network.nodes) > 0 {
-		for i, node := range network.nodes {
+	if len(network.goodNodes) > 0 {
+		for i, node := range network.goodNodes {
 			switch s := node.(type) { //nolint
 			case *_Node:
 				s._SetCertificateVerification(verify)
-				network.nodes[i] = s
+				network.goodNodes[i] = s
 			}
 		}
 	}
@@ -346,8 +445,8 @@ func (network *_ManagedNetwork) _SetVerifyCertificate(verify bool) *_ManagedNetw
 }
 
 func (network *_ManagedNetwork) _GetVerifyCertificate() bool {
-	if len(network.nodes) > 0 {
-		for _, node := range network.nodes {
+	if len(network.goodNodes) > 0 {
+		for _, node := range network.goodNodes {
 			switch s := node.(type) { //nolint
 			case *_Node:
 				return s._GetCertificateVerification()
