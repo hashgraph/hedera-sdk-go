@@ -250,6 +250,7 @@ func TestIntegrationTokenAssociateTransactionAutoAssociate(t *testing.T) {
 
 	record, err := NewTransactionRecordQuery().
 		SetTransactionID(resp.TransactionID).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)
 

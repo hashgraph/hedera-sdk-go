@@ -5,6 +5,7 @@ package hedera
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,8 @@ import (
 )
 
 func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
-
+	client, err := ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
+	require.NoError(t, err)
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
@@ -24,32 +25,32 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey).
-		SetNodeAccountIDs(env.NodeAccountIDs).
+		//SetNodeAccountIDs(env.NodeAccountIDs).
 		SetInitialBalance(newBalance).
 		SetMaxAutomaticTokenAssociations(100).
-		Execute(env.Client)
+		Execute(client)
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.GetReceipt(client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
 
 	tx, err := NewAccountDeleteTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).
-		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+		SetTransferAccountID(client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(env.Client)
+		FreezeWith(client)
 	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(env.Client)
+		Execute(client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.GetReceipt(client)
 	require.NoError(t, err)
 
 	//err = CloseIntegrationTestEnv(env, nil)
@@ -200,6 +201,7 @@ func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID2).
+		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 	require.NoError(t, err)
 

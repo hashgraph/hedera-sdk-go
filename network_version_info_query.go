@@ -128,9 +128,17 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
-	err = _QueryGeneratePayments(&query.Query, client, cost)
-	if err != nil {
-		return NetworkVersionInfo{}, err
+	if query.nodeAccountIDs.locked {
+		err = _QueryGeneratePayments(&query.Query, client, cost)
+		if err != nil {
+			return NetworkVersionInfo{}, err
+		}
+	} else {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return NetworkVersionInfo{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
 	pb := services.Query_NetworkGetVersionInfo{

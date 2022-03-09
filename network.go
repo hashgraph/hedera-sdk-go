@@ -20,9 +20,8 @@ func (network *_Network) SetNetwork(net map[string]AccountID) (err error) {
 	newNetwork := make(map[string]_IManagedNode)
 
 	for url, id := range net {
-		if newNetwork[url], err = _NewNode(id, url, network._ManagedNetwork.minBackoff); err != nil {
-			return err
-		}
+		node := _NewNode(id, url, network._ManagedNetwork.minBackOff.Nanoseconds())
+		newNetwork[url] = &node
 	}
 
 	return network._ManagedNetwork._SetNetwork(newNetwork)
@@ -40,6 +39,22 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 	return temp
 }
 
+func (network *_Network) _IncreaseDelay(node *_Node) {
+	node._IncreaseDelay()
+
+	for i, n := range network.goodNodes {
+		if goodNode, ok := n.(*_Node); ok {
+			if goodNode.accountID.String() == node.accountID.String() {
+				if i == len(network.goodNodes)-1 {
+					network.goodNodes = network.goodNodes[:i]
+				} else {
+					network.goodNodes = append(network.goodNodes[:i], network.goodNodes[i+1:]...)
+				}
+			}
+		}
+	}
+}
+
 func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
 	for _, node := range network.network[id.String()] {
 		switch n := node.(type) { //nolint
@@ -51,6 +66,14 @@ func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
 	}
 
 	return &_Node{}, false
+}
+
+func (network *_Network) _GetNode() *_Node {
+	if node, ok := network._ManagedNetwork._GetNode().(*_Node); ok {
+		return node
+	}
+
+	return &_Node{}
 }
 
 func (network *_Network) _GetNetworkName() *NetworkName {
@@ -112,17 +135,16 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 }
 
 func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { //nolint
-	nodes := network._GetNumberOfMostHealthyNodes(int32(network._ManagedNetwork._GetNumberOfNodesForTransaction()))
-	accountIDs := make([]AccountID, 0)
+	nodes := make([]AccountID, 0)
 
-	for _, node := range nodes {
-		switch n := node.(type) { //nolint
-		case *_Node:
-			accountIDs = append(accountIDs, n.accountID)
+	for i := 0; i < len(network.goodNodes); i++ {
+		node := network.goodNodes[i]
+		if node, ok := node.(*_Node); ok {
+			nodes = append(nodes, node.accountID)
 		}
 	}
 
-	return accountIDs, nil
+	return nodes, nil
 }
 
 func (network *_Network) _SetMaxNodesPerTransaction(max int) {
@@ -165,6 +187,22 @@ func (network *_Network) _SetVerifyCertificate(verify bool) *_ManagedNetwork {
 
 func (network *_Network) _GetVerifyCertificate() bool {
 	return network._ManagedNetwork._GetVerifyCertificate()
+}
+
+func (network *_Network) _SetNodeMinReadmitPeriod(period time.Duration) {
+	network._ManagedNetwork._SetNodeMinReadmitPeriod(period)
+}
+
+func (network *_Network) _SetNodeMaxReadmitPeriod(period time.Duration) {
+	network._ManagedNetwork._SetNodeMaxReadmitPeriod(period)
+}
+
+func (network *_Network) _GetNodeMinReadmitPeriod() time.Duration {
+	return network._ManagedNetwork.nodeMinReadmitPeriod
+}
+
+func (network *_Network) _GetNodeMaxReadmitPeriod() time.Duration {
+	return network._ManagedNetwork.nodeMaxReadmitPeriod
 }
 
 func (network *_Network) Close() error {

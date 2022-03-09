@@ -155,7 +155,6 @@ func TestIntegrationTokenTransferTransactionNotZeroSum(t *testing.T) {
 	accountID := *receipt.AccountID
 
 	resp, err = NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetTokenName("ffff").
 		SetTokenSymbol("F").
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).

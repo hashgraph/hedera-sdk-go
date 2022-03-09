@@ -4,38 +4,11 @@
 package hedera
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 )
-
-func TestIntegrationClientPingAllGoodNetwork(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
-
-	env.Client.SetMaxNodeAttempts(1)
-	env.Client.PingAll()
-
-	net := env.Client.GetNetwork()
-
-	keys := make([]string, len(net))
-	val := make([]AccountID, len(net))
-	i := 0
-	for st, n := range net {
-		keys[i] = st
-		val[i] = n
-		i++
-	}
-
-	_, err := NewAccountBalanceQuery().
-		SetAccountID(val[0]).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
-}
 
 func DisabledTestIntegrationClientPingAllBadNetwork(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)

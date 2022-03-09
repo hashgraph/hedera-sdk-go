@@ -74,21 +74,13 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs {
+	for range query.nodeAccountIDs._GetNodeAccountIDs() {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
@@ -199,9 +191,17 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
-	err = _QueryGeneratePayments(&query.Query, client, cost)
-	if err != nil {
-		return TopicInfo{}, err
+	if query.nodeAccountIDs.locked {
+		err = _QueryGeneratePayments(&query.Query, client, cost)
+		if err != nil {
+			return TopicInfo{}, err
+		}
+	} else {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return TopicInfo{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
 	pb := query._Build()

@@ -93,14 +93,6 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -109,7 +101,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 
 	query.timestamp = time.Now()
 
-	for range query.nodeAccountIDs {
+	for range query.nodeAccountIDs._GetNodeAccountIDs() {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err
@@ -268,14 +260,6 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return TransactionReceipt{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
