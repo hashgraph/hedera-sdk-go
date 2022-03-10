@@ -122,7 +122,7 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_TransactionRecordQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TransactionRecordQueryGetMethod,
 		_TransactionRecordQueryMapStatusError,

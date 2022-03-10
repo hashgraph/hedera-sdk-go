@@ -37,7 +37,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_NetworkVersionInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,

@@ -105,7 +105,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_ContractBytecodeQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_ContractBytecodeQueryGetMethod,
 		_ContractBytecodeQueryMapStatusError,
