@@ -88,21 +88,27 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 	hbarAllowances := make([]HbarAllowance, len(pb.GrantedCryptoAllowances))
 	if len(pb.GrantedCryptoAllowances) > 0 {
 		for _, allowance := range pb.GrantedCryptoAllowances {
-			hbarAllowances = append(hbarAllowances, _HbarAllowanceFromGrantedProtobuf(allowance))
+			hbarAllowance := _HbarAllowanceFromGrantedProtobuf(allowance)
+			hbarAllowance.OwnerAccountID = &accountID
+			hbarAllowances = append(hbarAllowances, hbarAllowance)
 		}
 	}
 
 	tokenAllowances := make([]TokenAllowance, len(pb.GrantedTokenAllowances))
 	if len(pb.GrantedTokenAllowances) > 0 {
 		for _, allowance := range pb.GrantedTokenAllowances {
-			tokenAllowances = append(tokenAllowances, _TokenAllowanceFromGrantedProtobuf(allowance))
+			tokenAllowance := _TokenAllowanceFromGrantedProtobuf(allowance)
+			tokenAllowance.OwnerAccountID = &accountID
+			tokenAllowances = append(tokenAllowances, tokenAllowance)
 		}
 	}
 
 	nftAllowances := make([]TokenNftAllowance, len(pb.GrantedNftAllowances))
 	if len(pb.GrantedNftAllowances) > 0 {
 		for _, allowance := range pb.GrantedNftAllowances {
-			nftAllowances = append(nftAllowances, _TokenNftAllowanceFromGrantedProtobuf(allowance))
+			nftAllowance := _TokenNftAllowanceFromGrantedProtobuf(allowance)
+			nftAllowance.OwnerAccountID = &accountID
+			nftAllowances = append(nftAllowances, nftAllowance)
 		}
 	}
 
