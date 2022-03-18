@@ -30,6 +30,9 @@ type TransactionRecord struct {
 	AliasKey                   *PublicKey
 	Duplicates                 []TransactionRecord
 	Children                   []TransactionRecord
+	HbarAllowances             []HbarAllowance
+	TokenAllowances            []TokenAllowance
+	TokenNftAllowances         []TokenNftAllowance
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -60,6 +63,9 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 	var tokenTransfers = make(map[TokenID][]TokenTransfer)
 	var nftTransfers = make(map[TokenID][]TokenNftTransfer)
 	var expectedDecimals = make(map[TokenID]uint32)
+	var hbarAllowances = make([]HbarAllowance, 0)
+	var tokenAllowances = make([]TokenAllowance, 0)
+	var tokenNftAllowances = make([]TokenNftAllowance, 0)
 
 	if pb.TransferList != nil {
 		for _, element := range pb.TransferList.AccountAmounts {
@@ -122,6 +128,18 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		}
 	}
 
+	for _, hbarAllowance := range pb.CryptoAdjustments {
+		hbarAllowances = append(hbarAllowances, _HbarAllowanceFromProtobuf(hbarAllowance))
+	}
+
+	for _, tokenAllowance := range pb.TokenAdjustments {
+		tokenAllowances = append(tokenAllowances, _TokenAllowanceFromProtobuf(tokenAllowance))
+	}
+
+	for _, tokenNftAllowance := range pb.NftAdjustments {
+		tokenNftAllowances = append(tokenNftAllowances, _TokenNftAllowanceFromProtobuf(tokenNftAllowance))
+	}
+
 	txRecord := TransactionRecord{
 		Receipt:                    _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: pb.GetReceipt()}),
 		TransactionHash:            pb.TransactionHash,
@@ -137,8 +155,11 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		AutomaticTokenAssociations: tokenAssociation,
 		ParentConsensusTimestamp:   _TimeFromProtobuf(pb.ParentConsensusTimestamp),
 		AliasKey:                   alias,
-		Children:                   childReceipts,
 		Duplicates:                 duplicateReceipts,
+		Children:                   childReceipts,
+		HbarAllowances:             hbarAllowances,
+		TokenAllowances:            tokenAllowances,
+		TokenNftAllowances:         tokenNftAllowances,
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -217,6 +238,21 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 		alias, _ = protobuf.Marshal(record.AliasKey._ToProtoKey())
 	}
 
+	cryptoAllowances := make([]*services.CryptoAllowance, 0)
+	for _, hbarAllowance := range record.HbarAllowances {
+		cryptoAllowances = append(cryptoAllowances, hbarAllowance._ToProtobuf())
+	}
+
+	tokenAllowances := make([]*services.TokenAllowance, 0)
+	for _, tokenAllowance := range record.TokenAllowances {
+		tokenAllowances = append(tokenAllowances, tokenAllowance._ToProtobuf())
+	}
+
+	nftAllowances := make([]*services.NftAllowance, 0)
+	for _, nftAllowance := range record.TokenNftAllowances {
+		nftAllowances = append(nftAllowances, nftAllowance._ToProtobuf())
+	}
+
 	var tRecord = services.TransactionRecord{
 		Receipt:         record.Receipt._ToProtobuf().GetReceipt(),
 		TransactionHash: record.TransactionHash,
@@ -235,7 +271,10 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 			Seconds: int64(record.ParentConsensusTimestamp.Second()),
 			Nanos:   int32(record.ParentConsensusTimestamp.Nanosecond()),
 		},
-		Alias: alias,
+		Alias:             alias,
+		CryptoAdjustments: cryptoAllowances,
+		TokenAdjustments:  tokenAllowances,
+		NftAdjustments:    nftAllowances,
 	}
 
 	var err error
