@@ -6,7 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.16
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220204040204-50a9ffe2cb34
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
