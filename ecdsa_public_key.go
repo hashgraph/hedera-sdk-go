@@ -120,7 +120,8 @@ func (pk _ECDSAPublicKey) _VerifyTransaction(transaction Transaction) bool {
 
 	_, _ = transaction._BuildAllTransactions()
 
-	for _, tx := range transaction.signedTransactions._GetSignedTransactions() {
+	for _, value := range transaction.signedTransactions.slice {
+		tx := value.(*services.SignedTransaction)
 		found := false
 		for _, sigPair := range tx.SigMap.GetSigPair() {
 			if bytes.Equal(sigPair.GetPubKeyPrefix(), pk._BytesRaw()) {

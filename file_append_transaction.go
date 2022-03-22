@@ -346,14 +346,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 		}
 	}
 
-	var initialTransactionID TransactionID
-	if transaction.transactionIDs._Length() > 0 {
-		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-		case TransactionID:
-			initialTransactionID = t
-		}
-	}
-	nextTransactionID := initialTransactionID
+	nextTransactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 
 	transaction.transactionIDs = _NewLockedSlice()
 	transaction.transactions = _NewLockedSlice()
@@ -368,7 +361,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 				end = len(transaction.contents)
 			}
 
-			_, err = transaction.transactionIDs._PushTransactionIDs(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
+			transaction.transactionIDs._Push(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
 			if err != nil {
 				panic(err)
 			}
@@ -387,13 +380,10 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 					return transaction, errors.Wrap(err, "error serializing body for file append")
 				}
 
-				_, err = transaction.signedTransactions._PushSignedTransactions(&services.SignedTransaction{
+				transaction.signedTransactions._Push(&services.SignedTransaction{
 					BodyBytes: bodyBytes,
 					SigMap:    &services.SignatureMap{},
 				})
-				if err != nil {
-					panic(err)
-				}
 			}
 
 			validStart := *nextTransactionID.ValidStart
@@ -500,10 +490,7 @@ func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, sign
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		_, err := transaction.signedTransactions._Set(index, temp)
-		if err != nil {
-			transaction.lockError = err
-		}
+		transaction.signedTransactions._Set(index, temp)
 	}
 
 	return transaction

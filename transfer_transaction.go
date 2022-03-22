@@ -343,7 +343,7 @@ func (transaction *TransferTransaction) AddApprovedTokenTransfer(tokenID TokenID
 				if transfer.accountID.Compare(accountID) == 0 {
 					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
 					transfer.IsApproved = approve
-					
+
 					return transaction
 				}
 			}
@@ -573,10 +573,7 @@ func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signat
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		_, err := transaction.signedTransactions._Set(index, temp)
-		if err != nil {
-			transaction.lockError = err
-		}
+		transaction.signedTransactions._Set(index, temp)
 	}
 
 	return transaction
@@ -650,13 +647,7 @@ func (transaction *TransferTransaction) Execute(
 		}
 	}
 
-	var transactionID TransactionID
-	if transaction.transactionIDs._Length() > 0 {
-		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-		case TransactionID:
-			transactionID = t
-		}
-	}
+	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(

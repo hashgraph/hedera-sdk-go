@@ -79,7 +79,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	for range query.nodeAccountIDs._GetNodeAccountIDs() {
+	for range query.nodeAccountIDs.slice {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
 			return Hbar{}, err

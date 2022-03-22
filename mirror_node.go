@@ -21,6 +21,13 @@ type _MirrorNode struct {
 	client                 *grpc.ClientConn
 }
 
+func (node *_MirrorNode) _SetVerifyCertificate(_ bool) {
+}
+
+func (node *_MirrorNode) _GetVerifyCertificate() bool {
+	return false
+}
+
 func _NewMirrorNode(address string) (node *_MirrorNode, err error) {
 	node = &_MirrorNode{}
 	node._ManagedNode, err = _NewManagedNode(address, 250*time.Millisecond)
@@ -87,7 +94,7 @@ func (node *_MirrorNode) _GetAddress() string {
 	return node._ManagedNode._GetAddress()
 }
 
-func (node *_MirrorNode) _GetReadmitTime() time.Time {
+func (node *_MirrorNode) _GetReadmitTime() *time.Time {
 	return node._ManagedNode._GetReadmitTime()
 }
 
@@ -163,13 +170,13 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 
 func (node *_MirrorNode) _ToSecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToSecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		readmitTime:    node.readmitTime,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToSecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		readmitTime:        node.readmitTime,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_MirrorNode{
@@ -181,13 +188,13 @@ func (node *_MirrorNode) _ToSecure() _IManagedNode {
 
 func (node *_MirrorNode) _ToInsecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToInsecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		readmitTime:    node.readmitTime,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToInsecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		readmitTime:        node.readmitTime,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_MirrorNode{
