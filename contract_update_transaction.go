@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -65,6 +66,11 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *service
 		expirationTime:  &expiration,
 		memo:            memo,
 	}
+}
+
+func (transaction *ContractUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // SetContractID sets The Contract ID instance to update (this can't be changed on the contract)
@@ -413,6 +419,8 @@ func (transaction *ContractUpdateTransaction) Execute(
 		_ContractUpdateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -593,4 +601,9 @@ func (transaction *ContractUpdateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *ContractUpdateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ContractUpdateTransaction:%d", timestamp.UnixNano())
 }

@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -25,6 +27,11 @@ func _FileDeleteTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 		Transaction: transaction,
 		fileID:      _FileIDFromProtobuf(pb.GetFileDelete().GetFileID()),
 	}
+}
+
+func (transaction *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *FileDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
@@ -198,6 +205,8 @@ func (transaction *FileDeleteTransaction) Execute(
 		_FileDeleteTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -379,4 +388,9 @@ func (transaction *FileDeleteTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *FileDeleteTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("FileDeleteTransaction:%d", timestamp.UnixNano())
 }

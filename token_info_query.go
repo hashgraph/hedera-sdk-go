@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -18,6 +19,11 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 	return &TokenInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
@@ -108,6 +114,8 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_TokenInfoQueryGetMethod,
 		_TokenInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -121,8 +129,8 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+func _TokenInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TokenInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -158,7 +166,9 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		return TokenInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -212,6 +222,8 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		_TokenInfoQueryGetMethod,
 		_TokenInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -279,4 +291,21 @@ func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *TokenInfoQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("TokenInfoQuery:%d", timestamp)
+}
+
+func (query *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

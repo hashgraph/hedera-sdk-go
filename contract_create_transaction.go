@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -44,6 +45,11 @@ func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *service
 		parameters:      pb.GetContractCreateInstance().ConstructorParameters,
 		memo:            pb.GetContractCreateInstance().GetMemo(),
 	}
+}
+
+func (transaction *ContractCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 func (transaction *ContractCreateTransaction) SetBytecodeFileID(byteCodeFileID FileID) *ContractCreateTransaction {
@@ -369,6 +375,8 @@ func (transaction *ContractCreateTransaction) Execute(
 		_ContractCreateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -549,4 +557,9 @@ func (transaction *ContractCreateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *ContractCreateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ContractCreateTransaction:%d", timestamp.UnixNano())
 }

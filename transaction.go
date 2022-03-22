@@ -44,6 +44,8 @@ type Transaction struct {
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
 	regenerateTransactionID bool
+
+	grpcDeadline *time.Duration
 }
 
 func _NewTransaction() Transaction {
@@ -82,6 +84,15 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		nodeAccountIDs:       _NewLockedSlice(),
 		publicKeys:           make([]PublicKey, 0),
 		transactionSigners:   make([]TransactionSigner, 0),
+	}
+
+	comp, err := _TransactionCompare(&list)
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	if !comp {
+		return Transaction{}, errors.New("failed to validate transaction bodies")
 	}
 
 	var first *services.TransactionBody = nil
@@ -255,6 +266,60 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 }
 
+func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
+	signed := make([]*services.SignedTransaction, 0)
+	var err error
+	for _, s := range list.TransactionList {
+		temp := services.SignedTransaction{}
+		err = protobuf.Unmarshal(s.SignedTransactionBytes, &temp)
+		if err != nil {
+			return false, err
+		}
+		signed = append(signed, &temp)
+	}
+	body := make([]*services.TransactionBody, 0)
+	for _, s := range signed {
+		temp := services.TransactionBody{}
+		err = protobuf.Unmarshal(s.BodyBytes, &temp)
+		if err != nil {
+			return false, err
+		}
+		body = append(body, &temp)
+	}
+
+	tx := services.TransactionBody{
+		TransactionFee:           body[0].TransactionFee,
+		TransactionValidDuration: body[0].TransactionValidDuration,
+		Memo:                     body[0].Memo,
+		Data:                     body[0].Data,
+	}
+
+	txBytes, err := protobuf.Marshal(&tx)
+	if err != nil {
+		return false, err
+	}
+
+	for i := 1; i < len(body); i++ {
+		tx2 := services.TransactionBody{
+			TransactionFee:           body[i].TransactionFee,
+			TransactionValidDuration: body[i].TransactionValidDuration,
+			Memo:                     body[i].Memo,
+			Data:                     body[i].Data,
+		}
+
+		txBytes2, err := protobuf.Marshal(&tx2)
+		if err != nil {
+			return false, err
+		}
+
+		if !bytes.Equal(txBytes, txBytes2) {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
 func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
 	returnMap := make(map[AccountID]map[*PublicKey][]byte, transaction.nodeAccountIDs._Length())
 
@@ -344,6 +409,15 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 	}
 
 	return transactionHash, nil
+}
+
+func (transaction *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
+	transaction.grpcDeadline = deadline
+	return transaction
+}
+
+func (transaction *Transaction) GetGrpcDeadline() *time.Duration {
+	return transaction.grpcDeadline
 }
 
 func (transaction *Transaction) _InitFee(client *Client) {
@@ -457,8 +531,10 @@ func (transaction *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(_ _Request, response _Response) _ExecutionState {
-	switch Status(response.transaction.NodeTransactionPrecheckCode) {
+func _TransactionShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	status := Status(response.transaction.NodeTransactionPrecheckCode)
+	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("transaction precheck status received")
+	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
 	case StatusTransactionExpired:

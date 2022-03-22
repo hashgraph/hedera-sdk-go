@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -29,6 +31,11 @@ func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *service
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
 	}
+}
+
+func (transaction *ContractDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // Sets the contract ID which should be deleted.
@@ -275,6 +282,8 @@ func (transaction *ContractDeleteTransaction) Execute(
 		_ContractDeleteTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -455,4 +464,9 @@ func (transaction *ContractDeleteTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *ContractDeleteTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ContractDeleteTransaction:%d", timestamp.UnixNano())
 }

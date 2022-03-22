@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -25,6 +26,11 @@ func _TokenUnpauseTransactionFromProtobuf(transaction Transaction, pb *services.
 		Transaction: transaction,
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenDeletion().GetToken()),
 	}
+}
+
+func (transaction *TokenUnpauseTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUnpauseTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 func (transaction *TokenUnpauseTransaction) SetTokenID(tokenID TokenID) *TokenUnpauseTransaction {
@@ -198,6 +204,8 @@ func (transaction *TokenUnpauseTransaction) Execute(
 		_TokenUnpauseTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -378,4 +386,9 @@ func (transaction *TokenUnpauseTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenUnpauseTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenUnpauseTransaction:%d", timestamp.UnixNano())
 }

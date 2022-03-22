@@ -17,7 +17,7 @@ import (
 func TestUnitContractBytecodeQueryValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	contractID, err := ContractIDFromString("0.0.123-rmkyk")
+	contractID, err := ContractIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	contractBytecode := NewContractBytecodeQuery().
@@ -39,7 +39,7 @@ func TestUnitContractBytecodeQueryValidateWrong(t *testing.T) {
 	err = contractBytecode._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
@@ -64,6 +64,7 @@ func TestUnitMockContractBytecodeQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	bytecode, err := NewContractBytecodeQuery().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
@@ -74,6 +75,4 @@ func TestUnitMockContractBytecodeQuery(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, bytes.Compare(bytecode, smartContractBytecode), 0)
-
-	server.Close()
 }

@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"time"
 
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/hashgraph/hedera-protobufs-go/mirror"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/credentials"
@@ -19,28 +21,25 @@ type _MirrorNode struct {
 	client                 *grpc.ClientConn
 }
 
-func _NewMirrorNode(address string) _MirrorNode {
-	wait := 250 * time.Millisecond
-	temp := _NewManagedNode(address, wait.Milliseconds())
-	return _MirrorNode{
-		_ManagedNode:           &temp,
-		consensusServiceClient: nil,
-	}
+func _NewMirrorNode(address string) (node *_MirrorNode, err error) {
+	node = &_MirrorNode{}
+	node._ManagedNode, err = _NewManagedNode(address, 250*time.Millisecond)
+	return node, err
 }
 
-func (node *_MirrorNode) _SetMinBackoff(waitTime int64) {
+func (node *_MirrorNode) _SetMinBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
-func (node *_MirrorNode) _GetMinBackoff() int64 {
+func (node *_MirrorNode) _GetMinBackoff() time.Duration {
 	return node._ManagedNode._GetMinBackoff()
 }
 
-func (node *_MirrorNode) _SetMaxBackoff(waitTime int64) {
+func (node *_MirrorNode) _SetMaxBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMaxBackoff(waitTime)
 }
 
-func (node *_MirrorNode) _GetMaxBackoff() int64 {
+func (node *_MirrorNode) _GetMaxBackoff() time.Duration {
 	return node._ManagedNode._GetMaxBackoff()
 }
 
@@ -104,7 +103,7 @@ func (node *_MirrorNode) _GetConsensusServiceClient() (*mirror.ConsensusServiceC
 	if node._ManagedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
-		security = grpc.WithInsecure() //nolint
+		security = grpc.WithTransportCredentials(insecure.NewCredentials()) //nolint
 	}
 
 	conn, err := grpc.Dial(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
@@ -139,7 +138,7 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 	if node._ManagedNode.address._IsTransportSecurity() {
 		security = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})) // nolint
 	} else {
-		security = grpc.WithInsecure() //nolint
+		security = grpc.WithTransportCredentials(insecure.NewCredentials()) //nolint
 	}
 
 	conn, err := grpc.Dial(node._ManagedNode.address._String(), security, grpc.WithKeepaliveParams(kacp), grpc.WithBlock())
@@ -156,13 +155,13 @@ func (node *_MirrorNode) _GetNetworkServiceClient() (*mirror.NetworkServiceClien
 
 func (node *_MirrorNode) _ToSecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToSecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToSecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_MirrorNode{
@@ -174,13 +173,13 @@ func (node *_MirrorNode) _ToSecure() _IManagedNode {
 
 func (node *_MirrorNode) _ToInsecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToInsecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToInsecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_MirrorNode{

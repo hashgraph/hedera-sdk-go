@@ -18,7 +18,7 @@ import (
 func TestUnitFileAppendTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	fileID, err := FileIDFromString("0.0.123-rmkyk")
+	fileID, err := FileIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	fileAppend := NewFileAppendTransaction().
@@ -40,7 +40,7 @@ func TestUnitFileAppendTransactionValidateWrong(t *testing.T) {
 	err = fileAppend._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
@@ -105,6 +105,7 @@ func TestUnitMockFileAppendTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewFileAppendTransaction().
 		SetFileID(FileID{File: 3}).
@@ -112,6 +113,4 @@ func TestUnitMockFileAppendTransaction(t *testing.T) {
 		SetContents(fil).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

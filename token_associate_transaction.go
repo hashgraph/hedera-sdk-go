@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -51,6 +52,11 @@ func _TokenAssociateTransactionFromProtobuf(transaction Transaction, pb *service
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenAssociate().GetAccount()),
 		tokens:      tokens,
 	}
+}
+
+func (transaction *TokenAssociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenAssociateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // The account to be associated with the provided tokens
@@ -282,6 +288,8 @@ func (transaction *TokenAssociateTransaction) Execute(
 		_TokenAssociateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -462,4 +470,9 @@ func (transaction *TokenAssociateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenAssociateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenAssociateTransaction:%d", timestamp.UnixNano())
 }

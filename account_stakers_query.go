@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -23,6 +24,11 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 	return &AccountStakersQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *AccountStakersQuery) SetGrpcDeadline(deadline *time.Duration) *AccountStakersQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetAccountID sets the Account ID for which the stakers should be retrieved
@@ -114,6 +120,8 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -124,8 +132,8 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountStakersQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
+func _AccountStakersQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountStakersQueryMapStatusError(_ _Request, response _Response) error {
@@ -159,7 +167,9 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		return []Transfer{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -213,6 +223,8 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -296,4 +308,21 @@ func (query *AccountStakersQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountStakersQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("AccountStakersQuery:%d", timestamp)
+}
+
+func (query *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

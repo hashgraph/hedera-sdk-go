@@ -35,3 +35,16 @@ func TestUnitAccountIDFromStringAlias(t *testing.T) {
 
 	assert.Equal(t, id.String(), id2.String())
 }
+
+func TestUnitChecksum(t *testing.T) {
+	id, err := LedgerIDFromString("01")
+	require.NoError(t, err)
+	ad1, err := _ChecksumParseAddress(id, "0.0.3")
+	require.NoError(t, err)
+	id, err = LedgerIDFromString("10")
+	require.NoError(t, err)
+	ad2, err := _ChecksumParseAddress(id, "0.0.3")
+	require.NoError(t, err)
+
+	require.NotEqual(t, ad1.correctChecksum, ad2.correctChecksum)
+}

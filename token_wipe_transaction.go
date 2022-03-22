@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -48,6 +49,11 @@ func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 		amount:      pb.GetTokenWipe().Amount,
 		serial:      pb.GetTokenWipe().GetSerialNumbers(),
 	}
+}
+
+func (transaction *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenWipeTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // The token for which the account will be wiped. If token does not exist, transaction results in
@@ -285,6 +291,8 @@ func (transaction *TokenWipeTransaction) Execute(
 		_TokenWipeTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -465,4 +473,9 @@ func (transaction *TokenWipeTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenWipeTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenWipeTransaction:%d", timestamp.UnixNano())
 }

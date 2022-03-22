@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -56,6 +57,11 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 		tokenTransfers: tokenTransfers,
 		nftTransfers:   nftTransfers,
 	}
+}
+
+func (transaction *TransferTransaction) SetGrpcDeadline(deadline *time.Duration) *TransferTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 func (transaction *TransferTransaction) SetTokenTransferApproval(tokenID TokenID, accountID AccountID, approval bool) *TransferTransaction { //nolint
@@ -551,6 +557,8 @@ func (transaction *TransferTransaction) Execute(
 		_TransferTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -798,4 +806,9 @@ func (transaction *TransferTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TransferTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TransferTransaction:%d", timestamp.UnixNano())
 }

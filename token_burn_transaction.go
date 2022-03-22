@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -36,6 +37,11 @@ func _TokenBurnTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 		amount:      pb.GetTokenBurn().GetAmount(),
 		serial:      pb.GetTokenBurn().GetSerialNumbers(),
 	}
+}
+
+func (transaction *TokenBurnTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenBurnTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // The token for which to burn tokens. If token does not exist, transaction results in
@@ -270,6 +276,8 @@ func (transaction *TokenBurnTransaction) Execute(
 		_TokenBurnTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -450,4 +458,9 @@ func (transaction *TokenBurnTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenBurnTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenBurnTransaction:%d", timestamp.UnixNano())
 }

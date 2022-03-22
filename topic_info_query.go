@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -18,6 +19,11 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 	return &TopicInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *TopicInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TopicInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetTopicID sets the topic to retrieve info about (the parameters and running state of).
@@ -109,6 +115,8 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_TopicInfoQueryGetMethod,
 		_TopicInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -122,8 +130,8 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TopicInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
+func _TopicInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TopicInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -158,7 +166,9 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -212,6 +222,8 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		_TopicInfoQueryGetMethod,
 		_TopicInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -277,4 +289,12 @@ func (query *TopicInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *TopicInfoQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("TopicInfoQuery:%d", timestamp)
 }

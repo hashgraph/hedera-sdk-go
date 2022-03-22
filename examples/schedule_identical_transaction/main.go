@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go/v2"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {
@@ -129,10 +130,9 @@ func main() {
 
 		tx, err := tx.FreezeWith(client)
 		if err != nil {
-			println(err.Error(), ": error while freezing transaction for client ", )
+			println(err.Error(), ": error while freezing transaction for client ")
 			return
 		}
-
 
 		signedTransaction, err := tx.SignWithOperator(client)
 		if err != nil {
@@ -143,7 +143,7 @@ func main() {
 		scheduledTx, err := hedera.NewScheduleCreateTransaction().
 			SetScheduledTransaction(signedTransaction)
 		if err != nil {
-			println(err.Error(),": error while setting scheduled transaction with operator client", operator)
+			println(err.Error(), ": error while setting scheduled transaction with operator client", operator)
 			return
 		}
 
@@ -157,9 +157,9 @@ func main() {
 		}
 
 		receipt, err := hedera.NewTransactionReceiptQuery().
-            SetTransactionID(response.TransactionID).
-            SetNodeAccountIDs([]hedera.AccountID{response.NodeID}).
-            Execute(client)
+			SetTransactionID(response.TransactionID).
+			SetNodeAccountIDs([]hedera.AccountID{response.NodeID}).
+			Execute(client)
 		if err != nil {
 			println(err.Error(), ": error while getting schedule create receipt transaction with operator", operator)
 			return

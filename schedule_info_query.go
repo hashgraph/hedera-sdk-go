@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -16,6 +17,11 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	return &ScheduleInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *ScheduleInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ScheduleInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 func (query *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
@@ -106,6 +112,8 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_ScheduleInfoQueryGetMethod,
 		_ScheduleInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -119,8 +127,8 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ScheduleInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
+func _ScheduleInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _ScheduleInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -155,7 +163,9 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		return ScheduleInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -209,6 +219,8 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		_ScheduleInfoQueryGetMethod,
 		_ScheduleInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -278,4 +290,21 @@ func (query *ScheduleInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *ScheduleInfoQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("ScheduleInfoQuery:%d", timestamp)
+}
+
+func (query *ScheduleInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *ScheduleInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

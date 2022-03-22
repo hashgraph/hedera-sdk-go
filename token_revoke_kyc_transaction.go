@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -36,6 +37,11 @@ func _TokenRevokeKycTransactionFromProtobuf(transaction Transaction, pb *service
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenRevokeKyc().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenRevokeKyc().GetAccount()),
 	}
+}
+
+func (transaction *TokenRevokeKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenRevokeKycTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
@@ -240,6 +246,8 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 		_TokenRevokeKycTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -420,4 +428,9 @@ func (transaction *TokenRevokeKycTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenRevokeKycTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenRevokeKycTransaction:%d", timestamp.UnixNano())
 }

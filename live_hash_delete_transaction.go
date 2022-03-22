@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
@@ -29,6 +30,11 @@ func _LiveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *service
 		accountID:   _AccountIDFromProtobuf(pb.GetCryptoDeleteLiveHash().GetAccountOfLiveHash()),
 		hash:        pb.GetCryptoDeleteLiveHash().LiveHashToDelete,
 	}
+}
+
+func (transaction *LiveHashDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashDeleteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 func (transaction *LiveHashDeleteTransaction) SetHash(hash []byte) *LiveHashDeleteTransaction {
@@ -196,6 +202,8 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 		_LiveHashDeleteTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -376,4 +384,9 @@ func (transaction *LiveHashDeleteTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *LiveHashDeleteTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("LiveHashDeleteTransaction:%d", timestamp.UnixNano())
 }

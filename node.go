@@ -26,34 +26,28 @@ type _Node struct {
 	verifyCertificate bool
 }
 
-type _Nodes struct {
-	nodes []_IManagedNode
-}
-
-func _NewNode(accountID AccountID, address string, minBackoff int64) _Node {
-	temp := _NewManagedNode(address, minBackoff)
-	return _Node{
+func _NewNode(accountID AccountID, address string, minBackoff time.Duration) (node *_Node, err error) {
+	node = &_Node{
 		accountID:         accountID,
-		channel:           nil,
-		_ManagedNode:      &temp,
-		addressBook:       nil,
 		verifyCertificate: true,
 	}
+	node._ManagedNode, err = _NewManagedNode(address, minBackoff)
+	return node, err
 }
 
-func (node *_Node) _SetMinBackoff(waitTime int64) {
+func (node *_Node) _SetMinBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
 
-func (node *_Node) _GetMinBackoff() int64 {
+func (node *_Node) _GetMinBackoff() time.Duration {
 	return node._ManagedNode._GetMinBackoff()
 }
 
-func (node *_Node) _SetMaxBackoff(waitTime int64) {
+func (node *_Node) _SetMaxBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMaxBackoff(waitTime)
 }
 
-func (node *_Node) _GetMaxBackoff() int64 {
+func (node *_Node) _GetMaxBackoff() time.Duration {
 	return node._ManagedNode._GetMaxBackoff()
 }
 
@@ -136,7 +130,6 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 					}
 
 					var encodedBuf bytes.Buffer
-
 					_ = pem.Encode(&encodedBuf, block)
 					digest := sha512.New384()
 
@@ -185,13 +178,13 @@ func (node *_Node) _Close() error {
 
 func (node *_Node) _ToSecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToSecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToSecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_Node{
@@ -205,13 +198,13 @@ func (node *_Node) _ToSecure() _IManagedNode {
 
 func (node *_Node) _ToInsecure() _IManagedNode {
 	managed := _ManagedNode{
-		address:        node.address._ToInsecure(),
-		currentBackoff: node.currentBackoff,
-		lastUsed:       node.lastUsed,
-		backoffUntil:   node.lastUsed,
-		useCount:       node.useCount,
-		minBackoff:     node.minBackoff,
-		attempts:       node.attempts,
+		address:            node.address._ToInsecure(),
+		currentBackoff:     node.currentBackoff,
+		lastUsed:           node.lastUsed,
+		backoffUntil:       node.backoffUntil,
+		useCount:           node.useCount,
+		minBackoff:         node.minBackoff,
+		badGrpcStatusCount: node.badGrpcStatusCount,
 	}
 
 	return &_Node{
@@ -220,37 +213,6 @@ func (node *_Node) _ToInsecure() _IManagedNode {
 		channel:           node.channel,
 		addressBook:       node.addressBook,
 		verifyCertificate: node.verifyCertificate,
-	}
-}
-
-func (nodes _Nodes) Len() int {
-	return len(nodes.nodes)
-}
-func (nodes _Nodes) Swap(i, j int) {
-	nodes.nodes[i], nodes.nodes[j] = nodes.nodes[j], nodes.nodes[i]
-}
-
-func (nodes _Nodes) Less(i, j int) bool {
-	if nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() { // nolint
-		if nodes.nodes[i]._GetUseCount() < nodes.nodes[j]._GetUseCount() { // nolint
-			return true
-		} else if nodes.nodes[i]._GetUseCount() > nodes.nodes[j]._GetUseCount() {
-			return false
-		} else {
-			return nodes.nodes[i]._GetLastUsed() < nodes.nodes[j]._GetLastUsed()
-		}
-	} else if nodes.nodes[i]._IsHealthy() && !nodes.nodes[j]._IsHealthy() {
-		return true
-	} else if !nodes.nodes[i]._IsHealthy() && nodes.nodes[j]._IsHealthy() {
-		return false
-	} else {
-		if nodes.nodes[i]._GetUseCount() < nodes.nodes[j]._GetUseCount() { // nolint
-			return true
-		} else if nodes.nodes[i]._GetUseCount() > nodes.nodes[j]._GetUseCount() {
-			return false
-		} else {
-			return nodes.nodes[i]._GetLastUsed() < nodes.nodes[j]._GetLastUsed()
-		}
 	}
 }
 

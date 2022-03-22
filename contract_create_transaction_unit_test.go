@@ -19,9 +19,9 @@ import (
 func TestUnitContractCreateTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
-	fileID, err := FileIDFromString("0.0.123-rmkyk")
+	fileID, err := FileIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	contractCreate := NewContractCreateTransaction().
@@ -47,7 +47,7 @@ func TestUnitContractCreateTransactionValidateWrong(t *testing.T) {
 	err = contractCreate._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
@@ -103,6 +103,7 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err = NewContractCreateTransaction().
 		SetAdminKey(client.GetOperatorPublicKey()).
@@ -113,6 +114,4 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

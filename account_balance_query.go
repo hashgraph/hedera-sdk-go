@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -12,6 +13,7 @@ type AccountBalanceQuery struct {
 	Query
 	accountID  *AccountID
 	contractID *ContractID
+	timestamp  time.Time
 }
 
 // NewAccountBalanceQuery creates an AccountBalanceQuery query which can be used to construct and execute
@@ -23,6 +25,11 @@ func NewAccountBalanceQuery() *AccountBalanceQuery {
 	return &AccountBalanceQuery{
 		Query: _NewQuery(false, &header),
 	}
+}
+
+func (query *AccountBalanceQuery) SetGrpcDeadline(deadline *time.Duration) *AccountBalanceQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetAccountID sets the AccountID for which you wish to query the balance.
@@ -126,6 +133,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
+	query.timestamp = time.Now()
+
 	for range query.nodeAccountIDs {
 		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
 		if err != nil {
@@ -153,6 +162,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -163,8 +174,8 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountBalanceQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
+func _AccountBalanceQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountBalanceQueryMapStatusError(_ _Request, response _Response) error {
@@ -206,6 +217,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		return AccountBalance{}, err
 	}
 
+	query.timestamp = time.Now()
 	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
@@ -227,6 +239,8 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -293,4 +307,18 @@ func (query *AccountBalanceQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountBalanceQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	return fmt.Sprintf("AccountBalanceQuery:%d", timestamp)
+}
+
+func (query *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

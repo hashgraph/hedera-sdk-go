@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -47,6 +48,11 @@ func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 		contents:       pb.GetFileCreate().GetContents(),
 		memo:           pb.GetMemo(),
 	}
+}
+
+func (transaction *FileCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // AddKey adds a key to the internal list of keys associated with the file. All of the keys on the list must sign to
@@ -286,6 +292,8 @@ func (transaction *FileCreateTransaction) Execute(
 		_FileCreateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -462,4 +470,9 @@ func (transaction *FileCreateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *FileCreateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("FileCreateTransaction:%d", timestamp.UnixNano())
 }

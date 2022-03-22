@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -37,6 +38,11 @@ func _TokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *services
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenUnfreeze().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenUnfreeze().GetAccount()),
 	}
+}
+
+func (transaction *TokenUnfreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUnfreezeTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // The token for which this account will be unfrozen. If token does not exist, transaction results in INVALID_TOKEN_ID
@@ -241,6 +247,8 @@ func (transaction *TokenUnfreezeTransaction) Execute(
 		_TokenUnfreezeTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -421,4 +429,9 @@ func (transaction *TokenUnfreezeTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenUnfreezeTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenUnfreezeTransaction:%d", timestamp.UnixNano())
 }

@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -103,6 +104,11 @@ func _TokenCreateTransactionFromProtobuf(transaction Transaction, pb *services.T
 		expirationTime:     &expirationTime,
 		autoRenewPeriod:    &autoRenew,
 	}
+}
+
+func (transaction *TokenCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // The publicly visible name of the token, specified as a string of only ASCII characters
@@ -627,6 +633,8 @@ func (transaction *TokenCreateTransaction) Execute(
 		_TokenCreateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -811,4 +819,9 @@ func (transaction *TokenCreateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenCreateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenCreateTransaction:%d", timestamp.UnixNano())
 }

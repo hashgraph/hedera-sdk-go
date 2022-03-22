@@ -17,7 +17,7 @@ import (
 func TestUnitContractCallQueryValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	contractID, err := ContractIDFromString("0.0.123-rmkyk")
+	contractID, err := ContractIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	contractCall := NewContractCallQuery().
@@ -39,7 +39,7 @@ func TestUnitContractCallQueryValidateWrong(t *testing.T) {
 	err = contractCall._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
@@ -71,6 +71,7 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	result, err := NewContractCallQuery().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
@@ -85,6 +86,4 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 	require.Equal(t, bytes.Compare(result.ContractCallResult, params._Build(&message)), 0)
 	require.Equal(t, result.GasUsed, uint64(75000))
 	require.Equal(t, result.ContractID.Contract, uint64(123))
-
-	server.Close()
 }

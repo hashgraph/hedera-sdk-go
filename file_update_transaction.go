@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -38,6 +39,11 @@ func _FileUpdateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 		contents:       pb.GetFileUpdate().GetContents(),
 		memo:           pb.GetFileUpdate().GetMemo().Value,
 	}
+}
+
+func (transaction *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *FileUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 func (transaction *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTransaction {
@@ -296,6 +302,8 @@ func (transaction *FileUpdateTransaction) Execute(
 		_FileUpdateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -476,4 +484,9 @@ func (transaction *FileUpdateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *FileUpdateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("FileUpdateTransaction:%d", timestamp.UnixNano())
 }
