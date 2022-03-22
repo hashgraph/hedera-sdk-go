@@ -79,7 +79,7 @@ func TestUnitMockContractExecuteTransaction(t *testing.T) {
 
 		if bod, ok := transactionBody.Data.(*services.TransactionBody_ContractCall); ok {
 			require.Equal(t, bod.ContractCall.ContractID.GetContractNum(), int64(123))
-			require.Equal(t, bod.ContractCall.GetGas(), int64(75000))
+			require.Equal(t, bod.ContractCall.GetGas(), int64(100000))
 			message := "setMessage"
 			require.Equal(t, bytes.Compare(bod.ContractCall.FunctionParameters, params._Build(&message)), 0)
 		}
