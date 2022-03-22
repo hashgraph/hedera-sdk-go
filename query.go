@@ -155,7 +155,7 @@ func _QueryAdvanceRequest(request _Request) {
 }
 
 func _CostQueryAdvanceRequest(request _Request) {
-	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeAccountIDs)
+	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeAccountIDs.slice)
 }
 
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {

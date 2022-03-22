@@ -20,8 +20,11 @@ func (network *_Network) SetNetwork(net map[string]AccountID) (err error) {
 	newNetwork := make(map[string]_IManagedNode)
 
 	for url, id := range net {
-		node := _NewNode(id, url, network._ManagedNetwork.minBackOff.Nanoseconds())
-		newNetwork[url] = &node
+		node, err := _NewNode(id, url, network.minBackoff)
+		if err != nil {
+			return err
+		}
+		newNetwork[url] = node
 	}
 
 	return network._ManagedNetwork._SetNetwork(newNetwork)
@@ -40,15 +43,15 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 }
 
 func (network *_Network) _IncreaseDelay(node *_Node) {
-	node._IncreaseDelay()
+	node._IncreaseBackoff()
 
-	for i, n := range network.goodNodes {
+	for i, n := range network.healthyNodes {
 		if goodNode, ok := n.(*_Node); ok {
 			if goodNode.accountID.String() == node.accountID.String() {
-				if i == len(network.goodNodes)-1 {
-					network.goodNodes = network.goodNodes[:i]
+				if i == len(network.healthyNodes)-1 {
+					network.healthyNodes = network.healthyNodes[:i]
 				} else {
-					network.goodNodes = append(network.goodNodes[:i], network.goodNodes[i+1:]...)
+					network.healthyNodes = append(network.healthyNodes[:i], network.healthyNodes[i+1:]...)
 				}
 			}
 		}
@@ -137,8 +140,8 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { //nolint
 	nodes := make([]AccountID, 0)
 
-	for i := 0; i < len(network.goodNodes); i++ {
-		node := network.goodNodes[i]
+	for i := 0; i < len(network.healthyNodes); i++ {
+		node := network.healthyNodes[i]
 		if node, ok := node.(*_Node); ok {
 			nodes = append(nodes, node.accountID)
 		}
@@ -198,11 +201,11 @@ func (network *_Network) _SetNodeMaxReadmitPeriod(period time.Duration) {
 }
 
 func (network *_Network) _GetNodeMinReadmitPeriod() time.Duration {
-	return network._ManagedNetwork.nodeMinReadmitPeriod
+	return network._ManagedNetwork.minNodeReadmitPeriod
 }
 
 func (network *_Network) _GetNodeMaxReadmitPeriod() time.Duration {
-	return network._ManagedNetwork.nodeMaxReadmitPeriod
+	return network._ManagedNetwork.maxNodeReadmitPeriod
 }
 
 func (network *_Network) Close() error {

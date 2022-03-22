@@ -39,7 +39,7 @@ func (network *_MirrorNetwork) _SetTransportSecurity(transportSecurity bool) *_M
 }
 
 func (network *_MirrorNetwork) _GetNextMirrorNode() *_MirrorNode {
-	node := network._ManagedNetwork.goodNodes[rand.Intn(len(network.goodNodes))]
+	node := network._ManagedNetwork.healthyNodes[rand.Intn(len(network.healthyNodes))]
 	if node, ok := node.(*_MirrorNode); ok {
 		return node
 	}
