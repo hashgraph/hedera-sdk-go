@@ -156,7 +156,7 @@ func (contract *ContractFunctionParameters) AddInt64(value int64) *ContractFunct
 func (contract *ContractFunctionParameters) AddInt72(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:23], value...)
+	argument.value = append(argument.value[:23], value...)
 
 	contract.function.AddInt72()
 	contract.arguments = append(contract.arguments, argument)
@@ -167,7 +167,7 @@ func (contract *ContractFunctionParameters) AddInt72(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt80(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:22], value...)
+	argument.value = append(argument.value[:22], value...)
 
 	contract.function.AddInt80()
 	contract.arguments = append(contract.arguments, argument)
@@ -178,7 +178,7 @@ func (contract *ContractFunctionParameters) AddInt80(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt88(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:21], value...)
+	argument.value = append(argument.value[:21], value...)
 
 	contract.function.AddInt88()
 	contract.arguments = append(contract.arguments, argument)
@@ -189,7 +189,7 @@ func (contract *ContractFunctionParameters) AddInt88(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt96(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:20], value...)
+	argument.value = append(argument.value[:20], value...)
 
 	contract.function.AddInt96()
 	contract.arguments = append(contract.arguments, argument)
@@ -200,7 +200,7 @@ func (contract *ContractFunctionParameters) AddInt96(value []byte) *ContractFunc
 func (contract *ContractFunctionParameters) AddInt104(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:19], value...)
+	argument.value = append(argument.value[:19], value...)
 
 	contract.function.AddInt104()
 	contract.arguments = append(contract.arguments, argument)
@@ -211,7 +211,7 @@ func (contract *ContractFunctionParameters) AddInt104(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt112(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:18], value...)
+	argument.value = append(argument.value[:18], value...)
 
 	contract.function.AddInt112()
 	contract.arguments = append(contract.arguments, argument)
@@ -222,7 +222,7 @@ func (contract *ContractFunctionParameters) AddInt112(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt120(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:17], value...)
+	argument.value = append(argument.value[:17], value...)
 
 	contract.function.AddInt120()
 	contract.arguments = append(contract.arguments, argument)
@@ -233,7 +233,7 @@ func (contract *ContractFunctionParameters) AddInt120(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt128(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:16], value...)
+	argument.value = append(argument.value[:16], value...)
 
 	contract.function.AddInt128()
 	contract.arguments = append(contract.arguments, argument)
@@ -244,7 +244,7 @@ func (contract *ContractFunctionParameters) AddInt128(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt136(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:15], value...)
+	argument.value = append(argument.value[:15], value...)
 
 	contract.function.AddInt136()
 	contract.arguments = append(contract.arguments, argument)
@@ -255,7 +255,7 @@ func (contract *ContractFunctionParameters) AddInt136(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt144(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:14], value...)
+	argument.value = append(argument.value[:14], value...)
 
 	contract.function.AddInt144()
 	contract.arguments = append(contract.arguments, argument)
@@ -266,7 +266,7 @@ func (contract *ContractFunctionParameters) AddInt144(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt152(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:13], value...)
+	argument.value = append(argument.value[:13], value...)
 
 	contract.function.AddInt152()
 	contract.arguments = append(contract.arguments, argument)
@@ -277,7 +277,7 @@ func (contract *ContractFunctionParameters) AddInt152(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt160(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:12], value...)
+	argument.value = append(argument.value[:12], value...)
 
 	contract.function.AddInt160()
 	contract.arguments = append(contract.arguments, argument)
@@ -288,7 +288,7 @@ func (contract *ContractFunctionParameters) AddInt160(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt168(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:11], value...)
+	argument.value = append(argument.value[:11], value...)
 
 	contract.function.AddInt168()
 	contract.arguments = append(contract.arguments, argument)
@@ -299,7 +299,7 @@ func (contract *ContractFunctionParameters) AddInt168(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt176(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:10], value...)
+	argument.value = append(argument.value[:10], value...)
 
 	contract.function.AddInt176()
 	contract.arguments = append(contract.arguments, argument)
@@ -310,7 +310,7 @@ func (contract *ContractFunctionParameters) AddInt176(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt184(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:9], value...)
+	argument.value = append(argument.value[:9], value...)
 
 	contract.function.AddInt184()
 	contract.arguments = append(contract.arguments, argument)
@@ -321,7 +321,7 @@ func (contract *ContractFunctionParameters) AddInt184(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt192(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:8], value...)
+	argument.value = append(argument.value[:8], value...)
 
 	contract.function.AddInt192()
 	contract.arguments = append(contract.arguments, argument)
@@ -332,7 +332,7 @@ func (contract *ContractFunctionParameters) AddInt192(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt200(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:7], value...)
+	argument.value = append(argument.value[:7], value...)
 
 	contract.function.AddInt200()
 	contract.arguments = append(contract.arguments, argument)
@@ -343,7 +343,7 @@ func (contract *ContractFunctionParameters) AddInt200(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt208(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:6], value...)
+	argument.value = append(argument.value[:6], value...)
 
 	contract.function.AddInt208()
 	contract.arguments = append(contract.arguments, argument)
@@ -354,7 +354,7 @@ func (contract *ContractFunctionParameters) AddInt208(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt216(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:5], value...)
+	argument.value = append(argument.value[:5], value...)
 
 	contract.function.AddInt216()
 	contract.arguments = append(contract.arguments, argument)
@@ -365,7 +365,7 @@ func (contract *ContractFunctionParameters) AddInt216(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt224(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:4], value...)
+	argument.value = append(argument.value[:4], value...)
 
 	contract.function.AddInt224()
 	contract.arguments = append(contract.arguments, argument)
@@ -376,7 +376,7 @@ func (contract *ContractFunctionParameters) AddInt224(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt232(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:3], value...)
+	argument.value = append(argument.value[:3], value...)
 
 	contract.function.AddInt232()
 	contract.arguments = append(contract.arguments, argument)
@@ -387,7 +387,7 @@ func (contract *ContractFunctionParameters) AddInt232(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt240(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:2], value...)
+	argument.value = append(argument.value[:2], value...)
 
 	contract.function.AddInt240()
 	contract.arguments = append(contract.arguments, argument)
@@ -398,7 +398,7 @@ func (contract *ContractFunctionParameters) AddInt240(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddInt248(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:1], value...)
+	argument.value = append(argument.value[:1], value...)
 
 	contract.function.AddInt248()
 	contract.arguments = append(contract.arguments, argument)
@@ -508,7 +508,7 @@ func (contract *ContractFunctionParameters) AddUint64(value uint64) *ContractFun
 func (contract *ContractFunctionParameters) AddUint72(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:23], value...)
+	argument.value = append(argument.value[:23], value...)
 
 	contract.function.AddUint72()
 	contract.arguments = append(contract.arguments, argument)
@@ -519,7 +519,7 @@ func (contract *ContractFunctionParameters) AddUint72(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint80(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:22], value...)
+	argument.value = append(argument.value[:22], value...)
 
 	contract.function.AddUint80()
 	contract.arguments = append(contract.arguments, argument)
@@ -530,7 +530,7 @@ func (contract *ContractFunctionParameters) AddUint80(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint88(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:21], value...)
+	argument.value = append(argument.value[:21], value...)
 
 	contract.function.AddUint88()
 	contract.arguments = append(contract.arguments, argument)
@@ -541,7 +541,7 @@ func (contract *ContractFunctionParameters) AddUint88(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint96(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:20], value...)
+	argument.value = append(argument.value[:20], value...)
 
 	contract.function.AddUint96()
 	contract.arguments = append(contract.arguments, argument)
@@ -552,7 +552,7 @@ func (contract *ContractFunctionParameters) AddUint96(value []byte) *ContractFun
 func (contract *ContractFunctionParameters) AddUint104(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:19], value...)
+	argument.value = append(argument.value[:19], value...)
 
 	contract.function.AddUint104()
 	contract.arguments = append(contract.arguments, argument)
@@ -563,7 +563,7 @@ func (contract *ContractFunctionParameters) AddUint104(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint112(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:18], value...)
+	argument.value = append(argument.value[:18], value...)
 
 	contract.function.AddUint112()
 	contract.arguments = append(contract.arguments, argument)
@@ -574,7 +574,7 @@ func (contract *ContractFunctionParameters) AddUint112(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint120(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:17], value...)
+	argument.value = append(argument.value[:17], value...)
 
 	contract.function.AddUint120()
 	contract.arguments = append(contract.arguments, argument)
@@ -585,7 +585,7 @@ func (contract *ContractFunctionParameters) AddUint120(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint128(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:16], value...)
+	argument.value = append(argument.value[:16], value...)
 
 	contract.function.AddUint128()
 	contract.arguments = append(contract.arguments, argument)
@@ -596,7 +596,7 @@ func (contract *ContractFunctionParameters) AddUint128(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint136(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:15], value...)
+	argument.value = append(argument.value[:15], value...)
 
 	contract.function.AddUint136()
 	contract.arguments = append(contract.arguments, argument)
@@ -607,7 +607,7 @@ func (contract *ContractFunctionParameters) AddUint136(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint144(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:14], value...)
+	argument.value = append(argument.value[:14], value...)
 
 	contract.function.AddUint144()
 	contract.arguments = append(contract.arguments, argument)
@@ -618,7 +618,7 @@ func (contract *ContractFunctionParameters) AddUint144(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint152(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:13], value...)
+	argument.value = append(argument.value[:13], value...)
 
 	contract.function.AddUint152()
 	contract.arguments = append(contract.arguments, argument)
@@ -629,7 +629,7 @@ func (contract *ContractFunctionParameters) AddUint152(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint160(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:12], value...)
+	argument.value = append(argument.value[:12], value...)
 
 	contract.function.AddUint160()
 	contract.arguments = append(contract.arguments, argument)
@@ -640,7 +640,7 @@ func (contract *ContractFunctionParameters) AddUint160(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint168(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:11], value...)
+	argument.value = append(argument.value[:11], value...)
 
 	contract.function.AddUint168()
 	contract.arguments = append(contract.arguments, argument)
@@ -651,7 +651,7 @@ func (contract *ContractFunctionParameters) AddUint168(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint176(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:10], value...)
+	argument.value = append(argument.value[:10], value...)
 
 	contract.function.AddUint176()
 	contract.arguments = append(contract.arguments, argument)
@@ -662,7 +662,7 @@ func (contract *ContractFunctionParameters) AddUint176(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint184(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:9], value...)
+	argument.value = append(argument.value[:9], value...)
 
 	contract.function.AddUint184()
 	contract.arguments = append(contract.arguments, argument)
@@ -673,7 +673,7 @@ func (contract *ContractFunctionParameters) AddUint184(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint192(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:8], value...)
+	argument.value = append(argument.value[:8], value...)
 
 	contract.function.AddUint192()
 	contract.arguments = append(contract.arguments, argument)
@@ -684,7 +684,7 @@ func (contract *ContractFunctionParameters) AddUint192(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint200(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:7], value...)
+	argument.value = append(argument.value[:7], value...)
 
 	contract.function.AddUint200()
 	contract.arguments = append(contract.arguments, argument)
@@ -695,7 +695,7 @@ func (contract *ContractFunctionParameters) AddUint200(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint208(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:6], value...)
+	argument.value = append(argument.value[:6], value...)
 
 	contract.function.AddUint208()
 	contract.arguments = append(contract.arguments, argument)
@@ -706,7 +706,7 @@ func (contract *ContractFunctionParameters) AddUint208(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint216(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:5], value...)
+	argument.value = append(argument.value[:5], value...)
 
 	contract.function.AddUint216()
 	contract.arguments = append(contract.arguments, argument)
@@ -717,7 +717,7 @@ func (contract *ContractFunctionParameters) AddUint216(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint224(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:4], value...)
+	argument.value = append(argument.value[:4], value...)
 
 	contract.function.AddUint224()
 	contract.arguments = append(contract.arguments, argument)
@@ -728,7 +728,7 @@ func (contract *ContractFunctionParameters) AddUint224(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint232(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:3], value...)
+	argument.value = append(argument.value[:3], value...)
 
 	contract.function.AddUint232()
 	contract.arguments = append(contract.arguments, argument)
@@ -739,7 +739,7 @@ func (contract *ContractFunctionParameters) AddUint232(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint240(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:2], value...)
+	argument.value = append(argument.value[:2], value...)
 
 	contract.function.AddUint240()
 	contract.arguments = append(contract.arguments, argument)
@@ -750,7 +750,7 @@ func (contract *ContractFunctionParameters) AddUint240(value []byte) *ContractFu
 func (contract *ContractFunctionParameters) AddUint248(value []byte) *ContractFunctionParameters {
 	argument := _NewArgument()
 
-	argument.value = append(value[:1], value...)
+	argument.value = append(argument.value[:1], value...)
 
 	contract.function.AddUint248()
 	contract.arguments = append(contract.arguments, argument)
