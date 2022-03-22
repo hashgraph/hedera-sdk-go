@@ -38,6 +38,7 @@
 * Min/max backoff for nodes should start at 8s to 60s
 * The current backoff for nodes should be used when sorting inside of network
   meaning nodes with a smaller current backoff will be prioritized
+* `TopicMessageQuery` start time should have a default
 
 ### Deprecated
 
