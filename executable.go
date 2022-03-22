@@ -3,7 +3,6 @@ package hedera
 import (
 	"context"
 	protobuf "google.golang.org/protobuf/proto"
-	"math"
 	"os"
 	"time"
 
@@ -31,10 +30,13 @@ func init() { // nolint
 	switch os.Getenv("HEDERA_SDK_GO_LOG_LEVEL") {
 	case "DEBUG":
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+		break
 	case "TRACE":
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+		break
 	case "INFO":
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+		break
 	default:
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
@@ -141,10 +143,15 @@ func _Execute(
 		}
 	}
 
+	currentBackoff := minBackoff
+
 	var attempt int64
 	var errPersistent error
 
-	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
+	for attempt = int64(0); attempt < int64(maxAttempts); attempt, *currentBackoff = attempt+1, *currentBackoff*2 {
+		if *currentBackoff > *maxBackoff {
+			*currentBackoff = *maxBackoff
+		}
 		var protoRequest _ProtoRequest
 		var node *_Node
 		var ok bool
@@ -189,8 +196,8 @@ func _Execute(
 
 		if !node._IsHealthy() {
 			logCtx.Trace().Str("requestId", logID).Str("delay", node._Wait().String()).Msg("node is unhealthy, waiting before continuing")
-			delay := node._Wait()
-			time.Sleep(delay)
+			_DelayForAttempt(logID, currentBackoff, attempt)
+			continue
 		}
 
 		logCtx.Trace().Str("requestId", logID).Msg("updating node account ID index")
@@ -237,14 +244,12 @@ func _Execute(
 		}
 
 		node._DecreaseBackoff()
+		*currentBackoff /= 2
 
-		retry := shouldRetry(logID, request, resp)
-
-		switch retry {
+		switch shouldRetry(logID, request, resp) {
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
-			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
-			client.network._IncreaseBackoff(node)
+			_DelayForAttempt(logID, currentBackoff, attempt)
 			continue
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
@@ -271,11 +276,9 @@ func _Execute(
 	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func _DelayForAttempt(logID string, minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
-	// 0.1s, 0.2s, 0.4s, 0.8s, ...
-	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
-	logCtx.Trace().Str("requestId", logID).Dur("delay", time.Duration(ms)).Int64("attempt", attempt+1).Msg("retrying  request attempt")
-	time.Sleep(time.Duration(ms) * time.Millisecond)
+func _DelayForAttempt(logID string, currentBackoff *time.Duration, attempt int64) {
+	logCtx.Trace().Str("requestId", logID).Dur("delay", *currentBackoff).Int64("attempt", attempt+1).Msg("retrying  request attempt")
+	time.Sleep(*currentBackoff)
 }
 
 func _ExecutableDefaultRetryHandler(logID string, err error) bool {
