@@ -35,7 +35,7 @@ func TestIntegrationContractDeleteTransactionCanExecute(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).
@@ -104,7 +104,7 @@ func TestIntegrationContractDeleteTransactionNoContractID(t *testing.T) {
 
 	resp, err = NewContractCreateTransaction().
 		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetGas(75000).
+		SetGas(100000).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetConstructorParameters(NewContractFunctionParameters().AddString("hello from hedera")).
 		SetBytecodeFileID(fileID).

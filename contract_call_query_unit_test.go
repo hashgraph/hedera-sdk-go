@@ -76,7 +76,7 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetContractID(ContractID{Contract: 123}).
 		SetQueryPayment(NewHbar(1)).
-		SetGas(75000).
+		SetGas(100000).
 		SetFunction(message, nil).
 		SetMaxQueryPayment(NewHbar(5)).
 		Execute(client)
