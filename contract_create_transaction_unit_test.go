@@ -90,7 +90,7 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 			params := NewContractFunctionParameters().AddString("hello from hedera")
 			require.Equal(t, bytes.Compare(bod.ContractCreateInstance.ConstructorParameters, params._Build(nil)), 0)
 			require.Equal(t, bod.ContractCreateInstance.Memo, "hedera-sdk-go::TestContractCreateTransaction_Execute")
-			require.Equal(t, bod.ContractCreateInstance.Gas, int64(75000))
+			require.Equal(t, bod.ContractCreateInstance.Gas, int64(100000))
 			require.Equal(t, hex.EncodeToString(bod.ContractCreateInstance.AdminKey.GetEd25519()), key.PublicKey().StringRaw())
 		}
 
