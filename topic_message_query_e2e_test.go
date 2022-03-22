@@ -121,7 +121,7 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	if !finished {
-		err = errors.New("Message was not received within 30 seconds")
+		err = errors.New("Message was not received within 60 seconds")
 	}
 	require.NoError(t, err)
 
@@ -276,14 +276,16 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	topicID := *receipt.TopicID
 	assert.NotNil(t, topicID)
 
-	wait := true
+	finished := false
 	start := time.Now()
 
 	_, err = NewTopicMessageQuery().
 		SetTopicID(topicID).
+		SetLimit(14).
+		SetEndTime(time.Now().Add(time.Second*20)).
 		Subscribe(env.Client, func(message TopicMessage) {
 			if string(message.Contents) == bigContents {
-				wait = false
+				finished = true
 			}
 		})
 	require.NoError(t, err)
@@ -299,7 +301,7 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	require.NoError(t, err)
 
 	for {
-		if err != nil || !wait || uint64(time.Since(start).Seconds()) > 30 {
+		if err != nil || finished || uint64(time.Since(start).Seconds()) > 60 {
 			break
 		}
 
@@ -315,10 +317,10 @@ func TestIntegrationTopicMessageQueryNoStartTime(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	if wait {
-		err = errors.New("Message was not received within 30 seconds")
+	if !finished {
+		err = errors.New("Message was not received within 60 seconds")
 	}
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)

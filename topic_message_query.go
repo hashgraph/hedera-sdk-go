@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"context"
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"io"
 	"math"
 	"regexp"
@@ -128,11 +129,15 @@ func (query *TopicMessageQuery) _Build() *mirror.ConsensusTopicQuery {
 	if query.topicID != nil {
 		body.TopicID = query.topicID._ToProtobuf()
 	}
+
 	if query.startTime != nil {
 		body.ConsensusStartTime = _TimeToProtobuf(*query.startTime)
+	} else {
+		body.ConsensusStartTime = &services.Timestamp{}
 	}
+
 	if query.endTime != nil {
-		body.ConsensusStartTime = _TimeToProtobuf(*query.endTime)
+		body.ConsensusEndTime = _TimeToProtobuf(*query.endTime)
 	}
 
 	return body
