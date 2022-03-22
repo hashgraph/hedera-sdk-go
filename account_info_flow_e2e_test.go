@@ -33,14 +33,10 @@ func TestIntegrationVerifySignatureFlowCanExecute(t *testing.T) {
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
 
-	verify, err := NewVerifySignatureFlow().
-		SetAccountID(accountID).
-		SetKey(newKey.PublicKey()).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	assert.True(t, verify)
+	//verify, err := AccountInfoFlowVerifySignature(env.Client, accountID, newKey.PublicKey())
+	//require.NoError(t, err)
+	//
+	//assert.True(t, verify)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -95,14 +91,10 @@ func TestIntegrationVerifySignatureFlowKeyList(t *testing.T) {
 	accountID := *receipt.AccountID
 	require.NoError(t, err)
 
-	verify, err := NewVerifySignatureFlow().
-		SetAccountID(accountID).
-		SetKey(pubKeys[0]).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	assert.True(t, verify)
+	//verify, err := AccountInfoFlowVerifySignature(env.Client, accountID, pubKeys[0])
+	//require.NoError(t, err)
+	//
+	//assert.True(t, verify)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

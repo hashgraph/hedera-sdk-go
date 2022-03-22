@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"bytes"
 	"encoding/hex"
 
 	"github.com/pkg/errors"
@@ -102,18 +101,6 @@ func (id *LedgerID) String() string {
 		return "previewnet"
 	default:
 		return h
-	}
-}
-
-func (id *LedgerID) _ForChecksum() string {
-	if bytes.Equal(id._LedgerIDBytes, []byte{0}) { //nolint
-		return "0"
-	} else if bytes.Equal(id._LedgerIDBytes, []byte{1}) {
-		return "1"
-	} else if bytes.Equal(id._LedgerIDBytes, []byte{2}) {
-		return "2"
-	} else {
-		return hex.EncodeToString(id._LedgerIDBytes)
 	}
 }
 
