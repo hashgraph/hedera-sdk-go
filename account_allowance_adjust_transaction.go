@@ -52,36 +52,41 @@ func _AccountAllowanceAdjustTransactionFromProtobuf(transaction Transaction, pb 
 	}
 }
 
-func (transaction *AccountAllowanceAdjustTransaction) AddHbarAllowance(id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
+func (transaction *AccountAllowanceAdjustTransaction) _AdjustHbarAllowance(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
 	transaction._RequireNotFrozen()
 	transaction.hbarAllowances = append(transaction.hbarAllowances, &HbarAllowance{
 		SpenderAccountID: &id,
+		OwnerAccountID:   ownerAccountID,
 		Amount:           amount.AsTinybar(),
 	})
 
 	return transaction
 }
 
-func (transaction *AccountAllowanceAdjustTransaction) AddHbarAllowanceWithOwner(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
-	transaction._RequireNotFrozen()
-	transaction.hbarAllowances = append(transaction.hbarAllowances, &HbarAllowance{
-		SpenderAccountID: &id,
-		Amount:           amount.AsTinybar(),
-		OwnerAccountID:   &ownerAccountID,
-	})
+// AddHbarAllowance
+// Deprecated: Use `GrantHbarAllowance` instead
+func (transaction *AccountAllowanceAdjustTransaction) AddHbarAllowance(id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustHbarAllowance(nil, id, amount)
+}
 
-	return transaction
+func (transaction *AccountAllowanceAdjustTransaction) GrantHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustHbarAllowance(&ownerAccountID, id, amount)
+}
+
+func (transaction *AccountAllowanceAdjustTransaction) RevokeHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustHbarAllowance(&ownerAccountID, id, amount.Negated())
 }
 
 func (transaction *AccountAllowanceAdjustTransaction) GetHbarAllowances() []*HbarAllowance {
 	return transaction.hbarAllowances
 }
 
-func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowance(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
+func (transaction *AccountAllowanceAdjustTransaction) _AdjustTokenAllowance(tokenID TokenID, ownerAccountID *AccountID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
 	transaction._RequireNotFrozen()
 	tokenApproval := TokenAllowance{
 		TokenID:          &tokenID,
 		SpenderAccountID: &accountID,
+		OwnerAccountID:   ownerAccountID,
 		Amount:           amount,
 	}
 
@@ -89,121 +94,101 @@ func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowance(tokenID 
 	return transaction
 }
 
-func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowanceWithOwner(ownerAccountID AccountID, tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
-	transaction._RequireNotFrozen()
-	tokenApproval := TokenAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &accountID,
-		Amount:           amount,
-		OwnerAccountID:   &ownerAccountID,
-	}
+// AddTokenAllowance
+// Deprecated - Use `GrantTokenAllowance()` instead
+func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowance(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustTokenAllowance(tokenID, nil, accountID, amount)
+}
 
-	transaction.tokenAllowances = append(transaction.tokenAllowances, &tokenApproval)
-	return transaction
+func (transaction *AccountAllowanceAdjustTransaction) GrantTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustTokenAllowance(tokenID, &ownerAccountID, accountID, int64(amount))
+}
+
+func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount uint64) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustTokenAllowance(tokenID, &ownerAccountID, accountID, -int64(amount))
 }
 
 func (transaction *AccountAllowanceAdjustTransaction) GetTokenAllowances() []*TokenAllowance {
 	return transaction.tokenAllowances
 }
 
+func (transaction *AccountAllowanceAdjustTransaction) _AdjustTokenNftAllowance(nftID NftID, ownerAccountID *AccountID, accountID AccountID) *AccountAllowanceAdjustTransaction {
+	transaction._RequireNotFrozen()
+
+	for _, t := range transaction.nftAllowances {
+		if t.TokenID.String() == nftID.TokenID.String() {
+			if t.SpenderAccountID.String() == accountID.String() {
+				b := false
+				for _, s := range t.SerialNumbers {
+					if s == nftID.SerialNumber {
+						b = true
+					}
+				}
+				if !b {
+					t.SerialNumbers = append(t.SerialNumbers, nftID.SerialNumber)
+				}
+				return transaction
+			}
+		}
+	}
+
+	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
+		TokenID:          &nftID.TokenID,
+		SpenderAccountID: &accountID,
+		OwnerAccountID:   ownerAccountID,
+		SerialNumbers:    []int64{nftID.SerialNumber},
+		AllSerials:       false,
+	})
+	return transaction
+}
+
+// AddTokenNftAllowance
+// Deprecated: Use `GrantTokenNftAllowance()` instead
 func (transaction *AccountAllowanceAdjustTransaction) AddTokenNftAllowance(nftID NftID, accountID AccountID) *AccountAllowanceAdjustTransaction {
-	transaction._RequireNotFrozen()
+	return transaction._AdjustTokenNftAllowance(nftID, nil, accountID)
+}
 
+func (transaction *AccountAllowanceAdjustTransaction) GrantTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustTokenNftAllowance(nftID, &ownerAccountID, accountID)
+}
+
+func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustTokenNftAllowance(nftID, &ownerAccountID, accountID)
+}
+
+func (transaction *AccountAllowanceAdjustTransaction) _AdjustTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID, allSerials bool) *AccountAllowanceAdjustTransaction {
 	for _, t := range transaction.nftAllowances {
-		if t.TokenID.String() == nftID.TokenID.String() {
-			if t.SpenderAccountID.String() == accountID.String() {
-				b := false
-				for _, s := range t.SerialNumbers {
-					if s == nftID.SerialNumber {
-						b = true
-					}
-				}
-				if !b {
-					t.SerialNumbers = append(t.SerialNumbers, nftID.SerialNumber)
-				}
+		if t.TokenID.String() == tokenID.String() {
+			if t.SpenderAccountID.String() == spenderAccount.String() {
+				t.SerialNumbers = []int64{}
+				t.AllSerials = true
 				return transaction
 			}
 		}
 	}
 
 	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &nftID.TokenID,
-		SpenderAccountID: &accountID,
-		SerialNumbers:    []int64{nftID.SerialNumber},
-		ApprovedForAll:   false,
+		TokenID:          &tokenID,
+		SpenderAccountID: &spenderAccount,
+		OwnerAccountID:   ownerAccountID,
+		SerialNumbers:    []int64{},
+		AllSerials:       allSerials,
 	})
 	return transaction
 }
 
-func (transaction *AccountAllowanceAdjustTransaction) AddTokenNftAllowanceWithOwner(ownerAccountID AccountID, nftID NftID, accountID AccountID) *AccountAllowanceAdjustTransaction {
-	transaction._RequireNotFrozen()
-
-	for _, t := range transaction.nftAllowances {
-		if t.TokenID.String() == nftID.TokenID.String() {
-			if t.SpenderAccountID.String() == accountID.String() {
-				b := false
-				for _, s := range t.SerialNumbers {
-					if s == nftID.SerialNumber {
-						b = true
-					}
-				}
-				if !b {
-					t.SerialNumbers = append(t.SerialNumbers, nftID.SerialNumber)
-				}
-				return transaction
-			}
-		}
-	}
-
-	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &nftID.TokenID,
-		SpenderAccountID: &accountID,
-		SerialNumbers:    []int64{nftID.SerialNumber},
-		ApprovedForAll:   false,
-		OwnerAccountID:   &ownerAccountID,
-	})
-	return transaction
-}
-
+// AddAllTokenNftAllowance
+// Deprecated: Use `GrantTokenNftAllowanceAllSerials()` instead
 func (transaction *AccountAllowanceAdjustTransaction) AddAllTokenNftAllowance(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
-	for _, t := range transaction.nftAllowances {
-		if t.TokenID.String() == tokenID.String() {
-			if t.SpenderAccountID.String() == spenderAccount.String() {
-				t.SerialNumbers = []int64{}
-				t.ApprovedForAll = true
-				return transaction
-			}
-		}
-	}
-
-	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &spenderAccount,
-		SerialNumbers:    []int64{},
-		ApprovedForAll:   true,
-	})
-	return transaction
+	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, true)
 }
 
-func (transaction *AccountAllowanceAdjustTransaction) AddAllTokenNftAllowanceWithOwner(ownerAccountID AccountID, tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
-	for _, t := range transaction.nftAllowances {
-		if t.TokenID.String() == tokenID.String() {
-			if t.SpenderAccountID.String() == spenderAccount.String() {
-				t.SerialNumbers = []int64{}
-				t.ApprovedForAll = true
-				return transaction
-			}
-		}
-	}
+func (transaction *AccountAllowanceAdjustTransaction) GrantTokenNftAllowanceAllSerials(ownerAccountID AccountID, tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, true)
+}
 
-	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &spenderAccount,
-		SerialNumbers:    []int64{},
-		ApprovedForAll:   true,
-		OwnerAccountID:   &ownerAccountID,
-	})
-	return transaction
+func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenNftAllowanceAllSerials(ownerAccountID AccountID, tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
+	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, false)
 }
 
 func (transaction *AccountAllowanceAdjustTransaction) GetTokenNftAllowances() []*TokenNftAllowance {

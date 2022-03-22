@@ -10,7 +10,7 @@ type TokenNftAllowance struct {
 	SpenderAccountID *AccountID
 	OwnerAccountID   *AccountID
 	SerialNumbers    []int64
-	ApprovedForAll   bool
+	AllSerials       bool
 }
 
 func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, serialNumbers []int64, approvedForAll bool) TokenNftAllowance {
@@ -19,14 +19,14 @@ func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, s
 		SpenderAccountID: &spender,
 		OwnerAccountID:   &owner,
 		SerialNumbers:    serialNumbers,
-		ApprovedForAll:   approvedForAll,
+		AllSerials:       approvedForAll,
 	}
 }
 
 func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance {
 	body := TokenNftAllowance{
-		ApprovedForAll: pb.ApprovedForAll.GetValue(),
-		SerialNumbers:  pb.SerialNumbers,
+		AllSerials:    pb.ApprovedForAll.GetValue(),
+		SerialNumbers: pb.SerialNumbers,
 	}
 
 	if pb.TokenId != nil {
@@ -46,8 +46,8 @@ func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance
 
 func _TokenNftAllowanceFromGrantedProtobuf(pb *services.GrantedNftAllowance) TokenNftAllowance {
 	body := TokenNftAllowance{
-		ApprovedForAll: pb.ApprovedForAll,
-		SerialNumbers:  pb.SerialNumbers,
+		AllSerials:    pb.ApprovedForAll,
+		SerialNumbers: pb.SerialNumbers,
 	}
 
 	if pb.TokenId != nil {
@@ -63,7 +63,7 @@ func _TokenNftAllowanceFromGrantedProtobuf(pb *services.GrantedNftAllowance) Tok
 
 func (approval *TokenNftAllowance) _ToProtobuf() *services.NftAllowance {
 	body := &services.NftAllowance{
-		ApprovedForAll: &wrapperspb.BoolValue{Value: approval.ApprovedForAll},
+		ApprovedForAll: &wrapperspb.BoolValue{Value: approval.AllSerials},
 		SerialNumbers:  approval.SerialNumbers,
 	}
 
@@ -84,7 +84,7 @@ func (approval *TokenNftAllowance) _ToProtobuf() *services.NftAllowance {
 
 func (approval *TokenNftAllowance) _ToGrantedProtobuf() *services.GrantedNftAllowance {
 	body := &services.GrantedNftAllowance{
-		ApprovedForAll: approval.ApprovedForAll,
+		ApprovedForAll: approval.AllSerials,
 		SerialNumbers:  approval.SerialNumbers,
 	}
 

@@ -52,61 +52,55 @@ func _AccountAllowanceApproveTransactionFromProtobuf(transaction Transaction, pb
 	}
 }
 
-func (transaction *AccountAllowanceApproveTransaction) AddHbarApproval(id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+func (transaction *AccountAllowanceApproveTransaction) _ApproveHbarApproval(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
 	transaction._RequireNotFrozen()
 	transaction.hbarAllowances = append(transaction.hbarAllowances, &HbarAllowance{
 		SpenderAccountID: &id,
 		Amount:           amount.AsTinybar(),
+		OwnerAccountID:   ownerAccountID,
 	})
 
 	return transaction
 }
 
-func (transaction *AccountAllowanceApproveTransaction) AddHbarApprovalWithOwner(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	transaction.hbarAllowances = append(transaction.hbarAllowances, &HbarAllowance{
-		SpenderAccountID: &id,
-		Amount:           amount.AsTinybar(),
-		OwnerAccountID:   &ownerAccountID,
-	})
+func (transaction *AccountAllowanceApproveTransaction) AddHbarApproval(id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveHbarApproval(nil, id, amount)
+}
 
-	return transaction
+func (transaction *AccountAllowanceApproveTransaction) ApproveHbarApproval(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
 
 func (transaction *AccountAllowanceApproveTransaction) GetHbarAllowances() []*HbarAllowance {
 	return transaction.hbarAllowances
 }
 
-func (transaction *AccountAllowanceApproveTransaction) AddTokenApproval(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenApproval(tokenID TokenID, ownerAccountID *AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
 	transaction._RequireNotFrozen()
 	tokenApproval := TokenAllowance{
 		TokenID:          &tokenID,
 		SpenderAccountID: &accountID,
 		Amount:           amount,
+		OwnerAccountID:   ownerAccountID,
 	}
 
 	transaction.tokenAllowances = append(transaction.tokenAllowances, &tokenApproval)
 	return transaction
 }
 
-func (transaction *AccountAllowanceApproveTransaction) AddTokenApprovalWithOwner(ownerAccountID AccountID, tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
-	tokenApproval := TokenAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &accountID,
-		Amount:           amount,
-		OwnerAccountID:   &ownerAccountID,
-	}
+func (transaction *AccountAllowanceApproveTransaction) AddTokenApproval(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenApproval(tokenID, nil, accountID, amount)
+}
 
-	transaction.tokenAllowances = append(transaction.tokenAllowances, &tokenApproval)
-	return transaction
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenApproval(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
 
 func (transaction *AccountAllowanceApproveTransaction) GetTokenAllowances() []*TokenAllowance {
 	return transaction.tokenAllowances
 }
 
-func (transaction *AccountAllowanceApproveTransaction) AddTokenNftApproval(nftID NftID, accountID AccountID) *AccountAllowanceApproveTransaction {
+func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftApproval(nftID NftID, ownerAccountID *AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
 	transaction._RequireNotFrozen()
 
 	for _, t := range transaction.nftAllowances {
@@ -130,80 +124,46 @@ func (transaction *AccountAllowanceApproveTransaction) AddTokenNftApproval(nftID
 		TokenID:          &nftID.TokenID,
 		SpenderAccountID: &accountID,
 		SerialNumbers:    []int64{nftID.SerialNumber},
-		ApprovedForAll:   false,
+		AllSerials:       false,
+		OwnerAccountID:   ownerAccountID,
 	})
 	return transaction
 }
 
-func (transaction *AccountAllowanceApproveTransaction) AddTokenNftApprovalWithOwner(ownerAccountID AccountID, nftID NftID, accountID AccountID) *AccountAllowanceApproveTransaction {
-	transaction._RequireNotFrozen()
+func (transaction *AccountAllowanceApproveTransaction) AddTokenNftApproval(nftID NftID, accountID AccountID) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenNftApproval(nftID, nil, accountID)
+}
 
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftApproval(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
+}
+func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
 	for _, t := range transaction.nftAllowances {
-		if t.TokenID.String() == nftID.TokenID.String() {
-			if t.SpenderAccountID.String() == accountID.String() {
-				b := false
-				for _, s := range t.SerialNumbers {
-					if s == nftID.SerialNumber {
-						b = true
-					}
-				}
-				if !b {
-					t.SerialNumbers = append(t.SerialNumbers, nftID.SerialNumber)
-				}
+		if t.TokenID.String() == tokenID.String() {
+			if t.SpenderAccountID.String() == spenderAccount.String() {
+				t.SerialNumbers = []int64{}
+				t.AllSerials = true
 				return transaction
 			}
 		}
 	}
 
 	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &nftID.TokenID,
-		SpenderAccountID: &accountID,
-		SerialNumbers:    []int64{nftID.SerialNumber},
-		ApprovedForAll:   false,
-		OwnerAccountID:   &ownerAccountID,
+		TokenID:          &tokenID,
+		SpenderAccountID: &spenderAccount,
+		SerialNumbers:    []int64{},
+		AllSerials:       true,
+		OwnerAccountID:   ownerAccountID,
 	})
 	return transaction
 }
 
 func (transaction *AccountAllowanceApproveTransaction) AddAllTokenNftApproval(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	for _, t := range transaction.nftAllowances {
-		if t.TokenID.String() == tokenID.String() {
-			if t.SpenderAccountID.String() == spenderAccount.String() {
-				t.SerialNumbers = []int64{}
-				t.ApprovedForAll = true
-				return transaction
-			}
-		}
-	}
-
-	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &spenderAccount,
-		SerialNumbers:    []int64{},
-		ApprovedForAll:   true,
-	})
-	return transaction
+	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount)
 }
 
-func (transaction *AccountAllowanceApproveTransaction) AddAllTokenNftApprovalWithOwner(ownerAccountID AccountID, tokenID TokenID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	for _, t := range transaction.nftAllowances {
-		if t.TokenID.String() == tokenID.String() {
-			if t.SpenderAccountID.String() == spenderAccount.String() {
-				t.SerialNumbers = []int64{}
-				t.ApprovedForAll = true
-				return transaction
-			}
-		}
-	}
-
-	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &spenderAccount,
-		SerialNumbers:    []int64{},
-		ApprovedForAll:   true,
-		OwnerAccountID:   &ownerAccountID,
-	})
-	return transaction
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount)
 }
 
 func (transaction *AccountAllowanceApproveTransaction) GetTokenNftAllowances() []*TokenNftAllowance {
