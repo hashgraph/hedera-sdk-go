@@ -71,6 +71,7 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	result, err := NewContractCallQuery().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
@@ -85,6 +86,4 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 	require.Equal(t, bytes.Compare(result.ContractCallResult, params._Build(&message)), 0)
 	require.Equal(t, result.GasUsed, uint64(75000))
 	require.Equal(t, result.ContractID.Contract, uint64(123))
-
-	server.Close()
 }

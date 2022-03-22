@@ -63,7 +63,7 @@ func TestIntegrationContractUpdateTransactionCanExecute(t *testing.T) {
 	assert.Equal(t, info.AccountID.String(), contractID.String())
 	assert.NotNil(t, info.AdminKey)
 	assert.Equal(t, info.AdminKey.String(), env.Client.GetOperatorPublicKey().String())
-	assert.Equal(t, info.Storage, uint64(523))
+	assert.Equal(t, info.Storage, uint64(0x40))
 	assert.Equal(t, info.ContractMemo, "[e2e::ContractCreateTransaction]")
 
 	resp, err = NewContractUpdateTransaction().
@@ -90,11 +90,12 @@ func TestIntegrationContractUpdateTransactionCanExecute(t *testing.T) {
 	assert.Equal(t, info.AccountID.String(), contractID.String())
 	assert.NotNil(t, info.AdminKey)
 	assert.Equal(t, info.AdminKey.String(), env.Client.GetOperatorPublicKey().String())
-	assert.Equal(t, info.Storage, uint64(523))
+	assert.Equal(t, info.Storage, uint64(0x40))
 	assert.Equal(t, info.ContractMemo, "[e2e::ContractUpdateTransaction]")
 
 	resp, err = NewContractDeleteTransaction().
 		SetContractID(contractID).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		Execute(env.Client)
 	require.NoError(t, err)

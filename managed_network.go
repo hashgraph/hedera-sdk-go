@@ -12,8 +12,8 @@ type _ManagedNetwork struct {
 	network                map[string][]_IManagedNode
 	nodes                  []_IManagedNode
 	maxNodeAttempts        int
-	minBackOff             time.Duration
-	maxBackOff             time.Duration
+	minBackoff             time.Duration
+	maxBackoff             time.Duration
 	maxNodesPerTransaction *int
 	ledgerID               *LedgerID
 	transportSecurity      bool
@@ -25,8 +25,8 @@ func _NewManagedNetwork() _ManagedNetwork {
 		network:                make(map[string][]_IManagedNode),
 		nodes:                  make([]_IManagedNode, 0),
 		maxNodeAttempts:        -1,
-		minBackOff:             250 * time.Millisecond,
-		maxBackOff:             8 * time.Second,
+		minBackoff:             250 * time.Millisecond,
+		maxBackoff:             8 * time.Second,
 		maxNodesPerTransaction: nil,
 		ledgerID:               nil,
 		transportSecurity:      false,
@@ -90,30 +90,30 @@ func (network *_ManagedNetwork) _GetMaxNodeAttempts() int {
 	return network.maxNodeAttempts
 }
 
-func (network *_ManagedNetwork) _SetMinBackoff(waitTime time.Duration) {
-	network.minBackOff = waitTime
+func (network *_ManagedNetwork) _SetMinBackoff(backoff time.Duration) {
+	network.minBackoff = backoff
 	for _, nod := range network.nodes {
 		if nod != nil {
-			nod._SetMinBackoff(waitTime.Milliseconds())
+			nod._SetMinBackoff(backoff)
 		}
 	}
 }
 
 func (network *_ManagedNetwork) _GetMinBackoff() time.Duration {
-	return network.minBackOff
+	return network.minBackoff
 }
 
-func (network *_ManagedNetwork) _SetMaxBackoff(waitTime time.Duration) {
-	network.maxBackOff = waitTime
+func (network *_ManagedNetwork) _SetMaxBackoff(backoff time.Duration) {
+	network.maxBackoff = backoff
 	for _, nod := range network.nodes {
 		if nod != nil {
-			nod._SetMaxBackoff(waitTime.Milliseconds())
+			nod._SetMaxBackoff(backoff)
 		}
 	}
 }
 
 func (network *_ManagedNetwork) _GetMaxBackoff() time.Duration {
-	return network.maxBackOff
+	return network.maxBackoff
 }
 
 func (network *_ManagedNetwork) _GetLedgerID() *LedgerID {
@@ -181,13 +181,20 @@ func (network *_ManagedNetwork) _SetTransportSecurity(transportSecurity bool) {
 }
 
 func (network *_ManagedNetwork) _GetNumberOfMostHealthyNodes(count int32) []_IManagedNode {
-	sort.Sort(_Nodes{nodes: network.nodes})
+	sort.Slice(network.nodes, func(i int, j int) bool {
+		return _ManagedNodeCompare(network.nodes[i].(*_Node)._ManagedNode, network.nodes[j].(*_Node)._ManagedNode) < 0
+	})
+
 	err := network._RemoveDeadNodes()
-	for _, n := range network.network {
-		sort.Sort(_Nodes{nodes: n})
-	}
 	if err != nil {
 		return []_IManagedNode{}
+	}
+
+	for _, networkPerNodeAccountID := range network.network {
+		net := networkPerNodeAccountID
+		sort.Slice(net, func(i int, j int) bool {
+			return _ManagedNodeCompare(net[i].(*_Node)._ManagedNode, net[j].(*_Node)._ManagedNode) < 0
+		})
 	}
 
 	nodes := make([]_IManagedNode, 0)

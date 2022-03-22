@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -16,6 +17,11 @@ func NewAccountInfoQuery() *AccountInfoQuery {
 	return &AccountInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *AccountInfoQuery) SetGrpcDeadline(deadline *time.Duration) *AccountInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetAccountID sets the AccountID for this AccountInfoQuery.
@@ -60,8 +66,8 @@ func (query *AccountInfoQuery) _Build() *services.Query_CryptoGetInfo {
 	return &pb
 }
 
-func _AccountInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
+func _AccountInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -123,6 +129,8 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountInfoQueryGetMethod,
 		_AccountInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -179,7 +187,9 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		return AccountInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -233,6 +243,8 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		_AccountInfoQueryGetMethod,
 		_AccountInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -276,4 +288,21 @@ func (query *AccountInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountInfoQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("AccountInfoQuery:%d", timestamp)
+}
+
+func (query *AccountInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -17,6 +18,11 @@ func NewLiveHashQuery() *LiveHashQuery {
 	return &LiveHashQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *LiveHashQuery) SetGrpcDeadline(deadline *time.Duration) *LiveHashQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 func (query *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
@@ -119,6 +125,8 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		_LiveHashQueryGetMethod,
 		_LiveHashQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -129,8 +137,8 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _LiveHashQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
+func _LiveHashQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
 }
 
 func _LiveHashQueryMapStatusError(_ _Request, response _Response) error {
@@ -164,7 +172,9 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -218,6 +228,8 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		_LiveHashQueryGetMethod,
 		_LiveHashQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -283,4 +295,21 @@ func (query *LiveHashQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *LiveHashQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("LiveHashQuery:%d", timestamp)
+}
+
+func (query *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID) *LiveHashQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

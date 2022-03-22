@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -32,6 +33,11 @@ func NewContractCallQuery() *ContractCallQuery {
 	return &ContractCallQuery{
 		Query: query,
 	}
+}
+
+func (query *ContractCallQuery) SetGrpcDeadline(deadline *time.Duration) *ContractCallQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetContractID sets the contract instance to call
@@ -163,6 +169,8 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -173,8 +181,8 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractCallQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
+func _ContractCallQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
 }
 
 func _ContractCallQueryMapStatusError(_ _Request, response _Response) error {
@@ -208,7 +216,9 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		return ContractFunctionResult{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -262,6 +272,8 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -328,4 +340,21 @@ func (query *ContractCallQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *ContractCallQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("ContractCallQuery:%d", timestamp)
+}
+
+func (query *ContractCallQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractCallQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

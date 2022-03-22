@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -41,6 +42,11 @@ func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 		chunkSize:   2048,
 		fileID:      _FileIDFromProtobuf(pb.GetFileAppend().GetFileID()),
 	}
+}
+
+func (transaction *FileAppendTransaction) SetGrpcDeadline(deadline *time.Duration) *FileAppendTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // SetFileID sets the FileID of the file to which the bytes are appended to.
@@ -278,6 +284,8 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 			_FileAppendTransactionGetMethod,
 			_TransactionMapStatusError,
 			_TransactionMapResponse,
+			transaction._GetLogID(),
+			transaction.grpcDeadline,
 		)
 
 		if err != nil {
@@ -535,4 +543,9 @@ func (transaction *FileAppendTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *FileAppendTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("FileAppendTransaction:%d", timestamp.UnixNano())
 }

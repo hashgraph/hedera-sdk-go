@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -48,6 +49,11 @@ func _TopicCreateTransactionFromProtobuf(transaction Transaction, pb *services.T
 		memo:               pb.GetContractCreateInstance().GetMemo(),
 		autoRenewPeriod:    &autoRenew,
 	}
+}
+
+func (transaction *TopicCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // SetAdminKey sets the key required to update or delete the topic. If unspecified, anyone can increase the topic's
@@ -309,6 +315,8 @@ func (transaction *TopicCreateTransaction) Execute(
 		_TopicCreateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -489,4 +497,9 @@ func (transaction *TopicCreateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TopicCreateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TopicCreateTransaction:%d", timestamp.UnixNano())
 }

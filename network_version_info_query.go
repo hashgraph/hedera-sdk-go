@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -15,6 +16,11 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	return &NetworkVersionInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *NetworkVersionInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
@@ -42,6 +48,8 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -55,8 +63,8 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _NetworkVersionInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+func _NetworkVersionInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _NetworkVersionInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -87,7 +95,9 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		query.SetNodeAccountIDs(nodeAccountIDs)
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -144,6 +154,8 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		_NetworkVersionInfoQueryGetMethod,
 		_NetworkVersionInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -209,4 +221,21 @@ func (query *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *NetworkVersionInfoQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp)
+}
+
+func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

@@ -4,46 +4,16 @@
 package hedera
 
 import (
+	"bytes"
+	"encoding/hex"
 	"testing"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
-	protobuf "google.golang.org/protobuf/proto"
-
-	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
-func TestUnitFileDeleteTransactionValidate(t *testing.T) {
-	client := ClientForTestnet()
-	client.SetAutoValidateChecksums(true)
-	fileID, err := FileIDFromString("0.0.123-rmkyk")
-	require.NoError(t, err)
-
-	fileDelete := NewFileDeleteTransaction().
-		SetFileID(fileID)
-
-	err = fileDelete._ValidateNetworkOnIDs(client)
-	require.NoError(t, err)
-}
-
-func TestUnitFileDeleteTransactionValidateWrong(t *testing.T) {
-	client := ClientForTestnet()
-	client.SetAutoValidateChecksums(true)
-	fileID, err := FileIDFromString("0.0.123-rmkykd")
-	require.NoError(t, err)
-
-	fileDelete := NewFileDeleteTransaction().
-		SetFileID(fileID)
-
-	err = fileDelete._ValidateNetworkOnIDs(client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
-	}
-}
-
-func TestUnitMockFileDeleteTransaction(t *testing.T) {
+func TestUnitMockFileCreateTransaction(t *testing.T) {
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -67,8 +37,6 @@ func TestUnitMockFileDeleteTransaction(t *testing.T) {
 			case *services.SignaturePair_Ed25519:
 				pbTemp, _ := PublicKeyFromBytesEd25519(sigPair.PubKeyPrefix)
 				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.Ed25519)
-				key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
-				require.Equal(t, key.PublicKey().String(), pbTemp.String())
 			case *services.SignaturePair_ECDSASecp256K1:
 				pbTemp, _ := PublicKeyFromBytesECDSA(sigPair.PubKeyPrefix)
 				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.ECDSASecp256K1)
@@ -76,8 +44,10 @@ func TestUnitMockFileDeleteTransaction(t *testing.T) {
 			require.True(t, verified)
 		}
 
-		if bod, ok := transactionBody.Data.(*services.TransactionBody_FileDelete); ok {
-			require.Equal(t, bod.FileDelete.FileID.FileNum, int64(3))
+		if bod, ok := transactionBody.Data.(*services.TransactionBody_FileCreate); ok {
+			require.Equal(t, bod.FileCreate.Memo, "go sdk e2e tests")
+			require.Equal(t, hex.EncodeToString(bod.FileCreate.Keys.Keys[0].GetEd25519()), "87deee7c3e3bd41d94d710531d529a1ae0c2e0463b27250072e177879267f501")
+			require.Equal(t, bytes.Compare(bod.FileCreate.Contents, []byte("Hello, World")), 0)
 		}
 
 		return &services.TransactionResponse{
@@ -90,10 +60,14 @@ func TestUnitMockFileDeleteTransaction(t *testing.T) {
 
 	client, server := NewMockClientAndServer(responses)
 	defer server.Close()
+	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
+	require.NoError(t, err)
 
-	_, err := NewFileDeleteTransaction().
-		SetFileID(FileID{File: 3}).
+	_, err = NewFileCreateTransaction().
+		SetKeys(newKey).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetContents([]byte("Hello, World")).
+		SetMemo("go sdk e2e tests").
 		Execute(client)
 	require.NoError(t, err)
 }

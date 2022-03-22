@@ -85,24 +85,24 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		}
 	}
 
-	hbarAllowances := make([]HbarAllowance, 0)
-	if len(pb.CryptoAllowances) > 0 {
-		for _, allowance := range pb.CryptoAllowances {
-			hbarAllowances = append(hbarAllowances, _HbarAllowanceFromProtobuf(allowance))
+	hbarAllowances := make([]HbarAllowance, len(pb.GrantedCryptoAllowances))
+	if len(pb.GrantedCryptoAllowances) > 0 {
+		for _, allowance := range pb.GrantedCryptoAllowances {
+			hbarAllowances = append(hbarAllowances, _HbarAllowanceFromGrantedProtobuf(allowance))
 		}
 	}
 
-	tokenAllowances := make([]TokenAllowance, 0)
-	if len(pb.TokenAllowances) > 0 {
-		for _, allowance := range pb.TokenAllowances {
-			tokenAllowances = append(tokenAllowances, _TokenAllowanceFromProtobuf(allowance))
+	tokenAllowances := make([]TokenAllowance, len(pb.GrantedTokenAllowances))
+	if len(pb.GrantedTokenAllowances) > 0 {
+		for _, allowance := range pb.GrantedTokenAllowances {
+			tokenAllowances = append(tokenAllowances, _TokenAllowanceFromGrantedProtobuf(allowance))
 		}
 	}
 
-	nftAllowances := make([]TokenNftAllowance, 0)
-	if len(pb.NftAllowances) > 0 {
-		for _, allowance := range pb.NftAllowances {
-			nftAllowances = append(nftAllowances, _TokenNftAllowanceFromProtobuf(allowance))
+	nftAllowances := make([]TokenNftAllowance, len(pb.GrantedNftAllowances))
+	if len(pb.GrantedNftAllowances) > 0 {
+		for _, allowance := range pb.GrantedNftAllowances {
+			nftAllowances = append(nftAllowances, _TokenNftAllowanceFromGrantedProtobuf(allowance))
 		}
 	}
 
@@ -174,28 +174,28 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		LedgerId:                       info.LedgerID.ToBytes(),
 	}
 
-	hbarAllowances := make([]*services.CryptoAllowance, 0)
+	hbarAllowances := make([]*services.GrantedCryptoAllowance, 0)
 	if len(info.HbarAllowances) > 0 {
 		for _, allowance := range info.HbarAllowances {
-			hbarAllowances = append(hbarAllowances, allowance._ToProtobuf())
+			hbarAllowances = append(hbarAllowances, allowance._ToGrantedProtobuf())
 		}
-		body.CryptoAllowances = hbarAllowances
+		body.GrantedCryptoAllowances = hbarAllowances
 	}
 
-	tokenAllowances := make([]*services.TokenAllowance, 0)
+	tokenAllowances := make([]*services.GrantedTokenAllowance, 0)
 	if len(info.TokenAllowances) > 0 {
 		for _, allowance := range info.TokenAllowances {
-			tokenAllowances = append(tokenAllowances, allowance._ToProtobuf())
+			tokenAllowances = append(tokenAllowances, allowance._ToGrantedProtobuf())
 		}
-		body.TokenAllowances = tokenAllowances
+		body.GrantedTokenAllowances = tokenAllowances
 	}
 
-	nftAllowances := make([]*services.NftAllowance, 0)
+	nftAllowances := make([]*services.GrantedNftAllowance, 0)
 	if len(info.NftAllowances) > 0 {
 		for _, allowance := range info.NftAllowances {
-			nftAllowances = append(nftAllowances, allowance._ToProtobuf())
+			nftAllowances = append(nftAllowances, allowance._ToGrantedProtobuf())
 		}
-		body.NftAllowances = nftAllowances
+		body.GrantedNftAllowances = nftAllowances
 	}
 
 	return body

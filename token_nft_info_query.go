@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -17,6 +18,11 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 		Query: _NewQuery(true, &header),
 		nftID: nil,
 	}
+}
+
+func (query *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenNftInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 func (query *TokenNftInfoQuery) SetNftID(nftID NftID) *TokenNftInfoQuery {
@@ -164,6 +170,8 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_TokenNftInfoQueryGetMethod,
 		_TokenNftInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 	if err != nil {
 		return Hbar{}, err
@@ -176,8 +184,8 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenNftInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
+func _TokenNftInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _TokenNftInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -212,7 +220,9 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		return []TokenNftInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -268,6 +278,8 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		_TokenNftInfoQueryGetMethod,
 		_TokenNftInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -334,4 +346,21 @@ func (query *TokenNftInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *TokenNftInfoQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("TokenNftInfoQuery:%d", timestamp)
+}
+
+func (query *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

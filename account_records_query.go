@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -23,6 +24,11 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 	return &AccountRecordsQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *AccountRecordsQuery) SetGrpcDeadline(deadline *time.Duration) *AccountRecordsQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetAccountID sets the account ID for which the records should be retrieved.
@@ -114,6 +120,8 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		_AccountRecordsQueryGetMethod,
 		_AccountRecordsQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -124,11 +132,8 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountRecordsQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	if response.query.GetCryptoGetAccountRecords() == nil {
-		println("nil adf")
-	}
-	return _QueryShouldRetry(Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
+func _AccountRecordsQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
 }
 
 func _AccountRecordsQueryMapStatusError(_ _Request, response _Response) error {
@@ -162,7 +167,9 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		return []TransactionRecord{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -218,6 +225,8 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		_AccountRecordsQueryGetMethod,
 		_AccountRecordsQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -289,4 +298,21 @@ func (query *AccountRecordsQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *AccountRecordsQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("AccountRecordsQuery:%d", timestamp)
+}
+
+func (query *AccountRecordsQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountRecordsQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

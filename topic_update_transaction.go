@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -49,6 +50,11 @@ func _TopicUpdateTransactionFromProtobuf(transaction Transaction, pb *services.T
 		autoRenewPeriod:    &autoRenew,
 		expirationTime:     &expirationTime,
 	}
+}
+
+func (transaction *TopicUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // SetTopicID sets the topic to be updated.
@@ -385,6 +391,8 @@ func (transaction *TopicUpdateTransaction) Execute(
 		_TopicUpdateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -565,4 +573,9 @@ func (transaction *TopicUpdateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TopicUpdateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TopicUpdateTransaction:%d", timestamp.UnixNano())
 }

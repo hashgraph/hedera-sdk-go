@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -35,6 +36,11 @@ func _ScheduleCreateTransactionFromProtobuf(transaction Transaction, pb *service
 		schedulableBody: pb.GetScheduleCreate().GetScheduledTransactionBody(),
 		memo:            pb.GetScheduleCreate().GetMemo(),
 	}
+}
+
+func (transaction *ScheduleCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 func (transaction *ScheduleCreateTransaction) SetPayerAccountID(payerAccountID AccountID) *ScheduleCreateTransaction {
@@ -241,6 +247,8 @@ func (transaction *ScheduleCreateTransaction) Execute(
 		_ScheduleCreateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -389,4 +397,9 @@ func (transaction *ScheduleCreateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *ScheduleCreateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ScheduleCreateTransaction:%d", timestamp.UnixNano())
 }

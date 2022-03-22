@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"time"
@@ -40,6 +42,11 @@ func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *servic
 		amount:      pb.GetContractCall().GetAmount(),
 		parameters:  pb.GetContractCall().GetFunctionParameters(),
 	}
+}
+
+func (transaction *ContractExecuteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractExecuteTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // SetContractID sets the contract instance to call.
@@ -269,6 +276,8 @@ func (transaction *ContractExecuteTransaction) Execute(
 		_ContractExecuteTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -449,4 +458,9 @@ func (transaction *ContractExecuteTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *ContractExecuteTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("ContractExecuteTransaction:%d", timestamp.UnixNano())
 }

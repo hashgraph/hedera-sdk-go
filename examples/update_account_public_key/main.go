@@ -48,7 +48,6 @@ func main() {
 		return
 	}
 
-
 	// Creating new account
 	accountTxResponse, err := hedera.NewAccountCreateTransaction().
 		// The key that must sign each transfer out of the account. If receiverSigRequired is true, then

@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -16,6 +17,11 @@ func NewFileInfoQuery() *FileInfoQuery {
 	return &FileInfoQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 func (query *FileInfoQuery) SetFileID(fileID FileID) *FileInfoQuery {
@@ -106,6 +112,8 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_FileInfoQueryGetMethod,
 		_FileInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -119,8 +127,8 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _FileInfoQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
+func _FileInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
 func _FileInfoQueryMapStatusError(_ _Request, response _Response) error {
@@ -154,7 +162,9 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		return FileInfo{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -208,6 +218,8 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		_FileInfoQueryGetMethod,
 		_FileInfoQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -282,4 +294,21 @@ func (query *FileInfoQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *FileInfoQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("FileInfoQuery:%d", timestamp)
+}
+
+func (query *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *FileInfoQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

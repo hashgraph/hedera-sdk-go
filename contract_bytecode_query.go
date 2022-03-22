@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -19,6 +20,11 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	return &ContractBytecodeQuery{
 		Query: _NewQuery(true, &header),
 	}
+}
+
+func (query *ContractBytecodeQuery) SetGrpcDeadline(deadline *time.Duration) *ContractBytecodeQuery {
+	query.Query.SetGrpcDeadline(deadline)
+	return query
 }
 
 // SetContractID sets the contract for which the bytecode is requested
@@ -110,6 +116,8 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		_ContractBytecodeQueryGetMethod,
 		_ContractBytecodeQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -120,8 +128,8 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractBytecodeQueryShouldRetry(_ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
+func _ContractBytecodeQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
 func _ContractBytecodeQueryMapStatusError(_ _Request, response _Response) error {
@@ -155,7 +163,9 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.lockedTransactionID {
+		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	}
 
 	var cost Hbar
 	if query.queryPayment.tinybar != 0 {
@@ -209,6 +219,8 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		_ContractBytecodeQueryGetMethod,
 		_ContractBytecodeQueryMapStatusError,
 		_QueryMapResponse,
+		query._GetLogID(),
+		query.grpcDeadline,
 	)
 
 	if err != nil {
@@ -275,4 +287,21 @@ func (query *ContractBytecodeQuery) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (query *ContractBytecodeQuery) _GetLogID() string {
+	timestamp := query.timestamp.UnixNano()
+	if query.paymentTransactionID.ValidStart != nil {
+		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	}
+	return fmt.Sprintf("ContractBytecodeQuery:%d", timestamp)
+}
+
+func (query *ContractBytecodeQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractBytecodeQuery {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

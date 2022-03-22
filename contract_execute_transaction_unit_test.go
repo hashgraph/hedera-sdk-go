@@ -93,6 +93,7 @@ func TestUnitMockContractExecuteTransaction(t *testing.T) {
 	}}
 
 	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
 
 	_, err := NewContractExecuteTransaction().
 		SetContractID(ContractID{Contract: 123}).
@@ -101,6 +102,4 @@ func TestUnitMockContractExecuteTransaction(t *testing.T) {
 		SetFunction("setMessage", NewContractFunctionParameters().AddString("new message")).
 		Execute(client)
 	require.NoError(t, err)
-
-	server.Close()
 }

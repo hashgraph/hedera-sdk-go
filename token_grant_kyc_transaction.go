@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -36,6 +37,11 @@ func _TokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *services
 		tokenID:     _TokenIDFromProtobuf(pb.GetTokenGrantKyc().GetToken()),
 		accountID:   _AccountIDFromProtobuf(pb.GetTokenGrantKyc().GetAccount()),
 	}
+}
+
+func (transaction *TokenGrantKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenGrantKycTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
@@ -240,6 +246,8 @@ func (transaction *TokenGrantKycTransaction) Execute(
 		_TokenGrantKycTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -420,4 +428,9 @@ func (transaction *TokenGrantKycTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *TokenGrantKycTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("TokenGrantKycTransaction:%d", timestamp.UnixNano())
 }

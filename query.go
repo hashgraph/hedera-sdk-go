@@ -12,6 +12,7 @@ type Query struct {
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
 
+	lockedTransactionID         bool
 	paymentTransactionID        TransactionID
 	nodeAccountIDs              []AccountID
 	maxQueryPayment             Hbar
@@ -25,14 +26,17 @@ type Query struct {
 
 	isPaymentRequired bool
 
-	maxBackoff *time.Duration
-	minBackoff *time.Duration
+	maxBackoff   *time.Duration
+	minBackoff   *time.Duration
+	grpcDeadline *time.Duration
+	timestamp    time.Time
 }
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	return Query{
 		pb:                   &services.Query{},
 		pbHeader:             header,
+		lockedTransactionID:  false,
 		paymentTransactionID: TransactionID{},
 		nextTransactionIndex: 0,
 		nextNodeIndex:        0,
@@ -41,7 +45,17 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		isPaymentRequired:    isPaymentRequired,
 		maxQueryPayment:      NewHbar(0),
 		queryPayment:         NewHbar(0),
+		timestamp:            time.Now(),
 	}
+}
+
+func (query *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
+	query.grpcDeadline = deadline
+	return query
+}
+
+func (query *Query) GetGrpcDeadline() *time.Duration {
+	return query.grpcDeadline
 }
 
 func (query *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
@@ -87,7 +101,8 @@ func (query *Query) SetMaxRetry(count int) *Query {
 	return query
 }
 
-func _QueryShouldRetry(status Status) _ExecutionState {
+func _QueryShouldRetry(logID string, status Status) _ExecutionState {
+	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("query precheck status received")
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
@@ -198,4 +213,17 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 			SigPair: sigPairs,
 		},
 	}, nil
+}
+
+func (query *Query) GetPaymentTransactionID() TransactionID {
+	return query.paymentTransactionID
+}
+
+func (query *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
+	if query.lockedTransactionID {
+		panic("payment TransactionID is locked")
+	}
+	query.lockedTransactionID = true
+	query.paymentTransactionID = transactionID
+	return query
 }

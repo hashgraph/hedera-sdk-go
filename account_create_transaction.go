@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -54,6 +55,11 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 		memo:                      pb.GetCryptoCreateAccount().GetMemo(),
 		receiverSignatureRequired: pb.GetCryptoCreateAccount().ReceiverSigRequired,
 	}
+}
+
+func (transaction *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountCreateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
 }
 
 // SetKey sets the key that must sign each transfer out of the account. If RecieverSignatureRequired is true, then it
@@ -330,6 +336,10 @@ func (transaction *AccountCreateTransaction) Execute(
 		)
 	}
 
+	if transaction.grpcDeadline == nil {
+		transaction.grpcDeadline = client.requestTimeout
+	}
+
 	resp, err := _Execute(
 		client,
 		_Request{
@@ -342,6 +352,8 @@ func (transaction *AccountCreateTransaction) Execute(
 		_AccountCreateTransactionGetMethod,
 		_TransactionMapStatusError,
 		_TransactionMapResponse,
+		transaction._GetLogID(),
+		transaction.grpcDeadline,
 	)
 
 	if err != nil {
@@ -522,4 +534,9 @@ func (transaction *AccountCreateTransaction) GetMinBackoff() time.Duration {
 	}
 
 	return 250 * time.Millisecond
+}
+
+func (transaction *AccountCreateTransaction) _GetLogID() string {
+	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+	return fmt.Sprintf("AccountCreateTransaction:%d", timestamp.UnixNano())
 }

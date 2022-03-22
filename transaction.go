@@ -44,6 +44,8 @@ type Transaction struct {
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
 	regenerateTransactionID bool
+
+	grpcDeadline *time.Duration
 }
 
 func _NewTransaction() Transaction {
@@ -346,6 +348,15 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 	return transactionHash, nil
 }
 
+func (transaction *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
+	transaction.grpcDeadline = deadline
+	return transaction
+}
+
+func (transaction *Transaction) GetGrpcDeadline() *time.Duration {
+	return transaction.grpcDeadline
+}
+
 func (transaction *Transaction) _InitFee(client *Client) {
 	if client != nil && transaction.transactionFee == 0 {
 		transaction.SetMaxTransactionFee(client.maxTransactionFee)
@@ -457,8 +468,10 @@ func (transaction *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(_ _Request, response _Response) _ExecutionState {
-	switch Status(response.transaction.NodeTransactionPrecheckCode) {
+func _TransactionShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
+	status := Status(response.transaction.NodeTransactionPrecheckCode)
+	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("transaction precheck status received")
+	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
 		return executionStateRetry
 	case StatusTransactionExpired:
