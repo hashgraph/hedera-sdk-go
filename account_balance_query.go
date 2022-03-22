@@ -119,22 +119,13 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.timestamp = time.Now()
-
-	for range query.nodeAccountIDs.slice {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
-	}
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	pb := query._Build()
 	pb.CryptogetAccountBalance.Header = query.pbHeader
-
 	query.pb = &services.Query{
 		Query: pb,
 	}
-
 	resp, err := _Execute(
 		client,
 		_Request{
