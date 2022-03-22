@@ -6,6 +6,8 @@ import (
 
 type _IManagedNode interface {
 	_GetKey() string
+	_SetVerifyCertificate(verify bool)
+	_GetVerifyCertificate() bool
 	_SetMinBackoff(waitTime time.Duration)
 	_GetMinBackoff() time.Duration
 	_SetMaxBackoff(waitTime time.Duration)
@@ -18,7 +20,7 @@ type _IManagedNode interface {
 	_GetUseCount() int64
 	_GetLastUsed() time.Time
 	_GetAttempts() int64
-	_GetReadmitTime() time.Time
+	_GetReadmitTime() *time.Time
 	_GetAddress() string
 	_ToSecure() _IManagedNode
 	_ToInsecure() _IManagedNode
@@ -27,18 +29,18 @@ type _IManagedNode interface {
 }
 
 type _ManagedNode struct {
-	address        *_ManagedNodeAddress
-	currentBackoff time.Duration
-	lastUsed       time.Time
-	useCount       int64
-	minBackoff     time.Duration
-	maxBackoff     time.Duration
-	attempts       int64
-	readmitTime    time.Time
+	address            *_ManagedNodeAddress
+	currentBackoff     time.Duration
+	lastUsed           time.Time
+	useCount           int64
+	minBackoff         time.Duration
+	maxBackoff         time.Duration
+	badGrpcStatusCount int64
+	readmitTime        *time.Time
 }
 
 func (node *_ManagedNode) _GetAttempts() int64 {
-	return node.attempts
+	return node.badGrpcStatusCount
 }
 
 func (node *_ManagedNode) _GetAddress() string {
@@ -49,19 +51,18 @@ func (node *_ManagedNode) _GetAddress() string {
 	return ""
 }
 
-func (node *_ManagedNode) _GetReadmitTime() time.Time {
+func (node *_ManagedNode) _GetReadmitTime() *time.Time {
 	return node.readmitTime
 }
 
 func _NewManagedNode(address string, minBackoff time.Duration) (node *_ManagedNode, err error) {
 	node = &_ManagedNode{
-		currentBackoff: minBackoff,
-		lastUsed:       time.Now(),
-		useCount:       0,
-		minBackoff:     minBackoff,
-		maxBackoff:     1 * time.Hour,
-		attempts:       0,
-		readmitTime:    time.Now(),
+		currentBackoff:     minBackoff,
+		lastUsed:           time.Now(),
+		useCount:           0,
+		minBackoff:         minBackoff,
+		maxBackoff:         1 * time.Hour,
+		badGrpcStatusCount: 0,
 	}
 	node.address, err = _ManagedNodeAddressFromString(address)
 	return node, err
@@ -90,20 +91,24 @@ func (node *_ManagedNode) _GetMaxBackoff() time.Duration {
 func (node *_ManagedNode) _InUse() {
 	node.useCount++
 	node.lastUsed = time.Now()
-	node.readmitTime = time.Now()
 }
 
 func (node *_ManagedNode) _IsHealthy() bool {
+	if node.readmitTime == nil {
+		return true
+	}
+
 	return node.readmitTime.Before(time.Now())
 }
 
 func (node *_ManagedNode) _IncreaseBackoff() {
-	node.attempts++
+	node.badGrpcStatusCount++
 	node.currentBackoff *= 2
 	if node.currentBackoff > node.maxBackoff {
 		node.currentBackoff = node.maxBackoff
 	}
-	node.readmitTime = time.Now().Add(node.currentBackoff)
+	readmitTime := time.Now().Add(node.currentBackoff)
+	node.readmitTime = &readmitTime
 }
 
 func (node *_ManagedNode) _DecreaseBackoff() {
@@ -138,7 +143,7 @@ func _ManagedNodeCompare(i *_ManagedNode, j *_ManagedNode) int64 {
 		return comparison
 	}
 
-	comparison = i.attempts - j.attempts
+	comparison = i.badGrpcStatusCount - j.badGrpcStatusCount
 	if comparison != 0 {
 		return comparison
 	}

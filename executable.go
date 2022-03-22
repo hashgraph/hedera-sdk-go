@@ -148,6 +148,7 @@ func _Execute(
 		var protoRequest _ProtoRequest
 		var node *_Node
 		var ok bool
+
 		if request.transaction != nil {
 			if request.transaction.nodeAccountIDs.locked && request.transaction.nodeAccountIDs._Length() > 0 {
 				protoRequest = makeRequest(request)
@@ -179,16 +180,6 @@ func _Execute(
 					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
 					request.query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction)
 				}
-				//for _, s := range client.network.nodes {
-				//	if node, ok := s.(*_Node); ok {
-				//		println(node.accountID.String(), "node", node.readmitTime)
-				//	}
-				//}
-				//for _, s := range client.network.healthyNodes {
-				//	if node, ok := s.(*_Node); ok {
-				//		println(node.accountID.String(), "good node", node.readmitTime)
-				//	}
-				//}
 				request.query.nodeAccountIDs._Set(0, node.accountID)
 				protoRequest = makeRequest(request)
 			}
@@ -260,7 +251,7 @@ func _Execute(
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
 				logCtx.Trace().Str("requestId", logID).Msg("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating")
-				_, err = request.transaction.transactionIDs._Set(request.transaction.nextTransactionIndex, TransactionIDGenerate(client.GetOperatorAccountID()))
+				request.transaction.transactionIDs._Set(request.transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
 				if err != nil {
 					panic(err)
 				}

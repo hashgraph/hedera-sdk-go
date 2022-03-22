@@ -156,7 +156,7 @@ func (sk _ECDSAPrivateKey) _SignTransaction(transaction *Transaction) ([]byte, e
 		return make([]byte, 0), errTransactionRequiresSingleNodeAccountID
 	}
 
-	signature := sk._Sign(transaction.signedTransactions._GetSignedTransactions()[0].GetBodyBytes())
+	signature := sk._Sign(transaction.signedTransactions._Get(0).(*services.SignedTransaction).GetBodyBytes())
 
 	publicKey := sk._PublicKey()
 	if publicKey == nil {
@@ -177,16 +177,13 @@ func (sk _ECDSAPrivateKey) _SignTransaction(transaction *Transaction) ([]byte, e
 	transaction.transactionIDs.locked = true
 
 	for index := 0; index < transaction.signedTransactions._Length(); index++ {
-		temp := transaction.signedTransactions._GetSignedTransactions()[index]
+		temp := transaction.signedTransactions._Get(index).(*services.SignedTransaction)
 
 		temp.SigMap.SigPair = append(
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		_, err := transaction.signedTransactions._Set(index, temp)
-		if err != nil {
-			transaction.lockError = err
-		}
+		transaction.signedTransactions._Set(index, temp)
 	}
 
 	return signature, nil

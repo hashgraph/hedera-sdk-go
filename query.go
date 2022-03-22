@@ -14,7 +14,7 @@ type Query struct {
 
 	lockedTransactionID         bool
 	paymentTransactionID        TransactionID
-	nodeAccountIDs              *_LockedSlice
+	nodeAccountIDs              *_LockableSlice
 	maxQueryPayment             Hbar
 	queryPayment                Hbar
 	nextPaymentTransactionIndex int
@@ -50,36 +50,31 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	}
 }
 
-func (query *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
-	query.grpcDeadline = deadline
-	return query
+func (this *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
+	this.grpcDeadline = deadline
+	return this
 }
 
-func (query *Query) GetGrpcDeadline() *time.Duration {
-	return query.grpcDeadline
+func (this *Query) GetGrpcDeadline() *time.Duration {
+	return this.grpcDeadline
 }
 
-func (query *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
+func (this *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
 	for _, nodeAccountID := range nodeAccountIDs {
-		if nodeAccountID._IsZero() {
-			panic("cannot set node account ID of 0.0.0")
-		}
+		this.nodeAccountIDs._Push(nodeAccountID)
 	}
-	if query.nodeAccountIDs.locked {
-		panic(errLockedSlice)
-	}
-	query.nodeAccountIDs = _NewLockedSlice()
-	query.nodeAccountIDs, _ = query.nodeAccountIDs._PushNodeAccountIDs(nodeAccountIDs...)
-	query.nodeAccountIDs.locked = true
-	return query
+	this.nodeAccountIDs._SetLocked(true)
+	return this
 }
 
-func (query *Query) GetNodeAccountIDs() []AccountID {
-	if query.nodeAccountIDs._Length() != 0 {
-		return query.nodeAccountIDs._GetNodeAccountIDs()
+func (this *Query) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
+	nodeAccountIDs = []AccountID{}
+
+	for _, value := range this.nodeAccountIDs.slice {
+		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
 	}
 
-	return make([]AccountID, 0)
+	return nodeAccountIDs
 }
 
 func _QueryGetNodeAccountID(request _Request) AccountID {
@@ -92,24 +87,24 @@ func _QueryGetNodeAccountID(request _Request) AccountID {
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
-	query.maxQueryPayment = maxPayment
-	return query
+func (this *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
+	this.maxQueryPayment = maxPayment
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *Query) SetQueryPayment(paymentAmount Hbar) *Query {
-	query.queryPayment = paymentAmount
-	return query
+func (this *Query) SetQueryPayment(paymentAmount Hbar) *Query {
+	this.queryPayment = paymentAmount
+	return this
 }
 
-func (query *Query) GetMaxRetryCount() int {
-	return query.maxRetry
+func (this *Query) GetMaxRetryCount() int {
+	return this.maxRetry
 }
 
-func (query *Query) SetMaxRetry(count int) *Query {
-	query.maxRetry = count
-	return query
+func (this *Query) SetMaxRetry(count int) *Query {
+	this.maxRetry = count
+	return this
 }
 
 func _QueryShouldRetry(logID string, status Status) _ExecutionState {
@@ -165,10 +160,10 @@ func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoR
 }
 
 func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
-	for _, nodeID := range query.nodeAccountIDs._GetNodeAccountIDs() {
+	for _, nodeID := range query.nodeAccountIDs.slice {
 		transaction, err := _QueryMakePaymentTransaction(
 			query.paymentTransactionID,
-			nodeID,
+			nodeID.(AccountID),
 			client.operator,
 			cost,
 		)
@@ -226,15 +221,15 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 	}, nil
 }
 
-func (query *Query) GetPaymentTransactionID() TransactionID {
-	return query.paymentTransactionID
+func (this *Query) GetPaymentTransactionID() TransactionID {
+	return this.paymentTransactionID
 }
 
-func (query *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
-	if query.lockedTransactionID {
+func (this *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
+	if this.lockedTransactionID {
 		panic("payment TransactionID is locked")
 	}
-	query.lockedTransactionID = true
-	query.paymentTransactionID = transactionID
-	return query
+	this.lockedTransactionID = true
+	this.paymentTransactionID = transactionID
+	return this
 }
