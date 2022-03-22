@@ -109,7 +109,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_AccountRecordsQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountRecordsQueryGetMethod,
 		_AccountRecordsQueryMapStatusError,

@@ -158,7 +158,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_ContractCallQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_ContractCallQueryGetMethod,
 		_ContractCallQueryMapStatusError,

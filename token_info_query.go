@@ -103,7 +103,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_TokenInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TokenInfoQueryGetMethod,
 		_TokenInfoQueryMapStatusError,

@@ -128,6 +128,10 @@ func _QueryAdvanceRequest(request _Request) {
 	request.query.nextNodeIndex = (currentIndex + 1) % length
 }
 
+func _CostQueryAdvanceRequest(request _Request) {
+	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeAccountIDs)
+}
+
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
 	return _IntermediateResponse{
 		query: response.query,
