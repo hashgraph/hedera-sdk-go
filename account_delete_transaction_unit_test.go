@@ -14,7 +14,7 @@ import (
 func TestUnitAccountDeleteTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	deleteAccount := NewAccountDeleteTransaction().
@@ -38,6 +38,6 @@ func TestUnitAccountDeleteTransactionValidateWrong(t *testing.T) {
 	err = deleteAccount._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
