@@ -35,3 +35,12 @@ func TestUnitAccountIDFromStringAlias(t *testing.T) {
 
 	assert.Equal(t, id.String(), id2.String())
 }
+
+func TestUnitChecksum(t *testing.T) {
+	ad1, err := _ChecksumParseAddress("01", "0.0.3")
+	require.NoError(t, err)
+	ad2, err := _ChecksumParseAddress("10", "0.0.3")
+	require.NoError(t, err)
+
+	require.NotEqual(t, ad1.correctChecksum, ad2.correctChecksum)
+}

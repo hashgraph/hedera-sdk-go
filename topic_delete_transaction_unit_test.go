@@ -14,7 +14,7 @@ import (
 func TestUnitTopicDeleteTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	topicID, err := TopicIDFromString("0.0.123-rmkyk")
+	topicID, err := TopicIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	topicDelete := NewTopicDeleteTransaction().
@@ -36,6 +36,6 @@ func TestUnitTopicDeleteTransactionValidateWrong(t *testing.T) {
 	err = topicDelete._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
