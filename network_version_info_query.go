@@ -86,15 +86,6 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 	var err error
 
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return NetworkVersionInfo{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
-
 	if !query.paymentTransactionIDs.locked {
 		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}

@@ -360,7 +360,6 @@ func TestUnitMockSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
 	defer server.Close()
 
 	_, err := NewFileCreateTransaction().
-		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetTransactionID(tran).
 		SetContents([]byte("hello")).
 		Execute(client)

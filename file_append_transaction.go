@@ -320,12 +320,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
 
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return transaction, err
-		}
-
-		transaction.SetNodeAccountIDs(nodeAccountIDs)
+		transaction.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
 	transaction._InitFee(client)
