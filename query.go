@@ -137,6 +137,7 @@ func _QueryAdvanceRequest(request _Request) {
 
 func _CostQueryAdvanceRequest(request _Request) {
 	request.query.paymentTransactionIDs._Advance()
+	request.query.nodeAccountIDs._Advance()
 }
 
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
