@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/require"
 )
@@ -48,10 +46,7 @@ func TestUnitTransferTransactionValidateWrong(t *testing.T) {
 		AddHbarTransfer(accountID, HbarFromTinybar(1))
 
 	err = transfer._ValidateNetworkOnIDs(client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
-	}
+	require.Error(t, err)
 }
 
 func TestUnitTransferTransactionOrdered(t *testing.T) {

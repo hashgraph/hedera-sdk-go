@@ -1,7 +1,6 @@
 package hedera
 
 import (
-	"encoding/hex"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -40,7 +39,7 @@ func _ChecksumVerify(num int) error {
 	}
 }
 
-func _ChecksumParseAddress(ledgerID string, address string) (_ParseAddressResult, error) {
+func _ChecksumParseAddress(ledgerID *LedgerID, address string) (_ParseAddressResult, error) {
 	var err error
 	match := regexp.MustCompile(`(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))(?:-([a-z]{5}))?$`)
 
@@ -56,12 +55,7 @@ func _ChecksumParseAddress(ledgerID string, address string) (_ParseAddressResult
 
 	ad := fmt.Sprintf("%s.%s.%s", matchArray[1], matchArray[2], matchArray[3])
 
-	l, err := LedgerIDFromString(ledgerID)
-	if err != nil {
-		return _ParseAddressResult{status: 0}, err
-	}
-
-	checksum := _CheckChecksum(l.ToBytes(), ad)
+	checksum := _CheckChecksum(ledgerID._LedgerIDBytes, ad)
 
 	var status int
 	switch m := matchArray[4]; {
@@ -100,16 +94,8 @@ func _CheckChecksum(ledgerID []byte, address string) string {
 	asciiA := []rune("a")[0]
 	w := 31
 
-	zeros := []byte{0, 0, 0, 0, 0, 0}
-
-	id := ledgerID
-	id = append(id, zeros...)
-	h := make([]int64, 0)
-
-	for i := 0; i < len(id); i++ {
-		processed, _ := strconv.ParseInt(hex.EncodeToString(id[i:i+1]), 16, 64)
-		h = append(h, processed)
-	}
+	h := make([]byte, len(ledgerID)+6)
+	copy(h[0:len(ledgerID)], ledgerID)
 
 	for _, j := range address {
 		if string(j) == "." {

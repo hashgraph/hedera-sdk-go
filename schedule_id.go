@@ -37,7 +37,7 @@ func (id *ScheduleID) ValidateChecksum(client *Client) error {
 	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
 		var tempChecksum _ParseAddressResult
 		var err error
-		tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+		tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 		if err != nil {
 			return err
 		}
@@ -63,7 +63,7 @@ func (id *ScheduleID) ValidateChecksum(client *Client) error {
 // Deprecated
 func (id *ScheduleID) Validate(client *Client) error {
 	if !id._IsZero() && client != nil && client.GetNetworkName() != nil {
-		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 		if err != nil {
 			return err
 		}
@@ -99,7 +99,7 @@ func (id ScheduleID) ToStringWithChecksum(client Client) (string, error) {
 	var checksum _ParseAddressResult
 	var err error
 	if client.network.ledgerID != nil {
-		checksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
+		checksum, err = _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule))
 	}
 	if err != nil {
 		return "", err
