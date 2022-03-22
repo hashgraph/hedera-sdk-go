@@ -129,29 +129,3 @@ func (node *_ManagedNode) _GetUseCount() int64 {
 func (node *_ManagedNode) _GetLastUsed() time.Time {
 	return node.lastUsed
 }
-
-func _ManagedNodeCompare(i *_ManagedNode, j *_ManagedNode) int64 {
-	iRemainingTime := i._Wait()
-	jRemainingTime := j._Wait()
-	comparison := iRemainingTime.Milliseconds() - jRemainingTime.Milliseconds()
-	if iRemainingTime > 0 && jRemainingTime > 0 && comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.currentBackoff.Milliseconds() - j.currentBackoff.Milliseconds()
-	if comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.badGrpcStatusCount - j.badGrpcStatusCount
-	if comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.useCount - j.useCount
-	if comparison != 0 {
-		return comparison
-	}
-
-	return i.lastUsed.UnixNano() - j.lastUsed.UnixNano()
-}

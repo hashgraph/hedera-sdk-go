@@ -130,11 +130,8 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID { //nolint
 	nodes := make([]AccountID, 0)
 
-	for i := 0; i < len(network.healthyNodes); i++ {
-		node := network.healthyNodes[i]
-		if node, ok := node.(*_Node); ok {
-			nodes = append(nodes, node.accountID)
-		}
+	for i := 0; i < network._GetNumberOfNodesForTransaction(); i++ {
+		nodes = append(nodes, network.healthyNodes[i].(*_Node).accountID)
 	}
 
 	return nodes
@@ -169,8 +166,7 @@ func (network *_Network) _GetNodeMaxBackoff() time.Duration {
 }
 
 func (network *_Network) _SetTransportSecurity(transportSecurity bool) *_Network {
-	network._ManagedNetwork._SetTransportSecurity(transportSecurity)
-
+	_ = network._ManagedNetwork._SetTransportSecurity(transportSecurity)
 	return network
 }
 

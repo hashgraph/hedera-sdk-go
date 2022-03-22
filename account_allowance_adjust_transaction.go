@@ -101,7 +101,7 @@ func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowance(tokenID 
 }
 
 func (transaction *AccountAllowanceAdjustTransaction) GrantTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
-	return transaction._AdjustTokenAllowance(tokenID, &ownerAccountID, accountID, int64(amount))
+	return transaction._AdjustTokenAllowance(tokenID, &ownerAccountID, accountID, amount)
 }
 
 func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount uint64) *AccountAllowanceAdjustTransaction {
@@ -391,10 +391,6 @@ func (transaction *AccountAllowanceAdjustTransaction) Execute(
 
 	if transaction.freezeError != nil {
 		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
 	}
 
 	if !transaction.IsFrozen() {

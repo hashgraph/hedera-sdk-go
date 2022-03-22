@@ -250,10 +250,6 @@ func (transaction *SystemDeleteTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
-	}
-
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
@@ -263,10 +259,6 @@ func (transaction *SystemDeleteTransaction) Execute(
 
 	if transaction.freezeError != nil {
 		return TransactionResponse{}, transaction.freezeError
-	}
-
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
 	}
 
 	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)

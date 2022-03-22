@@ -166,10 +166,6 @@ func (transaction *TokenPauseTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
-	}
-
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {

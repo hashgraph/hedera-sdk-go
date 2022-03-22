@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha512"
 	"fmt"
+
 	"github.com/pkg/errors"
 
 	"time"
@@ -36,7 +37,6 @@ type Transaction struct {
 	transactionSigners []TransactionSigner
 
 	freezeError error
-	lockError   error
 
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
@@ -57,22 +57,6 @@ func _NewTransaction() Transaction {
 		freezeError:              nil,
 		regenerateTransactionID:  true,
 	}
-}
-
-func _ProtoTransactionListToInterfaceArray(list []*services.Transaction) []interface{} {
-	transactions := make([]interface{}, len(list))
-	for _, transaction := range list {
-		transactions = append(transactions, transaction)
-	}
-	return transactions
-}
-
-func _ProtoSignedTransactionListToInterfaceArray(list []*services.SignedTransaction) []interface{} {
-	transactions := make([]interface{}, len(list))
-	for _, transaction := range list {
-		transactions = append(transactions, transaction)
-	}
-	return transactions
 }
 
 func TransactionFromBytes(data []byte) (interface{}, error) { // nolint

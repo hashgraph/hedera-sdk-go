@@ -271,10 +271,6 @@ func (transaction *FileUpdateTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
-	}
-
 	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {

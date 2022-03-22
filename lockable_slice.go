@@ -18,7 +18,7 @@ func (this *_LockableSlice) _RequireNotLocked() {
 	}
 }
 
-func (this *_LockableSlice) _SetLocked(locked bool) *_LockableSlice {
+func (this *_LockableSlice) _SetLocked(locked bool) *_LockableSlice { // nolint
 	this.locked = locked
 	return this
 }
