@@ -151,14 +151,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return ContractInfo{}, err
-		}
 
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return ContractInfo{}, err

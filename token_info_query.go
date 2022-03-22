@@ -145,14 +145,6 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 
 	var err error
 
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return TokenInfo{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return TokenInfo{}, err

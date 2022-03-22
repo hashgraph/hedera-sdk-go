@@ -475,9 +475,19 @@ func _TransactionFreezeWith(
 	body *services.TransactionBody,
 ) error {
 	if client != nil {
+		if transaction.nodeAccountIDs._IsEmpty() {
+			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
+				transaction.nodeAccountIDs._Push(nodeAccountID)
+			}
+		}
+
 		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
 			transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
 		}
+	}
+
+	if transaction.nodeAccountIDs._IsEmpty() {
+		return errNoClientOrTransactionIDOrNodeId
 	}
 
 	bodyBytes, err := protobuf.Marshal(body)

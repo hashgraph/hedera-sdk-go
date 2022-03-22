@@ -125,7 +125,7 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 	network._SetLedgerID(*ledger)
 }
 
-func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { //nolint
+func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID { //nolint
 	nodes := make([]AccountID, 0)
 
 	for i := 0; i < len(network.healthyNodes); i++ {
@@ -135,7 +135,7 @@ func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { /
 		}
 	}
 
-	return nodes, nil
+	return nodes
 }
 
 func (network *_Network) _SetMaxNodesPerTransaction(max int) {
