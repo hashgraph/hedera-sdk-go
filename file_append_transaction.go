@@ -348,9 +348,9 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 
 	nextTransactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 
-	transaction.transactionIDs = _NewLockedSlice()
-	transaction.transactions = _NewLockedSlice()
-	transaction.signedTransactions = _NewLockedSlice()
+	transaction.transactionIDs = _NewLockableSlice()
+	transaction.transactions = _NewLockableSlice()
+	transaction.signedTransactions = _NewLockableSlice()
 
 	if b, ok := body.Data.(*services.TransactionBody_FileAppend); ok {
 		for i := 0; uint64(i) < chunks; i++ {
@@ -475,7 +475,7 @@ func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, sign
 		return transaction
 	}
 
-	transaction.transactions = _NewLockedSlice()
+	transaction.transactions = _NewLockableSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 	transaction.transactionIDs.locked = true

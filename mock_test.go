@@ -5,10 +5,11 @@ package hedera
 
 import (
 	"context"
+	"github.com/hashgraph/hedera-protobufs-go/mirror"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net"
 	"testing"
-
-	"github.com/hashgraph/hedera-protobufs-go/mirror"
 
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
@@ -27,8 +28,6 @@ func TestUnitMockQuery(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
@@ -36,8 +35,6 @@ func TestUnitMockQuery(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
@@ -45,8 +42,6 @@ func TestUnitMockQuery(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
@@ -54,8 +49,6 @@ func TestUnitMockQuery(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
@@ -63,8 +56,6 @@ func TestUnitMockQuery(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
@@ -72,8 +63,6 @@ func TestUnitMockQuery(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
@@ -81,8 +70,6 @@ func TestUnitMockQuery(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
 			&services.Response{
 				Response: &services.Response_CryptogetAccountBalance{
 					CryptogetAccountBalance: &services.CryptoGetAccountBalanceResponse{
@@ -101,8 +88,8 @@ func TestUnitMockQuery(t *testing.T) {
 	defer server.Close()
 
 	_, err := NewAccountBalanceQuery().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetAccountID(AccountID{Account: 1800}).
-		//SetNodeAccountIDs([]AccountID{{Account: 3}, {Account: 4}, {Account: 5}, {Account: 6}, {Account: 7}, {Account: 8}}).
 		Execute(client)
 	require.NoError(t, err)
 }
@@ -234,6 +221,7 @@ func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
 	defer server.Close()
 
 	_, err := NewFileCreateTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetContents([]byte("hello")).
 		Execute(client)
 	require.NoError(t, err)
@@ -302,6 +290,7 @@ func TestUnitMockSingleTransactionIDForExecutions(t *testing.T) {
 	defer server.Close()
 
 	_, err := NewFileCreateTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetTransactionID(tran).
 		SetContents([]byte("hello")).
 		Execute(client)
@@ -371,6 +360,7 @@ func TestUnitMockSingleTransactionIDForExecutionsWithTimeout(t *testing.T) {
 	defer server.Close()
 
 	_, err := NewFileCreateTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetTransactionID(tran).
 		SetContents([]byte("hello")).
 		Execute(client)
@@ -414,6 +404,12 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 
 	key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
 	client.SetOperator(AccountID{Account: 1800}, key)
+	client.SetMinBackoff(0)
+	client.SetMaxBackoff(0)
+	client.SetMinNodeReadmitTime(0)
+	client.SetMaxNodeReadmitTime(0)
+	client.SetNodeMinBackoff(0)
+	client.SetNodeMaxBackoff(0)
 
 	return client, &MockServers{servers}
 }
@@ -421,6 +417,10 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
 	index := 0
 	return func(_srv interface{}, _ctx context.Context, dec func(interface{}) error, _interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+		if index >= len(responses) {
+			return nil, status.New(codes.Aborted, "No response found").Err()
+		}
+
 		response := responses[index]
 		index = index + 1
 

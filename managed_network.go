@@ -138,20 +138,20 @@ func (this *_ManagedNetwork) _GetMaxNodeAttempts() int {
 	return this.maxNodeAttempts
 }
 
-func (this *_ManagedNetwork) _SetNodeMinReadmitPeriod(min time.Duration) {
+func (this *_ManagedNetwork) _SetMinNodeReadmitPeriod(min time.Duration) {
 	this.minNodeReadmitPeriod = min
 	this.earliestReadmitTime = time.Now().Add(this.minNodeReadmitPeriod)
 }
 
-func (this *_ManagedNetwork) _GetNodeMinReadmitPeriod() time.Duration {
+func (this *_ManagedNetwork) _GetMinNodeReadmitPeriod() time.Duration {
 	return this.minNodeReadmitPeriod
 }
 
-func (this *_ManagedNetwork) _SetNodeMaxReadmitPeriod(max time.Duration) {
+func (this *_ManagedNetwork) _SetMaxNodeReadmitPeriod(max time.Duration) {
 	this.maxNodeReadmitPeriod = max
 }
 
-func (this *_ManagedNetwork) _GetNodeMaxReadmitPeriod() time.Duration {
+func (this *_ManagedNetwork) _GetMaxNodeReadmitPeriod() time.Duration {
 	return this.maxNodeReadmitPeriod
 }
 

@@ -59,24 +59,12 @@ func (network *_Network) _IncreaseDelay(node *_Node) {
 }
 
 func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
-	for _, node := range network.network[id.String()] {
-		switch n := node.(type) { //nolint
-		case *_Node:
-			if n.accountID.String() == id.String() {
-				return n, true
-			}
-		}
-	}
-
-	return &_Node{}, false
+	node, ok := network.network[id.String()]
+	return node[0].(*_Node), ok
 }
 
 func (network *_Network) _GetNode() *_Node {
-	if node, ok := network._ManagedNetwork._GetNode().(*_Node); ok {
-		return node
-	}
-
-	return &_Node{}
+	return network._ManagedNetwork._GetNode().(*_Node)
 }
 
 func (network *_Network) _GetNetworkName() *NetworkName {
@@ -193,11 +181,11 @@ func (network *_Network) _GetVerifyCertificate() bool {
 }
 
 func (network *_Network) _SetNodeMinReadmitPeriod(period time.Duration) {
-	network._ManagedNetwork._SetNodeMinReadmitPeriod(period)
+	network._ManagedNetwork._SetMinNodeReadmitPeriod(period)
 }
 
 func (network *_Network) _SetNodeMaxReadmitPeriod(period time.Duration) {
-	network._ManagedNetwork._SetNodeMaxReadmitPeriod(period)
+	network._ManagedNetwork._SetMaxNodeReadmitPeriod(period)
 }
 
 func (network *_Network) _GetNodeMinReadmitPeriod() time.Duration {

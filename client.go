@@ -409,6 +409,22 @@ func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network._GetNetwork()
 }
 
+func (client *Client) SetMaxNodeReadmitTime(readmitTime time.Duration) {
+	client.network._SetMaxNodeReadmitPeriod(readmitTime)
+}
+
+func (client *Client) GetMaxNodeReadmitPeriod() time.Duration {
+	return client.network._GetMaxNodeReadmitPeriod()
+}
+
+func (client *Client) SetMinNodeReadmitTime(readmitTime time.Duration) {
+	client.network._SetMinNodeReadmitPeriod(readmitTime)
+}
+
+func (client *Client) GetMinNodeReadmitPeriod() time.Duration {
+	return client.network._GetMinNodeReadmitPeriod()
+}
+
 func (client *Client) SetMaxBackoff(max time.Duration) {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
