@@ -44,6 +44,26 @@ func (result ContractFunctionResult) GetInt8(index uint64) int8 {
 	return int8(result.ContractCallResult[index*32+31])
 }
 
+func (result ContractFunctionResult) GetInt16(index uint64) uint16 {
+	return binary.BigEndian.Uint16(result.ContractCallResult[index*32+30 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetInt24(index uint64) uint32 {
+	return binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetInt40(index uint64) uint64 {
+	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetInt48(index uint64) uint64 {
+	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetInt56(index uint64) uint64 {
+	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+}
+
 // GetInt32 gets a _Solidity int32 from the result at the given index
 func (result ContractFunctionResult) GetInt32(index uint64) int32 {
 	return int32(binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32]))
@@ -52,6 +72,98 @@ func (result ContractFunctionResult) GetInt32(index uint64) int32 {
 // GetInt64 gets a _Solidity int64 from the result at the given index
 func (result ContractFunctionResult) GetInt64(index uint64) int64 {
 	return int64(binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32]))
+}
+
+func (result ContractFunctionResult) GetInt72(index uint64) []byte {
+	return result.ContractCallResult[index*32+23 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt80(index uint64) []byte {
+	return result.ContractCallResult[index*32+22 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt88(index uint64) []byte {
+	return result.ContractCallResult[index*32+21 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt96(index uint64) []byte {
+	return result.ContractCallResult[index*32+20 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt104(index uint64) []byte {
+	return result.ContractCallResult[index*32+19 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt112(index uint64) []byte {
+	return result.ContractCallResult[index*32+18 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt120(index uint64) []byte {
+	return result.ContractCallResult[index*32+17 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt128(index uint64) []byte {
+	return result.ContractCallResult[index*32+16 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt136(index uint64) []byte {
+	return result.ContractCallResult[index*32+15 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt144(index uint64) []byte {
+	return result.ContractCallResult[index*32+14 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt152(index uint64) []byte {
+	return result.ContractCallResult[index*32+13 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt160(index uint64) []byte {
+	return result.ContractCallResult[index*32+12 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt168(index uint64) []byte {
+	return result.ContractCallResult[index*32+11 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt176(index uint64) []byte {
+	return result.ContractCallResult[index*32+10 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt184(index uint64) []byte {
+	return result.ContractCallResult[index*32+9 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt192(index uint64) []byte {
+	return result.ContractCallResult[index*32+8 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt200(index uint64) []byte {
+	return result.ContractCallResult[index*32+7 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt208(index uint64) []byte {
+	return result.ContractCallResult[index*32+6 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt216(index uint64) []byte {
+	return result.ContractCallResult[index*32+5 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt224(index uint64) []byte {
+	return result.ContractCallResult[index*32+4 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt232(index uint64) []byte {
+	return result.ContractCallResult[index*32+3 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt240(index uint64) []byte {
+	return result.ContractCallResult[index*32+2 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetInt248(index uint64) []byte {
+	return result.ContractCallResult[index*32+1 : (index+1)*32]
 }
 
 // GetInt256 gets a _Solidity int256 from the result at the given index
@@ -64,14 +176,126 @@ func (result ContractFunctionResult) GetUint8(index uint64) uint8 {
 	return result.ContractCallResult[index*32+31]
 }
 
+func (result ContractFunctionResult) GetUint16(index uint64) uint16 {
+	return binary.BigEndian.Uint16(result.ContractCallResult[index*32+30 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetUint24(index uint64) uint32 {
+	return binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32])
+}
+
 // GetUint32 gets a _Solidity uint32 from the result at the given index
 func (result ContractFunctionResult) GetUint32(index uint64) uint32 {
 	return binary.BigEndian.Uint32(result.ContractCallResult[index*32+28 : (index+1)*32])
 }
 
+func (result ContractFunctionResult) GetUint40(index uint64) uint64 {
+	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetUint48(index uint64) uint64 {
+	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetUint56(index uint64) uint64 {
+	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+}
+
 // GetUint64 gets a _Solidity uint64 from the result at the given index
 func (result ContractFunctionResult) GetUint64(index uint64) uint64 {
 	return binary.BigEndian.Uint64(result.ContractCallResult[index*32+24 : (index+1)*32])
+}
+
+func (result ContractFunctionResult) GetUint72(index uint64) []byte {
+	return result.ContractCallResult[index*32+23 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint80(index uint64) []byte {
+	return result.ContractCallResult[index*32+22 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint88(index uint64) []byte {
+	return result.ContractCallResult[index*32+21 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint96(index uint64) []byte {
+	return result.ContractCallResult[index*32+20 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint104(index uint64) []byte {
+	return result.ContractCallResult[index*32+19 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint112(index uint64) []byte {
+	return result.ContractCallResult[index*32+18 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint120(index uint64) []byte {
+	return result.ContractCallResult[index*32+17 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint128(index uint64) []byte {
+	return result.ContractCallResult[index*32+16 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint136(index uint64) []byte {
+	return result.ContractCallResult[index*32+15 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint144(index uint64) []byte {
+	return result.ContractCallResult[index*32+14 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint152(index uint64) []byte {
+	return result.ContractCallResult[index*32+13 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint160(index uint64) []byte {
+	return result.ContractCallResult[index*32+12 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint168(index uint64) []byte {
+	return result.ContractCallResult[index*32+11 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint176(index uint64) []byte {
+	return result.ContractCallResult[index*32+10 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint184(index uint64) []byte {
+	return result.ContractCallResult[index*32+9 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint192(index uint64) []byte {
+	return result.ContractCallResult[index*32+8 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint200(index uint64) []byte {
+	return result.ContractCallResult[index*32+7 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint208(index uint64) []byte {
+	return result.ContractCallResult[index*32+6 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint216(index uint64) []byte {
+	return result.ContractCallResult[index*32+5 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint224(index uint64) []byte {
+	return result.ContractCallResult[index*32+4 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint232(index uint64) []byte {
+	return result.ContractCallResult[index*32+3 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint240(index uint64) []byte {
+	return result.ContractCallResult[index*32+2 : (index+1)*32]
+}
+
+func (result ContractFunctionResult) GetUint248(index uint64) []byte {
+	return result.ContractCallResult[index*32+1 : (index+1)*32]
 }
 
 // GetUint256 gets a _Solidity uint256 from the result at the given index
