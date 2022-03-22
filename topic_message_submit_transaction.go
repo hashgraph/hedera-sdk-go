@@ -316,9 +316,9 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	initialTransactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 	nextTransactionID := initialTransactionID
 
-	transaction.transactionIDs = _NewLockedSlice()
-	transaction.transactions = _NewLockedSlice()
-	transaction.signedTransactions = _NewLockedSlice()
+	transaction.transactionIDs = _NewLockableSlice()
+	transaction.transactions = _NewLockableSlice()
+	transaction.signedTransactions = _NewLockableSlice()
 	if b, ok := body.Data.(*services.TransactionBody_ConsensusSubmitMessage); ok {
 		for i := 0; uint64(i) < chunks; i++ {
 			start := i * chunkSize
@@ -451,7 +451,7 @@ func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicK
 		return transaction
 	}
 
-	transaction.transactions = _NewLockedSlice()
+	transaction.transactions = _NewLockableSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 	transaction.transactionIDs.locked = true

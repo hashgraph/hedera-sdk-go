@@ -12,15 +12,11 @@ type Query struct {
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
 
-	lockedTransactionID         bool
-	paymentTransactionID        TransactionID
-	nodeAccountIDs              *_LockableSlice
-	maxQueryPayment             Hbar
-	queryPayment                Hbar
-	nextPaymentTransactionIndex int
-	nextNodeIndex               int
-	nextTransactionIndex        int
-	maxRetry                    int
+	paymentTransactionIDs *_LockableSlice
+	nodeAccountIDs        *_LockableSlice
+	maxQueryPayment       Hbar
+	queryPayment          Hbar
+	maxRetry              int
 
 	paymentTransactions []*services.Transaction
 
@@ -34,19 +30,16 @@ type Query struct {
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	return Query{
-		pb:                   &services.Query{},
-		pbHeader:             header,
-		lockedTransactionID:  false,
-		paymentTransactionID: TransactionID{},
-		nextTransactionIndex: 0,
-		nextNodeIndex:        0,
-		maxRetry:             10,
-		nodeAccountIDs:       _NewLockedSlice(),
-		paymentTransactions:  make([]*services.Transaction, 0),
-		isPaymentRequired:    isPaymentRequired,
-		maxQueryPayment:      NewHbar(0),
-		queryPayment:         NewHbar(0),
-		timestamp:            time.Now(),
+		pb:                    &services.Query{},
+		pbHeader:              header,
+		paymentTransactionIDs: _NewLockableSlice(),
+		maxRetry:              10,
+		nodeAccountIDs:        _NewLockableSlice(),
+		paymentTransactions:   make([]*services.Transaction, 0),
+		isPaymentRequired:     isPaymentRequired,
+		maxQueryPayment:       NewHbar(0),
+		queryPayment:          NewHbar(0),
+		timestamp:             time.Now(),
 	}
 }
 
@@ -78,12 +71,7 @@ func (this *Query) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
 }
 
 func _QueryGetNodeAccountID(request _Request) AccountID {
-	switch node := request.query.nodeAccountIDs._Get(request.query.nextNodeIndex).(type) { //nolint
-	case AccountID:
-		return node
-	}
-
-	panic("Query node AccountID's not set before executing")
+	return request.query.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
@@ -121,7 +109,7 @@ func _QueryShouldRetry(logID string, status Status) _ExecutionState {
 
 func _QueryMakeRequest(request _Request) _ProtoRequest {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
+		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.paymentTransactionIDs.index]
 	}
 	request.query.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
@@ -132,7 +120,7 @@ func _QueryMakeRequest(request _Request) _ProtoRequest {
 
 func _CostQueryMakeRequest(request _Request) _ProtoRequest {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
+		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.paymentTransactionIDs.index]
 	}
 	request.query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	return _ProtoRequest{
@@ -142,15 +130,13 @@ func _CostQueryMakeRequest(request _Request) _ProtoRequest {
 
 func _QueryAdvanceRequest(request _Request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
+		request.query.paymentTransactionIDs._Advance()
 	}
-	length := request.query.nodeAccountIDs._Length()
-	currentIndex := request.query.nextNodeIndex
-	request.query.nextNodeIndex = (currentIndex + 1) % length
+	request.query.nodeAccountIDs._Advance()
 }
 
 func _CostQueryAdvanceRequest(request _Request) {
-	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeAccountIDs.slice)
+	request.query.paymentTransactionIDs._Advance()
 }
 
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
@@ -162,7 +148,7 @@ func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoR
 func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
 	for _, nodeID := range query.nodeAccountIDs.slice {
 		transaction, err := _QueryMakePaymentTransaction(
-			query.paymentTransactionID,
+			query.paymentTransactionIDs._GetCurrent().(TransactionID),
 			nodeID.(AccountID),
 			client.operator,
 			cost,
@@ -222,14 +208,10 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 }
 
 func (this *Query) GetPaymentTransactionID() TransactionID {
-	return this.paymentTransactionID
+	return this.paymentTransactionIDs._GetCurrent().(TransactionID)
 }
 
 func (this *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
-	if this.lockedTransactionID {
-		panic("payment TransactionID is locked")
-	}
-	this.lockedTransactionID = true
-	this.paymentTransactionID = transactionID
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return this
 }

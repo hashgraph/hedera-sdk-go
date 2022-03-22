@@ -157,7 +157,6 @@ func _Execute(
 				if !ok {
 					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 				}
-				advanceRequest(request)
 			} else {
 				node = client.network._GetNode()
 				request.transaction.nodeAccountIDs._Set(0, node.accountID)
@@ -171,7 +170,6 @@ func _Execute(
 				protoRequest = makeRequest(request)
 				nodeAccountID := getNodeAccountID(request)
 				node, ok = client.network._GetNodeForAccountID(nodeAccountID)
-				advanceRequest(request)
 			} else {
 				node = client.network._GetNode()
 				if len(request.query.paymentTransactions) > 0 {

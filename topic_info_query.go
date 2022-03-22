@@ -158,8 +158,8 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		return TopicInfo{}, err
 	}
 
-	if !query.lockedTransactionID {
-		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.paymentTransactionIDs.locked {
+		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
@@ -188,7 +188,6 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		cost = actualCost
 	}
 
-	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	if query.nodeAccountIDs.locked {
@@ -293,8 +292,8 @@ func (query *TopicInfoQuery) GetMinBackoff() time.Duration {
 
 func (query *TopicInfoQuery) _GetLogID() string {
 	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionID.ValidStart != nil {
-		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("TopicInfoQuery:%d", timestamp)
 }

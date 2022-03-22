@@ -6,7 +6,7 @@ type _LockableSlice struct {
 	index  int
 }
 
-func _NewLockedSlice() *_LockableSlice {
+func _NewLockableSlice() *_LockableSlice {
 	return &_LockableSlice{
 		slice: []interface{}{},
 	}

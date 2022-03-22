@@ -327,7 +327,7 @@ func (sk _Ed25519PrivateKey) _SignTransaction(transaction *Transaction) ([]byte,
 		return []byte{}, nil
 	}
 
-	transaction.transactions = _NewLockedSlice()
+	transaction.transactions = _NewLockableSlice()
 	transaction.publicKeys = append(transaction.publicKeys, wrappedPublicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 	transaction.transactionIDs.locked = true

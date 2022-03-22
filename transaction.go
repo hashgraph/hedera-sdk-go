@@ -50,10 +50,10 @@ func _NewTransaction() Transaction {
 	return Transaction{
 		maxRetry:                 10,
 		transactionValidDuration: &duration,
-		transactionIDs:           _NewLockedSlice(),
-		transactions:             _NewLockedSlice(),
-		signedTransactions:       _NewLockedSlice(),
-		nodeAccountIDs:           _NewLockedSlice(),
+		transactionIDs:           _NewLockableSlice(),
+		transactions:             _NewLockableSlice(),
+		signedTransactions:       _NewLockableSlice(),
+		nodeAccountIDs:           _NewLockableSlice(),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
 	}
@@ -85,17 +85,17 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return Transaction{}, err
 	}
 
-	transactions := _NewLockedSlice()
+	transactions := _NewLockableSlice()
 	for _, transaction := range list.TransactionList {
 		transactions._Push(transaction)
 	}
 
 	tx := Transaction{
 		maxRetry:           10,
-		transactionIDs:     _NewLockedSlice(),
+		transactionIDs:     _NewLockableSlice(),
 		transactions:       transactions,
-		signedTransactions: _NewLockedSlice(),
-		nodeAccountIDs:     _NewLockedSlice(),
+		signedTransactions: _NewLockableSlice(),
+		nodeAccountIDs:     _NewLockableSlice(),
 		publicKeys:         make([]PublicKey, 0),
 		transactionSigners: make([]TransactionSigner, 0),
 	}
@@ -439,7 +439,7 @@ func (this *Transaction) _InitTransactionID(client *Client) error {
 	if this.transactionIDs._Length() == 0 {
 		if client != nil {
 			if client.operator != nil {
-				this.transactionIDs = _NewLockedSlice()
+				this.transactionIDs = _NewLockableSlice()
 				this.transactionIDs = this.transactionIDs._Push(TransactionIDGenerate(client.operator.accountID))
 			} else {
 				return errNoClientOrTransactionID
@@ -486,14 +486,14 @@ func _TransactionFreezeWith(
 		// From the documentation this appears to only be possible if there are missing proto types
 		panic(err)
 	}
-	transaction.signedTransactions = transaction.signedTransactions._Push(&services.SignedTransaction{
-		BodyBytes: bodyBytes,
-		SigMap: &services.SignatureMap{
-			SigPair: make([]*services.SignaturePair, 0),
-		},
-	})
-	if err != nil {
-		return err
+
+	for range transaction.nodeAccountIDs.slice {
+		transaction.signedTransactions = transaction.signedTransactions._Push(&services.SignedTransaction{
+			BodyBytes: bodyBytes,
+			SigMap: &services.SignatureMap{
+				SigPair: make([]*services.SignaturePair, 0),
+			},
+		})
 	}
 
 	return nil
@@ -503,7 +503,7 @@ func (this *Transaction) _SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) {
-	this.transactions = _NewLockedSlice()
+	this.transactions = _NewLockableSlice()
 	this.publicKeys = append(this.publicKeys, publicKey)
 	this.transactionSigners = append(this.transactionSigners, signer)
 }
@@ -545,7 +545,7 @@ func _TransactionMakeRequest(request _Request) _ProtoRequest {
 }
 
 func _TransactionAdvanceRequest(request _Request) {
-	request.transaction.transactionIDs._Advance()
+	request.transaction.nodeAccountIDs._Advance()
 }
 
 func _TransactionGetNodeAccountID(request _Request) AccountID {

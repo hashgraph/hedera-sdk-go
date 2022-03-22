@@ -188,7 +188,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	}
 
 	query.timestamp = time.Now()
-	query.nextPaymentTransactionIndex = 0
+
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	pb := query._Build()
@@ -285,10 +285,6 @@ func (query *AccountBalanceQuery) _GetLogID() string {
 }
 
 func (query *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {
-	if query.lockedTransactionID {
-		panic("payment TransactionID is locked")
-	}
-	query.lockedTransactionID = true
-	query.paymentTransactionID = transactionID
+	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query
 }
