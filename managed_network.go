@@ -117,7 +117,7 @@ outer:
 	}
 }
 
-func (this *_ManagedNetwork) _GetNumberOfNodesForTransaction() int {
+func (this *_ManagedNetwork) _GetNumberOfNodesForTransaction() int { // nolint
 	this._ReadmitNodes()
 	if this.maxNodesPerTransaction != nil {
 		return int(math.Min(float64(*this.maxNodesPerTransaction), float64(len(this.network))))

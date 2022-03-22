@@ -2,9 +2,10 @@ package hedera
 
 import (
 	"context"
-	protobuf "google.golang.org/protobuf/proto"
 	"os"
 	"time"
+
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -30,13 +31,10 @@ func init() { // nolint
 	switch os.Getenv("HEDERA_SDK_GO_LOG_LEVEL") {
 	case "DEBUG":
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-		break
 	case "TRACE":
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
-		break
 	case "INFO":
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-		break
 	default:
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
@@ -92,7 +90,7 @@ type _Request struct {
 	transaction *Transaction
 }
 
-func _Execute(
+func _Execute( // nolint
 	client *Client,
 	request _Request,
 	shouldRetry func(string, _Request, _Response) _ExecutionState,
@@ -160,8 +158,7 @@ func _Execute(
 			if request.transaction.nodeAccountIDs.locked && request.transaction.nodeAccountIDs._Length() > 0 {
 				protoRequest = makeRequest(request)
 				nodeAccountID := getNodeAccountID(request)
-				node, ok = client.network._GetNodeForAccountID(nodeAccountID)
-				if !ok {
+				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
 					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 				}
 			} else {
@@ -176,14 +173,16 @@ func _Execute(
 			if request.query.nodeAccountIDs.locked && request.query.nodeAccountIDs._Length() > 0 {
 				protoRequest = makeRequest(request)
 				nodeAccountID := getNodeAccountID(request)
-				node, ok = client.network._GetNodeForAccountID(nodeAccountID)
+				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
+					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+				}
 			} else {
 				node = client.network._GetNode()
 				if len(request.query.paymentTransactions) > 0 {
 					var paymentTransaction services.TransactionBody
-					protobuf.Unmarshal(request.query.paymentTransactions[0].BodyBytes, &paymentTransaction)
+					_ = protobuf.Unmarshal(request.query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
 					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
-					request.query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction)
+					request.query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
 				}
 				request.query.nodeAccountIDs._Set(0, node.accountID)
 				protoRequest = makeRequest(request)

@@ -206,10 +206,6 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
-	}
-
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {

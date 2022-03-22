@@ -5,11 +5,12 @@ package hedera
 
 import (
 	"context"
+	"net"
+	"testing"
+
 	"github.com/hashgraph/hedera-protobufs-go/mirror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"net"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
