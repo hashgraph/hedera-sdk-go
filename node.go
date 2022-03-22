@@ -35,6 +35,10 @@ func _NewNode(accountID AccountID, address string, minBackoff time.Duration) (no
 	return node, err
 }
 
+func (node *_Node) _GetKey() string {
+	return node.accountID.String()
+}
+
 func (node *_Node) _SetMinBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
@@ -59,12 +63,12 @@ func (node *_Node) _IsHealthy() bool {
 	return node._ManagedNode._IsHealthy()
 }
 
-func (node *_Node) _IncreaseDelay() {
-	node._ManagedNode._IncreaseDelay()
+func (node *_Node) _IncreaseBackoff() {
+	node._ManagedNode._IncreaseBackoff()
 }
 
-func (node *_Node) _DecreaseDelay() {
-	node._ManagedNode._DecreaseDelay()
+func (node *_Node) _DecreaseBackoff() {
+	node._ManagedNode._DecreaseBackoff()
 }
 
 func (node *_Node) _Wait() time.Duration {
@@ -75,7 +79,7 @@ func (node *_Node) _GetUseCount() int64 {
 	return node._ManagedNode._GetUseCount()
 }
 
-func (node *_Node) _GetLastUsed() int64 {
+func (node *_Node) _GetLastUsed() time.Time {
 	return node._ManagedNode._GetLastUsed()
 }
 
@@ -91,7 +95,7 @@ func (node *_Node) _GetAddress() string {
 	return node._ManagedNode._GetAddress()
 }
 
-func (node *_Node) _GetReadmitTime() int64 {
+func (node *_Node) _GetReadmitTime() time.Time {
 	return node._ManagedNode._GetReadmitTime()
 }
 

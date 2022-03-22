@@ -184,7 +184,7 @@ func _Execute(
 				//		println(node.accountID.String(), "node", node.readmitTime)
 				//	}
 				//}
-				//for _, s := range client.network.goodNodes {
+				//for _, s := range client.network.healthyNodes {
 				//	if node, ok := s.(*_Node); ok {
 				//		println(node.accountID.String(), "good node", node.readmitTime)
 				//	}
@@ -247,7 +247,7 @@ func _Execute(
 			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
 
-		node._DecreaseDelay()
+		node._DecreaseBackoff()
 
 		retry := shouldRetry(logID, request, resp)
 

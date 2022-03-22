@@ -27,6 +27,10 @@ func _NewMirrorNode(address string) (node *_MirrorNode, err error) {
 	return node, err
 }
 
+func (node *_MirrorNode) _GetKey() string {
+	return node.address._String()
+}
+
 func (node *_MirrorNode) _SetMinBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
@@ -51,12 +55,12 @@ func (node *_MirrorNode) _IsHealthy() bool {
 	return node._ManagedNode._IsHealthy()
 }
 
-func (node *_MirrorNode) _IncreaseDelay() {
-	node._ManagedNode._IncreaseDelay()
+func (node *_MirrorNode) _IncreaseBackoff() {
+	node._ManagedNode._IncreaseBackoff()
 }
 
-func (node *_MirrorNode) _DecreaseDelay() {
-	node._ManagedNode._DecreaseDelay()
+func (node *_MirrorNode) _DecreaseBackoff() {
+	node._ManagedNode._DecreaseBackoff()
 }
 
 func (node *_MirrorNode) _Wait() time.Duration {
@@ -67,7 +71,7 @@ func (node *_MirrorNode) _GetUseCount() int64 {
 	return node._ManagedNode._GetUseCount()
 }
 
-func (node *_MirrorNode) _GetLastUsed() int64 {
+func (node *_MirrorNode) _GetLastUsed() time.Time {
 	return node._ManagedNode._GetLastUsed()
 }
 
@@ -83,7 +87,7 @@ func (node *_MirrorNode) _GetAddress() string {
 	return node._ManagedNode._GetAddress()
 }
 
-func (node *_MirrorNode) _GetReadmitTime() int64 {
+func (node *_MirrorNode) _GetReadmitTime() time.Time {
 	return node._ManagedNode._GetReadmitTime()
 }
 
