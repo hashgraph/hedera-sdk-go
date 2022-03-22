@@ -1,3 +1,32 @@
+## v2.11.0
+
+### Added
+
+* `ContractCreateFlow`
+* `Query.[Set|Get]PaymentTransactionID`
+* Verbose logging using zerolog
+* `*[Transaction|Query].[Set|Get]GrpcDeadline()`
+ * `TransactionRecord.[hbar|Token|TokenNft]AllowanceAdjustments`
+ * `TransferTransaction.AddApproved[Hbar|Token|Nft]Transfer()`
+ * `AccountAllowanceApproveTransaction.Approve[Hbar|Token|TokenNft]Allowance()`
+ * `AccountAllowanceAdjustTransaction.[Grant|Revoke][Hbar|Token|TokenNft]Allowance()`
+ * `AccountAllowanceAdjustTransaction.[Grant|Revoke]TokenNftAllowanceAllSerials()`
+
+### Fixed
+
+* `HbarAllowance.OwnerAccountID`, wasn't being set.
+* Min/max backoff for nodes should start at 8s to 60s
+* The current backoff for nodes should be used when sorting inside of network
+  meaning nodes with a smaller current backoff will be prioritized
+
+### Deprecated
+
+* `AccountUpdateTransaction.[Set|Get]AliasKey`
+
+### Removed
+
+* `Account[Approve|Adjust]AllowanceTransaction.Add[Hbar|Token|TokenNft]AllowanceWithOwner()`
+
 ## v2.11.0-beta.1
 
 ### Added
