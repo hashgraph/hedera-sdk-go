@@ -114,7 +114,7 @@ func main() {
 	contractTransactionID, err := hedera.NewContractCreateTransaction().
 		// Set gas to create the contract
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
-		SetGas(75000).
+		SetGas(100000).
 		// Failing to set parameters when required will result in "CONTRACT_REVERT_EXECUTED" status
 		SetConstructorParameters(contractFunctionParams).
 		// The contract bytecode must be set to the file ID containing the contract bytecode
@@ -156,7 +156,7 @@ func main() {
 		SetContractID(newContractID).
 		// The amount of gas to use for the call
 		// All of the gas offered will be used and charged a corresponding fee
-		SetGas(75000).
+		SetGas(100000).
 		// This query requires payment, depends on gas used
 		SetQueryPayment(hedera.NewHbar(1)).
 		// nil -> no parameters
@@ -189,7 +189,7 @@ func main() {
 		// Set which contract
 		SetContractID(newContractID).
 		// Set the gas to execute the contract call
-		SetGas(75000).
+		SetGas(100000).
 		// Set the function to call and the parameters to send
 		// in this case we're calling function "set_message" with a single
 		// string parameter of value "Hello from Hedera again!"
@@ -228,7 +228,7 @@ func main() {
 		// Set which contract
 		SetContractID(newContractID).
 		// Set gas to use
-		SetGas(75000).
+		SetGas(100000).
 		// Set the query payment explicitly since sometimes automatic payment calculated
 		// is too low
 		SetQueryPayment(hedera.NewHbar(1)).

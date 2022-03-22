@@ -111,7 +111,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_FileContentsQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_FileContentsQueryGetMethod,
 		_FileContentsQueryMapStatusError,

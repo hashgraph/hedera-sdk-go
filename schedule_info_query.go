@@ -107,7 +107,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_ScheduleInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_ScheduleInfoQueryGetMethod,
 		_ScheduleInfoQueryMapStatusError,

@@ -157,7 +157,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_AccountBalanceQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountBalanceQueryGetMethod,
 		_AccountBalanceQueryMapStatusError,

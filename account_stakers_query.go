@@ -115,7 +115,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_AccountStakersQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountStakersQueryGetMethod,
 		_AccountStakersQueryMapStatusError,

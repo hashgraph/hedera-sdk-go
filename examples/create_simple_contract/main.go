@@ -109,7 +109,7 @@ func main() {
 	// Instantiate the contract instance
 	contractTransactionResponse, err := hedera.NewContractCreateTransaction().
 		// Failing to set this to a sufficient amount will result in "INSUFFICIENT_GAS" status
-		SetGas(75000).
+		SetGas(100000).
 		// The file ID we got from the record of the file created previously
 		SetBytecodeFileID(byteCodeFileID).
 		// Setting an admin key allows you to delete the contract in the future
@@ -146,7 +146,7 @@ func main() {
 		SetContractID(newContractID).
 		// The amount of gas to use for the call
 		// All of the gas offered will be used and charged a corresponding fee
-		SetGas(75000).
+		SetGas(100000).
 		// This query requires payment, depends on gas used
 		SetQueryPayment(hedera.NewHbar(1)).
 		// Specified which function to call, and the parameters to pass to the function

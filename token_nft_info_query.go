@@ -165,7 +165,7 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_TokenNftInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TokenNftInfoQueryGetMethod,
 		_TokenNftInfoQueryMapStatusError,

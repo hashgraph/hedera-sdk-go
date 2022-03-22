@@ -110,7 +110,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_TopicInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_TopicInfoQueryGetMethod,
 		_TopicInfoQueryMapStatusError,

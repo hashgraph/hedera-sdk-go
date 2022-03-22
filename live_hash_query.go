@@ -120,7 +120,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_LiveHashQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_LiveHashQueryGetMethod,
 		_LiveHashQueryMapStatusError,

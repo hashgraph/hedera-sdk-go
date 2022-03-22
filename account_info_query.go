@@ -124,7 +124,7 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		},
 		_AccountInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
-		_QueryAdvanceRequest,
+		_CostQueryAdvanceRequest,
 		_QueryGetNodeAccountID,
 		_AccountInfoQueryGetMethod,
 		_AccountInfoQueryMapStatusError,
