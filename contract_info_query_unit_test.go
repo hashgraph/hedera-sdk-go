@@ -4,8 +4,9 @@
 package hedera
 
 import (
-	protobuf "google.golang.org/protobuf/proto"
 	"testing"
+
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
