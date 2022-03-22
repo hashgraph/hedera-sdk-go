@@ -198,7 +198,7 @@ func _Execute(
 
 		channel, err := node._GetChannel()
 		if err != nil {
-			client.network._IncreaseDelay(node)
+			client.network._IncreaseBackoff(node)
 			continue
 		}
 
@@ -227,7 +227,7 @@ func _Execute(
 		if err != nil {
 			errPersistent = err
 			if _ExecutableDefaultRetryHandler(logID, err) {
-				client.network._IncreaseDelay(node)
+				client.network._IncreaseBackoff(node)
 				continue
 			}
 			if errPersistent == nil {
@@ -244,7 +244,7 @@ func _Execute(
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
 			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
-			client.network._IncreaseDelay(node)
+			client.network._IncreaseBackoff(node)
 			continue
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {

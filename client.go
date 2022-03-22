@@ -639,8 +639,8 @@ func (client *Client) GetOperatorPublicKey() PublicKey {
 // be returned.
 func (client *Client) Ping(nodeID AccountID) error {
 	_, err := NewAccountBalanceQuery().
-		SetAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{nodeID}).
+		SetAccountID(client.GetOperatorAccountID()).
 		Execute(client)
 
 	return err

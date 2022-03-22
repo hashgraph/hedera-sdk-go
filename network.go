@@ -42,19 +42,21 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 	return temp
 }
 
-func (network *_Network) _IncreaseDelay(node *_Node) {
+func (network *_Network) _IncreaseBackoff(node *_Node) {
 	node._IncreaseBackoff()
 
-	for i, n := range network.healthyNodes {
-		if goodNode, ok := n.(*_Node); ok {
-			if goodNode.accountID.String() == node.accountID.String() {
-				if i == len(network.healthyNodes)-1 {
-					network.healthyNodes = network.healthyNodes[:i]
-				} else {
-					network.healthyNodes = append(network.healthyNodes[:i], network.healthyNodes[i+1:]...)
-				}
-			}
+	index := 0
+	for i, healthyNode := range network.healthyNodes {
+		if node == healthyNode {
+			index = i
+			break
 		}
+	}
+
+	if index == len(network.healthyNodes)-1 {
+		network.healthyNodes = network.healthyNodes[:index]
+	} else {
+		network.healthyNodes = append(network.healthyNodes[:index], network.healthyNodes[index+1:]...)
 	}
 }
 
