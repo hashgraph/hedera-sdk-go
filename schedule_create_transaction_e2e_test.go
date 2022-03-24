@@ -5,9 +5,10 @@ package hedera
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
