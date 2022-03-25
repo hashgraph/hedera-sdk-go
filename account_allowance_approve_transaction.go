@@ -63,11 +63,19 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveHbarApproval(owne
 	return transaction
 }
 
+// AddHbarApproval
+// Deprecated - Use ApproveHbarAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) AddHbarApproval(id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveHbarApproval(nil, id, amount)
 }
 
+// ApproveHbarApproval
+// Deprecated - Use ApproveHbarAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) ApproveHbarApproval(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
+}
+
+func (transaction *AccountAllowanceApproveTransaction) ApproveHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
 
@@ -88,11 +96,18 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenApproval(tok
 	return transaction
 }
 
+// Deprecated - Use ApproveTokenAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) AddTokenApproval(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenApproval(tokenID, nil, accountID, amount)
 }
 
+// ApproveTokenApproval
+// Deprecated - Use ApproveTokenAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenApproval(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
+}
+
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
 
@@ -130,13 +145,22 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftApproval(
 	return transaction
 }
 
+// AddTokenNftApproval
+// Deprecated - Use ApproveTokenNftAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) AddTokenNftApproval(nftID NftID, accountID AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftApproval(nftID, nil, accountID)
 }
 
+// ApproveTokenNftApproval
+// Deprecated - Use ApproveTokenNftAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftApproval(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
 }
+
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
+}
+
 func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
 	for _, t := range transaction.nftAllowances {
 		if t.TokenID.String() == tokenID.String() {

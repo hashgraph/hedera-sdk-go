@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -97,4 +98,29 @@ func (approval *TokenNftAllowance) _ToGrantedProtobuf() *services.GrantedNftAllo
 	}
 
 	return body
+}
+
+func (approval *TokenNftAllowance) String() string {
+	var owner string
+	var spender string
+	var token string
+	var serials string
+
+	if approval.OwnerAccountID != nil {
+		owner = approval.OwnerAccountID.String()
+	}
+
+	if approval.SpenderAccountID != nil {
+		spender = approval.SpenderAccountID.String()
+	}
+
+	if approval.TokenID != nil {
+		token = approval.TokenID.String()
+	}
+
+	for _, serial := range approval.SerialNumbers {
+		serials = serials + fmt.Sprintf("%d, ", serial)
+	}
+
+	return fmt.Sprintf("OwnerAccountID: %s, SpenderAccountID: %s, TokenID: %s, Serials: %s, ApprovedForAll: %t", owner, spender, token, serials, approval.AllSerials)
 }
