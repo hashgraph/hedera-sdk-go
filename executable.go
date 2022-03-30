@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"context"
+	"math"
 	"os"
 	"time"
 
@@ -102,43 +103,16 @@ func _Execute( // nolint
 	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
 	logID string,
 	deadline *time.Duration,
+	maxBackoff *time.Duration,
+	minBackoff *time.Duration,
+	maxRetry int,
 ) (_IntermediateResponse, error) {
 	var maxAttempts int
-	var minBackoff *time.Duration
-	var maxBackoff *time.Duration
 
 	if client.maxAttempts != nil {
 		maxAttempts = *client.maxAttempts
 	} else {
-		if request.query != nil {
-			maxAttempts = request.query.maxRetry
-		} else {
-			maxAttempts = request.transaction.maxRetry
-		}
-	}
-
-	if request.query != nil {
-		if request.query.maxBackoff == nil {
-			maxBackoff = &client.maxBackoff
-		} else {
-			maxBackoff = request.query.maxBackoff
-		}
-		if request.query.minBackoff == nil {
-			minBackoff = &client.minBackoff
-		} else {
-			minBackoff = request.query.minBackoff
-		}
-	} else {
-		if request.transaction.maxBackoff == nil {
-			maxBackoff = &client.maxBackoff
-		} else {
-			maxBackoff = request.transaction.maxBackoff
-		}
-		if request.transaction.minBackoff == nil {
-			minBackoff = &client.minBackoff
-		} else {
-			minBackoff = request.transaction.minBackoff
-		}
+		maxAttempts = maxRetry
 	}
 
 	currentBackoff := minBackoff
@@ -147,9 +121,6 @@ func _Execute( // nolint
 	var errPersistent error
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt, *currentBackoff = attempt+1, *currentBackoff*2 {
-		if *currentBackoff > *maxBackoff {
-			*currentBackoff = *maxBackoff
-		}
 		var protoRequest _ProtoRequest
 		var node *_Node
 		var ok bool
@@ -190,12 +161,13 @@ func _Execute( // nolint
 		}
 
 		node._InUse()
+		println(node.accountID.String())
 
 		logCtx.Trace().Str("requestId", logID).Str("nodeAccountID", node.accountID.String()).Str("nodeIPAddress", node.address._String())
 
 		if !node._IsHealthy() {
 			logCtx.Trace().Str("requestId", logID).Str("delay", node._Wait().String()).Msg("node is unhealthy, waiting before continuing")
-			_DelayForAttempt(logID, currentBackoff, attempt)
+			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
 			continue
 		}
 
@@ -243,12 +215,11 @@ func _Execute( // nolint
 		}
 
 		node._DecreaseBackoff()
-		*currentBackoff /= 2
 
 		switch shouldRetry(logID, request, resp) {
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
-			_DelayForAttempt(logID, currentBackoff, attempt)
+			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
 			continue
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
@@ -275,9 +246,11 @@ func _Execute( // nolint
 	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func _DelayForAttempt(logID string, currentBackoff *time.Duration, attempt int64) {
-	logCtx.Trace().Str("requestId", logID).Dur("delay", *currentBackoff).Int64("attempt", attempt+1).Msg("retrying  request attempt")
-	time.Sleep(*currentBackoff)
+func _DelayForAttempt(logID string, minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
+	// 0.1s, 0.2s, 0.4s, 0.8s, ...
+	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
+	logCtx.Trace().Str("requestId", logID).Dur("delay", time.Duration(ms)).Int64("attempt", attempt+1).Msg("retrying  request attempt")
+	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
 
 func _ExecutableDefaultRetryHandler(logID string, err error) bool {
