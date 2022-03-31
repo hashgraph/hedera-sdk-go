@@ -102,9 +102,7 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountRecordsQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -123,21 +121,21 @@ func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetCryptoGetAccountRecords().Header.Cost)
+	cost := int64(resp.(*services.Response).GetCryptoGetAccountRecords().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountRecordsQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
+func _AccountRecordsQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode))
 }
 
-func _AccountRecordsQueryMapStatusError(_ _Request, response _Response) error {
+func _AccountRecordsQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetCryptoGetAccountRecords().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _AccountRecordsQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _AccountRecordsQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetAccountRecords,
 	}
@@ -212,9 +210,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountRecordsQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -233,7 +229,7 @@ func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, 
 		return []TransactionRecord{}, err
 	}
 
-	for _, element := range resp.query.GetCryptoGetAccountRecords().Records {
+	for _, element := range resp.(*services.Response).GetCryptoGetAccountRecords().Records {
 		record := _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: element})
 		records = append(records, record)
 	}

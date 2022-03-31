@@ -541,7 +541,7 @@ func (transaction *TransferTransaction) _ConstructScheduleProtobuf() (*services.
 	}, nil
 }
 
-func _TransferTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TransferTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().CryptoTransfer,
 	}
@@ -654,9 +654,7 @@ func (transaction *TransferTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -674,7 +672,7 @@ func (transaction *TransferTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -685,7 +683,7 @@ func (transaction *TransferTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

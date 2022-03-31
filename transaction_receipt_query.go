@@ -118,9 +118,7 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TransactionReceiptQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -139,12 +137,12 @@ func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetTransactionGetReceipt().Header.Cost)
+	cost := int64(resp.(*services.Response).GetTransactionGetReceipt().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _TransactionReceiptQueryShouldRetry(logID string, request _Request, response _Response) _ExecutionState {
-	status := Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
+func _TransactionReceiptQueryShouldRetry(logID string, request interface{}, response interface{}) _ExecutionState {
+	status := Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode())
 	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("receipt precheck status received")
 
 	switch status {
@@ -156,7 +154,7 @@ func _TransactionReceiptQueryShouldRetry(logID string, request _Request, respons
 		return executionStateError
 	}
 
-	status = Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus())
+	status = Status(response.(*services.Response).GetTransactionGetReceipt().GetReceipt().GetStatus())
 	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("receipt status received")
 
 	switch status {
@@ -167,22 +165,22 @@ func _TransactionReceiptQueryShouldRetry(logID string, request _Request, respons
 	}
 }
 
-func _TransactionReceiptQueryMapStatusError(request _Request, response _Response) error {
-	switch Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
+func _TransactionReceiptQueryMapStatusError(request interface{}, response interface{}) error {
+	switch Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
 	default:
 		return ErrHederaPreCheckStatus{
-			Status: Status(response.query.GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()),
+			Status: Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()),
 		}
 	}
 
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetTransactionGetReceipt().GetReceipt().GetStatus()),
+		Status: Status(response.(*services.Response).GetTransactionGetReceipt().GetReceipt().GetStatus()),
 	}
 }
 
-func _TransactionReceiptQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _TransactionReceiptQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetTransactionReceipts,
 	}
@@ -281,9 +279,7 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TransactionReceiptQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -299,14 +295,14 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 	)
 
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {
-		if resp.query.GetTransactionGetReceipt() != nil {
-			return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt()), err
+		if resp.(*services.Response).GetTransactionGetReceipt() != nil {
+			return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt()), err
 		}
 
 		return TransactionReceipt{}, err
 	}
 
-	return _TransactionReceiptFromProtobuf(resp.query.GetTransactionGetReceipt()), nil
+	return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt()), nil
 }
 
 func (query *TransactionReceiptQuery) _GetLogID() string {

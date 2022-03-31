@@ -38,9 +38,7 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_NetworkVersionInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -59,24 +57,24 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetNetworkGetVersionInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetNetworkGetVersionInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
 	return HbarFromTinybar(cost), nil
 }
 
-func _NetworkVersionInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
+func _NetworkVersionInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _NetworkVersionInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _NetworkVersionInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetNetworkGetVersionInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _NetworkVersionInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _NetworkVersionInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetNetwork().GetVersionInfo,
 	}
@@ -145,9 +143,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_NetworkVersionInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -166,7 +162,7 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		return NetworkVersionInfo{}, err
 	}
 
-	return _NetworkVersionInfoFromProtobuf(resp.query.GetNetworkGetVersionInfo()), err
+	return _NetworkVersionInfoFromProtobuf(resp.(*services.Response).GetNetworkGetVersionInfo()), err
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

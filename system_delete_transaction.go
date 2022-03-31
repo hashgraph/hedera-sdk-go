@@ -177,7 +177,7 @@ func (transaction *SystemDeleteTransaction) _ConstructScheduleProtobuf() (*servi
 	}, nil
 }
 
-func _SystemDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _SystemDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	// switch os := runtime.GOOS; os {
 	// case "darwin":
 	//	fmt.Println("OS X.")
@@ -272,9 +272,7 @@ func (transaction *SystemDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -292,7 +290,7 @@ func (transaction *SystemDeleteTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -303,7 +301,7 @@ func (transaction *SystemDeleteTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

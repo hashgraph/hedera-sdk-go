@@ -103,9 +103,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ContractInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -124,7 +122,7 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetContractGetInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetContractGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
@@ -132,17 +130,17 @@ func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode))
+func _ContractInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetContractGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _ContractInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _ContractInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetContractGetInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetContractGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ContractInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _ContractInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetContract().GetContractInfo,
 	}
@@ -217,9 +215,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ContractInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -238,7 +234,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		return ContractInfo{}, err
 	}
 
-	info, err := _ContractInfoFromProtobuf(resp.query.GetContractGetInfo().ContractInfo)
+	info, err := _ContractInfoFromProtobuf(resp.(*services.Response).GetContractGetInfo().ContractInfo)
 	if err != nil {
 		return ContractInfo{}, err
 	}

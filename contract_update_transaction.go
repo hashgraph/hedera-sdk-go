@@ -318,7 +318,7 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*ser
 	}, nil
 }
 
-func _ContractUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _ContractUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetContract().UpdateContract,
 	}
@@ -399,9 +399,7 @@ func (transaction *ContractUpdateTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -419,7 +417,7 @@ func (transaction *ContractUpdateTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -430,7 +428,7 @@ func (transaction *ContractUpdateTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

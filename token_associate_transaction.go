@@ -187,7 +187,7 @@ func (transaction *TokenAssociateTransaction) _ConstructScheduleProtobuf() (*ser
 	}, nil
 }
 
-func _TokenAssociateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TokenAssociateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().AssociateTokens,
 	}
@@ -268,9 +268,7 @@ func (transaction *TokenAssociateTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -288,7 +286,7 @@ func (transaction *TokenAssociateTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -299,7 +297,7 @@ func (transaction *TokenAssociateTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

@@ -171,7 +171,7 @@ func (transaction *TokenDissociateTransaction) _ConstructScheduleProtobuf() (*se
 	}, nil
 }
 
-func _TokenDissociateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TokenDissociateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DissociateTokens,
 	}
@@ -252,9 +252,7 @@ func (transaction *TokenDissociateTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -272,7 +270,7 @@ func (transaction *TokenDissociateTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -283,7 +281,7 @@ func (transaction *TokenDissociateTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

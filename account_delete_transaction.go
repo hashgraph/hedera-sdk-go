@@ -147,7 +147,7 @@ func (transaction *AccountDeleteTransaction) _ConstructScheduleProtobuf() (*serv
 	}, nil
 }
 
-func _AccountDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _AccountDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().CryptoDelete,
 	}
@@ -228,9 +228,7 @@ func (transaction *AccountDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -248,7 +246,7 @@ func (transaction *AccountDeleteTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 			Hash:          make([]byte, 0),
 		}, err
 	}
@@ -260,7 +258,7 @@ func (transaction *AccountDeleteTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

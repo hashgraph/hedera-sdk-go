@@ -147,7 +147,7 @@ func (transaction *TokenFreezeTransaction) _ConstructScheduleProtobuf() (*servic
 	}, nil
 }
 
-func _TokenFreezeTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TokenFreezeTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().FreezeTokenAccount,
 	}
@@ -228,9 +228,7 @@ func (transaction *TokenFreezeTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -248,7 +246,7 @@ func (transaction *TokenFreezeTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -259,7 +257,7 @@ func (transaction *TokenFreezeTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

@@ -305,7 +305,7 @@ func (transaction *AccountAllowanceApproveTransaction) _ConstructScheduleProtobu
 	}, nil
 }
 
-func _AccountApproveAllowanceTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _AccountApproveAllowanceTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().ApproveAllowances,
 	}
@@ -386,9 +386,7 @@ func (transaction *AccountAllowanceApproveTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -406,7 +404,7 @@ func (transaction *AccountAllowanceApproveTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -417,7 +415,7 @@ func (transaction *AccountAllowanceApproveTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

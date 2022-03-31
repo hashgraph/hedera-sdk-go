@@ -249,9 +249,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 	for i := 0; i < size; i++ {
 		resp, err := _Execute(
 			client,
-			_Request{
-				transaction: &transaction.Transaction,
-			},
+			&transaction.Transaction,
 			_TransactionShouldRetry,
 			_TransactionMakeRequest,
 			_TransactionAdvanceRequest,
@@ -261,13 +259,16 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 			_TransactionMapResponse,
 			transaction._GetLogID(),
 			transaction.grpcDeadline,
+			transaction.maxBackoff,
+			transaction.minBackoff,
+			transaction.maxRetry,
 		)
 
 		if err != nil {
 			return []TransactionResponse{}, err
 		}
 
-		list[i] = resp.transaction
+		list[i] = resp.(TransactionResponse)
 	}
 
 	return list, nil
@@ -357,7 +358,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	return transaction, nil
 }
 
-func _TopicMessageSubmitTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TopicMessageSubmitTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetTopic().SubmitMessage,
 	}

@@ -23,67 +23,35 @@ func TestIntegrationAccountCreateTransactionCanExecute(t *testing.T) {
 
 	assert.Equal(t, 2*HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
 
-	for i := 0; i < 100; i++ {
-		resp, err := NewAccountCreateTransaction().
-			SetKey(newKey).
-			//SetNodeAccountIDs(env.NodeAccountIDs).
-			SetInitialBalance(newBalance).
-			SetMaxAutomaticTokenAssociations(100).
-			Execute(client)
+	resp, err := NewAccountCreateTransaction().
+		SetKey(newKey).
+		//SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(newBalance).
+		SetMaxAutomaticTokenAssociations(100).
+		Execute(client)
 
-		require.NoError(t, err)
+	require.NoError(t, err)
 
-		receipt, err := resp.GetReceipt(client)
-		require.NoError(t, err)
+	receipt, err := resp.GetReceipt(client)
+	require.NoError(t, err)
 
-		accountID := *receipt.AccountID
+	accountID := *receipt.AccountID
 
-		tx, err := NewAccountDeleteTransaction().
-			SetNodeAccountIDs([]AccountID{resp.NodeID}).
-			SetAccountID(accountID).
-			SetTransferAccountID(client.GetOperatorAccountID()).
-			SetTransactionID(TransactionIDGenerate(accountID)).
-			FreezeWith(client)
-		require.NoError(t, err)
+	tx, err := NewAccountDeleteTransaction().
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+		SetAccountID(accountID).
+		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransactionID(TransactionIDGenerate(accountID)).
+		FreezeWith(client)
+	require.NoError(t, err)
 
-		resp, err = tx.
-			Sign(newKey).
-			Execute(client)
-		require.NoError(t, err)
+	resp, err = tx.
+		Sign(newKey).
+		Execute(client)
+	require.NoError(t, err)
 
-		_, err = resp.GetReceipt(client)
-		require.NoError(t, err)
-	}
-
-	//resp, err := NewAccountCreateTransaction().
-	//	SetKey(newKey).
-	//	//SetNodeAccountIDs(env.NodeAccountIDs).
-	//	SetInitialBalance(newBalance).
-	//	SetMaxAutomaticTokenAssociations(100).
-	//	Execute(client)
-	//
-	//require.NoError(t, err)
-	//
-	//receipt, err := resp.GetReceipt(client)
-	//require.NoError(t, err)
-	//
-	//accountID := *receipt.AccountID
-	//
-	//tx, err := NewAccountDeleteTransaction().
-	//	SetNodeAccountIDs([]AccountID{resp.NodeID}).
-	//	SetAccountID(accountID).
-	//	SetTransferAccountID(client.GetOperatorAccountID()).
-	//	SetTransactionID(TransactionIDGenerate(accountID)).
-	//	FreezeWith(client)
-	//require.NoError(t, err)
-	//
-	//resp, err = tx.
-	//	Sign(newKey).
-	//	Execute(client)
-	//require.NoError(t, err)
-	//
-	//_, err = resp.GetReceipt(client)
-	//require.NoError(t, err)
+	_, err = resp.GetReceipt(client)
+	require.NoError(t, err)
 
 	//err = CloseIntegrationTestEnv(env, nil)
 	//require.NoError(t, err)

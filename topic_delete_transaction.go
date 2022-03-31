@@ -109,7 +109,7 @@ func (transaction *TopicDeleteTransaction) _ConstructScheduleProtobuf() (*servic
 	}, nil
 }
 
-func _TopicDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TopicDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetTopic().DeleteTopic,
 	}
@@ -190,9 +190,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -210,7 +208,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -221,7 +219,7 @@ func (transaction *TopicDeleteTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

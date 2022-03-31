@@ -98,9 +98,7 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ContractBytecodeQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -119,21 +117,21 @@ func (query *ContractBytecodeQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetContractGetBytecodeResponse().Header.Cost)
+	cost := int64(resp.(*services.Response).GetContractGetBytecodeResponse().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractBytecodeQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
+func _ContractBytecodeQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode))
 }
 
-func _ContractBytecodeQueryMapStatusError(_ _Request, response _Response) error {
+func _ContractBytecodeQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetContractGetBytecodeResponse().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ContractBytecodeQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _ContractBytecodeQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetContract().ContractGetBytecode,
 	}
@@ -206,9 +204,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ContractBytecodeQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -227,7 +223,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	return resp.query.GetContractGetBytecodeResponse().Bytecode, nil
+	return resp.(*services.Response).GetContractGetBytecodeResponse().Bytecode, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

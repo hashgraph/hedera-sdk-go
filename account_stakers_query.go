@@ -101,9 +101,7 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountStakersQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -122,21 +120,21 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetCryptoGetProxyStakers().Header.Cost)
+	cost := int64(resp.(*services.Response).GetCryptoGetProxyStakers().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountStakersQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
+func _AccountStakersQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode))
 }
 
-func _AccountStakersQueryMapStatusError(_ _Request, response _Response) error {
+func _AccountStakersQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetCryptoGetProxyStakers().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _AccountStakersQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _AccountStakersQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetStakersByAccountID,
 	}
@@ -207,9 +205,7 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountStakersQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -228,10 +224,10 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		return []Transfer{}, err
 	}
 
-	var stakers = make([]Transfer, len(resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker))
+	var stakers = make([]Transfer, len(resp.(*services.Response).GetCryptoGetProxyStakers().Stakers.ProxyStaker))
 
 	// TODO: This is wrong, this _Method shold return `[]ProxyStaker` not `[]Transfer`
-	for i, element := range resp.query.GetCryptoGetProxyStakers().Stakers.ProxyStaker {
+	for i, element := range resp.(*services.Response).GetCryptoGetProxyStakers().Stakers.ProxyStaker {
 		id := _AccountIDFromProtobuf(element.AccountID)
 		accountID := AccountID{}
 

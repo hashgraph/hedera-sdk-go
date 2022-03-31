@@ -107,9 +107,7 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_LiveHashQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -128,21 +126,21 @@ func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetCryptoGetLiveHash().Header.Cost)
+	cost := int64(resp.(*services.Response).GetCryptoGetLiveHash().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _LiveHashQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
+func _LiveHashQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode))
 }
 
-func _LiveHashQueryMapStatusError(_ _Request, response _Response) error {
+func _LiveHashQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetCryptoGetLiveHash().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _LiveHashQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _LiveHashQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetLiveHash,
 	}
@@ -213,9 +211,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_LiveHashQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -234,7 +230,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		return LiveHash{}, err
 	}
 
-	liveHash, err := _LiveHashFromProtobuf(resp.query.GetCryptoGetLiveHash().LiveHash)
+	liveHash, err := _LiveHashFromProtobuf(resp.(*services.Response).GetCryptoGetLiveHash().LiveHash)
 	if err != nil {
 		return LiveHash{}, err
 	}

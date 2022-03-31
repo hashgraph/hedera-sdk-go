@@ -163,7 +163,7 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "exceptional receipt status: INVALID_ACCOUNT_ID", err.Error())
+		assert.Equal(t, "exceptional receipt status: ACCOUNT_ID_DOES_NOT_EXIST", err.Error())
 	}
 
 	err = CloseIntegrationTestEnv(env, nil)

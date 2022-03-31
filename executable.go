@@ -67,46 +67,22 @@ type _Method struct {
 	) (*services.TransactionResponse, error)
 }
 
-type _Response struct {
-	query       *services.Response
-	transaction *services.TransactionResponse
-}
-
-type _IntermediateResponse struct {
-	query       *services.Response
-	transaction TransactionResponse
-}
-
-type _ProtoRequest struct {
-	query       *services.Query
-	transaction *services.Transaction
-}
-
-type QueryHeader struct {
-	header *services.QueryHeader //nolint
-}
-
-type _Request struct {
-	query       *Query
-	transaction *Transaction
-}
-
 func _Execute( // nolint
 	client *Client,
-	request _Request,
-	shouldRetry func(string, _Request, _Response) _ExecutionState,
-	makeRequest func(request _Request) _ProtoRequest,
-	advanceRequest func(_Request),
-	getNodeAccountID func(_Request) AccountID,
-	getMethod func(_Request, *_Channel) _Method,
-	mapStatusError func(_Request, _Response) error,
-	mapResponse func(_Request, _Response, AccountID, _ProtoRequest) (_IntermediateResponse, error),
+	request interface{},
+	shouldRetry func(string, interface{}, interface{}) _ExecutionState,
+	makeRequest func(interface{}) interface{},
+	advanceRequest func(interface{}),
+	getNodeAccountID func(interface{}) AccountID,
+	getMethod func(interface{}, *_Channel) _Method,
+	mapStatusError func(interface{}, interface{}) error,
+	mapResponse func(interface{}, interface{}, AccountID, interface{}) (interface{}, error),
 	logID string,
 	deadline *time.Duration,
 	maxBackoff *time.Duration,
 	minBackoff *time.Duration,
 	maxRetry int,
-) (_IntermediateResponse, error) {
+) (interface{}, error) {
 	var maxAttempts int
 
 	if client.maxAttempts != nil {
@@ -121,47 +97,43 @@ func _Execute( // nolint
 	var errPersistent error
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt, *currentBackoff = attempt+1, *currentBackoff*2 {
-		var protoRequest _ProtoRequest
+		var protoRequest interface{}
 		var node *_Node
-		var ok bool
 
-		if request.transaction != nil {
-			if request.transaction.nodeAccountIDs.locked && request.transaction.nodeAccountIDs._Length() > 0 {
+		if transaction, ok := request.(*Transaction); ok {
+			if transaction.nodeAccountIDs.locked && transaction.nodeAccountIDs._Length() > 0 {
 				protoRequest = makeRequest(request)
 				nodeAccountID := getNodeAccountID(request)
 				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
-					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+					return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 				}
 			} else {
 				node = client.network._GetNode()
-				request.transaction.nodeAccountIDs._Set(0, node.accountID)
-				tx, _ := request.transaction._BuildTransaction(0)
-				protoRequest = _ProtoRequest{
-					transaction: tx,
-				}
+				transaction.nodeAccountIDs._Set(0, node.accountID)
+				protoTransaction, _ := transaction._BuildTransaction(0)
+				protoRequest = protoTransaction
 			}
-		} else {
-			if request.query.nodeAccountIDs.locked && request.query.nodeAccountIDs._Length() > 0 {
+		} else if query, ok := request.(*Query); ok {
+			if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
 				protoRequest = makeRequest(request)
 				nodeAccountID := getNodeAccountID(request)
 				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
-					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+					return &services.Response{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
 				}
 			} else {
 				node = client.network._GetNode()
-				if len(request.query.paymentTransactions) > 0 {
+				if len(query.paymentTransactions) > 0 {
 					var paymentTransaction services.TransactionBody
-					_ = protobuf.Unmarshal(request.query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
+					_ = protobuf.Unmarshal(query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
 					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
-					request.query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
+					query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
 				}
-				request.query.nodeAccountIDs._Set(0, node.accountID)
+				query.nodeAccountIDs._Set(0, node.accountID)
 				protoRequest = makeRequest(request)
 			}
 		}
 
 		node._InUse()
-		println(node.accountID.String())
 
 		logCtx.Trace().Str("requestId", logID).Str("nodeAccountID", node.accountID.String()).Str("nodeIPAddress", node.address._String())
 
@@ -182,7 +154,7 @@ func _Execute( // nolint
 
 		method := getMethod(request, channel)
 
-		resp := _Response{}
+		var resp interface{}
 
 		ctx := context.TODO()
 		var cancel context.CancelFunc
@@ -193,9 +165,9 @@ func _Execute( // nolint
 
 		logCtx.Trace().Str("requestId", logID).Msg("executing gRPC call")
 		if method.query != nil {
-			resp.query, err = method.query(ctx, protoRequest.query)
+			resp, err = method.query(ctx, protoRequest.(*services.Query))
 		} else {
-			resp.transaction, err = method.transaction(ctx, protoRequest.transaction)
+			resp, err = method.transaction(ctx, protoRequest.(*services.Transaction))
 		}
 
 		if cancel != nil {
@@ -211,7 +183,12 @@ func _Execute( // nolint
 			if errPersistent == nil {
 				errPersistent = errors.New("error")
 			}
-			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+
+			if _, ok := request.(*Transaction); ok {
+				return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+			}
+
+			return &services.Response{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
 
 		node._DecreaseBackoff()
@@ -222,18 +199,26 @@ func _Execute( // nolint
 			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
 			continue
 		case executionStateExpired:
-			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
-				logCtx.Trace().Str("requestId", logID).Msg("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating")
-				request.transaction.transactionIDs._Set(request.transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
-				if err != nil {
-					panic(err)
+			if transaction, ok := request.(*Transaction); ok {
+				if !client.GetOperatorAccountID()._IsZero() && transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
+					logCtx.Trace().Str("requestId", logID).Msg("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating")
+					transaction.transactionIDs._Set(transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
+					if err != nil {
+						panic(err)
+					}
+					continue
+				} else {
+					return TransactionResponse{}, mapStatusError(request, resp)
 				}
-				continue
 			} else {
-				return _IntermediateResponse{}, mapStatusError(request, resp)
+				return &services.Response{}, mapStatusError(request, resp)
 			}
 		case executionStateError:
-			return _IntermediateResponse{}, mapStatusError(request, resp)
+			if _, ok := request.(*Transaction); ok {
+				return TransactionResponse{}, mapStatusError(request, resp)
+			}
+
+			return &services.Response{}, mapStatusError(request, resp)
 		case executionStateFinished:
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
@@ -243,7 +228,11 @@ func _Execute( // nolint
 		errPersistent = errors.New("error")
 	}
 
-	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+	if _, ok := request.(*Transaction); ok {
+		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+	}
+
+	return &services.Response{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
 func _DelayForAttempt(logID string, minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
