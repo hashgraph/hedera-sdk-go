@@ -151,9 +151,7 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ContractCallQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -163,27 +161,30 @@ func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetContractCallLocal().Header.Cost)
+	cost := int64(resp.(*services.Response).GetContractCallLocal().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _ContractCallQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode))
+func _ContractCallQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode))
 }
 
-func _ContractCallQueryMapStatusError(_ _Request, response _Response) error {
+func _ContractCallQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetContractCallLocal().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetContractCallLocal().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ContractCallQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _ContractCallQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetContract().ContractCallLocalMethod,
 	}
@@ -254,9 +255,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ContractCallQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -266,13 +265,16 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return ContractFunctionResult{}, err
 	}
 
-	return _ContractFunctionResultFromProtobuf(resp.query.GetContractCallLocal().FunctionResult), nil
+	return _ContractFunctionResultFromProtobuf(resp.(*services.Response).GetContractCallLocal().FunctionResult), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

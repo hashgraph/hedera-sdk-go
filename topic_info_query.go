@@ -97,9 +97,7 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TopicInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -109,30 +107,33 @@ func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetConsensusGetTopicInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetConsensusGetTopicInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
 	return HbarFromTinybar(cost), nil
 }
 
-func _TopicInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
+func _TopicInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _TopicInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _TopicInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetConsensusGetTopicInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _TopicInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _TopicInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetTopic().GetTopicInfo,
 	}
@@ -204,9 +205,7 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TopicInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -216,13 +215,16 @@ func (query *TopicInfoQuery) Execute(client *Client) (TopicInfo, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return TopicInfo{}, err
 	}
 
-	return _TopicInfoFromProtobuf(resp.query.GetConsensusGetTopicInfo().TopicInfo)
+	return _TopicInfoFromProtobuf(resp.(*services.Response).GetConsensusGetTopicInfo().TopicInfo)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

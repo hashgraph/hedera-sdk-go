@@ -105,7 +105,7 @@ func (transaction *ScheduleDeleteTransaction) _ConstructScheduleProtobuf() (*ser
 	}, nil
 }
 
-func _ScheduleDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _ScheduleDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().DeleteSchedule,
 	}
@@ -186,9 +186,7 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -198,12 +196,15 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -214,7 +215,7 @@ func (transaction *ScheduleDeleteTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }
