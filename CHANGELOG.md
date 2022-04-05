@@ -1,3 +1,23 @@
+## v2.12.0
+
+### Added
+
+* `AccountInfoFlowVerify[Signature|Transaction]()`
+* `Client.[Set|Get]NodeMinReadmitPeriod()`
+* Support for using any node from the entire network upon execution
+  if node account IDs have no been locked for the request.
+* Support for all integer widths for `ContractFunction[Result|Selector|Params]`
+
+### Fixed
+
+* Ledger ID checksums
+* `TransactionFromBytes()` should validate all the transaction bodies are the same
+
+### Changed
+
+* Network behavior to follow a more standard approach (remove the sorting we
+  used to do).
+
 ## v2.12.0-beta.1
 
 ### Added
