@@ -265,6 +265,7 @@ const (
 	StatusNftInFungibleTokenAllowances                             Status = 299
 	StatusInvalidAllowanceOwnerID                                  Status = 300
 	StatusInvalidAllowanceSpenderID                                Status = 301
+	StatusRepeatedAllowancesToDelete                               Status = 302
 )
 
 // String() returns a string representation of the status
@@ -790,6 +791,8 @@ func (status Status) String() string { // nolint
 		return "INVALID_ALLOWANCE_OWNER_ID"
 	case StatusInvalidAllowanceSpenderID:
 		return "INVALID_ALLOWANCE_SPENDER_ID"
+	case StatusRepeatedAllowancesToDelete:
+		return "REPEATED_ALLOWANCES_TO_DELETE"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

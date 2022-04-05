@@ -2,6 +2,7 @@ package hedera
 
 import (
 	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -57,6 +58,20 @@ func _TokenAllowanceFromGrantedProtobuf(pb *services.GrantedTokenAllowance) Toke
 	return body
 }
 
+func _TokenWipeAllowanceFromProtobuf(pb *services.TokenWipeAllowance) TokenAllowance {
+	body := TokenAllowance{}
+
+	if pb.TokenId != nil {
+		body.TokenID = _TokenIDFromProtobuf(pb.TokenId)
+	}
+
+	if pb.Owner != nil {
+		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
+	}
+
+	return body
+}
+
 func (approval *TokenAllowance) _ToProtobuf() *services.TokenAllowance {
 	body := &services.TokenAllowance{
 		Amount: approval.Amount,
@@ -84,6 +99,20 @@ func (approval *TokenAllowance) _ToGrantedProtobuf() *services.GrantedTokenAllow
 
 	if approval.SpenderAccountID != nil {
 		body.Spender = approval.SpenderAccountID._ToProtobuf()
+	}
+
+	if approval.TokenID != nil {
+		body.TokenId = approval.TokenID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (approval *TokenAllowance) _ToWipeProtobuf() *services.TokenWipeAllowance {
+	body := &services.TokenWipeAllowance{}
+
+	if approval.OwnerAccountID != nil {
+		body.Owner = approval.OwnerAccountID._ToProtobuf()
 	}
 
 	if approval.TokenID != nil {
