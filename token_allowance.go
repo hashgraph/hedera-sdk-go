@@ -1,6 +1,7 @@
 package hedera
 
 import (
+	"fmt"
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -90,4 +91,24 @@ func (approval *TokenAllowance) _ToGrantedProtobuf() *services.GrantedTokenAllow
 	}
 
 	return body
+}
+
+func (approval *TokenAllowance) String() string {
+	var owner string
+	var spender string
+	var token string
+
+	if approval.OwnerAccountID != nil {
+		owner = approval.OwnerAccountID.String()
+	}
+
+	if approval.SpenderAccountID != nil {
+		spender = approval.SpenderAccountID.String()
+	}
+
+	if approval.TokenID != nil {
+		token = approval.TokenID.String()
+	}
+
+	return fmt.Sprintf("OwnerAccountID: %s, SpenderAccountID: %s, TokenID: %s, Amount: %s", owner, spender, token, HbarFromTinybar(approval.Amount).String())
 }

@@ -1,6 +1,9 @@
 package hedera
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
+import (
+	"fmt"
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 type HbarAllowance struct {
 	OwnerAccountID   *AccountID
@@ -57,4 +60,16 @@ func (approval *HbarAllowance) _ToGrantedProtobuf() *services.GrantedCryptoAllow
 	}
 
 	return body
+}
+
+func (approval *HbarAllowance) String() string {
+	if approval.OwnerAccountID != nil && approval.SpenderAccountID != nil {
+		return fmt.Sprintf("OwnerAccountID: %s, SpenderAccountID: %s, Amount: %s", approval.OwnerAccountID.String(), approval.SpenderAccountID.String(), HbarFromTinybar(approval.Amount).String())
+	} else if approval.OwnerAccountID != nil {
+		return fmt.Sprintf("OwnerAccountID: %s, Amount: %s", approval.OwnerAccountID.String(), HbarFromTinybar(approval.Amount).String())
+	} else if approval.SpenderAccountID != nil {
+		return fmt.Sprintf("SpenderAccountID: %s, Amount: %s", approval.SpenderAccountID.String(), HbarFromTinybar(approval.Amount).String())
+	}
+
+	return ""
 }
