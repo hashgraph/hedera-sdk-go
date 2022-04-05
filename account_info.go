@@ -85,7 +85,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		}
 	}
 
-	hbarAllowances := make([]HbarAllowance, len(pb.GrantedCryptoAllowances))
+	hbarAllowances := make([]HbarAllowance, 0)
 	if len(pb.GrantedCryptoAllowances) > 0 {
 		for _, allowance := range pb.GrantedCryptoAllowances {
 			hbarAllowance := _HbarAllowanceFromGrantedProtobuf(allowance)
@@ -94,7 +94,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		}
 	}
 
-	tokenAllowances := make([]TokenAllowance, len(pb.GrantedTokenAllowances))
+	tokenAllowances := make([]TokenAllowance, 0)
 	if len(pb.GrantedTokenAllowances) > 0 {
 		for _, allowance := range pb.GrantedTokenAllowances {
 			tokenAllowance := _TokenAllowanceFromGrantedProtobuf(allowance)
@@ -103,7 +103,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		}
 	}
 
-	nftAllowances := make([]TokenNftAllowance, len(pb.GrantedNftAllowances))
+	nftAllowances := make([]TokenNftAllowance, 0)
 	if len(pb.GrantedNftAllowances) > 0 {
 		for _, allowance := range pb.GrantedNftAllowances {
 			nftAllowance := _TokenNftAllowanceFromGrantedProtobuf(allowance)
