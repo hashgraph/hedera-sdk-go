@@ -96,9 +96,7 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TokenInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -108,30 +106,33 @@ func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetTokenGetInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetTokenGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
+func _TokenInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _TokenInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _TokenInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetTokenGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _TokenInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _TokenInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetToken().GetTokenInfo,
 	}
@@ -203,9 +204,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TokenInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -215,13 +214,16 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return TokenInfo{}, err
 	}
 
-	info := _TokenInfoFromProtobuf(resp.query.GetTokenGetInfo().TokenInfo)
+	info := _TokenInfoFromProtobuf(resp.(*services.Response).GetTokenGetInfo().TokenInfo)
 
 	return info, nil
 }

@@ -115,9 +115,7 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TransactionRecordQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -127,35 +125,38 @@ func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetTransactionGetRecord().Header.Cost)
+	cost := int64(resp.(*services.Response).GetTransactionGetRecord().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
 	return HbarFromTinybar(cost), nil
 }
 
-func _TransactionRecordQueryShouldRetry(logID string, request _Request, response _Response) _ExecutionState {
-	status := Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode())
+func _TransactionRecordQueryShouldRetry(logID string, request interface{}, response interface{}) _ExecutionState {
+	status := Status(response.(*services.Response).GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode())
 	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("precheck status received")
 
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound:
 		return executionStateRetry
 	case StatusOk:
-		if response.query.GetTransactionGetRecord().GetHeader().ResponseType == services.ResponseType_COST_ANSWER {
+		if response.(*services.Response).GetTransactionGetRecord().GetHeader().ResponseType == services.ResponseType_COST_ANSWER {
 			return executionStateFinished
 		}
 	default:
 		return executionStateError
 	}
 
-	status = Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus())
+	status = Status(response.(*services.Response).GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus())
 	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("record's receipt status received")
 
 	switch status {
@@ -168,24 +169,25 @@ func _TransactionRecordQueryShouldRetry(logID string, request _Request, response
 	}
 }
 
-func _TransactionRecordQueryMapStatusError(request _Request, response _Response) error {
-	switch Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
+func _TransactionRecordQueryMapStatusError(request interface{}, response interface{}) error {
+	query := response.(*services.Response)
+	switch Status(query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()) {
 	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
 		break
 	default:
 		return ErrHederaPreCheckStatus{
-			Status: Status(response.query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()),
+			Status: Status(query.GetTransactionGetRecord().GetHeader().GetNodeTransactionPrecheckCode()),
 		}
 	}
 
 	return ErrHederaReceiptStatus{
-		Status: Status(response.query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
+		Status: Status(query.GetTransactionGetRecord().GetTransactionRecord().GetReceipt().GetStatus()),
 		// TxID:    _TransactionIDFromProtobuf(_Request.query.pb.GetTransactionGetRecord().TransactionID, networkName),
-		Receipt: _TransactionReceiptFromProtobuf(response.query.GetTransactionGetReceipt()),
+		Receipt: _TransactionReceiptFromProtobuf(query.GetTransactionGetReceipt()),
 	}
 }
 
-func _TransactionRecordQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _TransactionRecordQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetTxRecordByTxID,
 	}
@@ -325,9 +327,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TransactionRecordQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -337,6 +337,9 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
@@ -346,7 +349,7 @@ func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord,
 		return TransactionRecord{}, err
 	}
 
-	return _TransactionRecordFromProtobuf(resp.query.GetTransactionGetRecord()), nil
+	return _TransactionRecordFromProtobuf(resp.(*services.Response).GetTransactionGetRecord()), nil
 }
 
 func (query *TransactionRecordQuery) _GetLogID() string {

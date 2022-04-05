@@ -29,6 +29,8 @@ type Query struct {
 }
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
+	minBackoff := 250 * time.Millisecond
+	maxBackoff := 8 * time.Second
 	return Query{
 		pb:                    &services.Query{},
 		pbHeader:              header,
@@ -40,6 +42,8 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 		maxQueryPayment:       NewHbar(0),
 		queryPayment:          NewHbar(0),
 		timestamp:             time.Now(),
+		maxBackoff:            &maxBackoff,
+		minBackoff:            &minBackoff,
 	}
 }
 
@@ -70,8 +74,8 @@ func (this *Query) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
 	return nodeAccountIDs
 }
 
-func _QueryGetNodeAccountID(request _Request) AccountID {
-	return request.query.nodeAccountIDs._GetCurrent().(AccountID)
+func _QueryGetNodeAccountID(request interface{}) AccountID {
+	return request.(*Query).nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
@@ -107,43 +111,41 @@ func _QueryShouldRetry(logID string, status Status) _ExecutionState {
 	return executionStateError
 }
 
-func _QueryMakeRequest(request _Request) _ProtoRequest {
-	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.paymentTransactionIDs.index]
+func _QueryMakeRequest(request interface{}) interface{} {
+	query := request.(*Query)
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
 	}
-	request.query.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
+	query.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
-	return _ProtoRequest{
-		query: request.query.pb,
-	}
+	return query.pb
 }
 
-func _CostQueryMakeRequest(request _Request) _ProtoRequest {
-	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.paymentTransactionIDs.index]
+func _CostQueryMakeRequest(request interface{}) interface{} {
+	query := request.(*Query)
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		query.pbHeader.Payment = query.paymentTransactions[query.paymentTransactionIDs.index]
 	}
-	request.query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
-	return _ProtoRequest{
-		query: request.query.pb,
-	}
+	query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
+	return query.pb
 }
 
-func _QueryAdvanceRequest(request _Request) {
-	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.paymentTransactionIDs._Advance()
+func _QueryAdvanceRequest(request interface{}) {
+	query := request.(*Query)
+	if query.isPaymentRequired && len(query.paymentTransactions) > 0 {
+		query.paymentTransactionIDs._Advance()
 	}
-	request.query.nodeAccountIDs._Advance()
+	query.nodeAccountIDs._Advance()
 }
 
-func _CostQueryAdvanceRequest(request _Request) {
-	request.query.paymentTransactionIDs._Advance()
-	request.query.nodeAccountIDs._Advance()
+func _CostQueryAdvanceRequest(request interface{}) {
+	query := request.(*Query)
+	query.paymentTransactionIDs._Advance()
+	query.nodeAccountIDs._Advance()
 }
 
-func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
-	return _IntermediateResponse{
-		query: response.query,
-	}, nil
+func _QueryMapResponse(request interface{}, response interface{}, _ AccountID, protoRequest interface{}) (interface{}, error) {
+	return response.(*services.Response), nil
 }
 
 func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {

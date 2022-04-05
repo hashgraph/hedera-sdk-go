@@ -47,6 +47,8 @@ type Transaction struct {
 
 func _NewTransaction() Transaction {
 	duration := 120 * time.Second
+	minBackoff := 250 * time.Millisecond
+	maxBackoff := 8 * time.Second
 	return Transaction{
 		maxRetry:                 10,
 		transactionValidDuration: &duration,
@@ -56,6 +58,8 @@ func _NewTransaction() Transaction {
 		nodeAccountIDs:           _NewLockableSlice(),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
+		minBackoff:               &minBackoff,
+		maxBackoff:               &maxBackoff,
 	}
 }
 
@@ -514,8 +518,8 @@ func (this *Transaction) _KeyAlreadySigned(
 	return false
 }
 
-func _TransactionShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	status := Status(response.transaction.NodeTransactionPrecheckCode)
+func _TransactionShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("transaction precheck status received")
 	switch status {
 	case StatusPlatformTransactionNotCreated, StatusBusy:
@@ -529,47 +533,44 @@ func _TransactionShouldRetry(logID string, _ _Request, response _Response) _Exec
 	return executionStateError
 }
 
-func _TransactionMakeRequest(request _Request) _ProtoRequest {
-	index := request.transaction.nodeAccountIDs._Length()*request.transaction.transactionIDs.index + request.transaction.nodeAccountIDs.index
-	tx, _ := request.transaction._BuildTransaction(index)
+func _TransactionMakeRequest(request interface{}) interface{} {
+	transaction := request.(*Transaction)
+	index := transaction.nodeAccountIDs._Length()*transaction.transactionIDs.index + transaction.nodeAccountIDs.index
+	tx, _ := transaction._BuildTransaction(index)
 
-	return _ProtoRequest{
-		transaction: tx,
-	}
+	return tx
 }
 
-func _TransactionAdvanceRequest(request _Request) {
-	request.transaction.nodeAccountIDs._Advance()
+func _TransactionAdvanceRequest(request interface{}) {
+	request.(*Transaction).nodeAccountIDs._Advance()
 }
 
-func _TransactionGetNodeAccountID(request _Request) AccountID {
-	return request.transaction.nodeAccountIDs._GetCurrent().(AccountID)
+func _TransactionGetNodeAccountID(request interface{}) AccountID {
+	return request.(*Transaction).nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 func _TransactionMapStatusError(
-	request _Request,
-	response _Response,
+	request interface{},
+	response interface{},
 ) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.transaction.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode),
 		//NodeID: request.transaction.nodeAccountIDs,
-		TxID: request.transaction.GetTransactionID(),
+		TxID: request.(*Transaction).GetTransactionID(),
 	}
 }
 
-func _TransactionMapResponse(request _Request, _ _Response, nodeID AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
+func _TransactionMapResponse(request interface{}, _ interface{}, nodeID AccountID, protoRequest interface{}) (interface{}, error) {
 	hash := sha512.New384()
-	_, err := hash.Write(protoRequest.transaction.SignedTransactionBytes)
+	_, err := hash.Write(protoRequest.(*services.Transaction).SignedTransactionBytes)
 	if err != nil {
-		return _IntermediateResponse{}, err
+		return nil, err
 	}
 
-	return _IntermediateResponse{
-		transaction: TransactionResponse{
-			NodeID:        nodeID,
-			TransactionID: request.transaction.transactionIDs._GetNext().(TransactionID),
-			Hash:          hash.Sum(nil),
-		},
+	return TransactionResponse{
+		NodeID:        nodeID,
+		TransactionID: request.(*Transaction).transactionIDs._GetNext().(TransactionID),
+		Hash:          hash.Sum(nil),
 	}, nil
 }
 

@@ -149,12 +149,10 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		Query: pb,
 	}
 
-	var resp _IntermediateResponse
+	var resp interface{}
 	resp, err = _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TokenNftInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -164,29 +162,32 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetTokenGetNftInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetTokenGetNftInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
 	return HbarFromTinybar(cost), nil
 }
 
-func _TokenNftInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
+func _TokenNftInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _TokenNftInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _TokenNftInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetTokenGetNftInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _TokenNftInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _TokenNftInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetToken().GetTokenNftInfo,
 	}
@@ -255,13 +256,11 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		Query: pb,
 	}
 
-	var resp _IntermediateResponse
+	var resp interface{}
 	tokenInfos := make([]TokenNftInfo, 0)
 	resp, err = _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_TokenNftInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -271,13 +270,16 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return []TokenNftInfo{}, err
 	}
 
-	tokenInfos = append(tokenInfos, _TokenNftInfoFromProtobuf(resp.query.GetTokenGetNftInfo().GetNft()))
+	tokenInfos = append(tokenInfos, _TokenNftInfoFromProtobuf(resp.(*services.Response).GetTokenGetNftInfo().GetNft()))
 	return tokenInfos, nil
 }
 
