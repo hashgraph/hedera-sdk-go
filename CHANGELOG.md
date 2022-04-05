@@ -1,3 +1,19 @@
+## v2.13.0-beta.1
+
+### Added
+
+* `AccountAllowanceDeleteTransaction`
+* `ContractFunctionResult.[gas|hbarAmount|contractFunctionParametersBytes]`
+* `AccountAllowanceExample`
+* `ScheduleTransferExample`
+
+### Deprecated
+
+* `AccountAllowanceAdjustTransaction.revokeTokenNftAllowance()` with no replacement.
+* `AccountAllowanceApproveTransaction.AddHbarApproval()`, use `ApproveHbarAllowance()` instead.
+* `AccountAllowanceApproveTransaction.ApproveTokenApproval()`, use `GrantTokenNftAllowance()` instead.
+* `AccountAllowanceApproveTransaction.ApproveTokenNftApproval()`, use `ApproveTokenNftAllowance()` instead.
+
 ## v2.12.0
 
 ### Added
@@ -36,7 +52,7 @@
 ### Changed
 
 * Network behavior to follow a more standard approach (remove the sorting we
-   used to do).
+  used to do).
 
 ## v2.11.0
 
@@ -173,165 +189,165 @@
 
 ### Added
 
- * CREATE2 Solidity addresses can now be represented by a `ContractId` with `EvmAddress` set.
- * `ContractId.FromEvmAddress()`
- * `ContractFunctionResult.StateChanges`
- * `ContractFunctionResult.EvmAddress`
- * `ContractStateChange`
- * `StorageChange`
- * New response codes.
- * `ChunkedTransaction.[Set|Get]ChunkSize()`, and changed default chunk size for `FileAppendTransaction` to 2048.
- * `AccountAllowance[Adjust|Approve]Transaction`
- * `AccountInfo.[hbar|token|tokenNft]Allowances`
- * `[Hbar|Token|TokenNft]Allowance`
- * `[Hbar|Token|TokenNft]Allowance`
- * `TransferTransaction.set[Hbar|Token|TokenNft]TransferApproval()`
+* CREATE2 Solidity addresses can now be represented by a `ContractId` with `EvmAddress` set.
+* `ContractId.FromEvmAddress()`
+* `ContractFunctionResult.StateChanges`
+* `ContractFunctionResult.EvmAddress`
+* `ContractStateChange`
+* `StorageChange`
+* New response codes.
+* `ChunkedTransaction.[Set|Get]ChunkSize()`, and changed default chunk size for `FileAppendTransaction` to 2048.
+* `AccountAllowance[Adjust|Approve]Transaction`
+* `AccountInfo.[hbar|token|tokenNft]Allowances`
+* `[Hbar|Token|TokenNft]Allowance`
+* `[Hbar|Token|TokenNft]Allowance`
+* `TransferTransaction.set[Hbar|Token|TokenNft]TransferApproval()`
 
 ### Fixed
 
- * Requests not cycling though nodes.
- * Free queries not attempting to retry on different nodes.
+* Requests not cycling though nodes.
+* Free queries not attempting to retry on different nodes.
 
 ### Deprecated
 
- * `ContractId.FromSolidityAddress()`, use `ContractId.FromEvmAddress()` instead.
- * `ContractFunctionResult.CreatedContractIDs`.
+* `ContractId.FromSolidityAddress()`, use `ContractId.FromEvmAddress()` instead.
+* `ContractFunctionResult.CreatedContractIDs`.
 
 ## v2.8.0
 
 ### Added
 
- * Support for regenerating transaction IDs on demand if a request
+* Support for regenerating transaction IDs on demand if a request
   responses with `TRANSACITON_EXPIRED`
 
 ## v2.8.0-beta.1
 
 ### Added
 
- * Support for regenerating transaction IDs on demand if a request
-   responses with `TRANSACITON_EXPIRED`
+* Support for regenerating transaction IDs on demand if a request
+  responses with `TRANSACITON_EXPIRED`
 
 ## v2.7.0
 
 ### Added
 
- * `AccountId.AliasKey`, including `AccountId.[From]String()` support.
- * `[PublicKey|PrivateKey].ToAccountId()`.
- * `AliasKey` fields in `TransactionRecord` and `AccountInfo`.
- * `Nonce` field in `TransactionId`, including `TransactionId.[set|get]Nonce()`
- * `Children` fields in `TransactionRecord` and `TransactionReceipt`
- * `Duplicates` field in `TransactionReceipt`
- * `[TransactionReceiptQuery|TransactionRecordQuery].[Set|Get]IncludeChildren()`
- * `TransactionReceiptQuery.[Set|Get]IncludeDuplicates()`
- * New response codes.
- * Support for ECDSA SecP256K1 keys.
- * `PrivateKeyGenerate[ED25519|ECDSA]()`
- * `[Private|Public]KeyFrom[Bytes|String][DER|ED25519|ECDSA]()`
- * `[Private|Public]Key.[Bytes|String][Raw|DER]()`
- * `DelegateContractId`
- * `*Id.[from|to]SolidityAddress()`
+* `AccountId.AliasKey`, including `AccountId.[From]String()` support.
+* `[PublicKey|PrivateKey].ToAccountId()`.
+* `AliasKey` fields in `TransactionRecord` and `AccountInfo`.
+* `Nonce` field in `TransactionId`, including `TransactionId.[set|get]Nonce()`
+* `Children` fields in `TransactionRecord` and `TransactionReceipt`
+* `Duplicates` field in `TransactionReceipt`
+* `[TransactionReceiptQuery|TransactionRecordQuery].[Set|Get]IncludeChildren()`
+* `TransactionReceiptQuery.[Set|Get]IncludeDuplicates()`
+* New response codes.
+* Support for ECDSA SecP256K1 keys.
+* `PrivateKeyGenerate[ED25519|ECDSA]()`
+* `[Private|Public]KeyFrom[Bytes|String][DER|ED25519|ECDSA]()`
+* `[Private|Public]Key.[Bytes|String][Raw|DER]()`
+* `DelegateContractId`
+* `*Id.[from|to]SolidityAddress()`
 
 ### Deprecated
 
- * `PrivateKeyGenerate()`, use `PrivateKeyGenerate[ED25519|ECDSA]()` instead.
+* `PrivateKeyGenerate()`, use `PrivateKeyGenerate[ED25519|ECDSA]()` instead.
 
 ## v2.7.0-beta.1
 
 ### Added
 
- * `AccountId.AliasKey`, including `AccountId.[From]String()` support.
- * `[PublicKey|PrivateKey].ToAccountId()`.
- * `AliasKey` fields in `TransactionRecord` and `AccountInfo`.
- * `Nonce` field in `TransactionId`, including `TransactionId.[set|get]Nonce()`
- * `Children` fields in `TransactionRecord` and `TransactionReceipt`
- * `Duplicates` field in `TransactionReceipt`
- * `[TransactionReceiptQuery|TransactionRecordQuery].[Set|Get]IncludeChildren()`
- * `TransactionReceiptQuery.[Set|Get]IncludeDuplicates()`
- * New response codes.
- * Support for ECDSA SecP256K1 keys.
- * `PrivateKeyGenerate[ED25519|ECDSA]()`
- * `[Private|Public]KeyFrom[Bytes|String][DER|ED25519|ECDSA]()`
- * `[Private|Public]Key.[Bytes|String][Raw|DER]()`
+* `AccountId.AliasKey`, including `AccountId.[From]String()` support.
+* `[PublicKey|PrivateKey].ToAccountId()`.
+* `AliasKey` fields in `TransactionRecord` and `AccountInfo`.
+* `Nonce` field in `TransactionId`, including `TransactionId.[set|get]Nonce()`
+* `Children` fields in `TransactionRecord` and `TransactionReceipt`
+* `Duplicates` field in `TransactionReceipt`
+* `[TransactionReceiptQuery|TransactionRecordQuery].[Set|Get]IncludeChildren()`
+* `TransactionReceiptQuery.[Set|Get]IncludeDuplicates()`
+* New response codes.
+* Support for ECDSA SecP256K1 keys.
+* `PrivateKeyGenerate[ED25519|ECDSA]()`
+* `[Private|Public]KeyFrom[Bytes|String][DER|ED25519|ECDSA]()`
+* `[Private|Public]Key.[Bytes|String][Raw|DER]()`
 
 ### Deprecated
 
- * `PrivateKeyGenerate()`, use `PrivateKeyGenerate[ED25519|ECDSA]()` instead.
+* `PrivateKeyGenerate()`, use `PrivateKeyGenerate[ED25519|ECDSA]()` instead.
 
 ## v2.6.0
 
 ### Added
 
- * New smart contract response codes
+* New smart contract response codes
 
 ### Deprecated
 
- * `ContractCallQuery.[Set|Get]MaxResultSize()`
- * `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
+* `ContractCallQuery.[Set|Get]MaxResultSize()`
+* `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
 
 ## v2.6.0-beta.1
 
 ### Added
 
- * New smart contract response codes
+* New smart contract response codes
 
 ### Deprecated
 
- * `ContractCallQuery.[Set|Get]MaxResultSize()`
- * `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
+* `ContractCallQuery.[Set|Get]MaxResultSize()`
+* `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
 
 ## v2.5.1
 
 ### Fixed
 
- * `TransferTransaction.GetTokenTransfers()`
- * `TransferTransaction.AddTokenTransfer()`
- * Persistent error not being handled correctly
- * `TransactionReceiptQuery` should return even on a bad status codes.
-   Only *.GetReceipt()` should error on non `SUCCESS` status codes
+* `TransferTransaction.GetTokenTransfers()`
+* `TransferTransaction.AddTokenTransfer()`
+* Persistent error not being handled correctly
+* `TransactionReceiptQuery` should return even on a bad status codes.
+  Only *.GetReceipt()` should error on non `SUCCESS` status codes
 
 ## v2.5.1-beta.1
 
 ### Changed
 
- * Refactored and updated node account ID handling to err whenever a node account ID of 0.0.0 is being set
+* Refactored and updated node account ID handling to err whenever a node account ID of 0.0.0 is being set
 
 ## v2.5.0-beta.1
 
 ### Deprecated
 
- * `ContractCallQuery.[Set|Get]MaxResultSize()`
- * `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
+* `ContractCallQuery.[Set|Get]MaxResultSize()`
+* `ContractUpdateTransaction.[Set|Get]ByteCodeFileID()`
 
 ## v2.5.0
 
 ### Fixed
 
- * `TransactionReceiptQuery` should fill out `TransactionReceipt` even when a bad `Status` is returned
+* `TransactionReceiptQuery` should fill out `TransactionReceipt` even when a bad `Status` is returned
 
 ## v2.4.1
 
 ### Fixed
 
- * `TransferTransaction` should serialize the transfers list deterministically
+* `TransferTransaction` should serialize the transfers list deterministically
 
 ## v2.4.0
 
 ### Added
 
- * Support for toggling TLS for both mirror network and services network
+* Support for toggling TLS for both mirror network and services network
 
 ## v2.3.0
 
 ### Added
 
- * `FreezeType`
- * `FreezeTransaction.[get|set]FreezeType()`
+* `FreezeType`
+* `FreezeTransaction.[get|set]FreezeType()`
 
 ## v2.3.0-beta 1
 
 ### Added
 
- * Support for HIP-24 (token pausing)
+* Support for HIP-24 (token pausing)
     * `TokenInfo.PauseKey`
     * `TokenInfo.PauseStatus`
     * `TokenCreateTransaction.PauseKey`

@@ -187,6 +187,7 @@ func (transaction *AccountAllowanceAdjustTransaction) GrantTokenNftAllowanceAllS
 	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, true)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenNftAllowanceAllSerials(ownerAccountID AccountID, tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, false)
 }
