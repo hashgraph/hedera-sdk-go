@@ -27,6 +27,9 @@ type ContractFunctionResult struct {
 	CreatedContractIDs   []ContractID
 	ContractStateChanges []ContractStateChange
 	EvmAddress           ContractID
+	GasAvailable         int64
+	Amount               Hbar
+	FunctionParameters   []byte
 }
 
 // GetBool gets a _Solidity bool from the result at the given index
@@ -362,9 +365,12 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		Bloom:                pb.Bloom,
 		GasUsed:              pb.GasUsed,
 		LogInfo:              infos,
+		CreatedContractIDs:   createdContractIDs,
 		ContractStateChanges: csc,
 		EvmAddress:           evm,
-		CreatedContractIDs:   createdContractIDs,
+		GasAvailable:         pb.Gas,
+		Amount:               HbarFromTinybar(pb.Amount),
+		FunctionParameters:   pb.FunctionParameters,
 	}
 
 	if pb.ContractID != nil {
@@ -395,6 +401,9 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		LogInfo:            infos,
 		StateChanges:       stateChanges,
 		EvmAddress:         &wrapperspb.BytesValue{Value: result.EvmAddress.EvmAddress},
+		Gas:                result.GasAvailable,
+		Amount:             result.Amount.AsTinybar(),
+		FunctionParameters: result.FunctionParameters,
 	}
 }
 
