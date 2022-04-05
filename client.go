@@ -409,6 +409,22 @@ func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network._GetNetwork()
 }
 
+func (client *Client) SetMaxNodeReadmitTime(readmitTime time.Duration) {
+	client.network._SetMaxNodeReadmitPeriod(readmitTime)
+}
+
+func (client *Client) GetMaxNodeReadmitPeriod() time.Duration {
+	return client.network._GetMaxNodeReadmitPeriod()
+}
+
+func (client *Client) SetMinNodeReadmitTime(readmitTime time.Duration) {
+	client.network._SetMinNodeReadmitPeriod(readmitTime)
+}
+
+func (client *Client) GetMinNodeReadmitPeriod() time.Duration {
+	return client.network._GetMinNodeReadmitPeriod()
+}
+
 func (client *Client) SetMaxBackoff(max time.Duration) {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -522,10 +538,12 @@ func (client *Client) GetNetworkName() *NetworkName {
 	return client.network._GetNetworkName()
 }
 
+// Deprecated: Use SetLedgerID instead
 func (client *Client) SetLedgerID(id LedgerID) {
 	client.network._SetLedgerID(id)
 }
 
+// Deprecated: Use SetLedgerID instead
 func (client *Client) GetLedgerID() *LedgerID {
 	return client.network._GetLedgerID()
 }
@@ -544,6 +562,22 @@ func (client *Client) SetDefaultRegenerateTransactionIDs(regen bool) {
 
 func (client *Client) GetDefaultRegenerateTransactionIDs() bool {
 	return client.defaultRegenerateTransactionIDs
+}
+
+func (client *Client) SetNodeMinReadmitPeriod(period time.Duration) {
+	client.network._SetNodeMinReadmitPeriod(period)
+}
+
+func (client *Client) SetNodeMaxReadmitPeriod(period time.Duration) {
+	client.network._SetNodeMaxReadmitPeriod(period)
+}
+
+func (client *Client) GetNodeMinReadmitPeriod() time.Duration {
+	return client.network._GetNodeMinReadmitPeriod()
+}
+
+func (client *Client) GetNodeMaxReadmitPeriod() time.Duration {
+	return client.network._GetNodeMaxReadmitPeriod()
 }
 
 // SetOperator sets that account that will, by default, be paying for
@@ -605,8 +639,8 @@ func (client *Client) GetOperatorPublicKey() PublicKey {
 // be returned.
 func (client *Client) Ping(nodeID AccountID) error {
 	_, err := NewAccountBalanceQuery().
-		SetAccountID(client.GetOperatorAccountID()).
 		SetNodeAccountIDs([]AccountID{nodeID}).
+		SetAccountID(client.GetOperatorAccountID()).
 		Execute(client)
 
 	return err

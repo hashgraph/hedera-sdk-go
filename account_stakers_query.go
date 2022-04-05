@@ -78,27 +78,18 @@ func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 		return Hbar{}, errNoClientProvided
 	}
 
-	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
-
-	err = query._ValidateNetworkOnIDs(client)
+	err := query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return Hbar{}, err
 	}
-
-	for range query.nodeAccountIDs {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
+	if query.Query.nodeAccountIDs.locked {
+		for range query.nodeAccountIDs.slice {
+			paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+			if err != nil {
+				return Hbar{}, err
+			}
+			query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
 	pb := query._Build()
@@ -154,21 +145,14 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return []Transfer{}, err
-		}
 
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
 		return []Transfer{}, err
 	}
 
-	if !query.lockedTransactionID {
-		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.paymentTransactionIDs.locked {
+		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
@@ -197,12 +181,19 @@ func (query *AccountStakersQuery) Execute(client *Client) ([]Transfer, error) {
 		cost = actualCost
 	}
 
-	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
-	err = _QueryGeneratePayments(&query.Query, client, cost)
-	if err != nil {
-		return []Transfer{}, err
+	if query.nodeAccountIDs.locked {
+		err = _QueryGeneratePayments(&query.Query, client, cost)
+		if err != nil {
+			return []Transfer{}, err
+		}
+	} else {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return []Transfer{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
 	pb := query._Build()
@@ -312,17 +303,13 @@ func (query *AccountStakersQuery) GetMinBackoff() time.Duration {
 
 func (query *AccountStakersQuery) _GetLogID() string {
 	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionID.ValidStart != nil {
-		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("AccountStakersQuery:%d", timestamp)
 }
 
 func (query *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
-	if query.lockedTransactionID {
-		panic("payment TransactionID is locked")
-	}
-	query.lockedTransactionID = true
-	query.paymentTransactionID = transactionID
+	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query
 }

@@ -39,7 +39,7 @@ func _ChecksumVerify(num int) error {
 	}
 }
 
-func _ChecksumParseAddress(ledgerID string, address string) (_ParseAddressResult, error) {
+func _ChecksumParseAddress(ledgerID *LedgerID, address string) (_ParseAddressResult, error) {
 	var err error
 	match := regexp.MustCompile(`(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))\.(0|(?:[1-9]\d*))(?:-([a-z]{5}))?$`)
 
@@ -55,7 +55,7 @@ func _ChecksumParseAddress(ledgerID string, address string) (_ParseAddressResult
 
 	ad := fmt.Sprintf("%s.%s.%s", matchArray[1], matchArray[2], matchArray[3])
 
-	checksum := _CheckChecksum(ledgerID, ad)
+	checksum := _CheckChecksum(ledgerID._LedgerIDBytes, ad)
 
 	var status int
 	switch m := matchArray[4]; {
@@ -79,7 +79,7 @@ func _ChecksumParseAddress(ledgerID string, address string) (_ParseAddressResult
 	}, nil
 }
 
-func _CheckChecksum(ledgerID string, address string) string {
+func _CheckChecksum(ledgerID []byte, address string) string {
 	answer := ""
 	digits := make([]int, 0)
 	s0 := 0
@@ -94,18 +94,8 @@ func _CheckChecksum(ledgerID string, address string) string {
 	asciiA := []rune("a")[0]
 	w := 31
 
-	id := ledgerID + "000000000000"
-	h := make([]int64, 0)
-
-	for i := 0; i < len(id); i += 2 {
-		processed, _ := strconv.ParseInt(id[i:i+2], 16, 64)
-		h = append(h, processed)
-		if i+3 == len(id) {
-			processed, _ = strconv.ParseInt(id[i:len(id)-1], 16, 64)
-			h = append(h, processed)
-			break
-		}
-	}
+	h := make([]byte, len(ledgerID)+6)
+	copy(h[0:len(ledgerID)], ledgerID)
 
 	for _, j := range address {
 		if string(j) == "." {

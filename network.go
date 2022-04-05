@@ -20,9 +20,11 @@ func (network *_Network) SetNetwork(net map[string]AccountID) (err error) {
 	newNetwork := make(map[string]_IManagedNode)
 
 	for url, id := range net {
-		if newNetwork[url], err = _NewNode(id, url, network._ManagedNetwork.minBackoff); err != nil {
+		node, err := _NewNode(id, url, network.minBackoff)
+		if err != nil {
 			return err
 		}
+		newNetwork[url] = node
 	}
 
 	return network._ManagedNetwork._SetNetwork(newNetwork)
@@ -40,17 +42,31 @@ func (network *_Network) _GetNetwork() map[string]AccountID {
 	return temp
 }
 
-func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
-	for _, node := range network.network[id.String()] {
-		switch n := node.(type) { //nolint
-		case *_Node:
-			if n.accountID.String() == id.String() {
-				return n, true
-			}
+func (network *_Network) _IncreaseBackoff(node *_Node) {
+	node._IncreaseBackoff()
+
+	index := 0
+	for i, healthyNode := range network.healthyNodes {
+		if node == healthyNode {
+			index = i
+			break
 		}
 	}
 
-	return &_Node{}, false
+	if index == len(network.healthyNodes)-1 {
+		network.healthyNodes = network.healthyNodes[:index]
+	} else {
+		network.healthyNodes = append(network.healthyNodes[:index], network.healthyNodes[index+1:]...)
+	}
+}
+
+func (network *_Network) _GetNodeForAccountID(id AccountID) (*_Node, bool) {
+	node, ok := network.network[id.String()]
+	return node[0].(*_Node), ok
+}
+
+func (network *_Network) _GetNode() *_Node {
+	return network._ManagedNetwork._GetNode().(*_Node)
 }
 
 func (network *_Network) _GetNetworkName() *NetworkName {
@@ -111,18 +127,14 @@ func (network *_Network) _SetNetworkName(net NetworkName) {
 	network._SetLedgerID(*ledger)
 }
 
-func (network *_Network) _GetNodeAccountIDsForExecute() ([]AccountID, error) { //nolint
-	nodes := network._GetNumberOfMostHealthyNodes(int32(network._ManagedNetwork._GetNumberOfNodesForTransaction()))
-	accountIDs := make([]AccountID, 0)
+func (network *_Network) _GetNodeAccountIDsForExecute() []AccountID { //nolint
+	nodes := make([]AccountID, 0)
 
-	for _, node := range nodes {
-		switch n := node.(type) { //nolint
-		case *_Node:
-			accountIDs = append(accountIDs, n.accountID)
-		}
+	for i := 0; i < network._GetNumberOfNodesForTransaction(); i++ {
+		nodes = append(nodes, network.healthyNodes[i].(*_Node).accountID)
 	}
 
-	return accountIDs, nil
+	return nodes
 }
 
 func (network *_Network) _SetMaxNodesPerTransaction(max int) {
@@ -154,8 +166,7 @@ func (network *_Network) _GetNodeMaxBackoff() time.Duration {
 }
 
 func (network *_Network) _SetTransportSecurity(transportSecurity bool) *_Network {
-	network._ManagedNetwork._SetTransportSecurity(transportSecurity)
-
+	_ = network._ManagedNetwork._SetTransportSecurity(transportSecurity)
 	return network
 }
 
@@ -165,6 +176,22 @@ func (network *_Network) _SetVerifyCertificate(verify bool) *_ManagedNetwork {
 
 func (network *_Network) _GetVerifyCertificate() bool {
 	return network._ManagedNetwork._GetVerifyCertificate()
+}
+
+func (network *_Network) _SetNodeMinReadmitPeriod(period time.Duration) {
+	network._ManagedNetwork._SetMinNodeReadmitPeriod(period)
+}
+
+func (network *_Network) _SetNodeMaxReadmitPeriod(period time.Duration) {
+	network._ManagedNetwork._SetMaxNodeReadmitPeriod(period)
+}
+
+func (network *_Network) _GetNodeMinReadmitPeriod() time.Duration {
+	return network._ManagedNetwork.minNodeReadmitPeriod
+}
+
+func (network *_Network) _GetNodeMaxReadmitPeriod() time.Duration {
+	return network._ManagedNetwork.maxNodeReadmitPeriod
 }
 
 func (network *_Network) Close() error {

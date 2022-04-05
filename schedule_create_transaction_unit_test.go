@@ -14,7 +14,7 @@ import (
 func TestUnitScheduleCreateTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	scheduleCreate := NewScheduleCreateTransaction().
@@ -36,14 +36,14 @@ func TestUnitScheduleCreateTransactionValidateWrong(t *testing.T) {
 	err = scheduleCreate._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
 func TestUnitScheduleInfoQueryValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	scheduleID, err := ScheduleIDFromString("0.0.123-rmkyk")
+	scheduleID, err := ScheduleIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	scheduleInfo := NewScheduleInfoQuery().
@@ -65,14 +65,14 @@ func TestUnitScheduleInfoQueryValidateWrong(t *testing.T) {
 	err = scheduleInfo._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
 func TestUnitScheduleSignTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	scheduleID, err := ScheduleIDFromString("0.0.123-rmkyk")
+	scheduleID, err := ScheduleIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	scheduleSign := NewScheduleSignTransaction().
@@ -94,14 +94,14 @@ func TestUnitScheduleSignTransactionValidateWrong(t *testing.T) {
 	err = scheduleSign._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
 func TestUnitScheduleDeleteTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	scheduleID, err := ScheduleIDFromString("0.0.123-rmkyk")
+	scheduleID, err := ScheduleIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	scheduleDelete := NewScheduleDeleteTransaction().
@@ -123,6 +123,6 @@ func TestUnitScheduleDeleteTransactionValidateWrong(t *testing.T) {
 	err = scheduleDelete._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }

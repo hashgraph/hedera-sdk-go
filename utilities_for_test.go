@@ -92,7 +92,11 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	require.NoError(t, err)
 
 	env.Client.SetMaxNodeAttempts(1)
-	env.Client.SetMaxBackoff(time.Duration(1) * time.Second)
+	env.Client.SetMinBackoff(250 * time.Millisecond)
+	env.Client.SetMaxBackoff(8 * time.Second)
+	env.Client.SetNodeMinReadmitPeriod(5 * time.Second)
+	env.Client.SetNodeMaxReadmitPeriod(1 * time.Hour)
+	env.Client.SetMaxAttempts(100)
 	env.Client.PingAll()
 
 	network := make(map[string]AccountID)

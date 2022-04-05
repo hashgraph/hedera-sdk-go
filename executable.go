@@ -2,9 +2,10 @@ package hedera
 
 import (
 	"context"
-	"math"
 	"os"
 	"time"
+
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -89,7 +90,7 @@ type _Request struct {
 	transaction *Transaction
 }
 
-func _Execute(
+func _Execute( // nolint
 	client *Client,
 	request _Request,
 	shouldRetry func(string, _Request, _Response) _ExecutionState,
@@ -140,16 +141,52 @@ func _Execute(
 		}
 	}
 
+	currentBackoff := minBackoff
+
 	var attempt int64
 	var errPersistent error
 
-	for attempt = int64(0); attempt < int64(maxAttempts); attempt++ {
-		protoRequest := makeRequest(request)
-		nodeAccountID := getNodeAccountID(request)
+	for attempt = int64(0); attempt < int64(maxAttempts); attempt, *currentBackoff = attempt+1, *currentBackoff*2 {
+		if *currentBackoff > *maxBackoff {
+			*currentBackoff = *maxBackoff
+		}
+		var protoRequest _ProtoRequest
+		var node *_Node
+		var ok bool
 
-		node, ok := client.network._GetNodeForAccountID(nodeAccountID)
-		if !ok {
-			return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+		if request.transaction != nil {
+			if request.transaction.nodeAccountIDs.locked && request.transaction.nodeAccountIDs._Length() > 0 {
+				protoRequest = makeRequest(request)
+				nodeAccountID := getNodeAccountID(request)
+				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
+					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+				}
+			} else {
+				node = client.network._GetNode()
+				request.transaction.nodeAccountIDs._Set(0, node.accountID)
+				tx, _ := request.transaction._BuildTransaction(0)
+				protoRequest = _ProtoRequest{
+					transaction: tx,
+				}
+			}
+		} else {
+			if request.query.nodeAccountIDs.locked && request.query.nodeAccountIDs._Length() > 0 {
+				protoRequest = makeRequest(request)
+				nodeAccountID := getNodeAccountID(request)
+				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
+					return _IntermediateResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+				}
+			} else {
+				node = client.network._GetNode()
+				if len(request.query.paymentTransactions) > 0 {
+					var paymentTransaction services.TransactionBody
+					_ = protobuf.Unmarshal(request.query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
+					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
+					request.query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
+				}
+				request.query.nodeAccountIDs._Set(0, node.accountID)
+				protoRequest = makeRequest(request)
+			}
 		}
 
 		node._InUse()
@@ -158,8 +195,8 @@ func _Execute(
 
 		if !node._IsHealthy() {
 			logCtx.Trace().Str("requestId", logID).Str("delay", node._Wait().String()).Msg("node is unhealthy, waiting before continuing")
-			delay := node._Wait()
-			time.Sleep(delay)
+			_DelayForAttempt(logID, currentBackoff, attempt)
+			continue
 		}
 
 		logCtx.Trace().Str("requestId", logID).Msg("updating node account ID index")
@@ -167,7 +204,7 @@ func _Execute(
 
 		channel, err := node._GetChannel()
 		if err != nil {
-			node._IncreaseDelay()
+			client.network._IncreaseBackoff(node)
 			continue
 		}
 
@@ -196,7 +233,7 @@ func _Execute(
 		if err != nil {
 			errPersistent = err
 			if _ExecutableDefaultRetryHandler(logID, err) {
-				node._IncreaseDelay()
+				client.network._IncreaseBackoff(node)
 				continue
 			}
 			if errPersistent == nil {
@@ -205,19 +242,18 @@ func _Execute(
 			return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 		}
 
-		node._DecreaseDelay()
+		node._DecreaseBackoff()
+		*currentBackoff /= 2
 
-		retry := shouldRetry(logID, request, resp)
-
-		switch retry {
+		switch shouldRetry(logID, request, resp) {
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
-			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
+			_DelayForAttempt(logID, currentBackoff, attempt)
 			continue
 		case executionStateExpired:
 			if !client.GetOperatorAccountID()._IsZero() && request.transaction.regenerateTransactionID && !request.transaction.transactionIDs.locked {
 				logCtx.Trace().Str("requestId", logID).Msg("received `TRANSACTION_EXPIRED` with transaction ID regeneration enabled; regenerating")
-				_, err = request.transaction.transactionIDs._Set(request.transaction.nextTransactionIndex, TransactionIDGenerate(client.GetOperatorAccountID()))
+				request.transaction.transactionIDs._Set(request.transaction.transactionIDs.index, TransactionIDGenerate(client.GetOperatorAccountID()))
 				if err != nil {
 					panic(err)
 				}
@@ -239,11 +275,9 @@ func _Execute(
 	return _IntermediateResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func _DelayForAttempt(logID string, minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
-	// 0.1s, 0.2s, 0.4s, 0.8s, ...
-	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
-	logCtx.Trace().Str("requestId", logID).Dur("delay", time.Duration(ms)).Int64("attempt", attempt+1).Msg("retrying  request attempt")
-	time.Sleep(time.Duration(ms) * time.Millisecond)
+func _DelayForAttempt(logID string, currentBackoff *time.Duration, attempt int64) {
+	logCtx.Trace().Str("requestId", logID).Dur("delay", *currentBackoff).Int64("attempt", attempt+1).Msg("retrying  request attempt")
+	time.Sleep(*currentBackoff)
 }
 
 func _ExecutableDefaultRetryHandler(logID string, err error) bool {

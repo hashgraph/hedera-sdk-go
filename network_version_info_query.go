@@ -86,17 +86,8 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 
 	var err error
 
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return NetworkVersionInfo{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	}
-
-	if !query.lockedTransactionID {
-		query.paymentTransactionID = TransactionIDGenerate(client.operator.accountID)
+	if !query.paymentTransactionIDs.locked {
+		query.paymentTransactionIDs._Clear()._Push(TransactionIDGenerate(client.operator.accountID))
 	}
 
 	var cost Hbar
@@ -125,12 +116,19 @@ func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInf
 		cost = actualCost
 	}
 
-	query.nextPaymentTransactionIndex = 0
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
-	err = _QueryGeneratePayments(&query.Query, client, cost)
-	if err != nil {
-		return NetworkVersionInfo{}, err
+	if query.nodeAccountIDs.locked {
+		err = _QueryGeneratePayments(&query.Query, client, cost)
+		if err != nil {
+			return NetworkVersionInfo{}, err
+		}
+	} else {
+		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		if err != nil {
+			return NetworkVersionInfo{}, err
+		}
+		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
 	}
 
 	pb := services.Query_NetworkGetVersionInfo{
@@ -225,17 +223,13 @@ func (query *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
 
 func (query *NetworkVersionInfoQuery) _GetLogID() string {
 	timestamp := query.timestamp.UnixNano()
-	if query.paymentTransactionID.ValidStart != nil {
-		timestamp = query.paymentTransactionID.ValidStart.UnixNano()
+	if query.paymentTransactionIDs._Length() > 0 && query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart != nil {
+		timestamp = query.paymentTransactionIDs._GetCurrent().(TransactionID).ValidStart.UnixNano()
 	}
 	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp)
 }
 
 func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
-	if query.lockedTransactionID {
-		panic("payment TransactionID is locked")
-	}
-	query.lockedTransactionID = true
-	query.paymentTransactionID = transactionID
+	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query
 }

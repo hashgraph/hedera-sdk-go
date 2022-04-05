@@ -206,10 +206,6 @@ func (transaction *TopicMessageSubmitTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
-	}
-
 	list, err := transaction.ExecuteAll(client)
 
 	if err != nil {
@@ -234,13 +230,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		}
 	}
 
-	var transactionID TransactionID
-	if transaction.transactionIDs._Length() > 0 {
-		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-		case TransactionID:
-			transactionID = t
-		}
-	}
+	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 	accountID := AccountID{}
 	if transactionID.AccountID != nil {
 		accountID = *transactionID.AccountID
@@ -294,11 +284,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 			return transaction, errNoClientOrTransactionIDOrNodeId
 		}
 
-		accountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return transaction, err
-		}
-		transaction.SetNodeAccountIDs(accountIDs)
+		transaction.SetNodeAccountIDs(client.network._GetNodeAccountIDsForExecute())
 	}
 
 	transaction._InitFee(client)
@@ -319,18 +305,12 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 		}
 	}
 
-	var initialTransactionID TransactionID
-	if transaction.transactionIDs._Length() > 0 {
-		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-		case TransactionID:
-			initialTransactionID = t
-		}
-	}
-	nextTransactionID := _TransactionIDFromProtobuf(initialTransactionID._ToProtobuf())
+	initialTransactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
+	nextTransactionID := initialTransactionID
 
-	transaction.transactionIDs = _NewLockedSlice()
-	transaction.transactions = _NewLockedSlice()
-	transaction.signedTransactions = _NewLockedSlice()
+	transaction.transactionIDs = _NewLockableSlice()
+	transaction.transactions = _NewLockableSlice()
+	transaction.signedTransactions = _NewLockableSlice()
 	if b, ok := body.Data.(*services.TransactionBody_ConsensusSubmitMessage); ok {
 		for i := 0; uint64(i) < chunks; i++ {
 			start := i * chunkSize
@@ -340,10 +320,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 				end = len(transaction.message)
 			}
 
-			_, err = transaction.transactionIDs._PushTransactionIDs(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
-			if err != nil {
-				panic(err)
-			}
+			transaction.transactionIDs._Push(_TransactionIDFromProtobuf(nextTransactionID._ToProtobuf()))
 
 			b.ConsensusSubmitMessage.Message = transaction.message[start:end]
 			b.ConsensusSubmitMessage.ChunkInfo = &services.ConsensusMessageChunkInfo{
@@ -357,21 +334,18 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 				ConsensusSubmitMessage: b.ConsensusSubmitMessage,
 			}
 
-			for _, nodeAccountID := range transaction.nodeAccountIDs._GetNodeAccountIDs() {
-				body.NodeAccountID = nodeAccountID._ToProtobuf()
+			for _, nodeAccountID := range transaction.nodeAccountIDs.slice {
+				body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
 
 				bodyBytes, err := protobuf.Marshal(body)
 				if err != nil {
 					return transaction, errors.Wrap(err, "error serializing transaction body for topic submission")
 				}
 
-				_, err = transaction.signedTransactions._PushSignedTransactions(&services.SignedTransaction{
+				transaction.signedTransactions._Push(&services.SignedTransaction{
 					BodyBytes: bodyBytes,
 					SigMap:    &services.SignatureMap{},
 				})
-				if err != nil {
-					panic(err)
-				}
 			}
 
 			validStart := *nextTransactionID.ValidStart
@@ -469,7 +443,7 @@ func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicK
 		return transaction
 	}
 
-	transaction.transactions = _NewLockedSlice()
+	transaction.transactions = _NewLockableSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 	transaction.transactionIDs.locked = true
@@ -484,10 +458,7 @@ func (transaction *TopicMessageSubmitTransaction) AddSignature(publicKey PublicK
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		_, err := transaction.signedTransactions._Set(index, temp)
-		if err != nil {
-			transaction.lockError = err
-		}
+		transaction.signedTransactions._Set(index, temp)
 	}
 
 	return transaction

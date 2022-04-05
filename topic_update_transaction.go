@@ -353,10 +353,6 @@ func (transaction *TopicUpdateTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
-	}
-
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
@@ -364,13 +360,7 @@ func (transaction *TopicUpdateTransaction) Execute(
 		}
 	}
 
-	var transactionID TransactionID
-	if transaction.transactionIDs._Length() > 0 {
-		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-		case TransactionID:
-			transactionID = t
-		}
-	}
+	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(
@@ -515,7 +505,7 @@ func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, sig
 		return transaction
 	}
 
-	transaction.transactions = _NewLockedSlice()
+	transaction.transactions = _NewLockableSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 	transaction.transactionIDs.locked = true
@@ -530,10 +520,7 @@ func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, sig
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		_, err := transaction.signedTransactions._Set(index, temp)
-		if err != nil {
-			transaction.lockError = err
-		}
+		transaction.signedTransactions._Set(index, temp)
 	}
 
 	return transaction

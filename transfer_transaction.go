@@ -272,6 +272,126 @@ func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender Accou
 	return transaction
 }
 
+func (transaction *TransferTransaction) AddApprovedHbarTransfer(accountID AccountID, amount Hbar, approve bool) *TransferTransaction {
+	transaction._RequireNotFrozen()
+
+	for _, transfer := range transaction.hbarTransfers {
+		if transfer.accountID.Compare(accountID) == 0 {
+			transfer.Amount = HbarFromTinybar(amount.AsTinybar() + transfer.Amount.AsTinybar())
+			transfer.IsApproved = approve
+			return transaction
+		}
+	}
+
+	transaction.hbarTransfers = append(transaction.hbarTransfers, &_HbarTransfer{
+		accountID:  &accountID,
+		Amount:     amount,
+		IsApproved: approve,
+	})
+
+	return transaction
+}
+
+func (transaction *TransferTransaction) AddApprovedTokenTransferWithDecimals(tokenID TokenID, accountID AccountID, value int64, decimal uint32, approve bool) *TransferTransaction { //nolint
+	transaction._RequireNotFrozen()
+
+	for token, tokenTransfer := range transaction.tokenTransfers {
+		if token.Compare(tokenID) == 0 {
+			for _, transfer := range tokenTransfer.Transfers {
+				if transfer.accountID.Compare(accountID) == 0 {
+					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
+					tokenTransfer.ExpectedDecimals = &decimal
+					for _, transfer := range tokenTransfer.Transfers {
+						transfer.IsApproved = approve
+					}
+
+					return transaction
+				}
+			}
+		}
+	}
+
+	if v, ok := transaction.tokenTransfers[tokenID]; ok {
+		v.Transfers = append(v.Transfers, &_HbarTransfer{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: approve,
+		})
+		v.ExpectedDecimals = &decimal
+
+		return transaction
+	}
+
+	transaction.tokenTransfers[tokenID] = &_TokenTransfer{
+		Transfers: []*_HbarTransfer{{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: approve,
+		}},
+		ExpectedDecimals: &decimal,
+	}
+
+	return transaction
+}
+
+func (transaction *TransferTransaction) AddApprovedTokenTransfer(tokenID TokenID, accountID AccountID, value int64, approve bool) *TransferTransaction { //nolint
+	transaction._RequireNotFrozen()
+
+	for token, tokenTransfer := range transaction.tokenTransfers {
+		if token.Compare(tokenID) == 0 {
+			for _, transfer := range tokenTransfer.Transfers {
+				if transfer.accountID.Compare(accountID) == 0 {
+					transfer.Amount = HbarFromTinybar(transfer.Amount.AsTinybar() + value)
+					transfer.IsApproved = approve
+
+					return transaction
+				}
+			}
+		}
+	}
+
+	if v, ok := transaction.tokenTransfers[tokenID]; ok {
+		v.Transfers = append(v.Transfers, &_HbarTransfer{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: approve,
+		})
+
+		return transaction
+	}
+
+	transaction.tokenTransfers[tokenID] = &_TokenTransfer{
+		Transfers: []*_HbarTransfer{{
+			accountID:  &accountID,
+			Amount:     HbarFromTinybar(value),
+			IsApproved: approve,
+		}},
+	}
+
+	return transaction
+}
+
+func (transaction *TransferTransaction) AddApprovedNftTransfer(nftID NftID, sender AccountID, receiver AccountID, approve bool) *TransferTransaction {
+	transaction._RequireNotFrozen()
+
+	if transaction.nftTransfers == nil {
+		transaction.nftTransfers = make(map[TokenID][]*TokenNftTransfer)
+	}
+
+	if transaction.nftTransfers[nftID.TokenID] == nil {
+		transaction.nftTransfers[nftID.TokenID] = make([]*TokenNftTransfer, 0)
+	}
+
+	transaction.nftTransfers[nftID.TokenID] = append(transaction.nftTransfers[nftID.TokenID], &TokenNftTransfer{
+		SenderAccountID:   sender,
+		ReceiverAccountID: receiver,
+		SerialNumber:      nftID.SerialNumber,
+		IsApproved:        approve,
+	})
+
+	return transaction
+}
+
 func (transaction *TransferTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
@@ -438,7 +558,7 @@ func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signat
 		return transaction
 	}
 
-	transaction.transactions = _NewLockedSlice()
+	transaction.transactions = _NewLockableSlice()
 	transaction.publicKeys = append(transaction.publicKeys, publicKey)
 	transaction.transactionSigners = append(transaction.transactionSigners, nil)
 	transaction.transactionIDs.locked = true
@@ -453,10 +573,7 @@ func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signat
 			temp.SigMap.SigPair,
 			publicKey._ToSignaturePairProtobuf(signature),
 		)
-		_, err := transaction.signedTransactions._Set(index, temp)
-		if err != nil {
-			transaction.lockError = err
-		}
+		transaction.signedTransactions._Set(index, temp)
 	}
 
 	return transaction
@@ -519,10 +636,6 @@ func (transaction *TransferTransaction) Execute(
 		return TransactionResponse{}, transaction.freezeError
 	}
 
-	if transaction.lockError != nil {
-		return TransactionResponse{}, transaction.lockError
-	}
-
 	if !transaction.IsFrozen() {
 		_, err := transaction.FreezeWith(client)
 		if err != nil {
@@ -530,13 +643,7 @@ func (transaction *TransferTransaction) Execute(
 		}
 	}
 
-	var transactionID TransactionID
-	if transaction.transactionIDs._Length() > 0 {
-		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-		case TransactionID:
-			transactionID = t
-		}
-	}
+	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
 
 	if !client.GetOperatorAccountID()._IsZero() && client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
 		transaction.SignWith(

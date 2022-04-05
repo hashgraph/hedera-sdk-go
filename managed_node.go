@@ -5,18 +5,22 @@ import (
 )
 
 type _IManagedNode interface {
+	_GetKey() string
+	_SetVerifyCertificate(verify bool)
+	_GetVerifyCertificate() bool
 	_SetMinBackoff(waitTime time.Duration)
 	_GetMinBackoff() time.Duration
 	_SetMaxBackoff(waitTime time.Duration)
 	_GetMaxBackoff() time.Duration
 	_InUse()
 	_IsHealthy() bool
-	_IncreaseDelay()
-	_DecreaseDelay()
+	_IncreaseBackoff()
+	_DecreaseBackoff()
 	_Wait() time.Duration
 	_GetUseCount() int64
-	_GetLastUsed() int64
+	_GetLastUsed() time.Time
 	_GetAttempts() int64
+	_GetReadmitTime() *time.Time
 	_GetAddress() string
 	_ToSecure() _IManagedNode
 	_ToInsecure() _IManagedNode
@@ -27,12 +31,12 @@ type _IManagedNode interface {
 type _ManagedNode struct {
 	address            *_ManagedNodeAddress
 	currentBackoff     time.Duration
-	lastUsed           int64
-	backoffUntil       time.Time
+	lastUsed           time.Time
 	useCount           int64
 	minBackoff         time.Duration
 	maxBackoff         time.Duration
 	badGrpcStatusCount int64
+	readmitTime        *time.Time
 }
 
 func (node *_ManagedNode) _GetAttempts() int64 {
@@ -47,9 +51,14 @@ func (node *_ManagedNode) _GetAddress() string {
 	return ""
 }
 
+func (node *_ManagedNode) _GetReadmitTime() *time.Time {
+	return node.readmitTime
+}
+
 func _NewManagedNode(address string, minBackoff time.Duration) (node *_ManagedNode, err error) {
 	node = &_ManagedNode{
 		currentBackoff:     minBackoff,
+		lastUsed:           time.Now(),
 		useCount:           0,
 		minBackoff:         minBackoff,
 		maxBackoff:         1 * time.Hour,
@@ -59,12 +68,12 @@ func _NewManagedNode(address string, minBackoff time.Duration) (node *_ManagedNo
 	return node, err
 }
 
-func (node *_ManagedNode) _SetMinBackoff(waitTime time.Duration) {
+func (node *_ManagedNode) _SetMinBackoff(minBackoff time.Duration) {
 	if node.currentBackoff == node.minBackoff {
 		node.currentBackoff = node.minBackoff
 	}
 
-	node.minBackoff = waitTime
+	node.minBackoff = minBackoff
 }
 
 func (node *_ManagedNode) _GetMinBackoff() time.Duration {
@@ -81,23 +90,28 @@ func (node *_ManagedNode) _GetMaxBackoff() time.Duration {
 
 func (node *_ManagedNode) _InUse() {
 	node.useCount++
-	node.lastUsed = time.Now().UTC().UnixNano()
+	node.lastUsed = time.Now()
 }
 
 func (node *_ManagedNode) _IsHealthy() bool {
-	return node.backoffUntil.UnixNano() < time.Now().UTC().UnixNano()
+	if node.readmitTime == nil {
+		return true
+	}
+
+	return node.readmitTime.Before(time.Now())
 }
 
-func (node *_ManagedNode) _IncreaseDelay() {
+func (node *_ManagedNode) _IncreaseBackoff() {
 	node.badGrpcStatusCount++
-	node.backoffUntil = time.Now().Add(node.currentBackoff)
 	node.currentBackoff *= 2
 	if node.currentBackoff > node.maxBackoff {
 		node.currentBackoff = node.maxBackoff
 	}
+	readmitTime := time.Now().Add(node.currentBackoff)
+	node.readmitTime = &readmitTime
 }
 
-func (node *_ManagedNode) _DecreaseDelay() {
+func (node *_ManagedNode) _DecreaseBackoff() {
 	node.currentBackoff /= 2
 	if node.currentBackoff < node.minBackoff {
 		node.currentBackoff = node.minBackoff
@@ -105,39 +119,13 @@ func (node *_ManagedNode) _DecreaseDelay() {
 }
 
 func (node *_ManagedNode) _Wait() time.Duration {
-	return time.Until(node.backoffUntil)
+	return node.readmitTime.Sub(node.lastUsed)
 }
 
 func (node *_ManagedNode) _GetUseCount() int64 {
 	return node.useCount
 }
 
-func (node *_ManagedNode) _GetLastUsed() int64 {
+func (node *_ManagedNode) _GetLastUsed() time.Time {
 	return node.lastUsed
-}
-
-func _ManagedNodeCompare(i *_ManagedNode, j *_ManagedNode) int64 {
-	iRemainingTime := i._Wait()
-	jRemainingTime := j._Wait()
-	comparison := iRemainingTime.Milliseconds() - jRemainingTime.Milliseconds()
-	if iRemainingTime > 0 && jRemainingTime > 0 && comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.currentBackoff.Milliseconds() - j.currentBackoff.Milliseconds()
-	if comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.badGrpcStatusCount - j.badGrpcStatusCount
-	if comparison != 0 {
-		return comparison
-	}
-
-	comparison = i.useCount - j.useCount
-	if comparison != 0 {
-		return comparison
-	}
-
-	return i.lastUsed - j.lastUsed
 }

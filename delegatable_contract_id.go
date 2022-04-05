@@ -49,7 +49,7 @@ func (id *DelegatableContractID) ValidateChecksum(client *Client) error {
 		var tempChecksum _ParseAddressResult
 		var err error
 		if client.network.ledgerID != nil {
-			tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+			tempChecksum, err = _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
 		}
 		if err != nil {
 			return err
@@ -121,7 +121,7 @@ func (id DelegatableContractID) ToStringWithChecksum(client Client) (string, err
 	var checksum _ParseAddressResult
 	var err error
 	if client.network.ledgerID != nil {
-		checksum, err = _ChecksumParseAddress(client.GetLedgerID()._ForChecksum(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
+		checksum, err = _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract))
 	}
 	if err != nil {
 		return "", err

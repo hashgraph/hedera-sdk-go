@@ -14,7 +14,7 @@ import (
 func TestUnitTokenNftGetInfoByNftIDValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	nftID, err := NftIDFromString("2@0.0.123-rmkyk")
+	nftID, err := NftIDFromString("2@0.0.123-esxsf")
 	require.NoError(t, err)
 
 	nftInfo := NewTokenNftInfoQuery().
@@ -36,6 +36,6 @@ func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
 	err = nftInfo._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }

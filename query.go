@@ -12,15 +12,11 @@ type Query struct {
 	pb       *services.Query
 	pbHeader *services.QueryHeader //nolint
 
-	lockedTransactionID         bool
-	paymentTransactionID        TransactionID
-	nodeAccountIDs              []AccountID
-	maxQueryPayment             Hbar
-	queryPayment                Hbar
-	nextPaymentTransactionIndex int
-	nextNodeIndex               int
-	nextTransactionIndex        int
-	maxRetry                    int
+	paymentTransactionIDs *_LockableSlice
+	nodeAccountIDs        *_LockableSlice
+	maxQueryPayment       Hbar
+	queryPayment          Hbar
+	maxRetry              int
 
 	paymentTransactions []*services.Transaction
 
@@ -34,71 +30,69 @@ type Query struct {
 
 func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	return Query{
-		pb:                   &services.Query{},
-		pbHeader:             header,
-		lockedTransactionID:  false,
-		paymentTransactionID: TransactionID{},
-		nextTransactionIndex: 0,
-		nextNodeIndex:        0,
-		maxRetry:             10,
-		paymentTransactions:  make([]*services.Transaction, 0),
-		isPaymentRequired:    isPaymentRequired,
-		maxQueryPayment:      NewHbar(0),
-		queryPayment:         NewHbar(0),
-		timestamp:            time.Now(),
+		pb:                    &services.Query{},
+		pbHeader:              header,
+		paymentTransactionIDs: _NewLockableSlice(),
+		maxRetry:              10,
+		nodeAccountIDs:        _NewLockableSlice(),
+		paymentTransactions:   make([]*services.Transaction, 0),
+		isPaymentRequired:     isPaymentRequired,
+		maxQueryPayment:       NewHbar(0),
+		queryPayment:          NewHbar(0),
+		timestamp:             time.Now(),
 	}
 }
 
-func (query *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
-	query.grpcDeadline = deadline
-	return query
+func (this *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
+	this.grpcDeadline = deadline
+	return this
 }
 
-func (query *Query) GetGrpcDeadline() *time.Duration {
-	return query.grpcDeadline
+func (this *Query) GetGrpcDeadline() *time.Duration {
+	return this.grpcDeadline
 }
 
-func (query *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
+func (this *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
 	for _, nodeAccountID := range nodeAccountIDs {
-		if nodeAccountID._IsZero() {
-			panic("cannot set node account ID of 0.0.0")
-		}
+		this.nodeAccountIDs._Push(nodeAccountID)
 	}
-	query.nodeAccountIDs = nodeAccountIDs
-	return query
+	this.nodeAccountIDs._SetLocked(true)
+	return this
 }
 
-func (query *Query) GetNodeAccountIDs() []AccountID {
-	return query.nodeAccountIDs
+func (this *Query) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
+	nodeAccountIDs = []AccountID{}
+
+	for _, value := range this.nodeAccountIDs.slice {
+		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
+	}
+
+	return nodeAccountIDs
 }
 
 func _QueryGetNodeAccountID(request _Request) AccountID {
-	if len(request.query.nodeAccountIDs) > 0 {
-		return request.query.nodeAccountIDs[request.query.nextNodeIndex]
-	}
-
-	panic("Query node AccountID's not set before executing")
+	return request.query.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.
-func (query *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
-	query.maxQueryPayment = maxPayment
-	return query
+func (this *Query) SetMaxQueryPayment(maxPayment Hbar) *Query {
+	this.maxQueryPayment = maxPayment
+	return this
 }
 
 // SetQueryPayment sets the payment amount for this Query.
-func (query *Query) SetQueryPayment(paymentAmount Hbar) *Query {
-	query.queryPayment = paymentAmount
-	return query
+func (this *Query) SetQueryPayment(paymentAmount Hbar) *Query {
+	this.queryPayment = paymentAmount
+	return this
 }
 
-func (query *Query) GetMaxRetryCount() int {
-	return query.maxRetry
+func (this *Query) GetMaxRetryCount() int {
+	return this.maxRetry
 }
 
-func (query *Query) SetMaxRetry(count int) *Query {
-	query.maxRetry = count
-	return query
+func (this *Query) SetMaxRetry(count int) *Query {
+	this.maxRetry = count
+	return this
 }
 
 func _QueryShouldRetry(logID string, status Status) _ExecutionState {
@@ -115,7 +109,7 @@ func _QueryShouldRetry(logID string, status Status) _ExecutionState {
 
 func _QueryMakeRequest(request _Request) _ProtoRequest {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
+		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.paymentTransactionIDs.index]
 	}
 	request.query.pbHeader.ResponseType = services.ResponseType_ANSWER_ONLY
 
@@ -126,7 +120,7 @@ func _QueryMakeRequest(request _Request) _ProtoRequest {
 
 func _CostQueryMakeRequest(request _Request) _ProtoRequest {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.nextPaymentTransactionIndex]
+		request.query.pbHeader.Payment = request.query.paymentTransactions[request.query.paymentTransactionIDs.index]
 	}
 	request.query.pbHeader.ResponseType = services.ResponseType_COST_ANSWER
 	return _ProtoRequest{
@@ -136,15 +130,14 @@ func _CostQueryMakeRequest(request _Request) _ProtoRequest {
 
 func _QueryAdvanceRequest(request _Request) {
 	if request.query.isPaymentRequired && len(request.query.paymentTransactions) > 0 {
-		request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.paymentTransactions)
+		request.query.paymentTransactionIDs._Advance()
 	}
-	length := len(request.query.nodeAccountIDs)
-	currentIndex := request.query.nextNodeIndex
-	request.query.nextNodeIndex = (currentIndex + 1) % length
+	request.query.nodeAccountIDs._Advance()
 }
 
 func _CostQueryAdvanceRequest(request _Request) {
-	request.query.nextPaymentTransactionIndex = (request.query.nextPaymentTransactionIndex + 1) % len(request.query.nodeAccountIDs)
+	request.query.paymentTransactionIDs._Advance()
+	request.query.nodeAccountIDs._Advance()
 }
 
 func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoRequest _ProtoRequest) (_IntermediateResponse, error) {
@@ -154,10 +147,10 @@ func _QueryMapResponse(request _Request, response _Response, _ AccountID, protoR
 }
 
 func _QueryGeneratePayments(query *Query, client *Client, cost Hbar) error {
-	for _, nodeID := range query.nodeAccountIDs {
+	for _, nodeID := range query.nodeAccountIDs.slice {
 		transaction, err := _QueryMakePaymentTransaction(
-			query.paymentTransactionID,
-			nodeID,
+			query.paymentTransactionIDs._GetCurrent().(TransactionID),
+			nodeID.(AccountID),
 			client.operator,
 			cost,
 		)
@@ -215,15 +208,11 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 	}, nil
 }
 
-func (query *Query) GetPaymentTransactionID() TransactionID {
-	return query.paymentTransactionID
+func (this *Query) GetPaymentTransactionID() TransactionID {
+	return this.paymentTransactionIDs._GetCurrent().(TransactionID)
 }
 
-func (query *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
-	if query.lockedTransactionID {
-		panic("payment TransactionID is locked")
-	}
-	query.lockedTransactionID = true
-	query.paymentTransactionID = transactionID
-	return query
+func (this *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
+	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }

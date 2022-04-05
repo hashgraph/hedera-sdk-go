@@ -112,21 +112,6 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	} else if len(query.Query.GetNodeAccountIDs()) == 1 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return Hbar{}, err
-		}
-
-		query.nodeAccountIDs = append(query.nodeAccountIDs, nodeAccountIDs[0])
-	}
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -134,22 +119,13 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	query.timestamp = time.Now()
-
-	for range query.nodeAccountIDs {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
-		if err != nil {
-			return Hbar{}, err
-		}
-		query.paymentTransactions = append(query.paymentTransactions, paymentTransaction)
-	}
+	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	pb := query._Build()
 	pb.CryptogetAccountBalance.Header = query.pbHeader
-
 	query.pb = &services.Query{
 		Query: pb,
 	}
-
 	resp, err := _Execute(
 		client,
 		_Request{
@@ -196,21 +172,6 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	}
 
 	var err error
-	if len(query.Query.GetNodeAccountIDs()) == 0 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return AccountBalance{}, err
-		}
-
-		query.SetNodeAccountIDs(nodeAccountIDs)
-	} else if len(query.Query.GetNodeAccountIDs()) == 1 {
-		nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-		if err != nil {
-			return AccountBalance{}, err
-		}
-
-		query.nodeAccountIDs = append(query.nodeAccountIDs, nodeAccountIDs[0])
-	}
 
 	err = query._ValidateNetworkOnIDs(client)
 	if err != nil {
@@ -218,7 +179,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 	}
 
 	query.timestamp = time.Now()
-	query.nextPaymentTransactionIndex = 0
+
 	query.paymentTransactions = make([]*services.Transaction, 0)
 
 	pb := query._Build()
@@ -315,10 +276,6 @@ func (query *AccountBalanceQuery) _GetLogID() string {
 }
 
 func (query *AccountBalanceQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountBalanceQuery {
-	if query.lockedTransactionID {
-		panic("payment TransactionID is locked")
-	}
-	query.lockedTransactionID = true
-	query.paymentTransactionID = transactionID
+	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query
 }

@@ -21,25 +21,22 @@ type ITransaction interface {
 }
 
 type Transaction struct {
-	nextNodeIndex        int
-	nextTransactionIndex int
-	maxRetry             int
+	maxRetry int
 
 	transactionFee           uint64
 	memo                     string
 	transactionValidDuration *time.Duration
 	transactionID            TransactionID
 
-	transactionIDs     *_LockedSlice
-	transactions       *_LockedSlice
-	signedTransactions *_LockedSlice
-	nodeAccountIDs     *_LockedSlice
+	transactionIDs     *_LockableSlice
+	transactions       *_LockableSlice
+	signedTransactions *_LockableSlice
+	nodeAccountIDs     *_LockableSlice
 
 	publicKeys         []PublicKey
 	transactionSigners []TransactionSigner
 
 	freezeError error
-	lockError   error
 
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
@@ -51,14 +48,12 @@ type Transaction struct {
 func _NewTransaction() Transaction {
 	duration := 120 * time.Second
 	return Transaction{
-		nextNodeIndex:            0,
-		nextTransactionIndex:     0,
 		maxRetry:                 10,
 		transactionValidDuration: &duration,
-		transactionIDs:           _NewLockedSlice(),
-		transactions:             _NewLockedSlice(),
-		signedTransactions:       _NewLockedSlice(),
-		nodeAccountIDs:           _NewLockedSlice(),
+		transactionIDs:           _NewLockableSlice(),
+		transactions:             _NewLockableSlice(),
+		signedTransactions:       _NewLockableSlice(),
+		nodeAccountIDs:           _NewLockableSlice(),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
 	}
@@ -70,20 +65,32 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	if err != nil {
 		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to Transaction List")
 	}
-	tempTxs, err := _NewLockedSlice()._PushTransactions(list.TransactionList...)
 	if err != nil {
 		return Transaction{}, err
 	}
+
+	transactions := _NewLockableSlice()
+	for _, transaction := range list.TransactionList {
+		transactions._Push(transaction)
+	}
+
 	tx := Transaction{
-		nextNodeIndex:        0,
-		nextTransactionIndex: 0,
-		maxRetry:             10,
-		transactionIDs:       _NewLockedSlice(),
-		transactions:         tempTxs,
-		signedTransactions:   _NewLockedSlice(),
-		nodeAccountIDs:       _NewLockedSlice(),
-		publicKeys:           make([]PublicKey, 0),
-		transactionSigners:   make([]TransactionSigner, 0),
+		maxRetry:           10,
+		transactionIDs:     _NewLockableSlice(),
+		transactions:       transactions,
+		signedTransactions: _NewLockableSlice(),
+		nodeAccountIDs:     _NewLockableSlice(),
+		publicKeys:         make([]PublicKey, 0),
+		transactionSigners: make([]TransactionSigner, 0),
+	}
+
+	comp, err := _TransactionCompare(&list)
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	if !comp {
+		return Transaction{}, errors.New("failed to validate transaction bodies")
 	}
 
 	var first *services.TransactionBody = nil
@@ -94,7 +101,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 			return Transaction{}, errors.Wrap(err, "error deserializing SignedTransactionBytes in TransactionFromBytes")
 		}
 
-		tx.signedTransactions, err = tx.signedTransactions._PushSignedTransactions(&signedTransaction)
+		tx.signedTransactions = tx.signedTransactions._Push(&signedTransaction)
 		if err != nil {
 			return Transaction{}, err
 		}
@@ -131,7 +138,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 
 		found := false
 
-		for _, id := range tx.transactionIDs._GetTransactionIDs() {
+		for _, value := range tx.transactionIDs.slice {
+			id := value.(TransactionID)
 			if id.AccountID != nil && transactionID.AccountID != nil &&
 				id.AccountID._Equals(*transactionID.AccountID) &&
 				id.ValidStart != nil && transactionID.ValidStart != nil &&
@@ -142,10 +150,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		}
 
 		if !found {
-			tx.transactionIDs, err = tx.transactionIDs._PushTransactionIDs(transactionID)
-			if err != nil {
-				return Transaction{}, err
-			}
+			tx.transactionIDs = tx.transactionIDs._Push(transactionID)
 		}
 
 		for _, id := range tx.GetNodeAccountIDs() {
@@ -156,10 +161,7 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		}
 
 		if !found {
-			tx.nodeAccountIDs, err = tx.nodeAccountIDs._PushNodeAccountIDs(nodeAccountID)
-			if err != nil {
-				return Transaction{}, err
-			}
+			tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
 		}
 	}
 
@@ -257,17 +259,71 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 }
 
-func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
-	returnMap := make(map[AccountID]map[*PublicKey][]byte, transaction.nodeAccountIDs._Length())
+func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
+	signed := make([]*services.SignedTransaction, 0)
+	var err error
+	for _, s := range list.TransactionList {
+		temp := services.SignedTransaction{}
+		err = protobuf.Unmarshal(s.SignedTransactionBytes, &temp)
+		if err != nil {
+			return false, err
+		}
+		signed = append(signed, &temp)
+	}
+	body := make([]*services.TransactionBody, 0)
+	for _, s := range signed {
+		temp := services.TransactionBody{}
+		err = protobuf.Unmarshal(s.BodyBytes, &temp)
+		if err != nil {
+			return false, err
+		}
+		body = append(body, &temp)
+	}
 
-	if transaction.signedTransactions._Length() == 0 {
+	tx := services.TransactionBody{
+		TransactionFee:           body[0].TransactionFee,
+		TransactionValidDuration: body[0].TransactionValidDuration,
+		Memo:                     body[0].Memo,
+		Data:                     body[0].Data,
+	}
+
+	txBytes, err := protobuf.Marshal(&tx)
+	if err != nil {
+		return false, err
+	}
+
+	for i := 1; i < len(body); i++ {
+		tx2 := services.TransactionBody{
+			TransactionFee:           body[i].TransactionFee,
+			TransactionValidDuration: body[i].TransactionValidDuration,
+			Memo:                     body[i].Memo,
+			Data:                     body[i].Data,
+		}
+
+		txBytes2, err := protobuf.Marshal(&tx2)
+		if err != nil {
+			return false, err
+		}
+
+		if !bytes.Equal(txBytes, txBytes2) {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func (this *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
+	returnMap := make(map[AccountID]map[*PublicKey][]byte, this.nodeAccountIDs._Length())
+
+	if this.signedTransactions._Length() == 0 {
 		return returnMap, nil
 	}
 
-	for i, nodeID := range transaction.nodeAccountIDs.slice {
+	for i, nodeID := range this.nodeAccountIDs.slice {
 		var sigMap *services.SignatureMap
 		var tempID AccountID
-		switch k := transaction.signedTransactions._Get(i).(type) { //nolint
+		switch k := this.signedTransactions._Get(i).(type) { //nolint
 		case *services.SignedTransaction:
 			sigMap = k.SigMap
 		}
@@ -297,40 +353,40 @@ func (transaction *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]
 
 		returnMap[tempID] = inner
 	}
-	transaction.transactionIDs.locked = true
+	this.transactionIDs.locked = true
 
 	return returnMap, nil
 }
 
-func (transaction *Transaction) GetTransactionHash() ([]byte, error) {
-	hashes, err := transaction.GetTransactionHashPerNode()
+func (this *Transaction) GetTransactionHash() ([]byte, error) {
+	hashes, err := this.GetTransactionHashPerNode()
 	if err != nil {
 		return []byte{}, err
 	}
 
-	node := transaction.nodeAccountIDs._Get(0)
+	node := this.nodeAccountIDs._Get(0)
 	switch n := node.(type) { //nolint
 	case AccountID:
 		return hashes[n], nil
 	}
 
-	return []byte{}, errors.New("unsupported type for _LockedSlice")
+	return []byte{}, errors.New("unsupported type for _LockableSlice")
 }
 
-func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
+func (this *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
 	transactionHash := make(map[AccountID][]byte)
 
-	if !transaction._IsFrozen() {
+	if !this._IsFrozen() {
 		return transactionHash, errTransactionIsNotFrozen
 	}
 
-	allTx, err := transaction._BuildAllTransactions()
+	allTx, err := this._BuildAllTransactions()
 	if err != nil {
 		return transactionHash, err
 	}
-	transaction.transactionIDs.locked = true
+	this.transactionIDs.locked = true
 
-	for i, node := range transaction.nodeAccountIDs.slice {
+	for i, node := range this.nodeAccountIDs.slice {
 		switch n := node.(type) { //nolint
 		case AccountID:
 			hash := sha512.New384()
@@ -348,27 +404,27 @@ func (transaction *Transaction) GetTransactionHashPerNode() (map[AccountID][]byt
 	return transactionHash, nil
 }
 
-func (transaction *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
-	transaction.grpcDeadline = deadline
-	return transaction
+func (this *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
+	this.grpcDeadline = deadline
+	return this
 }
 
-func (transaction *Transaction) GetGrpcDeadline() *time.Duration {
-	return transaction.grpcDeadline
+func (this *Transaction) GetGrpcDeadline() *time.Duration {
+	return this.grpcDeadline
 }
 
-func (transaction *Transaction) _InitFee(client *Client) {
-	if client != nil && transaction.transactionFee == 0 {
-		transaction.SetMaxTransactionFee(client.maxTransactionFee)
+func (this *Transaction) _InitFee(client *Client) {
+	if client != nil && this.transactionFee == 0 {
+		this.SetMaxTransactionFee(client.maxTransactionFee)
 	}
 }
 
-func (transaction *Transaction) _InitTransactionID(client *Client) error {
-	if transaction.transactionIDs._Length() == 0 {
+func (this *Transaction) _InitTransactionID(client *Client) error {
+	if this.transactionIDs._Length() == 0 {
 		if client != nil {
 			if client.operator != nil {
-				transaction.transactionIDs = _NewLockedSlice()
-				transaction.transactionIDs, _ = transaction.transactionIDs._PushTransactionIDs(TransactionIDGenerate(client.operator.accountID))
+				this.transactionIDs = _NewLockableSlice()
+				this.transactionIDs = this.transactionIDs._Push(TransactionIDGenerate(client.operator.accountID))
 			} else {
 				return errNoClientOrTransactionID
 			}
@@ -377,26 +433,22 @@ func (transaction *Transaction) _InitTransactionID(client *Client) error {
 		}
 	}
 
-	switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-	case TransactionID:
-		transaction.transactionID = t
-	}
-
+	this.transactionID = this.transactionIDs._GetCurrent().(TransactionID)
 	return nil
 }
 
-func (transaction *Transaction) _IsFrozen() bool {
-	return transaction.signedTransactions._Length() > 0
+func (this *Transaction) _IsFrozen() bool {
+	return this.signedTransactions._Length() > 0
 }
 
-func (transaction *Transaction) _RequireNotFrozen() {
-	if transaction._IsFrozen() {
-		transaction.freezeError = errTransactionIsFrozen
+func (this *Transaction) _RequireNotFrozen() {
+	if this._IsFrozen() {
+		this.freezeError = errTransactionIsFrozen
 	}
 }
 
-func (transaction *Transaction) _RequireOneNodeAccountID() {
-	if transaction.nodeAccountIDs._Length() != 1 {
+func (this *Transaction) _RequireOneNodeAccountID() {
+	if this.nodeAccountIDs._Length() != 1 {
 		panic("Transaction has more than one _Node ID set")
 	}
 }
@@ -406,60 +458,54 @@ func _TransactionFreezeWith(
 	client *Client,
 	body *services.TransactionBody,
 ) error {
-	if transaction.nodeAccountIDs._Length() == 0 {
-		if client != nil {
-			nodeAccountIDs, err := client.network._GetNodeAccountIDsForExecute()
-			if err != nil {
-				return err
-			}
-			transaction.SetNodeAccountIDs(nodeAccountIDs)
-		} else {
-			return errNoClientOrTransactionIDOrNodeId
-		}
-	}
-
 	if client != nil {
+		if transaction.nodeAccountIDs._IsEmpty() {
+			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
+				transaction.nodeAccountIDs._Push(nodeAccountID)
+			}
+		}
+
 		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
 			transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
 		}
 	}
 
-	for _, nodeAccountID := range transaction.nodeAccountIDs._GetNodeAccountIDs() {
-		body.NodeAccountID = nodeAccountID._ToProtobuf()
-		bodyBytes, err := protobuf.Marshal(body)
-		if err != nil {
-			// This should be unreachable
-			// From the documentation this appears to only be possible if there are missing proto types
-			panic(err)
-		}
+	if transaction.nodeAccountIDs._IsEmpty() {
+		return errNoClientOrTransactionIDOrNodeId
+	}
 
-		transaction.signedTransactions, err = transaction.signedTransactions._PushSignedTransactions(&services.SignedTransaction{
+	bodyBytes, err := protobuf.Marshal(body)
+	if err != nil {
+		// This should be unreachable
+		// From the documentation this appears to only be possible if there are missing proto types
+		panic(err)
+	}
+
+	for range transaction.nodeAccountIDs.slice {
+		transaction.signedTransactions = transaction.signedTransactions._Push(&services.SignedTransaction{
 			BodyBytes: bodyBytes,
 			SigMap: &services.SignatureMap{
 				SigPair: make([]*services.SignaturePair, 0),
 			},
 		})
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
 }
 
-func (transaction *Transaction) _SignWith(
+func (this *Transaction) _SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
 ) {
-	transaction.transactions = _NewLockedSlice()
-	transaction.publicKeys = append(transaction.publicKeys, publicKey)
-	transaction.transactionSigners = append(transaction.transactionSigners, signer)
+	this.transactions = _NewLockableSlice()
+	this.publicKeys = append(this.publicKeys, publicKey)
+	this.transactionSigners = append(this.transactionSigners, signer)
 }
 
-func (transaction *Transaction) _KeyAlreadySigned(
+func (this *Transaction) _KeyAlreadySigned(
 	pk PublicKey,
 ) bool {
-	for _, key := range transaction.publicKeys {
+	for _, key := range this.publicKeys {
 		if key.String() == pk.String() {
 			return true
 		}
@@ -484,7 +530,7 @@ func _TransactionShouldRetry(logID string, _ _Request, response _Response) _Exec
 }
 
 func _TransactionMakeRequest(request _Request) _ProtoRequest {
-	index := request.transaction.nodeAccountIDs._Length()*request.transaction.nextTransactionIndex + request.transaction.nextNodeIndex
+	index := request.transaction.nodeAccountIDs._Length()*request.transaction.transactionIDs.index + request.transaction.nodeAccountIDs.index
 	tx, _ := request.transaction._BuildTransaction(index)
 
 	return _ProtoRequest{
@@ -493,18 +539,11 @@ func _TransactionMakeRequest(request _Request) _ProtoRequest {
 }
 
 func _TransactionAdvanceRequest(request _Request) {
-	length := request.transaction.nodeAccountIDs._Length()
-	currentIndex := request.transaction.nextNodeIndex
-	request.transaction.nextNodeIndex = (currentIndex + 1) % length
+	request.transaction.nodeAccountIDs._Advance()
 }
 
 func _TransactionGetNodeAccountID(request _Request) AccountID {
-	switch node := request.transaction.nodeAccountIDs._Get(request.transaction.nextNodeIndex).(type) { //nolint
-	case AccountID:
-		return node
-	}
-
-	return AccountID{}
+	return request.transaction.nodeAccountIDs._GetCurrent().(AccountID)
 }
 
 func _TransactionMapStatusError(
@@ -525,25 +564,17 @@ func _TransactionMapResponse(request _Request, _ _Response, nodeID AccountID, pr
 		return _IntermediateResponse{}, err
 	}
 
-	index := request.transaction.nextTransactionIndex
-	request.transaction.nextTransactionIndex = (index + 1) % request.transaction.transactionIDs._Length()
-
-	switch txID := request.transaction.transactionIDs._Get(index).(type) { //nolint
-	case TransactionID:
-		return _IntermediateResponse{
-			transaction: TransactionResponse{
-				NodeID:        nodeID,
-				TransactionID: txID,
-				Hash:          hash.Sum(nil),
-			},
-		}, nil
-	}
-
-	return _IntermediateResponse{}, errors.New("wrong type for _LockedSlice")
+	return _IntermediateResponse{
+		transaction: TransactionResponse{
+			NodeID:        nodeID,
+			TransactionID: request.transaction.transactionIDs._GetNext().(TransactionID),
+			Hash:          hash.Sum(nil),
+		},
+	}, nil
 }
 
-func (transaction *Transaction) String() string {
-	switch sig := transaction.signedTransactions._Get(0).(type) { //nolint
+func (this *Transaction) String() string {
+	switch sig := this.signedTransactions._Get(0).(type) { //nolint
 	case *services.SignedTransaction:
 		return fmt.Sprintf("%+v", sig)
 	}
@@ -551,42 +582,42 @@ func (transaction *Transaction) String() string {
 	return ""
 }
 
-func (transaction *Transaction) ToBytes() ([]byte, error) {
-	if !transaction._IsFrozen() {
+func (this *Transaction) ToBytes() ([]byte, error) {
+	if !this._IsFrozen() {
 		return make([]byte, 0), errTransactionIsNotFrozen
 	}
 
-	allTx, err := transaction._BuildAllTransactions()
+	allTx, err := this._BuildAllTransactions()
 	if err != nil {
 		return make([]byte, 0), err
 	}
-	transaction.transactionIDs.locked = true
+	this.transactionIDs.locked = true
 
 	pbTransactionList, lastError := protobuf.Marshal(&sdk.TransactionList{
 		TransactionList: allTx,
 	})
 
 	if lastError != nil {
-		return make([]byte, 0), errors.Wrap(err, "error serializing transaction list")
+		return make([]byte, 0), errors.Wrap(err, "error serializing this list")
 	}
 
 	return pbTransactionList, nil
 }
 
-func (transaction *Transaction) _SignTransaction(index int) {
-	initialTx := transaction.signedTransactions._GetSignedTransactions()[index]
+func (this *Transaction) _SignTransaction(index int) {
+	initialTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
 	bodyBytes := initialTx.GetBodyBytes()
 	if len(initialTx.SigMap.SigPair) != 0 {
-		for i, key := range transaction.publicKeys {
-			if transaction.transactionSigners[i] != nil {
+		for i, key := range this.publicKeys {
+			if this.transactionSigners[i] != nil {
 				if key.ed25519PublicKey != nil {
 					if bytes.Equal(initialTx.SigMap.SigPair[0].PubKeyPrefix, key.ed25519PublicKey.keyData) {
-						if !transaction.regenerateTransactionID {
+						if !this.regenerateTransactionID {
 							return
 						}
 						switch t := initialTx.SigMap.SigPair[0].Signature.(type) { //nolint
 						case *services.SignaturePair_Ed25519:
-							if bytes.Equal(t.Ed25519, transaction.transactionSigners[0](bodyBytes)) && len(t.Ed25519) > 0 {
+							if bytes.Equal(t.Ed25519, this.transactionSigners[0](bodyBytes)) && len(t.Ed25519) > 0 {
 								return
 							}
 						}
@@ -594,12 +625,12 @@ func (transaction *Transaction) _SignTransaction(index int) {
 				}
 				if key.ecdsaPublicKey != nil {
 					if bytes.Equal(initialTx.SigMap.SigPair[0].PubKeyPrefix, key.ecdsaPublicKey._BytesRaw()) {
-						if !transaction.regenerateTransactionID {
+						if !this.regenerateTransactionID {
 							return
 						}
 						switch t := initialTx.SigMap.SigPair[0].Signature.(type) { //nolint
 						case *services.SignaturePair_ECDSASecp256K1:
-							if bytes.Equal(t.ECDSASecp256K1, transaction.transactionSigners[0](bodyBytes)) && len(t.ECDSASecp256K1) > 0 {
+							if bytes.Equal(t.ECDSASecp256K1, this.transactionSigners[0](bodyBytes)) && len(t.ECDSASecp256K1) > 0 {
 								return
 							}
 						}
@@ -609,37 +640,30 @@ func (transaction *Transaction) _SignTransaction(index int) {
 		}
 	}
 
-	if transaction.regenerateTransactionID && !transaction.transactionIDs.locked {
-		modifiedTx := transaction.signedTransactions._GetSignedTransactions()[index]
+	if this.regenerateTransactionID && !this.transactionIDs.locked {
+		modifiedTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
 		modifiedTx.SigMap.SigPair = make([]*services.SignaturePair, 0)
-		_, err := transaction.signedTransactions._Set(index, modifiedTx)
-		if err != nil {
-			transaction.lockError = err
-		}
+		this.signedTransactions._Set(index, modifiedTx)
 	}
 
-	for i := 0; i < len(transaction.publicKeys); i++ {
-		publicKey := transaction.publicKeys[i]
-		signer := transaction.transactionSigners[i]
+	for i := 0; i < len(this.publicKeys); i++ {
+		publicKey := this.publicKeys[i]
+		signer := this.transactionSigners[i]
 
 		if signer == nil {
 			continue
 		}
 
-		modifiedTx := transaction.signedTransactions._GetSignedTransactions()[index]
-
+		modifiedTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
 		modifiedTx.SigMap.SigPair = append(modifiedTx.SigMap.SigPair, publicKey._ToSignaturePairProtobuf(signer(bodyBytes)))
-		_, err := transaction.signedTransactions._Set(index, modifiedTx)
-		if err != nil {
-			transaction.lockError = err
-		}
+		this.signedTransactions._Set(index, modifiedTx)
 	}
 }
 
-func (transaction *Transaction) _BuildAllTransactions() ([]*services.Transaction, error) {
+func (this *Transaction) _BuildAllTransactions() ([]*services.Transaction, error) {
 	allTx := make([]*services.Transaction, 0)
-	for i := 0; i < transaction.signedTransactions._Length(); i++ {
-		tx, err := transaction._BuildTransaction(i)
+	for i := 0; i < this.signedTransactions._Length(); i++ {
+		tx, err := this._BuildTransaction(i)
 		if err != nil {
 			return []*services.Transaction{}, err
 		}
@@ -649,41 +673,46 @@ func (transaction *Transaction) _BuildAllTransactions() ([]*services.Transaction
 	return allTx, nil
 }
 
-func (transaction *Transaction) _BuildTransaction(index int) (*services.Transaction, error) {
-	if transaction.transactions._Length() < index {
-		for i := transaction.transactions._Length(); i < index; i++ {
-			transaction.transactions.slice = append(transaction.transactions.slice, nil)
+func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, error) {
+	if this.transactions._Length() < index {
+		for i := this.transactions._Length(); i < index; i++ {
+			this.transactions.slice = append(this.transactions.slice, nil)
 		}
-	} else if transaction.transactions._Length() > index && transaction.transactions._Get(index) != nil {
-		tx := transaction.transactions._GetTransactions()[index]
+	} else if this.transactions._Length() > index && this.transactions._Get(index) != nil {
+		tx := this.transactions._Get(index).(*services.Transaction)
 		if tx.SignedTransactionBytes != nil && len(tx.SignedTransactionBytes) != 0 {
 			return tx, nil
 		}
 	}
 
-	signedTx := transaction.signedTransactions._GetSignedTransactions()[index]
+	signedTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
 
-	txID := transaction.transactionIDs._GetTransactionIDs()[transaction.nextTransactionIndex]
+	txID := this.transactionIDs._GetCurrent().(TransactionID)
 	originalBody := services.TransactionBody{}
 	_ = protobuf.Unmarshal(signedTx.BodyBytes, &originalBody)
+	if !this.nodeAccountIDs.locked && this.nodeAccountIDs._Length() > index {
+		if originalBody.NodeAccountID.String() != this.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf().String() {
+			originalBody.NodeAccountID = this.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf()
+		}
+	}
+
+	if originalBody.NodeAccountID == nil {
+		originalBody.NodeAccountID = this.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf()
+	}
+
 	if originalBody.TransactionID.String() != txID._ToProtobuf().String() {
 		originalBody.TransactionID = txID._ToProtobuf()
 	}
 
 	updatedBody, err := protobuf.Marshal(&originalBody)
 	if err != nil {
-		return &services.Transaction{}, errors.Wrap(err, "failed to update transaction ID")
+		return &services.Transaction{}, errors.Wrap(err, "failed to update this ID")
 	}
 	signedTx.BodyBytes = updatedBody
-	_, err = transaction.signedTransactions._Set(index, signedTx)
-	if err != nil {
-		transaction.lockError = err
-	}
+	this.signedTransactions._Set(index, signedTx)
+	this._SignTransaction(index)
 
-	transaction._SignTransaction(index)
-
-	tx := transaction.signedTransactions._GetSignedTransactions()[index]
-
+	tx := this.signedTransactions._GetCurrent().(*services.SignedTransaction)
 	data, err := protobuf.Marshal(tx)
 	if err != nil {
 		return &services.Transaction{}, errors.Wrap(err, "failed to serialize transactions for building")
@@ -698,104 +727,87 @@ func (transaction *Transaction) _BuildTransaction(index int) (*services.Transact
 // Shared
 //
 
-func (transaction *Transaction) GetMaxTransactionFee() Hbar {
-	return HbarFromTinybar(int64(transaction.transactionFee))
+func (this *Transaction) GetMaxTransactionFee() Hbar {
+	return HbarFromTinybar(int64(this.transactionFee))
 }
 
 // SetMaxTransactionFee sets the max transaction fee for this Transaction.
-func (transaction *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
-	transaction.transactionFee = uint64(fee.AsTinybar())
-	return transaction
+func (this *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
+	this.transactionFee = uint64(fee.AsTinybar())
+	return this
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled
-func (transaction *Transaction) GetRegenerateTransactionID() bool {
-	return transaction.regenerateTransactionID
+func (this *Transaction) GetRegenerateTransactionID() bool {
+	return this.regenerateTransactionID
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when \`TRANSACTION_EXPIRED\` is received
-func (transaction *Transaction) SetRegenerateTransactionID(regenerateTransactionID bool) *Transaction {
-	transaction.regenerateTransactionID = regenerateTransactionID
-	return transaction
+func (this *Transaction) SetRegenerateTransactionID(regenerateTransactionID bool) *Transaction {
+	this.regenerateTransactionID = regenerateTransactionID
+	return this
 }
 
-func (transaction *Transaction) GetTransactionMemo() string {
-	return transaction.memo
+func (this *Transaction) GetTransactionMemo() string {
+	return this.memo
 }
 
 // SetTransactionMemo sets the memo for this Transaction.
-func (transaction *Transaction) SetTransactionMemo(memo string) *Transaction {
-	transaction.memo = memo
-	return transaction
+func (this *Transaction) SetTransactionMemo(memo string) *Transaction {
+	this.memo = memo
+	return this
 }
 
-func (transaction *Transaction) GetTransactionValidDuration() time.Duration {
-	if transaction.transactionValidDuration != nil {
-		return *transaction.transactionValidDuration
+func (this *Transaction) GetTransactionValidDuration() time.Duration {
+	if this.transactionValidDuration != nil {
+		return *this.transactionValidDuration
 	}
 
 	return 0
 }
 
 // SetTransactionValidDuration sets the valid duration for this Transaction.
-func (transaction *Transaction) SetTransactionValidDuration(duration time.Duration) *Transaction {
-	transaction.transactionValidDuration = &duration
-	return transaction
+func (this *Transaction) SetTransactionValidDuration(duration time.Duration) *Transaction {
+	this.transactionValidDuration = &duration
+	return this
 }
 
-func (transaction *Transaction) GetTransactionID() TransactionID {
-	if transaction.transactionIDs._Length() > 0 {
-		switch t := transaction.transactionIDs._Get(transaction.nextTransactionIndex).(type) { //nolint
-		case TransactionID:
-			transaction.transactionIDs.locked = true
-			return t
-		}
-	}
-
-	return TransactionID{}
+func (this *Transaction) GetTransactionID() TransactionID {
+	return this.transactionIDs._GetCurrent().(TransactionID)
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
-func (transaction *Transaction) SetTransactionID(transactionID TransactionID) *Transaction {
-	if transaction.transactionIDs.locked {
-		panic(errLockedSlice)
-	}
-	transaction.transactionIDs = _NewLockedSlice()
-	transaction.transactionIDs, _ = transaction.transactionIDs._PushTransactionIDs(transactionID)
-	transaction.transactionIDs.locked = true
-	return transaction
+func (this *Transaction) SetTransactionID(transactionID TransactionID) *Transaction {
+	this.transactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return this
 }
 
-func (transaction *Transaction) GetNodeAccountIDs() []AccountID {
-	if transaction.nodeAccountIDs._Length() != 0 {
-		return transaction.nodeAccountIDs._GetNodeAccountIDs()
+func (this *Transaction) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
+	nodeAccountIDs = []AccountID{}
+
+	for _, value := range this.nodeAccountIDs.slice {
+		nodeAccountIDs = append(nodeAccountIDs, value.(AccountID))
 	}
 
-	return make([]AccountID, 0)
+	return nodeAccountIDs
 }
 
 // SetNodeAccountIDs sets the node AccountID for this Transaction.
-func (transaction *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transaction {
+func (this *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transaction {
 	for _, nodeAccountID := range nodeAccountIDs {
-		if nodeAccountID._IsZero() {
-			panic("cannot set node account ID of 0.0.0")
-		}
+		this.nodeAccountIDs._Push(nodeAccountID)
 	}
-	if transaction.nodeAccountIDs.locked {
-		panic(errLockedSlice)
-	}
-	transaction.nodeAccountIDs = _NewLockedSlice()
-	transaction.nodeAccountIDs, _ = transaction.nodeAccountIDs._PushNodeAccountIDs(nodeAccountIDs...)
-	return transaction
+	this.nodeAccountIDs._SetLocked(true)
+	return this
 }
 
-func (transaction *Transaction) GetMaxRetry() int {
-	return transaction.maxRetry
+func (this *Transaction) GetMaxRetry() int {
+	return this.maxRetry
 }
 
-func (transaction *Transaction) SetMaxRetry(count int) *Transaction {
-	transaction.maxRetry = count
-	return transaction
+func (this *Transaction) SetMaxRetry(count int) *Transaction {
+	this.maxRetry = count
+	return this
 }
 
 func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{}, error) { // nolint

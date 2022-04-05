@@ -14,9 +14,9 @@ import (
 func TestUnitTopicUpdateTransactionValidate(t *testing.T) {
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
-	accountID, err := AccountIDFromString("0.0.123-rmkyk")
+	accountID, err := AccountIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
-	topicID, err := TopicIDFromString("0.0.123-rmkyk")
+	topicID, err := TopicIDFromString("0.0.123-esxsf")
 	require.NoError(t, err)
 
 	topicUpdate := NewTopicUpdateTransaction().
@@ -42,6 +42,6 @@ func TestUnitTopicUpdateTransactionValidateWrong(t *testing.T) {
 	err = topicUpdate._ValidateNetworkOnIDs(client)
 	assert.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum rmkyk, network: testnet", err.Error())
+		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }

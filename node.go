@@ -35,6 +35,10 @@ func _NewNode(accountID AccountID, address string, minBackoff time.Duration) (no
 	return node, err
 }
 
+func (node *_Node) _GetKey() string {
+	return node.accountID.String()
+}
+
 func (node *_Node) _SetMinBackoff(waitTime time.Duration) {
 	node._ManagedNode._SetMinBackoff(waitTime)
 }
@@ -59,12 +63,12 @@ func (node *_Node) _IsHealthy() bool {
 	return node._ManagedNode._IsHealthy()
 }
 
-func (node *_Node) _IncreaseDelay() {
-	node._ManagedNode._IncreaseDelay()
+func (node *_Node) _IncreaseBackoff() {
+	node._ManagedNode._IncreaseBackoff()
 }
 
-func (node *_Node) _DecreaseDelay() {
-	node._ManagedNode._DecreaseDelay()
+func (node *_Node) _DecreaseBackoff() {
+	node._ManagedNode._DecreaseBackoff()
 }
 
 func (node *_Node) _Wait() time.Duration {
@@ -75,7 +79,7 @@ func (node *_Node) _GetUseCount() int64 {
 	return node._ManagedNode._GetUseCount()
 }
 
-func (node *_Node) _GetLastUsed() int64 {
+func (node *_Node) _GetLastUsed() time.Time {
 	return node._ManagedNode._GetLastUsed()
 }
 
@@ -89,6 +93,10 @@ func (node *_Node) _GetAttempts() int64 {
 
 func (node *_Node) _GetAddress() string {
 	return node._ManagedNode._GetAddress()
+}
+
+func (node *_Node) _GetReadmitTime() *time.Time {
+	return node._ManagedNode._GetReadmitTime()
 }
 
 func (node *_Node) _GetChannel() (*_Channel, error) {
@@ -113,7 +121,7 @@ func (node *_Node) _GetChannel() (*_Channel, error) {
 			InsecureSkipVerify: true, // nolint
 			VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 				if node.addressBook == nil {
-					println("skipping certificate check since no cert hash was found")
+					logCtx.Warn().Msg("skipping certificate check since no cert hash was found")
 					return nil
 				}
 
@@ -181,7 +189,7 @@ func (node *_Node) _ToSecure() _IManagedNode {
 		address:            node.address._ToSecure(),
 		currentBackoff:     node.currentBackoff,
 		lastUsed:           node.lastUsed,
-		backoffUntil:       node.backoffUntil,
+		readmitTime:        node.readmitTime,
 		useCount:           node.useCount,
 		minBackoff:         node.minBackoff,
 		badGrpcStatusCount: node.badGrpcStatusCount,
@@ -201,7 +209,7 @@ func (node *_Node) _ToInsecure() _IManagedNode {
 		address:            node.address._ToInsecure(),
 		currentBackoff:     node.currentBackoff,
 		lastUsed:           node.lastUsed,
-		backoffUntil:       node.backoffUntil,
+		readmitTime:        node.readmitTime,
 		useCount:           node.useCount,
 		minBackoff:         node.minBackoff,
 		badGrpcStatusCount: node.badGrpcStatusCount,
@@ -216,9 +224,10 @@ func (node *_Node) _ToInsecure() _IManagedNode {
 	}
 }
 
-func (node *_Node) _SetCertificateVerification(verify bool) { //nolint
+func (node *_Node) _SetVerifyCertificate(verify bool) {
 	node.verifyCertificate = verify
 }
-func (node *_Node) _GetCertificateVerification() bool { //nolint
+
+func (node *_Node) _GetVerifyCertificate() bool {
 	return node.verifyCertificate
 }
