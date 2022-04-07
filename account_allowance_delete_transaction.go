@@ -25,19 +25,7 @@ func NewAccountAllowanceDeleteTransaction() *AccountAllowanceDeleteTransaction {
 }
 
 func _AccountAllowanceDeleteTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *AccountAllowanceDeleteTransaction {
-	accountWipe := make([]*HbarAllowance, 0)
-	tokenWipe := make([]*TokenAllowance, 0)
 	nftWipe := make([]*TokenNftAllowance, 0)
-
-	for _, ap := range pb.GetCryptoDeleteAllowance().GetCryptoAllowances() {
-		temp := _HbarWipeAllowanceFromProtobuf(ap)
-		accountWipe = append(accountWipe, &temp)
-	}
-
-	for _, ap := range pb.GetCryptoDeleteAllowance().GetTokenAllowances() {
-		temp := _TokenWipeAllowanceFromProtobuf(ap)
-		tokenWipe = append(tokenWipe, &temp)
-	}
 
 	for _, ap := range pb.GetCryptoDeleteAllowance().GetNftAllowances() {
 		temp := _TokenNftWipeAllowanceProtobuf(ap)
@@ -46,12 +34,11 @@ func _AccountAllowanceDeleteTransactionFromProtobuf(transaction Transaction, pb 
 
 	return &AccountAllowanceDeleteTransaction{
 		Transaction: transaction,
-		hbarWipe:    accountWipe,
-		tokenWipe:   tokenWipe,
 		nftWipe:     nftWipe,
 	}
 }
 
+// Deprecated
 func (transaction *AccountAllowanceDeleteTransaction) DeleteAllHbarAllowances(ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.hbarWipe = append(transaction.hbarWipe, &HbarAllowance{
@@ -61,10 +48,12 @@ func (transaction *AccountAllowanceDeleteTransaction) DeleteAllHbarAllowances(ow
 	return transaction
 }
 
+// Deprecated
 func (transaction *AccountAllowanceDeleteTransaction) GetAllHbarDeleteAllowances() []*HbarAllowance {
 	return transaction.hbarWipe
 }
 
+// Deprecated
 func (transaction *AccountAllowanceDeleteTransaction) DeleteAllTokenAllowances(tokenID TokenID, ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
 	transaction._RequireNotFrozen()
 	tokenApproval := TokenAllowance{
@@ -76,6 +65,7 @@ func (transaction *AccountAllowanceDeleteTransaction) DeleteAllTokenAllowances(t
 	return transaction
 }
 
+// Deprecated
 func (transaction *AccountAllowanceDeleteTransaction) GetAllTokenDeleteAllowances() []*TokenAllowance {
 	return transaction.tokenWipe
 }
@@ -158,17 +148,7 @@ func (transaction *AccountAllowanceDeleteTransaction) _ValidateNetworkOnIDs(clie
 }
 
 func (transaction *AccountAllowanceDeleteTransaction) _Build() *services.TransactionBody {
-	accountWipe := make([]*services.CryptoWipeAllowance, 0)
-	tokenWipe := make([]*services.TokenWipeAllowance, 0)
-	nftWipe := make([]*services.NftWipeAllowance, 0)
-
-	for _, ap := range transaction.hbarWipe {
-		accountWipe = append(accountWipe, ap._ToWipeProtobuf())
-	}
-
-	for _, ap := range transaction.tokenWipe {
-		tokenWipe = append(tokenWipe, ap._ToWipeProtobuf())
-	}
+	nftWipe := make([]*services.NftRemoveAllowance, 0)
 
 	for _, ap := range transaction.nftWipe {
 		nftWipe = append(nftWipe, ap._ToWipeProtobuf())
@@ -181,9 +161,7 @@ func (transaction *AccountAllowanceDeleteTransaction) _Build() *services.Transac
 		Memo:                     transaction.Transaction.memo,
 		Data: &services.TransactionBody_CryptoDeleteAllowance{
 			CryptoDeleteAllowance: &services.CryptoDeleteAllowanceTransactionBody{
-				CryptoAllowances: accountWipe,
-				NftAllowances:    nftWipe,
-				TokenAllowances:  tokenWipe,
+				NftAllowances: nftWipe,
 			},
 		},
 	}
@@ -201,17 +179,7 @@ func (transaction *AccountAllowanceDeleteTransaction) Schedule() (*ScheduleCreat
 }
 
 func (transaction *AccountAllowanceDeleteTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	accountWipe := make([]*services.CryptoWipeAllowance, 0)
-	tokenWipe := make([]*services.TokenWipeAllowance, 0)
-	nftWipe := make([]*services.NftWipeAllowance, 0)
-
-	for _, ap := range transaction.hbarWipe {
-		accountWipe = append(accountWipe, ap._ToWipeProtobuf())
-	}
-
-	for _, ap := range transaction.tokenWipe {
-		tokenWipe = append(tokenWipe, ap._ToWipeProtobuf())
-	}
+	nftWipe := make([]*services.NftRemoveAllowance, 0)
 
 	for _, ap := range transaction.nftWipe {
 		nftWipe = append(nftWipe, ap._ToWipeProtobuf())
@@ -222,9 +190,7 @@ func (transaction *AccountAllowanceDeleteTransaction) _ConstructScheduleProtobuf
 		Memo:           transaction.Transaction.memo,
 		Data: &services.SchedulableTransactionBody_CryptoDeleteAllowance{
 			CryptoDeleteAllowance: &services.CryptoDeleteAllowanceTransactionBody{
-				CryptoAllowances: accountWipe,
-				NftAllowances:    nftWipe,
-				TokenAllowances:  tokenWipe,
+				NftAllowances: nftWipe,
 			},
 		},
 	}, nil
@@ -232,7 +198,7 @@ func (transaction *AccountAllowanceDeleteTransaction) _ConstructScheduleProtobuf
 
 func _AccountDeleteAllowanceTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel._GetCrypto().DeleteAllowance,
+		transaction: channel._GetCrypto().DeleteAllowances,
 	}
 }
 

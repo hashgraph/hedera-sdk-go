@@ -161,33 +161,45 @@ func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowance(
 	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
 }
 
-func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
+func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID, delegatingSpender AccountID) *AccountAllowanceApproveTransaction {
 	for _, t := range transaction.nftAllowances {
 		if t.TokenID.String() == tokenID.String() {
 			if t.SpenderAccountID.String() == spenderAccount.String() {
 				t.SerialNumbers = []int64{}
 				t.AllSerials = true
+				t.DelegatingSpender = &delegatingSpender
 				return transaction
 			}
 		}
 	}
 
 	transaction.nftAllowances = append(transaction.nftAllowances, &TokenNftAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &spenderAccount,
-		SerialNumbers:    []int64{},
-		AllSerials:       true,
-		OwnerAccountID:   ownerAccountID,
+		TokenID:           &tokenID,
+		SpenderAccountID:  &spenderAccount,
+		SerialNumbers:     []int64{},
+		AllSerials:        true,
+		OwnerAccountID:    ownerAccountID,
+		DelegatingSpender: &delegatingSpender,
 	})
 	return transaction
 }
 
+// Deprecated: Use AddAllTokenNftApprovalWithDelegatingSpender
 func (transaction *AccountAllowanceApproveTransaction) AddAllTokenNftApproval(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount)
+	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, AccountID{})
 }
 
+// Deprecated: Use ApproveTokenNftAllowanceAllSerialsWithDelegatingSpender
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount)
+	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, AccountID{})
+}
+
+func (transaction *AccountAllowanceApproveTransaction) AddAllTokenNftApprovalWithDelegatingSpender(tokenID TokenID, spenderAccount AccountID, delegatingSpender AccountID) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, delegatingSpender)
+}
+
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceAllSerialsWithDelegatingSpender(tokenID TokenID, ownerAccountID AccountID, spenderAccount AccountID, delegatingSpender AccountID) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, delegatingSpender)
 }
 
 func (transaction *AccountAllowanceApproveTransaction) GetTokenNftAllowances() []*TokenNftAllowance {

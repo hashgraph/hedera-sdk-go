@@ -36,28 +36,6 @@ func _HbarAllowanceFromProtobuf(pb *services.CryptoAllowance) HbarAllowance {
 	return body
 }
 
-func _HbarAllowanceFromGrantedProtobuf(pb *services.GrantedCryptoAllowance) HbarAllowance {
-	body := HbarAllowance{
-		Amount: pb.Amount,
-	}
-
-	if pb.Spender != nil {
-		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
-	}
-
-	return body
-}
-
-func _HbarWipeAllowanceFromProtobuf(pb *services.CryptoWipeAllowance) HbarAllowance {
-	body := HbarAllowance{}
-
-	if pb.Owner != nil {
-		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
-	}
-
-	return body
-}
-
 func (approval *HbarAllowance) _ToProtobuf() *services.CryptoAllowance {
 	body := &services.CryptoAllowance{
 		Amount: approval.Amount,
@@ -66,28 +44,6 @@ func (approval *HbarAllowance) _ToProtobuf() *services.CryptoAllowance {
 	if approval.SpenderAccountID != nil {
 		body.Spender = approval.SpenderAccountID._ToProtobuf()
 	}
-
-	if approval.OwnerAccountID != nil {
-		body.Owner = approval.OwnerAccountID._ToProtobuf()
-	}
-
-	return body
-}
-
-func (approval *HbarAllowance) _ToGrantedProtobuf() *services.GrantedCryptoAllowance {
-	body := &services.GrantedCryptoAllowance{
-		Amount: approval.Amount,
-	}
-
-	if approval.SpenderAccountID != nil {
-		body.Spender = approval.SpenderAccountID._ToProtobuf()
-	}
-
-	return body
-}
-
-func (approval *HbarAllowance) _ToWipeProtobuf() *services.CryptoWipeAllowance {
-	body := &services.CryptoWipeAllowance{}
 
 	if approval.OwnerAccountID != nil {
 		body.Owner = approval.OwnerAccountID._ToProtobuf()
