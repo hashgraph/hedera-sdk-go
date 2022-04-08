@@ -3,6 +3,7 @@ module github.com/hashgraph/hedera-sdk-go/v2
 go 1.13
 
 require (
+	github.com/cenkalti/backoff/v4 v4.1.2
 	github.com/ethereum/go-ethereum v1.10.19
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220706052312-268a7f00b638
 	github.com/pkg/errors v0.9.1
