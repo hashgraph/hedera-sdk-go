@@ -27,6 +27,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+
 	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/rs/zerolog"
@@ -105,6 +107,10 @@ func _Execute( // nolint
 	maxRetry int,
 ) (interface{}, error) {
 	var maxAttempts int
+	backOff := backoff.NewExponentialBackOff()
+	backOff.InitialInterval = *minBackoff
+	backOff.MaxInterval = *maxBackoff
+	backOff.Multiplier = 2
 
 	if client.maxAttempts != nil {
 		maxAttempts = *client.maxAttempts
@@ -175,7 +181,7 @@ func _Execute( // nolint
 
 		if !node._IsHealthy() {
 			logCtx.Trace().Str("requestId", logID).Str("delay", node._Wait().String()).Msg("node is unhealthy, waiting before continuing")
-			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
+			_DelayForAttempt(logID, backOff.NextBackOff(), attempt)
 			continue
 		}
 
@@ -241,7 +247,7 @@ func _Execute( // nolint
 		switch shouldRetry(logID, request, resp) {
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
-			_DelayForAttempt(logID, minBackoff, maxBackoff, attempt)
+			_DelayForAttempt(logID, backOff.NextBackOff(), attempt)
 			continue
 		case executionStateExpired:
 			if transaction, ok := request.(*Transaction); ok {
@@ -282,11 +288,9 @@ func _Execute( // nolint
 	return &services.Response{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 }
 
-func _DelayForAttempt(logID string, minBackoff *time.Duration, maxBackoff *time.Duration, attempt int64) {
-	// 0.1s, 0.2s, 0.4s, 0.8s, ...
-	ms := int64(math.Min(float64(minBackoff.Milliseconds())*math.Pow(2, float64(attempt)), float64(maxBackoff.Milliseconds())))
-	logCtx.Trace().Str("requestId", logID).Dur("delay", time.Duration(ms)).Int64("attempt", attempt+1).Msg("retrying  request attempt")
-	time.Sleep(time.Duration(ms) * time.Millisecond)
+func _DelayForAttempt(logID string, backoff time.Duration, attempt int64) {
+	logCtx.Trace().Str("requestId", logID).Dur("delay", backoff).Int64("attempt", attempt+1).Msg("retrying  request attempt")
+	time.Sleep(backoff)
 }
 
 func _ExecutableDefaultRetryHandler(logID string, err error) bool {
