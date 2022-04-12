@@ -195,6 +195,10 @@ github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220324083530-c7fe16ca68e9 h1
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220324083530-c7fe16ca68e9/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220407062851-1cb287936c27 h1:yHRWqWUuYFwLGQu7jPAP5AaE9MYeLOqhoVIU0ecsMUI=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220407062851-1cb287936c27/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220412064619-b912283508cb h1:MHgsXB9FKHLR9u1GaCKT9fxiM+DVdylt8AhcEd0J62o=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220412064619-b912283508cb/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220412065633-98fadd591d7d h1:bOTur4esZOZnuwUYdO0Xe71SiE8N3rIbN5iLhU3GpXM=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220412065633-98fadd591d7d/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
 github.com/hashicorp/go-bexpr v0.1.10/go.mod h1:oxlubA2vC/gFVfX1A6JGp7ls7uCDlfJn732ehYYg+g0=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=

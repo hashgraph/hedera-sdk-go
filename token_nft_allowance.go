@@ -27,6 +27,34 @@ func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, s
 	}
 }
 
+func _TokenNftAllowanceFromGrantedProtobuf(pb *services.GrantedNftAllowance) TokenNftAllowance {
+	body := TokenNftAllowance{}
+
+	if pb.TokenId != nil {
+		body.TokenID = _TokenIDFromProtobuf(pb.TokenId)
+	}
+
+	if pb.Spender != nil {
+		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
+	}
+
+	return body
+}
+
+func (approval *TokenNftAllowance) _ToGrantedProtobuf() *services.GrantedNftAllowance {
+	body := &services.GrantedNftAllowance{}
+
+	if approval.SpenderAccountID != nil {
+		body.Spender = approval.SpenderAccountID._ToProtobuf()
+	}
+
+	if approval.TokenID != nil {
+		body.TokenId = approval.TokenID._ToProtobuf()
+	}
+
+	return body
+}
+
 func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance {
 	body := TokenNftAllowance{
 		AllSerials:    pb.ApprovedForAll.GetValue(),
