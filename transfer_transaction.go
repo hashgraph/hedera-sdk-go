@@ -801,10 +801,6 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 	if err != nil {
 		return &TransferTransaction{}, err
 	}
-	transaction._InitFee(client)
-	if err := transaction._InitTransactionID(client); err != nil {
-		return transaction, err
-	}
 	body := transaction._Build()
 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)

@@ -165,7 +165,13 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		}
 	}
 
-	tx.transactionIDs.locked = true
+	if tx.transactionIDs._Length() > 0 {
+		tx.transactionIDs.locked = true
+	}
+
+	if tx.nodeAccountIDs._Length() > 0 {
+		tx.nodeAccountIDs.locked = true
+	}
 
 	if first == nil {
 		return nil, errNoTransactionInBytes
@@ -458,30 +464,28 @@ func _TransactionFreezeWith(
 	client *Client,
 	body *services.TransactionBody,
 ) error {
-	if client != nil {
-		if transaction.nodeAccountIDs._IsEmpty() {
+	if transaction.nodeAccountIDs._IsEmpty() {
+		if client != nil {
 			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
 				transaction.nodeAccountIDs._Push(nodeAccountID)
 			}
+
+			if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
+				transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
+			}
+		} else {
+			return errNoClientOrTransactionIDOrNodeId
 		}
+	}
 
-		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
-			transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
+	for _, nodeAccountID := range transaction.nodeAccountIDs.slice {
+		body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
+		bodyBytes, err := protobuf.Marshal(body)
+		if err != nil {
+			// This should be unreachable
+			// From the documentation this appears to only be possible if there are missing proto types
+			panic(err)
 		}
-	}
-
-	if transaction.nodeAccountIDs._IsEmpty() {
-		return errNoClientOrTransactionIDOrNodeId
-	}
-
-	bodyBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		// This should be unreachable
-		// From the documentation this appears to only be possible if there are missing proto types
-		panic(err)
-	}
-
-	for range transaction.nodeAccountIDs.slice {
 		transaction.signedTransactions = transaction.signedTransactions._Push(&services.SignedTransaction{
 			BodyBytes: bodyBytes,
 			SigMap: &services.SignatureMap{
@@ -773,7 +777,12 @@ func (this *Transaction) SetTransactionValidDuration(duration time.Duration) *Tr
 }
 
 func (this *Transaction) GetTransactionID() TransactionID {
-	return this.transactionIDs._GetCurrent().(TransactionID)
+	if this.transactionIDs._Length() > 0 {
+		t := this.transactionIDs._GetCurrent().(TransactionID)
+		return t
+	}
+
+	return TransactionID{}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.
