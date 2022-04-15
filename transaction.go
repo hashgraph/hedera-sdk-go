@@ -489,12 +489,14 @@ func _TransactionFreezeWith(
 			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
 				transaction.nodeAccountIDs._Push(nodeAccountID)
 			}
-
-			if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
-				transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
-			}
 		} else {
 			return errNoClientOrTransactionIDOrNodeId
+		}
+	}
+
+	if client != nil {
+		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
+			transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
 		}
 	}
 

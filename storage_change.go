@@ -57,7 +57,7 @@ func _StorageChangeFromProtobuf(pb *services.StorageChange) StorageChange {
 
 func (storageChange *StorageChange) _ToProtobuf() *services.StorageChange {
 	return &services.StorageChange{
-		Slot: storageChange.Slot.Bytes(),
+		Slot:      storageChange.Slot.Bytes(),
 		ValueRead: storageChange.ValueRead.Bytes(),
 		ValueWritten: &wrapperspb.BytesValue{
 			Value: storageChange.ValueWritten.Bytes(),

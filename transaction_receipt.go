@@ -170,7 +170,7 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptR
 	}
 
 	return &services.TransactionGetReceiptResponse{
-		Receipt: &receiptFinal,
+		Receipt:                      &receiptFinal,
 		ChildTransactionReceipts:     childReceipts,
 		DuplicateTransactionReceipts: duplicateReceipts,
 	}

@@ -231,6 +231,14 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 		Freeze()
 	require.NoError(t, err)
 
+	_ = transaction.GetTransactionID()
+	nodeID := transaction.GetNodeAccountIDs()
+	require.NotEmpty(t, nodeID)
+	require.False(t, nodeID[0]._IsZero())
+	h, err := transaction.GetTransactionHash()
+	require.NoError(t, err)
+	require.NotEmpty(t, h)
+
 	var tx services.TransactionBody
 	_ = protobuf.Unmarshal(transaction.signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
 	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
@@ -339,6 +347,50 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 					{
 						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
 						Amount:    -100000000,
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestUnitQueryRegression(t *testing.T) {
+	accountID := AccountID{Account: 5}
+	node := []AccountID{{Account: 3}}
+	client := ClientForTestnet()
+	privateKey, err := PrivateKeyFromString(mockPrivateKey)
+	client.SetOperator(AccountID{Account: 2}, privateKey)
+
+	query := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs(node).
+		SetPaymentTransactionID(testTransactionID).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25))
+
+	body := query._Build()
+	err = _QueryGeneratePayments(&query.Query, client, HbarFromTinybar(20))
+	require.NoError(t, err)
+
+	var paymentTx services.TransactionBody
+	_ = protobuf.Unmarshal(query.Query.paymentTransactions[0].BodyBytes, &paymentTx)
+
+	require.Equal(t, body.CryptoGetInfo.AccountID.String(), accountID._ToProtobuf().String())
+	require.Equal(t, paymentTx.NodeAccountID.String(), node[0]._ToProtobuf().String())
+	require.Equal(t, paymentTx.TransactionFee, uint64(NewHbar(1).tinybar))
+	require.Equal(t, paymentTx.TransactionValidDuration, &services.Duration{Seconds: 120})
+	require.Equal(t, paymentTx.TransactionID.String(), testTransactionID._ToProtobuf().String())
+	require.Equal(t, paymentTx.Data, &services.TransactionBody_CryptoTransfer{
+		CryptoTransfer: &services.CryptoTransferTransactionBody{
+			Transfers: &services.TransferList{
+				AccountAmounts: []*services.AccountAmount{
+					{
+						AccountID: node[0]._ToProtobuf(),
+						Amount:    HbarFromTinybar(20).AsTinybar(),
+					},
+					{
+						AccountID: client.GetOperatorAccountID()._ToProtobuf(),
+						Amount:    -HbarFromTinybar(20).AsTinybar(),
 					},
 				},
 			},

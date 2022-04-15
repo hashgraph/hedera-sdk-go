@@ -56,8 +56,8 @@ func _TokenNftInfoFromProtobuf(pb *services.TokenNftInfo) TokenNftInfo {
 
 func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *services.TokenNftInfo {
 	return &services.TokenNftInfo{
-		NftID:     tokenNftInfo.NftID._ToProtobuf(),
-		AccountID: tokenNftInfo.AccountID._ToProtobuf(),
+		NftID:        tokenNftInfo.NftID._ToProtobuf(),
+		AccountID:    tokenNftInfo.AccountID._ToProtobuf(),
 		CreationTime: _TimeToProtobuf(tokenNftInfo.CreationTime),
 		Metadata:     tokenNftInfo.Metadata,
 		LedgerId:     tokenNftInfo.LedgerID.ToBytes(),
