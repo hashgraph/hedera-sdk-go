@@ -505,11 +505,6 @@ func TestUnitMockAccountInfoQuery(t *testing.T) {
 		err := protobuf.Unmarshal(accountInfoQuery.Header.Payment.BodyBytes, &payment)
 		require.NoError(t, err)
 
-		require.NotNil(t, payment.TransactionID)
-		require.Equal(t, payment.TransactionID.AccountID.String(), AccountID{Account: 1800}._ToProtobuf().String())
-		require.NotNil(t, payment.NodeAccountID)
-		require.Equal(t, payment.NodeAccountID.String(), AccountID{Account: 3}._ToProtobuf().String())
-
 		return &services.Response{
 			Response: &services.Response_CryptoGetInfo{
 				CryptoGetInfo: &services.CryptoGetInfoResponse{
@@ -532,6 +527,103 @@ func TestUnitMockAccountInfoQuery(t *testing.T) {
 
 	_, err := NewAccountInfoQuery().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetAccountID(AccountID{Account: 5}).
+		Execute(client)
+	require.NoError(t, err)
+}
+
+func TestUnitMockAccountInfoQueryNoNodeSet(t *testing.T) {
+	call := func(request *services.Query) *services.Response {
+		require.NotNil(t, request.Query)
+		accountInfoQuery := request.Query.(*services.Query_CryptoGetInfo).CryptoGetInfo
+
+		require.Equal(t, accountInfoQuery.AccountID.String(), AccountID{Account: 5}._ToProtobuf().String())
+
+		var payment services.TransactionBody
+		require.NotEmpty(t, accountInfoQuery.Header.Payment.BodyBytes)
+		err := protobuf.Unmarshal(accountInfoQuery.Header.Payment.BodyBytes, &payment)
+		require.NoError(t, err)
+
+		require.NotNil(t, payment.TransactionID)
+		require.Equal(t, payment.TransactionID.AccountID.String(), AccountID{Account: 1800}._ToProtobuf().String())
+		require.NotNil(t, payment.NodeAccountID)
+		require.Equal(t, payment.NodeAccountID.String(), AccountID{Account: 3}._ToProtobuf().String())
+
+		require.Equal(t, payment.Data, &services.TransactionBody_CryptoTransfer{
+			CryptoTransfer: &services.CryptoTransferTransactionBody{
+				Transfers: &services.TransferList{
+					AccountAmounts: []*services.AccountAmount{
+						{
+							AccountID: AccountID{Account: 3}._ToProtobuf(),
+							Amount:    HbarFromTinybar(35).AsTinybar(),
+						},
+						{
+							AccountID: AccountID{Account: 1800}._ToProtobuf(),
+							Amount:    -HbarFromTinybar(35).AsTinybar(),
+						},
+					},
+				},
+			},
+		})
+
+		key, _ := PrivateKeyFromStringEd25519(mockPrivateKey)
+
+		return &services.Response{
+			Response: &services.Response_CryptoGetInfo{
+				CryptoGetInfo: &services.CryptoGetInfoResponse{
+					Header: &services.ResponseHeader{
+						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+						ResponseType:                services.ResponseType_ANSWER_ONLY,
+						Cost:                        35,
+					},
+					AccountInfo: &services.CryptoGetInfoResponse_AccountInfo{
+						AccountID:         &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						ContractAccountID: "",
+						Deleted:           false,
+						ProxyAccountID:    &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						ProxyReceived:     0,
+						Key:               key._ToProtoKey(),
+						Balance:           0,
+					},
+				},
+			},
+		}
+	}
+
+	costCall := func(request *services.Query) *services.Response {
+		require.NotNil(t, request.Query)
+		accountInfoQuery := request.Query.(*services.Query_CryptoGetInfo).CryptoGetInfo
+
+		require.Equal(t, accountInfoQuery.Header.ResponseType, services.ResponseType_COST_ANSWER)
+
+		require.Equal(t, accountInfoQuery.AccountID.String(), AccountID{Account: 5}._ToProtobuf().String())
+
+		var payment services.TransactionBody
+		require.NotEmpty(t, accountInfoQuery.Header.Payment.BodyBytes)
+		err := protobuf.Unmarshal(accountInfoQuery.Header.Payment.BodyBytes, &payment)
+		require.NoError(t, err)
+
+		return &services.Response{
+			Response: &services.Response_CryptoGetInfo{
+				CryptoGetInfo: &services.CryptoGetInfoResponse{
+					Header: &services.ResponseHeader{
+						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+						ResponseType:                services.ResponseType_COST_ANSWER,
+						Cost:                        35,
+					},
+				},
+			},
+		}
+	}
+
+	responses := [][]interface{}{{
+		costCall, call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	_, err := NewAccountInfoQuery().
 		SetAccountID(AccountID{Account: 5}).
 		Execute(client)
 	require.NoError(t, err)

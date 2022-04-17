@@ -57,10 +57,6 @@ func TestIntegrationMultiAppTransfer(t *testing.T) {
 		panic("Did not receive `TransferTransaction` back from signed bytes")
 	}
 
-	for _, s := range signedTx.GetNodeAccountIDs() {
-		println(s.String())
-	}
-
 	response, err := signedTx.Execute(env.Client)
 	require.NoError(t, err)
 

@@ -208,7 +208,7 @@ func (query *TokenInfoQuery) Execute(client *Client) (TokenInfo, error) {
 			return TokenInfo{}, err
 		}
 	} else {
-		paymentTransaction, err := _QueryMakePaymentTransaction(TransactionID{}, AccountID{}, client.operator, Hbar{})
+		paymentTransaction, err := _QueryMakePaymentTransaction(query.paymentTransactionIDs._GetCurrent().(TransactionID), AccountID{}, client.operator, cost)
 		if err != nil {
 			return TokenInfo{}, err
 		}

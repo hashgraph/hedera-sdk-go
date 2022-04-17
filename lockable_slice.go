@@ -98,7 +98,6 @@ func (this *_LockableSlice) _Advance() int { //nolint
 	index := this.index
 	if len(this.slice) != 0 {
 		this.index = (this.index + 1) % len(this.slice)
-		index = this.index
 	}
 	return index
 }
