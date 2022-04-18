@@ -207,8 +207,9 @@ func main() {
 
 	println("Adjusting Bob's allowance, increasing it by 2 Hbar. After this, Bob's allowance should be 3 Hbar.")
 
-	allowanceAdjust, err := hedera.NewAccountAllowanceAdjustTransaction().
-		GrantHbarAllowance(aliceID, bobID, hedera.NewHbar(2)).
+	allowanceAdjust, err := hedera.NewAccountAllowanceApproveTransaction().
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		ApproveHbarAllowance(aliceID, bobID, hedera.NewHbar(2)).
 		FreezeWith(client)
 	if err != nil {
 		println(err.Error(), ": error freezing account allowance adjust transaction")
@@ -362,17 +363,6 @@ func printBalance(client *hedera.Client, alice hedera.AccountID, bob hedera.Acco
 		return err
 	}
 	println("Alice's balance:", balance.Hbars.String())
-	info, err := hedera.NewAccountInfoQuery().
-		SetAccountID(alice).
-		SetNodeAccountIDs(nodeID).
-		Execute(client)
-	if err != nil {
-		return err
-	}
-	println("Alices's Hbar allowances: ")
-	for _, allowance := range info.HbarAllowances {
-		println(allowance.String())
-	}
 
 	balance, err = hedera.NewAccountBalanceQuery().
 		SetAccountID(bob).
