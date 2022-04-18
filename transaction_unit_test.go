@@ -3,6 +3,26 @@
 
 package hedera
 
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import (
 	"fmt"
 	"testing"
@@ -196,4 +216,184 @@ func TestUnitTransactionValidateBodiesNotEqual(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, fmt.Sprintf("failed to validate transaction bodies"), err.Error())
 	}
+}
+
+func TestUnitTransactionToFromBytes(t *testing.T) {
+	operatorID := AccountID{Account: 5}
+	recepientID := AccountID{Account: 4}
+	node := []AccountID{{Account: 3}}
+	transaction, err := NewTransferTransaction().
+		SetTransactionID(testTransactionID).
+		SetNodeAccountIDs(node).
+		AddHbarTransfer(operatorID, NewHbar(-1)).
+		AddHbarTransfer(recepientID, NewHbar(1)).
+		SetTransactionMemo("go sdk example multi_app_transfer/main.go").
+		Freeze()
+	require.NoError(t, err)
+
+	_ = transaction.GetTransactionID()
+	nodeID := transaction.GetNodeAccountIDs()
+	require.NotEmpty(t, nodeID)
+	require.False(t, nodeID[0]._IsZero())
+	h, err := transaction.GetTransactionHash()
+	require.NoError(t, err)
+	require.NotEmpty(t, h)
+
+	var tx services.TransactionBody
+	_ = protobuf.Unmarshal(transaction.signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
+	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
+	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
+		CryptoTransfer: &services.CryptoTransferTransactionBody{
+			Transfers: &services.TransferList{
+				AccountAmounts: []*services.AccountAmount{
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+						Amount:    100000000,
+					},
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						Amount:    -100000000,
+					},
+				},
+			},
+		},
+	})
+
+	txBytes, err := transaction.ToBytes()
+	require.NoError(t, err)
+
+	newTransaction, err := TransactionFromBytes(txBytes)
+
+	_ = protobuf.Unmarshal(newTransaction.(TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
+	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
+	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
+		CryptoTransfer: &services.CryptoTransferTransactionBody{
+			Transfers: &services.TransferList{
+				AccountAmounts: []*services.AccountAmount{
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+						Amount:    100000000,
+					},
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						Amount:    -100000000,
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
+	operatorID := AccountID{Account: 5}
+	recepientID := AccountID{Account: 4}
+	client := ClientForTestnet()
+	privateKey, err := PrivateKeyFromString(mockPrivateKey)
+	client.SetOperator(AccountID{Account: 2}, privateKey)
+
+	transaction, err := NewTransferTransaction().
+		AddHbarTransfer(operatorID, NewHbar(-1)).
+		AddHbarTransfer(recepientID, NewHbar(1)).
+		SetTransactionMemo("go sdk example multi_app_transfer/main.go").
+		FreezeWith(client)
+	require.NoError(t, err)
+
+	var tx services.TransactionBody
+	_ = protobuf.Unmarshal(transaction.signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	require.NotNil(t, tx.TransactionID, tx.NodeAccountID)
+	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
+		CryptoTransfer: &services.CryptoTransferTransactionBody{
+			Transfers: &services.TransferList{
+				AccountAmounts: []*services.AccountAmount{
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+						Amount:    100000000,
+					},
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						Amount:    -100000000,
+					},
+				},
+			},
+		},
+	})
+
+	initialTxID := tx.TransactionID
+	initialNode := tx.NodeAccountID
+
+	txBytes, err := transaction.ToBytes()
+	require.NoError(t, err)
+
+	newTransaction, err := TransactionFromBytes(txBytes)
+
+	_ = protobuf.Unmarshal(newTransaction.(TransferTransaction).signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
+	require.NotNil(t, tx.TransactionID, tx.NodeAccountID)
+	require.Equal(t, tx.TransactionID.String(), initialTxID.String())
+	require.Equal(t, tx.NodeAccountID.String(), initialNode.String())
+	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
+		CryptoTransfer: &services.CryptoTransferTransactionBody{
+			Transfers: &services.TransferList{
+				AccountAmounts: []*services.AccountAmount{
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{4}},
+						Amount:    100000000,
+					},
+					{
+						AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						Amount:    -100000000,
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestUnitQueryRegression(t *testing.T) {
+	accountID := AccountID{Account: 5}
+	node := []AccountID{{Account: 3}}
+	client := ClientForTestnet()
+	privateKey, err := PrivateKeyFromString(mockPrivateKey)
+	client.SetOperator(AccountID{Account: 2}, privateKey)
+
+	query := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		SetNodeAccountIDs(node).
+		SetPaymentTransactionID(testTransactionID).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25))
+
+	body := query._Build()
+	err = _QueryGeneratePayments(&query.Query, client, HbarFromTinybar(20))
+	require.NoError(t, err)
+
+	var paymentTx services.TransactionBody
+	_ = protobuf.Unmarshal(query.Query.paymentTransactions[0].BodyBytes, &paymentTx)
+
+	require.Equal(t, body.CryptoGetInfo.AccountID.String(), accountID._ToProtobuf().String())
+	require.Equal(t, paymentTx.NodeAccountID.String(), node[0]._ToProtobuf().String())
+	require.Equal(t, paymentTx.TransactionFee, uint64(NewHbar(1).tinybar))
+	require.Equal(t, paymentTx.TransactionValidDuration, &services.Duration{Seconds: 120})
+	require.Equal(t, paymentTx.TransactionID.String(), testTransactionID._ToProtobuf().String())
+	require.Equal(t, paymentTx.Data, &services.TransactionBody_CryptoTransfer{
+		CryptoTransfer: &services.CryptoTransferTransactionBody{
+			Transfers: &services.TransferList{
+				AccountAmounts: []*services.AccountAmount{
+					{
+						AccountID: node[0]._ToProtobuf(),
+						Amount:    HbarFromTinybar(20).AsTinybar(),
+					},
+					{
+						AccountID: client.GetOperatorAccountID()._ToProtobuf(),
+						Amount:    -HbarFromTinybar(20).AsTinybar(),
+					},
+				},
+			},
+		},
+	})
 }

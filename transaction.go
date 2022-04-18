@@ -1,5 +1,25 @@
 package hedera
 
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import (
 	"bytes"
 	"crypto/sha512"
@@ -165,7 +185,13 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		}
 	}
 
-	tx.transactionIDs.locked = true
+	if tx.transactionIDs._Length() > 0 {
+		tx.transactionIDs.locked = true
+	}
+
+	if tx.nodeAccountIDs._Length() > 0 {
+		tx.nodeAccountIDs.locked = true
+	}
 
 	if first == nil {
 		return nil, errNoTransactionInBytes
@@ -458,30 +484,30 @@ func _TransactionFreezeWith(
 	client *Client,
 	body *services.TransactionBody,
 ) error {
-	if client != nil {
-		if transaction.nodeAccountIDs._IsEmpty() {
+	if transaction.nodeAccountIDs._IsEmpty() {
+		if client != nil {
 			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
 				transaction.nodeAccountIDs._Push(nodeAccountID)
 			}
+		} else {
+			return errNoClientOrTransactionIDOrNodeId
 		}
+	}
 
+	if client != nil {
 		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
 			transaction.regenerateTransactionID = client.defaultRegenerateTransactionIDs
 		}
 	}
 
-	if transaction.nodeAccountIDs._IsEmpty() {
-		return errNoClientOrTransactionIDOrNodeId
-	}
-
-	bodyBytes, err := protobuf.Marshal(body)
-	if err != nil {
-		// This should be unreachable
-		// From the documentation this appears to only be possible if there are missing proto types
-		panic(err)
-	}
-
-	for range transaction.nodeAccountIDs.slice {
+	for _, nodeAccountID := range transaction.nodeAccountIDs.slice {
+		body.NodeAccountID = nodeAccountID.(AccountID)._ToProtobuf()
+		bodyBytes, err := protobuf.Marshal(body)
+		if err != nil {
+			// This should be unreachable
+			// From the documentation this appears to only be possible if there are missing proto types
+			panic(err)
+		}
 		transaction.signedTransactions = transaction.signedTransactions._Push(&services.SignedTransaction{
 			BodyBytes: bodyBytes,
 			SigMap: &services.SignatureMap{
@@ -773,7 +799,12 @@ func (this *Transaction) SetTransactionValidDuration(duration time.Duration) *Tr
 }
 
 func (this *Transaction) GetTransactionID() TransactionID {
-	return this.transactionIDs._GetCurrent().(TransactionID)
+	if this.transactionIDs._Length() > 0 {
+		t := this.transactionIDs._GetCurrent().(TransactionID)
+		return t
+	}
+
+	return TransactionID{}
 }
 
 // SetTransactionID sets the TransactionID for this Transaction.

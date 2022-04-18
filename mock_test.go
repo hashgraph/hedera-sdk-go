@@ -3,6 +3,26 @@
 
 package hedera
 
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import (
 	"context"
 	"net"
@@ -412,6 +432,201 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 	client.SetNodeMaxBackoff(0)
 
 	return client, &MockServers{servers}
+}
+
+func TestUnitMockAccountInfoQuery(t *testing.T) {
+	call := func(request *services.Query) *services.Response {
+		require.NotNil(t, request.Query)
+		accountInfoQuery := request.Query.(*services.Query_CryptoGetInfo).CryptoGetInfo
+
+		require.Equal(t, accountInfoQuery.AccountID.String(), AccountID{Account: 5}._ToProtobuf().String())
+
+		var payment services.TransactionBody
+		require.NotEmpty(t, accountInfoQuery.Header.Payment.BodyBytes)
+		err := protobuf.Unmarshal(accountInfoQuery.Header.Payment.BodyBytes, &payment)
+		require.NoError(t, err)
+
+		require.NotNil(t, payment.TransactionID)
+		require.Equal(t, payment.TransactionID.AccountID.String(), AccountID{Account: 1800}._ToProtobuf().String())
+		require.NotNil(t, payment.NodeAccountID)
+		require.Equal(t, payment.NodeAccountID.String(), AccountID{Account: 3}._ToProtobuf().String())
+
+		require.Equal(t, payment.Data, &services.TransactionBody_CryptoTransfer{
+			CryptoTransfer: &services.CryptoTransferTransactionBody{
+				Transfers: &services.TransferList{
+					AccountAmounts: []*services.AccountAmount{
+						{
+							AccountID: AccountID{Account: 3}._ToProtobuf(),
+							Amount:    HbarFromTinybar(35).AsTinybar(),
+						},
+						{
+							AccountID: AccountID{Account: 1800}._ToProtobuf(),
+							Amount:    -HbarFromTinybar(35).AsTinybar(),
+						},
+					},
+				},
+			},
+		})
+
+		key, _ := PrivateKeyFromStringEd25519(mockPrivateKey)
+
+		return &services.Response{
+			Response: &services.Response_CryptoGetInfo{
+				CryptoGetInfo: &services.CryptoGetInfoResponse{
+					Header: &services.ResponseHeader{
+						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+						ResponseType:                services.ResponseType_ANSWER_ONLY,
+						Cost:                        35,
+					},
+					AccountInfo: &services.CryptoGetInfoResponse_AccountInfo{
+						AccountID:         &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						ContractAccountID: "",
+						Deleted:           false,
+						ProxyAccountID:    &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						ProxyReceived:     0,
+						Key:               key._ToProtoKey(),
+						Balance:           0,
+					},
+				},
+			},
+		}
+	}
+
+	costCall := func(request *services.Query) *services.Response {
+		require.NotNil(t, request.Query)
+		accountInfoQuery := request.Query.(*services.Query_CryptoGetInfo).CryptoGetInfo
+
+		require.Equal(t, accountInfoQuery.Header.ResponseType, services.ResponseType_COST_ANSWER)
+
+		require.Equal(t, accountInfoQuery.AccountID.String(), AccountID{Account: 5}._ToProtobuf().String())
+
+		var payment services.TransactionBody
+		require.NotEmpty(t, accountInfoQuery.Header.Payment.BodyBytes)
+		err := protobuf.Unmarshal(accountInfoQuery.Header.Payment.BodyBytes, &payment)
+		require.NoError(t, err)
+
+		return &services.Response{
+			Response: &services.Response_CryptoGetInfo{
+				CryptoGetInfo: &services.CryptoGetInfoResponse{
+					Header: &services.ResponseHeader{
+						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+						ResponseType:                services.ResponseType_COST_ANSWER,
+						Cost:                        35,
+					},
+				},
+			},
+		}
+	}
+
+	responses := [][]interface{}{{
+		costCall, call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	_, err := NewAccountInfoQuery().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetAccountID(AccountID{Account: 5}).
+		Execute(client)
+	require.NoError(t, err)
+}
+
+func TestUnitMockAccountInfoQueryNoNodeSet(t *testing.T) {
+	call := func(request *services.Query) *services.Response {
+		require.NotNil(t, request.Query)
+		accountInfoQuery := request.Query.(*services.Query_CryptoGetInfo).CryptoGetInfo
+
+		require.Equal(t, accountInfoQuery.AccountID.String(), AccountID{Account: 5}._ToProtobuf().String())
+
+		var payment services.TransactionBody
+		require.NotEmpty(t, accountInfoQuery.Header.Payment.BodyBytes)
+		err := protobuf.Unmarshal(accountInfoQuery.Header.Payment.BodyBytes, &payment)
+		require.NoError(t, err)
+
+		require.NotNil(t, payment.TransactionID)
+		require.Equal(t, payment.TransactionID.AccountID.String(), AccountID{Account: 1800}._ToProtobuf().String())
+		require.NotNil(t, payment.NodeAccountID)
+		require.Equal(t, payment.NodeAccountID.String(), AccountID{Account: 3}._ToProtobuf().String())
+
+		require.Equal(t, payment.Data, &services.TransactionBody_CryptoTransfer{
+			CryptoTransfer: &services.CryptoTransferTransactionBody{
+				Transfers: &services.TransferList{
+					AccountAmounts: []*services.AccountAmount{
+						{
+							AccountID: AccountID{Account: 3}._ToProtobuf(),
+							Amount:    HbarFromTinybar(35).AsTinybar(),
+						},
+						{
+							AccountID: AccountID{Account: 1800}._ToProtobuf(),
+							Amount:    -HbarFromTinybar(35).AsTinybar(),
+						},
+					},
+				},
+			},
+		})
+
+		key, _ := PrivateKeyFromStringEd25519(mockPrivateKey)
+
+		return &services.Response{
+			Response: &services.Response_CryptoGetInfo{
+				CryptoGetInfo: &services.CryptoGetInfoResponse{
+					Header: &services.ResponseHeader{
+						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+						ResponseType:                services.ResponseType_ANSWER_ONLY,
+						Cost:                        35,
+					},
+					AccountInfo: &services.CryptoGetInfoResponse_AccountInfo{
+						AccountID:         &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						ContractAccountID: "",
+						Deleted:           false,
+						ProxyAccountID:    &services.AccountID{Account: &services.AccountID_AccountNum{5}},
+						ProxyReceived:     0,
+						Key:               key._ToProtoKey(),
+						Balance:           0,
+					},
+				},
+			},
+		}
+	}
+
+	costCall := func(request *services.Query) *services.Response {
+		require.NotNil(t, request.Query)
+		accountInfoQuery := request.Query.(*services.Query_CryptoGetInfo).CryptoGetInfo
+
+		require.Equal(t, accountInfoQuery.Header.ResponseType, services.ResponseType_COST_ANSWER)
+
+		require.Equal(t, accountInfoQuery.AccountID.String(), AccountID{Account: 5}._ToProtobuf().String())
+
+		var payment services.TransactionBody
+		require.NotEmpty(t, accountInfoQuery.Header.Payment.BodyBytes)
+		err := protobuf.Unmarshal(accountInfoQuery.Header.Payment.BodyBytes, &payment)
+		require.NoError(t, err)
+
+		return &services.Response{
+			Response: &services.Response_CryptoGetInfo{
+				CryptoGetInfo: &services.CryptoGetInfoResponse{
+					Header: &services.ResponseHeader{
+						NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+						ResponseType:                services.ResponseType_COST_ANSWER,
+						Cost:                        35,
+					},
+				},
+			},
+		}
+	}
+
+	responses := [][]interface{}{{
+		costCall, call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	_, err := NewAccountInfoQuery().
+		SetAccountID(AccountID{Account: 5}).
+		Execute(client)
+	require.NoError(t, err)
 }
 
 func NewMockHandler(responses []interface{}) func(interface{}, context.Context, func(interface{}) error, grpc.UnaryServerInterceptor) (interface{}, error) {
