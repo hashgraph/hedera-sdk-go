@@ -37,18 +37,41 @@ func NewHbarAllowance(ownerAccountID AccountID, spenderAccountID AccountID, amou
 }
 
 func _HbarAllowanceFromProtobuf(pb *services.CryptoAllowance) HbarAllowance {
-	return HbarAllowance{
-		OwnerAccountID:   _AccountIDFromProtobuf(pb.Owner),
-		SpenderAccountID: _AccountIDFromProtobuf(pb.Spender),
-		Amount:           pb.Amount,
+	body := HbarAllowance{
+		Amount: pb.Amount,
 	}
+
+	if pb.Spender != nil {
+		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
+	}
+
+	if pb.Owner != nil {
+		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
+	}
+
+	return body
 }
 
 func _HbarAllowanceFromGrantedProtobuf(pb *services.GrantedCryptoAllowance) HbarAllowance {
-	return HbarAllowance{
-		SpenderAccountID: _AccountIDFromProtobuf(pb.Spender),
-		Amount:           pb.Amount,
+	body := HbarAllowance{
+		Amount: pb.Amount,
 	}
+
+	if pb.Spender != nil {
+		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
+	}
+
+	return body
+}
+
+func _HbarWipeAllowanceFromProtobuf(pb *services.CryptoWipeAllowance) HbarAllowance {
+	body := HbarAllowance{}
+
+	if pb.Owner != nil {
+		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
+	}
+
+	return body
 }
 
 func (approval *HbarAllowance) _ToProtobuf() *services.CryptoAllowance {
@@ -77,4 +100,26 @@ func (approval *HbarAllowance) _ToGrantedProtobuf() *services.GrantedCryptoAllow
 	}
 
 	return body
+}
+
+func (approval *HbarAllowance) _ToWipeProtobuf() *services.CryptoWipeAllowance {
+	body := &services.CryptoWipeAllowance{}
+
+	if approval.OwnerAccountID != nil {
+		body.Owner = approval.OwnerAccountID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (approval *HbarAllowance) String() string {
+	if approval.OwnerAccountID != nil && approval.SpenderAccountID != nil { //nolint
+		return fmt.Sprintf("OwnerAccountID: %s, SpenderAccountID: %s, Amount: %s", approval.OwnerAccountID.String(), approval.SpenderAccountID.String(), HbarFromTinybar(approval.Amount).String())
+	} else if approval.OwnerAccountID != nil {
+		return fmt.Sprintf("OwnerAccountID: %s, Amount: %s", approval.OwnerAccountID.String(), HbarFromTinybar(approval.Amount).String())
+	} else if approval.SpenderAccountID != nil {
+		return fmt.Sprintf("SpenderAccountID: %s, Amount: %s", approval.SpenderAccountID.String(), HbarFromTinybar(approval.Amount).String())
+	}
+
+	return ""
 }

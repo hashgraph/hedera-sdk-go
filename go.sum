@@ -189,6 +189,10 @@ github.com/graph-gophers/graphql-go v1.3.0/go.mod h1:9CQHMSxwO4MprSdzoIEobiHpoLt
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220222084737-119eab707793 h1:h1c/Jw/60AzWJaxjaqONmTEfqUepJkYWdvDSDn+3l98=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220222084737-119eab707793/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220324082847-738dbdf84579 h1:m72T0dDEmrSs5+Vo8r4n39ra+IeBC0+s/0qAwBqga0I=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220324082847-738dbdf84579/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220324083530-c7fe16ca68e9 h1:cEIClOicw1Cfka1uh/u4Wz/Q/MXEpDFuaAIdKDTUKj8=
+github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220324083530-c7fe16ca68e9/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
 github.com/hashicorp/go-bexpr v0.1.10/go.mod h1:oxlubA2vC/gFVfX1A6JGp7ls7uCDlfJn732ehYYg+g0=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=

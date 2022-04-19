@@ -214,7 +214,7 @@ func (transaction *TokenWipeTransaction) _ConstructScheduleProtobuf() (*services
 	}, nil
 }
 
-func _TokenWipeTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TokenWipeTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().WipeTokenAccount,
 	}
@@ -291,9 +291,7 @@ func (transaction *TokenWipeTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -303,12 +301,15 @@ func (transaction *TokenWipeTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -319,7 +320,7 @@ func (transaction *TokenWipeTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

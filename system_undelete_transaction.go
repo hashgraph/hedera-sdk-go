@@ -163,7 +163,7 @@ func (transaction *SystemUndeleteTransaction) _ConstructScheduleProtobuf() (*ser
 	}, nil
 }
 
-func _SystemUndeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _SystemUndeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	if channel._GetContract() == nil {
 		return _Method{
 			transaction: channel._GetFile().SystemUndelete,
@@ -250,9 +250,7 @@ func (transaction *SystemUndeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -262,12 +260,15 @@ func (transaction *SystemUndeleteTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -278,7 +279,7 @@ func (transaction *SystemUndeleteTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

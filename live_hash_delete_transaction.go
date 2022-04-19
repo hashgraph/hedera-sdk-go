@@ -121,7 +121,7 @@ func (transaction *LiveHashDeleteTransaction) _ConstructScheduleProtobuf() (*ser
 	return nil, errors.New("cannot schedule `LiveHashAddTransaction`")
 }
 
-func _LiveHashDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _LiveHashDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().DeleteLiveHash,
 	}
@@ -202,9 +202,7 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -214,12 +212,15 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -230,7 +231,7 @@ func (transaction *LiveHashDeleteTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

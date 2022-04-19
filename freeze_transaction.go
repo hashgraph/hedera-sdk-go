@@ -173,7 +173,7 @@ func (transaction *FreezeTransaction) _ConstructScheduleProtobuf() (*services.Sc
 	}, nil
 }
 
-func _FreezeTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _FreezeTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFreeze().Freeze,
 	}
@@ -254,9 +254,7 @@ func (transaction *FreezeTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -266,12 +264,15 @@ func (transaction *FreezeTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -282,7 +283,7 @@ func (transaction *FreezeTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

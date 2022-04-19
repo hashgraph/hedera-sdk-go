@@ -148,9 +148,7 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 	}
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountBalanceQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -160,27 +158,30 @@ func (query *AccountBalanceQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetCryptogetAccountBalance().Header.Cost)
+	cost := int64(resp.(*services.Response).GetCryptogetAccountBalance().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _AccountBalanceQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
+func _AccountBalanceQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode))
 }
 
-func _AccountBalanceQueryMapStatusError(_ _Request, response _Response) error {
+func _AccountBalanceQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetCryptogetAccountBalance().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _AccountBalanceQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _AccountBalanceQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().CryptoGetBalance,
 	}
@@ -210,9 +211,7 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountBalanceQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -222,13 +221,16 @@ func (query *AccountBalanceQuery) Execute(client *Client) (AccountBalance, error
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return AccountBalance{}, err
 	}
 
-	return _AccountBalanceFromProtobuf(resp.query.GetCryptogetAccountBalance()), nil
+	return _AccountBalanceFromProtobuf(resp.(*services.Response).GetCryptogetAccountBalance()), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

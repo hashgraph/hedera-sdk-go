@@ -128,7 +128,7 @@ func (transaction *TokenDeleteTransaction) _ConstructScheduleProtobuf() (*servic
 	}, nil
 }
 
-func _TokenDeleteTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TokenDeleteTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DeleteToken,
 	}
@@ -209,9 +209,7 @@ func (transaction *TokenDeleteTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -221,12 +219,15 @@ func (transaction *TokenDeleteTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -237,7 +238,7 @@ func (transaction *TokenDeleteTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

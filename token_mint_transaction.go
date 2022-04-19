@@ -182,7 +182,7 @@ func (transaction *TokenMintTransaction) _ConstructScheduleProtobuf() (*services
 	}, nil
 }
 
-func _TokenMintTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TokenMintTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().MintToken,
 	}
@@ -262,9 +262,7 @@ func (transaction *TokenMintTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -274,12 +272,15 @@ func (transaction *TokenMintTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -290,7 +291,7 @@ func (transaction *TokenMintTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

@@ -86,17 +86,17 @@ func (query *AccountInfoQuery) _Build() *services.Query_CryptoGetInfo {
 	return &pb
 }
 
-func _AccountInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
+func _AccountInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _AccountInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _AccountInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetCryptoGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _AccountInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _AccountInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetCrypto().GetAccountInfo,
 	}
@@ -139,9 +139,7 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -151,13 +149,16 @@ func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetCryptoGetInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetCryptoGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
@@ -252,9 +253,7 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_AccountInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -264,13 +263,16 @@ func (query *AccountInfoQuery) Execute(client *Client) (AccountInfo, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return AccountInfo{}, err
 	}
 
-	return _AccountInfoFromProtobuf(resp.query.GetCryptoGetInfo().AccountInfo)
+	return _AccountInfoFromProtobuf(resp.(*services.Response).GetCryptoGetInfo().AccountInfo)
 }
 
 func (query *AccountInfoQuery) SetMaxBackoff(max time.Duration) *AccountInfoQuery {

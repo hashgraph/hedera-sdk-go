@@ -114,9 +114,7 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_FileInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -126,30 +124,33 @@ func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetFileGetInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetFileGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
 	return HbarFromTinybar(cost), nil
 }
 
-func _FileInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode))
+func _FileInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetFileGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _FileInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _FileInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetFileGetInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetFileGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _FileInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _FileInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetFile().GetFileInfo,
 	}
@@ -224,9 +225,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_FileInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -236,13 +235,16 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return FileInfo{}, err
 	}
 
-	info, err := _FileInfoFromProtobuf(resp.query.GetFileGetInfo().FileInfo)
+	info, err := _FileInfoFromProtobuf(resp.(*services.Response).GetFileGetInfo().FileInfo)
 	if err != nil {
 		return FileInfo{}, err
 	}

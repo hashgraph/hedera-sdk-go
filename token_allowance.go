@@ -21,6 +21,8 @@ package hedera
  */
 
 import (
+	"fmt"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
@@ -76,6 +78,20 @@ func _TokenAllowanceFromGrantedProtobuf(pb *services.GrantedTokenAllowance) Toke
 	return body
 }
 
+func _TokenWipeAllowanceFromProtobuf(pb *services.TokenWipeAllowance) TokenAllowance {
+	body := TokenAllowance{}
+
+	if pb.TokenId != nil {
+		body.TokenID = _TokenIDFromProtobuf(pb.TokenId)
+	}
+
+	if pb.Owner != nil {
+		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
+	}
+
+	return body
+}
+
 func (approval *TokenAllowance) _ToProtobuf() *services.TokenAllowance {
 	body := &services.TokenAllowance{
 		Amount: approval.Amount,
@@ -110,4 +126,38 @@ func (approval *TokenAllowance) _ToGrantedProtobuf() *services.GrantedTokenAllow
 	}
 
 	return body
+}
+
+func (approval *TokenAllowance) _ToWipeProtobuf() *services.TokenWipeAllowance {
+	body := &services.TokenWipeAllowance{}
+
+	if approval.OwnerAccountID != nil {
+		body.Owner = approval.OwnerAccountID._ToProtobuf()
+	}
+
+	if approval.TokenID != nil {
+		body.TokenId = approval.TokenID._ToProtobuf()
+	}
+
+	return body
+}
+
+func (approval *TokenAllowance) String() string {
+	var owner string
+	var spender string
+	var token string
+
+	if approval.OwnerAccountID != nil {
+		owner = approval.OwnerAccountID.String()
+	}
+
+	if approval.SpenderAccountID != nil {
+		spender = approval.SpenderAccountID.String()
+	}
+
+	if approval.TokenID != nil {
+		token = approval.TokenID.String()
+	}
+
+	return fmt.Sprintf("OwnerAccountID: %s, SpenderAccountID: %s, TokenID: %s, Amount: %s", owner, spender, token, HbarFromTinybar(approval.Amount).String())
 }

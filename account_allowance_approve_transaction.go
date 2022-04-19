@@ -83,11 +83,19 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveHbarApproval(owne
 	return transaction
 }
 
+// AddHbarApproval
+// Deprecated - Use ApproveHbarAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) AddHbarApproval(id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveHbarApproval(nil, id, amount)
 }
 
+// ApproveHbarApproval
+// Deprecated - Use ApproveHbarAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) ApproveHbarApproval(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
+}
+
+func (transaction *AccountAllowanceApproveTransaction) ApproveHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
 
@@ -108,11 +116,18 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenApproval(tok
 	return transaction
 }
 
+// Deprecated - Use ApproveTokenAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) AddTokenApproval(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenApproval(tokenID, nil, accountID, amount)
 }
 
+// ApproveTokenApproval
+// Deprecated - Use ApproveTokenAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenApproval(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
+}
+
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
 
@@ -150,13 +165,22 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftApproval(
 	return transaction
 }
 
+// AddTokenNftApproval
+// Deprecated - Use ApproveTokenNftAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) AddTokenNftApproval(nftID NftID, accountID AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftApproval(nftID, nil, accountID)
 }
 
+// ApproveTokenNftApproval
+// Deprecated - Use ApproveTokenNftAllowance instead
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftApproval(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
 }
+
+func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
+	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
+}
+
 func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID *AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
 	for _, t := range transaction.nftAllowances {
 		if t.TokenID.String() == tokenID.String() {
@@ -325,7 +349,7 @@ func (transaction *AccountAllowanceApproveTransaction) _ConstructScheduleProtobu
 	}, nil
 }
 
-func _AccountApproveAllowanceTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _AccountApproveAllowanceTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().ApproveAllowances,
 	}
@@ -406,9 +430,7 @@ func (transaction *AccountAllowanceApproveTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -418,12 +440,15 @@ func (transaction *AccountAllowanceApproveTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -434,7 +459,7 @@ func (transaction *AccountAllowanceApproveTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

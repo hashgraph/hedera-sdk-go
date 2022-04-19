@@ -229,6 +229,13 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 
 		tx2 := _AccountAllowanceApproveTransactionFromProtobuf(tx, pbBody)
 		return tx2, nil
+	case *services.SchedulableTransactionBody_CryptoDeleteAllowance:
+		pbBody.Data = &services.TransactionBody_CryptoDeleteAllowance{
+			CryptoDeleteAllowance: pb.GetCryptoDeleteAllowance(),
+		}
+
+		tx2 := _AccountAllowanceDeleteTransactionFromProtobuf(tx, pbBody)
+		return tx2, nil
 	case *services.SchedulableTransactionBody_FileAppend:
 		pbBody.Data = &services.TransactionBody_FileAppend{
 			FileAppend: pb.GetFileAppend(),

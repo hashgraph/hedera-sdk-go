@@ -173,7 +173,7 @@ func (transaction *FileAppendTransaction) _ConstructScheduleProtobuf() (*service
 	}, nil
 }
 
-func _FileAppendTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _FileAppendTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetFile().AppendContent,
 	}
@@ -290,9 +290,7 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 	for i := 0; i < size; i++ {
 		resp, err := _Execute(
 			client,
-			_Request{
-				transaction: &transaction.Transaction,
-			},
+			&transaction.Transaction,
 			_TransactionShouldRetry,
 			_TransactionMakeRequest,
 			_TransactionAdvanceRequest,
@@ -302,17 +300,20 @@ func (transaction *FileAppendTransaction) ExecuteAll(
 			_TransactionMapResponse,
 			transaction._GetLogID(),
 			transaction.grpcDeadline,
+			transaction.maxBackoff,
+			transaction.minBackoff,
+			transaction.maxRetry,
 		)
 
 		if err != nil {
 			return list, err
 		}
 
-		list[i] = resp.transaction
+		list[i] = resp.(TransactionResponse)
 
 		_, err = NewTransactionReceiptQuery().
-			SetNodeAccountIDs([]AccountID{resp.transaction.NodeID}).
-			SetTransactionID(resp.transaction.TransactionID).
+			SetNodeAccountIDs([]AccountID{resp.(TransactionResponse).NodeID}).
+			SetTransactionID(resp.(TransactionResponse).TransactionID).
 			Execute(client)
 		if err != nil {
 			return list, err

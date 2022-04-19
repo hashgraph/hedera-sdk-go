@@ -123,7 +123,7 @@ func (transaction *TokenUnpauseTransaction) _ConstructScheduleProtobuf() (*servi
 	}, nil
 }
 
-func _TokenUnpauseTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _TokenUnpauseTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetToken().DeleteToken,
 	}
@@ -204,9 +204,7 @@ func (transaction *TokenUnpauseTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -216,12 +214,15 @@ func (transaction *TokenUnpauseTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -232,7 +233,7 @@ func (transaction *TokenUnpauseTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }

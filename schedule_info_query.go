@@ -114,9 +114,7 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ScheduleInfoQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -126,30 +124,33 @@ func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetScheduleGetInfo().Header.Cost)
+	cost := int64(resp.(*services.Response).GetScheduleGetInfo().Header.Cost)
 	if cost < 25 {
 		return HbarFromTinybar(25), nil
 	}
 	return HbarFromTinybar(cost), nil
 }
 
-func _ScheduleInfoQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
+func _ScheduleInfoQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode))
 }
 
-func _ScheduleInfoQueryMapStatusError(_ _Request, response _Response) error {
+func _ScheduleInfoQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetScheduleGetInfo().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _ScheduleInfoQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _ScheduleInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetSchedule().GetScheduleInfo,
 	}
@@ -220,9 +221,7 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_ScheduleInfoQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -232,13 +231,16 @@ func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return ScheduleInfo{}, err
 	}
 
-	return _ScheduleInfoFromProtobuf(resp.query.GetScheduleGetInfo().ScheduleInfo), nil
+	return _ScheduleInfoFromProtobuf(resp.(*services.Response).GetScheduleGetInfo().ScheduleInfo), nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

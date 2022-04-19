@@ -167,7 +167,7 @@ func (transaction *ScheduleCreateTransaction) _Build() *services.TransactionBody
 func (transaction *ScheduleCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	return nil, errors.New("cannot schedule `ScheduleCreateTransaction`")
 }
-func _ScheduleCreateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _ScheduleCreateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetSchedule().CreateSchedule,
 	}
@@ -247,9 +247,7 @@ func (transaction *ScheduleCreateTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -259,12 +257,15 @@ func (transaction *ScheduleCreateTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -275,7 +276,7 @@ func (transaction *ScheduleCreateTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID:          transaction.GetTransactionID(),
-		NodeID:                 resp.transaction.NodeID,
+		NodeID:                 resp.(TransactionResponse).NodeID,
 		Hash:                   hash,
 		ScheduledTransactionId: transaction.GetTransactionID(),
 	}, nil

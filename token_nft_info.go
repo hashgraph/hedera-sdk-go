@@ -33,6 +33,7 @@ type TokenNftInfo struct {
 	CreationTime time.Time
 	Metadata     []byte
 	LedgerID     LedgerID
+	SpenderID    AccountID
 }
 
 func _TokenNftInfoFromProtobuf(pb *services.TokenNftInfo) TokenNftInfo {
@@ -45,12 +46,18 @@ func _TokenNftInfoFromProtobuf(pb *services.TokenNftInfo) TokenNftInfo {
 		accountID = *_AccountIDFromProtobuf(pb.AccountID)
 	}
 
+	spenderID := AccountID{}
+	if pb.SpenderId != nil {
+		spenderID = *_AccountIDFromProtobuf(pb.SpenderId)
+	}
+
 	return TokenNftInfo{
 		NftID:        _NftIDFromProtobuf(pb.NftID),
 		AccountID:    accountID,
 		CreationTime: _TimeFromProtobuf(pb.CreationTime),
 		Metadata:     pb.Metadata,
 		LedgerID:     LedgerID{pb.LedgerId},
+		SpenderID:    spenderID,
 	}
 }
 
@@ -61,6 +68,7 @@ func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *services.TokenNftInfo {
 		CreationTime: _TimeToProtobuf(tokenNftInfo.CreationTime),
 		Metadata:     tokenNftInfo.Metadata,
 		LedgerId:     tokenNftInfo.LedgerID.ToBytes(),
+		SpenderId:    tokenNftInfo.SpenderID._ToProtobuf(),
 	}
 }
 

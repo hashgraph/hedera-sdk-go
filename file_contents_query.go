@@ -118,9 +118,7 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_FileContentsQueryShouldRetry,
 		_CostQueryMakeRequest,
 		_CostQueryAdvanceRequest,
@@ -130,27 +128,30 @@ func (query *FileContentsQuery) GetCost(client *Client) (Hbar, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return Hbar{}, err
 	}
 
-	cost := int64(resp.query.GetFileGetContents().Header.Cost)
+	cost := int64(resp.(*services.Response).GetFileGetContents().Header.Cost)
 	return HbarFromTinybar(cost), nil
 }
 
-func _FileContentsQueryShouldRetry(logID string, _ _Request, response _Response) _ExecutionState {
-	return _QueryShouldRetry(logID, Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode))
+func _FileContentsQueryShouldRetry(logID string, _ interface{}, response interface{}) _ExecutionState {
+	return _QueryShouldRetry(logID, Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode))
 }
 
-func _FileContentsQueryMapStatusError(_ _Request, response _Response) error {
+func _FileContentsQueryMapStatusError(_ interface{}, response interface{}) error {
 	return ErrHederaPreCheckStatus{
-		Status: Status(response.query.GetFileGetContents().Header.NodeTransactionPrecheckCode),
+		Status: Status(response.(*services.Response).GetFileGetContents().Header.NodeTransactionPrecheckCode),
 	}
 }
 
-func _FileContentsQueryGetMethod(_ _Request, channel *_Channel) _Method {
+func _FileContentsQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	return _Method{
 		query: channel._GetFile().GetFileContent,
 	}
@@ -221,9 +222,7 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			query: &query.Query,
-		},
+		&query.Query,
 		_FileContentsQueryShouldRetry,
 		_QueryMakeRequest,
 		_QueryAdvanceRequest,
@@ -233,13 +232,16 @@ func (query *FileContentsQuery) Execute(client *Client) ([]byte, error) {
 		_QueryMapResponse,
 		query._GetLogID(),
 		query.grpcDeadline,
+		query.maxBackoff,
+		query.minBackoff,
+		query.maxRetry,
 	)
 
 	if err != nil {
 		return []byte{}, err
 	}
 
-	return resp.query.GetFileGetContents().FileContents.Contents, nil
+	return resp.(*services.Response).GetFileGetContents().FileContents.Contents, nil
 }
 
 // SetMaxQueryPayment sets the maximum payment allowed for this Query.

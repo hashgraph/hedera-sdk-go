@@ -345,7 +345,7 @@ func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*serv
 	}, nil
 }
 
-func _AccountUpdateTransactionGetMethod(request _Request, channel *_Channel) _Method {
+func _AccountUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
 		transaction: channel._GetCrypto().UpdateAccount,
 	}
@@ -426,9 +426,7 @@ func (transaction *AccountUpdateTransaction) Execute(
 
 	resp, err := _Execute(
 		client,
-		_Request{
-			transaction: &transaction.Transaction,
-		},
+		&transaction.Transaction,
 		_TransactionShouldRetry,
 		_TransactionMakeRequest,
 		_TransactionAdvanceRequest,
@@ -438,12 +436,15 @@ func (transaction *AccountUpdateTransaction) Execute(
 		_TransactionMapResponse,
 		transaction._GetLogID(),
 		transaction.grpcDeadline,
+		transaction.maxBackoff,
+		transaction.minBackoff,
+		transaction.maxRetry,
 	)
 
 	if err != nil {
 		return TransactionResponse{
 			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.transaction.NodeID,
+			NodeID:        resp.(TransactionResponse).NodeID,
 		}, err
 	}
 
@@ -454,7 +455,7 @@ func (transaction *AccountUpdateTransaction) Execute(
 
 	return TransactionResponse{
 		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.transaction.NodeID,
+		NodeID:        resp.(TransactionResponse).NodeID,
 		Hash:          hash,
 	}, nil
 }
