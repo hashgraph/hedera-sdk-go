@@ -20,7 +20,11 @@ package hedera
  *
  */
 
-import "github.com/hashgraph/hedera-protobufs-go/services"
+import (
+	"fmt"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+)
 
 type HbarAllowance struct {
 	OwnerAccountID   *AccountID

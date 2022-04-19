@@ -1,3 +1,25 @@
+## v2.13.0
+
+### Added
+
+* `AccountAllowanceDeleteTransaction`
+* `ContractFunctionResult.[gas|hbarAmount|contractFunctionParametersBytes]`
+* `AccountAllowanceExample`
+* `ScheduleTransferExample`
+
+### Deprecated
+
+* `AccountAllowanceAdjustTransaction.revokeTokenNftAllowance()` with no replacement.
+* `AccountAllowanceApproveTransaction.AddHbarApproval()`, use `ApproveHbarAllowance()` instead.
+* `AccountAllowanceApproveTransaction.ApproveTokenApproval()`, use `GrantTokenNftAllowance()` instead.
+* `AccountAllowanceApproveTransaction.ApproveTokenNftApproval()`, use `ApproveTokenNftAllowance()` instead.
+
+### Fixed
+
+* `*Transaction.GetTransactionID()` panic when not set.
+* `Transaction.Freeze()` now properly sets NodeAccountIDs
+* `*Query` payment transaction now properly contains the right NodeAccountIDs.
+
 ## v2.13.0-beta.1
 
 ### Added

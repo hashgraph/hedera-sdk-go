@@ -148,7 +148,7 @@ func _Execute( // nolint
 					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
 					transferTx := paymentTransaction.Data.(*services.TransactionBody_CryptoTransfer)
 					transferTx.CryptoTransfer.Transfers.AccountAmounts[0].AccountID = node.accountID._ToProtobuf()
-					request.query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
+					query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
 				}
 				query.nodeAccountIDs._Set(0, node.accountID)
 				protoRequest = makeRequest(request)
