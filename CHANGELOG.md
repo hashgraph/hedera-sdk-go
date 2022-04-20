@@ -1,3 +1,20 @@
+## v2.13.1
+
+### Added
+
+* `TokenNftAllowance.DelegatingSpender`
+* `AccountAllowanceApproveTransaction.AddAllTokenNftApprovalWithDelegatingSpender()`
+* `AccountAllowanceApproveTransaction.ApproveTokenNftAllowanceAllSerialsWithDelegatingSpender()`
+
+
+## Deprecated
+
+* `AccountAllowanceAdjustTransaction` with no replacement.
+* `AccountAllowanceDeleteTransaction.DeleteAllTokenAllowances()` with no replacement.
+* `AccountAllowanceDeleteTransaction.DeleteAllHbarAllowances()` with no replacement.
+* `AccountInfo.[Hbar|Toke|Nft]Allowances`, with no replacement.
+* `TransactionRecord.[Hbar|Toke|Nft]Allowances`, with no replacement.
+
 ## v2.13.0
 
 ### Added
