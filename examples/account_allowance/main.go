@@ -207,8 +207,9 @@ func main() {
 
 	println("Adjusting Bob's allowance, increasing it by 2 Hbar. After this, Bob's allowance should be 3 Hbar.")
 
-	allowanceAdjust, err := hedera.NewAccountAllowanceAdjustTransaction().
-		GrantHbarAllowance(aliceID, bobID, hedera.NewHbar(2)).
+	allowanceAdjust, err := hedera.NewAccountAllowanceApproveTransaction().
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		ApproveHbarAllowance(aliceID, bobID, hedera.NewHbar(2)).
 		FreezeWith(client)
 	if err != nil {
 		println(err.Error(), ": error freezing account allowance adjust transaction")
@@ -270,7 +271,58 @@ func main() {
 		return
 	}
 
-	println("Cleaning up")
+	println("Deleting Bob's allowance")
+
+	approvalFreeze, err = hedera.NewAccountAllowanceApproveTransaction().
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		ApproveHbarAllowance(aliceID, bobID, hedera.ZeroHbar).
+		FreezeWith(client)
+	if err != nil {
+		println(err.Error(), ": error freezing account allowance approve transaction")
+		return
+	}
+
+	approvalFreeze.Sign(aliceKey)
+
+	transactionResponse, err = approvalFreeze.Execute(client)
+	if err != nil {
+		println(err.Error(), ": error executing account allowance approve transaction")
+		return
+	}
+
+	_, err = transactionResponse.GetReceipt(client)
+	if err != nil {
+		println(err.Error(), ": error getting account allowance receipt")
+		return
+	}
+
+	println("If Bob tries to use his allowance it should fail.")
+
+	transferFreeze, err = hedera.NewTransferTransaction().
+		AddApprovedHbarTransfer(aliceID, hedera.NewHbar(1).Negated(), true).
+		AddHbarTransfer(charlieID, hedera.NewHbar(1)).
+		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
+		SetTransactionID(hedera.TransactionIDGenerate(bobID)).
+		FreezeWith(client)
+	if err != nil {
+		println(err.Error(), ": error freezing transfer transaction")
+		return
+	}
+
+	transferFreeze.Sign(bobKey)
+
+	transactionResponse, err = transferFreeze.Execute(client)
+	if err != nil {
+		println(err.Error(), ": error executing transfer transaction")
+		return
+	}
+
+	transactionReceipt, err = transactionResponse.GetReceipt(client)
+	if err != nil {
+		println(err.Error(), ": Error just like expected")
+	}
+
+	println("\nCleaning up")
 
 	accountDelete, err := hedera.NewAccountDeleteTransaction().
 		SetAccountID(aliceID).
@@ -362,17 +414,6 @@ func printBalance(client *hedera.Client, alice hedera.AccountID, bob hedera.Acco
 		return err
 	}
 	println("Alice's balance:", balance.Hbars.String())
-	info, err := hedera.NewAccountInfoQuery().
-		SetAccountID(alice).
-		SetNodeAccountIDs(nodeID).
-		Execute(client)
-	if err != nil {
-		return err
-	}
-	println("Alices's Hbar allowances: ")
-	for _, allowance := range info.HbarAllowances {
-		println(allowance.String())
-	}
 
 	balance, err = hedera.NewAccountBalanceQuery().
 		SetAccountID(bob).

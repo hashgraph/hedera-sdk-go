@@ -215,13 +215,6 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 
 		tx2 := _AccountUpdateTransactionFromProtobuf(tx, pbBody)
 		return tx2, nil
-	case *services.SchedulableTransactionBody_CryptoAdjustAllowance:
-		pbBody.Data = &services.TransactionBody_CryptoAdjustAllowance{
-			CryptoAdjustAllowance: pb.GetCryptoAdjustAllowance(),
-		}
-
-		tx2 := _AccountAllowanceAdjustTransactionFromProtobuf(tx, pbBody)
-		return tx2, nil
 	case *services.SchedulableTransactionBody_CryptoApproveAllowance:
 		pbBody.Data = &services.TransactionBody_CryptoApproveAllowance{
 			CryptoApproveAllowance: pb.GetCryptoApproveAllowance(),

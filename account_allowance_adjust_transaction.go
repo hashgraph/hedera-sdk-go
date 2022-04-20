@@ -27,6 +27,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// Deprecated
 type AccountAllowanceAdjustTransaction struct {
 	Transaction
 	hbarAllowances  []*HbarAllowance
@@ -44,34 +45,6 @@ func NewAccountAllowanceAdjustTransaction() *AccountAllowanceAdjustTransaction {
 	return &transaction
 }
 
-func _AccountAllowanceAdjustTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *AccountAllowanceAdjustTransaction {
-	accountApproval := make([]*HbarAllowance, 0)
-	tokenApproval := make([]*TokenAllowance, 0)
-	nftApproval := make([]*TokenNftAllowance, 0)
-
-	for _, ap := range pb.GetCryptoAdjustAllowance().GetCryptoAllowances() {
-		temp := _HbarAllowanceFromProtobuf(ap)
-		accountApproval = append(accountApproval, &temp)
-	}
-
-	for _, ap := range pb.GetCryptoAdjustAllowance().GetTokenAllowances() {
-		temp := _TokenAllowanceFromProtobuf(ap)
-		tokenApproval = append(tokenApproval, &temp)
-	}
-
-	for _, ap := range pb.GetCryptoAdjustAllowance().GetNftAllowances() {
-		temp := _TokenNftAllowanceFromProtobuf(ap)
-		nftApproval = append(nftApproval, &temp)
-	}
-
-	return &AccountAllowanceAdjustTransaction{
-		Transaction:     transaction,
-		hbarAllowances:  accountApproval,
-		tokenAllowances: tokenApproval,
-		nftAllowances:   nftApproval,
-	}
-}
-
 func (transaction *AccountAllowanceAdjustTransaction) _AdjustHbarAllowance(ownerAccountID *AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
 	transaction._RequireNotFrozen()
 	transaction.hbarAllowances = append(transaction.hbarAllowances, &HbarAllowance{
@@ -83,20 +56,22 @@ func (transaction *AccountAllowanceAdjustTransaction) _AdjustHbarAllowance(owner
 	return transaction
 }
 
-// AddHbarAllowance
-// Deprecated: Use `GrantHbarAllowance` instead
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) AddHbarAllowance(id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustHbarAllowance(nil, id, amount)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) GrantHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustHbarAllowance(&ownerAccountID, id, amount)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) RevokeHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustHbarAllowance(&ownerAccountID, id, amount.Negated())
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) GetHbarAllowances() []*HbarAllowance {
 	return transaction.hbarAllowances
 }
@@ -114,20 +89,22 @@ func (transaction *AccountAllowanceAdjustTransaction) _AdjustTokenAllowance(toke
 	return transaction
 }
 
-// AddTokenAllowance
-// Deprecated - Use `GrantTokenAllowance()` instead
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) AddTokenAllowance(tokenID TokenID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenAllowance(tokenID, nil, accountID, amount)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) GrantTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenAllowance(tokenID, &ownerAccountID, accountID, amount)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount uint64) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenAllowance(tokenID, &ownerAccountID, accountID, -int64(amount))
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) GetTokenAllowances() []*TokenAllowance {
 	return transaction.tokenAllowances
 }
@@ -162,16 +139,17 @@ func (transaction *AccountAllowanceAdjustTransaction) _AdjustTokenNftAllowance(n
 	return transaction
 }
 
-// AddTokenNftAllowance
-// Deprecated: Use `GrantTokenNftAllowance()` instead
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) AddTokenNftAllowance(nftID NftID, accountID AccountID) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenNftAllowance(nftID, nil, accountID)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) GrantTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenNftAllowance(nftID, &ownerAccountID, accountID)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenNftAllowance(nftID, &ownerAccountID, accountID)
 }
@@ -197,12 +175,12 @@ func (transaction *AccountAllowanceAdjustTransaction) _AdjustTokenNftAllowanceAl
 	return transaction
 }
 
-// AddAllTokenNftAllowance
-// Deprecated: Use `GrantTokenNftAllowanceAllSerials()` instead
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) AddAllTokenNftAllowance(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, true)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) GrantTokenNftAllowanceAllSerials(ownerAccountID AccountID, tokenID TokenID, spenderAccount AccountID) *AccountAllowanceAdjustTransaction {
 	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, true)
 }
@@ -212,6 +190,7 @@ func (transaction *AccountAllowanceAdjustTransaction) RevokeTokenNftAllowanceAll
 	return transaction._AdjustTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, false)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) GetTokenNftAllowances() []*TokenNftAllowance {
 	return transaction.nftAllowances
 }
@@ -279,37 +258,10 @@ func (transaction *AccountAllowanceAdjustTransaction) _ValidateNetworkOnIDs(clie
 }
 
 func (transaction *AccountAllowanceAdjustTransaction) _Build() *services.TransactionBody {
-	accountApproval := make([]*services.CryptoAllowance, 0)
-	tokenApproval := make([]*services.TokenAllowance, 0)
-	nftApproval := make([]*services.NftAllowance, 0)
-
-	for _, ap := range transaction.hbarAllowances {
-		accountApproval = append(accountApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range transaction.tokenAllowances {
-		tokenApproval = append(tokenApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range transaction.nftAllowances {
-		nftApproval = append(nftApproval, ap._ToProtobuf())
-	}
-
-	return &services.TransactionBody{
-		TransactionID:            transaction.transactionID._ToProtobuf(),
-		TransactionFee:           transaction.transactionFee,
-		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
-		Memo:                     transaction.Transaction.memo,
-		Data: &services.TransactionBody_CryptoAdjustAllowance{
-			CryptoAdjustAllowance: &services.CryptoAdjustAllowanceTransactionBody{
-				CryptoAllowances: accountApproval,
-				NftAllowances:    nftApproval,
-				TokenAllowances:  tokenApproval,
-			},
-		},
-	}
+	return &services.TransactionBody{}
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction._RequireNotFrozen()
 
@@ -322,52 +274,26 @@ func (transaction *AccountAllowanceAdjustTransaction) Schedule() (*ScheduleCreat
 }
 
 func (transaction *AccountAllowanceAdjustTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	accountApproval := make([]*services.CryptoAllowance, 0)
-	tokenApproval := make([]*services.TokenAllowance, 0)
-	nftApproval := make([]*services.NftAllowance, 0)
-
-	for _, ap := range transaction.hbarAllowances {
-		accountApproval = append(accountApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range transaction.tokenAllowances {
-		tokenApproval = append(tokenApproval, ap._ToProtobuf())
-	}
-
-	for _, ap := range transaction.nftAllowances {
-		nftApproval = append(nftApproval, ap._ToProtobuf())
-	}
-
-	return &services.SchedulableTransactionBody{
-		TransactionFee: transaction.transactionFee,
-		Memo:           transaction.Transaction.memo,
-		Data: &services.SchedulableTransactionBody_CryptoAdjustAllowance{
-			CryptoAdjustAllowance: &services.CryptoAdjustAllowanceTransactionBody{
-				CryptoAllowances: accountApproval,
-				NftAllowances:    nftApproval,
-				TokenAllowances:  tokenApproval,
-			},
-		},
-	}, nil
+	return &services.SchedulableTransactionBody{}, nil
 }
 
 func _AccountAdjustAllowanceTransactionGetMethod(request interface{}, channel *_Channel) _Method {
-	return _Method{
-		transaction: channel._GetCrypto().AdjustAllowance,
-	}
+	return _Method{}
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) IsFrozen() bool {
 	return transaction._IsFrozen()
 }
 
-// Sign uses the provided privateKey to sign the transaction.
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) Sign(
 	privateKey PrivateKey,
 ) *AccountAllowanceAdjustTransaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountAllowanceAdjustTransaction, error) {
@@ -389,8 +315,7 @@ func (transaction *AccountAllowanceAdjustTransaction) SignWithOperator(
 	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
 }
 
-// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
-// with the publicKey as the map key.
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
@@ -402,7 +327,7 @@ func (transaction *AccountAllowanceAdjustTransaction) SignWith(
 	return transaction
 }
 
-// Execute executes the Transaction with the provided client
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
@@ -466,10 +391,12 @@ func (transaction *AccountAllowanceAdjustTransaction) Execute(
 	}, nil
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) Freeze() (*AccountAllowanceAdjustTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
 
+// Deprecated
 func (transaction *AccountAllowanceAdjustTransaction) FreezeWith(client *Client) (*AccountAllowanceAdjustTransaction, error) {
 	if transaction.IsFrozen() {
 		return transaction, nil

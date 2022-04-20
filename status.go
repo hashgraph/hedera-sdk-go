@@ -286,6 +286,9 @@ const (
 	StatusInvalidAllowanceOwnerID                                  Status = 300
 	StatusInvalidAllowanceSpenderID                                Status = 301
 	StatusRepeatedAllowancesToDelete                               Status = 302
+	StatusInvalidDelegatingSpender                                 Status = 303
+	StatusDelegatingSpenderCannotGrantApproveForAll                Status = 304
+	StatusDelegatingSpenderDoesNotHaveApproveForAll                Status = 305
 )
 
 // String() returns a string representation of the status
@@ -813,6 +816,12 @@ func (status Status) String() string { // nolint
 		return "INVALID_ALLOWANCE_SPENDER_ID"
 	case StatusRepeatedAllowancesToDelete:
 		return "REPEATED_ALLOWANCES_TO_DELETE"
+	case StatusInvalidDelegatingSpender:
+		return "INVALID_DELEGATING_SPENDER"
+	case StatusDelegatingSpenderCannotGrantApproveForAll:
+		return "DELEGATING_SPENDER_CANNOT_GRANT_APPROVE_FOR_ALL"
+	case StatusDelegatingSpenderDoesNotHaveApproveForAll:
+		return "DELEGATING_SPENDER_DOES_NOT_HAVE_APPROVE_FOR_ALL"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

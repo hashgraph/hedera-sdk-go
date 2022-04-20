@@ -28,20 +28,22 @@ import (
 )
 
 type TokenNftAllowance struct {
-	TokenID          *TokenID
-	SpenderAccountID *AccountID
-	OwnerAccountID   *AccountID
-	SerialNumbers    []int64
-	AllSerials       bool
+	TokenID           *TokenID
+	SpenderAccountID  *AccountID
+	OwnerAccountID    *AccountID
+	SerialNumbers     []int64
+	AllSerials        bool
+	DelegatingSpender *AccountID
 }
 
-func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, serialNumbers []int64, approvedForAll bool) TokenNftAllowance {
+func NewTokenNftAllowance(tokenID TokenID, owner AccountID, spender AccountID, serialNumbers []int64, approvedForAll bool, delegatingSpender AccountID) TokenNftAllowance {
 	return TokenNftAllowance{
-		TokenID:          &tokenID,
-		SpenderAccountID: &spender,
-		OwnerAccountID:   &owner,
-		SerialNumbers:    serialNumbers,
-		AllSerials:       approvedForAll,
+		TokenID:           &tokenID,
+		SpenderAccountID:  &spender,
+		OwnerAccountID:    &owner,
+		SerialNumbers:     serialNumbers,
+		AllSerials:        approvedForAll,
+		DelegatingSpender: &delegatingSpender,
 	}
 }
 
@@ -63,27 +65,14 @@ func _TokenNftAllowanceFromProtobuf(pb *services.NftAllowance) TokenNftAllowance
 		body.OwnerAccountID = _AccountIDFromProtobuf(pb.Owner)
 	}
 
-	return body
-}
-
-func _TokenNftAllowanceFromGrantedProtobuf(pb *services.GrantedNftAllowance) TokenNftAllowance {
-	body := TokenNftAllowance{
-		AllSerials:    pb.ApprovedForAll,
-		SerialNumbers: pb.SerialNumbers,
-	}
-
-	if pb.TokenId != nil {
-		body.TokenID = _TokenIDFromProtobuf(pb.TokenId)
-	}
-
-	if pb.Spender != nil {
-		body.SpenderAccountID = _AccountIDFromProtobuf(pb.Spender)
+	if pb.DelegatingSpender != nil {
+		body.DelegatingSpender = _AccountIDFromProtobuf(pb.DelegatingSpender)
 	}
 
 	return body
 }
 
-func _TokenNftWipeAllowanceProtobuf(pb *services.NftWipeAllowance) TokenNftAllowance {
+func _TokenNftWipeAllowanceProtobuf(pb *services.NftRemoveAllowance) TokenNftAllowance {
 	body := TokenNftAllowance{
 		SerialNumbers: pb.SerialNumbers,
 	}
@@ -117,28 +106,15 @@ func (approval *TokenNftAllowance) _ToProtobuf() *services.NftAllowance {
 		body.TokenId = approval.TokenID._ToProtobuf()
 	}
 
-	return body
-}
-
-func (approval *TokenNftAllowance) _ToGrantedProtobuf() *services.GrantedNftAllowance {
-	body := &services.GrantedNftAllowance{
-		ApprovedForAll: approval.AllSerials,
-		SerialNumbers:  approval.SerialNumbers,
-	}
-
-	if approval.SpenderAccountID != nil {
-		body.Spender = approval.SpenderAccountID._ToProtobuf()
-	}
-
-	if approval.TokenID != nil {
-		body.TokenId = approval.TokenID._ToProtobuf()
+	if approval.DelegatingSpender != nil {
+		body.DelegatingSpender = approval.DelegatingSpender._ToProtobuf()
 	}
 
 	return body
 }
 
-func (approval *TokenNftAllowance) _ToWipeProtobuf() *services.NftWipeAllowance {
-	body := &services.NftWipeAllowance{
+func (approval *TokenNftAllowance) _ToWipeProtobuf() *services.NftRemoveAllowance {
+	body := &services.NftRemoveAllowance{
 		SerialNumbers: approval.SerialNumbers,
 	}
 

@@ -38,6 +38,7 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 	serialNumber2 := int64(4)
 	nftID1 := tokenID2.Nft(serialNumber1)
 	nftID2 := tokenID2.Nft(serialNumber2)
+	owner := AccountID{Account: 10}
 	spenderAccountID1 := AccountID{Account: 7}
 	spenderAccountID2 := AccountID{Account: 7890}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
@@ -49,11 +50,11 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 	transaction, err := NewAccountAllowanceApproveTransaction().
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).
-		AddHbarApproval(spenderAccountID1, hbarAmount).
-		AddTokenApproval(tokenID1, spenderAccountID1, tokenAmount).
-		AddTokenNftApproval(nftID1, spenderAccountID1).
-		AddTokenNftApproval(nftID2, spenderAccountID1).
-		AddTokenNftApproval(nftID2, spenderAccountID2).
+		ApproveHbarAllowance(owner, spenderAccountID1, hbarAmount).
+		ApproveTokenAllowance(tokenID1, owner, spenderAccountID1, tokenAmount).
+		ApproveTokenNftAllowance(nftID1, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID2).
 		AddAllTokenNftApproval(tokenID1, spenderAccountID1).
 		Freeze()
 	require.NoError(t, err)
@@ -65,32 +66,40 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 		require.Equal(t, d.CryptoApproveAllowance.CryptoAllowances, []*services.CryptoAllowance{
 			{
 				Spender: spenderAccountID1._ToProtobuf(),
+				Owner:   owner._ToProtobuf(),
 				Amount:  hbarAmount.AsTinybar(),
 			},
 		})
 		require.Equal(t, d.CryptoApproveAllowance.NftAllowances, []*services.NftAllowance{
 			{
-				TokenId:        tokenID2._ToProtobuf(),
-				Spender:        spenderAccountID1._ToProtobuf(),
-				SerialNumbers:  []int64{serialNumber1, serialNumber2},
-				ApprovedForAll: &wrapperspb.BoolValue{Value: false},
+				TokenId:           tokenID2._ToProtobuf(),
+				Spender:           spenderAccountID1._ToProtobuf(),
+				Owner:             owner._ToProtobuf(),
+				SerialNumbers:     []int64{serialNumber1, serialNumber2},
+				ApprovedForAll:    &wrapperspb.BoolValue{Value: false},
+				DelegatingSpender: nil,
 			},
 			{
-				TokenId:        tokenID2._ToProtobuf(),
-				Spender:        spenderAccountID2._ToProtobuf(),
-				SerialNumbers:  []int64{serialNumber2},
-				ApprovedForAll: &wrapperspb.BoolValue{Value: false},
+				TokenId:           tokenID2._ToProtobuf(),
+				Spender:           spenderAccountID2._ToProtobuf(),
+				Owner:             owner._ToProtobuf(),
+				SerialNumbers:     []int64{serialNumber2},
+				ApprovedForAll:    &wrapperspb.BoolValue{Value: false},
+				DelegatingSpender: nil,
 			},
 			{
-				TokenId:        tokenID1._ToProtobuf(),
-				Spender:        spenderAccountID1._ToProtobuf(),
-				SerialNumbers:  []int64{},
-				ApprovedForAll: &wrapperspb.BoolValue{Value: true},
+				TokenId:           tokenID1._ToProtobuf(),
+				Spender:           spenderAccountID1._ToProtobuf(),
+				Owner:             nil,
+				SerialNumbers:     []int64{},
+				ApprovedForAll:    &wrapperspb.BoolValue{Value: true},
+				DelegatingSpender: nil,
 			},
 		})
 		require.Equal(t, d.CryptoApproveAllowance.TokenAllowances, []*services.TokenAllowance{
 			{
 				TokenId: tokenID1._ToProtobuf(),
+				Owner:   owner._ToProtobuf(),
 				Spender: spenderAccountID1._ToProtobuf(),
 				Amount:  tokenAmount,
 			},
