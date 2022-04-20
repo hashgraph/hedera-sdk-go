@@ -54,6 +54,7 @@ type AccountInfo struct {
 	NftAllowances []TokenNftAllowance
 	// Deprecated
 	TokenAllowances []TokenAllowance
+	EthereumNonce   int64
 }
 
 func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
@@ -128,6 +129,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		MaxAutomaticTokenAssociations:  uint32(pb.MaxAutomaticTokenAssociations),
 		AliasKey:                       alias,
 		LedgerID:                       LedgerID{pb.LedgerId},
+		EthereumNonce:                  pb.EthereumNonce,
 	}, nil
 }
 
@@ -171,6 +173,7 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		MaxAutomaticTokenAssociations:  int32(info.MaxAutomaticTokenAssociations),
 		Alias:                          alias,
 		LedgerId:                       info.LedgerID.ToBytes(),
+		EthereumNonce:                  info.EthereumNonce,
 	}
 
 	return body
