@@ -90,7 +90,7 @@ func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
 }
 
 // SetInitcode
-//If it is small then it may either be stored as a hex encoded file or as a binary encoded field as part of the transaciton.
+// If it is small then it may either be stored as a hex encoded file or as a binary encoded field as part of the transaction.
 func (transaction *ContractCreateTransaction) SetInitcode(code []byte) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.initcode = code
