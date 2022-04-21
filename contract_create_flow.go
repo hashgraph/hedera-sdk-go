@@ -301,6 +301,33 @@ func (transaction *ContractCreateFlow) _CreateContractCreateTransactionWithBytec
 	return contractCreateTx
 }
 
+func (transaction *ContractCreateFlow) _CreateContractCreateTransactionWithInitcode() *ContractCreateTransaction {
+	contractCreateTx := NewContractCreateTransaction().
+		SetGas(uint64(transaction.gas)).
+		SetConstructorParametersRaw(transaction.parameters).
+		SetInitialBalance(HbarFromTinybar(transaction.initialBalance)).
+		SetInitcode(transaction.createBytecode).
+		SetContractMemo(transaction.memo)
+
+	if len(transaction.nodeAccountIDs) > 0 {
+		contractCreateTx.SetNodeAccountIDs(transaction.nodeAccountIDs)
+	}
+
+	if transaction.adminKey != nil {
+		contractCreateTx.SetAdminKey(*transaction.adminKey)
+	}
+
+	if transaction.proxyAccountID != nil {
+		contractCreateTx.SetProxyAccountID(*transaction.proxyAccountID)
+	}
+
+	if transaction.autoRenewPeriod != nil {
+		contractCreateTx.SetAutoRenewPeriod(*transaction.autoRenewPeriod)
+	}
+
+	return contractCreateTx
+}
+
 func (transaction *ContractCreateFlow) _CreateTransactionReceiptQuery(response TransactionResponse) *TransactionReceiptQuery {
 	return NewTransactionReceiptQuery().
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
