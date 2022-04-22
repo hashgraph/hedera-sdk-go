@@ -29,15 +29,17 @@ import (
 
 type ContractCreateTransaction struct {
 	Transaction
-	byteCodeFileID  *FileID
-	proxyAccountID  *AccountID
-	adminKey        Key
-	gas             int64
-	initialBalance  int64
-	autoRenewPeriod *time.Duration
-	parameters      []byte
-	memo            string
-	initcode        []byte
+	byteCodeFileID                *FileID
+	proxyAccountID                *AccountID
+	adminKey                      Key
+	gas                           int64
+	initialBalance                int64
+	autoRenewPeriod               *time.Duration
+	parameters                    []byte
+	memo                          string
+	initcode                      []byte
+	autoRenewAccountID            *AccountID
+	maxAutomaticTokenAssociations int32
 }
 
 func NewContractCreateTransaction() *ContractCreateTransaction {
@@ -208,6 +210,37 @@ func (transaction *ContractCreateTransaction) GetContractMemo() string {
 	return transaction.memo
 }
 
+// SetAutoRenewAccountID
+// An account to charge for auto-renewal of this contract. If not set, or set to an
+// account with zero hbar balance, the contract's own hbar balance will be used to
+// cover auto-renewal fees.
+func (transaction *ContractCreateTransaction) SetAutoRenewAccountID(id AccountID) *ContractCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.autoRenewAccountID = &id
+	return transaction
+}
+
+func (transaction *ContractCreateTransaction) GetAutoRenewAccountID() AccountID {
+	if transaction.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.autoRenewAccountID
+}
+
+// SetMaxAutomaticTokenAssociations
+// The maximum number of tokens that this contract can be automatically associated
+// with (i.e., receive air-drops from).
+func (transaction *ContractCreateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.maxAutomaticTokenAssociations = max
+	return transaction
+}
+
+func (transaction *ContractCreateTransaction) GetMaxAutomaticTokenAssociations() int32 {
+	return transaction.maxAutomaticTokenAssociations
+}
+
 func (transaction *ContractCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
@@ -230,10 +263,11 @@ func (transaction *ContractCreateTransaction) _ValidateNetworkOnIDs(client *Clie
 
 func (transaction *ContractCreateTransaction) _Build() *services.TransactionBody {
 	body := &services.ContractCreateTransactionBody{
-		Gas:                   transaction.gas,
-		InitialBalance:        transaction.initialBalance,
-		ConstructorParameters: transaction.parameters,
-		Memo:                  transaction.memo,
+		Gas:                           transaction.gas,
+		InitialBalance:                transaction.initialBalance,
+		ConstructorParameters:         transaction.parameters,
+		Memo:                          transaction.memo,
+		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
 	}
 
 	if transaction.autoRenewPeriod != nil {
@@ -252,6 +286,10 @@ func (transaction *ContractCreateTransaction) _Build() *services.TransactionBody
 
 	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	pb := services.TransactionBody{
@@ -280,10 +318,11 @@ func (transaction *ContractCreateTransaction) Schedule() (*ScheduleCreateTransac
 
 func (transaction *ContractCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	body := &services.ContractCreateTransactionBody{
-		Gas:                   transaction.gas,
-		InitialBalance:        transaction.initialBalance,
-		ConstructorParameters: transaction.parameters,
-		Memo:                  transaction.memo,
+		Gas:                           transaction.gas,
+		InitialBalance:                transaction.initialBalance,
+		ConstructorParameters:         transaction.parameters,
+		Memo:                          transaction.memo,
+		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
 	}
 
 	if transaction.autoRenewPeriod != nil {
@@ -302,6 +341,10 @@ func (transaction *ContractCreateTransaction) _ConstructScheduleProtobuf() (*ser
 
 	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	return &services.SchedulableTransactionBody{

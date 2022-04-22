@@ -298,6 +298,11 @@ const (
 	StatusWrongNonce                                               Status = 312
 	StatusAccessListUnsupported                                    Status = 313
 	StatusSchedulePendingExpiration                                Status = 314
+	StatusContractIsTokenTreasury                                  Status = 315
+	StatusContractHasNonZeroTokenBalances                          Status = 316
+	StatusContractExpiredAndPendingRemoval                         Status = 317
+	StatusContractHasNoAutoRenewAccount                            Status = 318
+	StatusPermanentRemovalRequiresSystemInitiation                 Status = 319
 )
 
 // String() returns a string representation of the status
@@ -849,6 +854,16 @@ func (status Status) String() string { // nolint
 		return "ACCESS_LIST_UNSUPPORTED"
 	case StatusSchedulePendingExpiration:
 		return "SCHEDULE_PENDING_EXPIRATION"
+	case StatusContractIsTokenTreasury:
+		return "CONTRACT_IS_TOKEN_TREASURY"
+	case StatusContractHasNonZeroTokenBalances:
+		return "CONTRACT_HAS_NON_ZERO_TOKEN_BALANCES"
+	case StatusContractExpiredAndPendingRemoval:
+		return "CONTRACT_EXPIRED_AND_PENDING_REMOVAL"
+	case StatusContractHasNoAutoRenewAccount:
+		return "CONTRACT_HAS_NO_AUTO_RENEW_ACCOUNT"
+	case StatusPermanentRemovalRequiresSystemInitiation:
+		return "PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
