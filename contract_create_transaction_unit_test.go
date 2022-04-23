@@ -27,6 +27,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
@@ -134,4 +135,79 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 		SetContractMemo("hedera-sdk-go::TestContractCreateTransaction_Execute").
 		Execute(client)
 	require.NoError(t, err)
+}
+
+func TestUnitContractCreateTransactionGet(t *testing.T) {
+	spenderAccountID1 := AccountID{Account: 7}
+	fileID := FileID{File: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewContractCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetGas(21341).
+		SetProxyAccountID(spenderAccountID1).
+		SetAutoRenewPeriod(60 * time.Second).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetContractMemo("yes").
+		SetBytecodeFileID(fileID).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetContractMemo()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetProxyAccountID()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetAutoRenewPeriod()
+	transaction.GetBytecodeFileID()
+	transaction.GetContractMemo()
+	transaction.GetGas()
+}
+
+func TestUnitContractCreateTransactionSetNothing(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewContractCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetContractMemo()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetProxyAccountID()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetAutoRenewPeriod()
+	transaction.GetBytecodeFileID()
+	transaction.GetContractMemo()
+	transaction.GetGas()
 }

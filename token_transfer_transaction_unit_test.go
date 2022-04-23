@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
@@ -155,4 +156,79 @@ func TestUnitTokenTransferTransactionValidateWrong(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
+}
+
+func TestUnitTransferTransactionGet(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+	accountID := AccountID{Account: 3}
+	nftID := tokenID.Nft(32)
+
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTransferTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetHbarTransferApproval(accountID, true).
+		SetTokenTransferApproval(tokenID, accountID, true).
+		SetNftTransferApproval(nftID, true).
+		AddHbarTransfer(accountID, NewHbar(34)).
+		AddTokenTransferWithDecimals(tokenID, accountID, 123, 12).
+		AddTokenTransfer(tokenID, accountID, 123).
+		AddNftTransfer(nftID, accountID, accountID).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetHbarTransfers()
+	transaction.GetTokenTransfers()
+	transaction.GetNftTransfers()
+	transaction.GetTokenIDDecimals()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
+}
+
+func TestUnitTransferTransactionNothingSet(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTransferTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetHbarTransfers()
+	transaction.GetTokenTransfers()
+	transaction.GetNftTransfers()
+	transaction.GetTokenIDDecimals()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
 }

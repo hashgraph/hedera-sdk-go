@@ -26,6 +26,7 @@ package hedera
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
@@ -135,4 +136,68 @@ func TestUnitMockTokenAssociateTransaction(t *testing.T) {
 		Sign(newKey).
 		Execute(client)
 	require.NoError(t, err)
+}
+
+func TestUnitTokenAssociateTransactionGet(t *testing.T) {
+	tokenIDs := []TokenID{{Token: 3}, {Token: 5}, {Token: 7}}
+
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenIDs(tokenIDs...).
+		SetAccountID(AccountID{Account: 7}).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetAccountID()
+	transaction.GetTokenIDs()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
+}
+
+func TestUnitTokenAssociateTransactionNothingSet(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetAccountID()
+	transaction.GetTokenIDs()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
 }

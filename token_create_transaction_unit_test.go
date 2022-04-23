@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -60,4 +61,119 @@ func TestUnitTokenCreateTransactionValidateWrong(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
+}
+
+func TestUnitTokenCreateTransactionGet(t *testing.T) {
+	accountID := AccountID{Account: 7}
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetTokenMemo("fnord").
+		SetDecimals(3).
+		SetCustomFees([]Fee{}).
+		SetTokenType(TokenTypeFungibleCommon).
+		SetSupplyType(TokenSupplyTypeFinite).
+		SetMaxSupply(12312123123123).
+		SetInitialSupply(1000000).
+		SetTreasuryAccountID(accountID).
+		SetAdminKey(newKey).
+		SetFreezeKey(newKey).
+		SetWipeKey(newKey).
+		SetKycKey(newKey).
+		SetSupplyKey(newKey).
+		SetPauseKey(newKey).
+		SetExpirationTime(time.Now()).
+		SetFreezeDefault(false).
+		SetAutoRenewPeriod(60 * time.Second).
+		SetAutoRenewAccount(accountID).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetTokenName()
+	transaction.GetTokenSymbol()
+	transaction.GetTokenMemo()
+	transaction.GetDecimals()
+	transaction.GetCustomFees()
+	transaction.GetTokenType()
+	transaction.GetSupplyType()
+	transaction.GetMaxSupply()
+	transaction.GetInitialSupply()
+	transaction.GetTreasuryAccountID()
+	transaction.GetAdminKey()
+	transaction.GetFreezeKey()
+	transaction.GetWipeKey()
+	transaction.GetKycKey()
+	transaction.GetSupplyKey()
+	transaction.GetPauseKey()
+	transaction.GetExpirationTime()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
+}
+
+func TestUnitTokenCreateTransactionNothingSet(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetTokenName()
+	transaction.GetTokenSymbol()
+	transaction.GetTokenMemo()
+	transaction.GetDecimals()
+	transaction.GetCustomFees()
+	transaction.GetTokenType()
+	transaction.GetSupplyType()
+	transaction.GetMaxSupply()
+	transaction.GetInitialSupply()
+	transaction.GetTreasuryAccountID()
+	transaction.GetAdminKey()
+	transaction.GetFreezeKey()
+	transaction.GetWipeKey()
+	transaction.GetKycKey()
+	transaction.GetSupplyKey()
+	transaction.GetPauseKey()
+	transaction.GetExpirationTime()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
 }

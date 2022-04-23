@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
@@ -126,4 +127,81 @@ func TestUnitMockAccountUpdateTransaction(t *testing.T) {
 		SetAliasKey(newKey.PublicKey()).
 		Execute(client)
 	require.NoError(t, err)
+}
+
+func TestUnitAccountUpdateTransactionGet(t *testing.T) {
+	spenderAccountID1 := AccountID{Account: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+
+	key, err := PrivateKeyGenerateEd25519()
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetAccountID(spenderAccountID1).
+		SetKey(key).
+		SetProxyAccountID(spenderAccountID1).
+		SetAccountMemo("").
+		SetReceiverSignatureRequired(true).
+		SetMaxAutomaticTokenAssociations(2).
+		SetAutoRenewPeriod(60 * time.Second).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetAccountID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxAutomaticTokenAssociations()
+	transaction.GetProxyAccountID()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetKey()
+	transaction.GetAutoRenewPeriod()
+	transaction.GetReceiverSignatureRequired()
+}
+
+func TestUnitAccountUpdateTransactionSetNothing(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetAccountID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxAutomaticTokenAssociations()
+	transaction.GetProxyAccountID()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetKey()
+	transaction.GetAutoRenewPeriod()
+	transaction.GetReceiverSignatureRequired()
 }

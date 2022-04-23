@@ -86,7 +86,7 @@ func (transaction *AccountDeleteTransaction) SetTransferAccountID(transferAccoun
 	return transaction
 }
 
-func (transaction *AccountDeleteTransaction) GetTransferAccountID(transferAccountID AccountID) AccountID {
+func (transaction *AccountDeleteTransaction) GetTransferAccountID() AccountID {
 	if transaction.transferAccountID == nil {
 		return AccountID{}
 	}

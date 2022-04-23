@@ -98,3 +98,36 @@ func TestUnitMockContractContentsQuery(t *testing.T) {
 
 	require.Equal(t, bytes.Compare(result, []byte{123}), 0)
 }
+
+func TestUnitFileContentsQueryGet(t *testing.T) {
+	fileID := FileID{File: 7}
+
+	balance := NewFileContentsQuery().
+		SetFileID(fileID).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetFileID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitFileContentsQuerySetNothing(t *testing.T) {
+	balance := NewFileContentsQuery()
+
+	balance.GetFileID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

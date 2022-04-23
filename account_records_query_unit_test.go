@@ -109,3 +109,35 @@ func TestUnitMockAccountRecordsQuery(t *testing.T) {
 	require.Equal(t, len(recordsQuery), 1)
 	require.Equal(t, recordsQuery[0].TransactionID.AccountID.Account, uint64(1800))
 }
+
+func TestUnitAccountRecordsQueryGet(t *testing.T) {
+	spenderAccountID1 := AccountID{Account: 7}
+
+	balance := NewAccountRecordsQuery().
+		SetAccountID(spenderAccountID1).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(10)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetAccountID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitAccountRecordsQuerySetNothing(t *testing.T) {
+	balance := NewAccountRecordsQuery()
+
+	balance.GetAccountID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

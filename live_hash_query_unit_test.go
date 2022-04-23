@@ -59,3 +59,39 @@ func TestUnitLiveHashQueryValidateWrong(t *testing.T) {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
+
+func TestUnitLiveHashQueryGet(t *testing.T) {
+	accountID := AccountID{Account: 7}
+
+	balance := NewLiveHashQuery().
+		SetAccountID(accountID).
+		SetHash([]byte{}).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetAccountID()
+	balance.GetGetHash()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitLiveHashQuerySetNothing(t *testing.T) {
+	balance := NewLiveHashQuery()
+
+	balance.GetAccountID()
+	balance.GetGetHash()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

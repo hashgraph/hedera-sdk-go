@@ -132,7 +132,13 @@ func (transaction *FileUpdateTransaction) SetFileMemo(memo string) *FileUpdateTr
 	return transaction
 }
 
+// GeFileMemo
+// Deprecated use GetFileMemo()
 func (transaction *FileUpdateTransaction) GeFileMemo() string {
+	return transaction.memo
+}
+
+func (transaction *FileUpdateTransaction) GetFileMemo() string {
 	return transaction.memo
 }
 

@@ -59,3 +59,23 @@ func TestUnitAccountBalanceQueryValidateWrong(t *testing.T) {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
+
+func TestUnitAccountBalanceQueryGet(t *testing.T) {
+	spenderAccountID1 := AccountID{Account: 7}
+
+	balance := NewAccountBalanceQuery().
+		SetAccountID(spenderAccountID1).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetAccountID()
+	balance.GetNodeAccountIDs()
+	balance.GetPaymentTransactionID()
+}
+
+func TestUnitAccountBalanceQuerySetNothing(t *testing.T) {
+	balance := NewAccountBalanceQuery()
+
+	balance.GetAccountID()
+	balance.GetNodeAccountIDs()
+	balance.GetPaymentTransactionID()
+}

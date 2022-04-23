@@ -170,3 +170,36 @@ func TestUnitMockContractInfoQueryGetTransactionID(t *testing.T) {
 
 	server.Close()
 }
+
+func TestUnitContractInfoQueryGet(t *testing.T) {
+	spenderContractID := ContractID{Contract: 7}
+
+	balance := NewContractInfoQuery().
+		SetContractID(spenderContractID).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetContractID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitContractInfoQuerySetNothing(t *testing.T) {
+	balance := NewContractInfoQuery()
+
+	balance.GetContractID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
