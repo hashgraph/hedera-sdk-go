@@ -488,6 +488,8 @@ func _TransactionFreezeWith(
 	client *Client,
 	body *services.TransactionBody,
 ) error {
+	fmt.Println(transaction.signedTransactions._Length())
+	fmt.Println(transaction.nodeAccountIDs._Length())
 	if transaction.nodeAccountIDs._IsEmpty() {
 		if client != nil {
 			for _, nodeAccountID := range client.network._GetNodeAccountIDsForExecute() {
@@ -497,6 +499,8 @@ func _TransactionFreezeWith(
 			return errNoClientOrTransactionIDOrNodeId
 		}
 	}
+	fmt.Println(transaction.signedTransactions._Length())
+	fmt.Println(transaction.nodeAccountIDs._Length())
 
 	if client != nil {
 		if client.defaultRegenerateTransactionIDs != transaction.regenerateTransactionID {
@@ -519,6 +523,8 @@ func _TransactionFreezeWith(
 			},
 		})
 	}
+	fmt.Println(transaction.signedTransactions._Length())
+	fmt.Println(transaction.nodeAccountIDs._Length())
 
 	return nil
 }
@@ -842,7 +848,7 @@ func (this *Transaction) SetMaxRetry(count int) *Transaction {
 	return this
 }
 
-func (this *Transaction) GetTrasactionBodyBytes() []byte {
+func (this *Transaction) GetTransactionBodyBytes() []byte {
 	return this.signedTransactions._GetCurrent().(*services.SignedTransaction).BodyBytes
 }
 

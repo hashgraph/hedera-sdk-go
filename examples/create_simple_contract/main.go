@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/arhtur007/hedera-sdk-go/v2"
 )
 
 // a simple contract struct
