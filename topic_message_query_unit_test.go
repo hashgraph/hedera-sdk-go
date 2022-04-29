@@ -1,11 +1,12 @@
 package hedera
 
 import (
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/status"
-	"testing"
-	"time"
 )
 
 func TestUnitTopicMessageQueryValidate(t *testing.T) {
