@@ -29,16 +29,18 @@ import (
 
 type ContractCreateFlow struct {
 	Transaction
-	bytecode        []byte
-	proxyAccountID  *AccountID
-	adminKey        *Key
-	gas             int64
-	initialBalance  int64
-	autoRenewPeriod *time.Duration
-	parameters      []byte
-	nodeAccountIDs  []AccountID
-	createBytecode  []byte
-	appendBytecode  []byte
+	bytecode                      []byte
+	proxyAccountID                *AccountID
+	adminKey                      *Key
+	gas                           int64
+	initialBalance                int64
+	autoRenewPeriod               *time.Duration
+	parameters                    []byte
+	nodeAccountIDs                []AccountID
+	createBytecode                []byte
+	appendBytecode                []byte
+	autoRenewAccountID            *AccountID
+	maxAutomaticTokenAssociations int32
 }
 
 func NewContractCreateFlow() *ContractCreateFlow {
@@ -159,6 +161,37 @@ func (transaction *ContractCreateFlow) GetContractMemo() string {
 	return transaction.memo
 }
 
+// SetAutoRenewAccountID
+// An account to charge for auto-renewal of this contract. If not set, or set to an
+// account with zero hbar balance, the contract's own hbar balance will be used to
+// cover auto-renewal fees.
+func (transaction *ContractCreateFlow) SetAutoRenewAccountID(id AccountID) *ContractCreateFlow {
+	transaction._RequireNotFrozen()
+	transaction.autoRenewAccountID = &id
+	return transaction
+}
+
+func (transaction *ContractCreateFlow) GetAutoRenewAccountID() AccountID {
+	if transaction.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.autoRenewAccountID
+}
+
+// SetMaxAutomaticTokenAssociations
+// The maximum number of tokens that this contract can be automatically associated
+// with (i.e., receive air-drops from).
+func (transaction *ContractCreateFlow) SetMaxAutomaticTokenAssociations(max int32) *ContractCreateFlow {
+	transaction._RequireNotFrozen()
+	transaction.maxAutomaticTokenAssociations = max
+	return transaction
+}
+
+func (transaction *ContractCreateFlow) GetMaxAutomaticTokenAssociations() int32 {
+	return transaction.maxAutomaticTokenAssociations
+}
+
 func (transaction *ContractCreateFlow) _SplitBytecode() *ContractCreateFlow {
 	if len(transaction.bytecode) > 2048 {
 		transaction.createBytecode = transaction.bytecode[0:2048]
@@ -222,15 +255,23 @@ func (transaction *ContractCreateFlow) _CreateContractCreateTransaction(fileID F
 		contractCreateTx.SetAutoRenewPeriod(*transaction.autoRenewPeriod)
 	}
 
+	if transaction.autoRenewAccountID != nil {
+		contractCreateTx.SetAutoRenewAccountID(*transaction.autoRenewAccountID)
+	}
+
+	if transaction.maxAutomaticTokenAssociations != 0 {
+		contractCreateTx.SetMaxAutomaticTokenAssociations(transaction.maxAutomaticTokenAssociations)
+	}
+
 	return contractCreateTx
 }
 
-func (transaction *ContractCreateFlow) _CreateContractCreateTransactionWithInitcode() *ContractCreateTransaction {
+func (transaction *ContractCreateFlow) _CreateContractCreateTransactionWithBytecode() *ContractCreateTransaction {
 	contractCreateTx := NewContractCreateTransaction().
 		SetGas(uint64(transaction.gas)).
 		SetConstructorParametersRaw(transaction.parameters).
 		SetInitialBalance(HbarFromTinybar(transaction.initialBalance)).
-		SetInitcode(transaction.createBytecode).
+		SetBytecode(transaction.createBytecode).
 		SetContractMemo(transaction.memo)
 
 	if len(transaction.nodeAccountIDs) > 0 {
@@ -247,6 +288,14 @@ func (transaction *ContractCreateFlow) _CreateContractCreateTransactionWithInitc
 
 	if transaction.autoRenewPeriod != nil {
 		contractCreateTx.SetAutoRenewPeriod(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		contractCreateTx.SetAutoRenewAccountID(*transaction.autoRenewAccountID)
+	}
+
+	if transaction.maxAutomaticTokenAssociations != 0 {
+		contractCreateTx.SetMaxAutomaticTokenAssociations(transaction.maxAutomaticTokenAssociations)
 	}
 
 	return contractCreateTx
@@ -297,7 +346,7 @@ func (transaction *ContractCreateFlow) Execute(client *Client) (TransactionRespo
 		return contractCreateResponse, nil
 	}
 
-	contractCreateResponse, err := transaction._CreateContractCreateTransactionWithInitcode().Execute(client)
+	contractCreateResponse, err := transaction._CreateContractCreateTransactionWithBytecode().Execute(client)
 	if err != nil {
 		return TransactionResponse{}, err
 	}

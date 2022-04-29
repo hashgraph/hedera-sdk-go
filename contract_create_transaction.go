@@ -80,6 +80,7 @@ func (transaction *ContractCreateTransaction) SetGrpcDeadline(deadline *time.Dur
 func (transaction *ContractCreateTransaction) SetBytecodeFileID(byteCodeFileID FileID) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.byteCodeFileID = &byteCodeFileID
+	transaction.initcode = nil
 	return transaction
 }
 
@@ -91,15 +92,16 @@ func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
 	return *transaction.byteCodeFileID
 }
 
-// SetInitcode
+// SetBytecode
 // If it is small then it may either be stored as a hex encoded file or as a binary encoded field as part of the transaction.
-func (transaction *ContractCreateTransaction) SetInitcode(code []byte) *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) SetBytecode(code []byte) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.initcode = code
+	transaction.byteCodeFileID = nil
 	return transaction
 }
 
-func (transaction *ContractCreateTransaction) GetInitcode() []byte {
+func (transaction *ContractCreateTransaction) GetBytecode() []byte {
 	return transaction.initcode
 }
 
