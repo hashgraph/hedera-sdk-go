@@ -42,6 +42,7 @@ type ScheduleInfo struct {
 	ScheduledTransactionID   *TransactionID
 	scheduledTransactionBody *services.SchedulableTransactionBody
 	LedgerID                 LedgerID
+	WaitForExpiry            bool
 }
 
 func _ScheduleInfoFromProtobuf(pb *services.ScheduleInfo) ScheduleInfo {
@@ -103,6 +104,7 @@ func _ScheduleInfoFromProtobuf(pb *services.ScheduleInfo) ScheduleInfo {
 		ScheduledTransactionID:   &scheduledTransactionID,
 		scheduledTransactionBody: pb.ScheduledTransactionBody,
 		LedgerID:                 LedgerID{pb.LedgerId},
+		WaitForExpiry:            pb.WaitForExpiry,
 	}
 }
 
@@ -130,6 +132,7 @@ func (scheduleInfo *ScheduleInfo) _ToProtobuf() *services.ScheduleInfo { // noli
 		PayerAccountID:           scheduleInfo.PayerAccountID._ToProtobuf(),
 		ScheduledTransactionID:   scheduleInfo.ScheduledTransactionID._ToProtobuf(),
 		LedgerId:                 scheduleInfo.LedgerID.ToBytes(),
+		WaitForExpiry:            scheduleInfo.WaitForExpiry,
 	}
 
 	if scheduleInfo.ExecutedAt != nil {
