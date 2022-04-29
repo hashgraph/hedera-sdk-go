@@ -44,13 +44,15 @@ import (
 // bytecode will be immutable.
 type ContractUpdateTransaction struct {
 	Transaction
-	contractID      *ContractID
-	proxyAccountID  *AccountID
-	bytecodeFileID  *FileID
-	adminKey        Key
-	autoRenewPeriod *time.Duration
-	expirationTime  *time.Time
-	memo            string
+	contractID                    *ContractID
+	proxyAccountID                *AccountID
+	bytecodeFileID                *FileID
+	adminKey                      Key
+	autoRenewPeriod               *time.Duration
+	expirationTime                *time.Time
+	memo                          string
+	autoRenewAccountID            *AccountID
+	maxAutomaticTokenAssociations int32
 }
 
 // NewContractUpdateTransaction creates a ContractUpdateTransaction transaction which can be
@@ -201,6 +203,37 @@ func (transaction *ContractUpdateTransaction) SetContractMemo(memo string) *Cont
 	return transaction
 }
 
+// SetAutoRenewAccountID
+// An account to charge for auto-renewal of this contract. If not set, or set to an
+// account with zero hbar balance, the contract's own hbar balance will be used to
+// cover auto-renewal fees.
+func (transaction *ContractUpdateTransaction) SetAutoRenewAccountID(id AccountID) *ContractUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.autoRenewAccountID = &id
+	return transaction
+}
+
+func (transaction *ContractUpdateTransaction) GetAutoRenewAccountID() AccountID {
+	if transaction.autoRenewAccountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.autoRenewAccountID
+}
+
+// SetMaxAutomaticTokenAssociations
+// The maximum number of tokens that this contract can be automatically associated
+// with (i.e., receive air-drops from).
+func (transaction *ContractUpdateTransaction) SetMaxAutomaticTokenAssociations(max int32) *ContractUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.maxAutomaticTokenAssociations = max
+	return transaction
+}
+
+func (transaction *ContractUpdateTransaction) GetMaxAutomaticTokenAssociations() int32 {
+	return transaction.maxAutomaticTokenAssociations
+}
+
 func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	return transaction.memo
 }
@@ -226,7 +259,9 @@ func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Clie
 }
 
 func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody {
-	body := &services.ContractUpdateTransactionBody{}
+	body := &services.ContractUpdateTransactionBody{
+		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations},
+	}
 
 	if transaction.expirationTime != nil {
 		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
@@ -246,6 +281,10 @@ func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody
 
 	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	if body.GetMemoWrapper() != nil {
@@ -279,7 +318,9 @@ func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransac
 }
 
 func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.ContractUpdateTransactionBody{}
+	body := &services.ContractUpdateTransactionBody{
+		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations},
+	}
 
 	if transaction.expirationTime != nil {
 		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
@@ -299,6 +340,10 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*ser
 
 	if transaction.proxyAccountID != nil {
 		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	if body.GetMemoWrapper() != nil {

@@ -41,6 +41,7 @@ type ContractCallQuery struct {
 	gas                uint64
 	maxResultSize      uint64
 	functionParameters []byte
+	senderID           *AccountID
 }
 
 // NewContractCallQuery creates a ContractCallQuery query which can be used to construct and execute a
@@ -72,6 +73,23 @@ func (query *ContractCallQuery) GetContractID() ContractID {
 	}
 
 	return *query.contractID
+}
+
+// SetSenderID
+// The account that is the "sender." If not present it is the accountId from the transactionId.
+// Typically a different value than specified in the transactionId requires a valid signature
+// over either the hedera transaction or foreign transaction data.
+func (query *ContractCallQuery) SetSenderID(id AccountID) *ContractCallQuery {
+	query.senderID = &id
+	return query
+}
+
+func (query *ContractCallQuery) GetSenderID() AccountID {
+	if query.senderID == nil {
+		return AccountID{}
+	}
+
+	return *query.senderID
 }
 
 // SetGas sets the amount of gas to use for the call. All of the gas offered will be charged for.
@@ -120,6 +138,12 @@ func (query *ContractCallQuery) _ValidateNetworkOnIDs(client *Client) error {
 		}
 	}
 
+	if query.senderID != nil {
+		if err := query.senderID.ValidateChecksum(client); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -133,6 +157,10 @@ func (query *ContractCallQuery) _Build() *services.Query_ContractCallLocal {
 
 	if query.contractID != nil {
 		pb.ContractCallLocal.ContractID = query.contractID._ToProtobuf()
+	}
+
+	if query.senderID != nil {
+		pb.ContractCallLocal.SenderId = query.senderID._ToProtobuf()
 	}
 
 	if len(query.functionParameters) > 0 {
