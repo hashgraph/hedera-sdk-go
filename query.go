@@ -110,6 +110,14 @@ func (this *Query) SetQueryPayment(paymentAmount Hbar) *Query {
 	return this
 }
 
+func (this *Query) GetMaxQueryPayment() Hbar {
+	return this.maxQueryPayment
+}
+
+func (this *Query) GetQueryPayment() Hbar {
+	return this.queryPayment
+}
+
 func (this *Query) GetMaxRetryCount() int {
 	return this.maxRetry
 }
@@ -231,7 +239,11 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 }
 
 func (this *Query) GetPaymentTransactionID() TransactionID {
-	return this.paymentTransactionIDs._GetCurrent().(TransactionID)
+	if !this.paymentTransactionIDs._IsEmpty() {
+		return this.paymentTransactionIDs._GetCurrent().(TransactionID)
+	}
+
+	return TransactionID{}
 }
 
 func (this *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {

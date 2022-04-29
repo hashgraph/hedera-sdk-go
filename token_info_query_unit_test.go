@@ -78,3 +78,36 @@ func TestUnitTokenInfoFromBytesEmptyBytes(t *testing.T) {
 	_, err := TokenInfoFromBytes([]byte{})
 	require.NoError(t, err)
 }
+
+func TestUnitTokenInfoQueryGet(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+
+	balance := NewTokenInfoQuery().
+		SetTokenID(tokenID).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetTokenID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitTokenInfoQueryNothingSet(t *testing.T) {
+	balance := NewTokenInfoQuery()
+
+	balance.GetTokenID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

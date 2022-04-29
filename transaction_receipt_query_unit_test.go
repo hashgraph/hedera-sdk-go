@@ -24,9 +24,8 @@ package hedera
  */
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 )
@@ -60,4 +59,43 @@ func TestUnitTransactionReceiptQueryValidateWrong(t *testing.T) {
 	if err != nil {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
+}
+
+func TestUnitTransactionReceiptQueryGet(t *testing.T) {
+	txID := TransactionIDGenerate(AccountID{Account: 7})
+
+	balance := NewTransactionReceiptQuery().
+		SetTransactionID(txID).
+		SetIncludeDuplicates(true).
+		SetIncludeChildren(true).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetTransactionID()
+	balance.GetIncludeChildren()
+	balance.GetIncludeDuplicates()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitTransactionReceiptQueryNothingSet(t *testing.T) {
+	balance := NewTransactionReceiptQuery()
+
+	balance.GetTransactionID()
+	balance.GetIncludeChildren()
+	balance.GetIncludeDuplicates()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
 }

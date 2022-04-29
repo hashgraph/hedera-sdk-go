@@ -59,3 +59,37 @@ func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
+
+func TestUnitTokenNftInfoQueryGet(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+	nftID := tokenID.Nft(45)
+
+	balance := NewTokenNftInfoQuery().
+		SetNftID(nftID).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetNftID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitTokenNftInfoQueryNothingSet(t *testing.T) {
+	balance := NewTokenNftInfoQuery()
+
+	balance.GetNftID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	protobuf "google.golang.org/protobuf/proto"
@@ -116,4 +117,72 @@ func TestUnitMockFileDeleteTransaction(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		Execute(client)
 	require.NoError(t, err)
+}
+
+func TestUnitFileDeleteTransactionGet(t *testing.T) {
+	fileID := FileID{File: 7}
+
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewFileDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetFileID(fileID).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetFileID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
+}
+
+func TestUnitFileDeleteTransactionNothingSet(t *testing.T) {
+	fileID := FileID{File: 7}
+
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewFileDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetFileID(fileID).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+
+	transaction.GetFileID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetRegenerateTransactionID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetRegenerateTransactionID()
 }

@@ -106,3 +106,71 @@ func TestUnitAccountAllowanceApproveTransaction(t *testing.T) {
 		})
 	}
 }
+
+func TestUnitAccountAllowanceApproveTransactionGet(t *testing.T) {
+	tokenID1 := TokenID{Token: 1}
+	tokenID2 := TokenID{Token: 141}
+	serialNumber1 := int64(3)
+	serialNumber2 := int64(4)
+	nftID1 := tokenID2.Nft(serialNumber1)
+	nftID2 := tokenID2.Nft(serialNumber2)
+	owner := AccountID{Account: 10}
+	spenderAccountID1 := AccountID{Account: 7}
+	spenderAccountID2 := AccountID{Account: 7890}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	hbarAmount := HbarFromTinybar(100)
+	tokenAmount := int64(101)
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountAllowanceApproveTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		ApproveHbarAllowance(owner, spenderAccountID1, hbarAmount).
+		ApproveTokenAllowance(tokenID1, owner, spenderAccountID1, tokenAmount).
+		ApproveTokenNftAllowance(nftID1, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID2).
+		AddAllTokenNftApproval(tokenID1, spenderAccountID1).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetTokenNftAllowances()
+	transaction.GetHbarAllowances()
+	transaction.GetTokenAllowances()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+}
+
+func TestUnitAccountAllowanceApproveTransactionSetNothing(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountAllowanceApproveTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetTokenNftAllowances()
+	transaction.GetHbarAllowances()
+	transaction.GetTokenAllowances()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+}

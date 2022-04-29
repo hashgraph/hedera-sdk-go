@@ -61,3 +61,51 @@ func TestUnitTransactionRecordQueryValidateWrong(t *testing.T) {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
+
+func TestUnitTransactionRecordQueryGet(t *testing.T) {
+	txID := TransactionIDGenerate(AccountID{Account: 7})
+
+	balance := NewTransactionRecordQuery().
+		SetTransactionID(txID).
+		SetIncludeDuplicates(true).
+		SetIncludeChildren(true).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetTransactionID()
+	balance.GetIncludeChildren()
+	balance.GetIncludeDuplicates()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitTransactionRecordQueryNothingSet(t *testing.T) {
+	txID := TransactionIDGenerate(AccountID{Account: 7})
+
+	balance := NewTransactionRecordQuery().
+		SetTransactionID(txID).
+		SetIncludeDuplicates(true).
+		SetIncludeChildren(true).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetTransactionID()
+	balance.GetIncludeChildren()
+	balance.GetIncludeDuplicates()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

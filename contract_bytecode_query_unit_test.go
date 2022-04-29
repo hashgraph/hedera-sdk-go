@@ -96,3 +96,35 @@ func TestUnitMockContractBytecodeQuery(t *testing.T) {
 
 	require.Equal(t, bytes.Compare(bytecode, smartContractBytecode), 0)
 }
+
+func TestUnitContractBytecodeQueryGet(t *testing.T) {
+	contractID := ContractID{Contract: 7}
+
+	balance := NewContractBytecodeQuery().
+		SetContractID(contractID).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(10)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetContractID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitContractBytecodeQuerySetNothing(t *testing.T) {
+	balance := NewContractBytecodeQuery()
+
+	balance.GetContractID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

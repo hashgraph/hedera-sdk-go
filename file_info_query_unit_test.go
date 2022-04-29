@@ -117,3 +117,36 @@ func TestUnitMockFileInfoQuery(t *testing.T) {
 	require.Equal(t, result.IsDeleted, false)
 	require.True(t, result.LedgerID.IsMainnet())
 }
+
+func TestUnitFileInfoQueryGet(t *testing.T) {
+	fileID := FileID{File: 7}
+
+	balance := NewFileInfoQuery().
+		SetFileID(fileID).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(1)).
+		SetQueryPayment(HbarFromTinybar(25)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetFileID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitFileInfoQuerySetNothing(t *testing.T) {
+	balance := NewFileInfoQuery()
+
+	balance.GetFileID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

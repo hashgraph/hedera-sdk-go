@@ -59,3 +59,35 @@ func TestUnitAccountInfoQueryValidateWrong(t *testing.T) {
 		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
+
+func TestUnitAccountInfoQueryGet(t *testing.T) {
+	spenderAccountID1 := AccountID{Account: 7}
+
+	balance := NewAccountInfoQuery().
+		SetAccountID(spenderAccountID1).
+		SetQueryPayment(NewHbar(2)).
+		SetMaxQueryPayment(NewHbar(10)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetAccountID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitAccountInfoQuerySetNothing(t *testing.T) {
+	balance := NewAccountInfoQuery()
+
+	balance.GetAccountID()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}

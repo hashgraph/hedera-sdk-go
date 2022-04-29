@@ -107,3 +107,40 @@ func TestUnitMockContractCallQuery(t *testing.T) {
 	require.Equal(t, result.GasUsed, uint64(75000))
 	require.Equal(t, result.ContractID.Contract, uint64(123))
 }
+
+func TestUnitContractCallQueryGet(t *testing.T) {
+	spenderContractID := ContractID{Contract: 7}
+
+	balance := NewContractCallQuery().
+		SetContractID(spenderContractID).
+		SetQueryPayment(NewHbar(2)).
+		SetGas(100000).
+		SetFunction("getMessage", nil).
+		SetFunctionParameters([]byte{}).
+		SetMaxQueryPayment(NewHbar(10)).
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+
+	balance.GetContractID()
+	balance.GetFunctionParameters()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
+
+func TestUnitContractCallQuerySetNothing(t *testing.T) {
+	balance := NewContractCallQuery()
+
+	balance.GetContractID()
+	balance.GetFunctionParameters()
+	balance.GetNodeAccountIDs()
+	balance.GetMinBackoff()
+	balance.GetMaxBackoff()
+	balance.GetMaxRetryCount()
+	balance.GetPaymentTransactionID()
+	balance.GetQueryPayment()
+	balance.GetMaxQueryPayment()
+}
