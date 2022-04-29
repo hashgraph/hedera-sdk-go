@@ -1,3 +1,24 @@
+# v2.14.0-beta.1
+
+### Added
+
+* `ContractCreateTransaction.[Get|Set]MaxAutomaticTokenAssociations()`
+* `ContractCreateTransaction.[Get|Set]AutoRenewAccountId()`
+* `ContractCreateTransaction.[Get|Set]Bytecode()`
+* `ContractUpdateTransaction.[Get|Set]MaxAutomaticTokenAssociations()`
+* `ContractUpdateTransaction.[Get|Set|clear]AutoRenewAccountId()`
+* `ContractCreateFlow.[Get|Set]MaxAutomaticTokenAssociations()`
+* `ContractCreateFlow.[Get|Set]AutoRenewAccountId()`
+* `ContractInfo.AutoRenewAccountID`
+* `ContractDeleteTransaction.[Get|Set]PermanentRemoval`
+* `ContractCallQuery.[Get|Set]SenderID`
+* `ScheduleCreateTransaction.[Get|Set]ExpirationTime`
+* `ScheduleCreateTransaction.[Get|Set]WaitForExpiry`
+* `ScheduleInfo.WaitForExpiry`
+* `EthereumTransaction`
+* `TransactionRecord.EthereumHash`
+* `AccountInfo.EthereumNonce`
+
 ## v2.13.3
 
 ### Fixed
