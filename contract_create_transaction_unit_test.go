@@ -107,7 +107,7 @@ func TestUnitMockContractCreateTransaction(t *testing.T) {
 		}
 
 		if bod, ok := transactionBody.Data.(*services.TransactionBody_ContractCreateInstance); ok {
-			require.Equal(t, bod.ContractCreateInstance.FileID.FileNum, int64(123))
+			require.Equal(t, bod.ContractCreateInstance.InitcodeSource.(*services.ContractCreateTransactionBody_FileID).FileID.FileNum, int64(123))
 			params := NewContractFunctionParameters().AddString("hello from hedera")
 			require.Equal(t, bytes.Compare(bod.ContractCreateInstance.ConstructorParameters, params._Build(nil)), 0)
 			require.Equal(t, bod.ContractCreateInstance.Memo, "hedera-sdk-go::TestContractCreateTransaction_Execute")

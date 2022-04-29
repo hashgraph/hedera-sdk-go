@@ -289,6 +289,20 @@ const (
 	StatusInvalidDelegatingSpender                                 Status = 303
 	StatusDelegatingSpenderCannotGrantApproveForAll                Status = 304
 	StatusDelegatingSpenderDoesNotHaveApproveForAll                Status = 305
+	StatusScheduleExpirationTimeTooFarInFuture                     Status = 306
+	StatusScheduleExpirationTimeMustBeHigherThanConsensusTime      Status = 307
+	StatusScheduleFutureThrottleExceeded                           Status = 308
+	StatusScheduleFutureGasLimitExceeded                           Status = 309
+	StatusInvalidEthereumTransaction                               Status = 310
+	StatusWrongChanID                                              Status = 311
+	StatusWrongNonce                                               Status = 312
+	StatusAccessListUnsupported                                    Status = 313
+	StatusSchedulePendingExpiration                                Status = 314
+	StatusContractIsTokenTreasury                                  Status = 315
+	StatusContractHasNonZeroTokenBalances                          Status = 316
+	StatusContractExpiredAndPendingRemoval                         Status = 317
+	StatusContractHasNoAutoRenewAccount                            Status = 318
+	StatusPermanentRemovalRequiresSystemInitiation                 Status = 319
 )
 
 // String() returns a string representation of the status
@@ -822,6 +836,34 @@ func (status Status) String() string { // nolint
 		return "DELEGATING_SPENDER_CANNOT_GRANT_APPROVE_FOR_ALL"
 	case StatusDelegatingSpenderDoesNotHaveApproveForAll:
 		return "DELEGATING_SPENDER_DOES_NOT_HAVE_APPROVE_FOR_ALL"
+	case StatusScheduleExpirationTimeTooFarInFuture:
+		return "SCHEDULE_EXPIRATION_TIME_TOO_FAR_IN_FUTURE"
+	case StatusScheduleExpirationTimeMustBeHigherThanConsensusTime:
+		return "SCHEDULE_EXPIRATION_TIME_MUST_BE_HIGHER_THAN_CONSENSUS_TIME"
+	case StatusScheduleFutureThrottleExceeded:
+		return "SCHEDULE_FUTURE_THROTTLE_EXCEEDED"
+	case StatusScheduleFutureGasLimitExceeded:
+		return "SCHEDULE_FUTURE_GAS_LIMIT_EXCEEDED"
+	case StatusInvalidEthereumTransaction:
+		return "INVALID_ETHEREUM_TRANSACTION"
+	case StatusWrongChanID:
+		return "WRONG_CHAIN_ID"
+	case StatusWrongNonce:
+		return "WRONG_NONCE"
+	case StatusAccessListUnsupported:
+		return "ACCESS_LIST_UNSUPPORTED"
+	case StatusSchedulePendingExpiration:
+		return "SCHEDULE_PENDING_EXPIRATION"
+	case StatusContractIsTokenTreasury:
+		return "CONTRACT_IS_TOKEN_TREASURY"
+	case StatusContractHasNonZeroTokenBalances:
+		return "CONTRACT_HAS_NON_ZERO_TOKEN_BALANCES"
+	case StatusContractExpiredAndPendingRemoval:
+		return "CONTRACT_EXPIRED_AND_PENDING_REMOVAL"
+	case StatusContractHasNoAutoRenewAccount:
+		return "CONTRACT_HAS_NO_AUTO_RENEW_ACCOUNT"
+	case StatusPermanentRemovalRequiresSystemInitiation:
+		return "PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

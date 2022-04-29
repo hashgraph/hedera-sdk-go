@@ -28,16 +28,17 @@ import (
 )
 
 type ContractInfo struct {
-	AccountID         AccountID
-	ContractID        ContractID
-	ContractAccountID string
-	AdminKey          Key
-	ExpirationTime    time.Time
-	AutoRenewPeriod   time.Duration
-	Storage           uint64
-	ContractMemo      string
-	Balance           uint64
-	LedgerID          LedgerID
+	AccountID          AccountID
+	ContractID         ContractID
+	ContractAccountID  string
+	AdminKey           Key
+	ExpirationTime     time.Time
+	AutoRenewPeriod    time.Duration
+	Storage            uint64
+	ContractMemo       string
+	Balance            uint64
+	LedgerID           LedgerID
+	AutoRenewAccountID *AccountID
 }
 
 func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_ContractInfo) (ContractInfo, error) {
@@ -64,22 +65,28 @@ func _ContractInfoFromProtobuf(contractInfo *services.ContractGetInfoResponse_Co
 		contractID = *_ContractIDFromProtobuf(contractInfo.ContractID)
 	}
 
+	var autoRenewAccountID *AccountID
+	if contractInfo.AutoRenewAccountId != nil {
+		autoRenewAccountID = _AccountIDFromProtobuf(contractInfo.AutoRenewAccountId)
+	}
+
 	return ContractInfo{
-		AccountID:         accountID,
-		ContractID:        contractID,
-		ContractAccountID: contractInfo.ContractAccountID,
-		AdminKey:          adminKey,
-		ExpirationTime:    _TimeFromProtobuf(contractInfo.ExpirationTime),
-		AutoRenewPeriod:   _DurationFromProtobuf(contractInfo.AutoRenewPeriod),
-		Storage:           uint64(contractInfo.Storage),
-		ContractMemo:      contractInfo.Memo,
-		Balance:           contractInfo.Balance,
-		LedgerID:          LedgerID{contractInfo.LedgerId},
+		AccountID:          accountID,
+		ContractID:         contractID,
+		ContractAccountID:  contractInfo.ContractAccountID,
+		AdminKey:           adminKey,
+		ExpirationTime:     _TimeFromProtobuf(contractInfo.ExpirationTime),
+		AutoRenewPeriod:    _DurationFromProtobuf(contractInfo.AutoRenewPeriod),
+		Storage:            uint64(contractInfo.Storage),
+		ContractMemo:       contractInfo.Memo,
+		Balance:            contractInfo.Balance,
+		LedgerID:           LedgerID{contractInfo.LedgerId},
+		AutoRenewAccountID: autoRenewAccountID,
 	}, nil
 }
 
 func (contractInfo *ContractInfo) _ToProtobuf() *services.ContractGetInfoResponse_ContractInfo {
-	return &services.ContractGetInfoResponse_ContractInfo{
+	body := &services.ContractGetInfoResponse_ContractInfo{
 		ContractID:        contractInfo.ContractID._ToProtobuf(),
 		AccountID:         contractInfo.AccountID._ToProtobuf(),
 		ContractAccountID: contractInfo.ContractAccountID,
@@ -91,6 +98,12 @@ func (contractInfo *ContractInfo) _ToProtobuf() *services.ContractGetInfoRespons
 		Balance:           contractInfo.Balance,
 		LedgerId:          contractInfo.LedgerID.ToBytes(),
 	}
+
+	if contractInfo.AutoRenewAccountID != nil {
+		body.AutoRenewAccountId = contractInfo.AutoRenewAccountID._ToProtobuf()
+	}
+
+	return body
 }
 
 func (contractInfo ContractInfo) ToBytes() []byte {
