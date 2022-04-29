@@ -35,6 +35,9 @@ func _EthereumTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 	}
 }
 
+// SetEthereumData
+// The raw Ethereum transaction (RLP encoded type 0, 1, and 2). Complete
+// unless the callData field is set.
 func (transaction *EthereumTransaction) SetEthereumData(data []byte) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 	transaction.ethereumData = data
@@ -51,6 +54,12 @@ func (transaction *EthereumTransaction) SetCallData(file FileID) *EthereumTransa
 	return transaction
 }
 
+// GetCallData
+// For large transactions (for example contract create) this is the callData
+// of the ethereumData. The data in the ethereumData will be re-written with
+// the callData element as a zero length string with the original contents in
+// the referenced file at time of execution. The ethereumData will need to be
+// "rehydrated" with the callData for signature validation to pass.
 func (transaction *EthereumTransaction) GetCallData() FileID {
 	if transaction.callData != nil {
 		return *transaction.callData
@@ -59,6 +68,9 @@ func (transaction *EthereumTransaction) GetCallData() FileID {
 	return FileID{}
 }
 
+// SetMaxGasAllowed
+// The maximum amount, in tinybars, that the payer of the hedera transaction
+// is willing to pay to complete the transaction.
 func (transaction *EthereumTransaction) SetMaxGasAllowed(gas int64) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 	transaction.MaxGasAllowed = gas
