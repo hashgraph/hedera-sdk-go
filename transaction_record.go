@@ -56,6 +56,7 @@ type TransactionRecord struct {
 	TokenAllowances []TokenAllowance
 	// Deprecated
 	TokenNftAllowances []TokenNftAllowance
+	EthereumHash       []byte
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -165,6 +166,7 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		AliasKey:                   alias,
 		Duplicates:                 duplicateReceipts,
 		Children:                   childReceipts,
+		EthereumHash:               pb.EthereumHash,
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -261,7 +263,8 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 			Seconds: int64(record.ParentConsensusTimestamp.Second()),
 			Nanos:   int32(record.ParentConsensusTimestamp.Nanosecond()),
 		},
-		Alias: alias,
+		Alias:        alias,
+		EthereumHash: record.EthereumHash,
 	}
 
 	var err error
