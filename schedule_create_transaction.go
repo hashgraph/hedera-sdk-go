@@ -34,6 +34,8 @@ type ScheduleCreateTransaction struct {
 	adminKey        Key
 	schedulableBody *services.SchedulableTransactionBody
 	memo            string
+	expirationTime  *time.Time
+	waitForExpiry   bool
 }
 
 func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
@@ -83,6 +85,32 @@ func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCrea
 	transaction.adminKey = key
 
 	return transaction
+}
+
+func (transaction *ScheduleCreateTransaction) SetExpirationTime(time time.Time) *ScheduleCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.expirationTime = &time
+
+	return transaction
+}
+
+func (transaction *ScheduleCreateTransaction) GetExpirationTime() time.Time {
+	if transaction.expirationTime != nil {
+		return *transaction.expirationTime
+	}
+
+	return time.Time{}
+}
+
+func (transaction *ScheduleCreateTransaction) SetWaitForExpiry(wait bool) *ScheduleCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.waitForExpiry = wait
+
+	return transaction
+}
+
+func (transaction *ScheduleCreateTransaction) GetWaitForExpiry() bool {
+	return transaction.waitForExpiry
 }
 
 func (transaction *ScheduleCreateTransaction) _SetSchedulableTransactionBody(txBody *services.SchedulableTransactionBody) *ScheduleCreateTransaction {
@@ -138,7 +166,8 @@ func (transaction *ScheduleCreateTransaction) _ValidateNetworkOnIDs(client *Clie
 
 func (transaction *ScheduleCreateTransaction) _Build() *services.TransactionBody {
 	body := &services.ScheduleCreateTransactionBody{
-		Memo: transaction.memo,
+		Memo:          transaction.memo,
+		WaitForExpiry: transaction.waitForExpiry,
 	}
 
 	if transaction.payerAccountID != nil {
@@ -151,6 +180,10 @@ func (transaction *ScheduleCreateTransaction) _Build() *services.TransactionBody
 
 	if transaction.schedulableBody != nil {
 		body.ScheduledTransactionBody = transaction.schedulableBody
+	}
+
+	if transaction.expirationTime != nil {
+		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
 
 	return &services.TransactionBody{
