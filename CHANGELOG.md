@@ -1,3 +1,16 @@
+## v2.13.2
+
+### Added
+
+* `*Query.GetMaxQueryPayment()`
+* `*Query.GetQueryPayment()`
+
+### Fixed
+
+* `*Query.GetPaymentTransactionID()` panic when not set.`
+* Removed unneeded parameter in `AccountDeleteTransaction.GetTransferAccountID()`.
+* `FileUpdateTransaction.GeFileMemo()` is now `FileUpdateTransaction.GetFileMemo()`
+
 ## v2.13.1
 
 ### Added
