@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -32,11 +33,12 @@ import (
 
 // AccountID is the ID for a Hedera account
 type AccountID struct {
-	Shard    uint64
-	Realm    uint64
-	Account  uint64
-	AliasKey *PublicKey
-	checksum *string
+	Shard           uint64
+	Realm           uint64
+	Account         uint64
+	AliasKey        *PublicKey
+	AliasEvmAddress *[]byte
+	checksum        *string
 }
 
 type _AccountIDs struct { //nolint
@@ -46,27 +48,54 @@ type _AccountIDs struct { //nolint
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
-	shard, realm, num, checksum, alias, err := _AccountIDFromString(data)
+	shard, realm, num, checksum, alias, aliasEvmAddress, err := _AccountIDFromString(data)
 	if err != nil {
 		return AccountID{}, err
 	}
 
 	if num == -1 {
+		if alias != nil {
+			return AccountID{
+				Shard:           uint64(shard),
+				Realm:           uint64(realm),
+				Account:         0,
+				AliasKey:        alias,
+				AliasEvmAddress: nil,
+				checksum:        checksum,
+			}, nil
+		}
+
 		return AccountID{
-			Shard:    uint64(shard),
-			Realm:    uint64(realm),
-			Account:  0,
-			AliasKey: alias,
-			checksum: checksum,
+			Shard:           uint64(shard),
+			Realm:           uint64(realm),
+			Account:         0,
+			AliasKey:        nil,
+			AliasEvmAddress: aliasEvmAddress,
+			checksum:        checksum,
 		}, nil
 	}
 
 	return AccountID{
-		Shard:    uint64(shard),
-		Realm:    uint64(realm),
-		Account:  uint64(num),
-		AliasKey: nil,
-		checksum: checksum,
+		Shard:           uint64(shard),
+		Realm:           uint64(realm),
+		Account:         uint64(num),
+		AliasKey:        nil,
+		AliasEvmAddress: nil,
+		checksum:        checksum,
+	}, nil
+}
+
+func AccountIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (AccountID, error) {
+	temp, err := hex.DecodeString(evmAddress)
+	if err != nil {
+		return AccountID{}, err
+	}
+	return AccountID{
+		Shard:           shard,
+		Realm:           realm,
+		Account:         0,
+		AliasEvmAddress: &temp,
+		checksum:        nil,
 	}, nil
 }
 
@@ -144,6 +173,8 @@ func (id *AccountID) Validate(client *Client) error {
 func (id AccountID) String() string {
 	if id.AliasKey != nil {
 		return fmt.Sprintf("%d.%d.%s", id.Shard, id.Realm, id.AliasKey.String())
+	} else if id.AliasEvmAddress != nil {
+		return fmt.Sprintf("%d.%d.%s", id.Shard, id.Realm, hex.EncodeToString(*id.AliasEvmAddress))
 	}
 
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
@@ -183,17 +214,24 @@ func (id AccountID) _ToProtobuf() *services.AccountID {
 		ShardNum: int64(id.Shard),
 		RealmNum: int64(id.Realm),
 	}
-	if id.AliasKey == nil {
-		resultID.Account = &services.AccountID_AccountNum{
-			AccountNum: int64(id.Account),
+	if id.AliasKey != nil {
+		data, _ := protobuf.Marshal(id.AliasKey._ToProtoKey())
+		resultID.Account = &services.AccountID_Alias{
+			Alias: data,
+		}
+
+		return resultID
+	} else if id.AliasEvmAddress != nil {
+		data, _ := protobuf.Marshal(&services.Key{Key: &services.Key_ECDSASecp256K1{ECDSASecp256K1: *id.AliasEvmAddress}})
+		resultID.Account = &services.AccountID_Alias{
+			Alias: data,
 		}
 
 		return resultID
 	}
 
-	data, _ := protobuf.Marshal(id.AliasKey._ToProtoKey())
-	resultID.Account = &services.AccountID_Alias{
-		Alias: data,
+	resultID.Account = &services.AccountID_AccountNum{
+		AccountNum: int64(id.Account),
 	}
 
 	return resultID
@@ -226,6 +264,11 @@ func _AccountIDFromProtobuf(accountID *services.AccountID) *AccountID {
 		pb := services.Key{}
 		_ = protobuf.Unmarshal(t.Alias, &pb)
 		initialKey, _ := _KeyFromProtobuf(&pb)
+		if evm, ok := pb.Key.(*services.Key_ECDSASecp256K1); ok && len(evm.ECDSASecp256K1) == 20 {
+			resultAccountID.Account = 0
+			resultAccountID.AliasEvmAddress = &evm.ECDSASecp256K1
+			return resultAccountID
+		}
 		switch t2 := initialKey.(type) {
 		case PublicKey:
 			resultAccountID.Account = 0

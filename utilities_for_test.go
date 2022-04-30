@@ -239,7 +239,7 @@ func _NewMockTransaction() (*TransferTransaction, error) {
 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
 		SetTransactionID(testTransactionID).
-		SetNodeAccountIDs([]AccountID{{0, 0, 4, nil, nil}}).
+		SetNodeAccountIDs([]AccountID{{0, 0, 4, nil, nil, nil}}).
 		FreezeWith(client)
 	if err != nil {
 		return &TransferTransaction{}, err

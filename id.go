@@ -28,12 +28,12 @@ import (
 	"strings"
 )
 
-func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, err error) {
+func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, evmAddress *[]byte, err error) {
 	if strings.Contains(s, "-") {
 		values := strings.SplitN(s, "-", 2)
 
 		if len(values) > 2 {
-			return 0, 0, 0, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}-{checksum}")
+			return 0, 0, 0, nil, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}-{checksum}")
 		}
 
 		checksum = &values[1]
@@ -43,30 +43,41 @@ func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *st
 	values := strings.SplitN(s, ".", 3)
 	if len(values) != 3 {
 		// Was not three values separated by periods
-		return 0, 0, 0, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}")
+		return 0, 0, 0, nil, nil, nil, fmt.Errorf("expected {shard}.{realm}.{num}")
 	}
 
 	shard, err = strconv.Atoi(values[0])
 	if err != nil {
-		return 0, 0, 0, nil, nil, err
+		return 0, 0, 0, nil, nil, nil, err
 	}
 
 	realm, err = strconv.Atoi(values[1])
 	if err != nil {
-		return 0, 0, 0, nil, nil, err
+		return 0, 0, 0, nil, nil, nil, err
+	}
+
+	if len(values[2]) < 20 {
+		num, err = strconv.Atoi(values[2])
+		if err != nil {
+			return 0, 0, 0, nil, nil, nil, err
+		}
+
+		return shard, realm, num, checksum, nil, nil, nil
+	} else if len(values[2]) == 40 {
+		temp, err2 := hex.DecodeString(values[2])
+		if err2 != nil {
+			return 0, 0, 0, nil, nil, nil, err
+		}
+
+		return shard, realm, -1, checksum, nil, &temp, nil
 	}
 
 	key, err := PublicKeyFromString(values[2])
 	if err != nil {
-		num, err = strconv.Atoi(values[2])
-		if err != nil {
-			return 0, 0, 0, nil, nil, err
-		}
-
-		return shard, realm, num, checksum, nil, nil
+		return 0, 0, 0, nil, nil, nil, err
 	}
 
-	return shard, realm, -1, checksum, &key, nil
+	return shard, realm, -1, checksum, &key, nil, nil
 }
 
 func _ContractIDFromString(s string) (shard int, realm int, num int, checksum *string, evmAddress []byte, err error) {
@@ -101,7 +112,7 @@ func _ContractIDFromString(s string) (shard int, realm int, num int, checksum *s
 	if err != nil {
 		temp, err2 := hex.DecodeString(values[2])
 		if err2 != nil {
-			return 0, 0, 0, nil, []byte{}, err
+			return 0, 0, 0, nil, nil, err
 		}
 		return shard, realm, -1, checksum, temp, nil
 	}
