@@ -166,13 +166,14 @@ func _Execute( // nolint
 		}
 
 		logCtx.Trace().Str("requestId", logID).Msg("updating node account ID index")
-		advanceRequest(request)
 
 		channel, err := node._GetChannel()
 		if err != nil {
 			client.network._IncreaseBackoff(node)
 			continue
 		}
+
+		advanceRequest(request)
 
 		method := getMethod(request, channel)
 

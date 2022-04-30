@@ -569,6 +569,7 @@ func _TransactionMakeRequest(request interface{}) interface{} {
 
 func _TransactionAdvanceRequest(request interface{}) {
 	request.(*Transaction).nodeAccountIDs._Advance()
+	request.(*Transaction).signedTransactions._Advance()
 }
 
 func _TransactionGetNodeAccountID(request interface{}) AccountID {
