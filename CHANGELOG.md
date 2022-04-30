@@ -10,6 +10,8 @@
 * `*Query.GetPaymentTransactionID()` panic when not set.`
 * Removed unneeded parameter in `AccountDeleteTransaction.GetTransferAccountID()`.
 * `FileUpdateTransaction.GeFileMemo()` is now `FileUpdateTransaction.GetFileMemo()`
+* `TopicMessageSubmitTransaction` failing to send all messages, instead was getting duplicated transaction error.
+* `TopicMessageSubmitTransaction` would panic if no message was set.
 
 ## v2.13.1
 
