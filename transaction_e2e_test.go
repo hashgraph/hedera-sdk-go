@@ -143,7 +143,7 @@ func TestIntegrationTransactionGetHash(t *testing.T) {
 }
 
 func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
-	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil, nil})
+	id := TransactionIDGenerate(AccountID{0, 0, 542348, nil, nil, nil})
 
 	TransactionBody := services.TransactionBody{
 		TransactionID: &services.TransactionID{
@@ -262,19 +262,19 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 
 	switch tx := transaction.(type) {
 	case TransferTransaction:
-		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348, nil, nil}].AsTinybar(), int64(-10))
-		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil, nil}].AsTinybar(), int64(10))
+		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 542348, nil, nil, nil}].AsTinybar(), int64(-10))
+		assert.Equal(t, tx.GetHbarTransfers()[AccountID{0, 0, 47439, nil, nil, nil}].AsTinybar(), int64(10))
 
 		signatures, err := tx.GetSignatures()
 		require.NoError(t, err)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey1)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey2)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey3)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey4)
-		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil}], &publicKey5)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil, nil}], &publicKey1)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil, nil}], &publicKey2)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil, nil}], &publicKey3)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil, nil}], &publicKey4)
+		assert.Contains(t, signatures[AccountID{0, 0, 3, nil, nil, nil}], &publicKey5)
 
 		assert.Equal(t, len(tx.GetNodeAccountIDs()), 1)
-		assert.True(t, tx.GetNodeAccountIDs()[0]._Equals(AccountID{0, 0, 3, nil, nil}))
+		assert.True(t, tx.GetNodeAccountIDs()[0]._Equals(AccountID{0, 0, 3, nil, nil, nil}))
 
 		resp, err := tx.Execute(env.Client)
 		require.NoError(t, err)

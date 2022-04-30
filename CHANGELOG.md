@@ -18,6 +18,8 @@
 * `EthereumTransaction`
 * `TransactionRecord.EthereumHash`
 * `AccountInfo.EthereumNonce`
+* `AccountID.AliasEvmAddress`
+* `AccountID.AccountIDFromEvmAddress()`
 
 ## v2.13.3
 
