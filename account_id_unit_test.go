@@ -68,3 +68,10 @@ func TestUnitChecksum(t *testing.T) {
 
 	require.NotEqual(t, ad1.correctChecksum, ad2.correctChecksum)
 }
+
+func TestUnitAccountIDEvm(t *testing.T) {
+	id, err := AccountIDFromString("0.0.0011223344556677889900112233445566778899")
+	require.NoError(t, err)
+
+	require.Equal(t, id.String(), "0.0.0011223344556677889900112233445566778899")
+}
