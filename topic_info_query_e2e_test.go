@@ -89,6 +89,7 @@ func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 
 	topicInfo := NewTopicInfoQuery().
 		SetMaxQueryPayment(NewHbar(1)).
+		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTopicID(topicID)
 
 	cost, err := topicInfo.GetCost(env.Client)

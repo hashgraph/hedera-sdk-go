@@ -250,7 +250,7 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 		}
 	}
 
-	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
+	transactionID := transaction.GetTransactionID()
 	accountID := AccountID{}
 	if transactionID.AccountID != nil {
 		accountID = *transactionID.AccountID
