@@ -30,7 +30,7 @@ import (
 )
 
 func TestUnitTransactionID(t *testing.T) {
-	txID := TransactionIDGenerate(AccountID{0, 0, 3, nil, nil})
+	txID := TransactionIDGenerate(AccountID{0, 0, 3, nil, nil, nil})
 	txID = txID.SetScheduled(true)
 }
 

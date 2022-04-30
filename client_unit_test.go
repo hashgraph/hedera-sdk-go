@@ -70,43 +70,43 @@ func TestUnitClientFromConfigWrongType(t *testing.T) {
 func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	client := ClientForTestnet()
 	nodes := make(map[string]AccountID, 2)
-	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil}
-	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil, nil}
+	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil, nil}
+	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil, nil, nil}
 
 	err := client.SetNetwork(nodes)
 	require.NoError(t, err)
 	network := client.GetNetwork()
 	assert.Equal(t, 2, len(network))
-	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil, nil})
-	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil, nil})
+	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil, nil, nil})
+	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil, nil, nil})
 
 	nodes = make(map[string]AccountID, 2)
-	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil}
-	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil, nil}
-	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil, nil}
+	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil, nil}
+	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil, nil, nil}
+	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil, nil, nil}
 
 	err = client.SetNetwork(nodes)
 	require.NoError(t, err)
 	network = client.GetNetwork()
 	assert.Equal(t, 3, len(network))
-	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil, nil})
-	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil, nil})
-	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil, nil})
+	assert.Equal(t, network["0.testnet.hedera.com:50211"], AccountID{0, 0, 3, nil, nil, nil})
+	assert.Equal(t, network["1.testnet.hedera.com:50211"], AccountID{0, 0, 4, nil, nil, nil})
+	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil, nil, nil})
 
 	nodes = make(map[string]AccountID, 1)
-	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil, nil}
+	nodes["2.testnet.hedera.com:50211"] = AccountID{0, 0, 5, nil, nil, nil}
 
 	err = client.SetNetwork(nodes)
 	require.NoError(t, err)
 	network = client.GetNetwork()
 	assert.Equal(t, 1, len(network))
-	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil, nil})
+	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil, nil, nil})
 
 	client.SetTransportSecurity(true)
 	client.SetCertificateVerification(true)
 	network = client.GetNetwork()
 	networkTLSMirror := client.GetMirrorNetwork()
-	assert.Equal(t, network["2.testnet.hedera.com:50212"], AccountID{0, 0, 5, nil, nil})
+	assert.Equal(t, network["2.testnet.hedera.com:50212"], AccountID{0, 0, 5, nil, nil, nil})
 	assert.Equal(t, networkTLSMirror[0], "hcs.testnet.mirrornode.hedera.com:443")
 
 	err = client.Close()
@@ -169,15 +169,15 @@ func contains(s []string, e string) bool {
 func TestUnitClientSetMultipleNetwork(t *testing.T) {
 	client := ClientForTestnet()
 	nodes := make(map[string]AccountID, 8)
-	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil}
-	nodes["34.94.106.61:50211"] = AccountID{0, 0, 3, nil, nil}
-	nodes["50.18.132.211:50211"] = AccountID{0, 0, 3, nil, nil}
-	nodes["138.91.142.219:50211"] = AccountID{0, 0, 3, nil, nil}
+	nodes["0.testnet.hedera.com:50211"] = AccountID{0, 0, 3, nil, nil, nil}
+	nodes["34.94.106.61:50211"] = AccountID{0, 0, 3, nil, nil, nil}
+	nodes["50.18.132.211:50211"] = AccountID{0, 0, 3, nil, nil, nil}
+	nodes["138.91.142.219:50211"] = AccountID{0, 0, 3, nil, nil, nil}
 
-	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil, nil}
-	nodes["35.237.119.55:50211"] = AccountID{0, 0, 4, nil, nil}
-	nodes["3.212.6.13:50211"] = AccountID{0, 0, 4, nil, nil}
-	nodes["52.168.76.241:50211"] = AccountID{0, 0, 4, nil, nil}
+	nodes["1.testnet.hedera.com:50211"] = AccountID{0, 0, 4, nil, nil, nil}
+	nodes["35.237.119.55:50211"] = AccountID{0, 0, 4, nil, nil, nil}
+	nodes["3.212.6.13:50211"] = AccountID{0, 0, 4, nil, nil, nil}
+	nodes["52.168.76.241:50211"] = AccountID{0, 0, 4, nil, nil, nil}
 
 	err := client.SetNetwork(nodes)
 	require.NoError(t, err)
