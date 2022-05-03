@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/arhtur007/hedera-sdk-go/v2"
 )
 
 func main() {

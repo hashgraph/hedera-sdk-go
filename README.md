@@ -1,7 +1,7 @@
 ![](https://img.shields.io/github/v/tag/hashgraph/hedera-sdk-go)
-[![Actions Status](https://github.com/hashgraph/hedera-sdk-go/v2/workflows/Go/badge.svg)](https://github.com/hashgraph/hedera-sdk-Go/actions?query=workflow%3AGo)
+[![Actions Status](https://github.com/arhtur007/hedera-sdk-go/v2/workflows/Go/badge.svg)](https://github.com/hashgraph/hedera-sdk-Go/actions?query=workflow%3AGo)
 ![](https://img.shields.io/github/go-mod/go-version/hashgraph/hedera-sdk-go)
-[![](https://godoc.org/github.com/hashgraph/hedera-sdk-go/v2?status.svg)](http://godoc.org/github.com/hashgraph/hedera-sdk-go/v2)
+[![](https://godoc.org/github.com/arhtur007/hedera-sdk-go/v2?status.svg)](http://godoc.org/github.com/arhtur007/hedera-sdk-go/v2)
 
 # Hedera™ Hashgraph Go SDK
 
@@ -21,7 +21,7 @@ available in the [hashgraph/hedera-protobuf] repository.
 ## Install
 
 ```sh
-$ go get github.com/hashgraph/hedera-sdk-go/v2
+$ go get github.com/arhtur007/hedera-sdk-go/v2
 ```
 
 #### Note
