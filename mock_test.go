@@ -635,7 +635,6 @@ func NewMockHandler(responses []interface{}) func(interface{}, context.Context, 
 		if index >= len(responses) {
 			return nil, status.New(codes.Aborted, "No response found").Err()
 		}
-
 		response := responses[index]
 		index = index + 1
 

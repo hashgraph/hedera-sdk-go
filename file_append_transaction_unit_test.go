@@ -202,3 +202,86 @@ func TestUnitFileAppendTransactionGet(t *testing.T) {
 //	transaction.GetRegenerateTransactionID()
 //	transaction.GetMaxChunkSize()
 //}
+
+func TestUnitMockFileAppendTransactionBigContents(t *testing.T) {
+	var previousTransactionID string
+	var previousContent []byte
+
+	receipt := &services.Response{
+		Response: &services.Response_TransactionGetReceipt{
+			TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+				Header: &services.ResponseHeader{
+					NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+					ResponseType:                services.ResponseType_ANSWER_ONLY,
+				},
+				Receipt: &services.TransactionReceipt{
+					Status: services.ResponseCodeEnum_SUCCESS,
+					FileID: &services.FileID{FileNum: 3},
+				},
+			},
+		},
+	}
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+		if previousTransactionID == "" {
+			previousTransactionID = transactionId
+		} else {
+			require.NotEqual(t, transactionId, previousTransactionID)
+			previousTransactionID = transactionId
+		}
+
+		content := transactionBody.Data.(*services.TransactionBody_FileAppend).FileAppend.Contents
+
+		if len(previousContent) == 0 {
+			previousContent = content
+		} else {
+			require.NotEqual(t, previousContent, content)
+			previousContent = content
+		}
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+
+		for _, sigPair := range sigMap.SigPair {
+			verified := false
+
+			switch k := sigPair.Signature.(type) {
+			case *services.SignaturePair_Ed25519:
+				pbTemp, _ := PublicKeyFromBytesEd25519(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.Ed25519)
+			case *services.SignaturePair_ECDSASecp256K1:
+				pbTemp, _ := PublicKeyFromBytesECDSA(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.ECDSASecp256K1)
+			}
+			require.True(t, verified)
+		}
+
+		return &services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		}
+	}
+	responses := [][]interface{}{{
+		call, receipt, call, receipt, call, receipt, call, receipt, call, receipt, call, receipt, call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	_, err := NewFileAppendTransaction().
+		SetFileID(FileID{File: 3}).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetContents([]byte(bigContents2)).
+		Execute(client)
+	require.NoError(t, err)
+}
