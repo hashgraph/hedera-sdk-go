@@ -63,3 +63,15 @@ func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
 }
+
+func (response TransactionResponse) GetReceiptQuery() *TransactionReceiptQuery {
+	return NewTransactionReceiptQuery().
+		SetTransactionID(response.TransactionID).
+		SetNodeAccountIDs([]AccountID{response.NodeID})
+}
+
+func (response TransactionResponse) GetRecordQuery() *TransactionRecordQuery {
+	return NewTransactionRecordQuery().
+		SetTransactionID(response.TransactionID).
+		SetNodeAccountIDs([]AccountID{response.NodeID})
+}
