@@ -1,3 +1,9 @@
+## v2.14.0-beta.2
+
+### Fixed
+
+* `*Query` payment signatures weren't getting updated after updating body with new random node.
+
 # v2.14.0-beta.1
 
 ### Added
