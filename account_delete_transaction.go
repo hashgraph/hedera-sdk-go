@@ -27,14 +27,10 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// AccountDeleteTransaction creates a new account. After the account is created, the AccountID for it is in the receipt,
-// or by asking for a Record of the transaction to be created, and retrieving that. The account can then automatically
-// generate records for large transfers into it or out of it, which each last for 25 hours. Records are generated for
-// any transfer that exceeds the thresholds given here. This account is charged hbar for each record generated, so the
-// thresholds are useful for limiting Record generation to happen only for large transactions.
-//
-// The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0,
-// with a null key. Future versions of the API will support multiple realms and multiple shards.
+// AccountDeleteTransaction
+// Mark an account as deleted, moving all its current hbars to another account. It will remain in
+// the ledger, marked as deleted, until it expires. Transfers into it a deleted account fail. But a
+// deleted account can still have its expiration extended in the normal way.
 type AccountDeleteTransaction struct {
 	Transaction
 	transferAccountID *AccountID
@@ -54,6 +50,9 @@ func (transaction *AccountDeleteTransaction) SetGrpcDeadline(deadline *time.Dura
 	return transaction
 }
 
+// NewAccountDeleteTransaction creates AccountDeleteTransaction which marks an account as deleted, moving all its current hbars to another account. It will remain in
+// the ledger, marked as deleted, until it expires. Transfers into it a deleted account fail. But a
+// deleted account can still have its expiration extended in the normal way.
 func NewAccountDeleteTransaction() *AccountDeleteTransaction {
 	transaction := AccountDeleteTransaction{
 		Transaction: _NewTransaction(),

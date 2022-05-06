@@ -27,12 +27,14 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// LiveHashQuery Requests a livehash associated to an account.
 type LiveHashQuery struct {
 	Query
 	accountID *AccountID
 	hash      []byte
 }
 
+// NewLiveHashQuery creates a LiveHashQuery that requests a livehash associated to an account.
 func NewLiveHashQuery() *LiveHashQuery {
 	header := services.QueryHeader{}
 	return &LiveHashQuery{
@@ -45,6 +47,7 @@ func (query *LiveHashQuery) SetGrpcDeadline(deadline *time.Duration) *LiveHashQu
 	return query
 }
 
+// SetAccountID Sets the AccountID to which the livehash is associated
 func (query *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
 	query.accountID = &accountID
 	return query
@@ -58,6 +61,7 @@ func (query *LiveHashQuery) GetAccountID() AccountID {
 	return *query.accountID
 }
 
+// SetHash Sets the SHA-384 data in the livehash
 func (query *LiveHashQuery) SetHash(hash []byte) *LiveHashQuery {
 	query.hash = hash
 	return query

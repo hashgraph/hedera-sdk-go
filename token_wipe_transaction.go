@@ -27,8 +27,8 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// Wipes the provided amount of tokens from the specified Account. Must be signed by the Token's
-// Wipe key.
+// TokenWipeTransaction
+// Wipes the provided amount of tokens from the specified Account. Must be signed by the Token's Wipe key.
 // If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
 // If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
 // If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
@@ -52,6 +52,23 @@ type TokenWipeTransaction struct {
 	serial    []int64
 }
 
+// NewTokenWipeTransaction creates TokenWipeTransaction which
+// wipes the provided amount of tokens from the specified Account. Must be signed by the Token's Wipe key.
+// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If an Association between the provided token and account is not found, the transaction will
+// resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+// If Wipe Key is not present in the Token, transaction results in TOKEN_HAS_NO_WIPE_KEY.
+// If the provided account is the Token's Treasury Account, transaction results in
+// CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT
+// On success, tokens are removed from the account and the total supply of the token is decreased
+// by the wiped amount.
+//
+// The amount provided is in the lowest denomination possible. Example:
+// Token A has 2 decimals. In order to wipe 100 tokens from account, one must provide amount of
+// 10000. In order to wipe 100.55 tokens, one must provide amount of 10055.
 func NewTokenWipeTransaction() *TokenWipeTransaction {
 	transaction := TokenWipeTransaction{
 		Transaction: _NewTransaction(),
@@ -76,7 +93,7 @@ func (transaction *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration
 	return transaction
 }
 
-// The token for which the account will be wiped. If token does not exist, transaction results in
+// SetTokenID Sets the token for which the account will be wiped. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
@@ -92,7 +109,7 @@ func (transaction *TokenWipeTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-// The account to be wiped
+// SetAccountID Sets the account to be wiped
 func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
@@ -107,7 +124,7 @@ func (transaction *TokenWipeTransaction) GetAccountID() AccountID {
 	return *transaction.accountID
 }
 
-// The amount of tokens to wipe from the specified account. Amount must be a positive non-zero
+// SetAmount Sets the amount of tokens to wipe from the specified account. Amount must be a positive non-zero
 // number in the lowest denomination possible, not bigger than the token balance of the account
 // (0; balance]
 func (transaction *TokenWipeTransaction) SetAmount(amount uint64) *TokenWipeTransaction {
@@ -124,6 +141,8 @@ func (transaction *TokenWipeTransaction) GetSerialNumbers() []int64 {
 	return transaction.serial
 }
 
+// SetSerialNumbers
+// Sets applicable to tokens of type NON_FUNGIBLE_UNIQUE. The list of serial numbers to be wiped.
 func (transaction *TokenWipeTransaction) SetSerialNumbers(serial []int64) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.serial = serial

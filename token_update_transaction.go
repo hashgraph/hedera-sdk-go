@@ -29,10 +29,26 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// Updates an already created Token.
-// If no value is given for a field, that field is left unchanged. For an immutable tokens
-// (that is, a token created without an adminKey), only the expiry may be updated. Setting any
-// other field in that case will cause the transaction status to resolve to TOKEN_IS_IMMUTABlE.
+// TokenUpdateTransaction
+// At consensus, updates an already created token to the given values.
+//
+// If no value is given for a field, that field is left unchanged. For an immutable tokens (that is,
+// a token without an admin key), only the expiry may be updated. Setting any other field in that
+// case will cause the transaction status to resolve to TOKEN_IS_IMMUTABLE.
+//
+// --- Signing Requirements ---
+// 1. Whether or not a token has an admin key, its expiry can be extended with only the transaction
+//    payer's signature.
+// 2. Updating any other field of a mutable token requires the admin key's signature.
+// 3. If a new admin key is set, this new key must sign <b>unless</b> it is exactly an empty
+//    <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the
+//    token to become immutable. (Other <tt>Key</tt> structures without a constituent
+//    <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
+// 4. If a new treasury is set, the new treasury account's key must sign the transaction.
+//
+// --- Nft Requirements ---
+// 1. If a non fungible token has a positive treasury balance, the operation will abort with
+//    CURRENT_TREASURY_STILL_OWNS_NFTS.
 type TokenUpdateTransaction struct {
 	Transaction
 	tokenID            *TokenID
@@ -52,6 +68,26 @@ type TokenUpdateTransaction struct {
 	autoRenewPeriod    *time.Duration
 }
 
+// NewTokenUpdateTransaction creates TokenUpdateTransaction which at consensus,
+// updates an already created token to the given values.
+//
+// If no value is given for a field, that field is left unchanged. For an immutable tokens (that is,
+// a token without an admin key), only the expiry may be updated. Setting any other field in that
+// case will cause the transaction status to resolve to TOKEN_IS_IMMUTABLE.
+//
+// --- Signing Requirements ---
+// 1. Whether or not a token has an admin key, its expiry can be extended with only the transaction
+//    payer's signature.
+// 2. Updating any other field of a mutable token requires the admin key's signature.
+// 3. If a new admin key is set, this new key must sign <b>unless</b> it is exactly an empty
+//    <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the
+//    token to become immutable. (Other <tt>Key</tt> structures without a constituent
+//    <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
+// 4. If a new treasury is set, the new treasury account's key must sign the transaction.
+//
+// --- Nft Requirements ---
+// 1. If a non fungible token has a positive treasury balance, the operation will abort with
+//    CURRENT_TREASURY_STILL_OWNS_NFTS.
 func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	transaction := TokenUpdateTransaction{
 		Transaction: _NewTransaction(),
@@ -93,7 +129,7 @@ func _TokenUpdateTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
-// The Token to be updated
+// SetTokenID Sets the Token to be updated
 func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
@@ -108,7 +144,8 @@ func (transaction *TokenUpdateTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-// The new Symbol of the Token. Must be UTF-8 capitalized alphabetical string identifying the token.
+// SetTokenSymbol Sets the new Symbol of the Token.
+// Must be UTF-8 capitalized alphabetical string identifying the token.
 func (transaction *TokenUpdateTransaction) SetTokenSymbol(symbol string) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenSymbol = symbol
@@ -119,7 +156,7 @@ func (transaction *TokenUpdateTransaction) GetTokenSymbol() string {
 	return transaction.tokenSymbol
 }
 
-// The new Name of the Token. Must be a string of ASCII characters.
+// SetTokenName Sets the new Name of the Token. Must be a string of ASCII characters.
 func (transaction *TokenUpdateTransaction) SetTokenName(name string) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenName = name
@@ -130,8 +167,9 @@ func (transaction *TokenUpdateTransaction) GetTokenName() string {
 	return transaction.tokenName
 }
 
-// The new Treasury account of the Token. If the provided treasury account is not existing or
-// deleted, the _Response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token
+// SetTreasuryAccountID sets thehe new Treasury account of the Token.
+// If the provided treasury account is not existing or deleted,
+// the _Response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token
 // balance held in the previous Treasury Account is transferred to the new one.
 func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -147,8 +185,8 @@ func (transaction *TokenUpdateTransaction) GetTreasuryAccountID() AccountID {
 	return *transaction.treasuryAccountID
 }
 
-// The new Admin key of the Token. If Token is immutable, transaction will resolve to
-// TOKEN_IS_IMMUTABlE.
+// SetAdminKey Sets the new Admin key of the Token.
+// If Token is immutable, transaction will resolve to TOKEN_IS_IMMUTABlE.
 func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey Key) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.adminKey = publicKey
@@ -159,6 +197,8 @@ func (transaction *TokenUpdateTransaction) GetAdminKey() Key {
 	return transaction.adminKey
 }
 
+// SetPauseKey Sets the Key which can pause and unpause the Token. If the Token does not currently have a pause key,
+// transaction will resolve to TOKEN_HAS_NO_PAUSE_KEY
 func (transaction *TokenUpdateTransaction) SetPauseKey(publicKey Key) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.pauseKey = publicKey
@@ -169,7 +209,7 @@ func (transaction *TokenUpdateTransaction) GetPauseKey() Key {
 	return transaction.pauseKey
 }
 
-// The new KYC key of the Token. If Token does not have currently a KYC key, transaction will
+// SetKycKey Sets the new KYC key of the Token. If Token does not have currently a KYC key, transaction will
 // resolve to TOKEN_HAS_NO_KYC_KEY.
 func (transaction *TokenUpdateTransaction) SetKycKey(publicKey Key) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -181,7 +221,7 @@ func (transaction *TokenUpdateTransaction) GetKycKey() Key {
 	return transaction.kycKey
 }
 
-// The new Freeze key of the Token. If the Token does not have currently a Freeze key, transaction
+// SetFreezeKey Sets the new Freeze key of the Token. If the Token does not have currently a Freeze key, transaction
 // will resolve to TOKEN_HAS_NO_FREEZE_KEY.
 func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey Key) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -193,7 +233,7 @@ func (transaction *TokenUpdateTransaction) GetFreezeKey() Key {
 	return transaction.freezeKey
 }
 
-// The new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction
+// SetWipeKey Sets the new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction
 // will resolve to TOKEN_HAS_NO_WIPE_KEY.
 func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey Key) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -205,7 +245,7 @@ func (transaction *TokenUpdateTransaction) GetWipeKey() Key {
 	return transaction.wipeKey
 }
 
-// The new Supply key of the Token. If the Token does not have currently a Supply key, transaction
+// SetSupplyKey Sets the new Supply key of the Token. If the Token does not have currently a Supply key, transaction
 // will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
 func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey Key) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -217,6 +257,9 @@ func (transaction *TokenUpdateTransaction) GetSupplyKey() Key {
 	return transaction.supplyKey
 }
 
+// SetFeeScheduleKey
+// If set, the new key to use to update the token's custom fee schedule; if the token does not
+// currently have this key, transaction will resolve to TOKEN_HAS_NO_FEE_SCHEDULE_KEY
 func (transaction *TokenUpdateTransaction) SetFeeScheduleKey(key Key) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.scheduleKey = key
@@ -227,7 +270,7 @@ func (transaction *TokenUpdateTransaction) GetFeeScheduleKey() Key {
 	return transaction.scheduleKey
 }
 
-// The new account which will be automatically charged to renew the token's expiration, at
+// SetAutoRenewAccount Sets the new account which will be automatically charged to renew the token's expiration, at
 // autoRenewPeriod interval.
 func (transaction *TokenUpdateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -243,7 +286,7 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewAccount() AccountID {
 	return *transaction.autoRenewAccountID
 }
 
-// The new interval at which the auto-renew account will be charged to extend the token's expiry.
+// SetAutoRenewPeriod Sets the new interval at which the auto-renew account will be charged to extend the token's expiry.
 func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.autoRenewPeriod = &autoRenewPeriod
@@ -258,8 +301,8 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 	return time.Duration(0)
 }
 
-// The new expiry time of the token. Expiry can be updated even if admin key is not set. If the
-// provided expiry is earlier than the current token expiry, transaction wil resolve to
+// SetExpirationTime Sets the new expiry time of the token. Expiry can be updated even if admin key is not set.
+//If the provided expiry is earlier than the current token expiry, transaction wil resolve to
 // INVALID_EXPIRATION_TIME
 func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime time.Time) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -274,6 +317,8 @@ func (transaction *TokenUpdateTransaction) GetExpirationTime() time.Time {
 	return time.Time{}
 }
 
+// SetTokenMemo
+// If set, the new memo to be associated with the token (UTF-8 encoding max 100 bytes)
 func (transaction *TokenUpdateTransaction) SetTokenMemo(memo string) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo

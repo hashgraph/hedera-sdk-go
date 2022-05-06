@@ -27,6 +27,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenRevokeKycTransaction
 // Revokes KYC to the account for the given token. Must be signed by the Token's kycKey.
 // If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
 // If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
@@ -42,6 +43,16 @@ type TokenRevokeKycTransaction struct {
 	accountID *AccountID
 }
 
+// NewTokenRevokeKycTransaction creates TokenRevokeKycTransaction which
+// revokes KYC to the account for the given token. Must be signed by the Token's kycKey.
+// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If an Association between the provided token and account is not found, the transaction will
+// resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+// If no KYC Key is defined, the transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
+// Once executed the Account is marked as KYC Revoked
 func NewTokenRevokeKycTransaction() *TokenRevokeKycTransaction {
 	transaction := TokenRevokeKycTransaction{
 		Transaction: _NewTransaction(),
@@ -64,7 +75,8 @@ func (transaction *TokenRevokeKycTransaction) SetGrpcDeadline(deadline *time.Dur
 	return transaction
 }
 
-// The token for which this account will get his KYC revoked. If token does not exist, transaction results in INVALID_TOKEN_ID
+// SetTokenID Sets the token for which this account will get his KYC revoked.
+// If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *TokenRevokeKycTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
@@ -79,7 +91,7 @@ func (transaction *TokenRevokeKycTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-// The account to be KYC Revoked
+// SetAccountID Sets the account to be KYC Revoked
 func (transaction *TokenRevokeKycTransaction) SetAccountID(accountID AccountID) *TokenRevokeKycTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID

@@ -84,6 +84,7 @@ func _NewTransaction() Transaction {
 	}
 }
 
+// TransactionFromBytes converts Transaction bytes to a related *Transaction.
 func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	list := sdk.TransactionList{}
 	err := protobuf.Unmarshal(data, &list)
@@ -322,6 +323,7 @@ func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
 	return true, nil
 }
 
+// GetSignatures Gets all of the signatures stored in the Transaction
 func (this *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, error) {
 	returnMap := make(map[AccountID]map[*PublicKey][]byte, this.nodeAccountIDs._Length())
 
@@ -367,6 +369,7 @@ func (this *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, e
 	return returnMap, nil
 }
 
+// GetTransactionHash gets the transaction hash
 func (this *Transaction) GetTransactionHash() ([]byte, error) {
 	hashes, err := this.GetTransactionHashPerNode()
 	if err != nil {
@@ -589,6 +592,8 @@ func (this *Transaction) String() string {
 	return ""
 }
 
+// ToBytes Builds then converts the current transaction to []byte
+// Requires Transaction to be frozen
 func (this *Transaction) ToBytes() ([]byte, error) {
 	if !this._IsFrozen() {
 		return make([]byte, 0), errTransactionIsNotFrozen

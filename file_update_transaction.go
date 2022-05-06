@@ -29,6 +29,13 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// FileUpdateTransaction
+// Modify the metadata and/or contents of a file. If a field is not set in the transaction body, the
+// corresponding file attribute will be unchanged. This transaction must be signed by all the keys
+// in the top level of a key list (M-of-M) of the file being updated. If the keys themselves are
+// being updated, then the transaction must also be signed by all the new keys. If the keys contain
+// additional KeyList or ThresholdKey then M-of-M secondary KeyList or ThresholdKey signing
+// requirements must be meet
 type FileUpdateTransaction struct {
 	Transaction
 	fileID         *FileID
@@ -38,6 +45,12 @@ type FileUpdateTransaction struct {
 	memo           string
 }
 
+// NewFileUpdateTransaction creates a FileUpdateTransaction which modifies the metadata and/or contents of a file.
+// If a field is not set in the transaction body, the corresponding file attribute will be unchanged.
+// This transaction must be signed by all the keys in the top level of a key list (M-of-M) of the file being updated.
+// If the keys themselves are being updated, then the transaction must also be signed by all the new keys. If the keys contain
+// additional KeyList or ThresholdKey then M-of-M secondary KeyList or ThresholdKey signing
+// requirements must be meet
 func NewFileUpdateTransaction() *FileUpdateTransaction {
 	transaction := FileUpdateTransaction{
 		Transaction: _NewTransaction(),
@@ -66,6 +79,7 @@ func (transaction *FileUpdateTransaction) SetGrpcDeadline(deadline *time.Duratio
 	return transaction
 }
 
+// SetFileID Sets the FileID to be updated
 func (transaction *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.fileID = &fileID
@@ -80,6 +94,7 @@ func (transaction *FileUpdateTransaction) GetFileID() FileID {
 	return *transaction.fileID
 }
 
+// SetKeys Sets the new list of keys that can modify or delete the file
 func (transaction *FileUpdateTransaction) SetKeys(keys ...Key) *FileUpdateTransaction {
 	transaction._RequireNotFrozen()
 	if transaction.keys == nil {
@@ -101,6 +116,7 @@ func (transaction *FileUpdateTransaction) GetKeys() KeyList {
 	return KeyList{}
 }
 
+// SetExpirationTime Sets the new expiry time
 func (transaction *FileUpdateTransaction) SetExpirationTime(expiration time.Time) *FileUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.expirationTime = &expiration
@@ -115,6 +131,7 @@ func (transaction *FileUpdateTransaction) GetExpirationTime() time.Time {
 	return time.Time{}
 }
 
+// SetContents Sets the new contents that should overwrite the file's current contents
 func (transaction *FileUpdateTransaction) SetContents(contents []byte) *FileUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.contents = contents
@@ -125,6 +142,7 @@ func (transaction *FileUpdateTransaction) GetContents() []byte {
 	return transaction.contents
 }
 
+// SetFileMemo Sets the new memo to be associated with the file (UTF-8 encoding max 100 bytes)
 func (transaction *FileUpdateTransaction) SetFileMemo(memo string) *FileUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo

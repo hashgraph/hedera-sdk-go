@@ -28,11 +28,17 @@ import (
 	"time"
 )
 
+// ScheduleDeleteTransaction Marks a schedule in the network's action queue as deleted. Must be signed by the admin key of the
+// target schedule.  A deleted schedule cannot receive any additional signing keys, nor will it be
+// executed.
 type ScheduleDeleteTransaction struct {
 	Transaction
 	scheduleID *ScheduleID
 }
 
+// NewScheduleDeleteTransaction creates ScheduleDeleteTransaction which marks a schedule in the network's action queue as deleted.
+// Must be signed by the admin key of the target schedule.
+// A deleted schedule cannot receive any additional signing keys, nor will it be executed.
 func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	transaction := ScheduleDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -54,6 +60,7 @@ func (transaction *ScheduleDeleteTransaction) SetGrpcDeadline(deadline *time.Dur
 	return transaction
 }
 
+// SetScheduleID Sets the ScheduleID of the scheduled transaction to be deleted
 func (transaction *ScheduleDeleteTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.scheduleID = &scheduleID

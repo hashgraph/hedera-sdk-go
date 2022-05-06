@@ -27,6 +27,14 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TransactionRecordQuery
+// Get the record for a transaction. If the transaction requested a record, then the record lasts
+// for one hour, and a state proof is available for it. If the transaction created an account, file,
+// or smart contract instance, then the record will contain the ID for what it created. If the
+// transaction called a smart contract function, then the record contains the result of that call.
+// If the transaction was a cryptocurrency transfer, then the record includes the TransferList which
+// gives the details of that transfer. If the transaction didn't return anything that should be in
+// the record, then the results field will be set to nothing.
 type TransactionRecordQuery struct {
 	Query
 	transactionID       *TransactionID
@@ -34,6 +42,14 @@ type TransactionRecordQuery struct {
 	duplicates          *bool
 }
 
+// NewTransactionRecordQuery creates TransactionRecordQuery which
+// gets the record for a transaction. If the transaction requested a record, then the record lasts
+// for one hour, and a state proof is available for it. If the transaction created an account, file,
+// or smart contract instance, then the record will contain the ID for what it created. If the
+// transaction called a smart contract function, then the record contains the result of that call.
+// If the transaction was a cryptocurrency transfer, then the record includes the TransferList which
+// gives the details of that transfer. If the transaction didn't return anything that should be in
+// the record, then the results field will be set to nothing.
 func NewTransactionRecordQuery() *TransactionRecordQuery {
 	header := services.QueryHeader{}
 	return &TransactionRecordQuery{
@@ -46,6 +62,8 @@ func (query *TransactionRecordQuery) SetGrpcDeadline(deadline *time.Duration) *T
 	return query
 }
 
+// SetIncludeChildren Sets whether the response should include the records of any child transactions spawned by the
+// top-level transaction with the given transactionID.
 func (query *TransactionRecordQuery) SetIncludeChildren(includeChildRecords bool) *TransactionRecordQuery {
 	query.includeChildRecords = &includeChildRecords
 	return query
@@ -59,6 +77,11 @@ func (query *TransactionRecordQuery) GetIncludeChildren() bool {
 	return false
 }
 
+// SetIncludeDuplicates Sets whether records of processing duplicate transactions should be returned along with the record
+// of processing the first consensus transaction with the given id whose status was neither
+// INVALID_NODE_ACCOUNT nor <tt>INVALID_PAYER_SIGNATURE; or, if no such
+// record exists, the record of processing the first transaction to reach consensus with the
+// given transaction id..
 func (query *TransactionRecordQuery) SetIncludeDuplicates(includeDuplicates bool) *TransactionRecordQuery {
 	query.duplicates = &includeDuplicates
 	return query

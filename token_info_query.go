@@ -27,13 +27,13 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenInfoQuery Used get information about Token instance
 type TokenInfoQuery struct {
 	Query
 	tokenID *TokenID
 }
 
-// NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
-//  Get Topic Info Query.
+// NewTokenInfoQuery creates a TokenInfoQuery which is used get information about Token instance
 func NewTokenInfoQuery() *TokenInfoQuery {
 	header := services.QueryHeader{}
 	return &TokenInfoQuery{
@@ -46,7 +46,7 @@ func (query *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfo
 	return query
 }
 
-// SetTopicID sets the topic to retrieve info about (the parameters and running state of).
+// SetTokenID Sets the topic to retrieve info about (the parameters and running state of).
 func (query *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
 	query.tokenID = &tokenID
 	return query

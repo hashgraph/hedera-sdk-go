@@ -27,10 +27,10 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenMintTransaction
 // Mints tokens from the Token's treasury Account. If no Supply Key is defined, the transaction
 // will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
-// The operation decreases the Total Supply of the Token. Total supply cannot go below
-// zero.
+// The operation decreases the Total Supply of the Token. Total supply cannot go below zero.
 // The amount provided must be in the lowest denomination possible. Example:
 // Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order
 // to mint 100.55 tokens, one must provide amount of 10055.
@@ -41,6 +41,13 @@ type TokenMintTransaction struct {
 	meta    [][]byte
 }
 
+// NewTokenMintTransaction creates TokenMintTransaction which
+// mints tokens from the Token's treasury Account. If no Supply Key is defined, the transaction
+// will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
+// The operation decreases the Total Supply of the Token. Total supply cannot go below zero.
+// The amount provided must be in the lowest denomination possible. Example:
+// Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order
+// to mint 100.55 tokens, one must provide amount of 10055.
 func NewTokenMintTransaction() *TokenMintTransaction {
 	transaction := TokenMintTransaction{
 		Transaction: _NewTransaction(),
@@ -64,7 +71,7 @@ func (transaction *TokenMintTransaction) SetGrpcDeadline(deadline *time.Duration
 	return transaction
 }
 
-// The token for which to mint tokens. If token does not exist, transaction results in
+// SetTokenID Sets the token for which to mint tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintTransaction {
 	transaction._RequireNotFrozen()
@@ -80,7 +87,7 @@ func (transaction *TokenMintTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-// The amount to mint from the Treasury Account. Amount must be a positive non-zero number, not
+// SetAmount Sets the amount to mint from the Treasury Account. Amount must be a positive non-zero number, not
 // bigger than the token balance of the treasury account (0; balance], represented in the lowest
 // denomination.
 func (transaction *TokenMintTransaction) SetAmount(amount uint64) *TokenMintTransaction {
@@ -93,12 +100,18 @@ func (transaction *TokenMintTransaction) GetAmount() uint64 {
 	return transaction.amount
 }
 
+// SetMetadatas
+//Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
+// Maximum allowed size of each metadata is 100 bytes
 func (transaction *TokenMintTransaction) SetMetadatas(meta [][]byte) *TokenMintTransaction {
 	transaction._RequireNotFrozen()
 	transaction.meta = meta
 	return transaction
 }
 
+// SetMetadata
+//Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
+// Maximum allowed size of each metadata is 100 bytes
 func (transaction *TokenMintTransaction) SetMetadata(meta []byte) *TokenMintTransaction {
 	transaction._RequireNotFrozen()
 	if transaction.meta == nil {

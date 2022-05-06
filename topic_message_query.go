@@ -36,6 +36,8 @@ import (
 
 var rstStream = regexp.MustCompile("(?i)\\brst[^0-9a-zA-Z]stream\\b") //nolint
 
+// TopicMessageQuery
+// Query that listens to messages sent to the specific TopicID
 type TopicMessageQuery struct {
 	errorHandler      func(stat status.Status)
 	completionHandler func()
@@ -48,6 +50,8 @@ type TopicMessageQuery struct {
 	limit             uint64
 }
 
+// NewTopicMessageQuery creates TopicMessageQuery which
+// listens to messages sent to the specific TopicID
 func NewTopicMessageQuery() *TopicMessageQuery {
 	return &TopicMessageQuery{
 		maxAttempts:       maxAttempts,
@@ -57,6 +61,8 @@ func NewTopicMessageQuery() *TopicMessageQuery {
 	}
 }
 
+// SetTopicID Sets topic ID to retrieve messages for.
+// Required
 func (query *TopicMessageQuery) SetTopicID(topicID TopicID) *TopicMessageQuery {
 	query.topicID = &topicID
 	return query
@@ -70,6 +76,8 @@ func (query *TopicMessageQuery) GetTopicID() TopicID {
 	return *query.topicID
 }
 
+// SetStartTime Sets time for when to start listening for messages. Defaults to current time if
+// not set.
 func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQuery {
 	query.startTime = &startTime
 	return query
@@ -83,6 +91,8 @@ func (query *TopicMessageQuery) GetStartTime() time.Time {
 	return time.Time{}
 }
 
+// SetEndTime Sets time when to stop listening for messages. If not set it will receive
+// indefinitely.
 func (query *TopicMessageQuery) SetEndTime(endTime time.Time) *TopicMessageQuery {
 	query.endTime = &endTime
 	return query
@@ -96,6 +106,8 @@ func (query *TopicMessageQuery) GetEndTime() time.Time {
 	return time.Time{}
 }
 
+// SetLimit Sets the maximum number of messages to receive before stopping. If not set or set to zero it will
+// return messages indefinitely.
 func (query *TopicMessageQuery) SetLimit(limit uint64) *TopicMessageQuery {
 	query.limit = limit
 	return query
@@ -105,6 +117,7 @@ func (query *TopicMessageQuery) GetLimit() uint64 {
 	return query.limit
 }
 
+// SetMaxAttempts Sets the amount of attempts to try to retrieve message
 func (query *TopicMessageQuery) SetMaxAttempts(maxAttempts uint64) *TopicMessageQuery {
 	query.maxAttempts = maxAttempts
 	return query

@@ -105,6 +105,9 @@ func (transaction *AccountCreateTransaction) GetInitialBalance() Hbar {
 	return HbarFromTinybar(int64(transaction.initialBalance))
 }
 
+// SetMaxAutomaticTokenAssociations
+// Set the maximum number of tokens that an Account can be implicitly associated with. Defaults to 0
+// and up to a maximum value of 1000.
 func (transaction *AccountCreateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.maxAutomaticTokenAssociations = max
@@ -153,6 +156,7 @@ func (transaction *AccountCreateTransaction) GetProxyAccountID() AccountID {
 	return *transaction.proxyAccountID
 }
 
+// SetAccountMemo Sets the memo associated with the account (UTF-8 encoding max 100 bytes)
 func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo

@@ -27,11 +27,25 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenUnpauseTransaction
+// Unpauses the Token. Must be signed with the Token's pause key.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If no Pause Key is defined, the transaction will resolve to TOKEN_HAS_NO_PAUSE_KEY.
+// Once executed the Token is marked as Unpaused and can be used in Transactions.
+// The operation is idempotent - becomes a no-op if the Token is already unpaused.
 type TokenUnpauseTransaction struct {
 	Transaction
 	tokenID *TokenID
 }
 
+// NewTokenUnpauseTransaction creates TokenUnpauseTransaction which unpauses the Token.
+// Must be signed with the Token's pause key.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If no Pause Key is defined, the transaction will resolve to TOKEN_HAS_NO_PAUSE_KEY.
+// Once executed the Token is marked as Unpaused and can be used in Transactions.
+// The operation is idempotent - becomes a no-op if the Token is already unpaused.
 func NewTokenUnpauseTransaction() *TokenUnpauseTransaction {
 	transaction := TokenUnpauseTransaction{
 		Transaction: _NewTransaction(),
@@ -53,6 +67,7 @@ func (transaction *TokenUnpauseTransaction) SetGrpcDeadline(deadline *time.Durat
 	return transaction
 }
 
+// SetTokenID Sets the token to be unpaused.
 func (transaction *TokenUnpauseTransaction) SetTokenID(tokenID TokenID) *TokenUnpauseTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID

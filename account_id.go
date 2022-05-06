@@ -180,6 +180,8 @@ func (id AccountID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
 }
 
+// ToStringWithChecksum returns the string representation of an AccountID in
+// `Shard.Realm.Account-checksum` (for example "0.0.3-sdaf")
 func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
 	if id.AliasKey != nil {
 		return "", errors.New("Account ID contains alias key, unable get checksum")
@@ -199,6 +201,7 @@ func (id AccountID) ToStringWithChecksum(client *Client) (string, error) {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Account, checksum.correctChecksum), nil
 }
 
+// GetChecksum Retrieve just the checksum
 func (id AccountID) GetChecksum() *string {
 	return id.checksum
 }
@@ -301,6 +304,7 @@ func (id AccountID) _Equals(other AccountID) bool {
 	return id.Shard == other.Shard && id.Realm == other.Realm && id.Account == other.Account && initialAlias == otherAlias
 }
 
+// ToBytes returns the wire-format encoding of AccountID
 func (id AccountID) ToBytes() []byte {
 	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
@@ -310,6 +314,7 @@ func (id AccountID) ToBytes() []byte {
 	return data
 }
 
+// AccountIDFromBytes converts wire-format encoding to Account ID
 func AccountIDFromBytes(data []byte) (AccountID, error) {
 	if data == nil {
 		return AccountID{}, errByteArrayNull

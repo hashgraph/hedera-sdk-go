@@ -29,12 +29,30 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenFeeScheduleUpdateTransaction
+// At consensus, updates a token type's fee schedule to the given list of custom fees.
+//
+// If the target token type has no fee_schedule_key, resolves to TOKEN_HAS_NO_FEE_SCHEDULE_KEY.
+// Otherwise this transaction must be signed to the fee_schedule_key, or the transaction will
+// resolve to INVALID_SIGNATURE.
+//
+// If the custom_fees list is empty, clears the fee schedule or resolves to
+// CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES if the fee schedule was already empty.
 type TokenFeeScheduleUpdateTransaction struct {
 	Transaction
 	tokenID    *TokenID
 	customFees []Fee
 }
 
+// NewTokenFeeScheduleUpdateTransaction creates TokenFeeScheduleUpdateTransaction which
+// at consensus, updates a token type's fee schedule to the given list of custom fees.
+//
+// If the target token type has no fee_schedule_key, resolves to TOKEN_HAS_NO_FEE_SCHEDULE_KEY.
+// Otherwise this transaction must be signed to the fee_schedule_key, or the transaction will
+// resolve to INVALID_SIGNATURE.
+//
+// If the custom_fees list is empty, clears the fee schedule or resolves to
+// CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES if the fee schedule was already empty.
 func NewTokenFeeScheduleUpdateTransaction() *TokenFeeScheduleUpdateTransaction {
 	transaction := TokenFeeScheduleUpdateTransaction{
 		Transaction: _NewTransaction(),
@@ -63,7 +81,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetGrpcDeadline(deadline *
 	return transaction
 }
 
-// The account to be associated with the provided tokens
+// SetTokenID Sets the token whose fee schedule is to be updated
 func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(tokenID TokenID) *TokenFeeScheduleUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
@@ -78,6 +96,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
+// SetCustomFees Sets the new custom fees to be assessed during a CryptoTransfer that transfers units of this token
 func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Fee) *TokenFeeScheduleUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.customFees = fees

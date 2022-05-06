@@ -29,11 +29,27 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// ScheduleSignTransaction Adds zero or more signing keys to a schedule.
+// If Long Term Scheduled Transactions are enabled and wait for expiry was set to true on the
+// ScheduleCreate then the transaction will always wait till it's `expiration_time` to execute.
+// Otherwise, if the resulting set of signing keys satisfy the
+// scheduled transaction's signing requirements, it will be executed immediately after the
+// triggering ScheduleSign.
+// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
+// for the record of the scheduled transaction's execution (if it occurs).
 type ScheduleSignTransaction struct {
 	Transaction
 	scheduleID *ScheduleID
 }
 
+// NewScheduleSignTransaction creates ScheduleSignTransaction which adds zero or more signing keys to a schedule.
+// If Long Term Scheduled Transactions are enabled and wait for expiry was set to true on the
+// ScheduleCreate then the transaction will always wait till it's `expiration_time` to execute.
+// Otherwise, if the resulting set of signing keys satisfy the
+// scheduled transaction's signing requirements, it will be executed immediately after the
+// triggering ScheduleSign.
+// Upon SUCCESS, the receipt includes the scheduledTransactionID to use to query
+// for the record of the scheduled transaction's execution (if it occurs).
 func NewScheduleSignTransaction() *ScheduleSignTransaction {
 	transaction := ScheduleSignTransaction{
 		Transaction: _NewTransaction(),
@@ -56,6 +72,7 @@ func (transaction *ScheduleSignTransaction) SetGrpcDeadline(deadline *time.Durat
 	return transaction
 }
 
+// SetScheduleID Sets the id of the schedule to add signing keys to
 func (transaction *ScheduleSignTransaction) SetScheduleID(scheduleID ScheduleID) *ScheduleSignTransaction {
 	transaction._RequireNotFrozen()
 	transaction.scheduleID = &scheduleID

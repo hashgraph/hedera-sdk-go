@@ -7,6 +7,11 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// AccountAllowanceDeleteTransaction
+// Deletes one or more non-fungible approved allowances from an owner's account. This operation
+// will remove the allowances granted to one or more specific non-fungible token serial numbers. Each owner account
+// listed as wiping an allowance must sign the transaction. Hbar and fungible token allowances
+// can be removed by setting the amount to zero in CryptoApproveAllowance.
 type AccountAllowanceDeleteTransaction struct {
 	Transaction
 	hbarWipe  []*HbarAllowance
@@ -14,6 +19,11 @@ type AccountAllowanceDeleteTransaction struct {
 	nftWipe   []*TokenNftAllowance
 }
 
+// NewAccountAllowanceDeleteTransaction
+// Creates AccountAllowanceDeleteTransaction whoch deletes one or more non-fungible approved allowances from an owner's account. This operation
+// will remove the allowances granted to one or more specific non-fungible token serial numbers. Each owner account
+// listed as wiping an allowance must sign the transaction. Hbar and fungible token allowances
+// can be removed by setting the amount to zero in CryptoApproveAllowance.
 func NewAccountAllowanceDeleteTransaction() *AccountAllowanceDeleteTransaction {
 	transaction := AccountAllowanceDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -70,6 +80,8 @@ func (transaction *AccountAllowanceDeleteTransaction) GetAllTokenDeleteAllowance
 	return transaction.tokenWipe
 }
 
+// DeleteAllTokenNftAllowances
+// The non-fungible token allowance/allowances to remove.
 func (transaction *AccountAllowanceDeleteTransaction) DeleteAllTokenNftAllowances(nftID NftID, ownerAccountID *AccountID) *AccountAllowanceDeleteTransaction {
 	transaction._RequireNotFrozen()
 
@@ -99,6 +111,8 @@ func (transaction *AccountAllowanceDeleteTransaction) DeleteAllTokenNftAllowance
 	return transaction
 }
 
+// GetAllTokenNftDeleteAllowances
+// Get the non-fungible token allowance/allowances that will be removed.
 func (transaction *AccountAllowanceDeleteTransaction) GetAllTokenNftDeleteAllowances() []*TokenNftAllowance {
 	return transaction.nftWipe
 }

@@ -29,6 +29,15 @@ import (
 	"time"
 )
 
+// LiveHashAddTransaction At consensus, attaches the given livehash to the given account.  The hash can be deleted by the
+// key controlling the account, or by any of the keys associated to the livehash.  Hence livehashes
+// provide a revocation service for their implied credentials; for example, when an authority grants
+// a credential to the account, the account owner will cosign with the authority (or authorities) to
+// attach a hash of the credential to the account---hence proving the grant. If the credential is
+// revoked, then any of the authorities may delete it (or the account owner). In this way, the
+// livehash mechanism acts as a revocation service.  An account cannot have two identical livehashes
+// associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
+// recreated with a new list of keys.
 type LiveHashAddTransaction struct {
 	Transaction
 	accountID *AccountID
@@ -37,6 +46,15 @@ type LiveHashAddTransaction struct {
 	duration  *time.Duration
 }
 
+// NewLiveHashAddTransaction creates LiveHashAddTransaction which at consensus, attaches the given livehash to the given account.
+// The hash can be deleted by the key controlling the account, or by any of the keys associated to the livehash.  Hence livehashes
+// provide a revocation service for their implied credentials; for example, when an authority grants
+// a credential to the account, the account owner will cosign with the authority (or authorities) to
+// attach a hash of the credential to the account---hence proving the grant. If the credential is
+// revoked, then any of the authorities may delete it (or the account owner). In this way, the
+// livehash mechanism acts as a revocation service.  An account cannot have two identical livehashes
+// associated. To modify the list of keys in a livehash, the livehash should first be deleted, then
+// recreated with a new list of keys.
 func NewLiveHashAddTransaction() *LiveHashAddTransaction {
 	transaction := LiveHashAddTransaction{
 		Transaction: _NewTransaction(),
@@ -64,6 +82,7 @@ func (transaction *LiveHashAddTransaction) SetGrpcDeadline(deadline *time.Durati
 	return transaction
 }
 
+// SetHash Sets the SHA-384 hash of a credential or certificate
 func (transaction *LiveHashAddTransaction) SetHash(hash []byte) *LiveHashAddTransaction {
 	transaction._RequireNotFrozen()
 	transaction.hash = hash
@@ -74,6 +93,8 @@ func (transaction *LiveHashAddTransaction) GetHash() []byte {
 	return transaction.hash
 }
 
+// SetKeys Sets a list of keys (primitive or threshold), all of which must sign to attach the livehash to an account.
+// Any one of which can later delete it.
 func (transaction *LiveHashAddTransaction) SetKeys(keys ...Key) *LiveHashAddTransaction {
 	transaction._RequireNotFrozen()
 	if transaction.keys == nil {
@@ -95,6 +116,7 @@ func (transaction *LiveHashAddTransaction) GetKeys() KeyList {
 	return KeyList{}
 }
 
+// SetDuration Set the duration for which the livehash will remain valid
 func (transaction *LiveHashAddTransaction) SetDuration(duration time.Duration) *LiveHashAddTransaction {
 	transaction._RequireNotFrozen()
 	transaction.duration = &duration
@@ -109,6 +131,7 @@ func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
 	return time.Duration(0)
 }
 
+// SetAccountID Sets the account to which the livehash is attached
 func (transaction *LiveHashAddTransaction) SetAccountID(accountID AccountID) *LiveHashAddTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID

@@ -27,11 +27,17 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenNftInfoQuery
+// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE.
+// Gets info on a NFT for a given TokenID (of type NON_FUNGIBLE_UNIQUE) and serial number
 type TokenNftInfoQuery struct {
 	Query
 	nftID *NftID
 }
 
+// NewTokenNftInfoQuery creates TokenNftInfoQuery which
+// gets info on a NFT for a given TokenID (of type NON_FUNGIBLE_UNIQUE) and serial number
+// Applicable only to tokens of type NON_FUNGIBLE_UNIQUE.
 func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	header := services.QueryHeader{}
 	return &TokenNftInfoQuery{
@@ -45,6 +51,7 @@ func (query *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenN
 	return query
 }
 
+// SetNftID Sets the ID of the NFT
 func (query *TokenNftInfoQuery) SetNftID(nftID NftID) *TokenNftInfoQuery {
 	query.nftID = &nftID
 	return query

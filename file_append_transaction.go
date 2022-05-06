@@ -84,6 +84,7 @@ func (transaction *FileAppendTransaction) GetFileID() FileID {
 	return *transaction.fileID
 }
 
+// SetMaxChunkSize Sets maximum amount of chunks append function can create
 func (transaction *FileAppendTransaction) SetMaxChunkSize(size int) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
 	transaction.chunkSize = size

@@ -27,23 +27,46 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenCreateTransaction
 // Create a new token. After the token is created, the Token ID for it is in the receipt.
 // The specified Treasury Account is receiving the initial supply of tokens as-well as the tokens
 // from the Token Mint operation once executed. The balance of the treasury account is decreased
 // when the Token Burn operation is executed.
 //
-// The supply that is going to be put in circulation is going to be the initial supply provided.
-// The maximum supply a token can have is 2^63-1.
+// The initialSupply is the initial supply of the smallest parts of a token (like a
+// tinybar, not an hbar). These are the smallest units of the token which may be transferred.
 //
-// Example:
-// Token A has initial supply set to 10_000 and decimals set to 2. The tokens that will be put
-// into circulation are going be 100.
-// Token B has initial supply set to 10_012_345_678 and decimals set to 8. The number of tokens
-// that will be put into circulation are going to be 100.12345678
+// The supply can change over time. If the total supply at some moment is S parts of tokens,
+// and the token is using D decimals, then S must be less than or equal to
+// 2<sup>63</sup>-1, which is 9,223,372,036,854,775,807. The number of whole tokens (not parts) will
+// be S / 10<sup>D</sup>.
 //
-// Creating immutable token: Token can be created as immutable if the adminKey is omitted. In this
-// case, the name, symbol, treasury, management keys, expiry and renew properties cannot be
-// updated. If a token is created as immutable, anyone is able to extend the expiry time by paying the fee.
+// If decimals is 8 or 11, then the number of whole tokens can be at most a few billions or
+// millions, respectively. For example, it could match Bitcoin (21 million whole tokens with 8
+// decimals) or hbars (50 billion whole tokens with 8 decimals). It could even match Bitcoin with
+// milli-satoshis (21 million whole tokens with 11 decimals).
+//
+// Note that a created token is immutable if the adminKey is omitted. No property of
+// an immutable token can ever change, with the sole exception of its expiry. Anyone can pay to
+// extend the expiry time of an immutable token.
+//
+// A token can be either FUNGIBLE_COMMON or NON_FUNGIBLE_UNIQUE, based on its
+// TokenType. If it has been omitted, FUNGIBLE_COMMON type is used.
+//
+// A token can have either INFINITE or FINITE supply type, based on its
+// TokenType. If it has been omitted, INFINITE type is used.
+//
+// If a FUNGIBLE TokenType is used, initialSupply should explicitly be set to a
+// non-negative. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+//
+// If a NON_FUNGIBLE_UNIQUE TokenType is used, initialSupply should explicitly be set
+// to 0. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+//
+// If an INFINITE TokenSupplyType is used, maxSupply should explicitly be set to 0. If
+// it is not 0, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
+//
+// If a FINITE TokenSupplyType is used, maxSupply should be explicitly set to a
+// non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
 type TokenCreateTransaction struct {
 	Transaction
 	treasuryAccountID  *AccountID
@@ -69,6 +92,46 @@ type TokenCreateTransaction struct {
 	autoRenewPeriod    *time.Duration
 }
 
+// NewTokenCreateTransaction creates TokenCreateTransaction which creates a new token.
+// After the token is created, the Token ID for it is in the receipt.
+// The specified Treasury Account is receiving the initial supply of tokens as-well as the tokens
+// from the Token Mint operation once executed. The balance of the treasury account is decreased
+// when the Token Burn operation is executed.
+//
+// The initialSupply is the initial supply of the smallest parts of a token (like a
+// tinybar, not an hbar). These are the smallest units of the token which may be transferred.
+//
+// The supply can change over time. If the total supply at some moment is S parts of tokens,
+// and the token is using D decimals, then S must be less than or equal to
+// 2<sup>63</sup>-1, which is 9,223,372,036,854,775,807. The number of whole tokens (not parts) will
+// be S / 10<sup>D</sup>.
+//
+// If decimals is 8 or 11, then the number of whole tokens can be at most a few billions or
+// millions, respectively. For example, it could match Bitcoin (21 million whole tokens with 8
+// decimals) or hbars (50 billion whole tokens with 8 decimals). It could even match Bitcoin with
+// milli-satoshis (21 million whole tokens with 11 decimals).
+//
+// Note that a created token is immutable if the adminKey is omitted. No property of
+// an immutable token can ever change, with the sole exception of its expiry. Anyone can pay to
+// extend the expiry time of an immutable token.
+//
+// A token can be either FUNGIBLE_COMMON or NON_FUNGIBLE_UNIQUE, based on its
+// TokenType. If it has been omitted, FUNGIBLE_COMMON type is used.
+//
+// A token can have either INFINITE or FINITE supply type, based on its
+// TokenType. If it has been omitted, INFINITE type is used.
+//
+// If a FUNGIBLE TokenType is used, initialSupply should explicitly be set to a
+// non-negative. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+//
+// If a NON_FUNGIBLE_UNIQUE TokenType is used, initialSupply should explicitly be set
+// to 0. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+//
+// If an INFINITE TokenSupplyType is used, maxSupply should explicitly be set to 0. If
+// it is not 0, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
+//
+// If a FINITE TokenSupplyType is used, maxSupply should be explicitly set to a
+// non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
 func NewTokenCreateTransaction() *TokenCreateTransaction {
 	transaction := TokenCreateTransaction{
 		Transaction: _NewTransaction(),
@@ -131,7 +194,7 @@ func (transaction *TokenCreateTransaction) SetGrpcDeadline(deadline *time.Durati
 	return transaction
 }
 
-// The publicly visible name of the token, specified as a string of only ASCII characters
+// SetTokenName Sets the publicly visible name of the token, specified as a string of only ASCII characters
 func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenName = name
@@ -142,14 +205,14 @@ func (transaction *TokenCreateTransaction) GetTokenName() string {
 	return transaction.tokenName
 }
 
-// The publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
+// SetTokenSymbol Sets the publicly visible token symbol. It is UTF-8 capitalized alphabetical string identifying the token
 func (transaction *TokenCreateTransaction) SetTokenSymbol(symbol string) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenSymbol = symbol
 	return transaction
 }
 
-// The publicly visible token memo. It is max 100 bytes.
+// SetTokenMemo Sets the publicly visible token memo. It is max 100 bytes.
 func (transaction *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo
@@ -164,7 +227,7 @@ func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
 	return transaction.tokenSymbol
 }
 
-// The number of decimal places a token is divisible by. This field can never be changed!
+// SetDecimals Sets the number of decimal places a token is divisible by. This field can never be changed!
 func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.decimals = uint32(decimals)
@@ -175,6 +238,7 @@ func (transaction *TokenCreateTransaction) GetDecimals() uint {
 	return uint(transaction.decimals)
 }
 
+// SetTokenType Specifies the token type. Defaults to FUNGIBLE_COMMON
 func (transaction *TokenCreateTransaction) SetTokenType(t TokenType) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenType = t
@@ -185,6 +249,7 @@ func (transaction *TokenCreateTransaction) GetTokenType() TokenType {
 	return transaction.tokenType
 }
 
+// SetSupplyType Specifies the token supply type. Defaults to INFINITE
 func (transaction *TokenCreateTransaction) SetSupplyType(tokenSupply TokenSupplyType) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenSupplyType = tokenSupply
@@ -195,6 +260,10 @@ func (transaction *TokenCreateTransaction) GetSupplyType() TokenSupplyType {
 	return transaction.tokenSupplyType
 }
 
+// SetMaxSupply Depends on TokenSupplyType. For tokens of type FUNGIBLE_COMMON - sets the
+// maximum number of tokens that can be in circulation. For tokens of type NON_FUNGIBLE_UNIQUE -
+// sets the maximum number of NFTs (serial numbers) that can be minted. This field can never be
+// changed!
 func (transaction *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.maxSupply = maxSupply
@@ -205,7 +274,7 @@ func (transaction *TokenCreateTransaction) GetMaxSupply() int64 {
 	return transaction.maxSupply
 }
 
-// The account which will act as a treasury for the token. This account will receive the specified initial supply
+// SetTreasuryAccountID Sets the account which will act as a treasury for the token. This account will receive the specified initial supply
 func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.treasuryAccountID = &treasuryAccountID
@@ -220,7 +289,7 @@ func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
 	return *transaction.treasuryAccountID
 }
 
-// The key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
+// SetAdminKey Sets the key which can perform update/delete operations on the token. If empty, the token can be perceived as immutable (not being able to be updated/deleted)
 func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.adminKey = publicKey
@@ -231,7 +300,7 @@ func (transaction *TokenCreateTransaction) GetAdminKey() Key {
 	return transaction.adminKey
 }
 
-// The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
+// SetKycKey Sets the key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
 func (transaction *TokenCreateTransaction) SetKycKey(publicKey Key) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.kycKey = publicKey
@@ -242,7 +311,7 @@ func (transaction *TokenCreateTransaction) GetKycKey() Key {
 	return transaction.kycKey
 }
 
-// The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
+// SetFreezeKey Sets the key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible
 func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.freezeKey = publicKey
@@ -253,7 +322,7 @@ func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
 	return transaction.freezeKey
 }
 
-// The key which can wipe the token balance of an account. If empty, wipe is not possible
+// SetWipeKey Sets the key which can wipe the token balance of an account. If empty, wipe is not possible
 func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.wipeKey = publicKey
@@ -264,6 +333,8 @@ func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return transaction.wipeKey
 }
 
+// SetFeeScheduleKey Set the key which can change the token's custom fee schedule; must sign a TokenFeeScheduleUpdate
+// transaction
 func (transaction *TokenCreateTransaction) SetFeeScheduleKey(key Key) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.scheduleKey = key
@@ -274,6 +345,8 @@ func (transaction *TokenCreateTransaction) GetFeeScheduleKey() Key {
 	return transaction.scheduleKey
 }
 
+// SetPauseKey Set the Key which can pause and unpause the Token.
+// If Empty the token pause status defaults to PauseNotApplicable, otherwise Unpaused.
 func (transaction *TokenCreateTransaction) SetPauseKey(key Key) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.pauseKey = key
@@ -284,6 +357,7 @@ func (transaction *TokenCreateTransaction) GetPauseKey() Key {
 	return transaction.pauseKey
 }
 
+// SetCustomFees Set the custom fees to be assessed during a CryptoTransfer that transfers units of this token
 func (transaction *TokenCreateTransaction) SetCustomFees(customFee []Fee) *TokenCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.customFees = customFee

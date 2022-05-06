@@ -30,6 +30,16 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TransferTransaction
+// Transfers cryptocurrency among two or more accounts by making the desired adjustments to their
+// balances. Each transfer list can specify up to 10 adjustments. Each negative amount is withdrawn
+// from the corresponding account (a sender), and each positive one is added to the corresponding
+// account (a receiver). The amounts list must sum to zero. Each amount is a number of tinybars
+// (there are 100,000,000 tinybars in one hbar).  If any sender account fails to have sufficient
+// hbars, then the entire transaction fails, and none of those transfers occur, though the
+// transaction fee is still charged. This transaction must be signed by the keys for all the sending
+// accounts, and for any receiving accounts that have receiverSigRequired == true. The signatures
+// are in the same order as the accounts, skipping those accounts that don't need a signature.
 type TransferTransaction struct {
 	Transaction
 	tokenTransfers map[TokenID]*_TokenTransfer
@@ -37,6 +47,16 @@ type TransferTransaction struct {
 	nftTransfers   map[TokenID][]*TokenNftTransfer
 }
 
+// NewTransferTransaction creates TransferTransaction which
+// transfers cryptocurrency among two or more accounts by making the desired adjustments to their
+// balances. Each transfer list can specify up to 10 adjustments. Each negative amount is withdrawn
+// from the corresponding account (a sender), and each positive one is added to the corresponding
+// account (a receiver). The amounts list must sum to zero. Each amount is a number of tinybars
+// (there are 100,000,000 tinybars in one hbar).  If any sender account fails to have sufficient
+// hbars, then the entire transaction fails, and none of those transfers occur, though the
+// transaction fee is still charged. This transaction must be signed by the keys for all the sending
+// accounts, and for any receiving accounts that have receiverSigRequired == true. The signatures
+// are in the same order as the accounts, skipping those accounts that don't need a signature.
 func NewTransferTransaction() *TransferTransaction {
 	transaction := TransferTransaction{
 		Transaction:    _NewTransaction(),
@@ -168,6 +188,7 @@ func (transaction *TransferTransaction) GetHbarTransfers() map[AccountID]Hbar {
 	return result
 }
 
+// AddHbarTransfer Sets The desired hbar balance adjustments
 func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amount Hbar) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
@@ -197,6 +218,7 @@ func (transaction *TransferTransaction) GetTokenIDDecimals() map[TokenID]uint32 
 	return result
 }
 
+// AddTokenTransferWithDecimals Sets the desired token unit balance adjustments with decimals
 func (transaction *TransferTransaction) AddTokenTransferWithDecimals(tokenID TokenID, accountID AccountID, value int64, decimal uint32) *TransferTransaction { //nolint
 	transaction._RequireNotFrozen()
 
@@ -236,6 +258,8 @@ func (transaction *TransferTransaction) AddTokenTransferWithDecimals(tokenID Tok
 	return transaction
 }
 
+// AddTokenTransfer Sets the desired token unit balance adjustments
+// Applicable to tokens of type FUNGIBLE_COMMON.
 func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accountID AccountID, value int64) *TransferTransaction { //nolint
 	transaction._RequireNotFrozen()
 
@@ -272,6 +296,8 @@ func (transaction *TransferTransaction) AddTokenTransfer(tokenID TokenID, accoun
 	return transaction
 }
 
+// AddNftTransfer Sets the desired nft token unit balance adjustments
+// Applicable to tokens of type NON_FUNGIBLE_UNIQUE.
 func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender AccountID, receiver AccountID) *TransferTransaction {
 	transaction._RequireNotFrozen()
 

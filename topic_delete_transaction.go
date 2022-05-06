@@ -28,13 +28,13 @@ import (
 	"time"
 )
 
-// A ConsensusTopicDeleteTransaction is for deleting a topic on HCS.
+// TopicDeleteTransaction is for deleting a topic on HCS.
 type TopicDeleteTransaction struct {
 	Transaction
 	topicID *TopicID
 }
 
-// NewConsensusTopicDeleteTransaction creates a ConsensusTopicDeleteTransaction transaction which can be used to construct
+// NewTopicDeleteTransaction creates a TopicDeleteTransaction which can be used to construct
 // and execute a Consensus Delete Topic Transaction.
 func NewTopicDeleteTransaction() *TopicDeleteTransaction {
 	transaction := TopicDeleteTransaction{
