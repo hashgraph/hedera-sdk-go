@@ -146,9 +146,18 @@ func _Execute( // nolint
 					var paymentTransaction services.TransactionBody
 					_ = protobuf.Unmarshal(query.paymentTransactions[0].BodyBytes, &paymentTransaction) // nolint
 					paymentTransaction.NodeAccountID = node.accountID._ToProtobuf()
+
 					transferTx := paymentTransaction.Data.(*services.TransactionBody_CryptoTransfer)
 					transferTx.CryptoTransfer.Transfers.AccountAmounts[0].AccountID = node.accountID._ToProtobuf()
 					query.paymentTransactions[0].BodyBytes, _ = protobuf.Marshal(&paymentTransaction) // nolint
+
+					signature := client.operator.signer(query.paymentTransactions[0].BodyBytes) // nolint
+					sigPairs := make([]*services.SignaturePair, 0)
+					sigPairs = append(sigPairs, client.operator.publicKey._ToSignaturePairProtobuf(signature))
+
+					query.paymentTransactions[0].SigMap = &services.SignatureMap{ // nolint
+						SigPair: sigPairs,
+					}
 				}
 				query.nodeAccountIDs._Set(0, node.accountID)
 				protoRequest = makeRequest(request)
