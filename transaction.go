@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"crypto/sha512"
 	"fmt"
+	"reflect"
 
 	"github.com/pkg/errors"
 
@@ -310,32 +311,8 @@ func _TransactionCompare(list *sdk.TransactionList) (bool, error) {
 		body = append(body, &temp)
 	}
 
-	tx := services.TransactionBody{
-		TransactionFee:           body[0].TransactionFee,
-		TransactionValidDuration: body[0].TransactionValidDuration,
-		Memo:                     body[0].Memo,
-		Data:                     body[0].Data,
-	}
-
-	txBytes, err := protobuf.Marshal(&tx)
-	if err != nil {
-		return false, err
-	}
-
 	for i := 1; i < len(body); i++ {
-		tx2 := services.TransactionBody{
-			TransactionFee:           body[i].TransactionFee,
-			TransactionValidDuration: body[i].TransactionValidDuration,
-			Memo:                     body[i].Memo,
-			Data:                     body[i].Data,
-		}
-
-		txBytes2, err := protobuf.Marshal(&tx2)
-		if err != nil {
-			return false, err
-		}
-
-		if !bytes.Equal(txBytes, txBytes2) {
+		if reflect.TypeOf(body[0].Data) != reflect.TypeOf(body[i].Data) {
 			return false, nil
 		}
 	}
@@ -692,6 +669,7 @@ func (this *Transaction) _BuildAllTransactions() ([]*services.Transaction, error
 	allTx := make([]*services.Transaction, 0)
 	for i := 0; i < this.signedTransactions._Length(); i++ {
 		tx, err := this._BuildTransaction(i)
+		this.transactionIDs._Advance()
 		if err != nil {
 			return []*services.Transaction{}, err
 		}
@@ -740,7 +718,7 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 	this.signedTransactions._Set(index, signedTx)
 	this._SignTransaction(index)
 
-	tx := this.signedTransactions._GetCurrent().(*services.SignedTransaction)
+	tx := this.signedTransactions._Get(index).(*services.SignedTransaction)
 	data, err := protobuf.Marshal(tx)
 	if err != nil {
 		return &services.Transaction{}, errors.Wrap(err, "failed to serialize transactions for building")

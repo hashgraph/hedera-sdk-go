@@ -1,3 +1,10 @@
+## v2.13.4
+
+### Fixed
+
+* `FileUpdateTransaction` and `TopicMessageSubmitTransaction` duplicate transaction errors.
+* `*Transaction.ToBytes()` now properly chunked transactions.
+
 ## v2.13.3
 
 ### Fixed

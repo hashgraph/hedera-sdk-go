@@ -327,7 +327,7 @@ func (transaction *TopicMessageSubmitTransaction) FreezeWith(client *Client) (*T
 	}
 
 	initialTransactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
-	nextTransactionID := initialTransactionID
+	nextTransactionID, _ := TransactionIdFromString(initialTransactionID.String())
 
 	transaction.transactionIDs = _NewLockableSlice()
 	transaction.transactions = _NewLockableSlice()

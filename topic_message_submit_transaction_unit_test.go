@@ -4,10 +4,11 @@
 package hedera
 
 import (
+	"testing"
+
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/require"
 	protobuf "google.golang.org/protobuf/proto"
-	"testing"
 )
 
 const bigContents2 = `
@@ -123,5 +124,76 @@ func TestUnitMockTopicSubmitTransaction(t *testing.T) {
 		SetMessage([]byte(bigContents2)).
 		SetTopicID(TopicID{Topic: 3}).
 		Execute(client)
+	require.NoError(t, err)
+}
+
+func TestUnitMockTopicSubmitTransactionFreeze(t *testing.T) {
+	var previousTransactionID string
+	var previousContent []byte
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+		if previousTransactionID == "" {
+			previousTransactionID = transactionId
+		} else {
+			require.NotEqual(t, transactionId, previousTransactionID)
+			previousTransactionID = transactionId
+		}
+
+		content := transactionBody.Data.(*services.TransactionBody_ConsensusSubmitMessage).ConsensusSubmitMessage.Message
+
+		if len(previousContent) == 0 {
+			previousContent = content
+		} else {
+			require.NotEqual(t, previousContent, content)
+			previousContent = content
+		}
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+
+		for _, sigPair := range sigMap.SigPair {
+			verified := false
+
+			switch k := sigPair.Signature.(type) {
+			case *services.SignaturePair_Ed25519:
+				pbTemp, _ := PublicKeyFromBytesEd25519(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.Ed25519)
+			case *services.SignaturePair_ECDSASecp256K1:
+				pbTemp, _ := PublicKeyFromBytesECDSA(sigPair.PubKeyPrefix)
+				verified = pbTemp.Verify(signedTransaction.BodyBytes, k.ECDSASecp256K1)
+			}
+			require.True(t, verified)
+		}
+
+		return &services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		}
+	}
+	responses := [][]interface{}{{
+		call, call, call, call, call, call, call, call, call, call, call, call, call, call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	submit, err := NewTopicMessageSubmitTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetMessage([]byte(bigContents2)).
+		SetTopicID(TopicID{Topic: 3}).
+		FreezeWith(client)
+	require.NoError(t, err)
+
+	_, err = submit.Execute(client)
 	require.NoError(t, err)
 }
