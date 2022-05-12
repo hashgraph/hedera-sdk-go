@@ -1,4 +1,4 @@
-## v2.13.4
+## v2.14.0-beta.3
 
 ### Fixed
 
@@ -33,6 +33,13 @@
 * `AccountInfo.EthereumNonce`
 * `AccountID.AliasEvmAddress`
 * `AccountID.AccountIDFromEvmAddress()`
+
+## v2.13.4
+
+### Fixed
+
+* `FileUpdateTransaction` and `TopicMessageSubmitTransaction` duplicate transaction errors.
+* `*Transaction.ToBytes()` now properly chunked transactions.
 
 ## v2.13.3
 
