@@ -41,8 +41,8 @@ type Client struct {
 
 	operator *_Operator
 
-	network                         _Network
-	mirrorNetwork                   *_MirrorNetwork
+	network _Network
+	// mirrorNetwork                   *_MirrorNetwork
 	autoValidateChecksums           bool
 	defaultRegenerateTransactionIDs bool
 	maxAttempts                     *int
@@ -246,10 +246,10 @@ func ClientForPreviewnet() *Client {
 // and returns a Client instance which can be used to
 func _NewClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
 	client := Client{
-		maxQueryPayment:                 defaultMaxQueryPayment,
-		maxTransactionFee:               defaultMaxTransactionFee,
-		network:                         _NewNetwork(),
-		mirrorNetwork:                   _NewMirrorNetwork(),
+		maxQueryPayment:   defaultMaxQueryPayment,
+		maxTransactionFee: defaultMaxTransactionFee,
+		network:           _NewNetwork(),
+		// mirrorNetwork:                   _NewMirrorNetwork(),
 		autoValidateChecksums:           false,
 		maxAttempts:                     nil,
 		minBackoff:                      250 * time.Millisecond,
@@ -258,7 +258,7 @@ func _NewClient(network map[string]AccountID, mirrorNetwork []string, name Netwo
 	}
 
 	_ = client.SetNetwork(network)
-	client.SetMirrorNetwork(mirrorNetwork)
+	// client.SetMirrorNetwork(mirrorNetwork)
 	client.network._SetNetworkName(name)
 
 	return &client
@@ -413,10 +413,10 @@ func (client *Client) Close() error {
 	if err != nil {
 		return err
 	}
-	err = client.mirrorNetwork._Close()
-	if err != nil {
-		return err
-	}
+	// err = client.mirrorNetwork._Close()
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -523,17 +523,17 @@ func (client *Client) SetMaxNodesPerTransaction(max int) {
 
 // SetNetwork replaces all _Nodes in the Client with a new set of _Nodes.
 // (e.g. for an Address Book update).
-func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
-	_ = client.mirrorNetwork._SetNetwork(mirrorNetwork)
-}
+// func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
+// 	_ = client.mirrorNetwork._SetNetwork(mirrorNetwork)
+// }
 
-func (client *Client) GetMirrorNetwork() []string {
-	return client.mirrorNetwork._GetNetwork()
-}
+// func (client *Client) GetMirrorNetwork() []string {
+// 	return client.mirrorNetwork._GetNetwork()
+// }
 
 func (client *Client) SetTransportSecurity(tls bool) *Client {
 	client.network._SetTransportSecurity(tls)
-	client.mirrorNetwork._SetTransportSecurity(tls)
+	// client.mirrorNetwork._SetTransportSecurity(tls)
 
 	return client
 }

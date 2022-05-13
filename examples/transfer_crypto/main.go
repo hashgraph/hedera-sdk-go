@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/arhtur007/hedera-sdk-go/v2"
 )
@@ -12,21 +11,21 @@ func main() {
 	var err error
 
 	// Retrieving network type from environment variable HEDERA_NETWORK
-	client, err = hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
+	client, err = hedera.ClientForName("testnet")
 	if err != nil {
 		println(err.Error(), ": error creating client")
 		return
 	}
 
 	// Retrieving operator ID from environment variable OPERATOR_ID
-	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
+	operatorAccountID, err := hedera.AccountIDFromString("0.0.34195733")
 	if err != nil {
 		println(err.Error(), ": error converting string to AccountID")
 		return
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
-	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
+	operatorKey, err := hedera.PrivateKeyFromString("302e020100300506032b65700422042023acb1f99279eca4805b62027f34e560585d301986fb2530ef6cde1ac9177174")
 	if err != nil {
 		println(err.Error(), ": error converting string to PrivateKey")
 		return
@@ -41,9 +40,9 @@ func main() {
 
 	transactionResponse, err := hedera.NewTransferTransaction().
 		// Hbar has to be negated to denote we are taking out from that account
-		AddHbarTransfer(client.GetOperatorAccountID(), hedera.NewHbar(-1000000)).
+		AddHbarTransfer(client.GetOperatorAccountID(), hedera.NewHbar(-0.00000001)).
 		// If the amount of these 2 transfers is not the same, the transaction will throw an error
-		AddHbarTransfer(hedera.AccountID{Account: 1153}, hedera.NewHbar(1000000)).
+		AddHbarTransfer(hedera.AccountID{Account: 34346808}, hedera.NewHbar(0.00000001)).
 		SetTransactionMemo("go sdk example send_hbar/main.go").
 		Execute(client)
 
