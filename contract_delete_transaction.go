@@ -28,6 +28,8 @@ import (
 	"time"
 )
 
+// ContractDeleteTransaction marks a contract as deleted and transfers its remaining hBars, if any, to a
+// designated receiver. After a contract is deleted, it can no longer be called.
 type ContractDeleteTransaction struct {
 	Transaction
 	contractID        *ContractID
@@ -36,6 +38,8 @@ type ContractDeleteTransaction struct {
 	permanentRemoval  bool
 }
 
+// NewContractDeleteTransaction creates ContractDeleteTransaction which marks a contract as deleted and transfers its remaining hBars, if any, to a
+// designated receiver. After a contract is deleted, it can no longer be called.
 func NewContractDeleteTransaction() *ContractDeleteTransaction {
 	transaction := ContractDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -59,7 +63,7 @@ func (transaction *ContractDeleteTransaction) SetGrpcDeadline(deadline *time.Dur
 	return transaction
 }
 
-// Sets the contract ID which should be deleted.
+// Sets the contract ID which will be deleted.
 func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractID) *ContractDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.contractID = &contractID
@@ -105,6 +109,13 @@ func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 	return *transaction.transferAccountID
 }
 
+// SetPermanentRemoval
+// If set to true, means this is a "synthetic" system transaction being used to
+// alert mirror nodes that the contract is being permanently removed from the ledger.
+// IMPORTANT: User transactions cannot set this field to true, as permanent
+// removal is always managed by the ledger itself. Any ContractDeleteTransaction
+// submitted to HAPI with permanent_removal=true will be rejected with precheck status
+// PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION.
 func (transaction *ContractDeleteTransaction) SetPermanentRemoval(remove bool) *ContractDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.permanentRemoval = remove

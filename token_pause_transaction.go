@@ -27,11 +27,27 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenPauseTransaction
+// Pauses the Token from being involved in any kind of Transaction until it is unpaused.
+// Must be signed with the Token's pause key.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If no Pause Key is defined, the transaction will resolve to TOKEN_HAS_NO_PAUSE_KEY.
+// Once executed the Token is marked as paused and will be not able to be a part of any transaction.
+// The operation is idempotent - becomes a no-op if the Token is already Paused.
 type TokenPauseTransaction struct {
 	Transaction
 	tokenID *TokenID
 }
 
+// NewTokenPauseTransaction creates TokenPauseTransaction which
+// pauses the Token from being involved in any kind of Transaction until it is unpaused.
+// Must be signed with the Token's pause key.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If no Pause Key is defined, the transaction will resolve to TOKEN_HAS_NO_PAUSE_KEY.
+// Once executed the Token is marked as paused and will be not able to be a part of any transaction.
+// The operation is idempotent - becomes a no-op if the Token is already Paused.
 func NewTokenPauseTransaction() *TokenPauseTransaction {
 	transaction := TokenPauseTransaction{
 		Transaction: _NewTransaction(),
@@ -53,6 +69,7 @@ func (transaction *TokenPauseTransaction) SetGrpcDeadline(deadline *time.Duratio
 	return transaction
 }
 
+// SetTokenID Sets the token to be paused
 func (transaction *TokenPauseTransaction) SetTokenID(tokenID TokenID) *TokenPauseTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID

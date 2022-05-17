@@ -28,11 +28,24 @@ import (
 	"time"
 )
 
+// FileDeleteTransaction Deletes the given file. After deletion, it will be marked as deleted and will have no contents.
+// But information about it will continue to exist until it expires. A list of keys was given when
+// the file was created. All the top level keys on that list must sign transactions to create or
+// modify the file, but any single one of the top level keys can be used to delete the file. This
+// transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
+// ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 type FileDeleteTransaction struct {
 	Transaction
 	fileID *FileID
 }
 
+// NewFileDeleteTransaction creates a FileDeleteTransaction which deletes the given file. After deletion,
+// it will be marked as deleted and will have no contents.
+// But information about it will continue to exist until it expires. A list of keys was given when
+// the file was created. All the top level keys on that list must sign transactions to create or
+// modify the file, but any single one of the top level keys can be used to delete the file. This
+// transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
+// ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
 func NewFileDeleteTransaction() *FileDeleteTransaction {
 	transaction := FileDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -54,6 +67,7 @@ func (transaction *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duratio
 	return transaction
 }
 
+// SetFileID Sets the FileID of the file to be deleted
 func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.fileID = &fileID

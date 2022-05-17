@@ -44,8 +44,15 @@ type FileCreateTransaction struct {
 	memo           string
 }
 
-// NewFileCreateTransaction creates a FileCreateTransaction transaction which can be
-// used to construct and execute a File Create Transaction.
+// NewFileCreateTransaction creates a FileCreateTransaction which creates a new file, containing the given contents.  It is referenced by its FileID, and does
+// not have a filename, so it is important to get and hold onto the FileID. After the file is created, the FileID for
+// it can be found in the receipt, or retrieved with a GetByKey query, or by asking for a Record of the transaction to
+// be created, and retrieving that.
+//
+// See FileInfoQuery for more information about files.
+//
+// The current API ignores shardID, realmID, and newRealmAdminKey, and creates everything in shard 0 and realm 0, with
+// a null key. Future versions of the API will support multiple realms and multiple shards.
 func NewFileCreateTransaction() *FileCreateTransaction {
 	transaction := FileCreateTransaction{
 		Transaction: _NewTransaction(),
@@ -137,6 +144,7 @@ func (transaction *FileCreateTransaction) GetContents() []byte {
 	return transaction.contents
 }
 
+// SetMemo Sets the memo associated with the file (UTF-8 encoding max 100 bytes)
 func (transaction *FileCreateTransaction) SetMemo(memo string) *FileCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo

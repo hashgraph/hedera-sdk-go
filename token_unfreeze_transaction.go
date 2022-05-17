@@ -27,6 +27,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenUnfreezeTransaction
 // Unfreezes transfers of the specified token for the account. Must be signed by the Token's freezeKey.
 // If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
 // If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
@@ -43,6 +44,17 @@ type TokenUnfreezeTransaction struct {
 	accountID *AccountID
 }
 
+// NewTokenUnfreezeTransaction creates TokenUnfreezeTransaction which
+// unfreezes transfers of the specified token for the account. Must be signed by the Token's freezeKey.
+// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If an Association between the provided token and account is not found, the transaction will
+// resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+// If no Freeze Key is defined, the transaction will resolve to TOKEN_HAS_NO_FREEZE_KEY.
+// Once executed the Account is marked as Unfrozen and will be able to receive or send tokens. The
+// operation is idempotent.
 func NewTokenUnfreezeTransaction() *TokenUnfreezeTransaction {
 	transaction := TokenUnfreezeTransaction{
 		Transaction: _NewTransaction(),
@@ -65,7 +77,8 @@ func (transaction *TokenUnfreezeTransaction) SetGrpcDeadline(deadline *time.Dura
 	return transaction
 }
 
-// The token for which this account will be unfrozen. If token does not exist, transaction results in INVALID_TOKEN_ID
+// SetTokenID Sets the token for which this account will be unfrozen.
+// If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenUnfreezeTransaction) SetTokenID(tokenID TokenID) *TokenUnfreezeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
@@ -80,7 +93,7 @@ func (transaction *TokenUnfreezeTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-// The account to be unfrozen
+// SetAccountID Sets the account to be unfrozen
 func (transaction *TokenUnfreezeTransaction) SetAccountID(accountID AccountID) *TokenUnfreezeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID

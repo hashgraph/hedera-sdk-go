@@ -29,6 +29,12 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// AccountUpdateTransaction
+// Change properties for the given account. Any null field is ignored (left unchanged). This
+// transaction must be signed by the existing key for this account. If the transaction is changing
+// the key field, then the transaction must be signed by both the old key (from before the change)
+// and the new key. The old key must sign for security. The new key must sign as a safeguard to
+// avoid accidentally changing to an invalid key, and then having no way to recover.
 type AccountUpdateTransaction struct {
 	Transaction
 	accountID                     *AccountID
@@ -44,6 +50,13 @@ type AccountUpdateTransaction struct {
 	aliasKey                      *PublicKey
 }
 
+// NewAccountUpdateTransaction
+// Creates AccoutnUppdateTransaction which changes properties for the given account.
+// Any null field is ignored (left unchanged).
+// This transaction must be signed by the existing key for this account. If the transaction is changing
+// the key field, then the transaction must be signed by both the old key (from before the change)
+// and the new key. The old key must sign for security. The new key must sign as a safeguard to
+// avoid accidentally changing to an invalid key, and then having no way to recover.
 func NewAccountUpdateTransaction() *AccountUpdateTransaction {
 	transaction := AccountUpdateTransaction{
 		Transaction: _NewTransaction(),
@@ -104,7 +117,7 @@ func (transaction *AccountUpdateTransaction) SetGrpcDeadline(deadline *time.Dura
 	return transaction
 }
 
-// Sets the new key.
+// SetKey Sets the new key for the Account
 func (transaction *AccountUpdateTransaction) SetKey(key Key) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.key = key
@@ -115,7 +128,7 @@ func (transaction *AccountUpdateTransaction) GetKey() (Key, error) {
 	return transaction.key, nil
 }
 
-// Sets the account ID which is being updated in this transaction.
+// SetAccountID Sets the account ID which is being updated in this transaction.
 func (transaction *AccountUpdateTransaction) SetAccountID(accountID AccountID) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
@@ -146,6 +159,9 @@ func (transaction *AccountUpdateTransaction) GetAliasKey() PublicKey {
 	return *transaction.aliasKey
 }
 
+// SetMaxAutomaticTokenAssociations
+// Sets the maximum number of tokens that an Account can be implicitly associated with. Up to a 1000
+// including implicit and explicit associations.
 func (transaction *AccountUpdateTransaction) SetMaxAutomaticTokenAssociations(max uint32) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.maxAutomaticTokenAssociations = max
@@ -156,6 +172,9 @@ func (transaction *AccountUpdateTransaction) GetMaxAutomaticTokenAssociations() 
 	return transaction.maxAutomaticTokenAssociations
 }
 
+// SetReceiverSignatureRequired
+// If true, this account's key must sign any transaction depositing into this account (in
+// addition to all withdrawals)
 func (transaction *AccountUpdateTransaction) SetReceiverSignatureRequired(receiverSignatureRequired bool) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.receiverSignatureRequired = receiverSignatureRequired
@@ -166,7 +185,7 @@ func (transaction *AccountUpdateTransaction) GetReceiverSignatureRequired() bool
 	return transaction.receiverSignatureRequired
 }
 
-// Sets the ID of the account to which this account is proxy staked.
+// SetProxyAccountID Sets the ID of the account to which this account is proxy staked.
 func (transaction *AccountUpdateTransaction) SetProxyAccountID(proxyAccountID AccountID) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.proxyAccountID = &proxyAccountID
@@ -181,7 +200,7 @@ func (transaction *AccountUpdateTransaction) GetProxyAccountID() AccountID {
 	return *transaction.proxyAccountID
 }
 
-// Sets the duration in which it will automatically extend the expiration period.
+// SetAutoRenewPeriod Sets the duration in which it will automatically extend the expiration period.
 func (transaction *AccountUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.autoRenewPeriod = &autoRenewPeriod
@@ -196,13 +215,13 @@ func (transaction *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration 
 	return time.Duration(0)
 }
 
+// SetExpirationTime sets the new expiration time to extend to (ignored if equal to or before the current one)
 func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.expirationTime = &expirationTime
 	return transaction
 }
 
-// Sets the new expiration time to extend to (ignored if equal to or before the current one).
 func (transaction *AccountUpdateTransaction) GetExpirationTime() time.Time {
 	if transaction.expirationTime != nil {
 		return *transaction.expirationTime
@@ -210,6 +229,7 @@ func (transaction *AccountUpdateTransaction) GetExpirationTime() time.Time {
 	return time.Time{}
 }
 
+// SetAccountMemo sets the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
 func (transaction *AccountUpdateTransaction) SetAccountMemo(memo string) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo
@@ -217,7 +237,7 @@ func (transaction *AccountUpdateTransaction) SetAccountMemo(memo string) *Accoun
 	return transaction
 }
 
-func (transaction *AccountUpdateTransaction) GeAccountMemo() string {
+func (transaction *AccountUpdateTransaction) GetAccountMemo() string {
 	return transaction.memo
 }
 
@@ -291,6 +311,7 @@ func (transaction *AccountUpdateTransaction) _Build() *services.TransactionBody 
 	return &pb
 }
 
+// Schedule Prepares a ScheduleCreateTransaction containing this transaction.
 func (transaction *AccountUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction._RequireNotFrozen()
 

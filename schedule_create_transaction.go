@@ -28,6 +28,11 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// ScheduleCreateTransaction Creates a new schedule entity (or simply, schedule) in the network's action queue.
+// Upon SUCCESS, the receipt contains the `ScheduleID` of the created schedule. A schedule
+// entity includes a scheduledTransactionBody to be executed.
+// When the schedule has collected enough signing Ed25519 keys to satisfy the schedule's signing
+// requirements, the schedule can be executed.
 type ScheduleCreateTransaction struct {
 	Transaction
 	payerAccountID  *AccountID
@@ -38,6 +43,11 @@ type ScheduleCreateTransaction struct {
 	waitForExpiry   bool
 }
 
+// NewScheduleCreateTransaction creates ScheduleCreateTransaction which creates a new schedule entity (or simply, schedule) in the network's action queue.
+// Upon SUCCESS, the receipt contains the `ScheduleID` of the created schedule. A schedule
+// entity includes a scheduledTransactionBody to be executed.
+// When the schedule has collected enough signing Ed25519 keys to satisfy the schedule's signing
+// requirements, the schedule can be executed.
 func NewScheduleCreateTransaction() *ScheduleCreateTransaction {
 	transaction := ScheduleCreateTransaction{
 		Transaction: _NewTransaction(),
@@ -65,6 +75,9 @@ func (transaction *ScheduleCreateTransaction) SetGrpcDeadline(deadline *time.Dur
 	return transaction
 }
 
+// SetPayerAccountID Sets an optional id of the account to be charged the service fee for the scheduled transaction at
+// the consensus time that it executes (if ever); defaults to the ScheduleCreate payer if not
+// given
 func (transaction *ScheduleCreateTransaction) SetPayerAccountID(payerAccountID AccountID) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.payerAccountID = &payerAccountID
@@ -80,6 +93,7 @@ func (transaction *ScheduleCreateTransaction) GetPayerAccountID() AccountID {
 	return *transaction.payerAccountID
 }
 
+// SetAdminKey Sets an optional Hedera key which can be used to sign a ScheduleDelete and remove the schedule
 func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.adminKey = key
@@ -87,6 +101,8 @@ func (transaction *ScheduleCreateTransaction) SetAdminKey(key Key) *ScheduleCrea
 	return transaction
 }
 
+// SetExpirationTime Sets an optional timestamp for specifying when the transaction should be evaluated for execution and then expire.
+// Defaults to 30 minutes after the transaction's consensus timestamp.
 func (transaction *ScheduleCreateTransaction) SetExpirationTime(time time.Time) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.expirationTime = &time
@@ -102,6 +118,12 @@ func (transaction *ScheduleCreateTransaction) GetExpirationTime() time.Time {
 	return time.Time{}
 }
 
+// SetWaitForExpiry
+// When set to true, the transaction will be evaluated for execution at expiration_time instead
+// of when all required signatures are received.
+// When set to false, the transaction will execute immediately after sufficient signatures are received
+// to sign the contained transaction. During the initial ScheduleCreate transaction or via ScheduleSign transactions.
+// Defaults to false.
 func (transaction *ScheduleCreateTransaction) SetWaitForExpiry(wait bool) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.waitForExpiry = wait
@@ -127,6 +149,7 @@ func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
 	return &transaction.adminKey
 }
 
+// SetScheduleMemo Sets an optional memo with a UTF-8 encoding of no more than 100 bytes which does not contain the zero byte.
 func (transaction *ScheduleCreateTransaction) SetScheduleMemo(memo string) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo
@@ -138,6 +161,7 @@ func (transaction *ScheduleCreateTransaction) GetScheduleMemo() string {
 	return transaction.memo
 }
 
+// SetScheduledTransaction Sets the scheduled transaction
 func (transaction *ScheduleCreateTransaction) SetScheduledTransaction(tx ITransaction) (*ScheduleCreateTransaction, error) {
 	transaction._RequireNotFrozen()
 

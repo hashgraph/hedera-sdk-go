@@ -27,6 +27,10 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// ContractCreateTransaction which is used to start a new smart contract instance.
+// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey query.
+// The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
+// small contracts.
 type ContractCreateTransaction struct {
 	Transaction
 	byteCodeFileID                *FileID
@@ -42,6 +46,10 @@ type ContractCreateTransaction struct {
 	maxAutomaticTokenAssociations int32
 }
 
+// NewContractCreateTransaction creates ContractCreateTransaction which is used to start a new smart contract instance.
+// After the instance is created, the ContractID for it is in the receipt, and can be retrieved by the Record or with a GetByKey query.
+// The instance will run the bytecode, either stored in a previously created file or in the transaction body itself for
+// small contracts.
 func NewContractCreateTransaction() *ContractCreateTransaction {
 	transaction := ContractCreateTransaction{
 		Transaction: _NewTransaction(),

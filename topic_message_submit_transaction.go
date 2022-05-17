@@ -32,6 +32,8 @@ import (
 
 const chunkSize = 1024
 
+// TopicMessageSubmitTransaction
+// Sends a message/messages to the Topic ID
 type TopicMessageSubmitTransaction struct {
 	Transaction
 	maxChunks uint64
@@ -39,6 +41,8 @@ type TopicMessageSubmitTransaction struct {
 	topicID   *TopicID
 }
 
+// NewTopicMessageSubmitTransaction createsTopicMessageSubmitTransaction which
+// sends a message/messages to the Topic ID
 func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 	transaction := TopicMessageSubmitTransaction{
 		Transaction: _NewTransaction(),
@@ -66,6 +70,7 @@ func (transaction *TopicMessageSubmitTransaction) SetGrpcDeadline(deadline *time
 	return transaction
 }
 
+// SetTopicID Sets the topic to submit message to.
 func (transaction *TopicMessageSubmitTransaction) SetTopicID(topicID TopicID) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
 	transaction.topicID = &topicID
@@ -80,6 +85,7 @@ func (transaction *TopicMessageSubmitTransaction) GetTopicID() TopicID {
 	return *transaction.topicID
 }
 
+// SetMessage Sets the message to be submitted.
 func (transaction *TopicMessageSubmitTransaction) SetMessage(message []byte) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
 	transaction.message = message
@@ -90,6 +96,7 @@ func (transaction *TopicMessageSubmitTransaction) GetMessage() []byte {
 	return transaction.message
 }
 
+// SetMaxChunks sets the maximum amount of chunks to use to send the message
 func (transaction *TopicMessageSubmitTransaction) SetMaxChunks(maxChunks uint64) *TopicMessageSubmitTransaction {
 	transaction._RequireNotFrozen()
 	transaction.maxChunks = maxChunks

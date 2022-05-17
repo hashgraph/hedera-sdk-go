@@ -33,8 +33,7 @@ type FileContentsQuery struct {
 	fileID *FileID
 }
 
-// NewFileContentsQuery creates a FileContentsQuery query which can be used to construct and execute a
-// File Get Contents Query.
+// NewFileContentsQuery creates a FileContentsQuery which retrieves the contents of a file.
 func NewFileContentsQuery() *FileContentsQuery {
 	header := services.QueryHeader{}
 	return &FileContentsQuery{

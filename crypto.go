@@ -94,6 +94,7 @@ type PublicKey struct {
 	ed25519PublicKey *_Ed25519PublicKey
 }
 
+// PrivateKeyGenerateEcdsa Generates a new ECDSASecp256K1 key
 func PrivateKeyGenerateEcdsa() (PrivateKey, error) {
 	key, err := _GenerateECDSAPrivateKey()
 	if err != nil {
@@ -109,6 +110,7 @@ func PrivateKeyGenerate() (PrivateKey, error) {
 	return PrivateKeyGenerateEd25519()
 }
 
+// PrivateKeyGenerateEd25519 Generates a new Ed25519 key
 func PrivateKeyGenerateEd25519() (PrivateKey, error) {
 	key, err := _GenerateEd25519PrivateKey()
 	if err != nil {
@@ -263,6 +265,7 @@ func PrivateKeyFromString(s string) (PrivateKey, error) {
 	return PrivateKeyFromBytes(byt)
 }
 
+// PrivateKeyFromStringDer Creates PrivateKey from hex string with a der prefix
 func PrivateKeyFromStringDer(s string) (PrivateKey, error) {
 	if strings.Contains(s, _ECDSAPrivateKeyPrefix) {
 		key, err := _ECDSAPrivateKeyFromString(s)

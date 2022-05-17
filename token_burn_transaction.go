@@ -27,7 +27,8 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// Burns tokens from the Token's treasury Account. If no Supply Key is defined, the transaction
+// TokenBurnTransaction Burns tokens from the Token's treasury Account.
+// If no Supply Key is defined, the transaction
 // will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
 // The operation decreases the Total Supply of the Token. Total supply cannot go below
 // zero.
@@ -41,6 +42,14 @@ type TokenBurnTransaction struct {
 	serial  []int64
 }
 
+// NewTokenBurnTransaction creates TokenBurnTransaction which burns tokens from the Token's treasury Account.
+// If no Supply Key is defined, the transaction
+// will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
+// The operation decreases the Total Supply of the Token. Total supply cannot go below
+// zero.
+// The amount provided must be in the lowest denomination possible. Example:
+// Token A has 2 decimals. In order to burn 100 tokens, one must provide amount of 10000. In order
+// to burn 100.55 tokens, one must provide amount of 10055.
 func NewTokenBurnTransaction() *TokenBurnTransaction {
 	transaction := TokenBurnTransaction{
 		Transaction: _NewTransaction(),
@@ -64,7 +73,7 @@ func (transaction *TokenBurnTransaction) SetGrpcDeadline(deadline *time.Duration
 	return transaction
 }
 
-// The token for which to burn tokens. If token does not exist, transaction results in
+// SetTokenID Sets the token for which to burn tokens. If token does not exist, transaction results in
 // INVALID_TOKEN_ID
 func (transaction *TokenBurnTransaction) SetTokenID(tokenID TokenID) *TokenBurnTransaction {
 	transaction._RequireNotFrozen()
@@ -80,7 +89,7 @@ func (transaction *TokenBurnTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-// The amount to burn from the Treasury Account. Amount must be a positive non-zero number, not
+// SetAmount Sets the amount to burn from the Treasury Account. Amount must be a positive non-zero number, not
 // bigger than the token balance of the treasury account (0; balance], represented in the lowest
 // denomination.
 func (transaction *TokenBurnTransaction) SetAmount(amount uint64) *TokenBurnTransaction {
@@ -98,6 +107,9 @@ func (transaction *TokenBurnTransaction) GetAmount() uint64 {
 	return transaction.amount
 }
 
+// SetSerialNumber
+// Applicable to tokens of type NON_FUNGIBLE_UNIQUE.
+// The list of serial numbers to be burned.
 func (transaction *TokenBurnTransaction) SetSerialNumber(serial int64) *TokenBurnTransaction {
 	transaction._RequireNotFrozen()
 	if transaction.serial == nil {

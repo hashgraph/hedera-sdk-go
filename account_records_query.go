@@ -93,6 +93,7 @@ func (query *AccountRecordsQuery) _Build() *services.Query_CryptoGetAccountRecor
 	return &pb
 }
 
+// GetCost Get the cost of the query
 func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided

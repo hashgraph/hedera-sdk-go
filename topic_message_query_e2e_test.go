@@ -110,6 +110,7 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 		}).
 		Subscribe(env.Client, func(message TopicMessage) {
 			// Do nothing
+			println(string(message.Contents))
 		})
 	require.NoError(t, err)
 

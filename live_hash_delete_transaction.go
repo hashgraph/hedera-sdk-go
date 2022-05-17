@@ -29,12 +29,16 @@ import (
 	"time"
 )
 
+// LiveHashDeleteTransaction At consensus, deletes a livehash associated to the given account. The transaction must be signed
+// by either the key of the owning account, or at least one of the keys associated to the livehash.
 type LiveHashDeleteTransaction struct {
 	Transaction
 	accountID *AccountID
 	hash      []byte
 }
 
+// NewLiveHashDeleteTransaction creates LiveHashDeleteTransaction which at consensus, deletes a livehash associated to the given account.
+// The transaction must be signed by either the key of the owning account, or at least one of the keys associated to the livehash.
 func NewLiveHashDeleteTransaction() *LiveHashDeleteTransaction {
 	transaction := LiveHashDeleteTransaction{
 		Transaction: _NewTransaction(),
@@ -57,6 +61,7 @@ func (transaction *LiveHashDeleteTransaction) SetGrpcDeadline(deadline *time.Dur
 	return transaction
 }
 
+// SetHash Set the SHA-384 livehash to delete from the account
 func (transaction *LiveHashDeleteTransaction) SetHash(hash []byte) *LiveHashDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.hash = hash
@@ -67,6 +72,7 @@ func (transaction *LiveHashDeleteTransaction) GetHash() []byte {
 	return transaction.hash
 }
 
+// SetAccountID Sets the account owning the livehash
 func (transaction *LiveHashDeleteTransaction) SetAccountID(accountID AccountID) *LiveHashDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID

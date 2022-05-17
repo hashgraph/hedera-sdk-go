@@ -27,11 +27,17 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// AccountInfoQuery
+// Get all the information about an account, including the balance. This does not get the list of
+// account records.
 type AccountInfoQuery struct {
 	Query
 	accountID *AccountID
 }
 
+// NewAccountInfoQuery
+// Creates an AccountInfoQuery which retrieves all the information about an account, including the balance. This does not get the list of
+// account records.
 func NewAccountInfoQuery() *AccountInfoQuery {
 	header := services.QueryHeader{}
 	return &AccountInfoQuery{
@@ -102,6 +108,7 @@ func _AccountInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// GetCost Get the cost of the query
 func (query *AccountInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided

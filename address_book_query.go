@@ -32,6 +32,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// AddressBookQuery query an address book for its list of nodes
 type AddressBookQuery struct {
 	attempt     uint64
 	maxAttempts uint64
@@ -46,6 +47,7 @@ func NewAddressBookQuery() *AddressBookQuery {
 	}
 }
 
+// SetFileID set the ID of the address book file on the network. Can be either 0.0.101 or 0.0.102.
 func (query *AddressBookQuery) SetFileID(id FileID) *AddressBookQuery {
 	query.fileID = &id
 	return query
@@ -59,6 +61,9 @@ func (query *AddressBookQuery) GetFileID() FileID {
 	return *query.fileID
 }
 
+// SetLimit
+// Set the maximum number of node addresses to receive before stopping.
+// If not set or set to zero it will return all node addresses in the database.
 func (query *AddressBookQuery) SetLimit(limit int32) *AddressBookQuery {
 	query.limit = limit
 	return query

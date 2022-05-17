@@ -27,11 +27,13 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// ScheduleInfoQuery Gets information about a schedule in the network's action queue.
 type ScheduleInfoQuery struct {
 	Query
 	scheduleID *ScheduleID
 }
 
+// NewScheduleInfoQuery creates ScheduleInfoQuery which gets information about a schedule in the network's action queue.
 func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	header := services.QueryHeader{}
 	return &ScheduleInfoQuery{
@@ -44,6 +46,7 @@ func (query *ScheduleInfoQuery) SetGrpcDeadline(deadline *time.Duration) *Schedu
 	return query
 }
 
+// SetScheduleID Sets the id of the schedule to interrogate
 func (query *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleInfoQuery {
 	query.scheduleID = &scheduleID
 	return query

@@ -27,6 +27,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenGrantKycTransaction
 // Grants KYC to the account for the given token. Must be signed by the Token's kycKey.
 // If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
 // If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
@@ -42,6 +43,16 @@ type TokenGrantKycTransaction struct {
 	accountID *AccountID
 }
 
+// NewTokenGrantKycTransaction creates TokenGrantKycTransaction which
+// grants KYC to the account for the given token. Must be signed by the Token's kycKey.
+// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+// If the provided token is not found, the transaction will resolve to INVALID_TOKEN_ID.
+// If the provided token has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If an Association between the provided token and account is not found, the transaction will
+// resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+// If no KYC Key is defined, the transaction will resolve to TOKEN_HAS_NO_KYC_KEY.
+// Once executed the Account is marked as KYC Granted.
 func NewTokenGrantKycTransaction() *TokenGrantKycTransaction {
 	transaction := TokenGrantKycTransaction{
 		Transaction: _NewTransaction(),
@@ -64,7 +75,8 @@ func (transaction *TokenGrantKycTransaction) SetGrpcDeadline(deadline *time.Dura
 	return transaction
 }
 
-// The token for which this account will be granted KYC. If token does not exist, transaction results in INVALID_TOKEN_ID
+// SetTokenID Sets the token for which this account will be granted KYC.
+// If token does not exist, transaction results in INVALID_TOKEN_ID
 func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenGrantKycTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokenID = &tokenID
@@ -79,7 +91,7 @@ func (transaction *TokenGrantKycTransaction) GetTokenID() TokenID {
 	return *transaction.tokenID
 }
 
-// The account to be KYCed
+// SetAccountID Sets the account to be KYCed
 func (transaction *TokenGrantKycTransaction) SetAccountID(accountID AccountID) *TokenGrantKycTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID

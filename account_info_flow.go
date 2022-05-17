@@ -20,6 +20,7 @@ package hedera
  *
  */
 
+// AccountInfoFlowVerifySignature Verifies signature using AccountInfoQuery
 func AccountInfoFlowVerifySignature(client *Client, accountID AccountID, message []byte, signature []byte) (bool, error) {
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).
@@ -36,6 +37,7 @@ func AccountInfoFlowVerifySignature(client *Client, accountID AccountID, message
 	return false, nil
 }
 
+// AccountInfoFlowVerifyTransaction Verifies transaction using AccountInfoQuery
 func AccountInfoFlowVerifyTransaction(client *Client, accountID AccountID, transaction Transaction, signature []byte) (bool, error) {
 	info, err := NewAccountInfoQuery().
 		SetAccountID(accountID).

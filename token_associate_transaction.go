@@ -27,7 +27,7 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// Associates the provided account with the provided tokens. Must be signed by the provided Account's key.
+// TokenAssociateTransaction Associates the provided account with the provided tokens. Must be signed by the provided Account's key.
 // If the provided account is not found, the transaction will resolve to
 // INVALID_ACCOUNT_ID.
 // If the provided account has been deleted, the transaction will resolve to
@@ -50,6 +50,24 @@ type TokenAssociateTransaction struct {
 	tokens    []TokenID
 }
 
+// NewTokenAssociateTransaction creates TokenAssociateTransaction which associates the provided account with the provided tokens.
+// Must be signed by the provided Account's key.
+// If the provided account is not found, the transaction will resolve to
+// INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to
+// ACCOUNT_DELETED.
+// If any of the provided tokens is not found, the transaction will resolve to
+// INVALID_TOKEN_REF.
+// If any of the provided tokens has been deleted, the transaction will resolve to
+// TOKEN_WAS_DELETED.
+// If an association between the provided account and any of the tokens already exists, the
+// transaction will resolve to
+// TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT.
+// If the provided account's associations count exceed the constraint of maximum token
+// associations per account, the transaction will resolve to
+// TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED.
+// On success, associations between the provided account and tokens are made and the account is
+// ready to interact with the tokens.
 func NewTokenAssociateTransaction() *TokenAssociateTransaction {
 	transaction := TokenAssociateTransaction{
 		Transaction: _NewTransaction(),
@@ -79,7 +97,7 @@ func (transaction *TokenAssociateTransaction) SetGrpcDeadline(deadline *time.Dur
 	return transaction
 }
 
-// The account to be associated with the provided tokens
+// SetAccountID Sets the account to be associated with the provided tokens
 func (transaction *TokenAssociateTransaction) SetAccountID(accountID AccountID) *TokenAssociateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
@@ -94,7 +112,7 @@ func (transaction *TokenAssociateTransaction) GetAccountID() AccountID {
 	return *transaction.accountID
 }
 
-// The tokens to be associated with the provided account
+// SetTokenIDs Sets the tokens to be associated with the provided account
 func (transaction *TokenAssociateTransaction) SetTokenIDs(ids ...TokenID) *TokenAssociateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokens = make([]TokenID, len(ids))
@@ -106,6 +124,7 @@ func (transaction *TokenAssociateTransaction) SetTokenIDs(ids ...TokenID) *Token
 	return transaction
 }
 
+// AddTokenID Adds the token to a token list to be associated with the provided account
 func (transaction *TokenAssociateTransaction) AddTokenID(id TokenID) *TokenAssociateTransaction {
 	transaction._RequireNotFrozen()
 	if transaction.tokens == nil {

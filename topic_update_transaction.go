@@ -29,7 +29,8 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-// *TopicUpdateTransaction updates all fields on a Topic that are set in the transaction.
+// TopicUpdateTransaction
+// Updates all fields on a Topic that are set in the transaction.
 type TopicUpdateTransaction struct {
 	Transaction
 	topicID            *TopicID
@@ -41,8 +42,8 @@ type TopicUpdateTransaction struct {
 	expirationTime     *time.Time
 }
 
-// NewTopicUpdateTransaction creates a *TopicUpdateTransaction transaction which can be
-// used to construct and execute a  Update Topic Transaction.
+// NewTopicUpdateTransaction creates a TopicUpdateTransaction transaction which
+// updates all fields on a Topic that are set in the transaction.
 func NewTopicUpdateTransaction() *TopicUpdateTransaction {
 	transaction := TopicUpdateTransaction{
 		Transaction: _NewTransaction(),

@@ -27,12 +27,42 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TokenDissociateTransaction
+// Dissociates the provided account with the provided tokens. Must be signed by the provided Account's key.
+// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+// If any of the provided tokens is not found, the transaction will resolve to INVALID_TOKEN_REF.
+// If any of the provided tokens has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If an association between the provided account and any of the tokens does not exist, the
+// transaction will resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+// If a token has not been deleted and has not expired, and the user has a nonzero balance, the
+// transaction will resolve to TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES.
+// If a <b>fungible token</b> has expired, the user can disassociate even if their token balance is
+// not zero.
+// If a <b>non fungible token</b> has expired, the user can <b>not</b> disassociate if their token
+// balance is not zero. The transaction will resolve to TRANSACTION_REQUIRED_ZERO_TOKEN_BALANCES.
+// On success, associations between the provided account and tokens are removed.
 type TokenDissociateTransaction struct {
 	Transaction
 	accountID *AccountID
 	tokens    []TokenID
 }
 
+// NewTokenDissociateTransaction creates TokenDissociateTransaction which
+// dissociates the provided account with the provided tokens. Must be signed by the provided Account's key.
+// If the provided account is not found, the transaction will resolve to INVALID_ACCOUNT_ID.
+// If the provided account has been deleted, the transaction will resolve to ACCOUNT_DELETED.
+// If any of the provided tokens is not found, the transaction will resolve to INVALID_TOKEN_REF.
+// If any of the provided tokens has been deleted, the transaction will resolve to TOKEN_WAS_DELETED.
+// If an association between the provided account and any of the tokens does not exist, the
+// transaction will resolve to TOKEN_NOT_ASSOCIATED_TO_ACCOUNT.
+// If a token has not been deleted and has not expired, and the user has a nonzero balance, the
+// transaction will resolve to TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES.
+// If a <b>fungible token</b> has expired, the user can disassociate even if their token balance is
+// not zero.
+// If a <b>non fungible token</b> has expired, the user can <b>not</b> disassociate if their token
+// balance is not zero. The transaction will resolve to TRANSACTION_REQUIRED_ZERO_TOKEN_BALANCES.
+// On success, associations between the provided account and tokens are removed.
 func NewTokenDissociateTransaction() *TokenDissociateTransaction {
 	transaction := TokenDissociateTransaction{
 		Transaction: _NewTransaction(),
@@ -62,7 +92,7 @@ func (transaction *TokenDissociateTransaction) SetGrpcDeadline(deadline *time.Du
 	return transaction
 }
 
-// The account to be dissociated with the provided tokens
+// SetAccountID Sets the account to be dissociated with the provided tokens
 func (transaction *TokenDissociateTransaction) SetAccountID(accountID AccountID) *TokenDissociateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.accountID = &accountID
@@ -77,7 +107,7 @@ func (transaction *TokenDissociateTransaction) GetAccountID() AccountID {
 	return *transaction.accountID
 }
 
-// The tokens to be dissociated with the provided account
+// SetTokenIDs Sets the tokens to be dissociated with the provided account
 func (transaction *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *TokenDissociateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokens = make([]TokenID, len(ids))
@@ -89,6 +119,7 @@ func (transaction *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *Toke
 	return transaction
 }
 
+// AddTokenID Adds the token to the list of tokens to be dissociated.
 func (transaction *TokenDissociateTransaction) AddTokenID(id TokenID) *TokenDissociateTransaction {
 	transaction._RequireNotFrozen()
 	if transaction.tokens == nil {

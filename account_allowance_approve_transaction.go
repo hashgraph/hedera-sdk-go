@@ -27,6 +27,15 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// AccountAllowanceApproveTransaction
+// Creates one or more hbar/token approved allowances <b>relative to the owner account specified in the allowances of
+// this transaction</b>. Each allowance grants a spender the right to transfer a pre-determined amount of the owner's
+// hbar/token to any other account of the spender's choice. If the owner is not specified in any allowance, the payer
+// of transaction is considered to be the owner for that particular allowance.
+// Setting the amount to zero in CryptoAllowance or TokenAllowance will remove the respective allowance for the spender.
+//
+// (So if account <tt>0.0.X</tt> pays for this transaction and owner is not specified in the allowance,
+// then at consensus each spender account will have new allowances to spend hbar or tokens from <tt>0.0.X</tt>).
 type AccountAllowanceApproveTransaction struct {
 	Transaction
 	hbarAllowances  []*HbarAllowance
@@ -34,6 +43,16 @@ type AccountAllowanceApproveTransaction struct {
 	nftAllowances   []*TokenNftAllowance
 }
 
+// NewAccountAllowanceApproveTransaction
+// Creates an AccountAloowanceApproveTransaction which creates
+// one or more hbar/token approved allowances relative to the owner account specified in the allowances of
+// this transaction. Each allowance grants a spender the right to transfer a pre-determined amount of the owner's
+// hbar/token to any other account of the spender's choice. If the owner is not specified in any allowance, the payer
+// of transaction is considered to be the owner for that particular allowance.
+// Setting the amount to zero in CryptoAllowance or TokenAllowance will remove the respective allowance for the spender.
+//
+// (So if account 0.0.X pays for this transaction and owner is not specified in the allowance,
+// then at consensus each spender account will have new allowances to spend hbar or tokens from 0.0.X).
 func NewAccountAllowanceApproveTransaction() *AccountAllowanceApproveTransaction {
 	transaction := AccountAllowanceApproveTransaction{
 		Transaction: _NewTransaction(),
@@ -95,6 +114,8 @@ func (transaction *AccountAllowanceApproveTransaction) ApproveHbarApproval(owner
 	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
 
+// ApproveHbarAllowance
+// Approves allowance of hbar transfers for a spender.
 func (transaction *AccountAllowanceApproveTransaction) ApproveHbarAllowance(ownerAccountID AccountID, id AccountID, amount Hbar) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
@@ -127,6 +148,8 @@ func (transaction *AccountAllowanceApproveTransaction) ApproveTokenApproval(toke
 	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
 
+// ApproveTokenAllowance
+// Approve allowance of fungible token transfers for a spender.
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenAllowance(tokenID TokenID, ownerAccountID AccountID, accountID AccountID, amount int64) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
@@ -177,6 +200,8 @@ func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftApproval(n
 	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
 }
 
+// ApproveTokenNftAllowance
+// Approve allowance of non-fungible token transfers for a spender.
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowance(nftID NftID, ownerAccountID AccountID, accountID AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftApproval(nftID, &ownerAccountID, accountID)
 }
@@ -204,18 +229,34 @@ func (transaction *AccountAllowanceApproveTransaction) _ApproveTokenNftAllowance
 	return transaction
 }
 
+// AddAllTokenNftApproval
+// Approve allowance of non-fungible token transfers for a spender.
+// Spender has access to all of the owner's NFT units of type tokenId (currently
+// owned and any in the future).
 func (transaction *AccountAllowanceApproveTransaction) AddAllTokenNftApproval(tokenID TokenID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, nil)
 }
 
+// ApproveTokenNftAllowanceAllSerials
+// Approve allowance of non-fungible token transfers for a spender.
+// Spender has access to all of the owner's NFT units of type tokenId (currently
+// owned and any in the future).
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceAllSerials(tokenID TokenID, ownerAccountID AccountID, spenderAccount AccountID) *AccountAllowanceApproveTransaction {
-	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, nil)
+	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, nil)
 }
 
+// AddAllTokenNftApprovalWithDelegatingSpender
+// Approve allowance of non-fungible token transfers for a spender with delegating spender.
+// Spender has access to all of the owner's NFT units of type tokenId (currently owned and any in the future).
+// Delegating spender is granted approvedForAll allowance and granting approval on an NFT serial to another spender.
 func (transaction *AccountAllowanceApproveTransaction) AddAllTokenNftApprovalWithDelegatingSpender(tokenID TokenID, spenderAccount AccountID, delegatingSpender AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, nil, spenderAccount, &delegatingSpender)
 }
 
+// ApproveTokenNftAllowanceAllSerialsWithDelegatingSpender
+// Approve allowance of non-fungible token transfers for a spender.
+// Spender has access to all of the owner's NFT units of type tokenId (currently owned and any in the future).
+// Delegating spender is granted approvedForAll allowance and granting approval on an NFT serial to another spender.
 func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceAllSerialsWithDelegatingSpender(tokenID TokenID, ownerAccountID AccountID, spenderAccount AccountID, delegatingSpender AccountID) *AccountAllowanceApproveTransaction {
 	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount, &delegatingSpender)
 }

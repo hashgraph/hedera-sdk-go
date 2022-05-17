@@ -27,6 +27,12 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
+// TransactionReceiptQuery
+// Get the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus,
+// then information about whether it succeeded or failed will be available until the end of the
+// receipt period.  Before and after the receipt period, and for a transaction that was never
+// submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
+// State proof is available for this response
 type TransactionReceiptQuery struct {
 	Query
 	transactionID *TransactionID
@@ -35,6 +41,12 @@ type TransactionReceiptQuery struct {
 	timestamp     time.Time
 }
 
+// NewTransactionReceiptQuery creates TransactionReceiptQuery which
+// gets the receipt of a transaction, given its transaction ID. Once a transaction reaches consensus,
+// then information about whether it succeeded or failed will be available until the end of the
+// receipt period.  Before and after the receipt period, and for a transaction that was never
+// submitted, the receipt is unknown.  This query is free (the payment field is left empty). No
+// State proof is available for this response
 func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	header := services.QueryHeader{}
 	return &TransactionReceiptQuery{
@@ -47,6 +59,8 @@ func (query *TransactionReceiptQuery) SetGrpcDeadline(deadline *time.Duration) *
 	return query
 }
 
+// SetIncludeChildren Sets whether the response should include the receipts of any child transactions spawned by the
+// top-level transaction with the given transactionID.
 func (query *TransactionReceiptQuery) SetIncludeChildren(includeChildReceipts bool) *TransactionReceiptQuery {
 	query.childReceipts = &includeChildReceipts
 	return query
@@ -60,6 +74,11 @@ func (query *TransactionReceiptQuery) GetIncludeChildren() bool {
 	return false
 }
 
+// SetIncludeDuplicates Sets whether receipts of processing duplicate transactions should be returned along with the
+// receipt of processing the first consensus transaction with the given id whose status was
+// neither INVALID_NODE_ACCOUNT nor INVALID_PAYER_SIGNATURE; or, if no
+// such receipt exists, the receipt of processing the first transaction to reach consensus with
+// the given transaction id.
 func (query *TransactionReceiptQuery) SetIncludeDuplicates(includeDuplicates bool) *TransactionReceiptQuery {
 	query.duplicates = &includeDuplicates
 	return query
