@@ -31,7 +31,6 @@ type NodeAddress struct {
 	CertHash    []byte
 	Addresses   []_Endpoint
 	Description string
-	Stake       int64
 }
 
 func _NodeAddressFromProtobuf(nodeAd *services.NodeAddress) NodeAddress {
@@ -48,7 +47,6 @@ func _NodeAddressFromProtobuf(nodeAd *services.NodeAddress) NodeAddress {
 		CertHash:    nodeAd.GetNodeCertHash(),
 		Addresses:   address,
 		Description: nodeAd.GetDescription(),
-		Stake:       nodeAd.GetStake(),
 	}
 }
 
@@ -60,7 +58,6 @@ func (nodeAdd *NodeAddress) _ToProtobuf() *services.NodeAddress {
 		NodeCertHash:    nodeAdd.CertHash,
 		ServiceEndpoint: nil,
 		Description:     nodeAdd.Description,
-		Stake:           nodeAdd.Stake,
 	}
 
 	if nodeAdd.AccountID != nil {

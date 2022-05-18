@@ -40,12 +40,13 @@ type AccountCreateTransaction struct {
 	proxyAccountID                *AccountID
 	key                           Key
 	initialBalance                uint64
-	receiveRecordThreshold        uint64
-	sendRecordThreshold           uint64
 	autoRenewPeriod               *time.Duration
 	memo                          string
 	receiverSignatureRequired     bool
 	maxAutomaticTokenAssociations uint32
+	stakedNodeAccountID           *AccountID
+	stakedNodeID                  *int64
+	declineReward                 bool
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
@@ -64,17 +65,23 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *AccountCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
+	stakedNodeID := pb.GetCryptoCreateAccount().GetStakedNodeId()
+
+	var stakeNodeAccountID *AccountID
+	if pb.GetCryptoCreateAccount().GetStakedAccountId() != nil {
+		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetStakedAccountId())
+	}
 	return &AccountCreateTransaction{
 		Transaction:                   transaction,
-		proxyAccountID:                _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
 		key:                           key,
 		initialBalance:                pb.GetCryptoCreateAccount().InitialBalance,
-		receiveRecordThreshold:        pb.GetCryptoCreateAccount().GetReceiveRecordThreshold(), // nolint
-		sendRecordThreshold:           pb.GetCryptoCreateAccount().GetSendRecordThreshold(),    // nolint
 		autoRenewPeriod:               &renew,
 		memo:                          pb.GetCryptoCreateAccount().GetMemo(),
 		receiverSignatureRequired:     pb.GetCryptoCreateAccount().ReceiverSigRequired,
-		maxAutomaticTokenAssociations: uint32(pb.GetCryptoCreateAccount().GetMaxAutomaticTokenAssociations()),
+		maxAutomaticTokenAssociations: uint32(pb.GetCryptoCreateAccount().MaxAutomaticTokenAssociations),
+		stakedNodeAccountID:           stakeNodeAccountID,
+		stakedNodeID:                  &stakedNodeID,
+		declineReward:                 pb.GetCryptoCreateAccount().GetDeclineReward(),
 	}
 }
 
@@ -139,6 +146,7 @@ func (transaction *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration 
 	return time.Duration(0)
 }
 
+// Deprecated
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
 // is an invalid account, or is an account that isn't a _Node, then this account is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
@@ -149,6 +157,7 @@ func (transaction *AccountCreateTransaction) SetProxyAccountID(id AccountID) *Ac
 	return transaction
 }
 
+// Deprecated
 func (transaction *AccountCreateTransaction) GetProxyAccountID() AccountID {
 	if transaction.proxyAccountID == nil {
 		return AccountID{}
@@ -166,6 +175,44 @@ func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *Accoun
 
 func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 	return transaction.memo
+}
+
+func (transaction *AccountCreateTransaction) SetStakedNodeAccountID(id AccountID) *AccountCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedNodeAccountID = &id
+	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetStakedNodeAccountID() AccountID {
+	if transaction.stakedNodeAccountID != nil {
+		return *transaction.stakedNodeAccountID
+	}
+
+	return AccountID{}
+}
+
+func (transaction *AccountCreateTransaction) SetStakedNodeID(id int64) *AccountCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedNodeID = &id
+	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetStakedNodeID() int64 {
+	if transaction.stakedNodeID != nil {
+		return *transaction.stakedNodeID
+	}
+
+	return 0
+}
+
+func (transaction *AccountCreateTransaction) SetDeclineReward(decline bool) *AccountCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.declineReward = decline
+	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetDeclineReward() bool {
+	return transaction.declineReward
 }
 
 func (transaction *AccountCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
@@ -187,23 +234,24 @@ func (transaction *AccountCreateTransaction) _ValidateNetworkOnIDs(client *Clien
 func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody {
 	body := &services.CryptoCreateTransactionBody{
 		InitialBalance:                transaction.initialBalance,
-		SendRecordThreshold:           transaction.receiveRecordThreshold,
-		ReceiveRecordThreshold:        transaction.sendRecordThreshold,
 		ReceiverSigRequired:           transaction.receiverSignatureRequired,
 		Memo:                          transaction.memo,
 		MaxAutomaticTokenAssociations: int32(transaction.maxAutomaticTokenAssociations),
+		DeclineReward:                 transaction.declineReward,
 	}
 
 	if transaction.key != nil {
 		body.Key = transaction.key._ToProtoKey()
 	}
 
-	if transaction.proxyAccountID != nil {
-		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
 	if transaction.autoRenewPeriod != nil {
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.stakedNodeAccountID != nil {
+		body.StakedId = &services.CryptoCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	} else if transaction.stakedNodeID != nil {
+		body.StakedId = &services.CryptoCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
 	return &services.TransactionBody{
@@ -244,23 +292,25 @@ func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransact
 
 func (transaction *AccountCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	body := &services.CryptoCreateTransactionBody{
-		InitialBalance:         transaction.initialBalance,
-		SendRecordThreshold:    transaction.receiveRecordThreshold,
-		ReceiveRecordThreshold: transaction.sendRecordThreshold,
-		ReceiverSigRequired:    transaction.receiverSignatureRequired,
-		Memo:                   transaction.memo,
+		InitialBalance:                transaction.initialBalance,
+		ReceiverSigRequired:           transaction.receiverSignatureRequired,
+		Memo:                          transaction.memo,
+		MaxAutomaticTokenAssociations: int32(transaction.maxAutomaticTokenAssociations),
+		DeclineReward:                 transaction.declineReward,
 	}
 
 	if transaction.key != nil {
 		body.Key = transaction.key._ToProtoKey()
 	}
 
-	if transaction.proxyAccountID != nil {
-		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
 	if transaction.autoRenewPeriod != nil {
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.stakedNodeAccountID != nil {
+		body.StakedId = &services.CryptoCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	} else if transaction.stakedNodeID != nil {
+		body.StakedId = &services.CryptoCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
 	return &services.SchedulableTransactionBody{
