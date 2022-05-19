@@ -302,7 +302,7 @@ func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 }
 
 // SetExpirationTime Sets the new expiry time of the token. Expiry can be updated even if admin key is not set.
-//If the provided expiry is earlier than the current token expiry, transaction wil resolve to
+// If the provided expiry is earlier than the current token expiry, transaction wil resolve to
 // INVALID_EXPIRATION_TIME
 func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime time.Time) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()
