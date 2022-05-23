@@ -828,6 +828,10 @@ func (this *Transaction) SetMaxRetry(count int) *Transaction {
 	return this
 }
 
+func (this *Transaction) GetTransactionBodyBytes() []byte {
+	return this.signedTransactions._GetCurrent().(*services.SignedTransaction).BodyBytes
+}
+
 func TransactionSign(transaction interface{}, privateKey PrivateKey) (interface{}, error) { // nolint
 	switch i := transaction.(type) {
 	case AccountCreateTransaction:
