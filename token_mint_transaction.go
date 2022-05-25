@@ -101,7 +101,7 @@ func (transaction *TokenMintTransaction) GetAmount() uint64 {
 }
 
 // SetMetadatas
-//Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
+// Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
 // Maximum allowed size of each metadata is 100 bytes
 func (transaction *TokenMintTransaction) SetMetadatas(meta [][]byte) *TokenMintTransaction {
 	transaction._RequireNotFrozen()
@@ -110,7 +110,7 @@ func (transaction *TokenMintTransaction) SetMetadatas(meta [][]byte) *TokenMintT
 }
 
 // SetMetadata
-//Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
+// Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
 // Maximum allowed size of each metadata is 100 bytes
 func (transaction *TokenMintTransaction) SetMetadata(meta []byte) *TokenMintTransaction {
 	transaction._RequireNotFrozen()

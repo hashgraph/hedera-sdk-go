@@ -1,6 +1,8 @@
 package hedera
 
 import (
+	"encoding/json"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 )
@@ -13,7 +15,8 @@ type EthereumTransactionData struct {
 func EthereumTransactionDataFromBytes(b []byte) (*EthereumTransactionData, error) {
 	var transactionData EthereumTransactionData
 	if b[0] == 2 {
-		byt := append(b[:0], b[0+1:]...)
+		byt := b
+		byt = append(byt[:0], byt[0+1:]...)
 		err := rlp.DecodeBytes(byt, &transactionData.eip1559)
 		if err != nil {
 			return nil, err
@@ -67,4 +70,24 @@ func (ethereumTxData *EthereumTransactionData) _SetData(data []byte) *EthereumTr
 
 	ethereumTxData.legacy.Data = data
 	return ethereumTxData
+}
+
+func (ethereumTxData *EthereumTransactionData) ToJson() ([]byte, error) {
+	var byt []byte
+	var err error
+	if ethereumTxData.eip1559 != nil {
+		byt, err = json.Marshal(ethereumTxData.eip1559)
+		if err != nil {
+			return []byte{}, err
+		}
+
+		return byt, nil
+	}
+
+	byt, err = json.Marshal(ethereumTxData.legacy)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return byt, nil
 }

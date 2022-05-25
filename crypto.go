@@ -551,6 +551,14 @@ func (pk PublicKey) StringRaw() string {
 	return ""
 }
 
+func (pk PublicKey) ToEthereumAddress() string {
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._ToEthereumAddress()
+	}
+
+	panic("unsupported operation on Ed25519PublicKey")
+}
+
 /*
  * For `Ed25519` the result of this method call is identical to `toBytesRaw()` while for `ECDSA`
  * this method is identical to `toBytesDer()`.

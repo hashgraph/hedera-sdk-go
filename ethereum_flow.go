@@ -133,7 +133,7 @@ func (transaction *EthereumFlow) Execute(client *Client) (TransactionResponse, e
 		ethereumTransaction.SetMaxGasAllowanceHbar(*transaction.maxGasAllowance)
 	}
 
-	if transaction.callDataFileID != nil {
+	if transaction.callDataFileID != nil { //nolint
 		if len(transaction.ethereumData._GetData()) != 0 {
 			return TransactionResponse{}, errors.New("call data file ID provided, but ethereum data already contains call data")
 		}

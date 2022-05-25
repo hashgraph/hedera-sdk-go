@@ -23,6 +23,7 @@ package hedera
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"encoding/hex"
 	"strings"
 
@@ -158,4 +159,14 @@ func (pk _ECDSAPublicKey) _VerifyTransaction(transaction Transaction) bool {
 	}
 
 	return true
+}
+
+func (pk _ECDSAPublicKey) _ToFullKey() []byte {
+	return elliptic.Marshal(crypto.S256(), pk.X, pk.Y)
+}
+
+func (pk _ECDSAPublicKey) _ToEthereumAddress() string {
+	temp := pk._ToFullKey()[1:]
+	hash := crypto.Keccak256(temp)
+	return hex.EncodeToString(hash[12:])
 }
