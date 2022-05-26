@@ -3,6 +3,8 @@ package hedera
 import (
 	"encoding/json"
 
+	"github.com/pkg/errors"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 )
@@ -90,4 +92,24 @@ func (ethereumTxData *EthereumTransactionData) ToJson() ([]byte, error) {
 	}
 
 	return byt, nil
+}
+
+func EthereumTransactionDataFromJson(b []byte) (*EthereumTransactionData, error) {
+	var eip1559 types.DynamicFeeTx
+	var leg types.LegacyTx
+	err := json.Unmarshal(b, &eip1559)
+	if err != nil {
+		err = json.Unmarshal(b, &leg)
+		if err != nil {
+			return nil, errors.New("Json bytes are neither eip1559 or legacy format")
+		}
+
+		return &EthereumTransactionData{
+			legacy: &leg,
+		}, nil
+	}
+
+	return &EthereumTransactionData{
+		eip1559: &eip1559,
+	}, nil
 }

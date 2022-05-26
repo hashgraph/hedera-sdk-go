@@ -7,9 +7,10 @@ type EthereumFlow struct {
 	ethereumData    *EthereumTransactionData
 	callDataFileID  *FileID
 	maxGasAllowance *Hbar
+	nodeAccountIDs  []AccountID
 }
 
-func NewEthereumFlowFlow() *EthereumFlow {
+func NewEthereumFlow() *EthereumFlow {
 	transaction := EthereumFlow{
 		Transaction: _NewTransaction(),
 	}
@@ -19,9 +20,9 @@ func NewEthereumFlowFlow() *EthereumFlow {
 	return &transaction
 }
 
-func (transaction *EthereumFlow) SetEthereumData(data EthereumTransactionData) *EthereumFlow {
+func (transaction *EthereumFlow) SetEthereumData(data *EthereumTransactionData) *EthereumFlow {
 	transaction._RequireNotFrozen()
-	transaction.ethereumData = &data
+	transaction.ethereumData = data
 	return transaction
 }
 
@@ -35,12 +36,8 @@ func (transaction *EthereumFlow) SetEthereumDataBytes(data []byte) *EthereumFlow
 	return transaction
 }
 
-func (transaction *EthereumFlow) GetEthereumData() EthereumTransactionData {
-	if transaction.ethereumData == nil {
-		return EthereumTransactionData{}
-	}
-
-	return *transaction.ethereumData
+func (transaction *EthereumFlow) GetEthereumData() *EthereumTransactionData {
+	return transaction.ethereumData
 }
 
 func (transaction *EthereumFlow) SetCallDataFileID(callData FileID) *EthereumFlow {
@@ -71,9 +68,24 @@ func (transaction *EthereumFlow) GetMaxGasAllowance() Hbar {
 	return *transaction.maxGasAllowance
 }
 
+func (transaction *EthereumFlow) SetNodeAccountIDs(nodes []AccountID) *EthereumFlow {
+	transaction._RequireNotFrozen()
+	transaction.nodeAccountIDs = nodes
+	return transaction
+}
+
+func (transaction *EthereumFlow) GetNodeAccountIDs() []AccountID {
+	return transaction.nodeAccountIDs
+}
+
 func (transaction *EthereumFlow) _CreateFile(callData []byte, client *Client) (FileID, error) {
+	fileCreate := NewFileCreateTransaction()
+	if len(transaction.nodeAccountIDs) > 0 {
+		fileCreate.SetNodeAccountIDs(transaction.nodeAccountIDs)
+	}
+
 	if len(callData) < 4097 {
-		resp, err := NewFileCreateTransaction().
+		resp, err := fileCreate.
 			SetContents(callData).
 			Execute(client)
 		if err != nil {
@@ -88,7 +100,7 @@ func (transaction *EthereumFlow) _CreateFile(callData []byte, client *Client) (F
 		return *receipt.FileID, nil
 	}
 
-	resp, err := NewFileCreateTransaction().
+	resp, err := fileCreate.
 		SetContents(callData[:4097]).
 		Execute(client)
 	if err != nil {
@@ -124,6 +136,9 @@ func (transaction *EthereumFlow) Execute(client *Client) (TransactionResponse, e
 	}
 
 	ethereumTransaction := NewEthereumTransaction()
+	if len(transaction.nodeAccountIDs) > 0 {
+		ethereumTransaction.SetNodeAccountIDs(transaction.nodeAccountIDs)
+	}
 	dataBytes, err := transaction.ethereumData.ToBytes()
 	if err != nil {
 		return TransactionResponse{}, err
@@ -140,7 +155,7 @@ func (transaction *EthereumFlow) Execute(client *Client) (TransactionResponse, e
 
 		ethereumTransaction.
 			SetEthereumData(dataBytes).
-			SetCallData(*transaction.callDataFileID)
+			SetCallDataFileID(*transaction.callDataFileID)
 	} else if len(dataBytes) <= 5120 {
 		ethereumTransaction.
 			SetEthereumData(dataBytes)
