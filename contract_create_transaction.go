@@ -65,16 +65,24 @@ func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *service
 	key, _ := _KeyFromProtobuf(pb.GetContractCreateInstance().GetAdminKey())
 	autoRenew := _DurationFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewPeriod())
 
+	var autoRenewAccountID *AccountID
+	if pb.GetContractCreateInstance().GetAutoRenewAccountId() != nil {
+		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewAccountId())
+	}
+
 	return &ContractCreateTransaction{
-		Transaction:     transaction,
-		byteCodeFileID:  _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
-		proxyAccountID:  _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID()),
-		adminKey:        key,
-		gas:             pb.GetContractCreateInstance().Gas,
-		initialBalance:  pb.GetContractCreateInstance().InitialBalance,
-		autoRenewPeriod: &autoRenew,
-		parameters:      pb.GetContractCreateInstance().ConstructorParameters,
-		memo:            pb.GetContractCreateInstance().GetMemo(),
+		Transaction:                   transaction,
+		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
+		proxyAccountID:                _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID()),
+		adminKey:                      key,
+		gas:                           pb.GetContractCreateInstance().Gas,
+		initialBalance:                pb.GetContractCreateInstance().InitialBalance,
+		autoRenewPeriod:               &autoRenew,
+		parameters:                    pb.GetContractCreateInstance().ConstructorParameters,
+		memo:                          pb.GetContractCreateInstance().GetMemo(),
+		initcode:                      pb.GetContractCreateInstance().GetInitcode(),
+		autoRenewAccountID:            autoRenewAccountID,
+		maxAutomaticTokenAssociations: pb.GetContractCreateInstance().GetMaxAutomaticTokenAssociations(),
 	}
 }
 

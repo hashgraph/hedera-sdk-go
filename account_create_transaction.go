@@ -65,15 +65,16 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
 	return &AccountCreateTransaction{
-		Transaction:               transaction,
-		proxyAccountID:            _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
-		key:                       key,
-		initialBalance:            pb.GetCryptoCreateAccount().InitialBalance,
-		receiveRecordThreshold:    pb.GetCryptoCreateAccount().GetReceiveRecordThreshold(), // nolint
-		sendRecordThreshold:       pb.GetCryptoCreateAccount().GetSendRecordThreshold(),    // nolint
-		autoRenewPeriod:           &renew,
-		memo:                      pb.GetCryptoCreateAccount().GetMemo(),
-		receiverSignatureRequired: pb.GetCryptoCreateAccount().ReceiverSigRequired,
+		Transaction:                   transaction,
+		proxyAccountID:                _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetProxyAccountID()),
+		key:                           key,
+		initialBalance:                pb.GetCryptoCreateAccount().InitialBalance,
+		receiveRecordThreshold:        pb.GetCryptoCreateAccount().GetReceiveRecordThreshold(), // nolint
+		sendRecordThreshold:           pb.GetCryptoCreateAccount().GetSendRecordThreshold(),    // nolint
+		autoRenewPeriod:               &renew,
+		memo:                          pb.GetCryptoCreateAccount().GetMemo(),
+		receiverSignatureRequired:     pb.GetCryptoCreateAccount().ReceiverSigRequired,
+		maxAutomaticTokenAssociations: uint32(pb.GetCryptoCreateAccount().GetMaxAutomaticTokenAssociations()),
 	}
 }
 

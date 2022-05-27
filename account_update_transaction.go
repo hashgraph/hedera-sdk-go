@@ -99,16 +99,17 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 	expiration := _TimeFromProtobuf(pb.GetCryptoUpdateAccount().ExpirationTime)
 
 	return &AccountUpdateTransaction{
-		Transaction:               transaction,
-		accountID:                 _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
-		proxyAccountID:            _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID()),
-		key:                       key,
-		receiveRecordThreshold:    receiveRecordThreshold,
-		sendRecordThreshold:       sendRecordThreshold,
-		autoRenewPeriod:           &autoRenew,
-		memo:                      pb.GetCryptoUpdateAccount().GetMemo().Value,
-		receiverSignatureRequired: receiverSignatureRequired,
-		expirationTime:            &expiration,
+		Transaction:                   transaction,
+		accountID:                     _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
+		proxyAccountID:                _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetProxyAccountID()),
+		key:                           key,
+		receiveRecordThreshold:        receiveRecordThreshold,
+		sendRecordThreshold:           sendRecordThreshold,
+		autoRenewPeriod:               &autoRenew,
+		memo:                          pb.GetCryptoUpdateAccount().GetMemo().Value,
+		receiverSignatureRequired:     receiverSignatureRequired,
+		expirationTime:                &expiration,
+		maxAutomaticTokenAssociations: uint32(pb.GetCryptoUpdateAccount().GetMaxAutomaticTokenAssociations().GetValue()),
 	}
 }
 
