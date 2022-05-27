@@ -48,7 +48,14 @@ func (transaction *EthereumTransaction) GetEthereumData() []byte {
 	return transaction.ethereumData
 }
 
+// Deprecated
 func (transaction *EthereumTransaction) SetCallData(file FileID) *EthereumTransaction {
+	transaction._RequireNotFrozen()
+	transaction.callData = &file
+	return transaction
+}
+
+func (transaction *EthereumTransaction) SetCallDataFileID(file FileID) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 	transaction.callData = &file
 	return transaction
@@ -74,6 +81,12 @@ func (transaction *EthereumTransaction) GetCallData() FileID {
 func (transaction *EthereumTransaction) SetMaxGasAllowed(gas int64) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 	transaction.MaxGasAllowed = gas
+	return transaction
+}
+
+func (transaction *EthereumTransaction) SetMaxGasAllowanceHbar(gas Hbar) *EthereumTransaction {
+	transaction._RequireNotFrozen()
+	transaction.MaxGasAllowed = gas.AsTinybar()
 	return transaction
 }
 
