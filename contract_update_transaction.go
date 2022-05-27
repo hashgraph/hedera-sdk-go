@@ -92,14 +92,21 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *service
 		memo = m.MemoWrapper.Value
 	}
 
+	var autoRenewAccountID *AccountID
+	if pb.GetContractUpdateInstance().GetAutoRenewAccountId() != nil {
+		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewAccountId())
+	}
+
 	return &ContractUpdateTransaction{
-		Transaction:     transaction,
-		contractID:      _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
-		proxyAccountID:  _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID()),
-		adminKey:        key,
-		autoRenewPeriod: &autoRenew,
-		expirationTime:  &expiration,
-		memo:            memo,
+		Transaction:                   transaction,
+		contractID:                    _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
+		proxyAccountID:                _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID()),
+		adminKey:                      key,
+		autoRenewPeriod:               &autoRenew,
+		expirationTime:                &expiration,
+		memo:                          memo,
+		autoRenewAccountID:            autoRenewAccountID,
+		maxAutomaticTokenAssociations: pb.GetContractUpdateInstance().GetMaxAutomaticTokenAssociations().GetValue(),
 	}
 }
 

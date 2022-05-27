@@ -55,6 +55,7 @@ func _ContractDeleteTransactionFromProtobuf(transaction Transaction, pb *service
 		contractID:        _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetContractID()),
 		transferContactID: _ContractIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferContractID()),
 		transferAccountID: _AccountIDFromProtobuf(pb.GetContractDeleteInstance().GetTransferAccountID()),
+		permanentRemoval:  pb.GetContractDeleteInstance().GetPermanentRemoval(),
 	}
 }
 
