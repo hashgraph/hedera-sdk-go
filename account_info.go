@@ -29,9 +29,10 @@ import (
 
 // AccountInfo is info about the account returned from an AccountInfoQuery
 type AccountInfo struct {
-	AccountID                      AccountID
-	ContractAccountID              string
-	IsDeleted                      bool
+	AccountID         AccountID
+	ContractAccountID string
+	IsDeleted         bool
+	// Deprecated
 	ProxyAccountID                 AccountID
 	ProxyReceived                  Hbar
 	Key                            Key
@@ -55,6 +56,7 @@ type AccountInfo struct {
 	// Deprecated
 	TokenAllowances []TokenAllowance
 	EthereumNonce   int64
+	StakingInfo     *StakingInfo
 }
 
 func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (AccountInfo, error) {
@@ -88,11 +90,6 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		}
 	}
 
-	proxyAccountID := AccountID{}
-	if pb.ProxyAccountID != nil {
-		proxyAccountID = *_AccountIDFromProtobuf(pb.ProxyAccountID)
-	}
-
 	accountID := AccountID{}
 	if pb.AccountID != nil {
 		accountID = *_AccountIDFromProtobuf(pb.AccountID)
@@ -109,11 +106,15 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		}
 	}
 
+	var stakingInfo StakingInfo
+	if pb.StakingInfo != nil {
+		stakingInfo = _StakingInfoFromProtobuf(pb.StakingInfo)
+	}
+
 	return AccountInfo{
 		AccountID:                      accountID,
 		ContractAccountID:              pb.ContractAccountID,
 		IsDeleted:                      pb.Deleted,
-		ProxyAccountID:                 proxyAccountID,
 		ProxyReceived:                  HbarFromTinybar(pb.ProxyReceived),
 		Key:                            pubKey,
 		Balance:                        HbarFromTinybar(int64(pb.Balance)),
@@ -130,6 +131,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		AliasKey:                       alias,
 		LedgerID:                       LedgerID{pb.LedgerId},
 		EthereumNonce:                  pb.EthereumNonce,
+		StakingInfo:                    &stakingInfo,
 	}, nil
 }
 
@@ -157,7 +159,6 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		AccountID:                      info.AccountID._ToProtobuf(),
 		ContractAccountID:              info.ContractAccountID,
 		Deleted:                        info.IsDeleted,
-		ProxyAccountID:                 info.ProxyAccountID._ToProtobuf(),
 		ProxyReceived:                  info.ProxyReceived.tinybar,
 		Key:                            info.Key._ToProtoKey(),
 		Balance:                        uint64(info.Balance.tinybar),
@@ -174,6 +175,10 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		Alias:                          alias,
 		LedgerId:                       info.LedgerID.ToBytes(),
 		EthereumNonce:                  info.EthereumNonce,
+	}
+
+	if info.StakingInfo != nil {
+		body.StakingInfo = info.StakingInfo._ToProtobuf()
 	}
 
 	return body

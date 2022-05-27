@@ -57,6 +57,7 @@ type TransactionRecord struct {
 	// Deprecated
 	TokenNftAllowances []TokenNftAllowance
 	EthereumHash       []byte
+	PaidStakingRewards map[AccountID]Hbar
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -124,6 +125,16 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		tokenAssociation = append(tokenAssociation, tokenAssociationFromProtobuf(association))
 	}
 
+	paidStakingRewards := make(map[AccountID]Hbar)
+	for _, aa := range pb.PaidStakingRewards {
+		account := _AccountIDFromProtobuf(aa.AccountID)
+		if val, ok := paidStakingRewards[*account]; ok {
+			paidStakingRewards[*account] = HbarFromTinybar(val.tinybar + aa.Amount)
+		}
+
+		paidStakingRewards[*account] = HbarFromTinybar(aa.Amount)
+	}
+
 	var alias *PublicKey
 	if len(pb.Alias) != 0 {
 		pbKey := services.Key{}
@@ -167,6 +178,7 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		Duplicates:                 duplicateReceipts,
 		Children:                   childReceipts,
 		EthereumHash:               pb.EthereumHash,
+		PaidStakingRewards:         paidStakingRewards,
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -245,6 +257,14 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 		alias, _ = protobuf.Marshal(record.AliasKey._ToProtoKey())
 	}
 
+	paidStakingRewards := make([]*services.AccountAmount, 0)
+	for account, hbar := range record.PaidStakingRewards {
+		paidStakingRewards = append(paidStakingRewards, &services.AccountAmount{
+			AccountID: account._ToProtobuf(),
+			Amount:    hbar.AsTinybar(),
+		})
+	}
+
 	var tRecord = services.TransactionRecord{
 		Receipt:         record.Receipt._ToProtobuf().GetReceipt(),
 		TransactionHash: record.TransactionHash,
@@ -263,8 +283,9 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 			Seconds: int64(record.ParentConsensusTimestamp.Second()),
 			Nanos:   int32(record.ParentConsensusTimestamp.Nanosecond()),
 		},
-		Alias:        alias,
-		EthereumHash: record.EthereumHash,
+		Alias:              alias,
+		EthereumHash:       record.EthereumHash,
+		PaidStakingRewards: paidStakingRewards,
 	}
 
 	var err error
