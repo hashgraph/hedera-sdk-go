@@ -44,6 +44,9 @@ type ContractCreateTransaction struct {
 	initcode                      []byte
 	autoRenewAccountID            *AccountID
 	maxAutomaticTokenAssociations int32
+	stakedNodeAccountID           *AccountID
+	stakedNodeID                  *int64
+	declineReward                 bool
 }
 
 // NewContractCreateTransaction creates ContractCreateTransaction which is used to start a new smart contract instance.
@@ -64,16 +67,21 @@ func NewContractCreateTransaction() *ContractCreateTransaction {
 func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *ContractCreateTransaction {
 	key, _ := _KeyFromProtobuf(pb.GetContractCreateInstance().GetAdminKey())
 	autoRenew := _DurationFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewPeriod())
+	stakedNodeID := pb.GetContractCreateInstance().GetStakedNodeId()
+
+	var stakeNodeAccountID *AccountID
+	if pb.GetContractCreateInstance().GetStakedAccountId() != nil {
+		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetStakedAccountId())
+	}
 
 	var autoRenewAccountID *AccountID
-	if pb.GetContractCreateInstance().GetAutoRenewAccountId() != nil {
+	if pb.GetContractCreateInstance().AutoRenewAccountId != nil {
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetAutoRenewAccountId())
 	}
 
 	return &ContractCreateTransaction{
 		Transaction:                   transaction,
 		byteCodeFileID:                _FileIDFromProtobuf(pb.GetContractCreateInstance().GetFileID()),
-		proxyAccountID:                _AccountIDFromProtobuf(pb.GetContractCreateInstance().GetProxyAccountID()),
 		adminKey:                      key,
 		gas:                           pb.GetContractCreateInstance().Gas,
 		initialBalance:                pb.GetContractCreateInstance().InitialBalance,
@@ -82,7 +90,10 @@ func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *service
 		memo:                          pb.GetContractCreateInstance().GetMemo(),
 		initcode:                      pb.GetContractCreateInstance().GetInitcode(),
 		autoRenewAccountID:            autoRenewAccountID,
-		maxAutomaticTokenAssociations: pb.GetContractCreateInstance().GetMaxAutomaticTokenAssociations(),
+		maxAutomaticTokenAssociations: pb.GetContractCreateInstance().MaxAutomaticTokenAssociations,
+		stakedNodeAccountID:           stakeNodeAccountID,
+		stakedNodeID:                  &stakedNodeID,
+		declineReward:                 pb.GetContractCreateInstance().GetDeclineReward(),
 	}
 }
 
@@ -181,6 +192,7 @@ func (transaction *ContractCreateTransaction) GetAutoRenewPeriod() time.Duration
 	return time.Duration(0)
 }
 
+// Deprecated
 // SetProxyAccountID sets the ID of the account to which this account is proxy staked. If proxyAccountID is not set,
 // is an invalID account, or is an account that isn't a _Node, then this account is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking ,
@@ -191,6 +203,7 @@ func (transaction *ContractCreateTransaction) SetProxyAccountID(proxyAccountID A
 	return transaction
 }
 
+// Deprecated
 func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
 	if transaction.proxyAccountID == nil {
 		return AccountID{}
@@ -199,14 +212,14 @@ func (transaction *ContractCreateTransaction) GetProxyAccountID() AccountID {
 	return *transaction.proxyAccountID
 }
 
-// Sets the constructor parameters
+// SetConstructorParameters Sets the constructor parameters
 func (transaction *ContractCreateTransaction) SetConstructorParameters(params *ContractFunctionParameters) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.parameters = params._Build(nil)
 	return transaction
 }
 
-// Sets the constructor parameters as their raw bytes.
+// SetConstructorParametersRaw Sets the constructor parameters as their raw bytes.
 func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params []byte) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.parameters = params
@@ -217,7 +230,7 @@ func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte 
 	return transaction.parameters
 }
 
-// Sets the memo to be associated with this contract.
+// SetContractMemo Sets the memo to be associated with this contract.
 func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.memo = memo
@@ -259,6 +272,44 @@ func (transaction *ContractCreateTransaction) GetMaxAutomaticTokenAssociations()
 	return transaction.maxAutomaticTokenAssociations
 }
 
+func (transaction *ContractCreateTransaction) SetStakedNodeAccountID(id AccountID) *ContractCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedNodeAccountID = &id
+	return transaction
+}
+
+func (transaction *ContractCreateTransaction) GetStakedNodeAccountID() AccountID {
+	if transaction.stakedNodeAccountID != nil {
+		return *transaction.stakedNodeAccountID
+	}
+
+	return AccountID{}
+}
+
+func (transaction *ContractCreateTransaction) SetStakedNodeID(id int64) *ContractCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedNodeID = &id
+	return transaction
+}
+
+func (transaction *ContractCreateTransaction) GetStakedNodeID() int64 {
+	if transaction.stakedNodeID != nil {
+		return *transaction.stakedNodeID
+	}
+
+	return 0
+}
+
+func (transaction *ContractCreateTransaction) SetDeclineReward(decline bool) *ContractCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.declineReward = decline
+	return transaction
+}
+
+func (transaction *ContractCreateTransaction) GetDeclineReward() bool {
+	return transaction.declineReward
+}
+
 func (transaction *ContractCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
@@ -286,6 +337,7 @@ func (transaction *ContractCreateTransaction) _Build() *services.TransactionBody
 		ConstructorParameters:         transaction.parameters,
 		Memo:                          transaction.memo,
 		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
+		DeclineReward:                 transaction.declineReward,
 	}
 
 	if transaction.autoRenewPeriod != nil {
@@ -302,12 +354,14 @@ func (transaction *ContractCreateTransaction) _Build() *services.TransactionBody
 		body.InitcodeSource = &services.ContractCreateTransactionBody_Initcode{Initcode: transaction.initcode}
 	}
 
-	if transaction.proxyAccountID != nil {
-		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
 	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
+	}
+
+	if transaction.stakedNodeAccountID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	} else if transaction.stakedNodeID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
 	pb := services.TransactionBody{
@@ -341,6 +395,7 @@ func (transaction *ContractCreateTransaction) _ConstructScheduleProtobuf() (*ser
 		ConstructorParameters:         transaction.parameters,
 		Memo:                          transaction.memo,
 		MaxAutomaticTokenAssociations: transaction.maxAutomaticTokenAssociations,
+		DeclineReward:                 transaction.declineReward,
 	}
 
 	if transaction.autoRenewPeriod != nil {
@@ -357,12 +412,14 @@ func (transaction *ContractCreateTransaction) _ConstructScheduleProtobuf() (*ser
 		body.InitcodeSource = &services.ContractCreateTransactionBody_Initcode{Initcode: transaction.initcode}
 	}
 
-	if transaction.proxyAccountID != nil {
-		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
 	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
+	}
+
+	if transaction.stakedNodeAccountID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	} else if transaction.stakedNodeID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
 	return &services.SchedulableTransactionBody{
