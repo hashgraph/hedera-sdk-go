@@ -418,3 +418,11 @@ func TestUnitPublicKeyFromPrivateKeyString(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "302f300706052b8104000a032400042102b46925b64940f5d7d3f394aba914c05f1607fa42e9e721afee0770cb55797d99", key.PublicKey().String())
 }
+
+func TestUnitPublicKeyToEthereumAddress(t *testing.T) {
+	byt, err := hex.DecodeString("03af80b90d25145da28c583359beb47b21796b2fe1a23c1511e443e7a64dfdb27d")
+	require.NoError(t, err)
+	key, err := PublicKeyFromBytesECDSA(byt)
+	ethereumAddress := key.ToEthereumAddress()
+	require.Equal(t, ethereumAddress, "627306090abab3a6e1400e9345bc60c78a8bef57")
+}
