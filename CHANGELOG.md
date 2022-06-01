@@ -1,3 +1,15 @@
+## v2.15.0
+
+### Added
+
+* `EthereumFlow`
+* `EthereumTransactionData`
+
+### Fixed
+
+* `Transaction.[From|To]Bytes` would ignore some variables
+* Fixed naming for `Ethereum.SetCallDataFileID()` and `Ethereum.SetMaxGasAllowanceHbar()` to be consistent with other sdks.
+
 # v2.14.0
 
 ### Added
