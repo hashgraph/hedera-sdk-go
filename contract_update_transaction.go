@@ -300,13 +300,13 @@ func (transaction *ContractUpdateTransaction) GetStakedNodeID() int64 {
 	return 0
 }
 
-func (transaction *ContractUpdateTransaction) SetDeclineReward(decline bool) *ContractUpdateTransaction {
+func (transaction *ContractUpdateTransaction) SetDeclineStakingReward(decline bool) *ContractUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.declineReward = decline
 	return transaction
 }
 
-func (transaction *ContractUpdateTransaction) GetDeclineReward() bool {
+func (transaction *ContractUpdateTransaction) GetDeclineStakingReward() bool {
 	return transaction.declineReward
 }
 
