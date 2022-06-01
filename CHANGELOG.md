@@ -1,3 +1,38 @@
+## v2.16.0-beta.1
+
+### Added
+
+* `StakingInfo`
+* `AccountCreateTransaction.[Set|Get]StakedNodeAccountID`
+* `AccountCreateTransaction.[Set|Get]StakedNodeID`
+* `AccountCreateTransaction.[Set|Get]DeclineStakingReward`
+* `AccountInfo.StakingInfo`
+* `AccountUpdateTransaction.[Set|Get]StakedNodeAccountID`
+* `AccountUpdateTransaction.[Set|Get]StakedNodeID`
+* `AccountUpdateTransaction.[Set|Get]DeclineStakingReward`
+* `ContractCreateTransaction.[Set|Get]StakedNodeAccountID`
+* `ContractCreateTransaction.[Set|Get]StakedNodeID`
+* `ContractCreateTransaction.[Set|Get]DeclineStakingReward`
+* `ContractInfo.StakingInfo`
+* `ContractUpdateTransaction.[Set|Get]StakedNodeAccountID`
+* `ContractUpdateTransaction.[Set|Get]StakedNodeID`
+* `ContractUpdateTransaction.[Set|Get]DeclineStakingReward`
+* `TransactionRecord.PaidStakingRewards`
+* `ScheduleCreateTransaction.[Set|Get]ExpirationTime`
+* `ScheduleCreateTransaction.[Set|Get]WaitForExpiry`
+
+## v2.15.0
+
+### Added
+
+* `EthereumFlow`
+* `EthereumTransactionData`
+
+### Fixed
+
+* `Transaction.[From|To]Bytes` would ignore some variables
+* Fixed naming for `Ethereum.SetCallDataFileID()` and `Ethereum.SetMaxGasAllowanceHbar()` to be consistent with other sdks.
+
 # v2.14.0
 
 ### Added
