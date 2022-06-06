@@ -205,8 +205,7 @@ func (transaction *TopicMessageSubmitTransaction) Schedule() (*ScheduleCreateTra
 
 func (transaction *TopicMessageSubmitTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	body := &services.ConsensusSubmitMessageTransactionBody{
-		Message:   transaction.message,
-		ChunkInfo: &services.ConsensusMessageChunkInfo{},
+		Message: transaction.message,
 	}
 
 	if transaction.topicID != nil {
