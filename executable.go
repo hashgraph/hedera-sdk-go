@@ -22,6 +22,7 @@ package hedera
 
 import (
 	"context"
+	"encoding/hex"
 	"math"
 	"os"
 	"time"
@@ -115,6 +116,7 @@ func _Execute( // nolint
 
 	var attempt int64
 	var errPersistent error
+	var marshaledRequest []byte
 
 	for attempt = int64(0); attempt < int64(maxAttempts); attempt, *currentBackoff = attempt+1, *currentBackoff*2 {
 		var protoRequest interface{}
@@ -133,6 +135,7 @@ func _Execute( // nolint
 				protoTransaction, _ := transaction._BuildTransaction(0)
 				protoRequest = protoTransaction
 			}
+			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Transaction))
 		} else if query, ok := request.(*Query); ok {
 			if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
 				protoRequest = makeRequest(request)
@@ -162,11 +165,13 @@ func _Execute( // nolint
 				query.nodeAccountIDs._Set(0, node.accountID)
 				protoRequest = makeRequest(request)
 			}
+			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Query))
 		}
 
 		node._InUse()
 
-		logCtx.Trace().Str("requestId", logID).Str("nodeAccountID", node.accountID.String()).Str("nodeIPAddress", node.address._String())
+		logCtx.Trace().Str("requestId", logID).Str("nodeAccountID", node.accountID.String()).Str("nodeIPAddress", node.address._String()).
+			Str("Request Proto:", hex.EncodeToString(marshaledRequest)).Msg("executing")
 
 		if !node._IsHealthy() {
 			logCtx.Trace().Str("requestId", logID).Str("delay", node._Wait().String()).Msg("node is unhealthy, waiting before continuing")
@@ -196,10 +201,18 @@ func _Execute( // nolint
 		}
 
 		logCtx.Trace().Str("requestId", logID).Msg("executing gRPC call")
+
+		var marshaledResponse []byte
 		if method.query != nil {
 			resp, err = method.query(ctx, protoRequest.(*services.Query))
+			if err == nil {
+				marshaledResponse, _ = protobuf.Marshal(resp.(*services.Response))
+			}
 		} else {
 			resp, err = method.transaction(ctx, protoRequest.(*services.Transaction))
+			if err == nil {
+				marshaledResponse, _ = protobuf.Marshal(resp.(*services.TransactionResponse))
+			}
 		}
 
 		if cancel != nil {
@@ -252,6 +265,8 @@ func _Execute( // nolint
 
 			return &services.Response{}, mapStatusError(request, resp)
 		case executionStateFinished:
+			logCtx.Trace().Str("Response Proto:", hex.EncodeToString(marshaledResponse)).Msg("finished")
+
 			return mapResponse(request, resp, node.accountID, protoRequest)
 		}
 	}

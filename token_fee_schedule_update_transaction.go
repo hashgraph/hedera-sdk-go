@@ -154,7 +154,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) _Build() *services.Transac
 }
 
 func (transaction *TokenFeeScheduleUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
+	return nil, errors.New("cannot schedule `TokenFeeScheduleUpdateTransaction")
 }
 
 func _TokenFeeScheduleUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {

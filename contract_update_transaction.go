@@ -374,26 +374,6 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*ser
 		}
 	}
 
-	if transaction.adminKey != nil {
-		body.AdminKey = transaction.adminKey._ToProtoKey()
-	}
-
-	if transaction.contractID != nil {
-		body.ContractID = transaction.contractID._ToProtobuf()
-	}
-
-	if transaction.proxyAccountID != nil {
-		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
-	if body.GetMemoWrapper() != nil {
-		body.GetMemoWrapper().Value = transaction.memo
-	} else {
-		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
-			MemoWrapper: &wrapperspb.StringValue{Value: transaction.memo},
-		}
-	}
-
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
