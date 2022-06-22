@@ -44,7 +44,7 @@ type ContractCreateTransaction struct {
 	initcode                      []byte
 	autoRenewAccountID            *AccountID
 	maxAutomaticTokenAssociations int32
-	stakedNodeAccountID           *AccountID
+	stakedAccountID               *AccountID
 	stakedNodeID                  *int64
 	declineReward                 bool
 }
@@ -91,7 +91,7 @@ func _ContractCreateTransactionFromProtobuf(transaction Transaction, pb *service
 		initcode:                      pb.GetContractCreateInstance().GetInitcode(),
 		autoRenewAccountID:            autoRenewAccountID,
 		maxAutomaticTokenAssociations: pb.GetContractCreateInstance().MaxAutomaticTokenAssociations,
-		stakedNodeAccountID:           stakeNodeAccountID,
+		stakedAccountID:               stakeNodeAccountID,
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetContractCreateInstance().GetDeclineReward(),
 	}
@@ -272,15 +272,15 @@ func (transaction *ContractCreateTransaction) GetMaxAutomaticTokenAssociations()
 	return transaction.maxAutomaticTokenAssociations
 }
 
-func (transaction *ContractCreateTransaction) SetStakedNodeAccountID(id AccountID) *ContractCreateTransaction {
+func (transaction *ContractCreateTransaction) SetStakedAccountID(id AccountID) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
-	transaction.stakedNodeAccountID = &id
+	transaction.stakedAccountID = &id
 	return transaction
 }
 
-func (transaction *ContractCreateTransaction) GetStakedNodeAccountID() AccountID {
-	if transaction.stakedNodeAccountID != nil {
-		return *transaction.stakedNodeAccountID
+func (transaction *ContractCreateTransaction) GetStakedAccountID() AccountID {
+	if transaction.stakedAccountID != nil {
+		return *transaction.stakedAccountID
 	}
 
 	return AccountID{}
@@ -358,8 +358,8 @@ func (transaction *ContractCreateTransaction) _Build() *services.TransactionBody
 		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
-	if transaction.stakedNodeAccountID != nil {
-		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
 	} else if transaction.stakedNodeID != nil {
 		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
@@ -416,8 +416,8 @@ func (transaction *ContractCreateTransaction) _ConstructScheduleProtobuf() (*ser
 		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
-	if transaction.stakedNodeAccountID != nil {
-		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.ContractCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
 	} else if transaction.stakedNodeID != nil {
 		body.StakedId = &services.ContractCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}

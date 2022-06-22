@@ -58,7 +58,7 @@ func main() {
 		// The account is charged to extend its expiration date every this many seconds. If it doesn't
 		// have enough balance, it extends as long as possible. If it is empty when it expires, then it
 		// is deleted.
-		SetStakedNodeAccountID(hedera.AccountID{Account: 3}).
+		SetStakedAccountID(hedera.AccountID{Account: 3}).
 		SetInitialBalance(hedera.NewHbar(20)).
 		Execute(client)
 	if err != nil {

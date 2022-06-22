@@ -46,7 +46,7 @@ type AccountUpdateTransaction struct {
 	expirationTime                *time.Time
 	maxAutomaticTokenAssociations uint32
 	aliasKey                      *PublicKey
-	stakedNodeAccountID           *AccountID
+	stakedAccountID               *AccountID
 	stakedNodeID                  *int64
 	declineReward                 bool
 }
@@ -99,7 +99,7 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 		receiverSignatureRequired:     receiverSignatureRequired,
 		expirationTime:                &expiration,
 		maxAutomaticTokenAssociations: uint32(pb.GetCryptoUpdateAccount().MaxAutomaticTokenAssociations.GetValue()),
-		stakedNodeAccountID:           stakeNodeAccountID,
+		stakedAccountID:               stakeNodeAccountID,
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetCryptoUpdateAccount().GetDeclineReward().GetValue(),
 	}
@@ -152,15 +152,15 @@ func (transaction *AccountUpdateTransaction) GetAliasKey() PublicKey {
 	return *transaction.aliasKey
 }
 
-func (transaction *AccountUpdateTransaction) SetStakedNodeAccountID(id AccountID) *AccountUpdateTransaction {
+func (transaction *AccountUpdateTransaction) SetStakedAccountID(id AccountID) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
-	transaction.stakedNodeAccountID = &id
+	transaction.stakedAccountID = &id
 	return transaction
 }
 
-func (transaction *AccountUpdateTransaction) GetStakedNodeAccountID() AccountID {
-	if transaction.stakedNodeAccountID != nil {
-		return *transaction.stakedNodeAccountID
+func (transaction *AccountUpdateTransaction) GetStakedAccountID() AccountID {
+	if transaction.stakedAccountID != nil {
+		return *transaction.stakedAccountID
 	}
 
 	return AccountID{}
@@ -183,6 +183,18 @@ func (transaction *AccountUpdateTransaction) GetStakedNodeID() int64 {
 func (transaction *AccountUpdateTransaction) SetDeclineStakingReward(decline bool) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.declineReward = decline
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) ClearStakedAccountID() *AccountUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedAccountID = &AccountID{Account: 0}
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) ClearStakedNodeID() *AccountUpdateTransaction {
+	transaction._RequireNotFrozen()
+	*transaction.stakedNodeID = -1
 	return transaction
 }
 
@@ -320,8 +332,8 @@ func (transaction *AccountUpdateTransaction) _Build() *services.TransactionBody 
 		body.Key = transaction.key._ToProtoKey()
 	}
 
-	if transaction.stakedNodeAccountID != nil {
-		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
 	} else if transaction.stakedNodeID != nil {
 		body.StakedId = &services.CryptoUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
@@ -379,8 +391,8 @@ func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*serv
 		body.Key = transaction.key._ToProtoKey()
 	}
 
-	if transaction.stakedNodeAccountID != nil {
-		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.CryptoUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
 	} else if transaction.stakedNodeID != nil {
 		body.StakedId = &services.CryptoUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}

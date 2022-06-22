@@ -90,7 +90,7 @@ func main() {
 	freezeUpdate, err := hedera.NewAccountUpdateTransaction().
 		SetNodeAccountIDs([]hedera.AccountID{transactionResponse.NodeID}).
 		SetAccountID(accountID).
-		// Should be -1 to remove staking, currently doesn't work
+		// Should use ClearStakedNodeID(), but it doesn't work for now.
 		SetStakedNodeID(0).
 		FreezeWith(client)
 	if err != nil {

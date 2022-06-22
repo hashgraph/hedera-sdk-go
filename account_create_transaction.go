@@ -44,7 +44,7 @@ type AccountCreateTransaction struct {
 	memo                          string
 	receiverSignatureRequired     bool
 	maxAutomaticTokenAssociations uint32
-	stakedNodeAccountID           *AccountID
+	stakedAccountID               *AccountID
 	stakedNodeID                  *int64
 	declineReward                 bool
 }
@@ -79,7 +79,7 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 		memo:                          pb.GetCryptoCreateAccount().GetMemo(),
 		receiverSignatureRequired:     pb.GetCryptoCreateAccount().ReceiverSigRequired,
 		maxAutomaticTokenAssociations: uint32(pb.GetCryptoCreateAccount().MaxAutomaticTokenAssociations),
-		stakedNodeAccountID:           stakeNodeAccountID,
+		stakedAccountID:               stakeNodeAccountID,
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetCryptoCreateAccount().GetDeclineReward(),
 	}
@@ -177,15 +177,15 @@ func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 	return transaction.memo
 }
 
-func (transaction *AccountCreateTransaction) SetStakedNodeAccountID(id AccountID) *AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetStakedAccountID(id AccountID) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
-	transaction.stakedNodeAccountID = &id
+	transaction.stakedAccountID = &id
 	return transaction
 }
 
-func (transaction *AccountCreateTransaction) GetStakedNodeAccountID() AccountID {
-	if transaction.stakedNodeAccountID != nil {
-		return *transaction.stakedNodeAccountID
+func (transaction *AccountCreateTransaction) GetStakedAccountID() AccountID {
+	if transaction.stakedAccountID != nil {
+		return *transaction.stakedAccountID
 	}
 
 	return AccountID{}
@@ -248,8 +248,8 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
-	if transaction.stakedNodeAccountID != nil {
-		body.StakedId = &services.CryptoCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.CryptoCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
 	} else if transaction.stakedNodeID != nil {
 		body.StakedId = &services.CryptoCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
@@ -307,8 +307,8 @@ func (transaction *AccountCreateTransaction) _ConstructScheduleProtobuf() (*serv
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
-	if transaction.stakedNodeAccountID != nil {
-		body.StakedId = &services.CryptoCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedNodeAccountID._ToProtobuf()}
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.CryptoCreateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
 	} else if transaction.stakedNodeID != nil {
 		body.StakedId = &services.CryptoCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
