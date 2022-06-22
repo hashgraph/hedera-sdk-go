@@ -53,6 +53,9 @@ type ContractUpdateTransaction struct {
 	memo                          string
 	autoRenewAccountID            *AccountID
 	maxAutomaticTokenAssociations int32
+	stakedAccountID               *AccountID
+	stakedNodeID                  *int64
+	declineReward                 bool
 }
 
 // NewContractUpdateTransaction creates a ContractUpdateTransaction transaction which can be
@@ -92,21 +95,30 @@ func _ContractUpdateTransactionFromProtobuf(transaction Transaction, pb *service
 		memo = m.MemoWrapper.Value
 	}
 
+	stakedNodeID := pb.GetContractUpdateInstance().GetStakedNodeId()
+
+	var stakeNodeAccountID *AccountID
+	if pb.GetContractUpdateInstance().GetStakedAccountId() != nil {
+		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetStakedAccountId())
+	}
+
 	var autoRenewAccountID *AccountID
-	if pb.GetContractUpdateInstance().GetAutoRenewAccountId() != nil {
+	if pb.GetContractUpdateInstance().AutoRenewAccountId != nil {
 		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetAutoRenewAccountId())
 	}
 
 	return &ContractUpdateTransaction{
 		Transaction:                   transaction,
 		contractID:                    _ContractIDFromProtobuf(pb.GetContractUpdateInstance().GetContractID()),
-		proxyAccountID:                _AccountIDFromProtobuf(pb.GetContractUpdateInstance().GetProxyAccountID()),
 		adminKey:                      key,
 		autoRenewPeriod:               &autoRenew,
 		expirationTime:                &expiration,
 		memo:                          memo,
 		autoRenewAccountID:            autoRenewAccountID,
-		maxAutomaticTokenAssociations: pb.GetContractUpdateInstance().GetMaxAutomaticTokenAssociations().GetValue(),
+		maxAutomaticTokenAssociations: pb.GetContractUpdateInstance().MaxAutomaticTokenAssociations.GetValue(),
+		stakedAccountID:               stakeNodeAccountID,
+		stakedNodeID:                  &stakedNodeID,
+		declineReward:                 pb.GetContractUpdateInstance().GetDeclineReward().GetValue(),
 	}
 }
 
@@ -158,6 +170,7 @@ func (transaction *ContractUpdateTransaction) GetAdminKey() (Key, error) {
 	return transaction.adminKey, nil
 }
 
+// Deprecated
 // SetProxyAccountID sets the ID of the account to which this contract is proxy staked. If proxyAccountID is left unset,
 // is an invalID account, or is an account that isn't a _Node, then this contract is automatically proxy staked to a _Node
 // chosen by the _Network, but without earning payments. If the proxyAccountID account refuses to accept proxy staking,
@@ -168,6 +181,7 @@ func (transaction *ContractUpdateTransaction) SetProxyAccountID(proxyAccountID A
 	return transaction
 }
 
+// Deprecated
 func (transaction *ContractUpdateTransaction) GetProxyAccountID() AccountID {
 	if transaction.proxyAccountID == nil {
 		return AccountID{}
@@ -258,6 +272,56 @@ func (transaction *ContractUpdateTransaction) GetContractMemo() string {
 	return transaction.memo
 }
 
+func (transaction *ContractUpdateTransaction) SetStakedAccountID(id AccountID) *ContractUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedAccountID = &id
+	return transaction
+}
+
+func (transaction *ContractUpdateTransaction) GetStakedAccountID() AccountID {
+	if transaction.stakedAccountID != nil {
+		return *transaction.stakedAccountID
+	}
+
+	return AccountID{}
+}
+
+func (transaction *ContractUpdateTransaction) SetStakedNodeID(id int64) *ContractUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedNodeID = &id
+	return transaction
+}
+
+func (transaction *ContractUpdateTransaction) GetStakedNodeID() int64 {
+	if transaction.stakedNodeID != nil {
+		return *transaction.stakedNodeID
+	}
+
+	return 0
+}
+
+func (transaction *ContractUpdateTransaction) SetDeclineStakingReward(decline bool) *ContractUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.declineReward = decline
+	return transaction
+}
+
+func (transaction *ContractUpdateTransaction) GetDeclineStakingReward() bool {
+	return transaction.declineReward
+}
+
+func (transaction *ContractUpdateTransaction) ClearStakedAccountID() *ContractUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.stakedAccountID = &AccountID{Account: 0}
+	return transaction
+}
+
+func (transaction *ContractUpdateTransaction) ClearStakedNodeID() *ContractUpdateTransaction {
+	transaction._RequireNotFrozen()
+	*transaction.stakedNodeID = -1
+	return transaction
+}
+
 func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
@@ -281,6 +345,7 @@ func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Clie
 func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody {
 	body := &services.ContractUpdateTransactionBody{
 		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations},
+		DeclineReward:                 &wrapperspb.BoolValue{Value: transaction.declineReward},
 	}
 
 	if transaction.expirationTime != nil {
@@ -299,10 +364,6 @@ func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if transaction.proxyAccountID != nil {
-		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
 	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
@@ -313,6 +374,12 @@ func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody
 		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
 			MemoWrapper: &wrapperspb.StringValue{Value: transaction.memo},
 		}
+	}
+
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.ContractUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
+	} else if transaction.stakedNodeID != nil {
+		body.StakedId = &services.ContractUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
 	return &services.TransactionBody{
@@ -340,6 +407,7 @@ func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransac
 func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	body := &services.ContractUpdateTransactionBody{
 		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations},
+		DeclineReward:                 &wrapperspb.BoolValue{Value: transaction.declineReward},
 	}
 
 	if transaction.expirationTime != nil {
@@ -358,10 +426,6 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*ser
 		body.ContractID = transaction.contractID._ToProtobuf()
 	}
 
-	if transaction.proxyAccountID != nil {
-		body.ProxyAccountID = transaction.proxyAccountID._ToProtobuf()
-	}
-
 	if transaction.autoRenewAccountID != nil {
 		body.AutoRenewAccountId = transaction.autoRenewAccountID._ToProtobuf()
 	}
@@ -372,6 +436,20 @@ func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*ser
 		body.MemoField = &services.ContractUpdateTransactionBody_MemoWrapper{
 			MemoWrapper: &wrapperspb.StringValue{Value: transaction.memo},
 		}
+	}
+
+	if transaction.adminKey != nil {
+		body.AdminKey = transaction.adminKey._ToProtoKey()
+	}
+
+	if transaction.contractID != nil {
+		body.ContractID = transaction.contractID._ToProtobuf()
+	}
+
+	if transaction.stakedAccountID != nil {
+		body.StakedId = &services.ContractUpdateTransactionBody_StakedAccountId{StakedAccountId: transaction.stakedAccountID._ToProtobuf()}
+	} else if transaction.stakedNodeID != nil {
+		body.StakedId = &services.ContractUpdateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
 	return &services.SchedulableTransactionBody{

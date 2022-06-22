@@ -303,6 +303,9 @@ const (
 	StatusContractExpiredAndPendingRemoval                         Status = 317
 	StatusContractHasNoAutoRenewAccount                            Status = 318
 	StatusPermanentRemovalRequiresSystemInitiation                 Status = 319
+	StatusProxyAccountIDFieldIsDeprecated                          Status = 320
+	StatusSelfStakingIsNotAllowed                                  Status = 321
+	StatusInvalidStakingID                                         Status = 322
 )
 
 // String() returns a string representation of the status
@@ -864,6 +867,12 @@ func (status Status) String() string { // nolint
 		return "CONTRACT_HAS_NO_AUTO_RENEW_ACCOUNT"
 	case StatusPermanentRemovalRequiresSystemInitiation:
 		return "PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION"
+	case StatusProxyAccountIDFieldIsDeprecated:
+		return "PROXY_ACCOUNT_ID_FIELD_IS_DEPRECATED "
+	case StatusSelfStakingIsNotAllowed:
+		return "SELF_STAKING_IS_NOT_ALLOWED"
+	case StatusInvalidStakingID:
+		return "INVALID_STAKING_ID"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
