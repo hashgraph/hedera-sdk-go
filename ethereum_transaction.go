@@ -130,7 +130,7 @@ func (transaction *EthereumTransaction) _Build() *services.TransactionBody {
 }
 
 func (transaction *EthereumTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	return nil, errors.New("cannot schedule `ScheduleSignTransaction")
+	return nil, errors.New("cannot schedule `EthereumTransaction")
 }
 
 func _EthereumTransactionGetMethod(request interface{}, channel *_Channel) _Method {
