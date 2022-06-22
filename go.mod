@@ -6,7 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.19
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220426085224-6f0ec6b1f440
 	github.com/pkg/errors v0.9.1
-	github.com/rs/zerolog v1.26.1
+	github.com/rs/zerolog v1.27.0
 	github.com/stretchr/testify v1.7.4
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a
