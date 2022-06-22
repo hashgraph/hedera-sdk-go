@@ -1,3 +1,33 @@
+## v2.16.0
+
+### Added
+
+* `StakingInfo`
+* `AccountCreateTransaction.[Set|Get]StakedAccountID`
+* `AccountCreateTransaction.[Set|Get]StakedNodeID`
+* `AccountCreateTransaction.[Set|Get]DeclineStakingReward`
+* `AccountInfo.StakingInfo`
+* `AccountUpdateTransaction.[Set|Get]StakedAccountID`
+* `AccountUpdateTransaction.[Set|Get]StakedNodeID`
+* `AccountUpdateTransaction.[Set|Get]DeclineStakingReward`
+* `AccountUpdateTransaction.ClearStaked[AccountID|NodeID]`
+* `ContractCreateTransaction.[Set|Get]StakedNodeAccountID`
+* `ContractCreateTransaction.[Set|Get]StakedNodeID`
+* `ContractCreateTransaction.[Set|Get]DeclineStakingReward`
+* `ContractInfo.StakingInfo`
+* `ContractUpdateTransaction.[Set|Get]StakedNodeAccountID`
+* `ContractUpdateTransaction.[Set|Get]StakedNodeID`
+* `ContractUpdateTransaction.[Set|Get]DeclineStakingReward`
+* `ContractUpdateTransaction.ClearStaked[AccountID|NodeID]`
+* `TransactionRecord.PaidStakingRewards`
+* `ScheduleCreateTransaction.[Set|Get]ExpirationTime`
+* `ScheduleCreateTransaction.[Set|Get]WaitForExpiry`
+* Protobuf requests and responses will be logged, for `TRACE`, in hex.
+
+### Fixed
+
+* `TopicMessageSubmitTransaction` empty `ChunkInfo` would always cause an error
+
 ## v2.16.0-beta.1
 
 ### Added

@@ -182,7 +182,7 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
+func DisabledTestIntegrationAccountCreateTransactionSetProxyAccountID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
