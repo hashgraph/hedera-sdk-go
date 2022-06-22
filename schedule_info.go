@@ -68,11 +68,11 @@ func _ScheduleInfoFromProtobuf(pb *services.ScheduleInfo) ScheduleInfo {
 	var deleted *time.Time
 	switch t := pb.Data.(type) {
 	case *services.ScheduleInfo_ExecutionTime:
-		time := _TimeFromProtobuf(t.ExecutionTime)
-		executed = &time
+		temp := _TimeFromProtobuf(t.ExecutionTime)
+		executed = &temp
 	case *services.ScheduleInfo_DeletionTime:
-		time := _TimeFromProtobuf(t.DeletionTime)
-		deleted = &time
+		temp := _TimeFromProtobuf(t.DeletionTime)
+		deleted = &temp
 	}
 
 	creatorAccountID := AccountID{}
