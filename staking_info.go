@@ -31,6 +31,7 @@ type StakingInfo struct {
 	DeclineStakingReward bool
 	StakePeriodStart     *time.Time
 	PendingReward        int64
+	PendingHbarReward    Hbar
 	StakedToMe           Hbar
 	StakedAccountID      *AccountID
 	StakedNodeID         *int64
@@ -46,6 +47,7 @@ func _StakingInfoFromProtobuf(pb *services.StakingInfo) StakingInfo {
 		DeclineStakingReward: pb.DeclineReward,
 		StakePeriodStart:     &start,
 		PendingReward:        pb.PendingReward,
+		PendingHbarReward:    HbarFromTinybar(pb.PendingReward),
 		StakedToMe:           HbarFromTinybar(pb.StakedToMe),
 	}
 
@@ -60,9 +62,17 @@ func _StakingInfoFromProtobuf(pb *services.StakingInfo) StakingInfo {
 }
 
 func (stakingInfo *StakingInfo) _ToProtobuf() *services.StakingInfo { // nolint
+	var pendingReward int64
+
+	if stakingInfo.PendingReward > 0 {
+		pendingReward = stakingInfo.PendingReward
+	} else {
+		pendingReward = stakingInfo.PendingHbarReward.AsTinybar()
+	}
+
 	body := services.StakingInfo{
 		DeclineReward: stakingInfo.DeclineStakingReward,
-		PendingReward: stakingInfo.PendingReward,
+		PendingReward: pendingReward,
 		StakedToMe:    stakingInfo.StakedToMe.AsTinybar(),
 	}
 
