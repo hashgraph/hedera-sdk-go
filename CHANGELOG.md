@@ -1,3 +1,9 @@
+## v2.16.1
+
+### Added
+
+* `StakingInfo.PendingHbarReward`
+
 ## v2.16.0
 
 ### Added
