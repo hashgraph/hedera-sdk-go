@@ -58,6 +58,8 @@ type TransactionRecord struct {
 	TokenNftAllowances []TokenNftAllowance
 	EthereumHash       []byte
 	PaidStakingRewards map[AccountID]Hbar
+	PseudorandomBytes  []byte
+	PseudorandomNumber *int32
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -179,6 +181,13 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		Children:                   childReceipts,
 		EthereumHash:               pb.EthereumHash,
 		PaidStakingRewards:         paidStakingRewards,
+	}
+
+	if pb.GetPseudorandomBytes() == nil {
+		temp := pb.GetPseudorandomNumber()
+		txRecord.PseudorandomNumber = &temp
+	} else {
+		txRecord.PseudorandomBytes = pb.GetPseudorandomBytes()
 	}
 
 	if pb.GetContractCreateResult() != nil {

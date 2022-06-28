@@ -407,6 +407,13 @@ func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error
 
 		tx2 := _ScheduleDeleteTransactionFromProtobuf(tx, pbBody)
 		return tx2, nil
+	case *services.SchedulableTransactionBody_RandomGenerate:
+		pbBody.Data = &services.TransactionBody_RandomGenerate{
+			RandomGenerate: pb.GetRandomGenerate(),
+		}
+
+		tx2 := _RngTransactionFromProtobuf(tx, pbBody)
+		return tx2, nil
 	default:
 		return nil, errors.New("(BUG) non-exhaustive switch statement")
 	}

@@ -306,6 +306,8 @@ const (
 	StatusProxyAccountIDFieldIsDeprecated                          Status = 320
 	StatusSelfStakingIsNotAllowed                                  Status = 321
 	StatusInvalidStakingID                                         Status = 322
+	StatusStakingNotEnabled                                        Status = 323
+	StatusInvalidRandomGenerateRange                               Status = 324
 )
 
 // String() returns a string representation of the status
@@ -873,6 +875,10 @@ func (status Status) String() string { // nolint
 		return "SELF_STAKING_IS_NOT_ALLOWED"
 	case StatusInvalidStakingID:
 		return "INVALID_STAKING_ID"
+	case StatusStakingNotEnabled:
+		return "STAKING_NOT_ENABLED"
+	case StatusInvalidRandomGenerateRange:
+		return "INVALID_RANDOM_GENERATE_RANGE"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))
