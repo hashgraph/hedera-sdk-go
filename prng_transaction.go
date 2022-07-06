@@ -27,13 +27,13 @@ import (
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
 
-type RngTransaction struct {
+type PrngTransaction struct {
 	Transaction
 	rang uint32
 }
 
-func NewRngTransaction() *RngTransaction {
-	transaction := RngTransaction{
+func NewPrngTransaction() *PrngTransaction {
+	transaction := PrngTransaction{
 		Transaction: _NewTransaction(),
 	}
 
@@ -42,14 +42,14 @@ func NewRngTransaction() *RngTransaction {
 	return &transaction
 }
 
-func _RngTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *RngTransaction {
-	return &RngTransaction{
+func _PrngTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *PrngTransaction {
+	return &PrngTransaction{
 		Transaction: transaction,
-		rang:        uint32(pb.GetRandomGenerate().GetRange()),
+		rang:        uint32(pb.GetPrng().GetRange()),
 	}
 }
 
-func (transaction *RngTransaction) SetGrpcDeadline(deadline *time.Duration) *RngTransaction {
+func (transaction *PrngTransaction) SetGrpcDeadline(deadline *time.Duration) *PrngTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
 }
@@ -57,19 +57,19 @@ func (transaction *RngTransaction) SetGrpcDeadline(deadline *time.Duration) *Rng
 // SetPayerAccountID Sets an optional id of the account to be charged the service fee for the scheduled transaction at
 // the consensus time that it executes (if ever); defaults to the ScheduleCreate payer if not
 // given
-func (transaction *RngTransaction) SetRange(r uint32) *RngTransaction {
+func (transaction *PrngTransaction) SetRange(r uint32) *PrngTransaction {
 	transaction._RequireNotFrozen()
 	transaction.rang = r
 
 	return transaction
 }
 
-func (transaction *RngTransaction) GetRange() uint32 {
+func (transaction *PrngTransaction) GetRange() uint32 {
 	return transaction.rang
 }
 
-func (transaction *RngTransaction) _Build() *services.TransactionBody {
-	body := &services.RandomGenerateTransactionBody{
+func (transaction *PrngTransaction) _Build() *services.TransactionBody {
+	body := &services.PrngTransactionBody{
 		Range: int32(transaction.rang),
 	}
 
@@ -78,46 +78,46 @@ func (transaction *RngTransaction) _Build() *services.TransactionBody {
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_RandomGenerate{
-			RandomGenerate: body,
+		Data: &services.TransactionBody_Prng{
+			Prng: body,
 		},
 	}
 }
 
-func (transaction *RngTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.RandomGenerateTransactionBody{
+func (transaction *PrngTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+	body := &services.PrngTransactionBody{
 		Range: int32(transaction.rang),
 	}
 
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &services.SchedulableTransactionBody_RandomGenerate{
-			RandomGenerate: body,
+		Data: &services.SchedulableTransactionBody_Prng{
+			Prng: body,
 		},
 	}, nil
 }
 
 func _RngTransactionGetMethod(request interface{}, channel *_Channel) _Method {
 	return _Method{
-		transaction: channel._GetUtil().RandomGenerate,
+		transaction: channel._GetUtil().Prng,
 	}
 }
 
-func (transaction *RngTransaction) IsFrozen() bool {
+func (transaction *PrngTransaction) IsFrozen() bool {
 	return transaction._IsFrozen()
 }
 
 // Sign uses the provided privateKey to sign the transaction.
-func (transaction *RngTransaction) Sign(
+func (transaction *PrngTransaction) Sign(
 	privateKey PrivateKey,
-) *RngTransaction {
+) *PrngTransaction {
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
-func (transaction *RngTransaction) SignWithOperator(
+func (transaction *PrngTransaction) SignWithOperator(
 	client *Client,
-) (*RngTransaction, error) {
+) (*PrngTransaction, error) {
 	// If the transaction is not signed by the _Operator, we need
 	// to sign the transaction with the _Operator
 
@@ -137,10 +137,10 @@ func (transaction *RngTransaction) SignWithOperator(
 
 // SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction's signature map
 // with the publicKey as the map key.
-func (transaction *RngTransaction) SignWith(
+func (transaction *PrngTransaction) SignWith(
 	publicKey PublicKey,
 	signer TransactionSigner,
-) *RngTransaction {
+) *PrngTransaction {
 	if !transaction._KeyAlreadySigned(publicKey) {
 		transaction._SignWith(publicKey, signer)
 	}
@@ -149,7 +149,7 @@ func (transaction *RngTransaction) SignWith(
 }
 
 // Execute executes the Transaction with the provided client
-func (transaction *RngTransaction) Execute(
+func (transaction *PrngTransaction) Execute(
 	client *Client,
 ) (TransactionResponse, error) {
 	if client == nil {
@@ -213,11 +213,11 @@ func (transaction *RngTransaction) Execute(
 	}, nil
 }
 
-func (transaction *RngTransaction) Freeze() (*RngTransaction, error) {
+func (transaction *PrngTransaction) Freeze() (*PrngTransaction, error) {
 	return transaction.FreezeWith(nil)
 }
 
-func (transaction *RngTransaction) FreezeWith(client *Client) (*RngTransaction, error) {
+func (transaction *PrngTransaction) FreezeWith(client *Client) (*PrngTransaction, error) {
 	if transaction.IsFrozen() {
 		return transaction, nil
 	}
@@ -230,76 +230,76 @@ func (transaction *RngTransaction) FreezeWith(client *Client) (*RngTransaction, 
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
-func (transaction *RngTransaction) GetMaxTransactionFee() Hbar {
+func (transaction *PrngTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this RngTransaction.
-func (transaction *RngTransaction) SetMaxTransactionFee(fee Hbar) *RngTransaction {
+// SetMaxTransactionFee sets the max transaction fee for this PrngTransaction.
+func (transaction *PrngTransaction) SetMaxTransactionFee(fee Hbar) *PrngTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
 	return transaction
 }
 
 // SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received
-func (transaction *RngTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *RngTransaction {
+func (transaction *PrngTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *PrngTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
 	return transaction
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.
-func (transaction *RngTransaction) GetRegenerateTransactionID() bool {
+func (transaction *PrngTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
-func (transaction *RngTransaction) GetTransactionMemo() string {
+func (transaction *PrngTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
 
-// SetTransactionMemo sets the memo for this RngTransaction.
-func (transaction *RngTransaction) SetTransactionMemo(memo string) *RngTransaction {
+// SetTransactionMemo sets the memo for this PrngTransaction.
+func (transaction *PrngTransaction) SetTransactionMemo(memo string) *PrngTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionMemo(memo)
 	return transaction
 }
 
-func (transaction *RngTransaction) GetTransactionValidDuration() time.Duration {
+func (transaction *PrngTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
 
-// SetTransactionValidDuration sets the valid duration for this RngTransaction.
-func (transaction *RngTransaction) SetTransactionValidDuration(duration time.Duration) *RngTransaction {
+// SetTransactionValidDuration sets the valid duration for this PrngTransaction.
+func (transaction *PrngTransaction) SetTransactionValidDuration(duration time.Duration) *PrngTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetTransactionValidDuration(duration)
 	return transaction
 }
 
-func (transaction *RngTransaction) GetTransactionID() TransactionID {
+func (transaction *PrngTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
 
-// SetTransactionID sets the TransactionID for this RngTransaction.
-func (transaction *RngTransaction) SetTransactionID(transactionID TransactionID) *RngTransaction {
+// SetTransactionID sets the TransactionID for this PrngTransaction.
+func (transaction *PrngTransaction) SetTransactionID(transactionID TransactionID) *PrngTransaction {
 	transaction._RequireNotFrozen()
 
 	transaction.Transaction.SetTransactionID(transactionID)
 	return transaction
 }
 
-// SetNodeAccountID sets the _Node AccountID for this RngTransaction.
-func (transaction *RngTransaction) SetNodeAccountIDs(nodeID []AccountID) *RngTransaction {
+// SetNodeAccountID sets the _Node AccountID for this PrngTransaction.
+func (transaction *PrngTransaction) SetNodeAccountIDs(nodeID []AccountID) *PrngTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetNodeAccountIDs(nodeID)
 	return transaction
 }
 
-func (transaction *RngTransaction) SetMaxRetry(count int) *RngTransaction {
+func (transaction *PrngTransaction) SetMaxRetry(count int) *PrngTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
-func (transaction *RngTransaction) SetMaxBackoff(max time.Duration) *RngTransaction {
+func (transaction *PrngTransaction) SetMaxBackoff(max time.Duration) *PrngTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
 	} else if max.Nanoseconds() < transaction.minBackoff.Nanoseconds() {
@@ -309,7 +309,7 @@ func (transaction *RngTransaction) SetMaxBackoff(max time.Duration) *RngTransact
 	return transaction
 }
 
-func (transaction *RngTransaction) GetMaxBackoff() time.Duration {
+func (transaction *PrngTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
 	}
@@ -317,7 +317,7 @@ func (transaction *RngTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
-func (transaction *RngTransaction) SetMinBackoff(min time.Duration) *RngTransaction {
+func (transaction *PrngTransaction) SetMinBackoff(min time.Duration) *PrngTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
 	} else if transaction.maxBackoff.Nanoseconds() < min.Nanoseconds() {
@@ -327,7 +327,7 @@ func (transaction *RngTransaction) SetMinBackoff(min time.Duration) *RngTransact
 	return transaction
 }
 
-func (transaction *RngTransaction) GetMinBackoff() time.Duration {
+func (transaction *PrngTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff
 	}
@@ -335,7 +335,7 @@ func (transaction *RngTransaction) GetMinBackoff() time.Duration {
 	return 250 * time.Millisecond
 }
 
-func (transaction *RngTransaction) _GetLogID() string {
+func (transaction *PrngTransaction) _GetLogID() string {
 	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
 	return fmt.Sprintf("RngTransaction:%d", timestamp.UnixNano())
 }

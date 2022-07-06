@@ -58,8 +58,8 @@ type TransactionRecord struct {
 	TokenNftAllowances []TokenNftAllowance
 	EthereumHash       []byte
 	PaidStakingRewards map[AccountID]Hbar
-	PseudorandomBytes  []byte
-	PseudorandomNumber *int32
+	PrngBytes          []byte
+	PrngNumber         *int32
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -183,11 +183,12 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		PaidStakingRewards:         paidStakingRewards,
 	}
 
-	if pb.GetPseudorandomBytes() == nil {
-		temp := pb.GetPseudorandomNumber()
-		txRecord.PseudorandomNumber = &temp
-	} else {
-		txRecord.PseudorandomBytes = pb.GetPseudorandomBytes()
+	if w, ok := pb.Entropy.(*services.TransactionRecord_PrngBytes); ok {
+		txRecord.PrngBytes = w.PrngBytes
+	}
+
+	if w, ok := pb.Entropy.(*services.TransactionRecord_PrngNumber); ok {
+		txRecord.PrngNumber = &w.PrngNumber
 	}
 
 	if pb.GetContractCreateResult() != nil {
@@ -295,6 +296,12 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 		Alias:              alias,
 		EthereumHash:       record.EthereumHash,
 		PaidStakingRewards: paidStakingRewards,
+	}
+
+	if record.PrngNumber != nil {
+		tRecord.Entropy = &services.TransactionRecord_PrngNumber{PrngNumber: *record.PrngNumber}
+	} else if len(record.PrngBytes) > 0 {
+		tRecord.Entropy = &services.TransactionRecord_PrngBytes{PrngBytes: record.PrngBytes}
 	}
 
 	var err error

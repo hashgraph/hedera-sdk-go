@@ -33,7 +33,7 @@ func main() {
 	// Setting the client operator ID and key
 	client.SetOperator(operatorAccountID, operatorKey)
 
-	createResponse, err := hedera.NewRngTransaction().
+	createResponse, err := hedera.NewPrngTransaction().
 		// Set the range
 		SetRange(12).
 		Execute(client)
@@ -48,10 +48,10 @@ func main() {
 		return
 	}
 
-	if transactionRecord.PseudorandomNumber != nil {
+	if transactionRecord.PrngNumber != nil {
 		println(err.Error(), ": error, pseudo-random number is nil")
 		return
 	}
-	
-	println("The pseudo-random number is:", *transactionRecord.PseudorandomNumber)
+
+	println("The pseudo-random number is:", *transactionRecord.PrngNumber)
 }
