@@ -1,3 +1,15 @@
+## v2.17.0-beta.1
+
+### Added
+
+* `PrngThansaction`
+* `TransactionRecord.PrngBytes`
+* `TransactionRecord.PrngNumber`
+
+## Deprecated
+
+* `ContractFunctionResult.ContractStateChanges` with no replacement.
+
 ## v2.16.1
 
 ### Added
