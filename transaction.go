@@ -288,6 +288,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return *_TokenUnpauseTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_EthereumTransaction:
 		return *_EthereumTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_Prng:
+		return *_PrngTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
