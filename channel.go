@@ -34,6 +34,7 @@ type _Channel struct {
 	network  services.NetworkServiceClient
 	token    services.TokenServiceClient
 	schedule services.ScheduleServiceClient
+	util     services.UtilServiceClient
 	client   *grpc.ClientConn
 }
 
@@ -105,4 +106,12 @@ func (channel _Channel) _GetSchedule() services.ScheduleServiceClient {
 	}
 
 	return channel.schedule
+}
+
+func (channel _Channel) _GetUtil() services.UtilServiceClient {
+	if channel.util == nil {
+		channel.util = services.NewUtilServiceClient(channel.client)
+	}
+
+	return channel.util
 }
