@@ -115,6 +115,58 @@ func TestUnitMockQuery(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func DisabledTestUnitMockBackoff(t *testing.T) {
+	responses := [][]interface{}{{
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+	}, {
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
+		},
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	newBalance := NewHbar(2)
+
+	tran := TransactionIDGenerate(AccountID{Account: 3})
+
+	_, err = NewAccountCreateTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}, {Account: 4}}).
+		SetKey(newKey).
+		SetTransactionID(tran).
+		SetInitialBalance(newBalance).
+		SetMaxAutomaticTokenAssociations(100).
+		Execute(client)
+	require.NoError(t, err)
+}
+
 func TestUnitMockAddressBookQuery(t *testing.T) {
 	responses := [][]interface{}{{
 		&services.NodeAddress{

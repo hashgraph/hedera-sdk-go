@@ -23,7 +23,6 @@ package hedera
 import (
 	"context"
 	"encoding/hex"
-	"math"
 	"os"
 	"time"
 
@@ -289,7 +288,7 @@ func _Execute( // nolint
 }
 
 func _DelayForAttempt(logID string, backoff time.Duration, attempt int64) {
-	logCtx.Trace().Str("requestId", logID).Dur("delay", backoff).Int64("attempt", attempt+1).Msg("retrying  request attempt")
+	logCtx.Trace().Str("requestId", logID).Dur("delay", backoff).Int64("attempt", attempt+1).Msg("retrying request attempt")
 	time.Sleep(backoff)
 }
 
