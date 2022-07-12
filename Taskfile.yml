@@ -1,0 +1,35 @@
+version: "3"
+
+tasks:
+    default:
+        deps:
+            - build
+
+    build:
+        cmds:
+            - go build
+
+    clean:
+        cmds:
+            - go clean
+
+    format:
+        cmds:
+            - go fmt || goimports -w *.go
+
+    lint:
+        cmds:
+            - golangci-lint run
+
+    test:
+        deps:
+            - "test:unit"
+            - "test:integration"
+
+    "test:unit":
+        cmds:
+            - go test -tags="unit" -v
+
+    "test:integration":
+        cmds:
+            - go test -tags="e2e" -v -timeout 9999s
