@@ -589,6 +589,8 @@ func (selector *ContractFunctionSelector) AddUint248() *ContractFunctionSelector
 	})
 }
 
+//For better usage you may use abi package
+//example: bytes := abi.U256(big.NewInt(some number))
 func (selector *ContractFunctionSelector) AddUint256() *ContractFunctionSelector {
 	return selector._AddParam(_Solidity{
 		ty:    aUint256,
