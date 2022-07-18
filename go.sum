@@ -201,10 +201,6 @@ github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB7
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/graph-gophers/graphql-go v1.3.0/go.mod h1:9CQHMSxwO4MprSdzoIEobiHpoLtHm77vfxsvsIN5Vuc=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
-github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220426085224-6f0ec6b1f440 h1:fCfQmEzK+/Y8cQY6YAAC4PR3zXNAysUeqvTO/JHzEwg=
-github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220426085224-6f0ec6b1f440/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
-github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220517092514-974f12047ea8 h1:gKNHuDc2cVRvEAO67IMyl8N1PMKRZmDj9TuWdHivFxg=
-github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220517092514-974f12047ea8/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220614085905-694ecae18fba h1:jR5ynbOxjPSopGunR5ti/b2kLUwM7cPdT5zRRX4KKfg=
 github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220614085905-694ecae18fba/go.mod h1:P0QU+a1kwZlqFNfG44/YhgR2njoDbAtDrYz3zR5lq3U=
 github.com/hashicorp/go-bexpr v0.1.10/go.mod h1:oxlubA2vC/gFVfX1A6JGp7ls7uCDlfJn732ehYYg+g0=
@@ -617,8 +613,8 @@ google.golang.org/grpc v1.27.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8
 google.golang.org/grpc v1.33.1/go.mod h1:fr5YgcSWrqhRRxogOsw7RzIpsmvOZ6IcH4kBYTpR3n0=
 google.golang.org/grpc v1.36.0/go.mod h1:qjiiYl8FncCW8feJPdyg3v6XW24KsRHe+dy9BAGRRjU=
 google.golang.org/grpc v1.39.0/go.mod h1:PImNr+rS9TWYb2O4/emRugxiyHZ5JyHW5F+RPnDzfrE=
-google.golang.org/grpc v1.47.0 h1:9n77onPX5F3qfFCqjy9dhn8PbNQsIKeVU04J9G7umt8=
-google.golang.org/grpc v1.47.0/go.mod h1:vN9eftEi1UMyUsIF80+uQXhHjbXYbm0uXoFCACuMGWk=
+google.golang.org/grpc v1.48.0 h1:rQOsyJ/8+ufEDJd/Gdsz7HG220Mh9HAhFHRGnIjda0w=
+google.golang.org/grpc v1.48.0/go.mod h1:vN9eftEi1UMyUsIF80+uQXhHjbXYbm0uXoFCACuMGWk=
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
 google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
 google.golang.org/protobuf v0.0.0-20200228230310-ab0ca4ff8a60/go.mod h1:cfTl7dwQJ+fmap5saPgwCLgHXTUD7jkjRqWcaiX5VyM=
