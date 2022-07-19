@@ -1,5 +1,9 @@
 package hedera
 
+import (
+	"math/big"
+)
+
 /*-
  *
  * Hedera Go SDK
@@ -20,15 +24,16 @@ package hedera
  *
  */
 
-type ContractStateChange struct {
-	ContractID     *ContractID
-	StorageChanges []*StorageChange
+type StorageChange struct {
+	Slot         *big.Int
+	ValueRead    *big.Int
+	ValueWritten *big.Int
 }
 
-func (csc *ContractStateChange) ToBytes() []byte {
+func (storageChange *StorageChange) ToBytes() []byte {
 	return []byte{}
 }
 
-func ContractStateChangeFromBytes(data []byte) (ContractStateChange, error) {
-	return ContractStateChange{}, nil
+func StorageChangeFromBytes(data []byte) (StorageChange, error) {
+	return StorageChange{}, nil
 }
