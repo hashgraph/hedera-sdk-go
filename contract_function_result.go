@@ -44,7 +44,8 @@ type ContractFunctionResult struct {
 	// LogInfo is the log info for events returned by the function
 	LogInfo []ContractLogInfo
 	// Deprecated
-	CreatedContractIDs   []ContractID
+	CreatedContractIDs []ContractID
+	// Deprecated
 	ContractStateChanges []ContractStateChange
 	EvmAddress           ContractID
 	GasAvailable         int64
@@ -363,11 +364,6 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 		}
 	}
 
-	csc := make([]ContractStateChange, 0)
-	for _, sc := range pb.StateChanges {
-		csc = append(csc, _ContractStateChangeFromProtobuf(sc))
-	}
-
 	var evm ContractID
 	if len(pb.EvmAddress.GetValue()) > 0 {
 		evm = ContractID{
@@ -380,17 +376,16 @@ func _ContractFunctionResultFromProtobuf(pb *services.ContractFunctionResult) Co
 	}
 
 	result := ContractFunctionResult{
-		ContractCallResult:   pb.ContractCallResult,
-		ErrorMessage:         pb.ErrorMessage,
-		Bloom:                pb.Bloom,
-		GasUsed:              pb.GasUsed,
-		LogInfo:              infos,
-		CreatedContractIDs:   createdContractIDs,
-		ContractStateChanges: csc,
-		EvmAddress:           evm,
-		GasAvailable:         pb.Gas,
-		Amount:               HbarFromTinybar(pb.Amount),
-		FunctionParameters:   pb.FunctionParameters,
+		ContractCallResult: pb.ContractCallResult,
+		ErrorMessage:       pb.ErrorMessage,
+		Bloom:              pb.Bloom,
+		GasUsed:            pb.GasUsed,
+		LogInfo:            infos,
+		CreatedContractIDs: createdContractIDs,
+		EvmAddress:         evm,
+		GasAvailable:       pb.Gas,
+		Amount:             HbarFromTinybar(pb.Amount),
+		FunctionParameters: pb.FunctionParameters,
 	}
 
 	if pb.ContractID != nil {
@@ -407,11 +402,6 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		infos[i] = info._ToProtobuf()
 	}
 
-	stateChanges := make([]*services.ContractStateChange, 0)
-	for _, change := range result.ContractStateChanges {
-		stateChanges = append(stateChanges, change._ToProtobuf())
-	}
-
 	return &services.ContractFunctionResult{
 		ContractID:         result.ContractID._ToProtobuf(),
 		ContractCallResult: result.ContractCallResult,
@@ -419,7 +409,6 @@ func (result ContractFunctionResult) _ToProtobuf() *services.ContractFunctionRes
 		Bloom:              result.Bloom,
 		GasUsed:            result.GasUsed,
 		LogInfo:            infos,
-		StateChanges:       stateChanges,
 		EvmAddress:         &wrapperspb.BytesValue{Value: result.EvmAddress.EvmAddress},
 		Gas:                result.GasAvailable,
 		Amount:             result.Amount.AsTinybar(),

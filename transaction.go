@@ -87,6 +87,9 @@ func _NewTransaction() Transaction {
 // TransactionFromBytes converts Transaction bytes to a related *Transaction.
 func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	list := sdk.TransactionList{}
+	duration := 120 * time.Second
+	minBackoff := 250 * time.Millisecond
+	maxBackoff := 8 * time.Second
 	err := protobuf.Unmarshal(data, &list)
 	if err != nil {
 		return Transaction{}, errors.Wrap(err, "error deserializing from bytes to Transaction List")
@@ -101,13 +104,18 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	tx := Transaction{
-		maxRetry:           10,
-		transactionIDs:     _NewLockableSlice(),
-		transactions:       transactions,
-		signedTransactions: _NewLockableSlice(),
-		nodeAccountIDs:     _NewLockableSlice(),
-		publicKeys:         make([]PublicKey, 0),
-		transactionSigners: make([]TransactionSigner, 0),
+		maxRetry:                 10,
+		transactionValidDuration: &duration,
+		transactionIDs:           _NewLockableSlice(),
+		transactions:             transactions,
+		signedTransactions:       _NewLockableSlice(),
+		nodeAccountIDs:           _NewLockableSlice(),
+		publicKeys:               make([]PublicKey, 0),
+		transactionSigners:       make([]TransactionSigner, 0),
+		freezeError:              nil,
+		regenerateTransactionID:  true,
+		minBackoff:               &minBackoff,
+		maxBackoff:               &maxBackoff,
 	}
 
 	comp, err := _TransactionCompare(&list)
@@ -288,6 +296,8 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		return *_TokenUnpauseTransactionFromProtobuf(tx, first), nil
 	case *services.TransactionBody_EthereumTransaction:
 		return *_EthereumTransactionFromProtobuf(tx, first), nil
+	case *services.TransactionBody_Prng:
+		return *_PrngTransactionFromProtobuf(tx, first), nil
 	default:
 		return Transaction{}, errFailedToDeserializeBytes
 	}
