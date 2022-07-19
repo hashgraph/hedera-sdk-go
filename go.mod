@@ -8,7 +8,7 @@ require (
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220706052312-268a7f00b638
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.27.0
-	github.com/stretchr/testify v1.7.4
+	github.com/stretchr/testify v1.8.0
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
@@ -17,5 +17,4 @@ require (
 	google.golang.org/genproto v0.0.0-20220718134204-073382fd740c // indirect
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
-	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 )
