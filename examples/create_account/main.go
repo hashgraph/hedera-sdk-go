@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/hashgraph/hedera-sdk-go/v2"
+	"os"
 )
 
 func main() {
@@ -62,7 +60,6 @@ func main() {
 		// The account is charged to extend its expiration date every this many seconds. If it doesn't
 		// have enough balance, it extends as long as possible. If it is empty when it expires, then it
 		// is deleted.
-		SetAutoRenewPeriod(time.Until(time.Now().Add(time.Hour * 1))).
 		Execute(client)
 	if err != nil {
 		println(err.Error(), ": error executing account create transaction}")
