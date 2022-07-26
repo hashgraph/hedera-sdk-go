@@ -457,6 +457,10 @@ func (transaction *TokenCreateTransaction) _Build() *services.TransactionBody {
 		body.PauseKey = transaction.pauseKey._ToProtoKey()
 	}
 
+	if transaction.freezeDefault != nil {
+		body.FreezeDefault = *transaction.freezeDefault
+	}
+
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
@@ -482,6 +486,7 @@ func (transaction *TokenCreateTransaction) Schedule() (*ScheduleCreateTransactio
 func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	body := &services.TokenCreateTransactionBody{
 		Name:          transaction.tokenName,
+		Symbol:        transaction.tokenSymbol,
 		Memo:          transaction.memo,
 		Decimals:      transaction.decimals,
 		TokenType:     services.TokenType(transaction.tokenType),
@@ -536,6 +541,15 @@ func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*servic
 	if transaction.supplyKey != nil {
 		body.SupplyKey = transaction.supplyKey._ToProtoKey()
 	}
+
+	if transaction.pauseKey != nil {
+		body.PauseKey = transaction.pauseKey._ToProtoKey()
+	}
+
+	if transaction.freezeDefault != nil {
+		body.FreezeDefault = *transaction.freezeDefault
+	}
+
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
