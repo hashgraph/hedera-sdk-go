@@ -29,7 +29,7 @@ import (
 
 type TransactionFeeSchedule struct {
 	RequestType RequestType
-	// Deprecated use Fees
+	// Deprecated: use Fees
 	FeeData *FeeData
 	Fees    []*FeeData
 }
