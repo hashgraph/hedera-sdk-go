@@ -75,4 +75,9 @@ jobs:
           cd hedera-services
           docker-compose up &
           cd ../hedera-sdk-go
-          go test -tags="e2e" -v -timeout 9999s
+          go test -tags="e2e" -coverprofile=coverage.out -covermode=atomic -v -timeout 9999s
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
