@@ -491,12 +491,12 @@ func (client *Client) GetMaxNodeAttempts() int {
 	return client.network._GetMaxNodeAttempts()
 }
 
-// Deprecated use SetNodeMinBackoff
+// Deprecated: use SetNodeMinBackoff
 func (client *Client) SetNodeWaitTime(nodeWait time.Duration) {
 	client.network._SetNodeMinBackoff(nodeWait)
 }
 
-// Deprecated use GetNodeMinBackoff
+// Deprecated: use GetNodeMinBackoff
 func (client *Client) GetNodeWaitTime() time.Duration {
 	return client.network._GetNodeMinBackoff()
 }

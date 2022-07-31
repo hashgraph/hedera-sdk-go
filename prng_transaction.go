@@ -45,7 +45,7 @@ func NewPrngTransaction() *PrngTransaction {
 func _PrngTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *PrngTransaction {
 	return &PrngTransaction{
 		Transaction: transaction,
-		rang:        uint32(pb.GetPrng().GetRange()),
+		rang:        uint32(pb.GetUtilPrng().GetRange()),
 	}
 }
 
@@ -69,7 +69,7 @@ func (transaction *PrngTransaction) GetRange() uint32 {
 }
 
 func (transaction *PrngTransaction) _Build() *services.TransactionBody {
-	body := &services.PrngTransactionBody{
+	body := &services.UtilPrngTransactionBody{
 		Range: int32(transaction.rang),
 	}
 
@@ -78,22 +78,22 @@ func (transaction *PrngTransaction) _Build() *services.TransactionBody {
 		Memo:                     transaction.Transaction.memo,
 		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
 		TransactionID:            transaction.transactionID._ToProtobuf(),
-		Data: &services.TransactionBody_Prng{
-			Prng: body,
+		Data: &services.TransactionBody_UtilPrng{
+			UtilPrng: body,
 		},
 	}
 }
 
 func (transaction *PrngTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
-	body := &services.PrngTransactionBody{
+	body := &services.UtilPrngTransactionBody{
 		Range: int32(transaction.rang),
 	}
 
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,
-		Data: &services.SchedulableTransactionBody_Prng{
-			Prng: body,
+		Data: &services.SchedulableTransactionBody_UtilPrng{
+			UtilPrng: body,
 		},
 	}, nil
 }
