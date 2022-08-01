@@ -43,12 +43,13 @@ type AccountInfo struct {
 	ExpirationTime                 time.Time
 	AutoRenewPeriod                time.Duration
 	LiveHashes                     []*LiveHash
-	TokenRelationships             []*TokenRelationship
-	AccountMemo                    string
-	OwnedNfts                      int64
-	MaxAutomaticTokenAssociations  uint32
-	AliasKey                       *PublicKey
-	LedgerID                       LedgerID
+	// Deprecated
+	TokenRelationships            []*TokenRelationship
+	AccountMemo                   string
+	OwnedNfts                     int64
+	MaxAutomaticTokenAssociations uint32
+	AliasKey                      *PublicKey
+	LedgerID                      LedgerID
 	// Deprecated
 	HbarAllowances []HbarAllowance
 	// Deprecated
@@ -67,15 +68,6 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 	pubKey, err := _KeyFromProtobuf(pb.Key)
 	if err != nil {
 		return AccountInfo{}, err
-	}
-
-	tokenRelationship := make([]*TokenRelationship, len(pb.TokenRelationships))
-
-	if pb.TokenRelationships != nil {
-		for i, relationship := range pb.TokenRelationships {
-			singleRelationship := _TokenRelationshipFromProtobuf(relationship)
-			tokenRelationship[i] = &singleRelationship
-		}
 	}
 
 	liveHashes := make([]*LiveHash, len(pb.LiveHashes))
@@ -121,7 +113,6 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		GenerateSendRecordThreshold:    HbarFromTinybar(int64(pb.GenerateSendRecordThreshold)),    // nolint
 		GenerateReceiveRecordThreshold: HbarFromTinybar(int64(pb.GenerateReceiveRecordThreshold)), // nolint
 		ReceiverSigRequired:            pb.ReceiverSigRequired,
-		TokenRelationships:             tokenRelationship,
 		ExpirationTime:                 _TimeFromProtobuf(pb.ExpirationTime),
 		AccountMemo:                    pb.Memo,
 		AutoRenewPeriod:                _DurationFromProtobuf(pb.AutoRenewPeriod),
@@ -136,13 +127,6 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 }
 
 func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInfo {
-	tokenRelationship := make([]*services.TokenRelationship, len(info.TokenRelationships))
-
-	for i, relationship := range info.TokenRelationships {
-		singleRelationship := relationship._ToProtobuf()
-		tokenRelationship[i] = singleRelationship
-	}
-
 	liveHashes := make([]*services.LiveHash, len(info.LiveHashes))
 
 	for i, liveHash := range info.LiveHashes {
@@ -168,7 +152,6 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		ExpirationTime:                 _TimeToProtobuf(info.ExpirationTime),
 		AutoRenewPeriod:                _DurationToProtobuf(info.AutoRenewPeriod),
 		LiveHashes:                     liveHashes,
-		TokenRelationships:             tokenRelationship,
 		Memo:                           info.AccountMemo,
 		OwnedNfts:                      info.OwnedNfts,
 		MaxAutomaticTokenAssociations:  int32(info.MaxAutomaticTokenAssociations),

@@ -395,7 +395,7 @@ func (transaction *TokenUpdateTransaction) _Build() *services.TransactionBody {
 		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
 	}
 
-	if transaction.adminKey != nil {
+	if transaction.kycKey != nil {
 		body.KycKey = transaction.kycKey._ToProtoKey()
 	}
 
@@ -472,7 +472,7 @@ func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*servic
 		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
 	}
 
-	if transaction.adminKey != nil {
+	if transaction.kycKey != nil {
 		body.KycKey = transaction.kycKey._ToProtoKey()
 	}
 
