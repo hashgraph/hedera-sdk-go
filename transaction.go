@@ -540,7 +540,7 @@ func _TransactionShouldRetry(logID string, _ interface{}, response interface{}) 
 	status := Status(response.(*services.TransactionResponse).NodeTransactionPrecheckCode)
 	logCtx.Trace().Str("requestId", logID).Str("status", status.String()).Msg("transaction precheck status received")
 	switch status {
-	case StatusPlatformTransactionNotCreated, StatusBusy:
+	case StatusPlatformTransactionNotCreated, StatusPlatformNotActive, StatusBusy:
 		return executionStateRetry
 	case StatusTransactionExpired:
 		return executionStateExpired

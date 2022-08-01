@@ -1,3 +1,9 @@
+## v2.17.1
+
+### Fixed
+
+ * Requests should retry on `PLATFOR_NOT_ACTIVE`
+
 ## v2.17.0
 
 ### Added
