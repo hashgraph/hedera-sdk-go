@@ -5,6 +5,7 @@
 * `AccountBalance.[tokens|tokenDecimals]` use a mirror node query instead
 * `AccountInfo.tokenRelationships` use a mirror node query instead
 * `ContractInfo.tokenRelationships` use a mirror node query instead
+* `TokenNftInfo.SpenderID` replaced by `TokenNftInfo.AllowanceSpenderAccountID`
 
 ### Fixed
 
