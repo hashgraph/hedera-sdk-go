@@ -1,8 +1,16 @@
 ## v2.17.1
 
+### Deprecated
+
+* `AccountBalance.[tokens|tokenDecimals]` use a mirror node query instead
+* `AccountInfo.tokenRelationships` use a mirror node query instead
+* `ContractInfo.tokenRelationships` use a mirror node query instead
+
 ### Fixed
 
- * Requests should retry on `PLATFOR_NOT_ACTIVE`
+* `Token[Update|Create]Transaction.KycKey`
+* `TokenCreateTransaction.FreezeDefaul` wasn't being set properly.
+* Requests should retry on `PLATFORM_NOT_ACTIVE`
 
 ## v2.17.0
 

@@ -530,7 +530,7 @@ func (transaction *TokenCreateTransaction) _ConstructScheduleProtobuf() (*servic
 		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
 	}
 
-	if transaction.adminKey != nil {
+	if transaction.kycKey != nil {
 		body.KycKey = transaction.kycKey._ToProtoKey()
 	}
 
