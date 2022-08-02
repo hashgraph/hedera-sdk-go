@@ -164,7 +164,6 @@ func TestUnitTokenUpdateTransactionNothingSet(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	proto := transaction._Build().GetTokenUpdate()
 	require.Nil(t, proto.Token)
-	require.Nil(t, proto.AutoRenewPeriod)
 	require.Nil(t, proto.AutoRenewAccount)
 	require.Nil(t, proto.AdminKey)
 	require.Nil(t, proto.Expiry)
