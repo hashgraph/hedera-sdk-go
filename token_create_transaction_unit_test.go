@@ -189,3 +189,41 @@ func TestUnitTokenCreateTransactionNothingSet(t *testing.T) {
 	require.Nil(t, proto.SupplyKey)
 	require.Nil(t, proto.Treasury)
 }
+
+func TestUnitTokenCreateTransactionKeyCheck(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	keys := make([]PrivateKey, 7)
+	var err error
+
+	for i := 0; i < 7; i++ {
+		keys[i], err = PrivateKeyGenerateEd25519()
+		require.NoError(t, err)
+	}
+
+	transaction, err := NewTokenCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetAdminKey(keys[0]).
+		SetFreezeKey(keys[1]).
+		SetWipeKey(keys[2]).
+		SetKycKey(keys[3]).
+		SetSupplyKey(keys[4]).
+		SetPauseKey(keys[5]).
+		SetFeeScheduleKey(keys[6]).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetTokenCreation()
+	require.Equal(t, proto.AdminKey.String(), keys[0]._ToProtoKey().String())
+	require.Equal(t, proto.FreezeKey.String(), keys[1]._ToProtoKey().String())
+	require.Equal(t, proto.WipeKey.String(), keys[2]._ToProtoKey().String())
+	require.Equal(t, proto.KycKey.String(), keys[3]._ToProtoKey().String())
+	require.Equal(t, proto.SupplyKey.String(), keys[4]._ToProtoKey().String())
+	require.Equal(t, proto.PauseKey.String(), keys[5]._ToProtoKey().String())
+	require.Equal(t, proto.FeeScheduleKey.String(), keys[6]._ToProtoKey().String())
+}
