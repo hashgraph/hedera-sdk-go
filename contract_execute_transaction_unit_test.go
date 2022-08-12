@@ -194,3 +194,32 @@ func TestUnitContractExecuteTransactionSetNothing(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	transaction.GetPayableAmount()
 }
+
+func TestUnitContractExecuteTransactionProtoCheck(t *testing.T) {
+	contractID := ContractID{Contract: 7}
+
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewContractExecuteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetContractID(contractID).
+		SetGas(100000).
+		SetFunctionParameters([]byte{34}).
+		SetPayableAmount(NewHbar(1)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetContractCall()
+	require.Equal(t, proto.ContractID.String(), contractID._ToProtobuf().String())
+	require.Equal(t, proto.Gas, int64(100000))
+	require.Equal(t, proto.Amount, NewHbar(1).AsTinybar())
+	require.Equal(t, proto.FunctionParameters, []byte{34})
+}

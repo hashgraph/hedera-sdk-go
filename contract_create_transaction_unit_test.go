@@ -211,3 +211,50 @@ func TestUnitContractCreateTransactionSetNothing(t *testing.T) {
 	transaction.GetContractMemo()
 	transaction.GetGas()
 }
+
+func TestUnitContractCreateTransactionProtoCheck(t *testing.T) {
+	accountID := AccountID{Account: 7}
+	fileID := FileID{File: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	transaction, err := NewContractCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetAdminKey(newKey.PublicKey()).
+		SetBytecodeFileID(fileID).
+		SetGas(500).
+		SetInitialBalance(NewHbar(50)).
+		SetConstructorParametersRaw([]byte{34}).
+		SetContractMemo("yes").
+		SetStakedAccountID(accountID).
+		SetMaxAutomaticTokenAssociations(3).
+		SetAutoRenewPeriod(time.Second * 3).
+		SetAutoRenewAccountID(accountID).
+		SetDeclineStakingReward(true).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetContractCreateInstance()
+	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
+	require.Equal(t, proto.GetFileID().String(), fileID._ToProtobuf().String())
+	require.Equal(t, proto.Memo, "yes")
+	require.Equal(t, proto.StakedId.(*services.ContractCreateTransactionBody_StakedAccountId).StakedAccountId.String(),
+		accountID._ToProtobuf().String())
+	require.Equal(t, proto.MaxAutomaticTokenAssociations, int32(3))
+	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(time.Second*3).String())
+	require.Equal(t, proto.AutoRenewAccountId.String(), accountID._ToProtobuf().String())
+	require.Equal(t, proto.DeclineReward, true)
+	require.Equal(t, proto.ConstructorParameters, []byte{34})
+	require.Equal(t, proto.InitialBalance, NewHbar(50).AsTinybar())
+	require.Equal(t, proto.Gas, int64(500))
+}

@@ -205,3 +205,34 @@ func TestUnitFileUpdateTransactionSetNothing(t *testing.T) {
 	transaction.GetFileID()
 	transaction.GetFileMemo()
 }
+
+func TestUnitFileUpdateTransactionProtoCheck(t *testing.T) {
+	fileID := FileID{File: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	transaction, err := NewFileUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetKeys(newKey).
+		SetContents([]byte{5, 6}).
+		SetFileID(fileID).
+		SetFileMemo("").
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetFileUpdate()
+	require.Equal(t, proto.Keys.Keys[0].String(), newKey._ToProtoKey().String())
+	require.Equal(t, proto.Contents, []byte{5, 6})
+	require.Equal(t, proto.FileID.String(), fileID._ToProtobuf().String())
+}

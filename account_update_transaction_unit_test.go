@@ -205,3 +205,46 @@ func TestUnitAccountUpdateTransactionSetNothing(t *testing.T) {
 	transaction.GetAutoRenewPeriod()
 	transaction.GetReceiverSignatureRequired()
 }
+
+func TestUnitAccountUpdateTransactionProtoCheck(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	stackedAccountID := AccountID{Account: 5}
+	accountID := AccountID{Account: 6}
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetKey(key).
+		SetAccountID(accountID).
+		SetAccountMemo("ty").
+		SetReceiverSignatureRequired(true).
+		SetMaxAutomaticTokenAssociations(2).
+		SetStakedAccountID(stackedAccountID).
+		SetDeclineStakingReward(true).
+		SetAutoRenewPeriod(60 * time.Second).
+		SetExpirationTime(time.Unix(34, 56)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetCryptoUpdateAccount()
+	require.Equal(t, proto.AccountIDToUpdate.String(), accountID._ToProtobuf().String())
+	require.Equal(t, proto.Key.String(), key._ToProtoKey().String())
+	require.Equal(t, proto.Memo.Value, "ty")
+	require.Equal(t, proto.ReceiverSigRequiredField.(*services.CryptoUpdateTransactionBody_ReceiverSigRequiredWrapper).ReceiverSigRequiredWrapper.Value, true)
+	require.Equal(t, proto.MaxAutomaticTokenAssociations.GetValue(), int32(2))
+	require.Equal(t, proto.StakedId.(*services.CryptoUpdateTransactionBody_StakedAccountId).StakedAccountId.String(),
+		stackedAccountID._ToProtobuf().String())
+	require.Equal(t, proto.DeclineReward.Value, true)
+	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(60*time.Second).String())
+	require.Equal(t, proto.ExpirationTime.String(), _TimeToProtobuf(time.Unix(34, 56)).String())
+}
