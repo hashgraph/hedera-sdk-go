@@ -136,3 +136,33 @@ func TestUnitTokenWipeTransactionNothingSet(t *testing.T) {
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
 }
+
+func TestUnitTokenWipeTransactionProtoCheck(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+	accountID := AccountID{Account: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenWipeTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenID(tokenID).
+		SetAccountID(accountID).
+		SetAmount(323).
+		SetSerialNumbers([]int64{123, 3123, 31}).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetTokenWipe()
+	require.Equal(t, proto.Token.String(), tokenID._ToProtobuf().String())
+	require.Equal(t, proto.Account.String(), accountID._ToProtobuf().String())
+	require.Equal(t, proto.Amount, uint64(323))
+	require.Equal(t, proto.SerialNumbers, []int64{123, 3123, 31})
+}

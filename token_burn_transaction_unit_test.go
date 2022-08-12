@@ -128,3 +128,30 @@ func TestUnitTokenBurnTransactionNothingSet(t *testing.T) {
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
 }
+
+func TestUnitTokenBurnTransactionProtoCheck(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenBurnTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenID(tokenID).
+		SetAmount(5).
+		SetSerialNumbers([]int64{1, 5, 6, 7}).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetTokenBurn()
+	require.Equal(t, proto.Token.String(), tokenID._ToProtobuf().String())
+	require.Equal(t, proto.Amount, uint64(5))
+	require.Equal(t, proto.SerialNumbers, []int64{1, 5, 6, 7})
+}

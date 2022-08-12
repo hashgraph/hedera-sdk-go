@@ -128,3 +128,30 @@ func TestUnitTokenMintTransactionNothingSet(t *testing.T) {
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
 }
+
+func TestUnitTokenMintTransactionProtoCheck(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenMintTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenID(tokenID).
+		SetAmount(323).
+		SetMetadatas([][]byte{{50}, {50}}).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetTokenMint()
+	require.Equal(t, proto.Token.String(), tokenID._ToProtobuf().String())
+	require.Equal(t, proto.Amount, uint64(323))
+	require.Equal(t, proto.Metadata, [][]byte{{50}, {50}})
+}

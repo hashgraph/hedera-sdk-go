@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"testing"
 	"time"
 
@@ -134,4 +135,33 @@ func TestUnitContractDeleteTransactionSetNothing(t *testing.T) {
 	transaction.GetTransferAccountID()
 	transaction.GetTransferContractID()
 	transaction.GetRegenerateTransactionID()
+}
+
+func TestUnitContractDeleteTransactionProtoCheck(t *testing.T) {
+	spenderAccountID1 := AccountID{Account: 7}
+	contractID := ContractID{Contract: 7}
+
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewContractDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetContractID(contractID).
+		SetTransferAccountID(spenderAccountID1).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		SetPermanentRemoval(true).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetContractDeleteInstance()
+	require.Equal(t, proto.ContractID.String(), contractID._ToProtobuf().String())
+	require.Equal(t, proto.Obtainers.(*services.ContractDeleteTransactionBody_TransferAccountID).TransferAccountID.String(),
+		spenderAccountID1._ToProtobuf().String())
+	require.Equal(t, proto.PermanentRemoval, true)
 }

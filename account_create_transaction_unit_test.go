@@ -142,7 +142,6 @@ func TestUnitMockAccountCreateTransaction(t *testing.T) {
 }
 
 func TestUnitAccountCreateTransactionGet(t *testing.T) {
-	spenderAccountID1 := AccountID{Account: 7}
 	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
 
 	key, err := PrivateKeyGenerateEd25519()
@@ -153,7 +152,6 @@ func TestUnitAccountCreateTransactionGet(t *testing.T) {
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).
 		SetKey(key).
-		SetProxyAccountID(spenderAccountID1).
 		SetAccountMemo("").
 		SetReceiverSignatureRequired(true).
 		SetMaxAutomaticTokenAssociations(2).
@@ -178,7 +176,6 @@ func TestUnitAccountCreateTransactionGet(t *testing.T) {
 	transaction.GetAccountMemo()
 	transaction.GetMaxTransactionFee()
 	transaction.GetMaxAutomaticTokenAssociations()
-	transaction.GetProxyAccountID()
 	transaction.GetRegenerateTransactionID()
 	transaction.GetKey()
 	transaction.GetInitialBalance()
@@ -217,4 +214,44 @@ func TestUnitAccountCreateTransactionSetNothing(t *testing.T) {
 	transaction.GetInitialBalance()
 	transaction.GetAutoRenewPeriod()
 	transaction.GetReceiverSignatureRequired()
+}
+
+func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	stackedAccountID := AccountID{Account: 5}
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetKey(key).
+		SetInitialBalance(NewHbar(3)).
+		SetAccountMemo("ty").
+		SetReceiverSignatureRequired(true).
+		SetMaxAutomaticTokenAssociations(2).
+		SetStakedAccountID(stackedAccountID).
+		SetDeclineStakingReward(true).
+		SetAutoRenewPeriod(60 * time.Second).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetCryptoCreateAccount()
+	require.Equal(t, proto.Key.String(), key._ToProtoKey().String())
+	require.Equal(t, proto.InitialBalance, uint64(NewHbar(3).AsTinybar()))
+	require.Equal(t, proto.Memo, "ty")
+	require.Equal(t, proto.ReceiverSigRequired, true)
+	require.Equal(t, proto.MaxAutomaticTokenAssociations, int32(2))
+	require.Equal(t, proto.StakedId.(*services.CryptoCreateTransactionBody_StakedAccountId).StakedAccountId.String(),
+		stackedAccountID._ToProtobuf().String())
+	require.Equal(t, proto.DeclineReward, true)
+	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(60*time.Second).String())
 }

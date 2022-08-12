@@ -149,6 +149,7 @@ func TestUnitContractUpdateTransactionGet(t *testing.T) {
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
 	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
 
 	transaction, err := NewContractUpdateTransaction().
 		SetTransactionID(transactionID).
@@ -208,4 +209,45 @@ func TestUnitContractUpdateTransactionSetNothing(t *testing.T) {
 	transaction.GetAdminKey()
 	transaction.GetRegenerateTransactionID()
 	transaction.GetContractMemo()
+}
+
+func TestUnitContractUpdateTransactionProtoCheck(t *testing.T) {
+	contractID := ContractID{Contract: 7}
+	accountID := AccountID{Account: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	transaction, err := NewContractUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetContractID(contractID).
+		SetAdminKey(newKey.PublicKey()).
+		SetContractMemo("yes").
+		SetStakedAccountID(accountID).
+		SetMaxAutomaticTokenAssociations(3).
+		SetAutoRenewPeriod(time.Second * 3).
+		SetExpirationTime(time.Unix(34, 3)).
+		SetAutoRenewAccountID(accountID).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetContractUpdateInstance()
+	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
+	require.Equal(t, proto.ContractID.String(), contractID._ToProtobuf().String())
+	require.Equal(t, proto.MemoField.(*services.ContractUpdateTransactionBody_MemoWrapper).MemoWrapper.Value, "yes")
+	require.Equal(t, proto.StakedId.(*services.ContractUpdateTransactionBody_StakedAccountId).StakedAccountId.String(),
+		accountID._ToProtobuf().String())
+	require.Equal(t, proto.MaxAutomaticTokenAssociations.Value, int32(3))
+	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(time.Second*3).String())
+	require.Equal(t, proto.ExpirationTime.String(), _TimeToProtobuf(time.Unix(34, 3)).String())
+	require.Equal(t, proto.AutoRenewAccountId.String(), accountID._ToProtobuf().String())
 }

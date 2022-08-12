@@ -136,3 +136,35 @@ func TestUnitTopicCreateTransactionNothingSet(t *testing.T) {
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
 }
+
+func TestUnitTopicCreateTransactionProtoCheck(t *testing.T) {
+	accountID := AccountID{Account: 23}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	newKey2, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	transaction, err := NewTopicCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetAdminKey(newKey).
+		SetSubmitKey(newKey2).
+		SetAutoRenewAccountID(accountID).
+		SetTopicMemo("memo").
+		SetAutoRenewPeriod(time.Second * 3).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetConsensusCreateTopic()
+	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
+	require.Equal(t, proto.SubmitKey.String(), newKey2._ToProtoKey().String())
+	require.Equal(t, proto.Memo, "memo")
+	require.Equal(t, proto.AutoRenewPeriod.Seconds, _DurationToProtobuf(time.Second*3).Seconds)
+	require.Equal(t, proto.AutoRenewAccount.String(), accountID._ToProtobuf().String())
+}

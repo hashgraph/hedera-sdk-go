@@ -130,3 +130,33 @@ func TestUnitTokenDissociateTransactionNothingSet(t *testing.T) {
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
 }
+
+func TestUnitTokenDissociateTransactionProtoCheck(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+	tokenID2 := TokenID{Token: 4}
+	tokenID3 := TokenID{Token: 3}
+	accountID := AccountID{Account: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenDissociateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenIDs(tokenID, tokenID2, tokenID3).
+		SetAccountID(accountID).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetTokenDissociate()
+	require.Equal(t, proto.Tokens[0].String(), tokenID._ToProtobuf().String())
+	require.Equal(t, proto.Tokens[1].String(), tokenID2._ToProtobuf().String())
+	require.Equal(t, proto.Tokens[2].String(), tokenID3._ToProtobuf().String())
+	require.Equal(t, proto.Account.String(), accountID._ToProtobuf().String())
+}

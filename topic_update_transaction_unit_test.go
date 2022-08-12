@@ -145,3 +145,40 @@ func TestUnitTopicUpdateTransactionNothingSet(t *testing.T) {
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
 }
+
+func TestUnitTopicUpdateTransactionProtoCheck(t *testing.T) {
+	topicID := TopicID{Topic: 5}
+	accountID := AccountID{Account: 23}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+	newKey2, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	transaction, err := NewTopicUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTopicID(topicID).
+		SetAutoRenewAccountID(accountID).
+		SetAdminKey(newKey).
+		SetSubmitKey(newKey2).
+		SetTopicMemo("memo").
+		SetAutoRenewPeriod(time.Second * 3).
+		SetExpirationTime(time.Unix(34, 12)).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetConsensusUpdateTopic()
+	require.Equal(t, proto.AdminKey.String(), newKey._ToProtoKey().String())
+	require.Equal(t, proto.TopicID.String(), topicID._ToProtobuf().String())
+	require.Equal(t, proto.AutoRenewAccount.String(), accountID._ToProtobuf().String())
+	require.Equal(t, proto.SubmitKey.String(), newKey2._ToProtoKey().String())
+	require.Equal(t, proto.Memo.Value, "memo")
+	require.Equal(t, proto.AutoRenewPeriod.Seconds, _DurationToProtobuf(time.Second*3).Seconds)
+	require.Equal(t, proto.ExpirationTime.String(), _TimeToProtobuf(time.Unix(34, 12)).String())
+}

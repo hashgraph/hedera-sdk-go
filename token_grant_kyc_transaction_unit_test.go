@@ -130,3 +130,29 @@ func TestUnitTokenGrantKycTransactionNothingSet(t *testing.T) {
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
 }
+
+func TestUnitTokenGrantKycTransactionProtoCheck(t *testing.T) {
+	tokenID := TokenID{Token: 7}
+	accountID := AccountID{Account: 7}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewTokenGrantKycTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenID(tokenID).
+		SetAccountID(accountID).
+		SetMaxTransactionFee(NewHbar(10)).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetTokenGrantKyc()
+	require.Equal(t, proto.Token.String(), tokenID._ToProtobuf().String())
+	require.Equal(t, proto.Account.String(), accountID._ToProtobuf().String())
+}

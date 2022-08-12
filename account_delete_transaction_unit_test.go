@@ -24,9 +24,8 @@ package hedera
  */
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 )
@@ -120,4 +119,27 @@ func TestUnitAccountDeleteTransactionSetNothing(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	transaction.GetTransferAccountID()
 	transaction.GetAccountID()
+}
+
+func TestUnitAccountDeleteTransactionProtoCheck(t *testing.T) {
+	spenderAccountID1 := AccountID{Account: 7}
+	transferAccountID := AccountID{Account: 8}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	transaction, err := NewAccountDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTransferAccountID(transferAccountID).
+		SetAccountID(spenderAccountID1).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+
+	proto := transaction._Build().GetCryptoDelete()
+	require.Equal(t, proto.TransferAccountID.String(), transferAccountID._ToProtobuf().String())
+	require.Equal(t, proto.DeleteAccountID.String(), spenderAccountID1._ToProtobuf().String())
 }
