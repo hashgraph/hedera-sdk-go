@@ -100,22 +100,6 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if relation.KycStatus != nil {
-			if *relation.KycStatus {
-				check = true
-			}
-		}
-	}
-	assert.Truef(t, check, "token grant kyc transaction failed")
-
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
@@ -210,9 +194,6 @@ func TestIntegrationTokenGrantKycTransactionNoTokenID(t *testing.T) {
 	resp, err = tx.
 		Sign(newKey).
 		Execute(env.Client)
-	require.NoError(t, err)
-
-	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)

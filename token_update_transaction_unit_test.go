@@ -24,6 +24,8 @@ package hedera
  */
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
+	protobuf "google.golang.org/protobuf/proto"
 	"testing"
 	"time"
 
@@ -70,13 +72,19 @@ func TestUnitTokenUpdateTransactionValidateWrong(t *testing.T) {
 }
 
 func TestUnitTokenUpdateTransactionGet(t *testing.T) {
-	accountID := AccountID{Account: 7}
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	accountID := AccountID{Account: 3, checksum: &checksum}
+	token := TokenID{Token: 3, checksum: &checksum}
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
 
 	transaction, err := NewTokenUpdateTransaction().
 		SetTransactionID(transactionID).
@@ -85,7 +93,7 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 		SetTokenSymbol("F").
 		SetTokenMemo("fnord").
 		SetTreasuryAccountID(accountID).
-		SetTokenID(TokenID{Token: 7}).
+		SetTokenID(token).
 		SetAdminKey(newKey).
 		SetFreezeKey(newKey).
 		SetWipeKey(newKey).
@@ -99,6 +107,10 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 		SetTransactionMemo("").
 		SetTransactionValidDuration(60 * time.Second).
 		SetRegenerateTransactionID(false).
+		SetGrpcDeadline(&grpc).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
 		Freeze()
 	require.NoError(t, err)
 
@@ -108,6 +120,10 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 	_, err = transaction.GetTransactionHash()
 	require.NoError(t, err)
 
+	err = transaction._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
 	transaction.GetTokenName()
 	transaction.GetTokenSymbol()
 	transaction.GetTreasuryAccountID()
@@ -126,6 +142,20 @@ func TestUnitTokenUpdateTransactionGet(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+	transaction._GetLogID()
+	transaction.GetMaxRetry()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	switch b := txFromBytes.(type) {
+	case TokenUpdateTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }
 
 func TestUnitTokenUpdateTransactionNothingSet(t *testing.T) {
@@ -212,4 +242,56 @@ func TestUnitTokenUpdateTransactionKeyCheck(t *testing.T) {
 	require.Equal(t, proto.SupplyKey.String(), keys[4]._ToProtoKey().String())
 	require.Equal(t, proto.PauseKey.String(), keys[5]._ToProtoKey().String())
 	require.Equal(t, proto.FeeScheduleKey.String(), keys[6]._ToProtoKey().String())
+}
+
+func TestUnitTokenUpdateTransactionMock(t *testing.T) {
+	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
+	require.NoError(t, err)
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+
+		return &services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		}
+	}
+	responses := [][]interface{}{{
+		call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	checksum := "dmqui"
+	accountID := AccountID{Account: 3, checksum: &checksum}
+	token := TokenID{Token: 3, checksum: &checksum}
+
+	freez, err := NewTokenUpdateTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetTokenID(token).
+		SetTreasuryAccountID(accountID).
+		SetAdminKey(newKey).
+		SetFreezeKey(newKey).
+		SetWipeKey(newKey).
+		SetKycKey(newKey).
+		SetSupplyKey(newKey).
+		SetPauseKey(newKey).
+		FreezeWith(client)
+	require.NoError(t, err)
+
+	_, err = freez.Sign(newKey).Execute(client)
+	require.NoError(t, err)
 }

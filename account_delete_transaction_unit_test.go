@@ -24,8 +24,11 @@ package hedera
  */
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/assert"
+	protobuf "google.golang.org/protobuf/proto"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -142,4 +145,106 @@ func TestUnitAccountDeleteTransactionProtoCheck(t *testing.T) {
 	proto := transaction._Build().GetCryptoDelete()
 	require.Equal(t, proto.TransferAccountID.String(), transferAccountID._ToProtobuf().String())
 	require.Equal(t, proto.DeleteAccountID.String(), spenderAccountID1._ToProtobuf().String())
+}
+
+func TestUnitAccountDeleteTransactionTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 3
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewAccountDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetAccountID(account).
+		SetTransferAccountID(account).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction._ValidateNetworkOnIDs(client)
+
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetAccountID()
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction.GetTransferAccountID()
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case AccountDeleteTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
+}
+
+func TestUnitAccountDeleteTransactionTransactionMock(t *testing.T) {
+	nodeAccountID := []AccountID{{Account: 3}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 3})
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+
+		return &services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		}
+	}
+	responses := [][]interface{}{{
+		call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	_, err := NewAccountDeleteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetAccountID(AccountID{Account: 3}).
+		Execute(client)
+	require.NoError(t, err)
 }

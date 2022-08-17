@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	protobuf "google.golang.org/protobuf/proto"
 	"testing"
 	"time"
 
@@ -231,4 +232,44 @@ func TestUnitTransferTransactionNothingSet(t *testing.T) {
 	transaction.GetRegenerateTransactionID()
 	transaction.GetMaxTransactionFee()
 	transaction.GetRegenerateTransactionID()
+}
+
+func TestUnitTransferTransactionMock(t *testing.T) {
+	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
+	require.NoError(t, err)
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+
+		return &services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		}
+	}
+	responses := [][]interface{}{{
+		call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	freez, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		FreezeWith(client)
+	require.NoError(t, err)
+
+	_, err = freez.Sign(newKey).Execute(client)
+	require.NoError(t, err)
 }

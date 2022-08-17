@@ -1,5 +1,5 @@
-//go:build all || e2e
-// +build all e2e
+//go:build all || unit
+// +build all unit
 
 package hedera
 
@@ -24,29 +24,19 @@ package hedera
  */
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
+	"os"
+	"testing"
 )
 
-func DisabledTestIntegrationNodeAddressBookFromBytes(t *testing.T) { // nolint
-	env := NewIntegrationTestEnv(t)
-
-	nodeAddressBookBytes, err := NewFileContentsQuery().
-		SetFileID(FileID{Shard: 0, Realm: 0, File: 101}).
-		Execute(env.Client)
+func TestUnitFeeSchedulesFromBytes(t *testing.T) { // nolint
+	dat, err := os.ReadFile("./fee_schedule/fee_schedule.pb")
 	require.NoError(t, err)
-	nodeAddressbook, err := NodeAddressBookFromBytes(nodeAddressBookBytes)
+	feeSchedules, err := FeeSchedulesFromBytes(dat)
 	require.NoError(t, err)
-	assert.NotNil(t, nodeAddressbook)
-
-	for _, ad := range nodeAddressbook.NodeAddresses {
-		println(ad.NodeID)
-		println(string(ad.CertHash))
-	}
-
-	err = CloseIntegrationTestEnv(env, nil)
-	require.NoError(t, err)
+	assert.NotNil(t, feeSchedules)
+	assert.Equal(t, int64(11461413665), feeSchedules.current.TransactionFeeSchedules[0].Fees[0].NodeData.Constant)
+	assert.Equal(t, int64(229228273302), feeSchedules.current.TransactionFeeSchedules[0].Fees[0].ServiceData.Constant)
+	assert.Equal(t, feeSchedules.current.TransactionFeeSchedules[0].RequestType, RequestTypeCryptoCreate)
 }

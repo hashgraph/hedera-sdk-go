@@ -69,6 +69,11 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 	accountID := *record.Receipt.AccountID
 	assert.NotNil(t, accountID)
 
+	recordBytes := record.ToBytes()
+
+	_, err = TransactionRecordFromBytes(recordBytes)
+	require.NoError(t, err)
+
 	transaction, err := NewAccountDeleteTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetAccountID(accountID).

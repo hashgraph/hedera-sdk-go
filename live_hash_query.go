@@ -327,3 +327,12 @@ func (query *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID)
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query
 }
+
+func (query *LiveHashQuery) SetMaxRetry(count int) *LiveHashQuery {
+	query.Query.SetMaxRetry(count)
+	return query
+}
+
+func (query *LiveHashQuery) GetMaxRetry() int {
+	return query.Query.maxRetry
+}

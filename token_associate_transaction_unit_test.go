@@ -71,7 +71,7 @@ func TestUnitTokenAssociateTransactionValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockTokenAssociateTransaction(t *testing.T) {
+func TestUnitTokenAssociateTransactionMock(t *testing.T) {
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 
@@ -230,4 +230,69 @@ func TestUnitTokenAssociateTransactionProtoCheck(t *testing.T) {
 	require.Equal(t, proto.Tokens[1].String(), tokenID2._ToProtobuf().String())
 	require.Equal(t, proto.Tokens[2].String(), tokenID3._ToProtobuf().String())
 	require.Equal(t, proto.Account.String(), accountID._ToProtobuf().String())
+}
+
+func TestUnitTokenAssociateTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	token := TokenID{Token: 3, checksum: &checksum}
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewTokenAssociateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTokenIDs(token).
+		AddTokenID(token).
+		SetAccountID(account).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	err = transaction._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetTokenIDs()
+	transaction.GetAccountID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case TokenAssociateTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }

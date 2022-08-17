@@ -31,7 +31,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func DisabledTestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
+func TestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
 	env := NewIntegrationTestEnv(t)
 
 	newBalance := NewHbar(2)

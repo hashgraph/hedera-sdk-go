@@ -5,6 +5,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/require"
@@ -59,7 +60,7 @@ In consequat, nisi iaculis laoreet elementum, massa mauris varius nisi, et porta
 Etiam ut sodales ex. Nulla luctus, magna eu scelerisque sagittis, nibh quam consectetur neque, non rutrum dolor metus nec ex. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed egestas augue elit, sollicitudin accumsan massa lobortis ac. Curabitur placerat, dolor a aliquam maximus, velit ipsum laoreet ligula, id ullamcorper lacus nibh eget nisl. Donec eget lacus venenatis enim consequat auctor vel in.
 `
 
-func TestUnitMockTopicSubmitTransaction(t *testing.T) {
+func TestUnitTopicMessageSubmitTransactionMock(t *testing.T) {
 	var previousTransactionID string
 	var previousContent []byte
 
@@ -127,7 +128,7 @@ func TestUnitMockTopicSubmitTransaction(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestUnitMockTopicSubmitTransactionFreeze(t *testing.T) {
+func TestUnitTopicMessageSubmitTransactionFreezeMock(t *testing.T) {
 	var previousTransactionID string
 	var previousContent []byte
 
@@ -196,4 +197,69 @@ func TestUnitMockTopicSubmitTransactionFreeze(t *testing.T) {
 
 	_, err = submit.Execute(client)
 	require.NoError(t, err)
+}
+
+func TestUnitTopicMessageSubmitTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	topic := TopicID{Topic: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewTopicMessageSubmitTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetTopicID(topic).
+		SetMessage([]byte("nothing to see here")).
+		SetMaxChunks(30).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	err = transaction._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetTopicID()
+	transaction.GetMessage()
+	transaction.GetMaxChunks()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case TopicMessageSubmitTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }

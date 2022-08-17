@@ -24,11 +24,3 @@ type ContractStateChange struct {
 	ContractID     *ContractID
 	StorageChanges []*StorageChange
 }
-
-func (csc *ContractStateChange) ToBytes() []byte {
-	return []byte{}
-}
-
-func ContractStateChangeFromBytes(data []byte) (ContractStateChange, error) {
-	return ContractStateChange{}, nil
-}

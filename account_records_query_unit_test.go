@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
@@ -62,12 +63,21 @@ func TestUnitAccountRecordQueryValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockAccountRecordsQuery(t *testing.T) {
+func TestUnitAccountRecordsQueryMock(t *testing.T) {
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_CryptoGetAccountRecords{
 				CryptoGetAccountRecords: &services.CryptoGetAccountRecordsResponse{
-					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+					Header:    &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+					AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 1800}},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptoGetAccountRecords{
+				CryptoGetAccountRecords: &services.CryptoGetAccountRecordsResponse{
+					Header:    &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+					AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 1800}},
 				},
 			},
 		},
@@ -98,12 +108,14 @@ func TestUnitMockAccountRecordsQuery(t *testing.T) {
 	client, server := NewMockClientAndServer(responses)
 	defer server.Close()
 
-	recordsQuery, err := NewAccountRecordsQuery().
+	query := NewAccountRecordsQuery().
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetAccountID(AccountID{Account: 1800}).
-		SetMaxQueryPayment(NewHbar(1)).
-		SetQueryPayment(HbarFromTinybar(25)).
-		Execute(client)
+		SetMaxQueryPayment(NewHbar(1))
+
+	_, err := query.GetCost(client)
+	require.NoError(t, err)
+	recordsQuery, err := query.Execute(client)
 	require.NoError(t, err)
 
 	require.Equal(t, len(recordsQuery), 1)
@@ -140,4 +152,35 @@ func TestUnitAccountRecordsQuerySetNothing(t *testing.T) {
 	balance.GetPaymentTransactionID()
 	balance.GetQueryPayment()
 	balance.GetMaxQueryPayment()
+}
+
+func TestUnitAccountRecordsQueryCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 3
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	query := NewAccountRecordsQuery().
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetAccountID(account).
+		SetNodeAccountIDs(nodeAccountID).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(23)).
+		SetQueryPayment(NewHbar(3)).
+		SetGrpcDeadline(&grpc)
+
+	err := query._ValidateNetworkOnIDs(client)
+
+	require.NoError(t, err)
+	query.GetNodeAccountIDs()
+	query.GetMaxBackoff()
+	query.GetMinBackoff()
+	query._GetLogID()
+	query.GetAccountID()
 }

@@ -24,75 +24,40 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
 )
 
-func TestUnitTokenIDFromString(t *testing.T) {
-	tokID := TokenID{
-		Shard: 1,
-		Realm: 2,
-		Token: 3,
-	}
-
-	gotTokID, err := TokenIDFromString(tokID.String())
-	require.NoError(t, err)
-	assert.Equal(t, tokID.Token, gotTokID.Token)
-}
-
-func TestUnitTokenIDChecksumFromString(t *testing.T) {
-	id, err := TokenIDFromString("0.0.123-rmkyk")
+func TestUnitFileIDChecksumFromString(t *testing.T) {
+	id, err := FileIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
 
 	client := ClientForTestnet()
 	id.ToStringWithChecksum(*client)
 	sol := id.ToSolidityAddress()
-	TokenIDFromSolidityAddress(sol)
+	FileIDFromSolidityAddress(sol)
 	id.Validate(client)
+
 	pb := id._ToProtobuf()
-	_TokenIDFromProtobuf(pb)
+	_FileIDFromProtobuf(pb)
 
 	idByte := id.ToBytes()
-	TokenIDFromBytes(idByte)
+	FileIDFromBytes(idByte)
 
-	id.Compare(TokenID{Token: 32})
+	require.Equal(t, FileID{File: 111}.String(), FileIDForFeeSchedule().String())
+	require.Equal(t, FileID{File: 102}.String(), FileIDForAddressBook().String())
+	require.Equal(t, FileID{File: 112}.String(), FileIDForExchangeRate().String())
 
-	assert.Equal(t, id.Token, uint64(123))
+	assert.Equal(t, id.File, uint64(123))
 }
 
-func TestUnitTokenIDChecksumToString(t *testing.T) {
+func TestUnitFileIDChecksumToString(t *testing.T) {
 	id := AccountID{
 		Shard:   50,
 		Realm:   150,
 		Account: 520,
 	}
 	assert.Equal(t, "50.150.520", id.String())
-}
-
-func TestUnitTokenIDFromStringEVM(t *testing.T) {
-	id, err := TokenIDFromString("0.0.434")
-	require.NoError(t, err)
-
-	require.Equal(t, "0.0.434", id.String())
-}
-
-func TestUnitTokenIDProtobuf(t *testing.T) {
-	id, err := TokenIDFromString("0.0.434")
-	require.NoError(t, err)
-
-	pb := id._ToProtobuf()
-
-	require.Equal(t, pb, &services.TokenID{
-		ShardNum: 0,
-		RealmNum: 0,
-		TokenNum: 434,
-	})
-
-	pbFrom := _TokenIDFromProtobuf(pb)
-
-	require.Equal(t, id, *pbFrom)
 }

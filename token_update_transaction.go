@@ -129,6 +129,11 @@ func _TokenUpdateTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+func (transaction *TokenUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUpdateTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetTokenID Sets the Token to be updated
 func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpdateTransaction {
 	transaction._RequireNotFrozen()

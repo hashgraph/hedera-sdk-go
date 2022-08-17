@@ -312,3 +312,8 @@ func (query *TopicInfoQuery) _GetLogID() string {
 	}
 	return fmt.Sprintf("TopicInfoQuery:%d", timestamp)
 }
+
+func (query *TopicInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TopicInfoQuery {
+	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
+	return query
+}

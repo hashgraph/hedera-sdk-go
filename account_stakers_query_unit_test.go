@@ -24,7 +24,9 @@ package hedera
  */
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -90,4 +92,77 @@ func TestUnitAccountStakersQuerySetNothing(t *testing.T) {
 	balance.GetPaymentTransactionID()
 	balance.GetQueryPayment()
 	balance.GetMaxQueryPayment()
+}
+
+func TestUnitAccountStakersQueryCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 3
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	query := NewAccountStakersQuery().
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetAccountID(account).
+		SetNodeAccountIDs(nodeAccountID).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(23)).
+		SetQueryPayment(NewHbar(3)).
+		SetGrpcDeadline(&grpc)
+
+	err := query._ValidateNetworkOnIDs(client)
+
+	require.NoError(t, err)
+	query.GetNodeAccountIDs()
+	query.GetMaxBackoff()
+	query.GetMinBackoff()
+	query._GetLogID()
+	query.GetAccountID()
+}
+
+func TestUnitAccountStakersQueryQueryMock(t *testing.T) {
+	responses := [][]interface{}{
+		{
+			&services.Response{
+				Response: &services.Response_CryptoGetProxyStakers{
+					CryptoGetProxyStakers: &services.CryptoGetStakersResponse{
+						Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 0},
+					},
+				},
+			},
+			&services.Response{
+				Response: &services.Response_CryptoGetProxyStakers{
+					CryptoGetProxyStakers: &services.CryptoGetStakersResponse{
+						Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 0},
+					},
+				},
+			},
+			&services.Response{
+				Response: &services.Response_CryptoGetProxyStakers{
+					CryptoGetProxyStakers: &services.CryptoGetStakersResponse{
+						Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_ANSWER_ONLY, Cost: 0},
+						Stakers: &services.AllProxyStakers{
+							AccountID: &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 1800}},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	query := NewAccountStakersQuery().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetAccountID(AccountID{Account: 1800})
+
+	query.GetCost(client)
+	_, err := query.Execute(client)
+	require.NoError(t, err)
 }

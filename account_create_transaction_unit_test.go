@@ -65,7 +65,7 @@ func TestUnitAccountCreateTransactionValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockAccountCreateTransaction(t *testing.T) {
+func TestUnitAccountCreateTransactionMock(t *testing.T) {
 	responses := [][]interface{}{{
 		status.New(codes.Unavailable, "node is UNAVAILABLE").Err(),
 		status.New(codes.Internal, "Received RST_STREAM with code 0").Err(),
@@ -254,4 +254,75 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 		stackedAccountID._ToProtobuf().String())
 	require.Equal(t, proto.DeclineReward, true)
 	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(60*time.Second).String())
+}
+
+func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewAccountCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetKey(key).
+		SetInitialBalance(NewHbar(3)).
+		SetAccountMemo("ty").
+		SetReceiverSignatureRequired(true).
+		SetMaxAutomaticTokenAssociations(2).
+		SetStakedAccountID(account).
+		SetStakedNodeID(4).
+		SetDeclineStakingReward(true).
+		SetAutoRenewPeriod(60 * time.Second).
+		SetTransactionMemo("").
+		SetTransactionValidDuration(60 * time.Second).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction._ValidateNetworkOnIDs(client)
+
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := key.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetStakedAccountID()
+	transaction.GetStakedNodeID()
+	transaction.GetDeclineStakingReward()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case AccountCreateTransaction:
+		b.AddSignature(key.PublicKey(), sig)
+	}
 }

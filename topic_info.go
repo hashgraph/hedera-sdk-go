@@ -48,11 +48,15 @@ func _TopicInfoFromProtobuf(topicInfo *services.ConsensusTopicInfo) (TopicInfo, 
 		TopicMemo:      topicInfo.Memo,
 		RunningHash:    topicInfo.RunningHash,
 		SequenceNumber: topicInfo.SequenceNumber,
-		ExpirationTime: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(),
-			time.Now().Hour(), time.Now().Minute(), int(topicInfo.ExpirationTime.Seconds),
-			int(topicInfo.ExpirationTime.Nanos), time.Now().Location()),
-		AutoRenewPeriod: _DurationFromProtobuf(topicInfo.AutoRenewPeriod),
-		LedgerID:        LedgerID{topicInfo.LedgerId},
+		LedgerID:       LedgerID{topicInfo.LedgerId},
+	}
+
+	if autoRenewPeriod := topicInfo.AutoRenewPeriod; autoRenewPeriod != nil {
+		tempTopicInfo.AutoRenewPeriod = _DurationFromProtobuf(topicInfo.AutoRenewPeriod)
+	}
+
+	if expirationTime := topicInfo.ExpirationTime; expirationTime != nil {
+		tempTopicInfo.ExpirationTime = _TimeFromProtobuf(expirationTime)
 	}
 
 	if adminKey := topicInfo.AdminKey; adminKey != nil {

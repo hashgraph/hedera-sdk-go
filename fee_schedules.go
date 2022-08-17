@@ -34,6 +34,7 @@ type FeeSchedules struct {
 
 func _FeeSchedulesFromProtobuf(feeSchedules *services.CurrentAndNextFeeSchedule) (FeeSchedules, error) {
 	if feeSchedules == nil {
+		println("feeschedules")
 		return FeeSchedules{}, errParameterNull
 	}
 

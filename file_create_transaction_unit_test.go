@@ -34,7 +34,7 @@ import (
 	protobuf "google.golang.org/protobuf/proto"
 )
 
-func TestUnitMockFileCreateTransaction(t *testing.T) {
+func TestUnitFileCreateTransactionMock(t *testing.T) {
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -189,4 +189,67 @@ func TestUnitFileCreateTransactionProtoCheck(t *testing.T) {
 	require.Equal(t, proto.Contents, []byte{5, 6})
 	require.Equal(t, proto.ExpirationTime.String(), _TimeToProtobuf(time.Unix(4, 56)).String())
 	require.Equal(t, proto.Memo, "memo")
+}
+
+func TestUnitFileCreateTransactionCoverage(t *testing.T) {
+	grpc := time.Second * 30
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewFileCreateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetKeys(newKey).
+		SetMemo("yes").
+		SetExpirationTime(time.Unix(23, 32)).
+		SetContents([]byte{0}).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetKeys()
+	transaction.GetMemo()
+	transaction.GetExpirationTime()
+	transaction.GetContents()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case FileCreateTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }
