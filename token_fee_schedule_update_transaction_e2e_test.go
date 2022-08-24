@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+    "fmt"
 
 	"github.com/stretchr/testify/assert"
 
@@ -539,4 +540,220 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
 	require.NoError(t, err)
+}
+
+func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute2(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+    fmt.Printf("Client operator: %v\n", env.Client.GetOperatorAccountID().String())
+
+    key1, err := PrivateKeyGenerateEd25519()
+    require.NoError(t, err)
+    key2, err := PrivateKeyGenerateEd25519()
+    require.NoError(t, err)
+    key3, err := PrivateKeyGenerateEd25519()
+    require.NoError(t, err)
+    key4, err := PrivateKeyGenerateEd25519()
+    require.NoError(t, err)
+
+    resp, err := NewAccountCreateTransaction().
+        SetKey(key1).
+        SetInitialBalance(NewHbar(1)).
+        Execute(env.Client)
+    require.NoError(t, err)
+
+    receipt, err := resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    accountID1 := *receipt.AccountID
+    fmt.Printf("AccountID 1: %v\n", accountID1.String())
+
+    resp, err = NewAccountCreateTransaction().
+        SetKey(key2).
+        SetInitialBalance(NewHbar(1)).
+        Execute(env.Client)
+    require.NoError(t, err)
+
+    receipt, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    accountID2 := *receipt.AccountID
+    fmt.Printf("AccountID 2: %v\n", accountID2.String())
+
+    resp, err = NewAccountCreateTransaction().
+        SetKey(key3).
+        SetInitialBalance(NewHbar(1)).
+        Execute(env.Client)
+    require.NoError(t, err)
+
+    receipt, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    accountID3 := *receipt.AccountID
+    fmt.Printf("AccountID 3 (Treasury): %v\n", accountID3.String())
+
+    resp, err = NewAccountCreateTransaction().
+        SetKey(key4).
+        SetInitialBalance(NewHbar(1)).
+        Execute(env.Client)
+    require.NoError(t, err)
+
+    receipt, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    accountID4 := *receipt.AccountID
+    fmt.Printf("AccountID 4: %v\n", accountID4.String())
+
+	customFee1 := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &accountID1,
+		},
+		Amount:              1,
+		DenominationTokenID: nil,
+	}
+
+    fmt.Printf("Created fixed custom fees of 1 to collector %v\n", accountID1.String())
+
+	customFee2 := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &accountID2,
+		},
+		Amount:              1,
+		DenominationTokenID: nil,
+	}
+
+    fmt.Printf("Created fixed custom fees of 1 to collector %v\n", accountID2.String())
+
+	customFee4 := CustomFixedFee{
+		CustomFee: CustomFee{
+			FeeCollectorAccountID: &accountID4,
+		},
+		Amount:              1,
+		DenominationTokenID: nil,
+	}
+
+    fmt.Printf("Created fixed custom fees of 1 to collector %v\n", accountID4.String())
+
+    customFees := []Fee{customFee1, customFee2, customFee4}
+
+	tokenCreate, err := NewTokenCreateTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetTokenName("ffff").
+		SetTokenSymbol("F").
+		SetDecimals(3).
+		SetInitialSupply(1000000).
+        SetTreasuryAccountID(accountID3).
+        SetAdminKey(env.Client.GetOperatorPublicKey()).
+        SetCustomFees(customFees).
+        FreezeWith(env.Client)
+	require.NoError(t, err)
+
+    tokenCreate.Sign(key3)
+
+    resp, err = tokenCreate.Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	tokenID := *receipt.TokenID
+
+    associate, err := NewTokenAssociateTransaction().
+        SetAccountID(accountID1).
+        SetTokenIDs(tokenID).
+        FreezeWith(env.Client)
+    require.NoError(t, err)
+
+    associate.Sign(key1)
+
+    resp, err = associate.Execute(env.Client)
+
+    _, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    fmt.Printf("Associated account ID 1 %v with token\n", accountID1.String())
+
+    associate, err = NewTokenAssociateTransaction().
+        SetAccountID(accountID2).
+        SetTokenIDs(tokenID).
+        FreezeWith(env.Client)
+    require.NoError(t, err)
+
+    associate.Sign(key2)
+
+    resp, err = associate.Execute(env.Client)
+
+    _, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    fmt.Printf("Associated account ID 2 %v with token\n", accountID2.String())
+
+    associate, err = NewTokenAssociateTransaction().
+        SetAccountID(accountID4).
+        SetTokenIDs(tokenID).
+        FreezeWith(env.Client)
+    require.NoError(t, err)
+
+    associate.Sign(key4)
+
+    resp, err = associate.Execute(env.Client)
+
+    _, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    fmt.Printf("Associated account ID 4 %v with token\n", accountID4.String())
+
+    resp, err = NewTokenAssociateTransaction().
+        SetAccountID(env.Client.GetOperatorAccountID()).
+        SetTokenIDs(tokenID).
+        Execute(env.Client)
+    require.NoError(t, err)
+
+    _, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    fmt.Printf("Associated operator account %v with token\n", env.Client.GetOperatorAccountID().String())
+
+    transfer, err := NewTransferTransaction().
+        AddTokenTransfer(tokenID, accountID3, -10).
+        AddTokenTransfer(tokenID, accountID1, 10).
+        FreezeWith(env.Client)
+    require.NoError(t, err)
+
+    transfer.Sign(key3)
+
+    resp, err = transfer.Execute(env.Client)
+    require.NoError(t, err)
+
+    _, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    fmt.Printf("Transfered 10 token from treasury to account ID %v\n", accountID1.String())
+
+    transfer, err = NewTransferTransaction().
+        AddTokenTransfer(tokenID, accountID1, -8).
+        AddTokenTransfer(tokenID, accountID2, 8).
+        FreezeWith(env.Client)
+    require.NoError(t, err)
+
+    transfer.Sign(key1)
+
+    resp, err = transfer.Execute(env.Client)
+    require.NoError(t, err)
+
+    _, err = resp.GetReceipt(env.Client)
+    require.NoError(t, err)
+
+    fmt.Printf("Transfered 8 token from %v to %v\n", accountID1.String(), accountID2.String())
+
+    record, err := resp.GetRecord(env.Client)
+    require.NoError(t, err)
+
+    for tokenID, transfers := range record.TokenTransfers {
+        fmt.Printf("%v: %+v\n", tokenID.String(), transfers)
+    }
+
+    for _, fee := range record.AssessedCustomFees {
+        fmt.Printf("%v\n", fee.String())
+    }
 }
