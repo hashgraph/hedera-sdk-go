@@ -118,12 +118,14 @@ func (transaction *ContractCreateFlow) GetAutoRenewPeriod() time.Duration {
 	return time.Duration(0)
 }
 
+// Deprecated
 func (transaction *ContractCreateFlow) SetProxyAccountID(proxyAccountID AccountID) *ContractCreateFlow {
 	transaction._RequireNotFrozen()
 	transaction.proxyAccountID = &proxyAccountID
 	return transaction
 }
 
+// Deprecated
 func (transaction *ContractCreateFlow) GetProxyAccountID() AccountID {
 	if transaction.proxyAccountID == nil {
 		return AccountID{}
