@@ -150,7 +150,7 @@ func (id *AccountID) Validate(client *Client) error {
 	if id.AliasKey != nil {
 		return errors.New("Account ID contains alias key, unable to validate")
 	}
-	if !id._IsZero() && client != nil && client.network.ledgerID == nil {
+	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
 		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account))
 		if err != nil {
 			return err

@@ -24,7 +24,9 @@ package hedera
  */
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -94,4 +96,83 @@ func TestUnitLiveHashQuerySetNothing(t *testing.T) {
 	balance.GetPaymentTransactionID()
 	balance.GetQueryPayment()
 	balance.GetMaxQueryPayment()
+}
+
+func TestUnitLiveHashQueryCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 3
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	query := NewLiveHashQuery().
+		SetAccountID(account).
+		SetHash([]byte{1}).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetNodeAccountIDs(nodeAccountID).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(23)).
+		SetQueryPayment(NewHbar(3)).
+		SetGrpcDeadline(&grpc)
+
+	err := query._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	query.GetNodeAccountIDs()
+	query.GetMaxBackoff()
+	query.GetMinBackoff()
+	query._GetLogID()
+	query.GetAccountID()
+	query.GetGetHash()
+	query.GetQueryPayment()
+	query.GetMaxQueryPayment()
+}
+
+func TestUnitLiveHashQueryMock(t *testing.T) {
+	responses := [][]interface{}{{
+		&services.Response{
+			Response: &services.Response_CryptoGetLiveHash{
+				CryptoGetLiveHash: &services.CryptoGetLiveHashResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptoGetLiveHash{
+				CryptoGetLiveHash: &services.CryptoGetLiveHashResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_CryptoGetLiveHash{
+				CryptoGetLiveHash: &services.CryptoGetLiveHashResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_ANSWER_ONLY, Cost: 2},
+					LiveHash: &services.LiveHash{
+						Hash:      []byte{1},
+						AccountId: &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 3}},
+					},
+				},
+			},
+		},
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	query := NewLiveHashQuery().
+		SetAccountID(AccountID{Account: 3}).
+		SetHash([]byte{1}).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetMaxQueryPayment(NewHbar(1))
+
+	_, err := query.GetCost(client)
+	require.NoError(t, err)
+
+	_, err = query.Execute(client)
+	require.NoError(t, err)
 }

@@ -45,3 +45,9 @@ func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) A
 		Hbars: HbarFromTinybar(int64(pb.Balance)),
 	}
 }
+
+func (balance *AccountBalance) _ToProtobuf() *services.CryptoGetAccountBalanceResponse {
+	return &services.CryptoGetAccountBalanceResponse{
+		Balance: uint64(balance.Hbars.AsTinybar()),
+	}
+}

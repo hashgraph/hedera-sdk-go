@@ -65,7 +65,7 @@ func TestUnitContractExecuteTransactionValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockContractExecuteTransaction(t *testing.T) {
+func TestUnitContractExecuteTransactionMock(t *testing.T) {
 	params := NewContractFunctionParameters().AddString("new message")
 
 	call := func(request *services.Transaction) *services.TransactionResponse {
@@ -222,4 +222,69 @@ func TestUnitContractExecuteTransactionProtoCheck(t *testing.T) {
 	require.Equal(t, proto.Gas, int64(100000))
 	require.Equal(t, proto.Amount, NewHbar(1).AsTinybar())
 	require.Equal(t, proto.FunctionParameters, []byte{34})
+}
+
+func TestUnitContractExecuteTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	contract := ContractID{Contract: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewContractExecuteTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetContractID(contract).
+		SetGas(100000).
+		SetFunctionParameters([]byte{34}).
+		SetPayableAmount(NewHbar(1)).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction._ValidateNetworkOnIDs(client)
+
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetGas()
+
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case ContractExecuteTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }

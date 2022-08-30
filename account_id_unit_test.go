@@ -33,6 +33,28 @@ import (
 
 func TestUnitAccountIDChecksumFromString(t *testing.T) {
 	id, err := AccountIDFromString("0.0.123-rmkyk")
+
+	client := ClientForTestnet()
+	id.ToStringWithChecksum(client)
+	id.GetChecksum()
+	sol := id.ToSolidityAddress()
+	AccountIDFromSolidityAddress(sol)
+	id.Validate(client)
+	evmID, err := AccountIDFromEvmAddress(0, 0, "ace082947b949651c703ff0f02bc1541")
+	require.NoError(t, err)
+	pb := evmID._ToProtobuf()
+	_AccountIDFromProtobuf(pb)
+
+	idByte := id.ToBytes()
+	AccountIDFromBytes(idByte)
+
+	key, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	alias := key.ToAccountID(0, 0)
+	pb = alias._ToProtobuf()
+	_AccountIDFromProtobuf(pb)
+
 	require.NoError(t, err)
 	assert.Equal(t, id.Account, uint64(123))
 }

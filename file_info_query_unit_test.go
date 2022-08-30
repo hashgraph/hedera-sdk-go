@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 
@@ -62,7 +63,7 @@ func TestUnitFileInfoQueryValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockFileInfoQuery(t *testing.T) {
+func TestUnitFileInfoQueryMock(t *testing.T) {
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 	key := newKey.PublicKey().BytesRaw()
@@ -71,7 +72,14 @@ func TestUnitMockFileInfoQuery(t *testing.T) {
 		&services.Response{
 			Response: &services.Response_FileGetInfo{
 				FileGetInfo: &services.FileGetInfoResponse{
-					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_FileGetInfo{
+				FileGetInfo: &services.FileGetInfoResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
 				},
 			},
 		},
@@ -104,12 +112,15 @@ func TestUnitMockFileInfoQuery(t *testing.T) {
 	client, server := NewMockClientAndServer(responses)
 	defer server.Close()
 
-	result, err := NewFileInfoQuery().
+	query := NewFileInfoQuery().
 		SetFileID(FileID{File: 3}).
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		SetMaxQueryPayment(NewHbar(1)).
-		SetQueryPayment(HbarFromTinybar(25)).
-		Execute(client)
+		SetMaxQueryPayment(NewHbar(1))
+
+	_, err = query.GetCost(client)
+	require.NoError(t, err)
+
+	result, err := query.Execute(client)
 	require.NoError(t, err)
 
 	require.Equal(t, result.Keys.keys[0].String(), newKey.PublicKey().String())
@@ -149,4 +160,36 @@ func TestUnitFileInfoQuerySetNothing(t *testing.T) {
 	balance.GetPaymentTransactionID()
 	balance.GetQueryPayment()
 	balance.GetMaxQueryPayment()
+}
+
+func TestUnitFileInfoQueryCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 3
+	file := FileID{File: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	query := NewFileInfoQuery().
+		SetFileID(file).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetNodeAccountIDs(nodeAccountID).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(23)).
+		SetQueryPayment(NewHbar(3)).
+		SetGrpcDeadline(&grpc)
+
+	err := query._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	query.GetNodeAccountIDs()
+	query.GetMaxBackoff()
+	query.GetMinBackoff()
+	query._GetLogID()
+	query.GetFileID()
+	query.GetQueryPayment()
+	query.GetMaxQueryPayment()
 }

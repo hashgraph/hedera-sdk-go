@@ -24,6 +24,8 @@ package hedera
  */
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
+	protobuf "google.golang.org/protobuf/proto"
 	"testing"
 	"time"
 
@@ -128,4 +130,125 @@ func TestUnitLiveHashAddTransactionSetNothing(t *testing.T) {
 	transaction.GetKeys()
 	transaction.GetRegenerateTransactionID()
 	transaction.GetHash()
+}
+
+func TestUnitLiveHashFromBytes(t *testing.T) {
+	liveHash := LiveHash{
+		AccountID: AccountID{Account: 3},
+		Hash:      []byte{1},
+	}
+
+	byt := liveHash.ToBytes()
+	fromBytes, err := LiveHashFromBytes(byt)
+	require.NoError(t, err)
+	require.Equal(t, fromBytes.AccountID.Account, uint64(3))
+}
+
+func TestUnitLiveHashAddTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewLiveHashAddTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetKeys(newKey).
+		SetHash([]byte{1}).
+		SetAccountID(account).
+		SetDuration(time.Second * 30).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction._ValidateNetworkOnIDs(client)
+
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetKeys()
+	transaction.GetAccountID()
+	transaction.GetHash()
+	transaction.GetKeys()
+	transaction.GetDuration()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case LiveHashAddTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
+}
+
+func TestUnitLiveHashAddTransactionMock(t *testing.T) {
+	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
+	require.NoError(t, err)
+
+	call := func(request *services.Transaction) *services.TransactionResponse {
+		require.NotEmpty(t, request.SignedTransactionBytes)
+		signedTransaction := services.SignedTransaction{}
+		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
+
+		require.NotEmpty(t, signedTransaction.BodyBytes)
+		transactionBody := services.TransactionBody{}
+		_ = protobuf.Unmarshal(signedTransaction.BodyBytes, &transactionBody)
+
+		require.NotNil(t, transactionBody.TransactionID)
+		transactionId := transactionBody.TransactionID.String()
+		require.NotEqual(t, "", transactionId)
+
+		sigMap := signedTransaction.GetSigMap()
+		require.NotNil(t, sigMap)
+
+		return &services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		}
+	}
+	responses := [][]interface{}{{
+		call,
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	freez, err := NewLiveHashAddTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetKeys(newKey).
+		SetAccountID(AccountID{Account: 3}).
+		SetHash([]byte{123}).
+		FreezeWith(client)
+	require.NoError(t, err)
+
+	_, err = freez.Sign(newKey).Execute(client)
+	require.NoError(t, err)
 }

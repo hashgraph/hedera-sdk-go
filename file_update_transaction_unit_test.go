@@ -66,7 +66,7 @@ func TestUnitFileUpdateTransactionValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockFileUpdateTransaction(t *testing.T) {
+func TestUnitFileUpdateTransactionMock(t *testing.T) {
 	newKey, err := PrivateKeyFromStringEd25519("302e020100300506032b657004220420a869f4c6191b9c8c99933e7f6b6611711737e4b1a1a5a4cb5370e719a1f6df98")
 	require.NoError(t, err)
 
@@ -235,4 +235,74 @@ func TestUnitFileUpdateTransactionProtoCheck(t *testing.T) {
 	require.Equal(t, proto.Keys.Keys[0].String(), newKey._ToProtoKey().String())
 	require.Equal(t, proto.Contents, []byte{5, 6})
 	require.Equal(t, proto.FileID.String(), fileID._ToProtobuf().String())
+}
+
+func TestUnitFileUpdateTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	file := FileID{File: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewFileUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetKeys(newKey).
+		SetFileMemo("yes").
+		SetExpirationTime(time.Unix(23, 32)).
+		SetContents([]byte{0}).
+		SetFileID(file).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction._ValidateNetworkOnIDs(client)
+
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetKeys()
+	transaction.GetFileMemo()
+	transaction.GetExpirationTime()
+	transaction.GetContents()
+	transaction.GetExpirationTime()
+	transaction.GetFileID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case FileUpdateTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }

@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"testing"
+	"time"
 
 	protobuf "google.golang.org/protobuf/proto"
 
@@ -64,12 +65,19 @@ func TestUnitContractInfoQueryValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockContractInfoQuery(t *testing.T) {
+func TestUnitContractInfoQueryMock(t *testing.T) {
 	responses := [][]interface{}{{
 		&services.Response{
 			Response: &services.Response_ContractGetInfo{
 				ContractGetInfo: &services.ContractGetInfoResponse{
-					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY, ResponseType: services.ResponseType_ANSWER_ONLY},
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_ContractGetInfo{
+				ContractGetInfo: &services.ContractGetInfoResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
 				},
 			},
 		},
@@ -99,12 +107,15 @@ func TestUnitMockContractInfoQuery(t *testing.T) {
 	client, server := NewMockClientAndServer(responses)
 	defer server.Close()
 
-	result, err := NewContractInfoQuery().
+	query := NewContractInfoQuery().
 		SetContractID(ContractID{Contract: 3}).
 		SetMaxQueryPayment(NewHbar(1)).
-		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 3}}).
-		Execute(client)
+		SetNodeAccountIDs([]AccountID{{Account: 3}})
+
+	_, err := query.GetCost(client)
+	require.NoError(t, err)
+
+	result, err := query.Execute(client)
 	require.NoError(t, err)
 
 	require.Equal(t, result.ContractID.Contract, uint64(3))
@@ -112,7 +123,7 @@ func TestUnitMockContractInfoQuery(t *testing.T) {
 	require.Equal(t, result.ContractMemo, "yes")
 }
 
-func TestUnitMockContractInfoQueryGetTransactionID(t *testing.T) {
+func TestUnitContractInfoQueryGetTransactionIDMock(t *testing.T) {
 	transactionID := TransactionIDGenerate(AccountID{Account: 123})
 	call := func(request *services.Query) *services.Response {
 		if query, ok := request.Query.(*services.Query_ContractGetInfo); ok {
@@ -191,15 +202,32 @@ func TestUnitContractInfoQueryGet(t *testing.T) {
 	balance.GetMaxQueryPayment()
 }
 
-func TestUnitContractInfoQuerySetNothing(t *testing.T) {
-	balance := NewContractInfoQuery()
+func TestUnitContractInfoQueryCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 3
+	contract := ContractID{Contract: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	balance.GetContractID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	query := NewContractInfoQuery().
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetContractID(contract).
+		SetNodeAccountIDs(nodeAccountID).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(23)).
+		SetQueryPayment(NewHbar(3)).
+		SetGrpcDeadline(&grpc)
+
+	err := query._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	query.GetNodeAccountIDs()
+	query.GetMaxBackoff()
+	query.GetMinBackoff()
+	query._GetLogID()
+	query.GetContractID()
 }

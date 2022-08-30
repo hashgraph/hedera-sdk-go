@@ -77,7 +77,7 @@ func TestUnitContractUpdateTransactionValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockContractUpdateTransaction(t *testing.T) {
+func TestUnitContractUpdateTransactionMock(t *testing.T) {
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
@@ -250,4 +250,85 @@ func TestUnitContractUpdateTransactionProtoCheck(t *testing.T) {
 	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(time.Second*3).String())
 	require.Equal(t, proto.ExpirationTime.String(), _TimeToProtobuf(time.Unix(34, 3)).String())
 	require.Equal(t, proto.AutoRenewAccountId.String(), accountID._ToProtobuf().String())
+}
+
+func TestUnitContractUpdateTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	file := FileID{File: 3, checksum: &checksum}
+	account := AccountID{Account: 3, checksum: &checksum}
+	contract := ContractID{Contract: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewContractUpdateTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetAdminKey(newKey.PublicKey()).
+		SetBytecodeFileID(file).
+		SetContractMemo("yes").
+		SetStakedAccountID(account).
+		SetStakedNodeID(3).
+		SetContractID(contract).
+		SetProxyAccountID(account).
+		SetDeclineStakingReward(true).
+		SetAutoRenewPeriod(time.Second * 30).
+		SetExpirationTime(time.Unix(345, 566)).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction._ValidateNetworkOnIDs(client)
+
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	transaction.GetStakedAccountID()
+	transaction.GetStakedNodeID()
+	transaction.GetProxyAccountID()
+	transaction.GetBytecodeFileID()
+	transaction.GetAutoRenewPeriod()
+	transaction.GetAutoRenewAccountID()
+	transaction.GetExpirationTime()
+	transaction.GetDeclineStakingReward()
+	transaction.ClearStakedAccountID()
+	transaction.ClearStakedNodeID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case ContractUpdateTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }

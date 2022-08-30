@@ -41,23 +41,17 @@ func _TransactionFeeScheduleFromProtobuf(txFeeSchedule *services.TransactionFeeS
 
 	feeData := make([]*FeeData, 0)
 
-	for _, data := range txFeeSchedule.GetFees() {
-		temp, err := _FeeDataFromProtobuf(data)
+	for _, d := range txFeeSchedule.GetFees() {
+		temp, err := _FeeDataFromProtobuf(d)
 		if err != nil {
 			return TransactionFeeSchedule{}, err
 		}
 		feeData = append(feeData, &temp)
 	}
 
-	singleFeeData, err := _FeeDataFromProtobuf(txFeeSchedule.GetFeeData()) // nolint
-	if err != nil {
-		return TransactionFeeSchedule{}, err
-	}
-
 	return TransactionFeeSchedule{
 		RequestType: RequestType(txFeeSchedule.GetHederaFunctionality()),
 		Fees:        feeData,
-		FeeData:     &singleFeeData,
 	}, nil
 }
 

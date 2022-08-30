@@ -24,7 +24,9 @@ package hedera
  */
 
 import (
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -92,4 +94,100 @@ func TestUnitTokenNftInfoQueryNothingSet(t *testing.T) {
 	balance.GetPaymentTransactionID()
 	balance.GetQueryPayment()
 	balance.GetMaxQueryPayment()
+}
+
+func TestUnitTokenNftInfoQueryCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 3
+	token := TokenID{Token: 3, checksum: &checksum}
+	account := AccountID{Account: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	query := NewTokenNftInfoQuery().
+		SetTokenID(token).
+		SetNftID(token.Nft(334)).
+		SetAccountID(account).
+		SetEnd(5).
+		SetStart(4).
+		ByAccountID(account).
+		ByTokenID(token).
+		ByNftID(token.Nft(334)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetNodeAccountIDs(nodeAccountID).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(23)).
+		SetQueryPayment(NewHbar(3)).
+		SetGrpcDeadline(&grpc)
+
+	err := query._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	query.GetNodeAccountIDs()
+	query.GetMaxBackoff()
+	query.GetMinBackoff()
+	query._GetLogID()
+	query.GetTokenID()
+	query.GetAccountID()
+	query.GetNftID()
+	query.GetStart()
+	query.GetEnd()
+	query._BuildByNft()
+	query.GetQueryPayment()
+	query.GetMaxQueryPayment()
+}
+
+func TestUnitTokenNftInfoQueryMock(t *testing.T) {
+	responses := [][]interface{}{{
+		&services.Response{
+			Response: &services.Response_TokenGetNftInfo{
+				TokenGetNftInfo: &services.TokenGetNftInfoResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_TokenGetNftInfo{
+				TokenGetNftInfo: &services.TokenGetNftInfoResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_COST_ANSWER, Cost: 2},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_TokenGetNftInfo{
+				TokenGetNftInfo: &services.TokenGetNftInfoResponse{
+					Header: &services.ResponseHeader{NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK, ResponseType: services.ResponseType_ANSWER_ONLY, Cost: 2},
+					Nft: &services.TokenNftInfo{
+						NftID:        nil,
+						AccountID:    nil,
+						CreationTime: nil,
+						Metadata:     nil,
+						LedgerId:     nil,
+						SpenderId:    nil,
+					},
+				},
+			},
+		},
+	}}
+
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+
+	checksum := "dmqui"
+	token := TokenID{Token: 3, checksum: &checksum}
+
+	query := NewTokenNftInfoQuery().
+		SetNftID(token.Nft(43)).
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		SetMaxQueryPayment(NewHbar(1))
+
+	_, err := query.GetCost(client)
+	require.NoError(t, err)
+
+	_, err = query.Execute(client)
+	require.NoError(t, err)
 }

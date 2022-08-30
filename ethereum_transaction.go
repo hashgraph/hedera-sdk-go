@@ -35,6 +35,11 @@ func _EthereumTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 	}
 }
 
+func (transaction *EthereumTransaction) SetGrpcDeadline(deadline *time.Duration) *EthereumTransaction {
+	transaction.Transaction.SetGrpcDeadline(deadline)
+	return transaction
+}
+
 // SetEthereumData
 // The raw Ethereum transaction (RLP encoded type 0, 1, and 2). Complete
 // unless the callData field is set.

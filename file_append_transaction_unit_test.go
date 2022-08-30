@@ -65,7 +65,7 @@ func TestUnitFileAppendTransactionValidateWrong(t *testing.T) {
 	}
 }
 
-func TestUnitMockFileAppendTransaction(t *testing.T) {
+func TestUnitFileAppendTransactionMock(t *testing.T) {
 	fil := []byte(" world!")
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
@@ -203,7 +203,7 @@ func TestUnitFileAppendTransactionGet(t *testing.T) {
 //	transaction.GetMaxChunkSize()
 //}
 
-func TestUnitMockFileAppendTransactionBigContents(t *testing.T) {
+func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 	var previousTransactionID string
 	var previousContent []byte
 
@@ -284,4 +284,68 @@ func TestUnitMockFileAppendTransactionBigContents(t *testing.T) {
 		SetContents([]byte(bigContents2)).
 		Execute(client)
 	require.NoError(t, err)
+}
+
+func TestUnitFileAppendTransactionCoverage(t *testing.T) {
+	checksum := "dmqui"
+	grpc := time.Second * 30
+	file := FileID{File: 3, checksum: &checksum}
+	nodeAccountID := []AccountID{{Account: 10}}
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	newKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	transaction, err := NewFileAppendTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		SetFileID(file).
+		SetContents([]byte{1}).
+		SetMaxChunkSize(5).
+		SetGrpcDeadline(&grpc).
+		SetMaxTransactionFee(NewHbar(3)).
+		SetMaxRetry(3).
+		SetMaxBackoff(time.Second * 30).
+		SetMinBackoff(time.Second * 10).
+		SetTransactionMemo("no").
+		SetTransactionValidDuration(time.Second * 30).
+		SetRegenerateTransactionID(false).
+		Freeze()
+	require.NoError(t, err)
+
+	transaction._ValidateNetworkOnIDs(client)
+
+	_, err = transaction.Schedule()
+	require.NoError(t, err)
+	transaction.GetTransactionID()
+	transaction.GetNodeAccountIDs()
+	transaction.GetMaxRetry()
+	transaction.GetMaxTransactionFee()
+	transaction.GetMaxBackoff()
+	transaction.GetMinBackoff()
+	transaction.GetContents()
+	transaction.GetMaxChunkSize()
+	transaction.GetRegenerateTransactionID()
+	byt, err := transaction.ToBytes()
+	require.NoError(t, err)
+	txFromBytes, err := TransactionFromBytes(byt)
+	require.NoError(t, err)
+	sig, err := newKey.SignTransaction(&transaction.Transaction)
+	require.NoError(t, err)
+
+	_, err = transaction.GetTransactionHash()
+	require.NoError(t, err)
+	transaction.GetMaxTransactionFee()
+	transaction.GetTransactionMemo()
+	transaction.GetRegenerateTransactionID()
+	_, err = transaction.GetSignatures()
+	require.NoError(t, err)
+	transaction._GetLogID()
+	switch b := txFromBytes.(type) {
+	case FileAppendTransaction:
+		b.AddSignature(newKey.PublicKey(), sig)
+	}
 }

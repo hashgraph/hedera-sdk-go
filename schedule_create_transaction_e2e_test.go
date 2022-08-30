@@ -3,6 +3,11 @@
 
 package hedera
 
+import (
+	"github.com/stretchr/testify/require"
+	"time"
+)
+
 /*-
  *
  * Hedera Go SDK
@@ -23,72 +28,101 @@ package hedera
  *
  */
 
-//
-// import (
-//	"fmt"
-//	"github.com/stretchr/testify/require"
-//	"testing"
-//)
-//
-// func DisabledTestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
-//	env := NewIntegrationTestEnv(t)
-//
-//	newKey, err := PrivateKeyGenerateEd25519()
-//	require.NoError(t, err)
-//
-//	newBalance := NewHbar(1)
-//
-//	assert.Equal(t, HbarUnits.Hbar._NumberOfTinybar(), newBalance.tinybar)
-//
-//	transactionID := TransactionIDGenerate(env.Client.GetOperatorAccountID())
-//
-//	tx := NewAccountCreateTransaction().
-//		SetTransactionID(transactionID).
-//		SetKey(newKey.PublicKey()).
-//		SetNodeAccountIDs(env.NodeAccountIDs).
-//		SetMaxTransactionFee(NewHbar(2)).
-//		SetInitialBalance(newBalance)
-//
-//	require.NoError(t, err)
-//
-//	scheduleTx, err := tx.Schedule()
-//	require.NoError(t, err)
-//
-//	resp, err := scheduleTx.
-//		SetPayerAccountID(env.Client.GetOperatorAccountID()).
-//		SetAdminKey(env.Client.GetOperatorPublicKey()).
-//		Execute(env.Client)
-//	require.NoError(t, err)
-//
-//	receipt, err := resp.GetReceipt(env.Client)
-//	require.NoError(t, err)
-//
-//	info, err := NewScheduleInfoQuery().
-//		SetScheduleID(*receipt.ScheduleID).
-//		SetQueryPayment(NewHbar(2)).
-//		Execute(env.Client)
-//	require.NoError(t, err)
-//
-//	infoTx, err := info.GetScheduledTransaction()
-//	require.NoError(t, err)
-//	assert.NotNil(t, infoTx)
-//
-//	tx2, err := NewScheduleDeleteTransaction().
-//		SetScheduleID(*receipt.ScheduleID).
-//		FreezeWith(env.Client)
-//	require.NoError(t, err)
-//
-//	resp, err = tx2.
-//		Sign(newKey).
-//		Execute(env.Client)
-//	require.NoError(t, err)
-//
-//	_, err = resp.GetReceipt(env.Client)
-//	assert.Error(t, err)
-//	if err != nil {
-//		assert.Equal(t, "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED", err.Error())
-//	}
-//}
+import (
+	"testing"
+)
+
+func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	keys := make([]PrivateKey, 2)
+	pubKeys := make([]PublicKey, 2)
+
+	for i := range keys {
+		newKey, err := PrivateKeyGenerateEd25519()
+		require.NoError(t, err)
+
+		keys[i] = newKey
+		pubKeys[i] = newKey.PublicKey()
+	}
+
+	keyList := NewKeyList().
+		AddAllPublicKeys(pubKeys)
+
+	createResponse, err := NewAccountCreateTransaction().
+		SetKey(keyList).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetInitialBalance(NewHbar(10)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+
+	transactionID := TransactionIDGenerate(env.OperatorID)
+	newAccountID := *transactionReceipt.AccountID
+
+	transferTx := NewTransferTransaction().
+		SetTransactionID(transactionID).
+		AddHbarTransfer(newAccountID, HbarFrom(-1, HbarUnits.Hbar)).
+		AddHbarTransfer(env.Client.GetOperatorAccountID(), HbarFrom(1, HbarUnits.Hbar))
+
+	scheduled, err := transferTx.Schedule()
+	require.NoError(t, err)
+
+	scheduleResponse, err := scheduled.
+		SetExpirationTime(time.Now().Add(30 * time.Minute)).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	scheduleRecord, err := scheduleResponse.GetRecord(env.Client)
+	require.NoError(t, err)
+
+	scheduleID := *scheduleRecord.Receipt.ScheduleID
+
+	signTransaction, err := NewScheduleSignTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetScheduleID(scheduleID).
+		FreezeWith(env.Client)
+
+	signTransaction.Sign(keys[0])
+
+	resp, err := signTransaction.Execute(env.Client)
+	require.NoError(t, err)
+
+	// Getting the receipt to make sure the signing executed properly
+	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	// Making sure the scheduled transaction executed properly with schedule info query
+	info, err := NewScheduleInfoQuery().
+		SetScheduleID(scheduleID).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	signTransaction, err = NewScheduleSignTransaction().
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		SetScheduleID(scheduleID).
+		FreezeWith(env.Client)
+
+	// Signing the scheduled transaction
+	signTransaction.Sign(keys[1])
+
+	resp, err = signTransaction.Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	info, err = NewScheduleInfoQuery().
+		SetScheduleID(scheduleID).
+		SetNodeAccountIDs(env.NodeAccountIDs).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	require.NotNil(t, info.ExecutedAt)
+}
+
 //
 // func DisabledTestIntegrationScheduleCreateTransactionMultiSign(t *testing.T) {
 //	env := NewIntegrationTestEnv(t)

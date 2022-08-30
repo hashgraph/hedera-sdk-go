@@ -31,7 +31,9 @@ type LiveHash struct {
 	AccountID AccountID
 	Hash      []byte
 	Keys      KeyList
-	Duration  time.Time
+	// Deprecated
+	Duration         time.Time
+	LiveHashDuration time.Duration
 }
 
 func (liveHash *LiveHash) _ToProtobuf() *services.LiveHash {
@@ -39,9 +41,7 @@ func (liveHash *LiveHash) _ToProtobuf() *services.LiveHash {
 		AccountId: liveHash.AccountID._ToProtobuf(),
 		Hash:      liveHash.Hash,
 		Keys:      liveHash.Keys._ToProtoKeyList(),
-		Duration: &services.Duration{
-			Seconds: int64(liveHash.Duration.Second()),
-		},
+		Duration:  _DurationToProtobuf(liveHash.LiveHashDuration),
 	}
 }
 
@@ -49,9 +49,14 @@ func _LiveHashFromProtobuf(hash *services.LiveHash) (LiveHash, error) {
 	if hash == nil {
 		return LiveHash{}, errParameterNull
 	}
-	keyList, err := _KeyListFromProtobuf(hash.Keys)
-	if err != nil {
-		return LiveHash{}, err
+
+	var keyList KeyList
+	var err error
+	if hash.Keys != nil {
+		keyList, err = _KeyListFromProtobuf(hash.Keys)
+		if err != nil {
+			return LiveHash{}, err
+		}
 	}
 
 	accountID := AccountID{}
@@ -59,13 +64,16 @@ func _LiveHashFromProtobuf(hash *services.LiveHash) (LiveHash, error) {
 		accountID = *_AccountIDFromProtobuf(hash.AccountId)
 	}
 
+	var duration time.Duration
+	if hash.Duration != nil {
+		duration = _DurationFromProtobuf(hash.Duration)
+	}
+
 	return LiveHash{
-		AccountID: accountID,
-		Hash:      hash.Hash,
-		Keys:      keyList,
-		Duration: time.Date(time.Now().Year(), time.Now().Month(),
-			time.Now().Day(), time.Now().Hour(), time.Now().Minute(),
-			int(hash.Duration.Seconds), time.Now().Nanosecond(), time.Now().Location()),
+		AccountID:        accountID,
+		Hash:             hash.Hash,
+		Keys:             keyList,
+		LiveHashDuration: duration,
 	}, nil
 }
 

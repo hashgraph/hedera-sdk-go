@@ -136,23 +136,47 @@ func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetRecei
 
 func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptResponse {
 	receiptFinal := services.TransactionReceipt{
-		Status:     services.ResponseCodeEnum(receipt.Status),
-		AccountID:  receipt.AccountID._ToProtobuf(),
-		FileID:     receipt.FileID._ToProtobuf(),
-		ContractID: receipt.ContractID._ToProtobuf(),
-		ExchangeRate: &services.ExchangeRateSet{
-			CurrentRate: receipt.ExchangeRate._ToProtobuf(),
-			NextRate:    receipt.ExchangeRate._ToProtobuf(),
-		},
-		TopicID:                 receipt.TopicID._ToProtobuf(),
+		Status:                  services.ResponseCodeEnum(receipt.Status),
 		TopicSequenceNumber:     receipt.TopicSequenceNumber,
 		TopicRunningHash:        receipt.TopicRunningHash,
 		TopicRunningHashVersion: receipt.TopicRunningHashVersion,
-		TokenID:                 receipt.TokenID._ToProtobuf(),
 		NewTotalSupply:          receipt.TotalSupply,
-		ScheduleID:              receipt.ScheduleID._ToProtobuf(),
-		ScheduledTransactionID:  receipt.ScheduledTransactionID._ToProtobuf(),
 		SerialNumbers:           receipt.SerialNumbers,
+	}
+
+	if receipt.ExchangeRate != nil {
+		receiptFinal.ExchangeRate = &services.ExchangeRateSet{
+			CurrentRate: receipt.ExchangeRate._ToProtobuf(),
+			NextRate:    receipt.ExchangeRate._ToProtobuf(),
+		}
+	}
+
+	if receipt.TopicID != nil {
+		receiptFinal.TopicID = receipt.TopicID._ToProtobuf()
+	}
+
+	if receipt.FileID != nil {
+		receiptFinal.FileID = receipt.FileID._ToProtobuf()
+	}
+
+	if receipt.ContractID != nil {
+		receiptFinal.ContractID = receipt.ContractID._ToProtobuf()
+	}
+
+	if receipt.AccountID != nil {
+		receiptFinal.AccountID = receipt.AccountID._ToProtobuf()
+	}
+
+	if receipt.TokenID != nil {
+		receiptFinal.TokenID = receipt.TokenID._ToProtobuf()
+	}
+
+	if receipt.ScheduleID != nil {
+		receiptFinal.ScheduleID = receipt.ScheduleID._ToProtobuf()
+	}
+
+	if receipt.ScheduledTransactionID != nil {
+		receiptFinal.ScheduledTransactionID = receipt.ScheduledTransactionID._ToProtobuf()
 	}
 
 	childReceipts := make([]*services.TransactionReceipt, 0)

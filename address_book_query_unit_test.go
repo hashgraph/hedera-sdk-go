@@ -1,4 +1,12 @@
+//go:build all || unit
+// +build all unit
+
 package hedera
+
+import (
+	"github.com/stretchr/testify/require"
+	"testing"
+)
 
 /*-
  *
@@ -20,7 +28,22 @@ package hedera
  *
  */
 
-type ProxyStaker struct {
-	AccountID AccountID
-	Amount    Hbar
+func TestUnitAddressBookQueryCoverage(t *testing.T) {
+	checksum := "dmqui"
+	file := FileID{File: 3, checksum: &checksum}
+
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+
+	query := NewAddressBookQuery().
+		SetFileID(file).
+		SetLimit(3).
+		SetMaxAttempts(4)
+
+	err := query._ValidateNetworkOnIDs(client)
+
+	require.NoError(t, err)
+	query.GetFileID()
+	query.GetLimit()
+	query.GetFileID()
 }

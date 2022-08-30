@@ -36,6 +36,22 @@ import (
 func TestUnitContractIDChecksumFromString(t *testing.T) {
 	id, err := ContractIDFromString("0.0.123-rmkyk")
 	require.NoError(t, err)
+
+	client := ClientForTestnet()
+	id.ToStringWithChecksum(*client)
+	sol := id.ToSolidityAddress()
+	ContractIDFromSolidityAddress(sol)
+	id.Validate(client)
+	evmID, err := ContractIDFromEvmAddress(0, 0, "ace082947b949651c703ff0f02bc1541")
+	require.NoError(t, err)
+	pb := evmID._ToProtobuf()
+	_ContractIDFromProtobuf(pb)
+
+	idByte := id.ToBytes()
+	ContractIDFromBytes(idByte)
+
+	id._ToProtoKey()
+
 	assert.Equal(t, id.Contract, uint64(123))
 }
 

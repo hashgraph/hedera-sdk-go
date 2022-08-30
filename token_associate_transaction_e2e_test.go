@@ -53,6 +53,7 @@ func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
+	println(env.Client.GetOperatorAccountID().String())
 
 	resp, err = NewTokenCreateTransaction().
 		SetTokenName("ffff").
@@ -91,19 +92,17 @@ func TestIntegrationTokenAssociateTransactionCanExecute(t *testing.T) {
 	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
+	dissociate, err := NewTokenDissociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
+		SetAccountID(accountID).
+		SetTokenIDs(tokenID).
+		FreezeWith(env.Client)
 	require.NoError(t, err)
 
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if tokenID.String() == relation.TokenID.String() {
-			check = true
-		}
-	}
-	assert.Truef(t, check, "token associate transaction didnt work")
+	resp, err = dissociate.
+		Sign(newKey).
+		Execute(env.Client)
+	require.NoError(t, err)
 
 	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
@@ -185,20 +184,6 @@ func TestIntegrationTokenAssociateTransactionNoTokenID(t *testing.T) {
 
 	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if tokenID.String() == relation.TokenID.String() {
-			check = true
-		}
-	}
-	assert.Falsef(t, check, "token associate transaction somehow worked")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).

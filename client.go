@@ -558,12 +558,10 @@ func (client *Client) GetNetworkName() *NetworkName {
 	return client.network._GetNetworkName()
 }
 
-// Deprecated: Use SetLedgerID instead
 func (client *Client) SetLedgerID(id LedgerID) {
 	client.network._SetLedgerID(id)
 }
 
-// Deprecated: Use SetLedgerID instead
 func (client *Client) GetLedgerID() *LedgerID {
 	return client.network._GetLedgerID()
 }

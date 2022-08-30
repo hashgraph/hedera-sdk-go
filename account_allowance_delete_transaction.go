@@ -122,28 +122,6 @@ func (transaction *AccountAllowanceDeleteTransaction) _ValidateNetworkOnIDs(clie
 		return nil
 	}
 
-	for _, ap := range transaction.hbarWipe {
-		if ap.OwnerAccountID != nil {
-			if err := ap.OwnerAccountID.ValidateChecksum(client); err != nil {
-				return err
-			}
-		}
-	}
-
-	for _, ap := range transaction.tokenWipe {
-		if ap.TokenID != nil {
-			if err := ap.TokenID.ValidateChecksum(client); err != nil {
-				return err
-			}
-		}
-
-		if ap.OwnerAccountID != nil {
-			if err := ap.OwnerAccountID.ValidateChecksum(client); err != nil {
-				return err
-			}
-		}
-	}
-
 	for _, ap := range transaction.nftWipe {
 		if ap.TokenID != nil {
 			if err := ap.TokenID.ValidateChecksum(client); err != nil {
