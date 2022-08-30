@@ -30,7 +30,7 @@ type TokenRelationship struct {
 	AutomaticAssociation bool
 }
 
-//func _TokenRelationshipFromProtobuf(pb *services.TokenRelationship) TokenRelationship {
+// func _TokenRelationshipFromProtobuf(pb *services.TokenRelationship) TokenRelationship {
 //	if pb == nil {
 //		return TokenRelationship{}
 //	}
@@ -51,7 +51,7 @@ type TokenRelationship struct {
 //	}
 //}
 //
-//func (relationship *TokenRelationship) _ToProtobuf() *services.TokenRelationship {
+// func (relationship *TokenRelationship) _ToProtobuf() *services.TokenRelationship {
 //	var freezeStatus services.TokenFreezeStatus
 //	switch *relationship.FreezeStatus {
 //	case true:
@@ -83,7 +83,7 @@ type TokenRelationship struct {
 //	}
 //}
 //
-//func (relationship TokenRelationship) ToBytes() []byte {
+// func (relationship TokenRelationship) ToBytes() []byte {
 //	data, err := protobuf.Marshal(relationship._ToProtobuf())
 //	if err != nil {
 //		return make([]byte, 0)
@@ -92,7 +92,7 @@ type TokenRelationship struct {
 //	return data
 //}
 //
-//func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
+// func TokenRelationshipFromBytes(data []byte) (TokenRelationship, error) {
 //	if data == nil {
 //		return TokenRelationship{}, errors.New("byte array can't be null")
 //	}
