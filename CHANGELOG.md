@@ -1,3 +1,13 @@
+## v2.17.2
+
+### Fixed
+
+* Removed deprecated flags for wrongfully deprecated `Client.[Set|Get]LedgerID`
+* Added `SetGrpcDeadline` to `EthereumTransaction` and `TokenUpdateTransaction`
+* Deprecated `LiveHash.Duration` use `LiveHash.LiveHashDuration`
+* Added missing `LiveHashQuery.[Set|Get]MaxRetry`
+* Added missing `TopicInfoQuery.SetPaymentTransactionID`
+
 ## v2.17.1
 
 ### Deprecated

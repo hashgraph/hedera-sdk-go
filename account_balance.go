@@ -36,7 +36,7 @@ type AccountBalance struct {
 	TokenDecimals TokenDecimalMap
 }
 
-func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) AccountBalance {
+func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) AccountBalance { //nolint
 	if pb == nil {
 		return AccountBalance{}
 	}
@@ -46,7 +46,7 @@ func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) A
 	}
 }
 
-func (balance *AccountBalance) _ToProtobuf() *services.CryptoGetAccountBalanceResponse {
+func (balance *AccountBalance) _ToProtobuf() *services.CryptoGetAccountBalanceResponse { //nolint
 	return &services.CryptoGetAccountBalanceResponse{
 		Balance: uint64(balance.Hbars.AsTinybar()),
 	}
