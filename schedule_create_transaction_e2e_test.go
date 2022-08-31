@@ -4,8 +4,10 @@
 package hedera
 
 import (
-	"github.com/stretchr/testify/require"
+	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 /*-
@@ -27,10 +29,6 @@ import (
  * limitations under the License.
  *
  */
-
-import (
-	"testing"
-)
 
 func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)

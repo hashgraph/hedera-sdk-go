@@ -69,7 +69,7 @@ func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *st
 	} else if len(values[2]) == 40 {
 		temp, err2 := hex.DecodeString(values[2])
 		if err2 != nil {
-			return 0, 0, 0, nil, nil, nil, err
+			return 0, 0, 0, nil, nil, nil, err2
 		}
 		var key *services.Key
 		err2 = protobuf.Unmarshal(temp, key)
