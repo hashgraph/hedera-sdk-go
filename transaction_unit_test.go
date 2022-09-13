@@ -49,6 +49,10 @@ func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 	_, err = transaction.GetTransactionHash()
 	require.NoError(t, err)
 
+	transaction.
+		SetTransactionMemo("memo").
+		SetMaxTransactionFee(NewHbar(5))
+
 	txBytes, err := transaction.ToBytes()
 	require.NoError(t, err)
 
@@ -63,6 +67,8 @@ func TestUnitTransactionSerializationDeserialization(t *testing.T) {
 		panic("Transaction was not TransferTransaction")
 	}
 
+	require.Equal(t, "memo", deserializedTXTyped.memo)
+	require.Equal(t, NewHbar(5), deserializedTXTyped.GetMaxTransactionFee())
 	assert.Equal(t, transaction.String(), deserializedTXTyped.String())
 }
 
