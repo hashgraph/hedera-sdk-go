@@ -20,7 +20,9 @@ tasks:
     lint:
         cmds:
             - golangci-lint run
-
+    update:
+        cmds:
+            - go test -tags="all" -v -run TestIntegrationAddressBookQueryUpdateAll
     test:
         deps:
             - "test:unit"

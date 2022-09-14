@@ -71,12 +71,12 @@ func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *st
 		if err2 != nil {
 			return 0, 0, 0, nil, nil, nil, err2
 		}
-		var key *services.Key
-		err2 = protobuf.Unmarshal(temp, key)
+		var key services.Key
+		err2 = protobuf.Unmarshal(temp, &key)
 		if err2 != nil {
 			return shard, realm, -1, checksum, nil, &temp, nil
 		}
-		aliasKey, err2 := _KeyFromProtobuf(key)
+		aliasKey, err2 := _KeyFromProtobuf(&key)
 		if err2 != nil {
 			return shard, realm, -1, checksum, nil, &temp, nil
 		}
