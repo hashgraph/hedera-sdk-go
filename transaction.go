@@ -197,6 +197,13 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		if !found {
 			tx.nodeAccountIDs = tx.nodeAccountIDs._Push(nodeAccountID)
 		}
+
+		if i == 0 {
+			tx.memo = body.Memo
+			if body.TransactionFee != 0 {
+				tx.transactionFee = body.TransactionFee
+			}
+		}
 	}
 
 	if tx.transactionIDs._Length() > 0 {
@@ -726,6 +733,9 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 	if originalBody.TransactionID.String() != txID._ToProtobuf().String() {
 		originalBody.TransactionID = txID._ToProtobuf()
 	}
+
+	originalBody.Memo = this.memo
+	originalBody.TransactionFee = this.transactionFee
 
 	updatedBody, err := protobuf.Marshal(&originalBody)
 	if err != nil {
