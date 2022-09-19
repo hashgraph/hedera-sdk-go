@@ -3,12 +3,18 @@ package main
 import (
 	_ "embed"
 	"encoding/hex"
+	"encoding/json"
 	"github.com/hashgraph/hedera-sdk-go/v2"
+	"github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper"
 	"os"
 )
 
 //go:embed PrecompileExample.json
 var precompileExample []byte
+
+type JsonObject struct {
+	Object string `json:"object"`
+}
 
 func main() {
 	var client *hedera.Client
@@ -67,8 +73,8 @@ func main() {
 		return
 	}
 
-	bytecodeFromJson, err := hedera.GetJsonResource(precompileExample)
-	if err != nil {
+	var bytecodeFromJson JsonObject
+	if json.Unmarshal(precompileExample, &bytecodeFromJson) != nil {
 		println(err.Error(), ": error reading from json")
 		return
 	}
@@ -87,10 +93,9 @@ func main() {
 		return
 	}
 
-	contractHelper := hedera.NewContractHelper(bytecodeFromJson.Object, *contractFunctionParameters, client)
+	contractHelper := contract_helper.NewContractHelper([]byte(bytecodeFromJson.Object), *contractFunctionParameters, client)
 
 	contractHelper.
-		SetNodeAccountIDs([]hedera.AccountID{{Account: 3}}).
 		SetResultValidatorForStep(0, func(contractFunctionResult hedera.ContractFunctionResult) bool {
 			println("getPseudoRandomSeed() returned " + hex.EncodeToString(contractFunctionResult.GetBytes32(0)))
 			return true
