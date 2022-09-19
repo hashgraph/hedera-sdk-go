@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/cenkalti/backoff/v4 v4.1.3
-	github.com/ethereum/go-ethereum v1.10.23
+	github.com/ethereum/go-ethereum v1.10.25
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220726083815-59ae9e528f56
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.28.0
