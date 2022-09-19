@@ -22,6 +22,7 @@ package hedera
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -93,6 +94,16 @@ func (transaction *FileAppendTransaction) SetMaxChunkSize(size int) *FileAppendT
 
 func (transaction *FileAppendTransaction) GetMaxChunkSize() int {
 	return transaction.chunkSize
+}
+
+func (transaction *FileAppendTransaction) SetMaxChunks(size uint64) *FileAppendTransaction {
+	transaction._RequireNotFrozen()
+	transaction.maxChunks = size
+	return transaction
+}
+
+func (transaction *FileAppendTransaction) GetMaxChunks() uint64 {
+	return transaction.maxChunks
 }
 
 // SetContents sets the bytes to append to the contents of the file.
@@ -351,7 +362,7 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 	}
 	body := transaction._Build()
 
-	chunks := uint64((len(transaction.contents) + (transaction.chunkSize - 1)) / transaction.chunkSize)
+	chunks := uint64(math.Floor(float64((len(transaction.contents) + (transaction.chunkSize - 1)) / transaction.chunkSize)))
 	if chunks > transaction.maxChunks {
 		return transaction, ErrMaxChunksExceeded{
 			Chunks:    chunks,

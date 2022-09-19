@@ -41,6 +41,7 @@ type ContractCreateFlow struct {
 	appendBytecode                []byte
 	autoRenewAccountID            *AccountID
 	maxAutomaticTokenAssociations int32
+	maxChunks                     *uint64
 }
 
 func NewContractCreateFlow() *ContractCreateFlow {
@@ -56,7 +57,7 @@ func NewContractCreateFlow() *ContractCreateFlow {
 
 func (transaction *ContractCreateFlow) SetBytecodeWithString(bytecode string) *ContractCreateFlow {
 	transaction._RequireNotFrozen()
-	transaction.bytecode, _ = hex.DecodeString(bytecode)
+	transaction.bytecode = []byte(bytecode)
 	return transaction
 }
 
@@ -163,6 +164,20 @@ func (transaction *ContractCreateFlow) GetContractMemo() string {
 	return transaction.memo
 }
 
+func (transaction *ContractCreateFlow) SetMaxChunks(max uint64) *ContractCreateFlow {
+	transaction._RequireNotFrozen()
+	transaction.maxChunks = &max
+	return transaction
+}
+
+func (transaction *ContractCreateFlow) GetMaxChunks() uint64 {
+	if transaction.maxChunks == nil {
+		return 0
+	}
+
+	return *transaction.maxChunks
+}
+
 // SetAutoRenewAccountID
 // An account to charge for auto-renewal of this contract. If not set, or set to an
 // account with zero hbar balance, the contract's own hbar balance will be used to
@@ -228,6 +243,9 @@ func (transaction *ContractCreateFlow) _CreateFileAppendTransaction(fileID FileI
 
 	if len(transaction.nodeAccountIDs) > 0 {
 		fileAppendTx.SetNodeAccountIDs(transaction.nodeAccountIDs)
+	}
+	if transaction.maxChunks != nil {
+		fileAppendTx.SetMaxChunks(*transaction.maxChunks)
 	}
 
 	return fileAppendTx
