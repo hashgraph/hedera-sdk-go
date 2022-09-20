@@ -2,6 +2,8 @@ package contract_helper
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/hashgraph/hedera-sdk-go/v2"
 	"github.com/pkg/errors"
 )
@@ -125,8 +127,7 @@ func (this *ContractHelper) ExecuteSteps(firstStep int32, lastStep int32, client
 			transaction.SetPayableAmount(*payableAmount)
 		}
 
-		functionName := "step" + string(stepIndex)
-		println(functionName)
+		functionName := "step" + strconv.Itoa(int(stepIndex))
 		parameters := this.GetParameterSupplier(stepIndex)()
 		if parameters != nil {
 			transaction.SetFunction(functionName, parameters)

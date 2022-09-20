@@ -348,6 +348,7 @@ func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, er
 		if err != nil {
 			return TransactionResponse{}, err
 		}
+
 		_, err = this._CreateTransactionReceiptQuery(fileAppendResponse).Execute(client)
 		if err != nil {
 			return TransactionResponse{}, err
@@ -357,8 +358,7 @@ func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, er
 		if err != nil {
 			return TransactionResponse{}, err
 		}
-		_, err = this._CreateTransactionReceiptQuery(contractCreateResponse).
-			Execute(client)
+		_, err = this._CreateTransactionReceiptQuery(contractCreateResponse).Execute(client)
 		if err != nil {
 			return TransactionResponse{}, err
 		}
