@@ -1,3 +1,14 @@
+## v2.17.3
+
+### Added
+
+* `AccountCreateTransaction.[Set|Get]Alias[Key|EvmAddress]()`
+* `ContractCreateFlow.[Set|Get]MaxChunks()`
+* Support for automatically updating networks
+* `Client.[Set|Get]NetworkUpdatePeriod()`
+* `Client` constructor supports `_ScheduleNetworkUpdate` to disable auto updates
+* `task update` for manual address book updating
+
 ## v2.17.2
 
 ### Fixed
