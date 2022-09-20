@@ -61,7 +61,7 @@ func NewAccountCreateTransaction() *AccountCreateTransaction {
 	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
-	transaction.SetMaxTransactionFee(NewHbar(3))
+	transaction.SetMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }
