@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,6 +33,18 @@ import (
 // Default max fees and payments to 1 h-bar
 var defaultMaxTransactionFee Hbar = NewHbar(1)
 var defaultMaxQueryPayment Hbar = NewHbar(1)
+
+//go:embed addressbook/mainnet.pb
+var mainnetAddress []byte
+var mainnetNodes, _ = NodeAddressBookFromBytes(mainnetAddress)
+
+//go:embed addressbook/previewnet.pb
+var previewnetAddress []byte
+var previewnetNodes, _ = NodeAddressBookFromBytes(previewnetAddress)
+
+//go:embed addressbook/testnet.pb
+var testnetAddress []byte
+var testnetNodes, _ = NodeAddressBookFromBytes(testnetAddress)
 
 // Client is the Hedera protocol wrapper for the SDK used by all
 // transaction and query types.
@@ -50,7 +63,10 @@ type Client struct {
 	maxBackoff time.Duration
 	minBackoff time.Duration
 
-	requestTimeout *time.Duration
+	requestTimeout             *time.Duration
+	networkUpdateInitialDelay  time.Duration
+	defaultNetworkUpdatePeriod time.Duration
+	quit                       chan bool
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -63,159 +79,14 @@ type _Operator struct {
 	signer     TransactionSigner
 }
 
-var mainnetNodes = map[string]AccountID{
-	"35.237.200.180:50211":  {Account: 3},
-	"34.239.82.6:50211":     {Account: 3},
-	"13.82.40.153:50211":    {Account: 3},
-	"13.124.142.126:50211":  {Account: 3},
-	"15.164.44.66:50211":    {Account: 3},
-	"15.165.118.251:50211":  {Account: 3},
-	"35.186.191.247:50211":  {Account: 4},
-	"3.130.52.236:50211":    {Account: 4},
-	"137.116.36.18:50211":   {Account: 4},
-	"35.192.2.25:50211":     {Account: 5},
-	"3.18.18.254:50211":     {Account: 5},
-	"104.43.194.202:50211":  {Account: 5},
-	"23.111.186.250:50211":  {Account: 5},
-	"74.50.117.35:50211":    {Account: 5},
-	"107.155.64.98:50211":   {Account: 5},
-	"35.199.161.108:50211":  {Account: 6},
-	"13.52.108.243:50211":   {Account: 6},
-	"13.64.151.232:50211":   {Account: 6},
-	"13.235.15.32:50211":    {Account: 6},
-	"104.211.205.124:50211": {Account: 6},
-	"13.71.90.154:50211":    {Account: 6},
-	"35.203.82.240:50211":   {Account: 7},
-	"3.114.54.4:50211":      {Account: 7},
-	"23.102.74.34:50211":    {Account: 7},
-	"35.236.5.219:50211":    {Account: 8},
-	"35.183.66.150:50211":   {Account: 8},
-	"23.96.185.18:50211":    {Account: 8},
-	"35.197.192.225:50211":  {Account: 9},
-	"35.181.158.250:50211":  {Account: 9},
-	"23.97.237.125:50211":   {Account: 9},
-	"31.214.8.131:50211":    {Account: 9},
-	"35.242.233.154:50211":  {Account: 10},
-	"3.248.27.48:50211":     {Account: 10},
-	"65.52.68.254:50211":    {Account: 10},
-	"179.190.33.184:50211":  {Account: 10},
-	"35.240.118.96:50211":   {Account: 11},
-	"13.53.119.185:50211":   {Account: 11},
-	"23.97.247.27:50211":    {Account: 11},
-	"69.87.222.61:50211":    {Account: 11},
-	"96.126.72.172:50211":   {Account: 11},
-	"69.87.221.231:50211":   {Account: 11},
-	"35.204.86.32:50211":    {Account: 12},
-	"35.177.162.180:50211":  {Account: 12},
-	"51.140.102.228:50211":  {Account: 12},
-	"35.234.132.107:50211":  {Account: 13},
-	"34.215.192.104:50211":  {Account: 13},
-	"13.77.158.252:50211":   {Account: 13},
-	"35.236.2.27:50211":     {Account: 14},
-	"52.8.21.141:50211":     {Account: 14},
-	"40.114.107.85:50211":   {Account: 14},
-	"35.228.11.53:50211":    {Account: 15},
-	"3.121.238.26:50211":    {Account: 15},
-	"40.89.139.247:50211":   {Account: 15},
-	"34.91.181.183:50211":   {Account: 16},
-	"18.157.223.230:50211":  {Account: 16},
-	"13.69.120.73:50211":    {Account: 16},
-	"50.7.176.235:50211":    {Account: 16},
-	"198.16.99.40:50211":    {Account: 16},
-	"50.7.124.46:50211":     {Account: 16},
-	"34.86.212.247:50211":   {Account: 17},
-	"18.232.251.19:50211":   {Account: 17},
-	"40.114.92.39:50211":    {Account: 17},
-	"172.105.247.67:50211":  {Account: 18},
-	"172.104.150.132:50211": {Account: 18},
-	"139.162.156.222:50211": {Account: 18},
-	"34.89.87.138:50211":    {Account: 19},
-	"18.168.4.59:50211":     {Account: 19},
-	"51.140.43.81:50211":    {Account: 19},
-	"34.82.78.255:50211":    {Account: 20},
-	"13.77.151.212:50211":   {Account: 20},
-	"34.76.140.109:50211":   {Account: 21},
-	"13.36.123.209:50211":   {Account: 21},
-	"34.64.141.166:50211":   {Account: 22},
-	"52.78.202.34:50211":    {Account: 22},
-	"35.232.244.145:50211":  {Account: 23},
-	"3.18.91.176:50211":     {Account: 23},
-	"34.89.103.38:50211":    {Account: 24},
-	"18.135.7.211:50211":    {Account: 24},
-	"34.93.112.7:50211":     {Account: 25},
-	"13.232.240.207:50211":  {Account: 25},
-	"34.87.150.174:50211":   {Account: 25},
-	"13.228.103.14:50211":   {Account: 25},
-}
-
-var testnetNodes = map[string]AccountID{
-	"0.testnet.hedera.com:50211": {Account: 3},
-	"34.94.106.61:50211":         {Account: 3},
-	"50.18.132.211:50211":        {Account: 3},
-	"138.91.142.219:50211":       {Account: 3},
-	"1.testnet.hedera.com:50211": {Account: 4},
-	"35.237.119.55:50211":        {Account: 4},
-	"3.212.6.13:50211":           {Account: 4},
-	"52.168.76.241:50211":        {Account: 4},
-	"2.testnet.hedera.com:50211": {Account: 5},
-	"35.245.27.193:50211":        {Account: 5},
-	"52.20.18.86:50211":          {Account: 5},
-	"40.79.83.124:50211":         {Account: 5},
-	"3.testnet.hedera.com:50211": {Account: 6},
-	"34.83.112.116:50211":        {Account: 6},
-	"54.70.192.33:50211":         {Account: 6},
-	"52.183.45.65:50211":         {Account: 6},
-	"4.testnet.hedera.com:50211": {Account: 7},
-	"34.94.160.4:50211":          {Account: 7},
-	"54.176.199.109:50211":       {Account: 7},
-	"13.64.181.136:50211":        {Account: 7},
-	"5.testnet.hedera.com:50211": {Account: 8},
-	"34.106.102.218:50211":       {Account: 8},
-	"35.155.49.147:50211":        {Account: 8},
-	"13.78.238.32:50211":         {Account: 8},
-	"6.testnet.hedera.com:50211": {Account: 9},
-	"34.133.197.230:50211":       {Account: 9},
-	"52.14.252.207:50211":        {Account: 9},
-	"52.165.17.231:50211":        {Account: 9},
-}
-
-var previewnetNodes = map[string]AccountID{
-	"0.previewnet.hedera.com:50211": {Account: 3},
-	"35.231.208.148:50211":          {Account: 3},
-	"3.211.248.172:50211":           {Account: 3},
-	"40.121.64.48:50211":            {Account: 3},
-	"1.previewnet.hedera.com:50211": {Account: 4},
-	"35.199.15.177:50211":           {Account: 4},
-	"3.133.213.146:50211":           {Account: 4},
-	"40.70.11.202:50211":            {Account: 4},
-	"2.previewnet.hedera.com:50211": {Account: 5},
-	"35.225.201.195:50211":          {Account: 5},
-	"52.15.105.130:50211":           {Account: 5},
-	"104.43.248.63:50211":           {Account: 5},
-	"3.previewnet.hedera.com:50211": {Account: 6},
-	"35.247.109.135:50211":          {Account: 6},
-	"54.241.38.1:50211":             {Account: 6},
-	"13.88.22.47:50211":             {Account: 6},
-	"4.previewnet.hedera.com:50211": {Account: 7},
-	"35.235.65.51:50211":            {Account: 7},
-	"54.177.51.127:50211":           {Account: 7},
-	"13.64.170.40:50211":            {Account: 7},
-	"5.previewnet.hedera.com:50211": {Account: 8},
-	"34.106.247.65:50211":           {Account: 8},
-	"35.83.89.171:50211":            {Account: 8},
-	"13.78.232.192:50211":           {Account: 8},
-	"6.previewnet.hedera.com:50211": {Account: 9},
-	"34.125.23.49:50211":            {Account: 9},
-	"50.18.17.93:50211":             {Account: 9},
-	"20.150.136.89:50211":           {Account: 9},
-}
-
-var mainnetMirror = []string{"mainnet-public.mirrornode.hedera.com:5600"}
+var mainnetMirror = []string{"mainnet-public.mirrornode.hedera.com:443"}
 var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
 var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
-	return _NewClient(network, []string{}, "mainnet")
+	net := _NewNetwork()
+	_ = net.SetNetwork(network)
+	return _NewClient(net, []string{}, "mainnet")
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
@@ -223,7 +94,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return _NewClient(mainnetNodes, mainnetMirror, NetworkNameMainnet)
+	return _NewClient(*_NetworkForTestnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -231,7 +102,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return _NewClient(testnetNodes, testnetMirror, NetworkNameTestnet)
+	return _NewClient(*_NetworkForPreviewnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -239,29 +110,64 @@ func ClientForTestnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return _NewClient(previewnetNodes, previewnetMirror, NetworkNamePreviewnet)
+	return _NewClient(*_NetworkForMainnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet)
 }
 
 // newClient takes in a map of _Node addresses to their respective IDS (_Network)
 // and returns a Client instance which can be used to
-func _NewClient(network map[string]AccountID, mirrorNetwork []string, name NetworkName) *Client {
+func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Client {
+	q := make(chan bool)
 	client := Client{
 		maxQueryPayment:                 defaultMaxQueryPayment,
 		maxTransactionFee:               defaultMaxTransactionFee,
-		network:                         _NewNetwork(),
+		network:                         network,
 		mirrorNetwork:                   _NewMirrorNetwork(),
 		autoValidateChecksums:           false,
 		maxAttempts:                     nil,
 		minBackoff:                      250 * time.Millisecond,
 		maxBackoff:                      8 * time.Second,
 		defaultRegenerateTransactionIDs: true,
+		defaultNetworkUpdatePeriod:      24 * time.Hour,
+		networkUpdateInitialDelay:       10 * time.Second,
+		quit:                            q,
 	}
 
-	_ = client.SetNetwork(network)
 	client.SetMirrorNetwork(mirrorNetwork)
 	client.network._SetNetworkName(name)
 
+	go client._ScheduleNetworkUpdate(client.quit, client.networkUpdateInitialDelay)
+
 	return &client
+}
+
+func (client *Client) _ScheduleNetworkUpdate(quit chan bool, duration time.Duration) {
+	time.Sleep(duration)
+	select {
+	case <-quit:
+		return
+	default:
+		addressbook, err := NewAddressBookQuery().
+			SetFileID(FileIDForAddressBook()).
+			Execute(client)
+		if err == nil && len(addressbook.NodeAddresses) > 0 {
+			client.SetNetworkFromAddressBook(addressbook)
+			client._ScheduleNetworkUpdate(quit, client.defaultNetworkUpdatePeriod)
+		}
+	}
+}
+
+func (client *Client) CancelScheduledNetworkUpdate() {
+	client.quit <- true
+}
+
+func (client *Client) SetNetworkUpdatePeriod(period time.Duration) *Client {
+	client.defaultNetworkUpdatePeriod = period
+	client._ScheduleNetworkUpdate(client.quit, period)
+	return client
+}
+
+func (client *Client) GetNetworkUpdatePeriod() time.Duration {
+	return client.defaultNetworkUpdatePeriod
 }
 
 func ClientForName(name string) (*Client, error) {
@@ -300,7 +206,8 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 		return nil, err
 	}
 
-	network := make(map[string]AccountID)
+	network := _NewNetwork()
+	networkAddresses := make(map[string]AccountID)
 
 	switch net := clientConfig.Network.(type) {
 	case map[string]interface{}:
@@ -311,21 +218,24 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				if err != nil {
 					return client, err
 				}
-
-				network[url] = accountID
+				networkAddresses[url] = accountID
 			default:
 				return client, errors.New("network is expected to be map of string to string, or string")
 			}
+		}
+		err = network.SetNetwork(networkAddresses)
+		if err != nil {
+			return &Client{}, err
 		}
 	case string:
 		if len(net) > 0 {
 			switch net {
 			case string(NetworkNameMainnet):
-				network = mainnetNodes
+				network = *_NetworkForMainnet(mainnetNodes._ToMap())
 			case string(NetworkNamePreviewnet):
-				network = previewnetNodes
+				network = *_NetworkForPreviewnet(previewnetNodes._ToMap())
 			case string(NetworkNameTestnet):
-				network = testnetNodes
+				network = *_NetworkForTestnet(testnetNodes._ToMap())
 			}
 		}
 	default:
@@ -409,6 +319,7 @@ func ClientFromConfigFile(filename string) (*Client, error) {
 
 // Close is used to disconnect the Client from the _Network
 func (client *Client) Close() error {
+	client.CancelScheduledNetworkUpdate()
 	err := client.network._Close()
 	if err != nil {
 		return err
@@ -668,4 +579,9 @@ func (client *Client) PingAll() {
 	for _, s := range client.GetNetwork() {
 		_ = client.Ping(s)
 	}
+}
+
+func (client *Client) SetNetworkFromAddressBook(addressBook NodeAddressBook) *Client {
+	client.network._SetNetworkFromAddressBook(addressBook)
+	return client
 }

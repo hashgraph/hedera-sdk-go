@@ -472,7 +472,8 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 		mirrorNetwork[i] = servers[i].listener.Addr().String()
 	}
 
-	client := _NewClient(network, mirrorNetwork, "mainnet")
+	client := ClientForNetwork(network)
+	client.SetMirrorNetwork(mirrorNetwork)
 
 	key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
 	client.SetOperator(AccountID{Account: 1800}, key)
