@@ -62,6 +62,7 @@ type Transaction struct {
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
 	regenerateTransactionID bool
+	transactionCache        []*services.Transaction
 
 	grpcDeadline *time.Duration
 }
@@ -77,6 +78,7 @@ func _NewTransaction() Transaction {
 		transactions:             _NewLockableSlice(),
 		signedTransactions:       _NewLockableSlice(),
 		nodeAccountIDs:           _NewLockableSlice(),
+		transactionCache:         make([]*services.Transaction, 0),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
 		minBackoff:               &minBackoff,
@@ -409,10 +411,7 @@ func (this *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, erro
 		return transactionHash, errTransactionIsNotFrozen
 	}
 
-	allTx, err := this._BuildAllTransactions()
-	if err != nil {
-		return transactionHash, err
-	}
+	allTx := this.transactionCache
 	this.transactionIDs.locked = true
 
 	for i, node := range this.nodeAccountIDs.slice {
@@ -751,9 +750,12 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 		return &services.Transaction{}, errors.Wrap(err, "failed to serialize transactions for building")
 	}
 
-	return &services.Transaction{
+	transaction := &services.Transaction{
 		SignedTransactionBytes: data,
-	}, nil
+	}
+
+	this.transactionCache = append(this.transactionCache, transaction)
+	return transaction, nil
 }
 
 //
