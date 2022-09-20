@@ -205,7 +205,6 @@ func TestUnitFileAppendTransactionGet(t *testing.T) {
 
 func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 	var previousTransactionID string
-	var previousContent []byte
 
 	receipt := &services.Response{
 		Response: &services.Response_TransactionGetReceipt{
@@ -221,6 +220,8 @@ func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 			},
 		},
 	}
+
+    contents := ""
 
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		require.NotEmpty(t, request.SignedTransactionBytes)
@@ -241,14 +242,7 @@ func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 			previousTransactionID = transactionId
 		}
 
-		content := transactionBody.Data.(*services.TransactionBody_FileAppend).FileAppend.Contents
-
-		if len(previousContent) == 0 {
-			previousContent = content
-		} else {
-			require.NotEqual(t, previousContent, content)
-			previousContent = content
-		}
+        contents += string(transactionBody.Data.(*services.TransactionBody_FileAppend).FileAppend.Contents);
 
 		sigMap := signedTransaction.GetSigMap()
 		require.NotNil(t, sigMap)
@@ -284,6 +278,8 @@ func TestUnitFileAppendTransactionBigContentsMock(t *testing.T) {
 		SetContents([]byte(bigContents2)).
 		Execute(client)
 	require.NoError(t, err)
+
+    require.Equal(t, bigContents2, contents)
 }
 
 func TestUnitFileAppendTransactionCoverage(t *testing.T) {
