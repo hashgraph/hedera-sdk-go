@@ -25,9 +25,10 @@ package hedera
 
 import (
 	"encoding/base64"
-	"github.com/hashgraph/hedera-protobufs-go/services"
 	"testing"
 	"time"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
 
 	"github.com/stretchr/testify/assert"
 
