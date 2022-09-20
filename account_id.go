@@ -225,9 +225,8 @@ func (id AccountID) _ToProtobuf() *services.AccountID {
 
 		return resultID
 	} else if id.AliasEvmAddress != nil {
-		data, _ := protobuf.Marshal(&services.Key{Key: &services.Key_ECDSASecp256K1{ECDSASecp256K1: *id.AliasEvmAddress}})
 		resultID.Account = &services.AccountID_Alias{
-			Alias: data,
+			Alias: *id.AliasEvmAddress,
 		}
 
 		return resultID
@@ -266,7 +265,12 @@ func _AccountIDFromProtobuf(accountID *services.AccountID) *AccountID {
 	case *services.AccountID_Alias:
 		pb := services.Key{}
 		_ = protobuf.Unmarshal(t.Alias, &pb)
-		initialKey, _ := _KeyFromProtobuf(&pb)
+		initialKey, err := _KeyFromProtobuf(&pb)
+		if err != nil && t.Alias != nil {
+			resultAccountID.Account = 0
+			resultAccountID.AliasEvmAddress = &t.Alias
+			return resultAccountID
+		}
 		if evm, ok := pb.Key.(*services.Key_ECDSASecp256K1); ok && len(evm.ECDSASecp256K1) == 20 {
 			resultAccountID.Account = 0
 			resultAccountID.AliasEvmAddress = &evm.ECDSASecp256K1
@@ -345,6 +349,16 @@ func (id AccountID) Compare(given AccountID) int {
 		if id.AliasKey.String() > given.AliasKey.String() { //nolint
 			return 1
 		} else if id.AliasKey.String() < given.AliasKey.String() {
+			return -1
+		}
+	}
+
+	if id.AliasEvmAddress != nil && given.AliasEvmAddress != nil {
+		originalEvmAddress := hex.EncodeToString(*id.AliasEvmAddress)
+		givenEvmAddress := hex.EncodeToString(*id.AliasEvmAddress)
+		if originalEvmAddress > givenEvmAddress { //nolint
+			return 1
+		} else if originalEvmAddress < givenEvmAddress {
 			return -1
 		}
 	}

@@ -24,10 +24,11 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
-	protobuf "google.golang.org/protobuf/proto"
 	"testing"
 	"time"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/stretchr/testify/assert"
 

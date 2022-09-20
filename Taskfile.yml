@@ -15,7 +15,7 @@ tasks:
 
     format:
         cmds:
-            - go fmt || goimports -w *.go
+            - go fmt && goimports -w *.go
 
     lint:
         cmds:
