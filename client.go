@@ -85,8 +85,11 @@ var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
-	_ = net.SetNetwork(network)
-	return _NewClient(net, []string{}, "mainnet")
+	client := _NewClient(net, []string{}, "mainnet")
+	client.CancelScheduledNetworkUpdate()
+	_ = client.SetNetwork(network)
+	net._SetLedgerID(*NewLedgerIDMainnet())
+	return client
 }
 
 // ClientForMainnet returns a preconfigured client for use with the standard
