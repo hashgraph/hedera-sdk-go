@@ -1,3 +1,9 @@
+## v2.17.4
+
+### Fixed
+
+* `*Transactions` now don't sign twice
+
 ## v2.17.3
 
 ### Added
