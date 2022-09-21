@@ -241,9 +241,6 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 	nodeID := transaction.GetNodeAccountIDs()
 	require.NotEmpty(t, nodeID)
 	require.False(t, nodeID[0]._IsZero())
-	h, err := transaction.GetTransactionHash()
-	require.NoError(t, err)
-	require.NotEmpty(t, h)
 
 	var tx services.TransactionBody
 	_ = protobuf.Unmarshal(transaction.signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
