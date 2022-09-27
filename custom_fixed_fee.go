@@ -95,7 +95,8 @@ func (fee CustomFixedFee) _ToProtobuf() *services.CustomFee {
 				DenominatingTokenId: tokenID,
 			},
 		},
-		FeeCollectorAccountId: FeeCollectorAccountID,
+		FeeCollectorAccountId:  FeeCollectorAccountID,
+		AllCollectorsAreExempt: fee.AllCollectorsAreExempt,
 	}
 }
 

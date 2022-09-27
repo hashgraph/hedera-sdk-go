@@ -126,6 +126,7 @@ func (fee CustomRoyaltyFee) _ToProtobuf() *services.CustomFee {
 				FallbackFee: fallback,
 			},
 		},
-		FeeCollectorAccountId: FeeCollectorAccountID,
+		FeeCollectorAccountId:  FeeCollectorAccountID,
+		AllCollectorsAreExempt: fee.AllCollectorsAreExempt,
 	}
 }
