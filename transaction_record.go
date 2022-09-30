@@ -78,7 +78,7 @@ func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResul
 	return *record.CallResult, nil
 }
 
-func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecordResponse) TransactionRecord {
+func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecordResponse, txID *TransactionID) TransactionRecord {
 	if protoResponse == nil {
 		return TransactionRecord{}
 	}
@@ -151,22 +151,27 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 	childReceipts := make([]TransactionRecord, 0)
 	if len(protoResponse.ChildTransactionRecords) > 0 {
 		for _, r := range protoResponse.ChildTransactionRecords {
-			childReceipts = append(childReceipts, _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: r}))
+			childReceipts = append(childReceipts, _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: r}, txID))
 		}
 	}
 
 	duplicateReceipts := make([]TransactionRecord, 0)
 	if len(protoResponse.DuplicateTransactionRecords) > 0 {
 		for _, r := range protoResponse.DuplicateTransactionRecords {
-			duplicateReceipts = append(duplicateReceipts, _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: r}))
+			duplicateReceipts = append(duplicateReceipts, _TransactionRecordFromProtobuf(&services.TransactionGetRecordResponse{TransactionRecord: r}, txID))
 		}
 	}
 
+	var transactionID TransactionID
+	if pb.TransactionID != nil {
+		transactionID = _TransactionIDFromProtobuf(pb.TransactionID)
+	}
+
 	txRecord := TransactionRecord{
-		Receipt:                    _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: pb.GetReceipt()}),
+		Receipt:                    _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: pb.GetReceipt()}, txID),
 		TransactionHash:            pb.TransactionHash,
 		ConsensusTimestamp:         _TimeFromProtobuf(pb.ConsensusTimestamp),
-		TransactionID:              _TransactionIDFromProtobuf(pb.TransactionID),
+		TransactionID:              transactionID,
 		TransactionMemo:            pb.Memo,
 		TransactionFee:             HbarFromTinybar(int64(pb.TransactionFee)),
 		Transfers:                  accountTransfers,
@@ -356,6 +361,10 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 	}, err
 }
 
+func (record TransactionRecord) ValidateReceiptStatus(shouldValidate bool) error {
+	return record.Receipt.ValidateStatus(shouldValidate)
+}
+
 func (record TransactionRecord) ToBytes() []byte {
 	rec, err := record._ToProtobuf()
 	if err != nil {
@@ -379,5 +388,5 @@ func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
 		return TransactionRecord{}, err
 	}
 
-	return _TransactionRecordFromProtobuf(&pb), nil
+	return _TransactionRecordFromProtobuf(&pb, nil), nil
 }

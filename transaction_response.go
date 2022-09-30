@@ -25,6 +25,7 @@ type TransactionResponse struct {
 	ScheduledTransactionId TransactionID // nolint
 	NodeID                 AccountID
 	Hash                   []byte
+	ValidateStatus         bool
 }
 
 func (response TransactionResponse) GetReceipt(client *Client) (TransactionReceipt, error) {
@@ -37,15 +38,7 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 		return receipt, err
 	}
 
-	if receipt.Status != StatusSuccess {
-		return receipt, ErrHederaReceiptStatus{
-			TxID:    response.TransactionID,
-			Status:  receipt.Status,
-			Receipt: receipt,
-		}
-	}
-
-	return receipt, nil
+	return receipt, receipt.ValidateStatus(response.ValidateStatus)
 }
 
 func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord, error) {
@@ -74,4 +67,13 @@ func (response TransactionResponse) GetRecordQuery() *TransactionRecordQuery {
 	return NewTransactionRecordQuery().
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID})
+}
+
+func (response TransactionResponse) SetValidateStatus(validate bool) *TransactionResponse {
+	response.ValidateStatus = validate
+	return &response
+}
+
+func (response TransactionResponse) GetValidateStatus() bool {
+	return response.ValidateStatus
 }

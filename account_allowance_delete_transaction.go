@@ -286,8 +286,9 @@ func (transaction *AccountAllowanceDeleteTransaction) Execute(
 
 	if err != nil {
 		return TransactionResponse{
-			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.(TransactionResponse).NodeID,
+			TransactionID:  transaction.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
 		}, err
 	}
 
@@ -297,9 +298,10 @@ func (transaction *AccountAllowanceDeleteTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.(TransactionResponse).NodeID,
-		Hash:          hash,
+		TransactionID:  transaction.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           hash,
+		ValidateStatus: true,
 	}, nil
 }
 
