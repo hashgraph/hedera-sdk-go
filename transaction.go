@@ -412,22 +412,37 @@ func (this *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, erro
 	}
 
 	if len(this.transactionCache) > 0 {
-		allTx := this.transactionCache
-		this.transactionIDs.locked = true
+		if this.nodeAccountIDs.locked {
+			allTx := this.transactionCache
+			this.transactionIDs.locked = true
 
-		for i, node := range this.nodeAccountIDs.slice {
-			switch n := node.(type) { //nolint
-			case AccountID:
-				hash := sha512.New384()
-				_, err := hash.Write(allTx[i].GetSignedTransactionBytes())
-				if err != nil {
-					return transactionHash, err
+			for i, node := range this.nodeAccountIDs.slice {
+				switch n := node.(type) { //nolint
+				case AccountID:
+					hash := sha512.New384()
+					_, err := hash.Write(allTx[i].GetSignedTransactionBytes())
+					if err != nil {
+						return transactionHash, err
+					}
+
+					finalHash := hash.Sum(nil)
+
+					transactionHash[n] = finalHash
 				}
-
-				finalHash := hash.Sum(nil)
-
-				transactionHash[n] = finalHash
 			}
+		} else {
+			allTx := this.transactionCache
+			this.transactionIDs.locked = true
+
+			hash := sha512.New384()
+			_, err := hash.Write(allTx[0].GetSignedTransactionBytes())
+			if err != nil {
+				return transactionHash, err
+			}
+
+			finalHash := hash.Sum(nil)
+
+			transactionHash[this.nodeAccountIDs._Get(0).(AccountID)] = finalHash
 		}
 	}
 
