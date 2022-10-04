@@ -42,9 +42,10 @@ type TransactionReceipt struct {
 	SerialNumbers           []int64
 	Duplicates              []TransactionReceipt
 	Children                []TransactionReceipt
+	TransactionID           *TransactionID
 }
 
-func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetReceiptResponse) TransactionReceipt {
+func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetReceiptResponse, transactionID *TransactionID) TransactionReceipt {
 	if protoResponse == nil {
 		return TransactionReceipt{}
 	}
@@ -103,14 +104,14 @@ func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetRecei
 	childReceipts := make([]TransactionReceipt, 0)
 	if len(protoResponse.ChildTransactionReceipts) > 0 {
 		for _, r := range protoResponse.ChildTransactionReceipts {
-			childReceipts = append(childReceipts, _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: r}))
+			childReceipts = append(childReceipts, _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: r}, transactionID))
 		}
 	}
 
 	duplicateReceipts := make([]TransactionReceipt, 0)
 	if len(protoResponse.DuplicateTransactionReceipts) > 0 {
 		for _, r := range protoResponse.DuplicateTransactionReceipts {
-			duplicateReceipts = append(duplicateReceipts, _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: r}))
+			duplicateReceipts = append(duplicateReceipts, _TransactionReceiptFromProtobuf(&services.TransactionGetReceiptResponse{Receipt: r}, transactionID))
 		}
 	}
 
@@ -131,6 +132,7 @@ func _TransactionReceiptFromProtobuf(protoResponse *services.TransactionGetRecei
 		SerialNumbers:           protoReceipt.SerialNumbers,
 		Children:                childReceipts,
 		Duplicates:              duplicateReceipts,
+		TransactionID:           transactionID,
 	}
 }
 
@@ -200,6 +202,17 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptR
 	}
 }
 
+func (receipt TransactionReceipt) ValidateStatus(shouldValidate bool) error {
+	if shouldValidate && receipt.Status != StatusSuccess {
+		if receipt.TransactionID != nil {
+			return _NewErrHederaReceiptStatus(*receipt.TransactionID, receipt.Status)
+		}
+		return _NewErrHederaReceiptStatus(TransactionID{}, receipt.Status)
+	}
+
+	return nil
+}
+
 func (receipt TransactionReceipt) ToBytes() []byte {
 	data, err := protobuf.Marshal(receipt._ToProtobuf())
 	if err != nil {
@@ -219,5 +232,5 @@ func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
 		return TransactionReceipt{}, err
 	}
 
-	return _TransactionReceiptFromProtobuf(&pb), nil
+	return _TransactionReceiptFromProtobuf(&pb, nil), nil
 }
