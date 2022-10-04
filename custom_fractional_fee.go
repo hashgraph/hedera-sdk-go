@@ -145,7 +145,8 @@ func (fee CustomFractionalFee) _ToProtobuf() *services.CustomFee {
 				NetOfTransfers: bool(fee.AssessmentMethod),
 			},
 		},
-		FeeCollectorAccountId: FeeCollectorAccountID,
+		FeeCollectorAccountId:  FeeCollectorAccountID,
+		AllCollectorsAreExempt: fee.AllCollectorsAreExempt,
 	}
 }
 
