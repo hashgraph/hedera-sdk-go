@@ -1,10 +1,15 @@
+## v2.17.5
+
+### Added
+
+* Update documentation for `ContractFunction[Parameters|Result]` to show how to use large integer variants
+* Implement `TransactionResponse.ValidateStatus`
+
 ## v2.17.4
 
 ### Fixed
 
 * `*Transactions` now don't sign twice
-* Update documentation for `ContractFunction[Parameters|Result]` to show how to use large integer variants
-* Implement `TransactionResponse.ValidateStatus`
 
 ## v2.17.3
 
