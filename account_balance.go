@@ -40,9 +40,20 @@ func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) A
 	if pb == nil {
 		return AccountBalance{}
 	}
-
+	var tokens map[TokenID]uint64
+	if pb.TokenBalances != nil {
+		tokens = make(map[TokenID]uint64, len(pb.TokenBalances))
+		for _, token := range pb.TokenBalances {
+			if t := _TokenIDFromProtobuf(token.TokenId); t != nil {
+				tokens[*t] = token.Balance
+			}
+		}
+	}
 	return AccountBalance{
-		Hbars: HbarFromTinybar(int64(pb.Balance)),
+		Hbars:         HbarFromTinybar(int64(pb.Balance)),
+		Token:         tokens,
+		Tokens:        _TokenBalanceMapFromProtobuf(pb.TokenBalances),
+		TokenDecimals: _TokenDecimalMapFromProtobuf(pb.TokenBalances),
 	}
 }
 
