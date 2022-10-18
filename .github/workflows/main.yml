@@ -55,14 +55,14 @@ jobs:
         working-directory: hedera-services
         run: docker build -t services-node:$TAG .
 
-      - name: Set up Go 1.16
-        uses: actions/setup-go@v1
+      - name: Set up Go 1.19
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.16
+          go-version: 1.19
         id: go
 
       - name: Fetch Hedera SDK
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: hedera-sdk-go
 
