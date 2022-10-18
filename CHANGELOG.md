@@ -1,3 +1,9 @@
+## v2.17.6
+
+### Fixed
+
+* `NewAccountBallanceQuery` to correctly return account balance
+
 ## v2.17.5
 
 ### Added
