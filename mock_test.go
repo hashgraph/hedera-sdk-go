@@ -27,6 +27,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/mirror"
 	"google.golang.org/grpc/codes"
@@ -455,6 +456,19 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 	network := map[string]AccountID{}
 	mirrorNetwork := make([]string, len(allNodeResponses))
 	servers := make([]*MockServer, len(allNodeResponses))
+	client := &Client{
+		maxQueryPayment:                 defaultMaxQueryPayment,
+		maxTransactionFee:               defaultMaxTransactionFee,
+		network:                         _NewNetwork(),
+		mirrorNetwork:                   _NewMirrorNetwork(),
+		autoValidateChecksums:           false,
+		maxAttempts:                     nil,
+		minBackoff:                      250 * time.Millisecond,
+		maxBackoff:                      8 * time.Second,
+		defaultRegenerateTransactionIDs: true,
+		defaultNetworkUpdatePeriod:      24 * time.Hour,
+		networkUpdateInitialDelay:       1 * time.Millisecond,
+	}
 
 	for i, responses := range allNodeResponses {
 		responses := responses
@@ -472,7 +486,9 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 		mirrorNetwork[i] = servers[i].listener.Addr().String()
 	}
 
-	client := _NewClient(network, mirrorNetwork, "mainnet")
+	client.SetNetwork(network)
+	client.SetLedgerID(*NewLedgerIDMainnet())
+	client.SetMirrorNetwork(mirrorNetwork)
 
 	key, _ := PrivateKeyFromStringEd25519("302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d")
 	client.SetOperator(AccountID{Account: 1800}, key)

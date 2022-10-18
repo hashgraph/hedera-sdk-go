@@ -310,6 +310,9 @@ const (
 	StatusInvalidRandomGenerateRange                               Status = 324
 	StatusMaxEntitiesInPriceRegimeHaveBeenCreated                  Status = 325
 	StatusInvalidFullPrefixSignatureForPrecompile                  Status = 326
+	StatusInsufficientBalancesForStorageRent                       Status = 327
+	StatusMaxChildRecordsExceeded                                  Status = 328
+	StatusInsufficientBalancesForRenewalFees                       Status = 329
 )
 
 // String() returns a string representation of the status
@@ -885,6 +888,12 @@ func (status Status) String() string { // nolint
 		return "MAX_ENTITIES_IN_PRICE_REGIME_HAVE_BEEN_CREATED"
 	case StatusInvalidFullPrefixSignatureForPrecompile:
 		return "INVALID_FULL_PREFIX_SIGNATURE_FOR_PRECOMPILE"
+	case StatusInsufficientBalancesForStorageRent:
+		return "INSUFFICIENT_BALANCES_FOR_STORAGE_RENT"
+	case StatusMaxChildRecordsExceeded:
+		return "MAX_CHILD_RECORDS_EXCEEDED"
+	case StatusInsufficientBalancesForRenewalFees:
+		return "INSUFFICIENT_BALANCES_FOR_RENEWAL_FEES"
 	}
 
 	panic(fmt.Sprintf("unreachable: Status.String() switch statement is non-exhaustive. Status: %v", uint32(status)))

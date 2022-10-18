@@ -335,13 +335,13 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 
 	if err, ok := err.(ErrHederaPreCheckStatus); ok {
 		if resp.(*services.Response).GetTransactionGetReceipt() != nil {
-			return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt()), err
+			return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt(), query.transactionID), err
 		}
 
 		return TransactionReceipt{}, err
 	}
 
-	return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt()), nil
+	return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt(), query.transactionID), nil
 }
 
 func (query *TransactionReceiptQuery) _GetLogID() string {

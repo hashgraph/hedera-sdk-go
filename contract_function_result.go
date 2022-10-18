@@ -28,8 +28,17 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-// ContractFunctionResult is the result returned by a call to a smart contract function. This is The _Response to
-// a ContractCallQuery, and is in the record for a ContractCallQuery.
+// ContractFunctionResult is a struct which allows users to convert between solidity and Go types, and is typically
+// returned by `ContractCallQuery` and is present in the transaction records of `ContractExecuteTransaction`.
+// Use the methods `Get<Type>()` to get a parameter. Not all solidity types
+// are supported out of the box, but the most common types are. The larger variants
+// of number types return just the bytes for the integer instead of converting to a big int type.
+// To convert those bytes into a usable integer using "github.com/ethereum/go-ethereum/common/math" and "math/big" do the following:
+// ```
+// contractFunctionResult.GetUint256(<index>)
+// bInt := new(big.Int)
+// bInt.SetBytes(query.GetUint256(0))
+// ```
 type ContractFunctionResult struct {
 	// ContractID is the smart contract instance whose function was called
 	ContractID *ContractID

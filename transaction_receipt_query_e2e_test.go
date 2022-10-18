@@ -64,7 +64,7 @@ func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 	require.NoError(t, err)
 }
 
-//what is this
+// what is this
 func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 

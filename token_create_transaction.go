@@ -138,7 +138,7 @@ func NewTokenCreateTransaction() *TokenCreateTransaction {
 	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
-	transaction.SetMaxTransactionFee(NewHbar(30))
+	transaction.SetMaxTransactionFee(NewHbar(40))
 	transaction.SetTokenType(TokenTypeFungibleCommon)
 
 	return &transaction
@@ -738,8 +738,9 @@ func (transaction *TokenCreateTransaction) Execute(
 
 	if err != nil {
 		return TransactionResponse{
-			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.(TransactionResponse).NodeID,
+			TransactionID:  transaction.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
 		}, err
 	}
 
@@ -749,9 +750,10 @@ func (transaction *TokenCreateTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.(TransactionResponse).NodeID,
-		Hash:          hash,
+		TransactionID:  transaction.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           hash,
+		ValidateStatus: true,
 	}, nil
 }
 

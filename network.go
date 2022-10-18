@@ -222,3 +222,42 @@ func (network *_Network) Close() error {
 
 	return nil
 }
+
+func _NetworkForMainnet(nodeAddresses map[AccountID]NodeAddress) *_Network {
+	network := _NewNetwork()
+	network.addressBook = nodeAddresses
+	network._SetLedgerID(*NewLedgerIDMainnet())
+	_ = network.SetNetwork(network._ToNet())
+	return &network
+}
+
+func _NetworkForTestnet(nodeAddresses map[AccountID]NodeAddress) *_Network {
+	network := _NewNetwork()
+	network.addressBook = nodeAddresses
+	network._SetLedgerID(*NewLedgerIDTestnet())
+	_ = network.SetNetwork(network._ToNet())
+	return &network
+}
+
+func _NetworkForPreviewnet(nodeAddresses map[AccountID]NodeAddress) *_Network {
+	network := _NewNetwork()
+	network.addressBook = nodeAddresses
+	network._SetLedgerID(*NewLedgerIDPreviewnet())
+	_ = network.SetNetwork(network._ToNet())
+	return &network
+}
+
+func (network *_Network) _SetNetworkFromAddressBook(addressBook NodeAddressBook) {
+	network.addressBook = addressBook._ToMap()
+	_ = network.SetNetwork(network._ToNet())
+}
+
+func (network *_Network) _ToNet() map[string]AccountID {
+	newNetwork := make(map[string]AccountID)
+	for accountID, node := range network.addressBook {
+		for _, address := range node.Addresses {
+			newNetwork[address.String()] = accountID
+		}
+	}
+	return newNetwork
+}

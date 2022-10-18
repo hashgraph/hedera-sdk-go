@@ -26,6 +26,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+	protobuf "google.golang.org/protobuf/proto"
 )
 
 func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, evmAddress *[]byte, err error) {
@@ -66,7 +69,20 @@ func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *st
 	} else if len(values[2]) == 40 {
 		temp, err2 := hex.DecodeString(values[2])
 		if err2 != nil {
-			return 0, 0, 0, nil, nil, nil, err
+			return 0, 0, 0, nil, nil, nil, err2
+		}
+		var key services.Key
+		err2 = protobuf.Unmarshal(temp, &key)
+		if err2 != nil {
+			return shard, realm, -1, checksum, nil, &temp, nil
+		}
+		aliasKey, err2 := _KeyFromProtobuf(&key)
+		if err2 != nil {
+			return shard, realm, -1, checksum, nil, &temp, nil
+		}
+
+		if aliasPublicKey, ok := aliasKey.(PublicKey); ok {
+			return shard, realm, -1, checksum, &aliasPublicKey, nil, nil
 		}
 
 		return shard, realm, -1, checksum, nil, &temp, nil

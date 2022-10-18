@@ -218,7 +218,9 @@ func _NewMockClient() (*Client, error) {
 	var net = make(map[string]AccountID)
 	net["nonexistent-testnet:56747"] = AccountID{Account: 3}
 
-	client := _NewClient(net, []string{}, "testnet")
+	client := ClientForTestnet()
+	client.SetMirrorNetwork([]string{})
+	client.SetNetwork(net)
 	client.SetOperator(AccountID{Account: 2}, privateKey)
 
 	return client, nil

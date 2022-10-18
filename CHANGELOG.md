@@ -1,3 +1,27 @@
+## v2.17.5
+
+### Added
+
+* Update documentation for `ContractFunction[Parameters|Result]` to show how to use large integer variants
+* Implement `TransactionResponse.ValidateStatus`
+
+## v2.17.4
+
+### Fixed
+
+* `*Transactions` now don't sign twice
+
+## v2.17.3
+
+### Added
+
+* `AccountCreateTransaction.[Set|Get]Alias[Key|EvmAddress]()`
+* `ContractCreateFlow.[Set|Get]MaxChunks()`
+* Support for automatically updating networks
+* `Client.[Set|Get]NetworkUpdatePeriod()`
+* `Client` constructor supports `_ScheduleNetworkUpdate` to disable auto updates
+* `task update` for manual address book updating
+
 ## v2.17.2
 
 ### Fixed

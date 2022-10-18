@@ -33,7 +33,8 @@ type TopicInfoQuery struct {
 }
 
 // NewTopicInfoQuery creates a TopicInfoQuery query which can be used to construct and execute a
-//  Get Topic Info Query.
+//
+//	Get Topic Info Query.
 func NewTopicInfoQuery() *TopicInfoQuery {
 	header := services.QueryHeader{}
 	return &TopicInfoQuery{

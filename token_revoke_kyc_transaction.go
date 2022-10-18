@@ -275,8 +275,9 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 
 	if err != nil {
 		return TransactionResponse{
-			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.(TransactionResponse).NodeID,
+			TransactionID:  transaction.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
 		}, err
 	}
 
@@ -286,9 +287,10 @@ func (transaction *TokenRevokeKycTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.(TransactionResponse).NodeID,
-		Hash:          hash,
+		TransactionID:  transaction.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           hash,
+		ValidateStatus: true,
 	}, nil
 }
 

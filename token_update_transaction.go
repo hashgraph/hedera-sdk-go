@@ -37,18 +37,18 @@ import (
 // case will cause the transaction status to resolve to TOKEN_IS_IMMUTABLE.
 //
 // --- Signing Requirements ---
-// 1. Whether or not a token has an admin key, its expiry can be extended with only the transaction
-//    payer's signature.
-// 2. Updating any other field of a mutable token requires the admin key's signature.
-// 3. If a new admin key is set, this new key must sign <b>unless</b> it is exactly an empty
-//    <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the
-//    token to become immutable. (Other <tt>Key</tt> structures without a constituent
-//    <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
-// 4. If a new treasury is set, the new treasury account's key must sign the transaction.
+//  1. Whether or not a token has an admin key, its expiry can be extended with only the transaction
+//     payer's signature.
+//  2. Updating any other field of a mutable token requires the admin key's signature.
+//  3. If a new admin key is set, this new key must sign <b>unless</b> it is exactly an empty
+//     <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the
+//     token to become immutable. (Other <tt>Key</tt> structures without a constituent
+//     <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
+//  4. If a new treasury is set, the new treasury account's key must sign the transaction.
 //
 // --- Nft Requirements ---
-// 1. If a non fungible token has a positive treasury balance, the operation will abort with
-//    CURRENT_TREASURY_STILL_OWNS_NFTS.
+//  1. If a non fungible token has a positive treasury balance, the operation will abort with
+//     CURRENT_TREASURY_STILL_OWNS_NFTS.
 type TokenUpdateTransaction struct {
 	Transaction
 	tokenID            *TokenID
@@ -76,18 +76,18 @@ type TokenUpdateTransaction struct {
 // case will cause the transaction status to resolve to TOKEN_IS_IMMUTABLE.
 //
 // --- Signing Requirements ---
-// 1. Whether or not a token has an admin key, its expiry can be extended with only the transaction
-//    payer's signature.
-// 2. Updating any other field of a mutable token requires the admin key's signature.
-// 3. If a new admin key is set, this new key must sign <b>unless</b> it is exactly an empty
-//    <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the
-//    token to become immutable. (Other <tt>Key</tt> structures without a constituent
-//    <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
-// 4. If a new treasury is set, the new treasury account's key must sign the transaction.
+//  1. Whether or not a token has an admin key, its expiry can be extended with only the transaction
+//     payer's signature.
+//  2. Updating any other field of a mutable token requires the admin key's signature.
+//  3. If a new admin key is set, this new key must sign <b>unless</b> it is exactly an empty
+//     <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the
+//     token to become immutable. (Other <tt>Key</tt> structures without a constituent
+//     <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
+//  4. If a new treasury is set, the new treasury account's key must sign the transaction.
 //
 // --- Nft Requirements ---
-// 1. If a non fungible token has a positive treasury balance, the operation will abort with
-//    CURRENT_TREASURY_STILL_OWNS_NFTS.
+//  1. If a non fungible token has a positive treasury balance, the operation will abort with
+//     CURRENT_TREASURY_STILL_OWNS_NFTS.
 func NewTokenUpdateTransaction() *TokenUpdateTransaction {
 	transaction := TokenUpdateTransaction{
 		Transaction: _NewTransaction(),
@@ -600,8 +600,9 @@ func (transaction *TokenUpdateTransaction) Execute(
 
 	if err != nil {
 		return TransactionResponse{
-			TransactionID: transaction.GetTransactionID(),
-			NodeID:        resp.(TransactionResponse).NodeID,
+			TransactionID:  transaction.GetTransactionID(),
+			NodeID:         resp.(TransactionResponse).NodeID,
+			ValidateStatus: true,
 		}, err
 	}
 
@@ -611,9 +612,10 @@ func (transaction *TokenUpdateTransaction) Execute(
 	}
 
 	return TransactionResponse{
-		TransactionID: transaction.GetTransactionID(),
-		NodeID:        resp.(TransactionResponse).NodeID,
-		Hash:          hash,
+		TransactionID:  transaction.GetTransactionID(),
+		NodeID:         resp.(TransactionResponse).NodeID,
+		Hash:           hash,
+		ValidateStatus: true,
 	}, nil
 }
 
