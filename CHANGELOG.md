@@ -1,3 +1,9 @@
+## v2.17.7
+
+### Fixed
+
+* 10 seconds blocking on creating a `Client`
+
 ## v2.17.6
 
 ### Fixed
