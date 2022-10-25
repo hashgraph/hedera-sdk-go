@@ -21,6 +21,7 @@ package hedera
  */
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"errors"
@@ -66,7 +67,8 @@ type Client struct {
 	requestTimeout             *time.Duration
 	networkUpdateInitialDelay  time.Duration
 	defaultNetworkUpdatePeriod time.Duration
-	quit                       chan bool
+	networkUpdateContext       context.Context
+	cancelNetworkUpdate        context.CancelFunc
 }
 
 // TransactionSigner is a closure or function that defines how transactions will be signed
@@ -85,8 +87,7 @@ var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
-	client := _NewClient(net, []string{}, "mainnet")
-	client.CancelScheduledNetworkUpdate()
+	client := _NewClient(net, []string{}, "mainnet", false)
 	_ = client.SetNetwork(network)
 	net._SetLedgerID(*NewLedgerIDMainnet())
 	return client
@@ -97,7 +98,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return _NewClient(*_NetworkForTestnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet)
+	return _NewClient(*_NetworkForTestnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet, true)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -105,7 +106,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return _NewClient(*_NetworkForPreviewnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet)
+	return _NewClient(*_NetworkForPreviewnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet, true)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -113,13 +114,13 @@ func ClientForTestnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return _NewClient(*_NetworkForMainnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet)
+	return _NewClient(*_NetworkForMainnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet, true)
 }
 
 // newClient takes in a map of _Node addresses to their respective IDS (_Network)
 // and returns a Client instance which can be used to
-func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Client {
-	q := make(chan bool)
+func _NewClient(network _Network, mirrorNetwork []string, name NetworkName, networkUpdate bool) *Client {
+	ctx, cancel := context.WithCancel(context.Background())
 	client := Client{
 		maxQueryPayment:                 defaultMaxQueryPayment,
 		maxTransactionFee:               defaultMaxTransactionFee,
@@ -132,40 +133,42 @@ func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Cli
 		defaultRegenerateTransactionIDs: true,
 		defaultNetworkUpdatePeriod:      24 * time.Hour,
 		networkUpdateInitialDelay:       10 * time.Second,
-		quit:                            q,
+		networkUpdateContext:            ctx,
+		cancelNetworkUpdate:             cancel,
 	}
 
 	client.SetMirrorNetwork(mirrorNetwork)
 	client.network._SetNetworkName(name)
 
-	go client._ScheduleNetworkUpdate(client.quit, client.networkUpdateInitialDelay)
+	if networkUpdate {
+		go client._ScheduleNetworkUpdate(ctx, 0)
+	}
 
 	return &client
 }
 
-func (client *Client) _ScheduleNetworkUpdate(quit chan bool, duration time.Duration) {
-	time.Sleep(duration)
+func (client *Client) _ScheduleNetworkUpdate(ctx context.Context, duration time.Duration) {
 	select {
-	case <-quit:
+	case <-ctx.Done():
 		return
-	default:
+	case <-time.After(duration):
 		addressbook, err := NewAddressBookQuery().
 			SetFileID(FileIDForAddressBook()).
 			Execute(client)
 		if err == nil && len(addressbook.NodeAddresses) > 0 {
 			client.SetNetworkFromAddressBook(addressbook)
-			client._ScheduleNetworkUpdate(quit, client.defaultNetworkUpdatePeriod)
+			client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
 		}
 	}
 }
 
 func (client *Client) CancelScheduledNetworkUpdate() {
-	client.quit <- true
+	client.cancelNetworkUpdate()
 }
 
 func (client *Client) SetNetworkUpdatePeriod(period time.Duration) *Client {
 	client.defaultNetworkUpdatePeriod = period
-	client._ScheduleNetworkUpdate(client.quit, period)
+	client._ScheduleNetworkUpdate(client.networkUpdateContext, period)
 	return client
 }
 
@@ -256,16 +259,16 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
-		client = _NewClient(network, arr, NetworkNameMainnet)
+		client = _NewClient(network, arr, NetworkNameMainnet, false)
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
 			case string(NetworkNameMainnet):
-				client = _NewClient(network, mainnetMirror, NetworkNameMainnet)
+				client = _NewClient(network, mainnetMirror, NetworkNameMainnet, true)
 			case string(NetworkNamePreviewnet):
-				client = _NewClient(network, previewnetMirror, NetworkNamePreviewnet)
+				client = _NewClient(network, previewnetMirror, NetworkNamePreviewnet, true)
 			case string(NetworkNameTestnet):
-				client = _NewClient(network, testnetMirror, NetworkNameTestnet)
+				client = _NewClient(network, testnetMirror, NetworkNameTestnet, true)
 			}
 		}
 	default:
