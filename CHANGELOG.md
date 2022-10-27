@@ -1,5 +1,10 @@
 ## v2.17.7
 
+### Added
+
+* Example for HIP-542
+* Example for HIP-573
+
 ### Fixed
 
 * 10 seconds blocking on creating a `Client`
