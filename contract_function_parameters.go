@@ -31,7 +31,7 @@ import (
 // Use the builder methods `Add<Type>()` to add a parameter. Not all solidity types
 // are supported out of the box, but the most common types are. The larger variants
 // of number types require the parameter to be `[]byte`. This is a little unintuitive,
-// so here is an exmaple of how to use those larger number variants using
+// so here is an example of how to use those larger number variants using
 // "github.com/ethereum/go-ethereum/common/math" and "math/big"
 // ```
 // AddUint88(math.PaddedBigBytes(n, 88 / 8))

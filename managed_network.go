@@ -119,10 +119,6 @@ func (this *_ManagedNetwork) _ReadmitNodes() {
 		}
 	}
 
-	if nextEarliestReadmitTime.Before(now.Add(this.minNodeReadmitPeriod)) {
-		nextEarliestReadmitTime = now.Add(this.minNodeReadmitPeriod)
-	}
-
 outer:
 	for _, node := range this.nodes {
 		for _, healthyNode := range this.healthyNodes {

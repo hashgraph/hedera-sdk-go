@@ -111,10 +111,7 @@ func (transaction *TokenDissociateTransaction) GetAccountID() AccountID {
 func (transaction *TokenDissociateTransaction) SetTokenIDs(ids ...TokenID) *TokenDissociateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokens = make([]TokenID, len(ids))
-
-	for i, tokenID := range ids {
-		transaction.tokens[i] = tokenID
-	}
+	copy(transaction.tokens, ids)
 
 	return transaction
 }
@@ -133,10 +130,7 @@ func (transaction *TokenDissociateTransaction) AddTokenID(id TokenID) *TokenDiss
 
 func (transaction *TokenDissociateTransaction) GetTokenIDs() []TokenID {
 	tokenIDs := make([]TokenID, len(transaction.tokens))
-
-	for i, tokenID := range transaction.tokens {
-		tokenIDs[i] = tokenID
-	}
+	copy(tokenIDs, transaction.tokens)
 
 	return tokenIDs
 }

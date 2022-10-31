@@ -116,10 +116,7 @@ func (transaction *TokenAssociateTransaction) GetAccountID() AccountID {
 func (transaction *TokenAssociateTransaction) SetTokenIDs(ids ...TokenID) *TokenAssociateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.tokens = make([]TokenID, len(ids))
-
-	for i, tokenID := range ids {
-		transaction.tokens[i] = tokenID
-	}
+	copy(transaction.tokens, ids)
 
 	return transaction
 }
@@ -138,10 +135,7 @@ func (transaction *TokenAssociateTransaction) AddTokenID(id TokenID) *TokenAssoc
 
 func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 	tokenIDs := make([]TokenID, len(transaction.tokens))
-
-	for i, tokenID := range transaction.tokens {
-		tokenIDs[i] = tokenID
-	}
+	copy(tokenIDs, transaction.tokens)
 
 	return tokenIDs
 }
