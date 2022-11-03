@@ -127,6 +127,11 @@ func (fee CustomFractionalFee) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
+func (fee *CustomFractionalFee) SetAllCollectorsAreExempt(exempt bool) *CustomFractionalFee {
+	fee.AllCollectorsAreExempt = exempt
+	return fee
+}
+
 func (fee CustomFractionalFee) _ToProtobuf() *services.CustomFee {
 	var FeeCollectorAccountID *services.AccountID
 	if fee.FeeCollectorAccountID != nil {
@@ -145,7 +150,8 @@ func (fee CustomFractionalFee) _ToProtobuf() *services.CustomFee {
 				NetOfTransfers: bool(fee.AssessmentMethod),
 			},
 		},
-		FeeCollectorAccountId: FeeCollectorAccountID,
+		FeeCollectorAccountId:  FeeCollectorAccountID,
+		AllCollectorsAreExempt: fee.AllCollectorsAreExempt,
 	}
 }
 

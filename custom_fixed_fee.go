@@ -95,7 +95,8 @@ func (fee CustomFixedFee) _ToProtobuf() *services.CustomFee {
 				DenominatingTokenId: tokenID,
 			},
 		},
-		FeeCollectorAccountId: FeeCollectorAccountID,
+		FeeCollectorAccountId:  FeeCollectorAccountID,
+		AllCollectorsAreExempt: fee.AllCollectorsAreExempt,
 	}
 }
 
@@ -143,6 +144,11 @@ func (fee *CustomFixedFee) SetFeeCollectorAccountID(id AccountID) *CustomFixedFe
 
 func (fee *CustomFixedFee) GetFeeCollectorAccountID() AccountID {
 	return *fee.FeeCollectorAccountID
+}
+
+func (fee *CustomFixedFee) SetAllCollectorsAreExempt(exempt bool) *CustomFixedFee {
+	fee.AllCollectorsAreExempt = exempt
+	return fee
 }
 
 func (fee CustomFixedFee) ToBytes() []byte {

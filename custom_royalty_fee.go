@@ -84,6 +84,11 @@ func (fee *CustomRoyaltyFee) GetFallbackFee() CustomFixedFee {
 	return CustomFixedFee{}
 }
 
+func (fee *CustomRoyaltyFee) SetAllCollectorsAreExempt(exempt bool) *CustomRoyaltyFee {
+	fee.AllCollectorsAreExempt = exempt
+	return fee
+}
+
 func _CustomRoyaltyFeeFromProtobuf(royalty *services.RoyaltyFee, fee CustomFee) CustomRoyaltyFee {
 	var fallback CustomFixedFee
 	if royalty.FallbackFee != nil {
@@ -126,6 +131,7 @@ func (fee CustomRoyaltyFee) _ToProtobuf() *services.CustomFee {
 				FallbackFee: fallback,
 			},
 		},
-		FeeCollectorAccountId: FeeCollectorAccountID,
+		FeeCollectorAccountId:  FeeCollectorAccountID,
+		AllCollectorsAreExempt: fee.AllCollectorsAreExempt,
 	}
 }
