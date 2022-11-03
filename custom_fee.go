@@ -26,7 +26,8 @@ import (
 )
 
 type CustomFee struct {
-	FeeCollectorAccountID *AccountID
+	FeeCollectorAccountID  *AccountID
+	AllCollectorsAreExempt bool
 }
 
 func _CustomFeeFromProtobuf(customFee *services.CustomFee) Fee {
@@ -40,7 +41,8 @@ func _CustomFeeFromProtobuf(customFee *services.CustomFee) Fee {
 	}
 
 	fee := CustomFee{
-		FeeCollectorAccountID: id,
+		FeeCollectorAccountID:  id,
+		AllCollectorsAreExempt: customFee.AllCollectorsAreExempt,
 	}
 
 	switch t := customFee.Fee.(type) {
@@ -62,6 +64,15 @@ func (fee *CustomFee) SetFeeCollectorAccountID(id AccountID) *CustomFee {
 
 func (fee *CustomFee) GetFeeCollectorAccountID() AccountID {
 	return *fee.FeeCollectorAccountID
+}
+
+func (fee *CustomFee) SetAllCollectorsAreExempt(exempt bool) *CustomFee {
+	fee.AllCollectorsAreExempt = exempt
+	return fee
+}
+
+func (fee *CustomFee) GetAllCollectorsAreExempt() bool {
+	return fee.AllCollectorsAreExempt
 }
 
 func CustomFeeFromBytes(data []byte) (Fee, error) {

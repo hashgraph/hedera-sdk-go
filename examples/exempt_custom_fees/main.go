@@ -2,27 +2,27 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/hashgraph/hedera-sdk-go/v2"
+	"os"
 )
 
 func main() {
 	client, err := hedera.ClientForName(os.Getenv("HEDERA_NETWORK"))
 	if err != nil {
-		println(err.Error(), ": error creating client")
+		fmt.Println(err.Error(), ": error creating client")
 		return
 	}
 
 	id, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
-		println(err.Error(), ": error converting string to AccountID")
+		fmt.Println(err.Error(), ": error converting string to AccountID")
 		return
 	}
 
 	// Retrieving operator key from environment variable OPERATOR_KEY
 	key, err := hedera.PrivateKeyFromString(os.Getenv("OPERATOR_KEY"))
 	if err != nil {
-		println(err.Error(), ": error converting string to PrivateKey")
+		fmt.Println(err.Error(), ": error converting string to PrivateKey")
 		return
 	}
 
@@ -99,30 +99,6 @@ func main() {
 	thirdAccountId := *receiptThirdAccount.AccountID
 	fmt.Println("thirdAccountId: ", thirdAccountId)
 
-	firstAccountBalanceBefore, err := hedera.NewAccountBalanceQuery().
-		SetAccountID(firstAccountId).
-		Execute(client)
-	if err != nil {
-		fmt.Println(err)
-	}
-	println("first's balance:", firstAccountBalanceBefore.Hbars.String())
-
-	secondAccountBalanceBefore, err := hedera.NewAccountBalanceQuery().
-		SetAccountID(secondAccountId).
-		Execute(client)
-	if err != nil {
-		fmt.Println(err)
-	}
-	println("second's balance:", secondAccountBalanceBefore.Hbars.String())
-
-	thirdAccountBalanceBefore, err := hedera.NewAccountBalanceQuery().
-		SetAccountID(thirdAccountId).
-		Execute(client)
-	if err != nil {
-		fmt.Println(err)
-	}
-	println("third's balance:", thirdAccountBalanceBefore.Hbars.String())
-
 	/**
 	 * Step 2
 	 *
@@ -132,31 +108,33 @@ func main() {
 	 * Fee #3 sends 3/100 of the transferred value to collector 0.0.C.
 	 */
 
-	fee1 := hedera.NewCustomFractionalFee().SetFeeCollectorAccountID(firstAccountId).SetNumerator(2).SetDenominator(100)
-	fee2 := hedera.NewCustomFractionalFee().SetFeeCollectorAccountID(secondAccountId).SetNumerator(3).SetDenominator(100)
-	fee3 := hedera.NewCustomFractionalFee().SetFeeCollectorAccountID(thirdAccountId).SetNumerator(1).SetDenominator(100)
+	fee1 := hedera.NewCustomFractionalFee().SetFeeCollectorAccountID(firstAccountId).SetNumerator(1).SetDenominator(100).SetAllCollectorsAreExempt(true)
+	fee2 := hedera.NewCustomFractionalFee().SetFeeCollectorAccountID(secondAccountId).SetNumerator(2).SetDenominator(100).SetAllCollectorsAreExempt(true)
+	fee3 := hedera.NewCustomFractionalFee().SetFeeCollectorAccountID(thirdAccountId).SetNumerator(3).SetDenominator(100).SetAllCollectorsAreExempt(true)
 	tokenCreateTransaction, err := hedera.NewTokenCreateTransaction().
 		SetTokenName("HIP-573 Token").SetTokenSymbol("H573").
 		SetTokenType(hedera.TokenTypeFungibleCommon).
-		SetTreasuryAccountID(secondAccountId).SetAutoRenewAccount(id).
+		SetTreasuryAccountID(id).SetAutoRenewAccount(id).
 		SetAdminKey(key.PublicKey()).SetFreezeKey(key.PublicKey()).
 		SetWipeKey(key.PublicKey()).SetInitialSupply(100000000). // Total supply = 100000000 / 10 ^ 2
 		SetDecimals(2).SetCustomFees([]hedera.Fee{fee1, fee2, fee3}).FreezeWith(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-	tokenCreateTransaction = tokenCreateTransaction.Sign(key).
-		Sign(firstAccountPrivateKey).
-		Sign(secondAccountPrivateKey).
-		Sign(thirdAccountPrivateKey)
 
-	transactionResponse, err := tokenCreateTransaction.Execute(client)
+	transactionResponse, err := tokenCreateTransaction.Sign(key).
+	Sign(firstAccountPrivateKey).
+	Sign(secondAccountPrivateKey).
+	Sign(thirdAccountPrivateKey).Execute(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	receipt, err := transactionResponse.GetReceipt(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	tokenId := *receipt.TokenID
 	fmt.Println("Created token with token id: ", tokenId)
@@ -166,22 +144,49 @@ func main() {
 	 *
 	 * Collector 0.0.B sends 10_000 units of the token to 0.0.A.
 	 */
-	tokenTransferTx, err := hedera.NewTransferTransaction().
-		AddTokenTransfer(tokenId, secondAccountId, -10000).
-		AddTokenTransfer(tokenId, firstAccountId, 10000).
+	 
+	 const amount = 10_000
+	// First we transfer the amount from treasury account to second account
+	treasuryTokenTransferTransaction, err := hedera.NewTransferTransaction().
+		AddTokenTransfer(tokenId, id, -amount).AddTokenTransfer(tokenId, secondAccountId, amount).
 		FreezeWith(client)
 	if err != nil {
 		fmt.Println(err)
+		return
+	}
+
+	treasuryTokenTransferSubmit, err := treasuryTokenTransferTransaction.Sign(key).Execute(client)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	treasuryTransferReceipt, err := treasuryTokenTransferSubmit.GetReceipt(client)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	
+	fmt.Println("Sending from treasury account to the second account - 'TransferTransaction' status: ", treasuryTransferReceipt.Status)
+
+	tokenTransferTx, err := hedera.NewTransferTransaction().
+		AddTokenTransfer(tokenId, secondAccountId, -amount).
+		AddTokenTransfer(tokenId, firstAccountId, amount).
+		FreezeWith(client)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	submitTransaction, err := tokenTransferTx.Sign(key).Sign(secondAccountPrivateKey).Execute(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	record, err := submitTransaction.GetRecord(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	fmt.Println("Transaction fee: ", record.TransactionFee)
 
@@ -197,30 +202,30 @@ func main() {
 		Execute(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-	println("first's balance:", firstAccountBalanceAfter.Hbars.String())
+	fmt.Println("first's balance:", firstAccountBalanceAfter.Tokens.Get(tokenId))
 
 	secondAccountBalanceAfter, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(secondAccountId).
 		Execute(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-	println("second's balance:", secondAccountBalanceAfter.Hbars.String())
+	fmt.Println("second's balance:", secondAccountBalanceAfter.Tokens.Get(tokenId))
 
 	thirdAccountBalanceAfter, err := hedera.NewAccountBalanceQuery().
 		SetAccountID(thirdAccountId).
 		Execute(client)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-	println("third's balance:", thirdAccountBalanceAfter.Hbars.String())
+	fmt.Println("third's balance:", secondAccountBalanceAfter.Tokens.Get(tokenId))
 
-	if firstAccountBalanceBefore.Hbars == firstAccountBalanceAfter.Hbars &&
-		secondAccountBalanceBefore.Hbars == secondAccountBalanceAfter.Hbars &&
-		thirdAccountBalanceBefore.Hbars == thirdAccountBalanceAfter.Hbars {
-
-		fmt.Println(`Fee collector accounts were not charged after transfer transaction`)
+	if firstAccountBalanceAfter.Tokens.Get(tokenId) == amount && secondAccountBalanceAfter.Tokens.Get(tokenId) == 0 && thirdAccountBalanceAfter.Tokens.Get(tokenId) == 0 {
+		fmt.Println("Fee collector accounts were not charged after transfer transaction")
 	}
 
 	client.Close()

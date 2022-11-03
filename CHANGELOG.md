@@ -1,3 +1,9 @@
+## v2.18.0
+
+### Added
+
+* `CustomFee.AllCollectorsAreExempt`
+
 ## v2.17.7
 
 ### Added
