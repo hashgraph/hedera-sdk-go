@@ -38,11 +38,12 @@ import (
 // requirements must be meet
 type FileUpdateTransaction struct {
 	Transaction
-	fileID         *FileID
-	keys           *KeyList
-	expirationTime *time.Time
-	contents       []byte
-	memo           string
+	fileID             *FileID
+	keys               *KeyList
+	expirationTime     *time.Time
+	contents           []byte
+	memo               string
+	autoRenewAccountID *AccountID
 }
 
 // NewFileUpdateTransaction creates a FileUpdateTransaction which modifies the metadata and/or contents of a file.
@@ -65,12 +66,13 @@ func _FileUpdateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	expiration := _TimeFromProtobuf(pb.GetFileUpdate().GetExpirationTime())
 
 	return &FileUpdateTransaction{
-		Transaction:    transaction,
-		fileID:         _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
-		keys:           &keys,
-		expirationTime: &expiration,
-		contents:       pb.GetFileUpdate().GetContents(),
-		memo:           pb.GetFileUpdate().GetMemo().Value,
+		Transaction:        transaction,
+		fileID:             _FileIDFromProtobuf(pb.GetFileUpdate().GetFileID()),
+		keys:               &keys,
+		expirationTime:     &expiration,
+		contents:           pb.GetFileUpdate().GetContents(),
+		memo:               pb.GetFileUpdate().GetMemo().Value,
+		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetFileCreate().AutoRenewAccount),
 	}
 }
 
@@ -150,6 +152,16 @@ func (transaction *FileUpdateTransaction) SetFileMemo(memo string) *FileUpdateTr
 	return transaction
 }
 
+func (transaction *FileUpdateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *FileUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.autoRenewAccountID = &autoRenewAccountID
+	return transaction
+}
+
+func (transaction *FileUpdateTransaction) GetAutoRenewAccount() AccountID {
+	return *transaction.autoRenewAccountID
+}
+
 // GeFileMemo
 // Deprecated: use GetFileMemo()
 func (transaction *FileUpdateTransaction) GeFileMemo() string {
@@ -194,6 +206,10 @@ func (transaction *FileUpdateTransaction) _Build() *services.TransactionBody {
 		body.Contents = transaction.contents
 	}
 
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
+	}
+
 	return &services.TransactionBody{
 		TransactionFee:           transaction.transactionFee,
 		Memo:                     transaction.Transaction.memo,
@@ -234,6 +250,10 @@ func (transaction *FileUpdateTransaction) _ConstructScheduleProtobuf() (*service
 
 	if transaction.contents != nil {
 		body.Contents = transaction.contents
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	return &services.SchedulableTransactionBody{

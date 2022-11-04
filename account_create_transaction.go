@@ -51,6 +51,7 @@ type AccountCreateTransaction struct {
 	declineReward                 bool
 	aliasKey                      *PublicKey
 	aliasEvmAddress               []byte
+	autoRenewAccountID            *AccountID
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
@@ -70,7 +71,7 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 	key, _ := _KeyFromProtobuf(pb.GetCryptoCreateAccount().GetKey())
 	renew := _DurationFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewPeriod())
 	stakedNodeID := pb.GetCryptoCreateAccount().GetStakedNodeId()
-
+	autoRenewAccount := _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetAutoRenewAccount())
 	var stakeNodeAccountID *AccountID
 	if pb.GetCryptoCreateAccount().GetStakedAccountId() != nil {
 		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetCryptoCreateAccount().GetStakedAccountId())
@@ -87,6 +88,7 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 		stakedAccountID:               stakeNodeAccountID,
 		stakedNodeID:                  &stakedNodeID,
 		declineReward:                 pb.GetCryptoCreateAccount().GetDeclineReward(),
+		autoRenewAccountID:            autoRenewAccount,
 	}
 
 	if pb.GetCryptoCreateAccount().GetAlias() != nil {
@@ -259,6 +261,20 @@ func (transaction *AccountCreateTransaction) GetAliasEvmAddress() []byte {
 	return transaction.aliasEvmAddress
 }
 
+func (transaction *AccountCreateTransaction) SetAutoRenewAccount(id AccountID) *AccountCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.autoRenewAccountID = &id
+	return transaction
+}
+
+func (transaction *AccountCreateTransaction) GetAutoRenewAccount() AccountID {
+	if transaction.autoRenewAccountID != nil {
+		return *transaction.autoRenewAccountID
+	}
+
+	return AccountID{}
+}
+
 func (transaction *AccountCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
 	if client == nil || !client.autoValidateChecksums {
 		return nil
@@ -290,6 +306,10 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 
 	if transaction.autoRenewPeriod != nil {
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	if transaction.stakedAccountID != nil {
@@ -356,6 +376,10 @@ func (transaction *AccountCreateTransaction) _ConstructScheduleProtobuf() (*serv
 
 	if transaction.autoRenewPeriod != nil {
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	if transaction.stakedAccountID != nil {
@@ -479,7 +503,6 @@ func (transaction *AccountCreateTransaction) Execute(
 		transaction.minBackoff,
 		transaction.maxRetry,
 	)
-
 	if err != nil {
 		return TransactionResponse{
 			TransactionID:  transaction.GetTransactionID(),

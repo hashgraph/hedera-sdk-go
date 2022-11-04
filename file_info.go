@@ -28,13 +28,14 @@ import (
 )
 
 type FileInfo struct {
-	FileID         FileID
-	Size           int64
-	ExpirationTime time.Time
-	IsDeleted      bool
-	Keys           KeyList
-	FileMemo       string
-	LedgerID       LedgerID
+	FileID             FileID
+	Size               int64
+	ExpirationTime     time.Time
+	IsDeleted          bool
+	Keys               KeyList
+	FileMemo           string
+	LedgerID           LedgerID
+	AutoRenewAccount AccountID
 }
 
 func _FileInfoFromProtobuf(fileInfo *services.FileGetInfoResponse_FileInfo) (FileInfo, error) {
@@ -54,15 +55,20 @@ func _FileInfoFromProtobuf(fileInfo *services.FileGetInfoResponse_FileInfo) (Fil
 	if fileInfo.FileID != nil {
 		fileID = *_FileIDFromProtobuf(fileInfo.FileID)
 	}
+	autoRenewAccount := AccountID{}
+	if fileInfo.AutoRenewAccount != nil {
+		autoRenewAccount = *_AccountIDFromProtobuf(fileInfo.AutoRenewAccount)
+	}
 
 	return FileInfo{
-		FileID:         fileID,
-		Size:           fileInfo.Size,
-		ExpirationTime: _TimeFromProtobuf(fileInfo.ExpirationTime),
-		IsDeleted:      fileInfo.Deleted,
-		Keys:           keys,
-		FileMemo:       fileInfo.Memo,
-		LedgerID:       LedgerID{fileInfo.LedgerId},
+		FileID:             fileID,
+		Size:               fileInfo.Size,
+		ExpirationTime:     _TimeFromProtobuf(fileInfo.ExpirationTime),
+		IsDeleted:          fileInfo.Deleted,
+		Keys:               keys,
+		FileMemo:           fileInfo.Memo,
+		LedgerID:           LedgerID{fileInfo.LedgerId},
+		AutoRenewAccount: autoRenewAccount,
 	}, nil
 }
 
@@ -74,10 +80,11 @@ func (fileInfo *FileInfo) _ToProtobuf() *services.FileGetInfoResponse_FileInfo {
 			Seconds: int64(fileInfo.ExpirationTime.Second()),
 			Nanos:   int32(fileInfo.ExpirationTime.Nanosecond()),
 		},
-		Deleted:  fileInfo.IsDeleted,
-		Keys:     fileInfo.Keys._ToProtoKeyList(),
-		Memo:     fileInfo.FileMemo,
-		LedgerId: fileInfo.LedgerID.ToBytes(),
+		Deleted:          fileInfo.IsDeleted,
+		Keys:             fileInfo.Keys._ToProtoKeyList(),
+		Memo:             fileInfo.FileMemo,
+		LedgerId:         fileInfo.LedgerID.ToBytes(),
+		AutoRenewAccount: fileInfo.AutoRenewAccount._ToProtobuf(),
 	}
 }
 

@@ -42,6 +42,7 @@ type AccountInfo struct {
 	ReceiverSigRequired            bool
 	ExpirationTime                 time.Time
 	AutoRenewPeriod                time.Duration
+	AutoRenewAccountID             AccountID
 	LiveHashes                     []*LiveHash
 	// Deprecated
 	TokenRelationships            []*TokenRelationship
@@ -87,6 +88,11 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		accountID = *_AccountIDFromProtobuf(pb.AccountID)
 	}
 
+	autoRenewAccountId := AccountID{}
+	if pb.AutoRenewAccount != nil {
+		autoRenewAccountId = *_AccountIDFromProtobuf(pb.AutoRenewAccount)
+	}
+
 	var alias *PublicKey
 	if len(pb.Alias) != 0 {
 		pbKey := services.Key{}
@@ -123,6 +129,7 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 		LedgerID:                       LedgerID{pb.LedgerId},
 		EthereumNonce:                  pb.EthereumNonce,
 		StakingInfo:                    &stakingInfo,
+		AutoRenewAccountID:             autoRenewAccountId,
 	}, nil
 }
 
@@ -151,6 +158,7 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 		ReceiverSigRequired:            info.ReceiverSigRequired,
 		ExpirationTime:                 _TimeToProtobuf(info.ExpirationTime),
 		AutoRenewPeriod:                _DurationToProtobuf(info.AutoRenewPeriod),
+		AutoRenewAccount:               info.AutoRenewAccountID._ToProtobuf(),
 		LiveHashes:                     liveHashes,
 		Memo:                           info.AccountMemo,
 		OwnedNfts:                      info.OwnedNfts,

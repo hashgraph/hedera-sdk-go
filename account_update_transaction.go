@@ -41,6 +41,7 @@ type AccountUpdateTransaction struct {
 	proxyAccountID                *AccountID
 	key                           Key
 	autoRenewPeriod               *time.Duration
+	autoRenewAccountID            *AccountID
 	memo                          string
 	receiverSignatureRequired     bool
 	expirationTime                *time.Time
@@ -89,12 +90,17 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 	if pb.GetCryptoUpdateAccount().GetStakedAccountId() != nil {
 		stakeNodeAccountID = _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetStakedAccountId())
 	}
+	var autoRenewAccountID *AccountID
+	if pb.GetCryptoUpdateAccount().GetAutoRenewAccount() != nil {
+		autoRenewAccountID = _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAutoRenewAccount())
+	}
 
 	return &AccountUpdateTransaction{
 		Transaction:                   transaction,
 		accountID:                     _AccountIDFromProtobuf(pb.GetCryptoUpdateAccount().GetAccountIDToUpdate()),
 		key:                           key,
 		autoRenewPeriod:               &autoRenew,
+		autoRenewAccountID:            autoRenewAccountID,
 		memo:                          pb.GetCryptoUpdateAccount().GetMemo().Value,
 		receiverSignatureRequired:     receiverSignatureRequired,
 		expirationTime:                &expiration,
@@ -260,6 +266,20 @@ func (transaction *AccountUpdateTransaction) GetAutoRenewPeriod() time.Duration 
 	return time.Duration(0)
 }
 
+func (transaction *AccountUpdateTransaction) SetAutoRenewAccountID(accountID AccountID) *AccountUpdateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.accountID = &accountID
+	return transaction
+}
+
+func (transaction *AccountUpdateTransaction) GetAutoRenewAccountID() AccountID {
+	if transaction.accountID == nil {
+		return AccountID{}
+	}
+
+	return *transaction.accountID
+}
+
 // SetExpirationTime sets the new expiration time to extend to (ignored if equal to or before the current one)
 func (transaction *AccountUpdateTransaction) SetExpirationTime(expirationTime time.Time) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
@@ -320,6 +340,10 @@ func (transaction *AccountUpdateTransaction) _Build() *services.TransactionBody 
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
 	}
 
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
+	}
+
 	if transaction.expirationTime != nil {
 		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
 	}
@@ -377,6 +401,10 @@ func (transaction *AccountUpdateTransaction) _ConstructScheduleProtobuf() (*serv
 
 	if transaction.autoRenewPeriod != nil {
 		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	if transaction.expirationTime != nil {

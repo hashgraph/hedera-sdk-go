@@ -38,10 +38,11 @@ import (
 // a null key. Future versions of the API will support multiple realms and multiple shards.
 type FileCreateTransaction struct {
 	Transaction
-	keys           *KeyList
-	expirationTime *time.Time
-	contents       []byte
-	memo           string
+	keys               *KeyList
+	expirationTime     *time.Time
+	contents           []byte
+	memo               string
+	autoRenewAccountID *AccountID
 }
 
 // NewFileCreateTransaction creates a FileCreateTransaction which creates a new file, containing the given contents.  It is referenced by its FileID, and does
@@ -69,11 +70,12 @@ func _FileCreateTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	expiration := _TimeFromProtobuf(pb.GetFileCreate().GetExpirationTime())
 
 	return &FileCreateTransaction{
-		Transaction:    transaction,
-		keys:           &keys,
-		expirationTime: &expiration,
-		contents:       pb.GetFileCreate().GetContents(),
-		memo:           pb.GetMemo(),
+		Transaction:        transaction,
+		keys:               &keys,
+		expirationTime:     &expiration,
+		contents:           pb.GetFileCreate().GetContents(),
+		memo:               pb.GetMemo(),
+		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetFileCreate().AutoRenewAccount),
 	}
 }
 
@@ -155,6 +157,16 @@ func (transaction *FileCreateTransaction) GetMemo() string {
 	return transaction.memo
 }
 
+func (transaction *FileCreateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *FileCreateTransaction {
+	transaction._RequireNotFrozen()
+	transaction.autoRenewAccountID = &autoRenewAccountID
+	return transaction
+}
+
+func (transaction *FileCreateTransaction) GetAutoRenewAccount() AccountID {
+	return *transaction.autoRenewAccountID
+}
+
 func (transaction *FileCreateTransaction) _Build() *services.TransactionBody {
 	body := &services.FileCreateTransactionBody{
 		Memo: transaction.memo,
@@ -170,6 +182,10 @@ func (transaction *FileCreateTransaction) _Build() *services.TransactionBody {
 
 	if transaction.contents != nil {
 		body.Contents = transaction.contents
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	return &services.TransactionBody{
@@ -209,6 +225,10 @@ func (transaction *FileCreateTransaction) _ConstructScheduleProtobuf() (*service
 
 	if transaction.contents != nil {
 		body.Contents = transaction.contents
+	}
+
+	if transaction.autoRenewAccountID != nil {
+		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
 	}
 
 	return &services.SchedulableTransactionBody{
