@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
@@ -56,7 +55,7 @@ func main() {
 	}()
 
 	// R contents from hello_world.json file
-	rawContract, err := ioutil.ReadFile("./hello_world.json")
+	rawContract, err := os.ReadFile("./hello_world.json")
 	if err != nil {
 		println(err.Error(), ": error reading hello_world.json")
 		return

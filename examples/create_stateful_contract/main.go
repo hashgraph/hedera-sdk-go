@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/hashgraph/hedera-sdk-go/v2"
@@ -57,7 +56,7 @@ func main() {
 	}()
 
 	// Read in the compiled contract from stateful.json
-	rawSmartContract, err := ioutil.ReadFile("./stateful.json")
+	rawSmartContract, err := os.ReadFile("./stateful.json")
 	if err != nil {
 		println(err.Error(), ": error reading stateful.json")
 		return

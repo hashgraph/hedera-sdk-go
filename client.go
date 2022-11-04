@@ -26,7 +26,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"time"
 )
@@ -315,7 +315,7 @@ func ClientFromConfigFile(filename string) (*Client, error) {
 		err = file.Close()
 	}()
 
-	configBytes, err := ioutil.ReadAll(file)
+	configBytes, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}

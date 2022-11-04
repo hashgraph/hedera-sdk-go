@@ -29,7 +29,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -172,7 +171,7 @@ func _Ed25519PrivateKeyFromKeystore(ks []byte, passphrase string) (*_Ed25519Priv
 
 // PrivateKeyReadKeystore recovers an _Ed25519PrivateKey from an encrypted _Keystore file.
 func _Ed25519PrivateKeyReadKeystore(source io.Reader, passphrase string) (*_Ed25519PrivateKey, error) {
-	keystoreBytes, err := ioutil.ReadAll(source)
+	keystoreBytes, err := io.ReadAll(source)
 	if err != nil {
 		return &_Ed25519PrivateKey{}, err
 	}
@@ -230,7 +229,7 @@ func _Ed25519PrivateKeyReadPem(source io.Reader, passphrase string) (*_Ed25519Pr
 	// note: Passphrases are currently not supported, but included in the function definition to avoid breaking
 	// changes in the future.
 
-	pemFileBytes, err := ioutil.ReadAll(source)
+	pemFileBytes, err := io.ReadAll(source)
 	if err != nil {
 		return &_Ed25519PrivateKey{}, err
 	}

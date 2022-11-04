@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/hashgraph/hedera-sdk-go/v2"
 	"github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper"
-	"io/ioutil"
 	"os"
 )
 
@@ -75,7 +74,7 @@ func main() {
 	//Submit the transaction to a Hedera network
 	transaction.Execute(client)
 
-	rawContract, err := ioutil.ReadFile("../precompile_example/ZeroTokenOperations.json")
+	rawContract, err := os.ReadFile("../precompile_example/ZeroTokenOperations.json")
 	if err != nil {
 		println(err.Error(), ": error reading json")
 		return
