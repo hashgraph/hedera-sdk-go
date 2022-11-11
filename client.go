@@ -157,8 +157,8 @@ func (client *Client) _ScheduleNetworkUpdate(ctx context.Context, duration time.
 			Execute(client)
 		if err == nil && len(addressbook.NodeAddresses) > 0 {
 			client.SetNetworkFromAddressBook(addressbook)
-			client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
 		}
+		client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
 	}
 }
 

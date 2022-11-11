@@ -4,6 +4,10 @@
 
 * `CustomFee.AllCollectorsAreExempt`
 
+### Fixed
+
+* Addressbook Query no logner panics
+
 ## v2.17.7
 
 ### Added
