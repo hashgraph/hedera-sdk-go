@@ -97,7 +97,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return _NewClient(*_NetworkForTestnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet)
+	return _NewClient(*_NetworkForMainnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -105,7 +105,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return _NewClient(*_NetworkForPreviewnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet)
+	return _NewClient(*_NetworkForTestnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -113,7 +113,7 @@ func ClientForTestnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return _NewClient(*_NetworkForMainnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet)
+	return _NewClient(*_NetworkForPreviewnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet)
 }
 
 // newClient takes in a map of _Node addresses to their respective IDS (_Network)
@@ -140,7 +140,7 @@ func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Cli
 
 	// We can't ask for AddressBook from non existent Mirror node
 	if len(mirrorNetwork) > 0 {
-		// Update the Addressbook, before the deafult timeout starts
+		// Update the Addressbook, before the default timeout starts
 		client._UpdateAddressBook()
 		go client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
 	}
