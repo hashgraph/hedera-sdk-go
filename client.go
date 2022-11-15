@@ -65,7 +65,6 @@ type Client struct {
 	minBackoff time.Duration
 
 	requestTimeout             *time.Duration
-	networkUpdateInitialDelay  time.Duration
 	defaultNetworkUpdatePeriod time.Duration
 	networkUpdateContext       context.Context
 	cancelNetworkUpdate        context.CancelFunc
@@ -87,7 +86,7 @@ var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
-	client := _NewClient(net, []string{}, "mainnet", false)
+	client := _NewClient(net, []string{}, "mainnet")
 	_ = client.SetNetwork(network)
 	net._SetLedgerID(*NewLedgerIDMainnet())
 	return client
@@ -98,7 +97,7 @@ func ClientForNetwork(network map[string]AccountID) *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForMainnet() *Client {
-	return _NewClient(*_NetworkForTestnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet, true)
+	return _NewClient(*_NetworkForMainnet(mainnetNodes._ToMap()), mainnetMirror, NetworkNameMainnet)
 }
 
 // ClientForTestnet returns a preconfigured client for use with the standard
@@ -106,7 +105,7 @@ func ClientForMainnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForTestnet() *Client {
-	return _NewClient(*_NetworkForPreviewnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet, true)
+	return _NewClient(*_NetworkForTestnet(testnetNodes._ToMap()), testnetMirror, NetworkNameTestnet)
 }
 
 // ClientForPreviewnet returns a preconfigured client for use with the standard
@@ -114,12 +113,12 @@ func ClientForTestnet() *Client {
 // Most users will want to set an _Operator account with .SetOperator so
 // transactions can be automatically given TransactionIDs and signed.
 func ClientForPreviewnet() *Client {
-	return _NewClient(*_NetworkForMainnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet, true)
+	return _NewClient(*_NetworkForPreviewnet(previewnetNodes._ToMap()), previewnetMirror, NetworkNamePreviewnet)
 }
 
 // newClient takes in a map of _Node addresses to their respective IDS (_Network)
 // and returns a Client instance which can be used to
-func _NewClient(network _Network, mirrorNetwork []string, name NetworkName, networkUpdate bool) *Client {
+func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := Client{
 		maxQueryPayment:                 defaultMaxQueryPayment,
@@ -132,7 +131,6 @@ func _NewClient(network _Network, mirrorNetwork []string, name NetworkName, netw
 		maxBackoff:                      8 * time.Second,
 		defaultRegenerateTransactionIDs: true,
 		defaultNetworkUpdatePeriod:      24 * time.Hour,
-		networkUpdateInitialDelay:       10 * time.Second,
 		networkUpdateContext:            ctx,
 		cancelNetworkUpdate:             cancel,
 	}
@@ -140,25 +138,33 @@ func _NewClient(network _Network, mirrorNetwork []string, name NetworkName, netw
 	client.SetMirrorNetwork(mirrorNetwork)
 	client.network._SetNetworkName(name)
 
-	if networkUpdate {
-		go client._ScheduleNetworkUpdate(ctx, 0)
+	// We can't ask for AddressBook from non existent Mirror node
+	if len(mirrorNetwork) > 0 {
+		// Update the Addressbook, before the default timeout starts
+		client._UpdateAddressBook()
+		go client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
 	}
 
 	return &client
 }
 
+func (client *Client) _UpdateAddressBook() {
+	addressbook, err := NewAddressBookQuery().
+		SetFileID(FileIDForAddressBook()).
+		Execute(client)
+	if err == nil && len(addressbook.NodeAddresses) > 0 {
+		client.SetNetworkFromAddressBook(addressbook)
+	}
+}
+
 func (client *Client) _ScheduleNetworkUpdate(ctx context.Context, duration time.Duration) {
-	select {
-	case <-ctx.Done():
-		return
-	case <-time.After(duration):
-		addressbook, err := NewAddressBookQuery().
-			SetFileID(FileIDForAddressBook()).
-			Execute(client)
-		if err == nil && len(addressbook.NodeAddresses) > 0 {
-			client.SetNetworkFromAddressBook(addressbook)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(duration):
+			client._UpdateAddressBook()
 		}
-		client._ScheduleNetworkUpdate(ctx, client.defaultNetworkUpdatePeriod)
 	}
 }
 
@@ -168,7 +174,9 @@ func (client *Client) CancelScheduledNetworkUpdate() {
 
 func (client *Client) SetNetworkUpdatePeriod(period time.Duration) *Client {
 	client.defaultNetworkUpdatePeriod = period
-	client._ScheduleNetworkUpdate(client.networkUpdateContext, period)
+	client.CancelScheduledNetworkUpdate()
+	client.networkUpdateContext, client.cancelNetworkUpdate = context.WithCancel(context.Background())
+	go client._ScheduleNetworkUpdate(client.networkUpdateContext, period)
 	return client
 }
 
@@ -259,16 +267,16 @@ func ClientFromConfig(jsonBytes []byte) (*Client, error) {
 				return client, errors.New("mirrorNetwork is expected to be either string or an array of strings")
 			}
 		}
-		client = _NewClient(network, arr, NetworkNameMainnet, false)
+		client = _NewClient(network, arr, NetworkNameMainnet)
 	case string:
 		if len(mirror) > 0 {
 			switch mirror {
 			case string(NetworkNameMainnet):
-				client = _NewClient(network, mainnetMirror, NetworkNameMainnet, true)
+				client = _NewClient(network, mainnetMirror, NetworkNameMainnet)
 			case string(NetworkNamePreviewnet):
-				client = _NewClient(network, previewnetMirror, NetworkNamePreviewnet, true)
+				client = _NewClient(network, previewnetMirror, NetworkNamePreviewnet)
 			case string(NetworkNameTestnet):
-				client = _NewClient(network, testnetMirror, NetworkNameTestnet, true)
+				client = _NewClient(network, testnetMirror, NetworkNameTestnet)
 			}
 		}
 	default:

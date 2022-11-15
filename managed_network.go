@@ -104,7 +104,6 @@ func (this *_ManagedNetwork) _SetNetwork(network map[string]_IManagedNode) error
 	this.nodes = newNodes
 	this.network = newNetwork
 	this.healthyNodes = newHealthyNodes
-	this.ledgerID = nil
 
 	return nil
 }
