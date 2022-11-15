@@ -154,7 +154,7 @@ func (query *AddressBookQuery) Execute(client *Client) (NodeAddressBook, error) 
 			}
 
 			if subClient == nil {
-				ctx, cancel = context.WithCancel(context.TODO())
+				ctx, cancel = context.WithCancel(client.networkUpdateContext)
 
 				subClient, err = (*channel).GetNodes(ctx, pb)
 				if err != nil {

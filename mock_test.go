@@ -456,6 +456,7 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 	network := map[string]AccountID{}
 	mirrorNetwork := make([]string, len(allNodeResponses))
 	servers := make([]*MockServer, len(allNodeResponses))
+	ctx, cancel := context.WithCancel(context.Background())
 	client := &Client{
 		maxQueryPayment:                 defaultMaxQueryPayment,
 		maxTransactionFee:               defaultMaxTransactionFee,
@@ -467,7 +468,8 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 		maxBackoff:                      8 * time.Second,
 		defaultRegenerateTransactionIDs: true,
 		defaultNetworkUpdatePeriod:      24 * time.Hour,
-		networkUpdateInitialDelay:       1 * time.Millisecond,
+		networkUpdateContext:            ctx,
+		cancelNetworkUpdate:             cancel,
 	}
 
 	for i, responses := range allNodeResponses {
