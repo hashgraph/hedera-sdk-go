@@ -48,7 +48,7 @@ func NewTokenDeleteTransaction() *TokenDeleteTransaction {
 	transaction := TokenDeleteTransaction{
 		Transaction: _NewTransaction(),
 	}
-	transaction.SetMaxTransactionFee(NewHbar(30))
+	transaction._SetDefaultMaxTransactionFee(NewHbar(30))
 
 	return &transaction
 }

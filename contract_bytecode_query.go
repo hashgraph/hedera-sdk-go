@@ -178,7 +178,7 @@ func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 		cost = query.queryPayment
 	} else {
 		if query.maxQueryPayment.tinybar == 0 {
-			cost = client.maxQueryPayment
+			cost = client.GetDefaultMaxQueryPayment()
 		} else {
 			cost = query.maxQueryPayment
 		}

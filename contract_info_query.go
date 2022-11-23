@@ -40,8 +40,6 @@ func NewContractInfoQuery() *ContractInfoQuery {
 	header := services.QueryHeader{}
 	query := _NewQuery(true, &header)
 
-	query.SetMaxQueryPayment(NewHbar(2))
-
 	return &ContractInfoQuery{
 		Query: query,
 	}
@@ -187,7 +185,7 @@ func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 		cost = query.queryPayment
 	} else {
 		if query.maxQueryPayment.tinybar == 0 {
-			cost = client.maxQueryPayment
+			cost = client.GetDefaultMaxQueryPayment()
 		} else {
 			cost = query.maxQueryPayment
 		}

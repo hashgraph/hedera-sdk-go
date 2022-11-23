@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,8 +32,7 @@ import (
 )
 
 func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
-	client, err := ClientFromConfigFile(os.Getenv("CONFIG_FILE"))
-	require.NoError(t, err)
+	env := NewIntegrationTestEnv(t)
 
 	newKey, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
@@ -45,10 +43,10 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	resp, err := NewAccountCreateTransaction().
 		SetKey(newKey.PublicKey()).
 		SetInitialBalance(newBalance).
-		Execute(client)
+		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(client)
+	receipt, err := resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -59,7 +57,7 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		Execute(client)
+		Execute(env.Client)
 	require.NoError(t, err)
 
 	assert.Equal(t, accountID, info.AccountID)
@@ -67,20 +65,21 @@ func TestIntegrationAccountInfoQueryCanExecute(t *testing.T) {
 	assert.Equal(t, newKey.PublicKey(), info.Key)
 	assert.Equal(t, newBalance.tinybar, info.Balance.tinybar)
 
+
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetTransferAccountID(client.GetOperatorAccountID()).
+		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		SetTransactionID(TransactionIDGenerate(accountID)).
-		FreezeWith(client)
+		FreezeWith(env.Client)
 	require.NoError(t, err)
 
 	resp, err = tx.
 		Sign(newKey).
-		Execute(client)
+		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(client)
+	_, err = resp.GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	//err = CloseIntegrationTestEnv(env, nil)
@@ -116,7 +115,7 @@ func TestIntegrationAccountInfoQueryGetCost(t *testing.T) {
 
 	cost, err := accountInfo.GetCost(env.Client)
 	require.NoError(t, err)
-
+	
 	info, err := accountInfo.SetQueryPayment(cost).Execute(env.Client)
 	require.NoError(t, err)
 

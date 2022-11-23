@@ -45,7 +45,7 @@ func NewTopicCreateTransaction() *TopicCreateTransaction {
 	}
 
 	transaction.SetAutoRenewPeriod(7890000 * time.Second)
-	transaction.SetMaxTransactionFee(NewHbar(2))
+	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	// Default to maximum values for record thresholds. Without this records would be
 	// auto-created whenever a send or receive transaction takes place for this new account.

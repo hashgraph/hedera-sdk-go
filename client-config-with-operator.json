@@ -1,12 +1,12 @@
 {
-    "network": {
-        "0.previewnet.hedera.com:50211" : "0.0.3",
-        "1.previewnet.hedera.com:50211"  : "0.0.4",
-        "2.previewnet.hedera.com:50211" : "0.0.5",
-        "3.previewnet.hedera.com:50211" : "0.0.6"
-    },
-    "operator": {
-        "accountId": "0.0.3",
-        "privateKey": "302e020100300506032b657004220420eaa013282e"
-    }
+  "network": {
+      "0.previewnet.hedera.com:50211" : "0.0.3",
+      "1.previewnet.hedera.com:50211"  : "0.0.4",
+      "2.previewnet.hedera.com:50211" : "0.0.5",
+      "3.previewnet.hedera.com:50211" : "0.0.6"
+  },
+  "operator": {
+      "accountId": "0.0.3",
+      "privateKey": "302e020100300506032b657004220420eaa013282e"
+  }
 }

@@ -458,8 +458,7 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 	servers := make([]*MockServer, len(allNodeResponses))
 	ctx, cancel := context.WithCancel(context.Background())
 	client := &Client{
-		maxQueryPayment:                 defaultMaxQueryPayment,
-		maxTransactionFee:               defaultMaxTransactionFee,
+		defaultMaxQueryPayment:          NewHbar(1),
 		network:                         _NewNetwork(),
 		mirrorNetwork:                   _NewMirrorNetwork(),
 		autoValidateChecksums:           false,

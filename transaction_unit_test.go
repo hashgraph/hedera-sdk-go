@@ -400,3 +400,43 @@ func TestUnitQueryRegression(t *testing.T) {
 		},
 	})
 }
+func TestUnitTransactionInitFeeMaxTransactionWithouthSettingFee(t *testing.T) {
+	//Default Max Fee for TransferTransaction
+	fee := NewHbar(1)
+	client, err := _NewMockClient()
+	require.NoError(t, err)
+	transaction, err := NewTransferTransaction().
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
+		FreezeWith(client)
+	require.NoError(t, err)
+	require.Equal(t, uint64(fee.AsTinybar()), transaction.transactionFee)
+}
+
+func TestUnitTransactionInitFeeMaxTransactionFeeSetExplicitly(t *testing.T) {
+	clientMaxFee := NewHbar(14)
+	explicitMaxFee := NewHbar(15)
+	client, err := _NewMockClient()
+	client.SetDefaultMaxTransactionFee(clientMaxFee)
+	require.NoError(t, err)
+	transaction, err := NewTransferTransaction().
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
+		SetMaxTransactionFee(explicitMaxFee).
+		FreezeWith(client)
+	require.NoError(t, err)
+	require.Equal(t, uint64(explicitMaxFee.AsTinybar()), transaction.transactionFee)
+}
+
+func TestUnitTransactionInitFeeMaxTransactionFromClientDefault(t *testing.T) {
+	fee := NewHbar(14)
+	client, err := _NewMockClient()
+	client.SetDefaultMaxTransactionFee(fee)
+	require.NoError(t, err)
+	transaction, err := NewTransferTransaction().
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-100)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(100)).
+		FreezeWith(client)
+	require.NoError(t, err)
+	require.Equal(t, uint64(fee.AsTinybar()), transaction.transactionFee)
+}

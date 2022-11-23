@@ -31,10 +31,6 @@ import (
 	"time"
 )
 
-// Default max fees and payments to 1 h-bar
-var defaultMaxTransactionFee Hbar = NewHbar(1)
-var defaultMaxQueryPayment Hbar = NewHbar(1)
-
 //go:embed addressbook/mainnet.pb
 var mainnetAddress []byte
 var mainnetNodes, _ = NodeAddressBookFromBytes(mainnetAddress)
@@ -50,8 +46,8 @@ var testnetNodes, _ = NodeAddressBookFromBytes(testnetAddress)
 // Client is the Hedera protocol wrapper for the SDK used by all
 // transaction and query types.
 type Client struct {
-	maxTransactionFee Hbar
-	maxQueryPayment   Hbar
+	defaultMaxTransactionFee Hbar
+	defaultMaxQueryPayment   Hbar
 
 	operator *_Operator
 
@@ -121,8 +117,7 @@ func ClientForPreviewnet() *Client {
 func _NewClient(network _Network, mirrorNetwork []string, name NetworkName) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := Client{
-		maxQueryPayment:                 defaultMaxQueryPayment,
-		maxTransactionFee:               defaultMaxTransactionFee,
+		defaultMaxQueryPayment:          NewHbar(1),
 		network:                         network,
 		mirrorNetwork:                   _NewMirrorNetwork(),
 		autoValidateChecksums:           false,
@@ -598,4 +593,30 @@ func (client *Client) PingAll() {
 func (client *Client) SetNetworkFromAddressBook(addressBook NodeAddressBook) *Client {
 	client.network._SetNetworkFromAddressBook(addressBook)
 	return client
+}
+
+func (client *Client) SetDefaultMaxQueryPayment(defaultMaxQueryPayment Hbar) error {
+	if defaultMaxQueryPayment.AsTinybar() < 0 {
+		return errors.New("DefaultMaxQueryPayment must be non-negative")
+	}
+
+	client.defaultMaxQueryPayment = defaultMaxQueryPayment
+	return nil
+}
+
+func (client *Client) GetDefaultMaxQueryPayment() Hbar {
+	return client.defaultMaxQueryPayment
+}
+
+func (client *Client) SetDefaultMaxTransactionFee(defaultMaxTransactionFee Hbar) error {
+	if defaultMaxTransactionFee.AsTinybar() < 0 {
+		return errors.New("DefaultMaxTransactionFee must be non-negative")
+	}
+
+	client.defaultMaxTransactionFee = defaultMaxTransactionFee
+	return nil
+}
+
+func (client *Client) GetDefaultMaxTransactionFee() Hbar {
+	return client.defaultMaxTransactionFee
 }
