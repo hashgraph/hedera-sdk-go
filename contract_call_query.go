@@ -49,7 +49,6 @@ type ContractCallQuery struct {
 func NewContractCallQuery() *ContractCallQuery {
 	header := services.QueryHeader{}
 	query := _NewQuery(true, &header)
-	query.SetMaxQueryPayment(NewHbar(2))
 
 	return &ContractCallQuery{
 		Query: query,
@@ -259,7 +258,7 @@ func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult,
 		cost = query.queryPayment
 	} else {
 		if query.maxQueryPayment.tinybar == 0 {
-			cost = client.maxQueryPayment
+			cost = client.GetDefaultMaxQueryPayment()
 		} else {
 			cost = query.maxQueryPayment
 		}

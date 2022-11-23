@@ -33,13 +33,13 @@ import (
 
 func TestIntegrationFileCreateTransactionCanExecute(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
-
 	resp, err := NewFileCreateTransaction().
 		SetKeys(env.Client.GetOperatorPublicKey()).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetContents([]byte("Hello, World")).
 		SetTransactionMemo("go sdk e2e tests").
 		Execute(env.Client)
+
 
 	require.NoError(t, err)
 

@@ -65,7 +65,7 @@ func NewTransferTransaction() *TransferTransaction {
 		nftTransfers:   make(map[TokenID][]*TokenNftTransfer),
 	}
 
-	transaction.SetMaxTransactionFee(NewHbar(1))
+	transaction._SetDefaultMaxTransactionFee(NewHbar(1))
 
 	return &transaction
 }

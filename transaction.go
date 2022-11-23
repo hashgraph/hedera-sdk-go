@@ -45,6 +45,7 @@ type Transaction struct {
 	maxRetry int
 
 	transactionFee           uint64
+	defaultMaxTransactionFee uint64
 	memo                     string
 	transactionValidDuration *time.Duration
 	transactionID            TransactionID
@@ -458,9 +459,17 @@ func (this *Transaction) GetGrpcDeadline() *time.Duration {
 	return this.grpcDeadline
 }
 
+// Sets the maxTransaction fee based on priority:
+// 1. Explicitly set for this transaction
+// 2. Client has a default value set for all transactions
+// 3. The default for this type of transaction, which is set during creation
 func (this *Transaction) _InitFee(client *Client) {
-	if client != nil && this.transactionFee == 0 {
-		this.SetMaxTransactionFee(client.maxTransactionFee)
+	if this.transactionFee == 0 {
+		if client != nil && client.GetDefaultMaxTransactionFee().AsTinybar() != 0 {
+			this.SetMaxTransactionFee(client.GetDefaultMaxTransactionFee())
+		} else {
+			this.SetMaxTransactionFee(this.GetDefaultMaxTransactionFee())
+		}
 	}
 }
 
@@ -751,7 +760,11 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 	}
 
 	originalBody.Memo = this.memo
-	originalBody.TransactionFee = this.transactionFee
+	if this.transactionFee != 0 {
+		originalBody.TransactionFee = this.transactionFee
+	} else {
+		originalBody.TransactionFee = this.defaultMaxTransactionFee
+	}
 
 	updatedBody, err := protobuf.Marshal(&originalBody)
 	if err != nil {
@@ -787,6 +800,14 @@ func (this *Transaction) GetMaxTransactionFee() Hbar {
 func (this *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
 	this.transactionFee = uint64(fee.AsTinybar())
 	return this
+}
+func (this *Transaction) GetDefaultMaxTransactionFee() Hbar {
+	return HbarFromTinybar(int64(this.defaultMaxTransactionFee))
+}
+
+// SetMaxTransactionFee sets the max transaction fee for this Transaction.
+func (this *Transaction) _SetDefaultMaxTransactionFee(fee Hbar) {
+	this.defaultMaxTransactionFee = uint64(fee.AsTinybar())
 }
 
 // GetRegenerateTransactionID returns true if transaction ID regeneration is enabled

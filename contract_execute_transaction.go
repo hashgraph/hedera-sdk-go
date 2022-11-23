@@ -49,7 +49,7 @@ func NewContractExecuteTransaction() *ContractExecuteTransaction {
 	transaction := ContractExecuteTransaction{
 		Transaction: _NewTransaction(),
 	}
-	transaction.SetMaxTransactionFee(NewHbar(2))
+	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }

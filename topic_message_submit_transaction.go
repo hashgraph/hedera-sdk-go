@@ -49,7 +49,7 @@ func NewTopicMessageSubmitTransaction() *TopicMessageSubmitTransaction {
 		maxChunks:   20,
 		message:     make([]byte, 0),
 	}
-	transaction.SetMaxTransactionFee(NewHbar(2))
+	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
 
 	return &transaction
 }

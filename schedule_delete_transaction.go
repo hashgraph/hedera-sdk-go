@@ -43,7 +43,7 @@ func NewScheduleDeleteTransaction() *ScheduleDeleteTransaction {
 	transaction := ScheduleDeleteTransaction{
 		Transaction: _NewTransaction(),
 	}
-	transaction.SetMaxTransactionFee(NewHbar(5))
+	transaction._SetDefaultMaxTransactionFee(NewHbar(5))
 
 	return &transaction
 }

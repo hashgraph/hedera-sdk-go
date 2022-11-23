@@ -177,7 +177,7 @@ func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 		cost = query.queryPayment
 	} else {
 		if query.maxQueryPayment.tinybar == 0 {
-			cost = client.maxQueryPayment
+			cost = client.GetDefaultMaxQueryPayment()
 		} else {
 			cost = query.maxQueryPayment
 		}

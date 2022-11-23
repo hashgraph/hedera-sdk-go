@@ -241,7 +241,7 @@ func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) 
 		cost = query.queryPayment
 	} else {
 		if query.maxQueryPayment.tinybar == 0 {
-			cost = client.maxQueryPayment
+			cost = client.GetDefaultMaxQueryPayment()
 		} else {
 			cost = query.maxQueryPayment
 		}

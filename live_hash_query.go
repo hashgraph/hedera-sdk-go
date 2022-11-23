@@ -191,7 +191,7 @@ func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 		cost = query.queryPayment
 	} else {
 		if query.maxQueryPayment.tinybar == 0 {
-			cost = client.maxQueryPayment
+			cost = client.GetDefaultMaxQueryPayment()
 		} else {
 			cost = query.maxQueryPayment
 		}
