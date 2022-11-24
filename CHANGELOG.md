@@ -1,3 +1,14 @@
+## v2.19.0
+
+### Added
+
+* `SetDefaultMaxQueryPayment` and `SetDefaultMaxTransactionFee` in `Client`
+
+### Fixed
+
+* Schedule network recursive call
+* Wrongly deprecated `SpenderID` field in `TokenNFTInfo`
+
 ## v2.18.0
 
 ### Added
