@@ -293,8 +293,16 @@ func _AccountIDFromProtobuf(accountID *services.AccountID) *AccountID {
 	}
 }
 
+func (id AccountID) IsZero() bool {
+	return id._IsZero()
+}
+
 func (id AccountID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Account == 0 && id.AliasKey == nil
+}
+
+func (id AccountID) Equals(other AccountID) bool {
+	return id._Equals(other)
 }
 
 func (id AccountID) _Equals(other AccountID) bool {
