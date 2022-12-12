@@ -87,6 +87,10 @@ func _NewTransaction() Transaction {
 	}
 }
 
+func (this *Transaction) GetSignedTransactionBodyBytes(transactionIndex int) []byte {
+	return this.signedTransactions._Get(transactionIndex).(*services.SignedTransaction).GetBodyBytes()
+}
+
 // TransactionFromBytes converts Transaction bytes to a related *Transaction.
 func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	list := sdk.TransactionList{}
