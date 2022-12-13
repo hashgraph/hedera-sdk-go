@@ -1,3 +1,10 @@
+## v2.20.0
+
+### Added
+
+* `IsZero()` and `Equals()` in `AccountID`
+* `GetSignedTransactionBodyBytes()` in `Transaction`
+
 ## v2.19.0
 
 ### Added
