@@ -37,7 +37,7 @@ func main() {
 	initialAdminKeys := make([]hedera.PrivateKey, 3)
 
 	// Generating the keys for the KeyList
-	for i, _ := range initialAdminKeys {
+	for i := range initialAdminKeys {
 		key, err := hedera.GeneratePrivateKey()
 		if err != nil {
 			println(err.Error(), ": error generating PrivateKey")
@@ -93,7 +93,7 @@ func main() {
 	newAdminKeys := make([]hedera.PrivateKey, 4)
 
 	// Generating the keys
-	for i, _ := range newAdminKeys {
+	for i := range newAdminKeys {
 		key, err := hedera.GeneratePrivateKey()
 		if err != nil {
 			println(err.Error(), ": error generating PrivateKey")

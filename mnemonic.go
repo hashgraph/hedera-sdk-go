@@ -26,8 +26,11 @@ import (
 	"math/big"
 	"strings"
 
+	"crypto/sha512"
 	"github.com/pkg/errors"
 	"github.com/tyler-smith/go-bip39"
+	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/text/unicode/norm"
 )
 
 type Mnemonic struct {
@@ -264,6 +267,13 @@ func (m Mnemonic) _ToLegacyEntropy2() ([]byte, error) {
 	}
 
 	return entropy, nil
+}
+
+func (m Mnemonic) _ToSeed(passPhrase string) []byte {
+	passPhraseNFKD := norm.NFKD.String(passPhrase)
+	salt := []byte("mnemonic" + passPhraseNFKD)
+	seed := pbkdf2.Key([]byte(m.String()), salt, 2048, 64, sha512.New)
+	return seed
 }
 
 func _ConvertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 {
