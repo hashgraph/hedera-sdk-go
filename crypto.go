@@ -551,7 +551,16 @@ func (pk PublicKey) StringRaw() string {
 	return ""
 }
 
+// `Deprecated: Use ToEvmAddress instead`
 func (pk PublicKey) ToEthereumAddress() string {
+	if pk.ecdsaPublicKey != nil {
+		return pk.ecdsaPublicKey._ToEthereumAddress()
+	}
+
+	panic("unsupported operation on Ed25519PublicKey")
+}
+
+func (pk PublicKey) ToEvmAddress() string {
 	if pk.ecdsaPublicKey != nil {
 		return pk.ecdsaPublicKey._ToEthereumAddress()
 	}
