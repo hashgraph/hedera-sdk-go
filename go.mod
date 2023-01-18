@@ -7,7 +7,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/ethereum/go-ethereum v1.10.25
-	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20220927094515-9a7aad3fa052
+	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20221223083421-851698720852
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.28.0

@@ -32,6 +32,18 @@ import (
 )
 
 func _AccountIDFromString(s string) (shard int, realm int, num int, checksum *string, alias *PublicKey, evmAddress *[]byte, err error) {
+	if _Has0xPrefix(s) {
+		s = _Without0x(s)
+	}
+	if _IsHex(s) {
+		bytes := _Hex2Bytes(s)
+		if err == nil {
+			if len(bytes) == 20 {
+				return 0, 0, -1, nil, nil, &bytes, nil
+			}
+		}
+	}
+
 	if strings.Contains(s, "-") {
 		values := strings.SplitN(s, "-", 2)
 
@@ -191,4 +203,39 @@ func _IdToSolidityAddress(shard uint64, realm uint64, num uint64) string {
 	binary.BigEndian.PutUint64(bytes[4:12], realm)
 	binary.BigEndian.PutUint64(bytes[12:20], num)
 	return hex.EncodeToString(bytes)
+}
+
+func _Has0xPrefix(str string) bool {
+	return len(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')
+}
+
+func _Without0x(s string) string {
+	if _Has0xPrefix(s) {
+		s = s[2:]
+	}
+	if len(s)%2 == 1 {
+		s = "0" + s
+	}
+	return s
+}
+
+func _Hex2Bytes(str string) []byte {
+	h, _ := hex.DecodeString(str)
+	return h
+}
+
+func _IsHexCharacter(c byte) bool {
+	return ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')
+}
+
+func _IsHex(str string) bool {
+	if len(str)%2 != 0 {
+		return false
+	}
+	for _, c := range []byte(str) {
+		if !_IsHexCharacter(c) {
+			return false
+		}
+	}
+	return true
 }

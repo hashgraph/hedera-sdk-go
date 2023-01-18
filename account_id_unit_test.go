@@ -97,3 +97,28 @@ func TestUnitAccountIDEvm(t *testing.T) {
 
 	require.Equal(t, id.String(), "0.0.0011223344556677889900112233445566778899")
 }
+func TestUnitAccountIDEvmAddressOnly0x(t *testing.T) {
+	id, err := AccountIDFromString("0x1234567890abcdef1234567890abcdef12345678")
+	require.NoError(t, err)
+
+	require.Equal(t, id.String(), "0.0.1234567890abcdef1234567890abcdef12345678")
+}
+
+func TestUnitAccountIDEvmAddressOnlyWithout0x(t *testing.T) {
+	id, err := AccountIDFromString("1234567890abcdef1234567890abcdef12345678")
+	require.NoError(t, err)
+
+	require.Equal(t, id.String(), "0.0.1234567890abcdef1234567890abcdef12345678")
+}
+func TestUnitAccountIDEvmPublicAddress0x(t *testing.T) {
+	id, err := AccountIDFromEvmPublicAddress("0x1234567890abcdef1234567890abcdef12345678")
+	require.NoError(t, err)
+
+	require.Equal(t, id.String(), "0.0.1234567890abcdef1234567890abcdef12345678")
+}
+func TestUnitAccountIDEvmPublicAddressWithout0x(t *testing.T) {
+	id, err := AccountIDFromEvmPublicAddress("0x1234567890abcdef1234567890abcdef12345678")
+	require.NoError(t, err)
+
+	require.Equal(t, id.String(), "0.0.1234567890abcdef1234567890abcdef12345678")
+}
