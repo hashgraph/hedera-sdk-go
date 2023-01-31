@@ -63,7 +63,6 @@ type Transaction struct {
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
 	regenerateTransactionID bool
-	transactionCache        []*services.Transaction
 
 	grpcDeadline *time.Duration
 }
@@ -79,7 +78,6 @@ func _NewTransaction() Transaction {
 		transactions:             _NewLockableSlice(),
 		signedTransactions:       _NewLockableSlice(),
 		nodeAccountIDs:           _NewLockableSlice(),
-		transactionCache:         make([]*services.Transaction, 0),
 		freezeError:              nil,
 		regenerateTransactionID:  true,
 		minBackoff:               &minBackoff,
@@ -393,61 +391,44 @@ func (this *Transaction) GetSignatures() (map[AccountID]map[*PublicKey][]byte, e
 	return returnMap, nil
 }
 
-// GetTransactionHash gets the transaction hash
 func (this *Transaction) GetTransactionHash() ([]byte, error) {
-	hashes, err := this.GetTransactionHashPerNode()
+	current, err := this._BuildTransaction(0)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
+	}
+	hash := sha512.New384()
+	_, err = hash.Write(current.GetSignedTransactionBytes())
+	if err != nil {
+		return nil, err
 	}
 
-	node := this.nodeAccountIDs._Get(0)
-	switch n := node.(type) { //nolint
-	case AccountID:
-		return hashes[n], nil
-	}
-
-	return []byte{}, errors.New("unsupported type for _LockableSlice")
+	return hash.Sum(nil), nil
 }
 
 func (this *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, error) {
 	transactionHash := make(map[AccountID][]byte)
-
 	if !this._IsFrozen() {
 		return transactionHash, errTransactionIsNotFrozen
 	}
 
-	if len(this.transactionCache) > 0 {
-		if this.nodeAccountIDs.locked {
-			allTx := this.transactionCache
-			this.transactionIDs.locked = true
+	allTx, err := this._BuildAllTransactions()
+	if err != nil {
+		return transactionHash, err
+	}
+	this.transactionIDs.locked = true
 
-			for i, node := range this.nodeAccountIDs.slice {
-				switch n := node.(type) { //nolint
-				case AccountID:
-					hash := sha512.New384()
-					_, err := hash.Write(allTx[i].GetSignedTransactionBytes())
-					if err != nil {
-						return transactionHash, err
-					}
-
-					finalHash := hash.Sum(nil)
-
-					transactionHash[n] = finalHash
-				}
-			}
-		} else {
-			allTx := this.transactionCache
-			this.transactionIDs.locked = true
-
+	for i, node := range this.nodeAccountIDs.slice {
+		switch n := node.(type) { //nolint
+		case AccountID:
 			hash := sha512.New384()
-			_, err := hash.Write(allTx[0].GetSignedTransactionBytes())
+			_, err := hash.Write(allTx[i].GetSignedTransactionBytes())
 			if err != nil {
 				return transactionHash, err
 			}
 
 			finalHash := hash.Sum(nil)
 
-			transactionHash[this.nodeAccountIDs._Get(0).(AccountID)] = finalHash
+			transactionHash[n] = finalHash
 		}
 	}
 
@@ -788,7 +769,6 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 		SignedTransactionBytes: data,
 	}
 
-	this.transactionCache = append(this.transactionCache, transaction)
 	return transaction, nil
 }
 
