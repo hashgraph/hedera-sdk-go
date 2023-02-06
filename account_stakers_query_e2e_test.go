@@ -112,6 +112,7 @@ func TestIntegrationAccountStakersQueryInsufficientFee(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = accountStakers.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
+	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional precheck status NOT_SUPPORTED", err.Error())
 	}

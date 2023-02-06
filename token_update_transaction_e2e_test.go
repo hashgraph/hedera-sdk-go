@@ -51,7 +51,7 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -63,7 +63,7 @@ func TestIntegrationTokenUpdateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
@@ -102,7 +102,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenCreateTransaction().
@@ -121,7 +121,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -140,7 +140,7 @@ func TestIntegrationTokenUpdateTransactionDifferentKeys(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
@@ -178,7 +178,7 @@ func TestIntegrationTokenUpdateTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp2, err := NewTokenUpdateTransaction().
@@ -209,7 +209,7 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -253,7 +253,7 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -266,7 +266,7 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = mint.GetReceipt(env.Client)
+	_, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	update, err := NewTokenUpdateTransaction().
@@ -282,7 +282,7 @@ func DisabledTestIntegrationTokenUpdateTransactionTreasury(t *testing.T) { // no
 	resp, err = update.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().

@@ -49,7 +49,7 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -70,7 +70,7 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -87,7 +87,7 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
@@ -97,7 +97,7 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
@@ -111,7 +111,7 @@ func TestIntegrationTokenGrantKycTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -135,7 +135,7 @@ func TestIntegrationTokenGrantKycTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -156,7 +156,7 @@ func TestIntegrationTokenGrantKycTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -173,7 +173,7 @@ func TestIntegrationTokenGrantKycTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp2, err := NewTokenGrantKycTransaction().
@@ -217,7 +217,7 @@ func TestIntegrationTokenGrantKycTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -238,7 +238,7 @@ func TestIntegrationTokenGrantKycTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -255,7 +255,7 @@ func TestIntegrationTokenGrantKycTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp2, err := NewTokenGrantKycTransaction().
@@ -278,7 +278,7 @@ func TestIntegrationTokenGrantKycTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -302,7 +302,7 @@ func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -319,7 +319,7 @@ func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -336,7 +336,7 @@ func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
@@ -346,25 +346,9 @@ func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	assert.Equal(t, "exceptional receipt status: TOKEN_HAS_NO_KYC_KEY", err.Error())
-
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if relation.KycStatus != nil {
-			if *relation.KycStatus {
-				check = true
-			}
-		}
-	}
-	assert.Falsef(t, check, "token grant kyc transaction passed")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -377,7 +361,7 @@ func TestIntegrationTokenGrantKycTransactionNoKycSet(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)

@@ -86,7 +86,7 @@ func TestIntegrationTransactionRecordQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -144,7 +144,7 @@ func TestIntegrationTransactionRecordQueryReceiptPaymentZero(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -186,6 +186,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 		SetMaxQueryPayment(HbarFromTinybar(99999)).
 		SetQueryPayment(HbarFromTinybar(1)).
 		Execute(env.Client)
+		assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_TX_FEE", err.Error())
 	}
@@ -205,7 +206,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -229,7 +230,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -259,7 +260,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -276,7 +277,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
@@ -286,7 +287,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
@@ -296,7 +297,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	record, err := resp.GetRecord(env.Client)
@@ -313,7 +314,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
@@ -327,7 +328,7 @@ func DisabledTestIntegrationTokenTransferRecordsQuery(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 }
 
@@ -348,7 +349,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -370,7 +371,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -383,7 +384,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	mintReceipt, err := mint.GetReceipt(env.Client)
+	mintReceipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	transaction, err := NewTokenAssociateTransaction().
@@ -398,7 +399,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenGrantKycTransaction().
@@ -408,7 +409,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTransferTransaction().
@@ -418,7 +419,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	record, err := resp.GetRecord(env.Client)
@@ -434,7 +435,7 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
@@ -448,6 +449,6 @@ func DisabledTestIntegrationTokenNftTransferRecordQuery(t *testing.T) { // nolin
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 }

@@ -51,7 +51,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -63,7 +63,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
@@ -80,7 +80,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
@@ -114,7 +114,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -126,7 +126,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	customFee := CustomFractionalFee{
@@ -146,7 +146,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
@@ -179,7 +179,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -191,7 +191,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
@@ -208,7 +208,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionNoFeeScheduleKey(t *testing
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: TOKEN_HAS_NO_FEE_SCHEDULE_KEY", err.Error())
@@ -241,7 +241,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -253,7 +253,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
@@ -270,7 +270,7 @@ func DisabledTestIntegrationTokenFeeScheduleUpdateTransactionWrongScheduleKey(t 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_CUSTOM_FEE_SCHEDULE_KEY", err.Error())
@@ -307,7 +307,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -319,7 +319,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenFeeScheduleUpdateTransaction().
@@ -327,7 +327,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionScheduleAlreadyHasNoFees(t 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -355,7 +355,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -367,7 +367,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	customFee := CustomFractionalFee{
@@ -387,7 +387,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionFractionalFeeOnlyForFungibl
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON", err.Error())
@@ -417,7 +417,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -440,7 +440,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenIDNonFungible := *receipt.TokenID
@@ -452,7 +452,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
@@ -469,7 +469,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionDenominationMustBeFungibleC
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: CUSTOM_FEE_DENOMINATION_MUST_BE_FUNGIBLE_COMMON", err.Error())
@@ -496,7 +496,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -508,7 +508,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	customFee := CustomFixedFee{
@@ -531,7 +531,7 @@ func TestIntegrationTokenFeeScheduleUpdateTransactionCustomFeeListTooLong(t *tes
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: CUSTOM_FEES_LIST_TOO_LONG", err.Error())

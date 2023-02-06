@@ -43,7 +43,7 @@ func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -59,7 +59,7 @@ func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	contents, err := NewFileContentsQuery().
@@ -76,7 +76,7 @@ func TestIntegrationFileUpdateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -95,7 +95,7 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -106,7 +106,7 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
@@ -118,7 +118,7 @@ func TestIntegrationFileUpdateTransactionNoFileID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)

@@ -45,13 +45,13 @@ func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	remoteContents, err := NewFileContentsQuery().
@@ -70,7 +70,7 @@ func TestIntegrationFileContentsQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -91,13 +91,13 @@ func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
@@ -119,7 +119,7 @@ func TestIntegrationFileContentsQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -140,13 +140,13 @@ func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
@@ -168,7 +168,7 @@ func TestIntegrationFileContentsQuerySetBigMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -189,13 +189,13 @@ func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
@@ -207,6 +207,7 @@ func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = fileContents.Execute(env.Client)
+	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "cost of FileContentsQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
@@ -217,7 +218,7 @@ func TestIntegrationFileContentsQuerySetSmallMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -238,13 +239,13 @@ func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileContents := NewFileContentsQuery().
@@ -256,6 +257,7 @@ func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = fileContents.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
+	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional precheck status INSUFFICIENT_TX_FEE", err.Error())
 	}
@@ -266,7 +268,7 @@ func TestIntegrationFileContentsQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)

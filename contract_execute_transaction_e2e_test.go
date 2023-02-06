@@ -45,7 +45,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -61,7 +61,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -75,7 +75,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewContractDeleteTransaction().
@@ -85,7 +85,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -94,7 +94,7 @@ func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -129,7 +129,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -145,7 +145,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -158,7 +158,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_GAS", err.Error())
@@ -171,7 +171,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -180,7 +180,7 @@ func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -201,7 +201,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -217,7 +217,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -230,7 +230,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: CONTRACT_REVERT_EXECUTED", err.Error())
@@ -243,7 +243,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -252,7 +252,7 @@ func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -272,7 +272,7 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -294,7 +294,7 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -312,7 +312,7 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 	require.NoError(t, err)
 	assert.NotNil(t, record)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 	_, err = record.GetContractExecuteResult()
 	require.NoError(t, err)
@@ -324,7 +324,7 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -333,7 +333,7 @@ func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { // noli
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)

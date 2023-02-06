@@ -44,13 +44,13 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
@@ -63,7 +63,7 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -88,7 +88,7 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -97,7 +97,7 @@ func TestIntegrationContractInfoQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -117,13 +117,13 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
@@ -136,7 +136,7 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -164,7 +164,7 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -173,7 +173,7 @@ func TestIntegrationContractInfoQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -193,13 +193,13 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
@@ -212,7 +212,7 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -240,7 +240,7 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -249,7 +249,7 @@ func TestIntegrationContractInfoQuerySetBigMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -269,13 +269,13 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
@@ -288,7 +288,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -303,6 +303,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = contractInfo.Execute(env.Client)
+	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "cost of ContractInfoQuery ("+cost.String()+") without explicit payment is greater than the max query payment of 1 tℏ", err.Error())
 	}
@@ -314,7 +315,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -323,7 +324,7 @@ func TestIntegrationContractInfoQuerySetSmallMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -343,13 +344,13 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewContractCreateTransaction().
@@ -362,7 +363,7 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -388,7 +389,7 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
@@ -397,7 +398,7 @@ func TestIntegrationContractInfoQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)

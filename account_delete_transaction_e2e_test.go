@@ -49,7 +49,7 @@ func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := receipt.AccountID
@@ -71,7 +71,7 @@ func TestIntegrationAccountDeleteTransactionCanExecute(t *testing.T) {
 	resp, err = tx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -95,7 +95,7 @@ func TestIntegrationAccountDeleteTransactionNoTransferAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := receipt.AccountID
@@ -134,7 +134,7 @@ func TestIntegrationAccountDeleteTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
@@ -170,7 +170,7 @@ func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := receipt.AccountID
@@ -185,7 +185,7 @@ func TestIntegrationAccountDeleteTransactionNoSigning(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())

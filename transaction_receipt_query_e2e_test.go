@@ -54,7 +54,7 @@ func TestIntegrationTransactionReceiptQueryCanExecute(t *testing.T) {
 	resp, err := tx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	_, err = resp.GetRecord(env.Client)
@@ -77,7 +77,7 @@ func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testi
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -98,7 +98,7 @@ func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testi
 	resp, err = scheduleTx.Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	scheduleID := *receipt.ScheduleID
@@ -112,7 +112,7 @@ func DisabledTestIntegrationTransactionReceiptQueryInvalidTransactionID(t *testi
 	resp, err = scheduleSignTx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 
 	switch receiptErr := err.(type) {

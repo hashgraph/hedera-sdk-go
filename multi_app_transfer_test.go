@@ -60,7 +60,7 @@ func TestIntegrationMultiAppTransfer(t *testing.T) {
 	response, err := signedTx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = response.GetReceipt(env.Client)
+	_, err = response.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)

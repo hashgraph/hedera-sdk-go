@@ -44,7 +44,7 @@ func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -63,7 +63,7 @@ func TestIntegrationTopicDeleteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	_, err = NewTopicInfoQuery().
@@ -93,7 +93,7 @@ func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -111,7 +111,7 @@ func TestIntegrationTopicDeleteTransactionNoTopicID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_TOPIC_ID", err.Error())

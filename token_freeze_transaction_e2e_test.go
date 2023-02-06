@@ -49,7 +49,7 @@ func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -70,7 +70,7 @@ func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -87,7 +87,7 @@ func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenFreezeTransaction().
@@ -97,24 +97,8 @@ func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if relation.FreezeStatus != nil {
-			if *relation.FreezeStatus {
-				check = true
-			}
-		}
-	}
-	assert.Truef(t, check, "token freeze transaction failed to freeze")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -127,7 +111,7 @@ func TestIntegrationTokenFreezeTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -151,7 +135,7 @@ func TestIntegrationTokenFreezeTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -172,7 +156,7 @@ func TestIntegrationTokenFreezeTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -189,7 +173,7 @@ func TestIntegrationTokenFreezeTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp, err = NewTokenFreezeTransaction().

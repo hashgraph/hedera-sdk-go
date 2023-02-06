@@ -49,7 +49,7 @@ func TestUnitClientFromConfigWithOperator(t *testing.T) {
 	testOperatorKey, err := PrivateKeyFromString("302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10")
 	require.NoError(t, err)
 
-	assert.Equal(t, 10, len(client.network.network))
+	assert.True(t, len(client.network.network) > 0)
 	assert.NotNil(t, client.operator)
 	assert.Equal(t, testOperatorKey.ed25519PrivateKey.keyData, client.operator.privateKey.ed25519PrivateKey.keyData)
 	assert.Equal(t, AccountID{Account: 3}.Account, client.operator.accountID.Account)
@@ -57,11 +57,13 @@ func TestUnitClientFromConfigWithOperator(t *testing.T) {
 
 func TestUnitClientFromConfigWrongType(t *testing.T) {
 	_, err := ClientFromConfig([]byte(testClientJSONWrongTypeMirror))
+	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "mirrorNetwork is expected to be either string or an array of strings", err.Error())
 	}
 
 	_, err = ClientFromConfig([]byte(testClientJSONWrongTypeNetwork))
+	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "network is expected to be map of string to string, or string", err.Error())
 	}

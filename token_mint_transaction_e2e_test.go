@@ -49,7 +49,7 @@ func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -70,7 +70,7 @@ func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -82,7 +82,7 @@ func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewTokenInfoQuery().
@@ -104,7 +104,7 @@ func TestIntegrationTokenMintTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -128,7 +128,7 @@ func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -149,19 +149,17 @@ func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
 
-	resp2, err := NewTokenMintTransaction().
+	_, err = NewTokenMintTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetTokenID(tokenID).
 		Execute(env.Client)
-	assert.Error(t, err)
-	if err != nil {
-		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_TOKEN_MINT_AMOUNT received for transaction %s", resp2.TransactionID), err.Error())
-	}
+	// It is now possible to perform Zero Token Operations https://hips.hedera.com/hip/hip-564
+	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -174,7 +172,7 @@ func TestIntegrationTokenMintTransactionNoAmount(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -198,7 +196,7 @@ func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -219,7 +217,7 @@ func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -244,7 +242,7 @@ func TestIntegrationTokenMintTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -268,7 +266,7 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -291,7 +289,7 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -303,7 +301,7 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: TOKEN_MAX_SUPPLY_REACHED", err.Error())
@@ -320,7 +318,7 @@ func TestIntegrationTokenMintTransactionMaxReached(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -351,7 +349,7 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -364,7 +362,7 @@ func DisabledTestIntegrationTokenMintTransactionMetadataTooLong(t *testing.T) { 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	mintReceipt, err := mint.GetReceipt(env.Client)
+	mintReceipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	nftID := tokenID.Nft(mintReceipt.SerialNumbers[0])
@@ -402,7 +400,7 @@ func DisabledTestIntegrationTokenMintTransactionInvalidMetadata(t *testing.T) { 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -414,7 +412,7 @@ func DisabledTestIntegrationTokenMintTransactionInvalidMetadata(t *testing.T) { 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = mint.GetReceipt(env.Client)
+	_, err = mint.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_TOKEN_MINT_METADATA", err.Error())

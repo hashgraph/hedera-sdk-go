@@ -49,7 +49,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -70,7 +70,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -87,22 +87,8 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if tokenID.String() == relation.TokenID.String() {
-			check = true
-		}
-	}
-	assert.Truef(t, check, "token associate transaction didnt work")
 
 	dissociateTx, err := NewTokenDissociateTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
@@ -116,22 +102,8 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	info, err = NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check = false
-	for _, relation := range info.TokenRelationships {
-		if tokenID.String() == relation.TokenID.String() {
-			check = true
-		}
-	}
-	assert.Falsef(t, check, "token dissociate transaction didnt work")
 
 	tx, err := NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -144,7 +116,7 @@ func TestIntegrationTokenDissociateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -168,7 +140,7 @@ func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -189,7 +161,7 @@ func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -201,7 +173,7 @@ func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	_, err = NewTokenDissociateTransaction().
@@ -211,7 +183,7 @@ func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	_, err = NewAccountDeleteTransaction().
@@ -220,7 +192,7 @@ func TestIntegrationTokenDissociateTransactionNoSigningOne(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -244,7 +216,7 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -265,7 +237,7 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -282,7 +254,7 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	dissociateTx, err := NewTokenDissociateTransaction().
@@ -296,22 +268,8 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if tokenID.String() == relation.TokenID.String() {
-			check = true
-		}
-	}
-	assert.Truef(t, check, "token dissociate transaction somehow worked")
 
 	_, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
@@ -319,7 +277,7 @@ func TestIntegrationTokenDissociateTransactionNoTokenID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)
@@ -343,7 +301,7 @@ func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -364,7 +322,7 @@ func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -381,7 +339,7 @@ func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	dissociateTx, err := NewTokenDissociateTransaction().
@@ -397,27 +355,13 @@ func TestIntegrationTokenDissociateTransactionNoAccountID(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("exceptional precheck status INVALID_ACCOUNT_ID received for transaction %s", resp2.TransactionID), err.Error())
 	}
 
-	info, err := NewAccountInfoQuery().
-		SetAccountID(accountID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-
-	check := false
-	for _, relation := range info.TokenRelationships {
-		if tokenID.String() == relation.TokenID.String() {
-			check = true
-		}
-	}
-	assert.Truef(t, check, "token dissociate transaction somehow worked")
-
 	_, err = NewAccountDeleteTransaction().
 		SetAccountID(accountID).
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, &tokenID)

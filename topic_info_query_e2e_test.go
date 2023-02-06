@@ -43,7 +43,7 @@ func TestIntegrationTopicInfoQueryCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := txID.GetReceipt(env.Client)
+	receipt, err := txID.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -81,7 +81,7 @@ func TestIntegrationTopicInfoQueryGetCost(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -118,7 +118,7 @@ func TestIntegrationTopicInfoQuerySetBigMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -154,7 +154,7 @@ func TestIntegrationTopicInfoQuerySetSmallMaxPayment(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -194,7 +194,7 @@ func TestIntegrationTopicInfoQueryInsufficientFee(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID
@@ -250,7 +250,7 @@ func TestIntegrationTopicInfoQueryThreshold(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := txID.GetReceipt(env.Client)
+	receipt, err := txID.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	topicID := *receipt.TopicID

@@ -151,7 +151,7 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 		panic(err)
 	}
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	if err != nil {
 		panic(err)
 	}
@@ -170,7 +170,7 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 	var resp TransactionResponse
 	var err error
 	if token != nil {
-		dissociateTx, err := NewTokenDeleteTransaction().
+		deleteTokenTx, err := NewTokenDeleteTransaction().
 			SetNodeAccountIDs(env.NodeAccountIDs).
 			SetTokenID(*token).
 			FreezeWith(env.Client)
@@ -178,19 +178,33 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 			return err
 		}
 
-		resp, err = dissociateTx.
+		resp, err = deleteTokenTx.
 			Sign(env.OperatorKey).
 			Execute(env.Client)
 		if err != nil {
 			return err
 		}
 
-		_, err = resp.GetReceipt(env.Client)
+		_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 		if err != nil {
 			return err
 		}
 	}
+	if token != nil {
+		dissociateTx, err := NewTokenDissociateTransaction().
+			SetAccountID(env.Client.operator.accountID).
+			SetNodeAccountIDs(env.NodeAccountIDs).
+			AddTokenID(*token).
+			Execute(env.Client)
+		if err != nil {
+			return err
+		}
 
+		_, err = dissociateTx.SetValidateStatus(true).GetReceipt(env.Client)
+		if err != nil {
+			return err
+		}
+	}
 	resp, err = NewAccountDeleteTransaction().
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		SetAccountID(env.OperatorID).
@@ -200,7 +214,7 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 		return err
 	}
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	if err != nil {
 		return err
 	}

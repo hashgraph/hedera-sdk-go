@@ -54,7 +54,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	transactionReceipt, err := createResponse.GetReceipt(env.Client)
+	transactionReceipt, err := createResponse.SetValidateStatus(true).GetReceipt(env.Client)
 
 	transactionID := TransactionIDGenerate(env.OperatorID)
 	newAccountID := *transactionReceipt.AccountID
@@ -88,7 +88,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	// Getting the receipt to make sure the signing executed properly
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	// Making sure the scheduled transaction executed properly with schedule info query
@@ -109,7 +109,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 	resp, err = signTransaction.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err = NewScheduleInfoQuery().
@@ -192,7 +192,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //	resp, err := signTransaction.Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	info2, err := NewScheduleInfoQuery().
@@ -265,7 +265,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	info2, err := NewScheduleInfoQuery().
@@ -306,7 +306,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	receipt, err := resp.GetReceipt(env.Client)
+//	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	info, err := NewScheduleInfoQuery().
@@ -335,7 +335,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	assert.Error(t, err)
 //	if err != nil {
 //		assert.Equal(t, "exceptional receipt status: SCHEDULE_ALREADY_EXECUTED", err.Error())
@@ -480,7 +480,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	receipt, err := resp.GetReceipt(env.Client)
+//	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	accountID := *receipt.AccountID
@@ -502,7 +502,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	receipt, err = resp.GetReceipt(env.Client)
+//	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	tokenID := *receipt.TokenID
@@ -532,7 +532,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	resp, err = NewTokenGrantKycTransaction().
@@ -542,7 +542,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	tx := NewTransferTransaction().
@@ -562,7 +562,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //	resp, err = scheduleTx.Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	receipt, err = resp.GetReceipt(env.Client)
+//	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	scheduleID := *receipt.ScheduleID
@@ -587,7 +587,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //	resp, err = signTransaction.Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	info2, err := NewScheduleInfoQuery().
@@ -637,7 +637,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	receipt, err := resp.GetReceipt(env.Client)
+//	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	accountID := *receipt.AccountID
@@ -659,7 +659,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	receipt, err = resp.GetReceipt(env.Client)
+//	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	tokenID := *receipt.TokenID
@@ -689,7 +689,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	resp, err = NewTokenGrantKycTransaction().
@@ -699,7 +699,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //		Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	tx := NewTransferTransaction().
@@ -725,7 +725,7 @@ func TestIntegrationScheduleCreateTransactionCanExecute(t *testing.T) {
 //	resp, err = scheduleTx.Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	receipt, err = resp.GetReceipt(env.Client)
+//	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	scheduleID := *receipt.ScheduleID

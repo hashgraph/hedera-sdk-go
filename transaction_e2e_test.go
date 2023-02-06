@@ -46,7 +46,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
@@ -70,7 +70,7 @@ func TestIntegrationTransactionAddSignature(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -89,7 +89,7 @@ func TestIntegrationTransactionSignTransaction(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tx, err := NewAccountDeleteTransaction().
@@ -105,7 +105,7 @@ func TestIntegrationTransactionSignTransaction(t *testing.T) {
 	resp, err = tx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -279,7 +279,7 @@ func DisabledTestTransactionFromBytes(t *testing.T) { // nolint
 		resp, err := tx.Execute(env.Client)
 		require.NoError(t, err)
 
-		_, err = resp.GetReceipt(env.Client)
+		_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 		require.NoError(t, err)
 	default:
 		panic("Transaction was not a crypto transfer?")
