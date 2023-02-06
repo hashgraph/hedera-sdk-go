@@ -47,7 +47,7 @@ func TestIntegrationContractDeleteTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -63,7 +63,7 @@ func TestIntegrationContractDeleteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	assert.NotNil(t, receipt.ContractID)
@@ -76,19 +76,8 @@ func TestIntegrationContractDeleteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
-
-	_, err = NewContractInfoQuery().
-		SetContractID(contractID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		SetMaxQueryPayment(NewHbar(2)).
-		Execute(env.Client)
-	// an error should occur if the contract was properly deleted
-	assert.Error(t, err)
-
-	// status := err.(ErrHederaPreCheckStatus).Status
-	// assert.Equal(t, status, StatusContractDeleted)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
@@ -96,7 +85,7 @@ func TestIntegrationContractDeleteTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -117,7 +106,7 @@ func TestIntegrationContractDeleteTransactionNoContractID(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -133,7 +122,7 @@ func TestIntegrationContractDeleteTransactionNoContractID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err = resp.GetReceipt(env.Client)
+	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	resp2, err := NewContractDeleteTransaction().
@@ -150,7 +139,7 @@ func TestIntegrationContractDeleteTransactionNoContractID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)

@@ -40,7 +40,7 @@ func TestIntegrationTransferTransactionCanTransferHbar(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -55,7 +55,7 @@ func TestIntegrationTransferTransactionTransferHbarNothingSet(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -77,7 +77,7 @@ func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *test
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -95,7 +95,7 @@ func TestIntegrationTransferTransactionTransferHbarPositiveFlippedAmount(t *test
 	resp, err = frozen.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -128,7 +128,7 @@ func DisabledTestIntegrationTransferTransactionTransferHbarLoadOf1000(t *testing
 			panic(err)
 		}
 
-		receipt[i], err = response[i].GetReceipt(env.Client)
+		receipt[i], err = response[i].SetValidateStatus(true).GetReceipt(env.Client)
 		if err != nil {
 			panic(err)
 		}
@@ -152,7 +152,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -175,7 +175,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytes(t *testing.T) {
 	resp, err = TransactionExecute(transactionInterface, env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -197,7 +197,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -221,7 +221,7 @@ func TestIntegrationTransferTransactionCanTransferFromBytesAfter(t *testing.T) {
 	resp, err = TransactionExecute(signedTx, env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -243,7 +243,7 @@ func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -269,7 +269,7 @@ func TestIntegrationTransferTransactionCanTransferSignature(t *testing.T) {
 	resp, err = TransactionExecute(signedTx, env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -289,7 +289,7 @@ func TestIntegrationTransferTransactionCanTransferHbarWithAliasID(t *testing.T) 
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)

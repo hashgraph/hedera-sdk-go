@@ -53,7 +53,7 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -73,7 +73,7 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 	resp, err = tx.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
@@ -98,7 +98,7 @@ func TestIntegrationAccountUpdateTransactionCanExecute(t *testing.T) {
 	resp, err = txDelete.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 
 	require.NoError(t, err)
 
@@ -127,7 +127,7 @@ func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	accountID := *receipt.AccountID
@@ -140,7 +140,7 @@ func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	info, err := NewAccountInfoQuery().
@@ -165,7 +165,7 @@ func TestIntegrationAccountUpdateTransactionNoSigning(t *testing.T) {
 	resp, err = txDelete.Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -180,7 +180,7 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: ACCOUNT_ID_DOES_NOT_EXIST", err.Error())
@@ -211,7 +211,7 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 //
 //	require.NoError(t, err)
 //
-//	receipt, err := resp.GetReceipt(env.Client)
+//	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	accountID := *receipt.AccountID
@@ -243,7 +243,7 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 //		require.NoError(t, err)
 //	}
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //	require.NoError(t, err)
 //
 //	info, err := NewAccountInfoQuery().
@@ -268,7 +268,7 @@ func TestIntegrationAccountUpdateTransactionAccountIDNotSet(t *testing.T) {
 //	resp, err = txDelete.Execute(env.Client)
 //	require.NoError(t, err)
 //
-//	_, err = resp.GetReceipt(env.Client)
+//	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 //
 //	require.NoError(t, err)
 //

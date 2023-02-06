@@ -43,7 +43,7 @@ func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
@@ -56,7 +56,7 @@ func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	contents, err := NewFileContentsQuery().
@@ -73,7 +73,7 @@ func TestIntegrationFileAppendTransactionCanExecute(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -92,23 +92,22 @@ func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	fileID := *receipt.FileID
 	assert.NotNil(t, fileID)
 
-	_, err = NewFileAppendTransaction().
+	resp, err = NewFileAppendTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetContents([]byte(" world!")).
 		Execute(env.Client)
+	require.NoError(t, err)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
 	}
-
-	_, err = resp.GetReceipt(env.Client)
-	require.NoError(t, err)
 
 	resp, err = NewFileDeleteTransaction().
 		SetFileID(fileID).
@@ -116,7 +115,7 @@ func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	_, err = resp.GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	err = CloseIntegrationTestEnv(env, nil)
@@ -126,11 +125,12 @@ func TestIntegrationFileAppendTransactionNoFileID(t *testing.T) {
 func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	_, err := NewFileAppendTransaction().
+	resp, err := NewFileAppendTransaction().
 		SetContents([]byte(" world!")).
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
-	assert.Error(t, err)
+	require.NoError(t, err)
+	_, err =resp.SetValidateStatus(true).GetReceipt(env.Client)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
 	}

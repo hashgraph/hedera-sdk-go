@@ -53,7 +53,7 @@ func TestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	receipt, err := resp.GetReceipt(env.Client)
+	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	tokenID := *receipt.TokenID
@@ -66,7 +66,7 @@ func TestIntegrationTokenNftGetInfoByNftIDCanExecute(t *testing.T) { // nolint
 		Execute(env.Client)
 	require.NoError(t, err)
 
-	mintReceipt, err := mint.GetReceipt(env.Client)
+	mintReceipt, err := mint.SetValidateStatus(true).GetReceipt(env.Client)
 	require.NoError(t, err)
 
 	nftID := tokenID.Nft(mintReceipt.SerialNumbers[0])
