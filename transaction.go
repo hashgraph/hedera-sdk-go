@@ -63,8 +63,7 @@ type Transaction struct {
 	maxBackoff              *time.Duration
 	minBackoff              *time.Duration
 	regenerateTransactionID bool
-
-	grpcDeadline *time.Duration
+	grpcDeadline            *time.Duration
 }
 
 func _NewTransaction() Transaction {
@@ -714,27 +713,11 @@ func (this *Transaction) _BuildAllTransactions() ([]*services.Transaction, error
 }
 
 func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, error) {
-	if this.transactions._Length() < index {
-		for i := this.transactions._Length(); i < index; i++ {
-			this.transactions.slice = append(this.transactions.slice, nil)
-		}
-	} else if this.transactions._Length() > index && this.transactions._Get(index) != nil {
-		tx := this.transactions._Get(index).(*services.Transaction)
-		if tx.SignedTransactionBytes != nil && len(tx.SignedTransactionBytes) != 0 {
-			return tx, nil
-		}
-	}
-
 	signedTx := this.signedTransactions._Get(index).(*services.SignedTransaction)
 
 	txID := this.transactionIDs._GetCurrent().(TransactionID)
 	originalBody := services.TransactionBody{}
 	_ = protobuf.Unmarshal(signedTx.BodyBytes, &originalBody)
-	if !this.nodeAccountIDs.locked && this.nodeAccountIDs._Length() > index {
-		if originalBody.NodeAccountID.String() != this.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf().String() {
-			originalBody.NodeAccountID = this.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf()
-		}
-	}
 
 	if originalBody.NodeAccountID == nil {
 		originalBody.NodeAccountID = this.nodeAccountIDs._GetCurrent().(AccountID)._ToProtobuf()
@@ -755,6 +738,24 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 	if err != nil {
 		return &services.Transaction{}, errors.Wrap(err, "failed to update this ID")
 	}
+
+	// Bellow are checks whether we need to sign the transaction or we already have the same signed
+	if bytes.Equal(signedTx.BodyBytes, updatedBody) {
+		sigPairLen := len(signedTx.SigMap.GetSigPair())
+		// For cases where we need more than 1 signature
+		if sigPairLen > 0 && sigPairLen == len(this.publicKeys) {
+			data, err := protobuf.Marshal(signedTx)
+			if err != nil {
+				return &services.Transaction{}, errors.Wrap(err, "failed to serialize transactions for building")
+			}
+			transaction := &services.Transaction{
+				SignedTransactionBytes: data,
+			}
+
+			return transaction, nil
+		}
+	}
+
 	signedTx.BodyBytes = updatedBody
 	this.signedTransactions._Set(index, signedTx)
 	this._SignTransaction(index)

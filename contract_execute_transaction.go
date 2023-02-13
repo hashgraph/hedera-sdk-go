@@ -299,15 +299,10 @@ func (transaction *ContractExecuteTransaction) Execute(
 		}, err
 	}
 
-	hash, err := transaction.GetTransactionHash()
-	if err != nil {
-		return TransactionResponse{}, err
-	}
-
 	return TransactionResponse{
 		TransactionID:  transaction.GetTransactionID(),
 		NodeID:         resp.(TransactionResponse).NodeID,
-		Hash:           hash,
+		Hash:           resp.(TransactionResponse).Hash,
 		ValidateStatus: true,
 	}, nil
 }

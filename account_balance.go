@@ -42,8 +42,8 @@ func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) A
 	}
 	var tokens map[TokenID]uint64
 	if pb.TokenBalances != nil { //nolint
-		tokens = make(map[TokenID]uint64, len(pb.TokenBalances))//nolint
-		for _, token := range pb.TokenBalances { //nolint
+		tokens = make(map[TokenID]uint64, len(pb.TokenBalances)) //nolint
+		for _, token := range pb.TokenBalances {                 //nolint
 			if t := _TokenIDFromProtobuf(token.TokenId); t != nil {
 				tokens[*t] = token.Balance
 			}
@@ -52,8 +52,8 @@ func _AccountBalanceFromProtobuf(pb *services.CryptoGetAccountBalanceResponse) A
 	return AccountBalance{
 		Hbars:         HbarFromTinybar(int64(pb.Balance)),
 		Token:         tokens,
-		Tokens:        _TokenBalanceMapFromProtobuf(pb.TokenBalances),//nolint
-		TokenDecimals: _TokenDecimalMapFromProtobuf(pb.TokenBalances),//nolint
+		Tokens:        _TokenBalanceMapFromProtobuf(pb.TokenBalances), //nolint
+		TokenDecimals: _TokenDecimalMapFromProtobuf(pb.TokenBalances), //nolint
 	}
 }
 

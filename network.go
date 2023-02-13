@@ -73,9 +73,7 @@ func (network *_Network) _IncreaseBackoff(node *_Node) {
 		}
 	}
 
-	if index == len(network.healthyNodes)-1 {
-		network.healthyNodes = network.healthyNodes[:index]
-	} else {
+	if index >= 0 && index < len(network.healthyNodes) {
 		network.healthyNodes = append(network.healthyNodes[:index], network.healthyNodes[index+1:]...)
 	}
 }

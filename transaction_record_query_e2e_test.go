@@ -186,7 +186,7 @@ func TestIntegrationTransactionRecordQueryInsufficientFee(t *testing.T) {
 		SetMaxQueryPayment(HbarFromTinybar(99999)).
 		SetQueryPayment(HbarFromTinybar(1)).
 		Execute(env.Client)
-		assert.Error(t, err)
+	assert.Error(t, err)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INSUFFICIENT_TX_FEE", err.Error())
 	}

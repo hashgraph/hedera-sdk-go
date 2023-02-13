@@ -130,7 +130,7 @@ func TestIntegrationFileAppendTransactionNothingSet(t *testing.T) {
 		SetNodeAccountIDs(env.NodeAccountIDs).
 		Execute(env.Client)
 	require.NoError(t, err)
-	_, err =resp.SetValidateStatus(true).GetReceipt(env.Client)
+	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
 	if err != nil {
 		assert.Equal(t, "exceptional receipt status: INVALID_FILE_ID", err.Error())
 	}

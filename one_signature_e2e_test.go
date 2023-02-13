@@ -42,8 +42,7 @@ func fnc() {
 func TestIntegrationOneSignature(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
 
-	client := ClientForTestnet().SetOperatorWith(env.OriginalOperatorID, env.OriginalOperatorKey, signingServiceTwo)
-
+	client := ClientForNetwork(env.Client.GetNetwork()).SetOperatorWith(env.OriginalOperatorID, env.OriginalOperatorKey, signingServiceTwo)
 	response, err := NewTransferTransaction().
 		AddHbarTransfer(env.OriginalOperatorID, NewHbar(-1)).
 		AddHbarTransfer(AccountID{Account: 3}, NewHbar(1)).
@@ -55,6 +54,9 @@ func TestIntegrationOneSignature(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, int64(1), fncCount.count)
+	client.Close()
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
 }
 
 func signingServiceTwo(txBytes []byte) []byte {

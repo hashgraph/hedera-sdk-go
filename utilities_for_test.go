@@ -77,10 +77,9 @@ func NewIntegrationTestEnv(t *testing.T) IntegrationTestEnv {
 	} else if os.Getenv("HEDERA_NETWORK") == "localhost" {
 		network := make(map[string]AccountID)
 		network["127.0.0.1:50213"] = AccountID{Account: 3}
-		network["127.0.0.1:50214"] = AccountID{Account: 4}
-		network["127.0.0.1:50215"] = AccountID{Account: 5}
 
 		env.Client = ClientForNetwork(network)
+		env.Client.cancelNetworkUpdate()
 	} else if os.Getenv("HEDERA_NETWORK") == "testnet" {
 		env.Client = ClientForTestnet()
 	} else if os.Getenv("CONFIG_FILE") != "" {
@@ -189,8 +188,9 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 		if err != nil {
 			return err
 		}
-	}
-	if token != nil {
+
+		// This is needed, because we can't delete the account while still having tokens.
+		// This works only, because the token is deleted, otherwise the acount would need to have 0 balance of it before dissociating.
 		dissociateTx, err := NewTokenDissociateTransaction().
 			SetAccountID(env.Client.operator.accountID).
 			SetNodeAccountIDs(env.NodeAccountIDs).
@@ -219,7 +219,7 @@ func CloseIntegrationTestEnv(env IntegrationTestEnv, token *TokenID) error {
 		return err
 	}
 
-	return nil
+	return env.Client.Close()
 }
 
 func _NewMockClient() (*Client, error) {

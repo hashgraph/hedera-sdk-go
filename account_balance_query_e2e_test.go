@@ -83,7 +83,6 @@ func TestIntegrationAccountBalanceQueryCanGetTokenBalance(t *testing.T) {
 
 	assert.Equal(t, balance.Tokens.Get(*tokenID), uint64(1000000))
 	assert.Equal(t, balance.TokenDecimals.Get(*tokenID), uint64(3))
-
 	err = CloseIntegrationTestEnv(env, tokenID)
 	require.NoError(t, err)
 }

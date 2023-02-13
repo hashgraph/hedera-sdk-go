@@ -255,7 +255,6 @@ func (transaction *TopicMessageSubmitTransaction) ExecuteAll(
 			return []TransactionResponse{}, err
 		}
 	}
-
 	transactionID := transaction.GetTransactionID()
 	accountID := AccountID{}
 	if transactionID.AccountID != nil {
