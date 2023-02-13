@@ -22,7 +22,9 @@ package hedera
 
 import (
 	"crypto/ecdsa"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -34,7 +36,8 @@ import (
 
 // _ECDSAPrivateKey is an Key_ECDSASecp256K1 private key.
 type _ECDSAPrivateKey struct {
-	*ecdsa.PrivateKey
+	keyData   *ecdsa.PrivateKey
+	chainCode []byte
 }
 
 func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
@@ -44,7 +47,7 @@ func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
 	}
 
 	return &_ECDSAPrivateKey{
-		key,
+		keyData: key,
 	}, nil
 }
 
@@ -72,7 +75,7 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 	}
 
 	return &_ECDSAPrivateKey{
-		key,
+		keyData: key,
 	}, nil
 }
 
@@ -95,8 +98,30 @@ func _ECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
 	}
 
 	return &_ECDSAPrivateKey{
-		key,
+		keyData: key,
 	}, nil
+}
+
+func _ECDSAPrivateKeyFromSeed(seed []byte) (*_ECDSAPrivateKey, error) {
+	h := hmac.New(sha512.New, []byte("Bitcoin seed"))
+
+	_, err := h.Write(seed)
+	if err != nil {
+		return &_ECDSAPrivateKey{}, err
+	}
+
+	digest := h.Sum(nil)
+
+	keyBytes := digest[0:32]
+	chainCode := digest[32:]
+	privateKey, err := _ECDSAPrivateKeyFromBytes(keyBytes)
+
+	if err != nil {
+		return &_ECDSAPrivateKey{}, err
+	}
+	privateKey.chainCode = chainCode
+
+	return privateKey, nil
 }
 
 func _ECDSAPrivateKeyFromString(s string) (*_ECDSAPrivateKey, error) {
@@ -109,11 +134,11 @@ func _ECDSAPrivateKeyFromString(s string) (*_ECDSAPrivateKey, error) {
 }
 
 func (sk *_ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
-	if sk.PrivateKey.Y == nil && sk.PrivateKey.X == nil {
-		b := sk.D.Bytes()
+	if sk.keyData.Y == nil && sk.keyData.X == nil {
+		b := sk.keyData.D.Bytes()
 		x, y := crypto.S256().ScalarBaseMult(b)
-		sk.X = x
-		sk.Y = y
+		sk.keyData.X = x
+		sk.keyData.Y = y
 		return &_ECDSAPublicKey{
 			&ecdsa.PublicKey{
 				Curve: crypto.S256(),
@@ -125,16 +150,16 @@ func (sk *_ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
 
 	return &_ECDSAPublicKey{
 		&ecdsa.PublicKey{
-			Curve: sk.Curve,
-			X:     sk.X,
-			Y:     sk.Y,
+			Curve: sk.keyData.Curve,
+			X:     sk.keyData.X,
+			Y:     sk.keyData.Y,
 		},
 	}
 }
 
 func (sk _ECDSAPrivateKey) _Sign(message []byte) []byte {
 	hash := crypto.Keccak256Hash(message)
-	sig, err := crypto.Sign(hash.Bytes(), sk.PrivateKey)
+	sig, err := crypto.Sign(hash.Bytes(), sk.keyData)
 	if err != nil {
 		panic(err)
 	}
@@ -144,9 +169,38 @@ func (sk _ECDSAPrivateKey) _Sign(message []byte) []byte {
 	return sig[:len(sig)-1]
 }
 
+// SupportsDerivation returns true if the _ECDSAPrivateKey supports derivation.
+func (sk _ECDSAPrivateKey) _SupportsDerivation() bool {
+	return sk.chainCode != nil
+}
+
+// Derive a child key compatible with the iOS and Android wallets using a provided wallet/account index. Use index 0 for
+// the default account.
+//
+// This will fail if the key does not support derivation which can be checked by calling SupportsDerivation()
+func (sk _ECDSAPrivateKey) _Derive(index uint32) (*_ECDSAPrivateKey, error) {
+	if !sk._SupportsDerivation() {
+		return nil, _NewErrBadKeyf("child key cannot be derived from this key")
+	}
+
+	derivedKeyBytes, chainCode, err := _DeriveECDSAChildKey(sk._BytesRaw(), sk.chainCode, index)
+	if err != nil {
+		return nil, err
+	}
+
+	derivedKey, err := _ECDSAPrivateKeyFromBytes(derivedKeyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	derivedKey.chainCode = chainCode
+
+	return derivedKey, nil
+}
+
 func (sk _ECDSAPrivateKey) _BytesRaw() []byte {
 	privateKey := make([]byte, 32)
-	temp := sk.D.Bytes()
+	temp := sk.keyData.D.Bytes()
 	copy(privateKey[32-len(temp):], temp)
 
 	return privateKey
