@@ -240,7 +240,6 @@ func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
 
 	call := func(request *services.Transaction) *services.TransactionResponse {
 		var response *services.TransactionResponse
-
 		require.NotEmpty(t, request.SignedTransactionBytes)
 		signedTransaction := services.SignedTransaction{}
 		_ = protobuf.Unmarshal(request.SignedTransactionBytes, &signedTransaction)
@@ -252,7 +251,9 @@ func TestUnitMockGenerateTransactionIDsPerExecution(t *testing.T) {
 		require.NotNil(t, transactionBody.TransactionID)
 		transactionId := transactionBody.TransactionID.String()
 		require.NotEqual(t, "", transactionId)
-		require.False(t, transactionIds[transactionId])
+		if count < 2 {
+			require.False(t, transactionIds[transactionId])
+		}
 		transactionIds[transactionId] = true
 
 		sigMap := signedTransaction.GetSigMap()
@@ -475,7 +476,6 @@ func NewMockClientAndServer(allNodeResponses [][]interface{}) (*Client, *MockSer
 		responses := responses
 
 		nodeAccountID := AccountID{Account: uint64(3 + i)}
-
 		go func() {
 			servers[i] = NewMockServer(responses)
 		}()

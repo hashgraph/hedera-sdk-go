@@ -170,9 +170,6 @@ func TestIntegrationAccountInfoQueryInsufficientFee(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{resp.NodeID})
 
-	_, err = accountInfo.GetCost(env.Client)
-	require.NoError(t, err)
-
 	_, err = accountInfo.SetQueryPayment(HbarFromTinybar(1)).Execute(env.Client)
 	assert.Error(t, err)
 	if err != nil {

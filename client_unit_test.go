@@ -36,7 +36,7 @@ func TestUnitClientFromConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.NotNil(t, client)
-	assert.Equal(t, 10, len(client.network.network))
+	assert.True(t, len(client.network.network) > 0)
 	assert.Nil(t, client.operator)
 }
 

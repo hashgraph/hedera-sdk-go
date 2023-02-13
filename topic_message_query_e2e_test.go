@@ -113,7 +113,6 @@ func TestIntegrationTopicMessageQueryCanExecute(t *testing.T) {
 			println(string(message.Contents))
 		})
 	require.NoError(t, err)
-
 	resp, err = NewTopicMessageSubmitTransaction().
 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
 		SetMessage([]byte(bigContents)).

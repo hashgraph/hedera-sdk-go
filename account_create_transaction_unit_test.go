@@ -69,7 +69,6 @@ func TestUnitAccountCreateTransactionMock(t *testing.T) {
 	responses := [][]interface{}{{
 		status.New(codes.Unavailable, "node is UNAVAILABLE").Err(),
 		status.New(codes.Internal, "Received RST_STREAM with code 0").Err(),
-	}, {
 		&services.TransactionResponse{
 			NodeTransactionPrecheckCode: services.ResponseCodeEnum_BUSY,
 		},

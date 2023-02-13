@@ -128,18 +128,16 @@ func _Execute( // nolint
 		var node *_Node
 
 		if transaction, ok := request.(*Transaction); ok {
-			if transaction.nodeAccountIDs.locked && transaction.nodeAccountIDs._Length() > 0 {
-				protoRequest = makeRequest(request)
-				nodeAccountID := getNodeAccountID(request)
-				if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
-					return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
-				}
-			} else {
-				node = client.network._GetNode()
-				transaction.nodeAccountIDs._Set(0, node.accountID)
-				protoTransaction, _ := transaction._BuildTransaction(0)
-				protoRequest = protoTransaction
+			if attempt > 0 && transaction.nodeAccountIDs._Length() > 1 {
+				advanceRequest(request)
 			}
+
+			protoRequest = makeRequest(request)
+			nodeAccountID := getNodeAccountID(request)
+			if node, ok = client.network._GetNodeForAccountID(nodeAccountID); !ok {
+				return TransactionResponse{}, ErrInvalidNodeAccountIDSet{nodeAccountID}
+			}
+
 			marshaledRequest, _ = protobuf.Marshal(protoRequest.(*services.Transaction))
 		} else if query, ok := request.(*Query); ok {
 			if query.nodeAccountIDs.locked && query.nodeAccountIDs._Length() > 0 {
@@ -223,7 +221,6 @@ func _Execute( // nolint
 		if cancel != nil {
 			cancel()
 		}
-
 		if err != nil {
 			errPersistent = err
 			if _ExecutableDefaultRetryHandler(logID, err) {
@@ -242,7 +239,6 @@ func _Execute( // nolint
 		}
 
 		node._DecreaseBackoff()
-
 		switch shouldRetry(logID, request, resp) {
 		case executionStateRetry:
 			errPersistent = mapStatusError(request, resp)
@@ -295,7 +291,6 @@ func _DelayForAttempt(logID string, backoff time.Duration, attempt int64) {
 func _ExecutableDefaultRetryHandler(logID string, err error) bool {
 	code := status.Code(err)
 	logCtx.Trace().Str("requestId", logID).Str("status", code.String()).Msg("received gRPC error with status code")
-
 	switch code {
 	case codes.ResourceExhausted, codes.Unavailable:
 		return true
