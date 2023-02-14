@@ -26,6 +26,7 @@ package hedera
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -57,7 +58,8 @@ func TestIntegrationAddressBookQueryUpdateAll(t *testing.T) {
 	require.NoError(t, err)
 
 	client = ClientForTestnet()
-
+	// Testnet has limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
+	time.Sleep(time.Second*5)
 	testnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
 		Execute(client)
