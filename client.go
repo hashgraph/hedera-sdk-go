@@ -77,8 +77,8 @@ type _Operator struct {
 }
 
 var mainnetMirror = []string{"mainnet-public.mirrornode.hedera.com:443"}
-var testnetMirror = []string{"hcs.testnet.mirrornode.hedera.com:5600"}
-var previewnetMirror = []string{"hcs.previewnet.mirrornode.hedera.com:5600"}
+var testnetMirror = []string{"testnet.mirrornode.hedera.com:443"}
+var previewnetMirror = []string{"previewnet.mirrornode.hedera.com:443"}
 
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
