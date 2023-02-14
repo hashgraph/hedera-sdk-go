@@ -62,25 +62,25 @@ func TestUnitManagedNodeAddressTest(t *testing.T) {
 	require.True(t, urlAddressInsecure.port == 50211)
 	require.True(t, urlAddressInsecure._String() == "0.testnet.hedera.com:50211")
 
-	mirrorNodeAddress, err := _ManagedNodeAddressFromString("hcs.mainnet.mirrornode.hedera.com:5600")
+	mirrorNodeAddress, err := _ManagedNodeAddressFromString("mainnet-public.mirrornode.hedera.com:5600")
 	require.NoError(t, err)
-	require.True(t, *mirrorNodeAddress.address == "hcs.mainnet.mirrornode.hedera.com")
+	require.True(t, *mirrorNodeAddress.address == "mainnet-public.mirrornode.hedera.com")
 	require.True(t, mirrorNodeAddress.port == 5600)
-	require.True(t, mirrorNodeAddress._String() == "hcs.mainnet.mirrornode.hedera.com:5600")
+	require.True(t, mirrorNodeAddress._String() == "mainnet-public.mirrornode.hedera.com:5600")
 
 	mirrorNodeAddressSecure := mirrorNodeAddress._ToSecure()
-	require.True(t, *mirrorNodeAddressSecure.address == "hcs.mainnet.mirrornode.hedera.com")
+	require.True(t, *mirrorNodeAddressSecure.address == "mainnet-public.mirrornode.hedera.com")
 	require.True(t, mirrorNodeAddressSecure.port == 443)
-	require.True(t, mirrorNodeAddressSecure._String() == "hcs.mainnet.mirrornode.hedera.com:443")
+	require.True(t, mirrorNodeAddressSecure._String() == "mainnet-public.mirrornode.hedera.com:443")
 
 	mirrorNodeAddressInsecure := mirrorNodeAddressSecure._ToInsecure()
-	require.True(t, *mirrorNodeAddressInsecure.address == "hcs.mainnet.mirrornode.hedera.com")
+	require.True(t, *mirrorNodeAddressInsecure.address == "mainnet-public.mirrornode.hedera.com")
 	require.True(t, mirrorNodeAddressInsecure.port == 5600)
-	require.True(t, mirrorNodeAddressInsecure._String() == "hcs.mainnet.mirrornode.hedera.com:5600")
+	require.True(t, mirrorNodeAddressInsecure._String() == "mainnet-public.mirrornode.hedera.com:5600")
 
 	_, err = _ManagedNodeAddressFromString("this is a random string with spaces:443")
 	require.Error(t, err)
 
-	_, err = _ManagedNodeAddressFromString("hcs.mainnet.mirrornode.hedera.com:notarealport")
+	_, err = _ManagedNodeAddressFromString("mainnet-public.mirrornode.hedera.com:notarealport")
 	require.Error(t, err)
 }
