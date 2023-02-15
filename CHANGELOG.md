@@ -1,3 +1,16 @@
+## v2.21.0
+
+### Fixed
+
+* Panic in multiple node account id locking
+* Regenerating transaction id, when not expired
+* Signs more than once per node/transaction
+* Not retrying other nodes when there are multiple nodes are locked
+* Panic when locking multiple nodes
+* Panic when too many nodes are not healthy
+* INVALID_NODE_ACCOUNT error
+* Setting MaxAutomaticTokenAssociations on ContractUpdate even if not set
+
 ## v2.20.0
 
 ### Added
