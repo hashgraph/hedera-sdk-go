@@ -344,8 +344,11 @@ func (transaction *ContractUpdateTransaction) _ValidateNetworkOnIDs(client *Clie
 
 func (transaction *ContractUpdateTransaction) _Build() *services.TransactionBody {
 	body := &services.ContractUpdateTransactionBody{
-		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations},
-		DeclineReward:                 &wrapperspb.BoolValue{Value: transaction.declineReward},
+		DeclineReward: &wrapperspb.BoolValue{Value: transaction.declineReward},
+	}
+
+	if transaction.maxAutomaticTokenAssociations != 0 {
+		body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations}
 	}
 
 	if transaction.expirationTime != nil {
@@ -406,8 +409,11 @@ func (transaction *ContractUpdateTransaction) Schedule() (*ScheduleCreateTransac
 
 func (transaction *ContractUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
 	body := &services.ContractUpdateTransactionBody{
-		MaxAutomaticTokenAssociations: &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations},
-		DeclineReward:                 &wrapperspb.BoolValue{Value: transaction.declineReward},
+		DeclineReward: &wrapperspb.BoolValue{Value: transaction.declineReward},
+	}
+
+	if transaction.maxAutomaticTokenAssociations != 0 {
+		body.MaxAutomaticTokenAssociations = &wrapperspb.Int32Value{Value: transaction.maxAutomaticTokenAssociations}
 	}
 
 	if transaction.expirationTime != nil {
