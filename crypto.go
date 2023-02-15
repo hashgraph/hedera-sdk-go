@@ -26,8 +26,10 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"io"
+	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/pbkdf2"
@@ -239,6 +241,7 @@ func PublicKeyFromBytesDer(bytes []byte) (PublicKey, error) {
 	}, nil
 }
 
+// Deprecated
 // PrivateKeyFromMnemonic recovers an _Ed25519PrivateKey from a valid 24 word length mnemonic phrase and a
 // passphrase.
 //
@@ -303,6 +306,28 @@ func PrivateKeyFromStringEd25519(s string) (PrivateKey, error) {
 
 func PrivateKeyFromStringECSDA(s string) (PrivateKey, error) {
 	key, err := _ECDSAPrivateKeyFromString(s)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	return PrivateKey{
+		ecdsaPrivateKey: key,
+	}, nil
+}
+
+func PrivateKeyFromSeedEd25519(seed []byte) (PrivateKey, error) {
+	key, err := _Ed25519PrivateKeyFromSeed(seed)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	return PrivateKey{
+		ed25519PrivateKey: key,
+	}, nil
+}
+
+func PrivateKeyFromSeedECDSAsecp256k1(seed []byte) (PrivateKey, error) {
+	key, err := _ECDSAPrivateKeyFromSeed(seed)
 	if err != nil {
 		return PrivateKey{}, err
 	}
@@ -392,8 +417,11 @@ func PublicKeyFromStringEd25519(s string) (PublicKey, error) {
 	}, nil
 }
 
-// SLIP-10/BIP-32 Child Key derivation
-func _DeriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte) {
+func _DeriveEd25519ChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte, error) {
+	if IsHardenedIndex(index) {
+		return nil, nil, errors.New("the index should not be pre-hardened")
+	}
+
 	h := hmac.New(sha512.New, chainCode)
 
 	input := make([]byte, 37)
@@ -409,22 +437,59 @@ func _DeriveChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, 
 	input[33] |= 128
 
 	if _, err := h.Write(input); err != nil {
-		panic(err)
+		return nil, nil, err
 	}
 
 	digest := h.Sum(nil)
 
-	return digest[0:32], digest[32:]
+	return digest[0:32], digest[32:], nil
 }
 
-func _DeriveLegacyChildKey(parentKey []byte, index int64) []byte {
+func _DeriveECDSAChildKey(parentKey []byte, chainCode []byte, index uint32) ([]byte, []byte, error) {
+	h := hmac.New(sha512.New, chainCode)
+
+	isHardened := IsHardenedIndex(index)
+	input := make([]byte, 37)
+	key, err := crypto.ToECDSA(parentKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if isHardened {
+		offset := 33 - len(parentKey)
+		copy(input[offset:], parentKey)
+	} else {
+		pubKey := crypto.CompressPubkey(&key.PublicKey)
+		copy(input, pubKey)
+	}
+
+	binary.BigEndian.PutUint32(input[33:37], index)
+
+	if _, err := h.Write(input); err != nil {
+		return nil, nil, err
+	}
+
+	i := h.Sum(nil)
+
+	il := new(big.Int)
+	il.SetBytes(i[0:32])
+	ir := i[32:]
+
+	ki := new(big.Int)
+	ki.Add(key.D, il)
+	ki.Mod(ki, key.Curve.Params().N)
+
+	return ki.Bytes(), ir, nil
+}
+
+func _DeriveLegacyChildKey(parentKey []byte, index int64) ([]byte, error) {
 	in := make([]uint8, 8)
 
 	switch switchIndex := index; {
 	case switchIndex == int64(0xffffffffff):
 		in = []uint8{0, 0, 0, 0xff, 0xff, 0xff, 0xff, 0xff}
 	case switchIndex > 0xffffffff:
-		panic(errors.New("derive index is out of range"))
+		return nil, errors.New("derive index is out of range")
 	default:
 		if switchIndex < 0 {
 			for i := 0; i < 4; i++ {
@@ -443,7 +508,7 @@ func _DeriveLegacyChildKey(parentKey []byte, index int64) []byte {
 
 	salt := []byte{0xFF}
 
-	return pbkdf2.Key(password, salt, 2048, 32, sha512.New)
+	return pbkdf2.Key(password, salt, 2048, 32, sha512.New), nil
 }
 
 func (sk PrivateKey) PublicKey() PublicKey {
@@ -690,8 +755,18 @@ func (sk PrivateKey) Derive(index uint32) (PrivateKey, error) {
 			ed25519PrivateKey: key,
 		}, nil
 	}
+	if sk.ecdsaPrivateKey != nil {
+		key, err := sk.ecdsaPrivateKey._Derive(index)
+		if err != nil {
+			return PrivateKey{}, err
+		}
 
-	return PrivateKey{}, errors.New("only ed25519 derivation is supported right now")
+		return PrivateKey{
+			ecdsaPrivateKey: key,
+		}, nil
+	}
+
+	return PrivateKey{}, nil
 }
 
 func (sk PrivateKey) LegacyDerive(index int64) (PrivateKey, error) {

@@ -26,14 +26,19 @@ import (
 	"math/big"
 	"strings"
 
+	"crypto/sha512"
+
 	"github.com/pkg/errors"
 	"github.com/tyler-smith/go-bip39"
+	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/text/unicode/norm"
 )
 
 type Mnemonic struct {
 	words string
 }
 
+// Deprecated
 func (m Mnemonic) ToPrivateKey(passPhrase string) (PrivateKey, error) {
 	return PrivateKeyFromMnemonic(m, passPhrase)
 }
@@ -264,6 +269,72 @@ func (m Mnemonic) _ToLegacyEntropy2() ([]byte, error) {
 	}
 
 	return entropy, nil
+}
+
+func (m Mnemonic) _ToSeed(passPhrase string) []byte {
+	passPhraseNFKD := norm.NFKD.String(passPhrase)
+	salt := []byte("mnemonic" + passPhraseNFKD)
+	seed := pbkdf2.Key([]byte(m.String()), salt, 2048, 64, sha512.New)
+	return seed
+}
+
+func (m Mnemonic) ToStandardEd25519PrivateKey(passPhrase string, index uint32) (PrivateKey, error) {
+	seed := m._ToSeed(passPhrase)
+	derivedKey, err := _Ed25519PrivateKeyFromSeed(seed)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	keyBytes, chainCode := derivedKey.keyData, derivedKey.chainCode
+	for _, i := range []uint32{44, 3030, 0, 0, index} {
+		keyBytes, chainCode, err = _DeriveEd25519ChildKey(keyBytes, chainCode, i)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+	}
+
+	privateKey, err := _Ed25519PrivateKeyFromBytes(keyBytes)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	privateKey.chainCode = chainCode
+
+	return PrivateKey{
+		ed25519PrivateKey: privateKey,
+	}, nil
+}
+
+func (m Mnemonic) ToStandardECDSAsecp256k1PrivateKey(passPhrase string, index uint32) (PrivateKey, error) {
+	seed := m._ToSeed(passPhrase)
+	derivedKey, err := _ECDSAPrivateKeyFromSeed(seed)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	keyBytes, chainCode := derivedKey.keyData.D.Bytes(), derivedKey.chainCode
+	for _, i := range []uint32{
+		ToHardenedIndex(44),
+		ToHardenedIndex(3030),
+		ToHardenedIndex(0),
+		0,
+		index} {
+		keyBytes, chainCode, err = _DeriveECDSAChildKey(keyBytes, chainCode, i)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+	}
+
+	privateKey, err := _ECDSAPrivateKeyFromBytes(keyBytes)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	privateKey.chainCode = chainCode
+
+	return PrivateKey{
+		ecdsaPrivateKey: privateKey,
+	}, nil
 }
 
 func _ConvertRadix(nums []int, fromRadix int, toRadix int, toLength int) []uint8 {
