@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.2.1 // indirect
-	github.com/cenkalti/backoff/v4 v4.1.3
+	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/ethereum/go-ethereum v1.10.25
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230222133122-6549ac627de9
