@@ -249,14 +249,12 @@ func (transaction *AccountCreateTransaction) GetAliasKey() PublicKey {
 	return PublicKey{}
 }
 
-// Deprecated - Use SetEvmAddress instead
 func (transaction *AccountCreateTransaction) SetAliasEvmAddress(evmAddress []byte) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.aliasEvmAddress = evmAddress
 	return transaction
 }
 
-// Deprecated - Use GetEvmAddress instead
 func (transaction *AccountCreateTransaction) GetAliasEvmAddress() []byte {
 	return transaction.aliasEvmAddress
 }

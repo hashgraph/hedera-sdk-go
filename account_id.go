@@ -33,12 +33,12 @@ import (
 
 // AccountID is the ID for a Hedera account
 type AccountID struct {
-	Shard      uint64
-	Realm      uint64
-	Account    uint64
-	AliasKey   *PublicKey
+	Shard           uint64
+	Realm           uint64
+	Account         uint64
+	AliasKey        *PublicKey
 	AliasEvmAddress *[]byte
-	checksum   *string
+	checksum        *string
 }
 
 type _AccountIDs struct { //nolint
@@ -48,7 +48,7 @@ type _AccountIDs struct { //nolint
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
-	shard, realm, num, checksum, alias, AliasEvmAddress, err := _AccountIDFromString(data)
+	shard, realm, num, checksum, alias, aliasEvmAddress, err := _AccountIDFromString(data)
 	if err != nil {
 		return AccountID{}, err
 	}
@@ -56,32 +56,32 @@ func AccountIDFromString(data string) (AccountID, error) {
 	if num == -1 {
 		if alias != nil {
 			return AccountID{
-				Shard:      uint64(shard),
-				Realm:      uint64(realm),
-				Account:    0,
-				AliasKey:   alias,
+				Shard:           uint64(shard),
+				Realm:           uint64(realm),
+				Account:         0,
+				AliasKey:        alias,
 				AliasEvmAddress: nil,
-				checksum:   checksum,
+				checksum:        checksum,
 			}, nil
 		}
 
 		return AccountID{
-			Shard:      uint64(shard),
-			Realm:      uint64(realm),
-			Account:    0,
-			AliasKey:   nil,
-			AliasEvmAddress: AliasEvmAddress,
-			checksum:   checksum,
+			Shard:           uint64(shard),
+			Realm:           uint64(realm),
+			Account:         0,
+			AliasKey:        nil,
+			AliasEvmAddress: aliasEvmAddress,
+			checksum:        checksum,
 		}, nil
 	}
 
 	return AccountID{
-		Shard:      uint64(shard),
-		Realm:      uint64(realm),
-		Account:    uint64(num),
-		AliasKey:   nil,
+		Shard:           uint64(shard),
+		Realm:           uint64(realm),
+		Account:         uint64(num),
+		AliasKey:        nil,
 		AliasEvmAddress: nil,
-		checksum:   checksum,
+		checksum:        checksum,
 	}, nil
 }
 
@@ -91,11 +91,11 @@ func AccountIDFromEvmAddress(shard uint64, realm uint64, aliasEvmAddress string)
 		return AccountID{}, err
 	}
 	return AccountID{
-		Shard:      shard,
-		Realm:      realm,
-		Account:    0,
+		Shard:           shard,
+		Realm:           realm,
+		Account:         0,
 		AliasEvmAddress: &temp,
-		checksum:   nil,
+		checksum:        nil,
 	}, nil
 }
 
