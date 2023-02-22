@@ -69,7 +69,6 @@ func _AccountInfoFromProtobuf(pb *services.CryptoGetInfoResponse_AccountInfo) (A
 	if err != nil {
 		return AccountInfo{}, err
 	}
-
 	liveHashes := make([]*LiveHash, len(pb.LiveHashes))
 
 	if pb.LiveHashes != nil {

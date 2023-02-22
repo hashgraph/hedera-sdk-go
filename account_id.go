@@ -85,8 +85,8 @@ func AccountIDFromString(data string) (AccountID, error) {
 	}, nil
 }
 
-func AccountIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (AccountID, error) {
-	temp, err := hex.DecodeString(evmAddress)
+func AccountIDFromEvmAddress(shard uint64, realm uint64, aliasEvmAddress string) (AccountID, error) {
+	temp, err := hex.DecodeString(aliasEvmAddress)
 	if err != nil {
 		return AccountID{}, err
 	}
@@ -97,6 +97,11 @@ func AccountIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (Acc
 		AliasEvmAddress: &temp,
 		checksum:        nil,
 	}, nil
+}
+
+// Returns an AccountID with EvmPublic address for the use of HIP-583
+func AccountIDFromEvmPublicAddress(s string) (AccountID, error) {
+	return AccountIDFromString(s)
 }
 
 // AccountIDFromSolidityAddress constructs an AccountID from a string
@@ -363,7 +368,7 @@ func (id AccountID) Compare(given AccountID) int {
 
 	if id.AliasEvmAddress != nil && given.AliasEvmAddress != nil {
 		originalEvmAddress := hex.EncodeToString(*id.AliasEvmAddress)
-		givenEvmAddress := hex.EncodeToString(*id.AliasEvmAddress)
+		givenEvmAddress := hex.EncodeToString(*given.AliasEvmAddress)
 		if originalEvmAddress > givenEvmAddress { //nolint
 			return 1
 		} else if originalEvmAddress < givenEvmAddress {

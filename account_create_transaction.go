@@ -304,7 +304,6 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 	} else if transaction.aliasEvmAddress != nil {
 		body.Alias = transaction.aliasEvmAddress
 	}
-
 	return &services.TransactionBody{
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		TransactionFee:           transaction.transactionFee,
@@ -370,7 +369,6 @@ func (transaction *AccountCreateTransaction) _ConstructScheduleProtobuf() (*serv
 	} else if transaction.aliasEvmAddress != nil {
 		body.Alias = transaction.aliasEvmAddress
 	}
-
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,

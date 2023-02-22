@@ -60,6 +60,7 @@ type TransactionRecord struct {
 	PaidStakingRewards map[AccountID]Hbar
 	PrngBytes          []byte
 	PrngNumber         *int32
+	EvmAddress         []byte
 }
 
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
@@ -186,6 +187,7 @@ func _TransactionRecordFromProtobuf(protoResponse *services.TransactionGetRecord
 		Children:                   childReceipts,
 		EthereumHash:               pb.EthereumHash,
 		PaidStakingRewards:         paidStakingRewards,
+		EvmAddress:                 pb.EvmAddress,
 	}
 
 	if w, ok := pb.Entropy.(*services.TransactionRecord_PrngBytes); ok {
@@ -301,6 +303,7 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 		Alias:              alias,
 		EthereumHash:       record.EthereumHash,
 		PaidStakingRewards: paidStakingRewards,
+		EvmAddress:         record.EvmAddress,
 	}
 
 	if record.PrngNumber != nil {
