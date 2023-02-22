@@ -50,7 +50,7 @@ type AccountCreateTransaction struct {
 	stakedNodeID                  *int64
 	declineReward                 bool
 	aliasKey                      *PublicKey
-	evmAddress                    []byte
+	aliasEvmAddress               []byte
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
@@ -97,11 +97,9 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 			if key, ok := publicKey.(PublicKey); ok {
 				body.aliasKey = &key
 			}
+		} else {
+			body.aliasEvmAddress = pb.GetCryptoCreateAccount().GetAlias()
 		}
-	}
-
-	if pb.GetCryptoCreateAccount().GetEvmAddress() != nil {
-		body.evmAddress = pb.GetCryptoCreateAccount().GetEvmAddress()
 	}
 
 	return &body
@@ -253,22 +251,14 @@ func (transaction *AccountCreateTransaction) GetAliasKey() PublicKey {
 
 // Deprecated - Use SetEvmAddress instead
 func (transaction *AccountCreateTransaction) SetAliasEvmAddress(evmAddress []byte) *AccountCreateTransaction {
-	return transaction.SetEvmAddress(evmAddress)
+	transaction._RequireNotFrozen()
+	transaction.aliasEvmAddress = evmAddress
+	return transaction
 }
 
 // Deprecated - Use GetEvmAddress instead
 func (transaction *AccountCreateTransaction) GetAliasEvmAddress() []byte {
-	return transaction.evmAddress
-}
-
-func (transaction *AccountCreateTransaction) SetEvmAddress(evmAddress []byte) *AccountCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.evmAddress = evmAddress
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) GetEvmAddress() []byte {
-	return transaction.evmAddress
+	return transaction.aliasEvmAddress
 }
 
 func (transaction *AccountCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
@@ -313,11 +303,9 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 	if transaction.aliasKey != nil {
 		key, _ := protobuf.Marshal(transaction.aliasKey._ToProtoKey())
 		body.Alias = key
+	} else if transaction.aliasEvmAddress != nil {
+		body.Alias = transaction.aliasEvmAddress
 	}
-	if transaction.evmAddress != nil {
-		body.EvmAddress = transaction.evmAddress
-	}
-
 	return &services.TransactionBody{
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		TransactionFee:           transaction.transactionFee,
@@ -380,11 +368,9 @@ func (transaction *AccountCreateTransaction) _ConstructScheduleProtobuf() (*serv
 	if transaction.aliasKey != nil {
 		key, _ := protobuf.Marshal(transaction.aliasKey._ToProtoKey())
 		body.Alias = key
+	} else if transaction.aliasEvmAddress != nil {
+		body.Alias = transaction.aliasEvmAddress
 	}
-	if transaction.evmAddress != nil {
-		body.EvmAddress = transaction.evmAddress
-	}
-
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
 		Memo:           transaction.Transaction.memo,

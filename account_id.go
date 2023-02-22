@@ -37,7 +37,7 @@ type AccountID struct {
 	Realm      uint64
 	Account    uint64
 	AliasKey   *PublicKey
-	EvmAddress *[]byte
+	AliasEvmAddress *[]byte
 	checksum   *string
 }
 
@@ -48,7 +48,7 @@ type _AccountIDs struct { //nolint
 // AccountIDFromString constructs an AccountID from a string formatted as
 // `Shard.Realm.Account` (for example "0.0.3")
 func AccountIDFromString(data string) (AccountID, error) {
-	shard, realm, num, checksum, alias, evmAddress, err := _AccountIDFromString(data)
+	shard, realm, num, checksum, alias, AliasEvmAddress, err := _AccountIDFromString(data)
 	if err != nil {
 		return AccountID{}, err
 	}
@@ -60,7 +60,7 @@ func AccountIDFromString(data string) (AccountID, error) {
 				Realm:      uint64(realm),
 				Account:    0,
 				AliasKey:   alias,
-				EvmAddress: nil,
+				AliasEvmAddress: nil,
 				checksum:   checksum,
 			}, nil
 		}
@@ -70,7 +70,7 @@ func AccountIDFromString(data string) (AccountID, error) {
 			Realm:      uint64(realm),
 			Account:    0,
 			AliasKey:   nil,
-			EvmAddress: evmAddress,
+			AliasEvmAddress: AliasEvmAddress,
 			checksum:   checksum,
 		}, nil
 	}
@@ -80,13 +80,13 @@ func AccountIDFromString(data string) (AccountID, error) {
 		Realm:      uint64(realm),
 		Account:    uint64(num),
 		AliasKey:   nil,
-		EvmAddress: nil,
+		AliasEvmAddress: nil,
 		checksum:   checksum,
 	}, nil
 }
 
-func AccountIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (AccountID, error) {
-	temp, err := hex.DecodeString(evmAddress)
+func AccountIDFromEvmAddress(shard uint64, realm uint64, aliasEvmAddress string) (AccountID, error) {
+	temp, err := hex.DecodeString(aliasEvmAddress)
 	if err != nil {
 		return AccountID{}, err
 	}
@@ -94,7 +94,7 @@ func AccountIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (Acc
 		Shard:      shard,
 		Realm:      realm,
 		Account:    0,
-		EvmAddress: &temp,
+		AliasEvmAddress: &temp,
 		checksum:   nil,
 	}, nil
 }
@@ -178,8 +178,8 @@ func (id *AccountID) Validate(client *Client) error {
 func (id AccountID) String() string {
 	if id.AliasKey != nil {
 		return fmt.Sprintf("%d.%d.%s", id.Shard, id.Realm, id.AliasKey.String())
-	} else if id.EvmAddress != nil {
-		return fmt.Sprintf("%d.%d.%s", id.Shard, id.Realm, hex.EncodeToString(*id.EvmAddress))
+	} else if id.AliasEvmAddress != nil {
+		return fmt.Sprintf("%d.%d.%s", id.Shard, id.Realm, hex.EncodeToString(*id.AliasEvmAddress))
 	}
 
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Account)
@@ -229,13 +229,9 @@ func (id AccountID) _ToProtobuf() *services.AccountID {
 		}
 
 		return resultID
-	} else if id.EvmAddress != nil {
-		// TODO change to following after this is fixed in serices: https://github.com/hashgraph/hedera-services/issues/4606:
-		// resultID.Account = &services.AccountID_EvmAddress{
-		// 	EvmAddress: *id.EvmAddress,
-		// }
+	} else if id.AliasEvmAddress != nil {
 		resultID.Account = &services.AccountID_Alias{
-			Alias: *id.EvmAddress,
+			Alias: *id.AliasEvmAddress,
 		}
 
 		return resultID
@@ -271,22 +267,18 @@ func _AccountIDFromProtobuf(accountID *services.AccountID) *AccountID {
 	}
 
 	switch t := accountID.Account.(type) {
-	// TODO change to following after this is fixed in serices: https://github.com/hashgraph/hedera-services/issues/4606:
-	// case *services.AccountID_EvmAddress:
-	// 	resultAccountID.EvmAddress = &t.EvmAddress
-	// 	return resultAccountID
 	case *services.AccountID_Alias:
 		pb := services.Key{}
 		_ = protobuf.Unmarshal(t.Alias, &pb)
 		initialKey, err := _KeyFromProtobuf(&pb)
 		if err != nil && t.Alias != nil {
 			resultAccountID.Account = 0
-			resultAccountID.EvmAddress = &t.Alias
+			resultAccountID.AliasEvmAddress = &t.Alias
 			return resultAccountID
 		}
 		if evm, ok := pb.Key.(*services.Key_ECDSASecp256K1); ok && len(evm.ECDSASecp256K1) == 20 {
 			resultAccountID.Account = 0
-			resultAccountID.EvmAddress = &evm.ECDSASecp256K1
+			resultAccountID.AliasEvmAddress = &evm.ECDSASecp256K1
 			return resultAccountID
 		}
 		switch t2 := initialKey.(type) {
@@ -374,9 +366,9 @@ func (id AccountID) Compare(given AccountID) int {
 		}
 	}
 
-	if id.EvmAddress != nil && given.EvmAddress != nil {
-		originalEvmAddress := hex.EncodeToString(*id.EvmAddress)
-		givenEvmAddress := hex.EncodeToString(*given.EvmAddress)
+	if id.AliasEvmAddress != nil && given.AliasEvmAddress != nil {
+		originalEvmAddress := hex.EncodeToString(*id.AliasEvmAddress)
+		givenEvmAddress := hex.EncodeToString(*given.AliasEvmAddress)
 		if originalEvmAddress > givenEvmAddress { //nolint
 			return 1
 		} else if originalEvmAddress < givenEvmAddress {
