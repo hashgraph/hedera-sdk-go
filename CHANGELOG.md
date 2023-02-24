@@ -1,3 +1,17 @@
+## v2.22.0
+
+### Added
+
+* Support for HIP-583
+* Example for HIP-583 `account_create_token_transfer` which autocreates an account by sending HBAR to an Etherum Account Address
+* `Mnemonic.ToStandardEd25519PrivateKey` which uses the correct derivation path
+* `Mnemonic.ToStandardECDSAsecp256k1PrivateKey` which uses the correct derivation path
+
+### Deprecated
+
+* `Mnemonic.ToPrivateKey()` was using incorrect derivation path
+* `PrivateKeyFromMnemonic()` was using incorrect derivation path
+
 ## v2.21.0
 
 ### Fixed
