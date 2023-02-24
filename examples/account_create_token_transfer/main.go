@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	client := hedera.ClientForPreviewnet()
+	client := hedera.ClientForTestnet()
 	myAccountId, err := hedera.AccountIDFromString(os.Getenv("OPERATOR_ID"))
 	if err != nil {
 		panic(err)
