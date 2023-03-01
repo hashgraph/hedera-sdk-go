@@ -37,7 +37,7 @@ jobs:
               uses: golangci/golangci-lint-action@v3
               with:
                   skip-cache: true
-#
+
     test:
         name: Test
         if: success()

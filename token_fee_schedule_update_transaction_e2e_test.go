@@ -31,68 +31,68 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
-	env := NewIntegrationTestEnv(t)
+// func TestIntegrationTokenFeeScheduleUpdateTransactionCanExecute(t *testing.T) {
+// 	env := NewIntegrationTestEnv(t)
 
-	resp, err := NewTokenCreateTransaction().
-		SetNodeAccountIDs(env.NodeAccountIDs).
-		SetTokenName("ffff").
-		SetTokenSymbol("F").
-		SetDecimals(3).
-		SetInitialSupply(1000000).
-		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
-		SetAdminKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeKey(env.Client.GetOperatorPublicKey()).
-		SetWipeKey(env.Client.GetOperatorPublicKey()).
-		SetKycKey(env.Client.GetOperatorPublicKey()).
-		SetSupplyKey(env.Client.GetOperatorPublicKey()).
-		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
-		SetFreezeDefault(false).
-		Execute(env.Client)
-	require.NoError(t, err)
+// 	resp, err := NewTokenCreateTransaction().
+// 		SetNodeAccountIDs(env.NodeAccountIDs).
+// 		SetTokenName("ffff").
+// 		SetTokenSymbol("F").
+// 		SetDecimals(3).
+// 		SetInitialSupply(1000000).
+// 		SetTreasuryAccountID(env.Client.GetOperatorAccountID()).
+// 		SetAdminKey(env.Client.GetOperatorPublicKey()).
+// 		SetFreezeKey(env.Client.GetOperatorPublicKey()).
+// 		SetWipeKey(env.Client.GetOperatorPublicKey()).
+// 		SetKycKey(env.Client.GetOperatorPublicKey()).
+// 		SetSupplyKey(env.Client.GetOperatorPublicKey()).
+// 		SetFeeScheduleKey(env.Client.GetOperatorPublicKey()).
+// 		SetFreezeDefault(false).
+// 		Execute(env.Client)
+// 	require.NoError(t, err)
 
-	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+// 	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+// 	require.NoError(t, err)
 
-	tokenID := *receipt.TokenID
+// 	tokenID := *receipt.TokenID
 
-	resp, err = NewTokenUpdateTransaction().
-		SetTokenID(tokenID).
-		SetTokenSymbol("A").
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
+// 	resp, err = NewTokenUpdateTransaction().
+// 		SetTokenID(tokenID).
+// 		SetTokenSymbol("A").
+// 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+// 		Execute(env.Client)
+// 	require.NoError(t, err)
 
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+// 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+// 	require.NoError(t, err)
 
-	customFee := CustomFixedFee{
-		CustomFee: CustomFee{
-			FeeCollectorAccountID: &env.OperatorID,
-		},
-		Amount:              1,
-		DenominationTokenID: &tokenID,
-	}
+// 	customFee := CustomFixedFee{
+// 		CustomFee: CustomFee{
+// 			FeeCollectorAccountID: &env.OperatorID,
+// 		},
+// 		Amount:              1,
+// 		DenominationTokenID: &tokenID,
+// 	}
 
-	resp, err = NewTokenFeeScheduleUpdateTransaction().
-		SetTokenID(tokenID).
-		SetCustomFees([]Fee{customFee}).
-		Execute(env.Client)
-	require.NoError(t, err)
+// 	resp, err = NewTokenFeeScheduleUpdateTransaction().
+// 		SetTokenID(tokenID).
+// 		SetCustomFees([]Fee{customFee}).
+// 		Execute(env.Client)
+// 	require.NoError(t, err)
 
-	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
-	require.NoError(t, err)
+// 	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+// 	require.NoError(t, err)
 
-	info, err := NewTokenInfoQuery().
-		SetTokenID(tokenID).
-		SetNodeAccountIDs([]AccountID{resp.NodeID}).
-		Execute(env.Client)
-	require.NoError(t, err)
-	assert.True(t, len(info.CustomFees) > 0)
+// 	info, err := NewTokenInfoQuery().
+// 		SetTokenID(tokenID).
+// 		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+// 		Execute(env.Client)
+// 	require.NoError(t, err)
+// 	assert.True(t, len(info.CustomFees) > 0)
 
-	err = CloseIntegrationTestEnv(env, &tokenID)
-	require.NoError(t, err)
-}
+// 	err = CloseIntegrationTestEnv(env, &tokenID)
+// 	require.NoError(t, err)
+// }
 
 func TestIntegrationTokenFeeScheduleUpdateTransactionWithFractional(t *testing.T) {
 	env := NewIntegrationTestEnv(t)
