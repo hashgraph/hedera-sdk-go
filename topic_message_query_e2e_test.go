@@ -1,5 +1,5 @@
-//go:build all || e2e
-// +build all e2e
+//go:build testnet
+// +build testnet
 
 package hedera
 
