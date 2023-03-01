@@ -1,59 +1,75 @@
-name: Build
+name: PR Checks
 
 on:
-  pull_request:
-    branches:
-      - main
-      - develop
-  push:
-    branches:
-      - main
-      - develop
+    pull_request:
+        branches:
+            - main
+            - develop
+    push:
+        branches:
+            - main
+            - develop
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go 1.19
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-        id: go
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Set up Go 1.19
+              uses: actions/setup-go@v3
+              with:
+                  go-version: 1.19
+              id: go
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
+            - name: Check out code into the Go module directory
+              uses: actions/checkout@v3
 
-      - name: Vet Examples
-        run: go vet ./examples/...
+            - name: Vet Examples
+              run: go vet ./examples/...
 
-      - name: Vet
-        run: go vet .
+            - name: Vet
+              run: go vet .
 
-      - name: Build
-        run: go build -v .
+            - name: Build
+              run: go build -v .
 
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go 1.19
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-        id: go
+            - name: Lint
+              uses: golangci/golangci-lint-action@v3
+              with:
+                  skip-cache: true
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
+    test:
+        name: Test
+        if: success()
+        runs-on: ubuntu-latest
+        needs:
+            - build
+        env:
+            HEDERA_NETWORK: localhost
+            OPERATOR_ID: ${{ secrets.LOCAL_OPERATOR_ID }}
+            OPERATOR_KEY: ${{ secrets.LOCAL_OPERATOR_KEY }}
 
-      - run: go test -tags="unit" -v -timeout 9999s
+        steps:
+            - name: Check out code into the Go module directory
+              uses: actions/checkout@v3
 
-  golangci:
-    name: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.50
+            - name: Start the local node
+              if: success()
+              run: npx @hashgraph/hedera-local start -d --network local
+
+            - name: Tests Unit
+              if: success()
+              run: go test -tags="unit" -timeout 9999s -v -coverprofile=unit.out -covermode=atomic
+
+            - name: Tests Integration
+              if: success()
+              run: go test -tags="e2e" -timeout 9999s -v -coverprofile=e2e.out -covermode=atomic
+
+            - name: Upload coverage to Codecov
+              if: success()
+              uses: codecov/codecov-action@v3
+              with:
+                files: ./unit.out,./e2e.out
+
+            - name: Stop the local node
+              run: npx @hashgraph/hedera-local stop
