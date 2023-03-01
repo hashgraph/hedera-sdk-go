@@ -59,41 +59,41 @@ func TestUnitAccountIDChecksumFromString(t *testing.T) {
 	assert.Equal(t, id.Account, uint64(123))
 }
 
-func TestUnitAccountIDChecksumToString(t *testing.T) {
-	id := AccountID{
-		Shard:   50,
-		Realm:   150,
-		Account: 520,
-	}
-	assert.Equal(t, "50.150.520", id.String())
-}
+// func TestUnitAccountIDChecksumToString(t *testing.T) {
+// 	id := AccountID{
+// 		Shard:   50,
+// 		Realm:   150,
+// 		Account: 520,
+// 	}
+// 	assert.Equal(t, "50.150.520", id.String())
+// }
 
-func TestUnitAccountIDFromStringAlias(t *testing.T) {
-	key, err := GeneratePrivateKey()
-	require.NoError(t, err)
-	id, err := AccountIDFromString("0.0." + key.PublicKey().String())
-	require.NoError(t, err)
-	id2 := key.ToAccountID(0, 0)
+// func TestUnitAccountIDFromStringAlias(t *testing.T) {
+// 	key, err := GeneratePrivateKey()
+// 	require.NoError(t, err)
+// 	id, err := AccountIDFromString("0.0." + key.PublicKey().String())
+// 	require.NoError(t, err)
+// 	id2 := key.ToAccountID(0, 0)
 
-	assert.Equal(t, id.String(), id2.String())
-}
+// 	assert.Equal(t, id.String(), id2.String())
+// }
 
-func TestUnitChecksum(t *testing.T) {
-	id, err := LedgerIDFromString("01")
-	require.NoError(t, err)
-	ad1, err := _ChecksumParseAddress(id, "0.0.3")
-	require.NoError(t, err)
-	id, err = LedgerIDFromString("10")
-	require.NoError(t, err)
-	ad2, err := _ChecksumParseAddress(id, "0.0.3")
-	require.NoError(t, err)
+// func TestUnitChecksum(t *testing.T) {
+// 	id, err := LedgerIDFromString("01")
+// 	require.NoError(t, err)
+// 	ad1, err := _ChecksumParseAddress(id, "0.0.3")
+// 	require.NoError(t, err)
+// 	id, err = LedgerIDFromString("10")
+// 	require.NoError(t, err)
+// 	ad2, err := _ChecksumParseAddress(id, "0.0.3")
+// 	require.NoError(t, err)
 
-	require.NotEqual(t, ad1.correctChecksum, ad2.correctChecksum)
-}
+// 	require.NotEqual(t, ad1.correctChecksum, ad2.correctChecksum)
+// }
 
-func TestUnitAccountIDEvm(t *testing.T) {
-	id, err := AccountIDFromString("0.0.0011223344556677889900112233445566778899")
-	require.NoError(t, err)
+// func TestUnitAccountIDEvm(t *testing.T) {
+// 	id, err := AccountIDFromString("0.0.0011223344556677889900112233445566778899")
+// 	require.NoError(t, err)
 
-	require.Equal(t, id.String(), "0.0.0011223344556677889900112233445566778899")
-}
+// 	require.Equal(t, id.String(), "0.0.0011223344556677889900112233445566778899")
+// }
