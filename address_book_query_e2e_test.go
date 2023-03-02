@@ -1,5 +1,5 @@
-//go:build testnet
-// +build testnet
+//go:build testnets
+// +build testnets
 
 package hedera
 
@@ -31,46 +31,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIntegrationAddressBookQueryCanExecute(t *testing.T) {
-	client := ClientForPreviewnet()
-
-	result, err := NewAddressBookQuery().
-		SetFileID(FileID{0, 0, 102, nil}).
-		Execute(client)
-	require.NoError(t, err)
-
-	//for _, k := range result.NodeAddresses {
-	//	println(k.AccountID.String())
-	//	for _, s := range k.Addresses {
-	//		println(s.String())
-	//	}
-	//}
-
-	require.NotEqual(t, len(result.NodeAddresses), 0)
-}
-
 func TestIntegrationAddressBookQueryUpdateAll(t *testing.T) {
 	client := ClientForPreviewnet()
-
+	// There are some limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
+	time.Sleep(time.Second * 5)
 	previewnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
 		Execute(client)
 	require.NoError(t, err)
+	require.Greater(t, len(previewnet.NodeAddresses), 0)
 
 	client = ClientForTestnet()
-	// Testnet has limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
+	// There are some limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
 	time.Sleep(time.Second * 5)
 	testnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
 		Execute(client)
 	require.NoError(t, err)
+	require.Greater(t, len(testnet.NodeAddresses), 0)
 
 	client = ClientForMainnet()
-
+	// There are some limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
+	time.Sleep(time.Second * 5)
 	mainnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
 		Execute(client)
 	require.NoError(t, err)
+	require.Greater(t, len(mainnet.NodeAddresses), 0)
 
 	filePreviewnet, err := os.OpenFile("addressbook/previewnet.pb", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	require.NoError(t, err)

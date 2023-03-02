@@ -1,5 +1,5 @@
-//go:build testnet
-// +build testnet
+//go:build testnets
+// +build testnets
 
 package hedera
 

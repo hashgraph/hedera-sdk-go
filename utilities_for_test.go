@@ -1,5 +1,5 @@
-//go:build all || unit || e2e
-// +build all unit e2e
+//go:build all || unit || e2e || testnets
+// +build all unit e2e testnets
 
 package hedera
 
