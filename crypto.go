@@ -304,7 +304,12 @@ func PrivateKeyFromStringEd25519(s string) (PrivateKey, error) {
 	}, nil
 }
 
+// Deprecated: use PrivateKeyFromStringECDSA() instead
 func PrivateKeyFromStringECSDA(s string) (PrivateKey, error) {
+	return PrivateKeyFromStringECDSA(s)
+}
+
+func PrivateKeyFromStringECDSA(s string) (PrivateKey, error) {
 	key, err := _ECDSAPrivateKeyFromString(s)
 	if err != nil {
 		return PrivateKey{}, err

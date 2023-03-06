@@ -43,7 +43,7 @@ func _ECDSAPublicKeyFromBytes(byt []byte) (*_ECDSAPublicKey, error) {
 	case 49:
 		return _ECDSAPublicKeyFromBytesDer(byt)
 	default:
-		return &_ECDSAPublicKey{}, _NewErrBadKeyf("invalid compressed ecsda public key length: %v bytes", len(byt))
+		return &_ECDSAPublicKey{}, _NewErrBadKeyf("invalid compressed ECDSA public key length: %v bytes", len(byt))
 	}
 }
 
