@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashgraph/hedera-sdk-go/v2"
 	"os"
+
+	"github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 	client.SetOperator(myAccountId, myPrivateKey)
 
 	// ## Example
-	// Create a ECSDA private key
+	// Create a ECDSA private key
 	// Extract the ECDSA public key public key
 	// Extract the Ethereum public address
 	// Transfer tokens using the `TransferTransaction` to the Etherum Account Address
@@ -34,7 +35,7 @@ func main() {
 	// Sign the transaction with ECDSA private key
 	// Get the `AccountInfo` of the account and show the account is now a complete account by returning the public key on the account
 
-	// Create a ECSDA private key
+	// Create a ECDSA private key
 	privateKey, err := hedera.PrivateKeyGenerateEcdsa()
 	if err != nil {
 		println(err.Error())

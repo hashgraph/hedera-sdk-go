@@ -329,7 +329,7 @@ func TestUnitPrivateKeyECDSASign(t *testing.T) {
 
 func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
 	message := []byte("hello world")
-	key, err := PrivateKeyFromStringECSDA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
+	key, err := PrivateKeyFromStringECDSA("8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048")
 	require.NoError(t, err)
 
 	sig := key.Sign(message)
@@ -350,7 +350,7 @@ func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
 func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
-	key2, err := PrivateKeyFromStringECSDA(key.StringRaw())
+	key2, err := PrivateKeyFromStringECDSA(key.StringRaw())
 	require.NoError(t, err)
 
 	require.Equal(t, key2.String(), key.String())
@@ -398,7 +398,7 @@ func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
 }
 
 func TestUnitPublicKeyFromPrivateKeyString(t *testing.T) {
-	key, err := PrivateKeyFromStringECSDA("3030020100300706052b8104000a04220420d790c27a81d745ad3340e27dacedc982d1f9252c0d7a4582da9847e2094603d4")
+	key, err := PrivateKeyFromStringECDSA("3030020100300706052b8104000a04220420d790c27a81d745ad3340e27dacedc982d1f9252c0d7a4582da9847e2094603d4")
 	require.NoError(t, err)
 	require.Equal(t, "302f300706052b8104000a032400042102b46925b64940f5d7d3f394aba914c05f1607fa42e9e721afee0770cb55797d99", key.PublicKey().String())
 }
