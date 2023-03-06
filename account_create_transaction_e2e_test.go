@@ -158,7 +158,6 @@ func TestIntegrationAccountCreateTransactionAddSignature(t *testing.T) {
 		SetTransferAccountID(env.Client.GetOperatorAccountID()).
 		FreezeWith(env.Client)
 	require.NoError(t, err)
-
 	updateBytes, err := tx.ToBytes()
 	require.NoError(t, err)
 

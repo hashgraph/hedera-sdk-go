@@ -26,6 +26,7 @@ package hedera
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/sdk"
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -225,6 +226,7 @@ func DisabledTestUnitTransactionValidateBodiesNotEqual(t *testing.T) {
 }
 
 func TestUnitTransactionToFromBytes(t *testing.T) {
+	duration := time.Second * 10
 	operatorID := AccountID{Account: 5}
 	recepientID := AccountID{Account: 4}
 	node := []AccountID{{Account: 3}}
@@ -234,6 +236,7 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 		AddHbarTransfer(operatorID, NewHbar(-1)).
 		AddHbarTransfer(recepientID, NewHbar(1)).
 		SetTransactionMemo("go sdk example multi_app_transfer/main.go").
+		SetTransactionValidDuration(duration).
 		Freeze()
 	require.NoError(t, err)
 
@@ -247,6 +250,7 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
 	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
 	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
 		CryptoTransfer: &services.CryptoTransferTransactionBody{
 			Transfers: &services.TransferList{
@@ -273,6 +277,7 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 	require.Equal(t, tx.TransactionID.String(), testTransactionID._ToProtobuf().String())
 	require.Equal(t, tx.NodeAccountID.String(), node[0]._ToProtobuf().String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
 	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
 		CryptoTransfer: &services.CryptoTransferTransactionBody{
 			Transfers: &services.TransferList{
@@ -292,6 +297,7 @@ func TestUnitTransactionToFromBytes(t *testing.T) {
 }
 
 func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
+	duration := time.Second * 10
 	operatorID := AccountID{Account: 5}
 	recepientID := AccountID{Account: 4}
 	client := ClientForTestnet()
@@ -302,6 +308,7 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 		AddHbarTransfer(operatorID, NewHbar(-1)).
 		AddHbarTransfer(recepientID, NewHbar(1)).
 		SetTransactionMemo("go sdk example multi_app_transfer/main.go").
+		SetTransactionValidDuration(duration).
 		FreezeWith(client)
 	require.NoError(t, err)
 
@@ -309,6 +316,7 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 	_ = protobuf.Unmarshal(transaction.signedTransactions._Get(0).(*services.SignedTransaction).BodyBytes, &tx)
 	require.NotNil(t, tx.TransactionID, tx.NodeAccountID)
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
 	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
 		CryptoTransfer: &services.CryptoTransferTransactionBody{
 			Transfers: &services.TransferList{
@@ -339,6 +347,7 @@ func TestUnitTransactionToFromBytesWithClient(t *testing.T) {
 	require.Equal(t, tx.TransactionID.String(), initialTxID.String())
 	require.Equal(t, tx.NodeAccountID.String(), initialNode.String())
 	require.Equal(t, tx.Memo, "go sdk example multi_app_transfer/main.go")
+	require.Equal(t, duration, _DurationFromProtobuf(tx.TransactionValidDuration))
 	require.Equal(t, tx.Data, &services.TransactionBody_CryptoTransfer{
 		CryptoTransfer: &services.CryptoTransferTransactionBody{
 			Transfers: &services.TransferList{

@@ -91,7 +91,6 @@ func (this *Transaction) GetSignedTransactionBodyBytes(transactionIndex int) []b
 // TransactionFromBytes converts Transaction bytes to a related *Transaction.
 func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	list := sdk.TransactionList{}
-	duration := 120 * time.Second
 	minBackoff := 250 * time.Millisecond
 	maxBackoff := 8 * time.Second
 	err := protobuf.Unmarshal(data, &list)
@@ -108,18 +107,17 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 	}
 
 	tx := Transaction{
-		maxRetry:                 10,
-		transactionValidDuration: &duration,
-		transactionIDs:           _NewLockableSlice(),
-		transactions:             transactions,
-		signedTransactions:       _NewLockableSlice(),
-		nodeAccountIDs:           _NewLockableSlice(),
-		publicKeys:               make([]PublicKey, 0),
-		transactionSigners:       make([]TransactionSigner, 0),
-		freezeError:              nil,
-		regenerateTransactionID:  true,
-		minBackoff:               &minBackoff,
-		maxBackoff:               &maxBackoff,
+		maxRetry:                10,
+		transactionIDs:          _NewLockableSlice(),
+		transactions:            transactions,
+		signedTransactions:      _NewLockableSlice(),
+		nodeAccountIDs:          _NewLockableSlice(),
+		publicKeys:              make([]PublicKey, 0),
+		transactionSigners:      make([]TransactionSigner, 0),
+		freezeError:             nil,
+		regenerateTransactionID: true,
+		minBackoff:              &minBackoff,
+		maxBackoff:              &maxBackoff,
 	}
 
 	comp, err := _TransactionCompare(&list)
@@ -166,6 +164,12 @@ func TransactionFromBytes(data []byte) (interface{}, error) { // nolint
 		}
 		var transactionID TransactionID
 		var nodeAccountID AccountID
+
+		if body.GetTransactionValidDuration() != nil {
+			duration := _DurationFromProtobuf(body.GetTransactionValidDuration())
+			tx.transactionValidDuration = &duration
+		}
+
 		if body.GetTransactionID() != nil {
 			transactionID = _TransactionIDFromProtobuf(body.GetTransactionID())
 		}
