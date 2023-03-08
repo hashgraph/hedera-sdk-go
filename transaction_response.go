@@ -42,13 +42,14 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 }
 
 func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord, error) {
-	_, err := NewTransactionReceiptQuery().
+	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID}).
 		Execute(client)
 
 	if err != nil {
-		return TransactionRecord{}, err
+		// Manually add the receipt, because an empty TransactionRecord will have an empty receipt and empty receipt has no status and no status defaults to 0, which means success
+		return TransactionRecord{Receipt: receipt}, err
 	}
 
 	return NewTransactionRecordQuery().

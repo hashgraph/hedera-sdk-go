@@ -26,6 +26,7 @@ package hedera
 import (
 	"testing"
 
+	"github.com/hashgraph/hedera-protobufs-go/services"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
@@ -99,4 +100,50 @@ func TestUnitTransactionReceiptQueryNothingSet(t *testing.T) {
 	balance.GetPaymentTransactionID()
 	balance.GetQueryPayment()
 	balance.GetMaxQueryPayment()
+}
+func TestUnitTransactionReceiptNotFound(t *testing.T) {
+	responses := [][]interface{}{{
+		&services.TransactionResponse{
+			NodeTransactionPrecheckCode: services.ResponseCodeEnum_OK,
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_RECEIPT_NOT_FOUND,
+					},
+				},
+			},
+		},
+		&services.Response{
+			Response: &services.Response_TransactionGetReceipt{
+				TransactionGetReceipt: &services.TransactionGetReceiptResponse{
+					Header: &services.ResponseHeader{
+						Cost:         0,
+						ResponseType: services.ResponseType_ANSWER_ONLY,
+					},
+					Receipt: &services.TransactionReceipt{
+						Status: services.ResponseCodeEnum_RECEIPT_NOT_FOUND,
+					},
+				},
+			},
+		},
+	}}
+	client, server := NewMockClientAndServer(responses)
+	defer server.Close()
+	tx, err := NewTransferTransaction().
+		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-1)).
+		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).
+		Execute(client)
+		client.SetMaxAttempts(2)
+	require.NoError(t, err)	
+	receipt, err :=tx.SetValidateStatus(true).GetReceipt(client)
+	require.Error(t, err)
+	require.Equal(t, "exceptional precheck status RECEIPT_NOT_FOUND", err.Error())
+	require.Equal(t, StatusReceiptNotFound, receipt.Status)
 }

@@ -206,7 +206,7 @@ func _TransactionReceiptQueryShouldRetry(logID string, request interface{}, resp
 
 func _TransactionReceiptQueryMapStatusError(request interface{}, response interface{}) error {
 	switch Status(response.(*services.Response).GetTransactionGetReceipt().GetHeader().GetNodeTransactionPrecheckCode()) {
-	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusReceiptNotFound, StatusRecordNotFound, StatusOk:
+	case StatusPlatformTransactionNotCreated, StatusBusy, StatusUnknown, StatusOk:
 		break
 	default:
 		return ErrHederaPreCheckStatus{
@@ -337,8 +337,8 @@ func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceip
 		if resp.(*services.Response).GetTransactionGetReceipt() != nil {
 			return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt(), query.transactionID), err
 		}
-
-		return TransactionReceipt{}, err
+		// Manually add the receipt status, because an empty receipt has no status and no status defaults to 0, which means success
+		return TransactionReceipt{Status: err.Status}, err
 	}
 
 	return _TransactionReceiptFromProtobuf(resp.(*services.Response).GetTransactionGetReceipt(), query.transactionID), nil
