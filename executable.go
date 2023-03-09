@@ -280,7 +280,7 @@ func _Execute( // nolint
 		return TransactionResponse{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
 	}
 
-	return &services.Response{}, errors.Wrapf(errPersistent, "retry %d/%d", attempt, maxAttempts)
+	return &services.Response{}, errPersistent
 }
 
 func _DelayForAttempt(logID string, backoff time.Duration, attempt int64) {
