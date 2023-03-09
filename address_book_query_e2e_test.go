@@ -43,7 +43,8 @@ func TestIntegrationAddressBookQueryUpdateAll(t *testing.T) {
 
 	client = ClientForTestnet()
 	// There are some limitation on requests: unexpected HTTP status code received from server: 429 (Too Many Requests)
-	time.Sleep(time.Second * 5)
+	// Testnet specifically has a more aggresive rate limit
+	time.Sleep(time.Second * 20)
 	testnet, err := NewAddressBookQuery().
 		SetFileID(FileIDForAddressBook()).
 		Execute(client)
