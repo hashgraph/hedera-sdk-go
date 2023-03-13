@@ -140,9 +140,9 @@ func TestUnitTransactionReceiptNotFound(t *testing.T) {
 		AddHbarTransfer(AccountID{Account: 2}, HbarFromTinybar(-1)).
 		AddHbarTransfer(AccountID{Account: 3}, HbarFromTinybar(1)).
 		Execute(client)
-		client.SetMaxAttempts(2)
-	require.NoError(t, err)	
-	receipt, err :=tx.SetValidateStatus(true).GetReceipt(client)
+	client.SetMaxAttempts(2)
+	require.NoError(t, err)
+	receipt, err := tx.SetValidateStatus(true).GetReceipt(client)
 	require.Error(t, err)
 	require.Equal(t, "exceptional precheck status RECEIPT_NOT_FOUND", err.Error())
 	require.Equal(t, StatusReceiptNotFound, receipt.Status)
