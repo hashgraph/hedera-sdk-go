@@ -100,6 +100,11 @@ func (fee *CustomFractionalFee) GetAssessmentMethod() FeeAssessmentMethod {
 	return fee.AssessmentMethod
 }
 
+func (fee *CustomFractionalFee) SetAssessmentMethod(feeAssessmentMethod FeeAssessmentMethod) *CustomFractionalFee {
+	fee.AssessmentMethod = feeAssessmentMethod
+	return fee
+}
+
 func _CustomFractionalFeeFromProtobuf(fractionalFee *services.FractionalFee, fee CustomFee) CustomFractionalFee {
 	return CustomFractionalFee{
 		CustomFee:        fee,

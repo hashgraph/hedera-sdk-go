@@ -288,6 +288,7 @@ func TestIntegrationTokenCreateTransactionWithCustomFees(t *testing.T) {
 				SetNumerator(1).
 				SetDenominator(20).
 				SetMin(1).
+				SetAssessmentMethod(true).
 				SetMax(10),
 		}).
 		SetFreezeDefault(false).
