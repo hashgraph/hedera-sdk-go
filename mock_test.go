@@ -773,6 +773,7 @@ func NewMockServer(responses []interface{}) (server *MockServer) {
 	server.server.RegisterService(NewServiceDescription(handler, &services.TokenService_ServiceDesc), nil)
 	server.server.RegisterService(NewServiceDescription(handler, &services.ScheduleService_ServiceDesc), nil)
 	server.server.RegisterService(NewServiceDescription(handler, &services.FreezeService_ServiceDesc), nil)
+	server.server.RegisterService(NewServiceDescription(handler, &services.NetworkService_ServiceDesc), nil)
 	server.server.RegisterService(NewMirrorServiceDescription(streamHandler, &mirror.NetworkService_ServiceDesc), nil)
 
 	server.listener, err = net.Listen("tcp", "localhost:0")

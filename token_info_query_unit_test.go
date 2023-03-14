@@ -25,6 +25,7 @@ package hedera
 
 import (
 	"encoding/base64"
+	"fmt"
 	"testing"
 	"time"
 
@@ -79,40 +80,48 @@ func TestUnitTokenInfoFromBytesEmptyBytes(t *testing.T) {
 
 func TestUnitTokenInfoQueryGet(t *testing.T) {
 	tokenID := TokenID{Token: 7}
-
+	deadline := time.Duration(time.Minute)
+	accountId := AccountID{Account: 123}
+	validStart := time.Now().Add(10 * time.Minute)
 	balance := NewTokenInfoQuery().
 		SetTokenID(tokenID).
 		SetQueryPayment(NewHbar(2)).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}}).
+		SetMaxRetry(3).
+		SetMinBackoff(300 * time.Millisecond).
+		SetMaxBackoff(10 * time.Second).
+		SetPaymentTransactionID(TransactionID{AccountID: &accountId, ValidStart: &validStart}).
+		SetMaxQueryPayment(NewHbar(500)).
+		SetGrpcDeadline(&deadline)
 
-	balance.GetTokenID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	require.Equal(t, tokenID, balance.GetTokenID())
+	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, balance.GetNodeAccountIDs())
+	require.Equal(t, 300*time.Millisecond, balance.GetMinBackoff())
+	require.Equal(t, 10*time.Second, balance.GetMaxBackoff())
+	require.Equal(t, 3, balance.GetMaxRetryCount())
+	require.Equal(t, TransactionID{AccountID: &accountId, ValidStart: &validStart}, balance.GetPaymentTransactionID())
+	require.Equal(t, HbarFromTinybar(25), balance.GetQueryPayment())
+	require.Equal(t, NewHbar(500), balance.GetMaxQueryPayment())
 }
 
 func TestUnitTokenInfoQueryNothingSet(t *testing.T) {
 	balance := NewTokenInfoQuery()
 
-	balance.GetTokenID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	require.Equal(t, TokenID{}, balance.GetTokenID())
+	require.Equal(t, []AccountID{}, balance.GetNodeAccountIDs())
+	require.Equal(t, 250*time.Millisecond, balance.GetMinBackoff())
+	require.Equal(t, 8*time.Second, balance.GetMaxBackoff())
+	require.Equal(t, 10, balance.GetMaxRetryCount())
+	require.Equal(t, TransactionID{}, balance.GetPaymentTransactionID())
+	require.Equal(t, Hbar{}, balance.GetQueryPayment())
+	require.Equal(t, Hbar{}, balance.GetMaxQueryPayment())
 }
 
 func TestUnitTokenInfoQueryCoverage(t *testing.T) {
 	checksum := "dmqui"
-	grpc := time.Second * 3
+	deadline := time.Second * 3
 	token := TokenID{Token: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -129,17 +138,19 @@ func TestUnitTokenInfoQueryCoverage(t *testing.T) {
 		SetPaymentTransactionID(transactionID).
 		SetMaxQueryPayment(NewHbar(23)).
 		SetQueryPayment(NewHbar(3)).
-		SetGrpcDeadline(&grpc)
+		SetGrpcDeadline(&deadline)
 
 	err := query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
-	query.GetNodeAccountIDs()
-	query.GetMaxBackoff()
-	query.GetMinBackoff()
-	query._GetLogID()
-	query.GetTokenID()
-	query.GetQueryPayment()
-	query.GetMaxQueryPayment()
+
+	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
+	require.Equal(t, time.Second*30, query.GetMaxBackoff())
+	require.Equal(t, time.Second*10, query.GetMinBackoff())
+	require.Equal(t, token, query.GetTokenID())
+	require.Equal(t, NewHbar(3), query.GetQueryPayment())
+	require.Equal(t, NewHbar(23), query.GetMaxQueryPayment())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
+	require.Equal(t, fmt.Sprintf("TokenInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitTokenInfoQueryMock(t *testing.T) {
@@ -203,9 +214,9 @@ func TestUnitTokenInfoQueryMock(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetMaxQueryPayment(NewHbar(1))
 
-	_, err := query.GetCost(client)
+	cost, err := query.GetCost(client)
 	require.NoError(t, err)
-
+	require.Equal(t, HbarFromTinybar(2), cost)
 	_, err = query.Execute(client)
 	require.NoError(t, err)
 }

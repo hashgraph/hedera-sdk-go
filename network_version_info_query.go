@@ -78,9 +78,6 @@ func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	cost := int64(resp.(*services.Response).GetNetworkGetVersionInfo().Header.Cost)
-	if cost < 25 {
-		return HbarFromTinybar(25), nil
-	}
 	return HbarFromTinybar(cost), nil
 }
 

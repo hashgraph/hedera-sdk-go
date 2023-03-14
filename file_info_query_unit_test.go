@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -117,8 +118,9 @@ func TestUnitFileInfoQueryMock(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetMaxQueryPayment(NewHbar(1))
 
-	_, err = query.GetCost(client)
+	cost, err := query.GetCost(client)
 	require.NoError(t, err)
+	require.Equal(t, cost, HbarFromTinybar(2))
 
 	result, err := query.Execute(client)
 	require.NoError(t, err)
@@ -130,66 +132,48 @@ func TestUnitFileInfoQueryMock(t *testing.T) {
 }
 
 func TestUnitFileInfoQueryGet(t *testing.T) {
-	fileID := FileID{File: 7}
-
-	balance := NewFileInfoQuery().
+	checksum := "dmqui"
+	fileID := FileID{File: 3, checksum: &checksum}
+	deadline := time.Duration(time.Minute)
+	accountId := AccountID{Account: 123}
+	transactionID := TransactionIDGenerate(accountId)
+	query := NewFileInfoQuery().
 		SetFileID(fileID).
 		SetQueryPayment(NewHbar(2)).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
-
-	balance.GetFileID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}}).
+		SetGrpcDeadline(&deadline).
+		SetMaxBackoff(1 * time.Minute).
+		SetMinBackoff(500 * time.Millisecond).
+		SetMaxRetry(5).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(500))
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	err := query._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	require.Equal(t, fileID, query.GetFileID())
+	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
+	require.Equal(t, 500*time.Millisecond, query.GetMinBackoff())
+	require.Equal(t, 1*time.Minute, query.GetMaxBackoff())
+	require.Equal(t, 5, query.GetMaxRetryCount())
+	require.Equal(t, transactionID, query.GetPaymentTransactionID())
+	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
+	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
+	require.Equal(t, fmt.Sprintf("FileInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitFileInfoQuerySetNothing(t *testing.T) {
 	balance := NewFileInfoQuery()
 
-	balance.GetFileID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
-}
-
-func TestUnitFileInfoQueryCoverage(t *testing.T) {
-	checksum := "dmqui"
-	grpc := time.Second * 3
-	file := FileID{File: 3, checksum: &checksum}
-	nodeAccountID := []AccountID{{Account: 10}}
-	transactionID := TransactionIDGenerate(AccountID{Account: 324})
-
-	client := ClientForTestnet()
-	client.SetAutoValidateChecksums(true)
-
-	query := NewFileInfoQuery().
-		SetFileID(file).
-		SetMaxRetry(3).
-		SetMaxBackoff(time.Second * 30).
-		SetMinBackoff(time.Second * 10).
-		SetNodeAccountIDs(nodeAccountID).
-		SetPaymentTransactionID(transactionID).
-		SetMaxQueryPayment(NewHbar(23)).
-		SetQueryPayment(NewHbar(3)).
-		SetGrpcDeadline(&grpc)
-
-	err := query._ValidateNetworkOnIDs(client)
-	require.NoError(t, err)
-	query.GetNodeAccountIDs()
-	query.GetMaxBackoff()
-	query.GetMinBackoff()
-	query._GetLogID()
-	query.GetFileID()
-	query.GetQueryPayment()
-	query.GetMaxQueryPayment()
+	require.Equal(t, FileID{}, balance.GetFileID())
+	require.Equal(t, []AccountID{}, balance.GetNodeAccountIDs())
+	require.Equal(t, 250*time.Millisecond, balance.GetMinBackoff())
+	require.Equal(t, 8*time.Second, balance.GetMaxBackoff())
+	require.Equal(t, 10, balance.GetMaxRetryCount())
+	require.Equal(t, TransactionID{}, balance.GetPaymentTransactionID())
+	require.Equal(t, Hbar{}, balance.GetQueryPayment())
+	require.Equal(t, Hbar{}, balance.GetMaxQueryPayment())
 }

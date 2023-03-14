@@ -24,11 +24,11 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,58 +57,59 @@ func TestUnitTransactionRecordQueryValidateWrong(t *testing.T) {
 		SetTransactionID(transactionID)
 
 	err = recordQuery._ValidateNetworkOnIDs(client)
-	assert.Error(t, err)
+	require.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
+		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
 func TestUnitTransactionRecordQueryGet(t *testing.T) {
 	txID := TransactionIDGenerate(AccountID{Account: 7})
-
-	balance := NewTransactionRecordQuery().
+	deadline := time.Duration(time.Minute)
+	accountId := AccountID{Account: 123}
+	transactionID := TransactionIDGenerate(accountId)
+	query := NewTransactionRecordQuery().
 		SetTransactionID(txID).
 		SetIncludeDuplicates(true).
 		SetIncludeChildren(true).
 		SetQueryPayment(NewHbar(2)).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}}).
+		SetMaxRetry(3).
+		SetMinBackoff(300 * time.Millisecond).
+		SetMaxBackoff(10 * time.Second).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(500)).
+		SetGrpcDeadline(&deadline)
 
-	balance.GetTransactionID()
-	balance.GetIncludeChildren()
-	balance.GetIncludeDuplicates()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	require.Equal(t, txID, query.GetTransactionID())
+	require.True(t, query.GetIncludeChildren())
+	require.True(t, query.GetIncludeDuplicates())
+	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
+	require.Equal(t, 300*time.Millisecond, query.GetMinBackoff())
+	require.Equal(t, 10*time.Second, query.GetMaxBackoff())
+	require.Equal(t, 3, query.GetMaxRetryCount())
+	require.Equal(t, transactionID, query.GetPaymentTransactionID())
+	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
+	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
+	require.Equal(t, fmt.Sprintf("TransactionRecordQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitTransactionRecordQueryNothingSet(t *testing.T) {
-	txID := TransactionIDGenerate(AccountID{Account: 7})
+	query := NewTransactionRecordQuery()
 
-	balance := NewTransactionRecordQuery().
-		SetTransactionID(txID).
-		SetIncludeDuplicates(true).
-		SetIncludeChildren(true).
-		SetQueryPayment(NewHbar(2)).
-		SetMaxQueryPayment(NewHbar(1)).
-		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
-
-	balance.GetTransactionID()
-	balance.GetIncludeChildren()
-	balance.GetIncludeDuplicates()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	require.Equal(t, TransactionID{}, query.GetTransactionID())
+	require.False(t, query.GetIncludeChildren())
+	require.False(t, query.GetIncludeDuplicates())
+	require.Empty(t, query.GetNodeAccountIDs())
+	require.Equal(t, 250*time.Millisecond, query.GetMinBackoff())
+	require.Equal(t, 8*time.Second, query.GetMaxBackoff())
+	require.Equal(t, 10, query.GetMaxRetryCount())
+	require.Equal(t, TransactionID{}, query.GetPaymentTransactionID())
+	require.Equal(t, Hbar{}, query.GetQueryPayment())
+	require.Equal(t, Hbar{}, query.GetMaxQueryPayment())
 }
 
 func TestUnitTransactionRecordReceiptNotFound(t *testing.T) {

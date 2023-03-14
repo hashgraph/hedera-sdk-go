@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -63,41 +64,55 @@ func TestUnitScheduleInfoQueryValidateWrong(t *testing.T) {
 }
 
 func TestUnitScheduleInfoQueryGet(t *testing.T) {
-	scheduleID := ScheduleID{Schedule: 7}
+	checksum := "dmqui"
+	accountId := AccountID{Account: 123}
+	deadline := time.Duration(time.Minute)
+	validStart := time.Now().Add(10 * time.Minute)
+	scheduleID := ScheduleID{Schedule: 3, checksum: &checksum}
 
-	balance := NewScheduleInfoQuery().
+	query := NewScheduleInfoQuery().
 		SetScheduleID(scheduleID).
 		SetQueryPayment(NewHbar(2)).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
-
-	balance.GetScheduleID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}}).
+		SetMaxRetry(3).
+		SetMinBackoff(300 * time.Millisecond).
+		SetMaxBackoff(10 * time.Second).
+		SetPaymentTransactionID(TransactionID{AccountID: &accountId, ValidStart: &validStart}).
+		SetMaxQueryPayment(NewHbar(500)).
+		SetGrpcDeadline(&deadline)
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	err := query._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	require.Equal(t, scheduleID, query.GetScheduleID())
+	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
+	require.Equal(t, 300*time.Millisecond, query.GetMinBackoff())
+	require.Equal(t, 10*time.Second, query.GetMaxBackoff())
+	require.Equal(t, 3, query.GetMaxRetryCount())
+	require.Equal(t, TransactionID{AccountID: &AccountID{Account: 123}, ValidStart: &validStart}, query.GetPaymentTransactionID())
+	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
+	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
 }
 
 func TestUnitScheduleInfoQuerySetNothing(t *testing.T) {
-	balance := NewScheduleInfoQuery()
+	info := NewScheduleInfoQuery()
 
-	balance.GetScheduleID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	require.Equal(t, ScheduleID{}, info.GetScheduleID())
+	require.Equal(t, []AccountID{}, info.GetNodeAccountIDs())
+	require.Equal(t, 250*time.Millisecond, info.GetMinBackoff())
+	require.Equal(t, 8*time.Second, info.GetMaxBackoff())
+	require.Equal(t, 10, info.GetMaxRetryCount())
+	require.Equal(t, TransactionID{}, info.GetPaymentTransactionID())
+	require.Equal(t, Hbar{}, info.GetQueryPayment())
+	require.Equal(t, Hbar{}, info.GetMaxQueryPayment())
 }
 
 func TestUnitScheduleInfoQueryCoverage(t *testing.T) {
 	checksum := "dmqui"
-	grpc := time.Second * 3
+	deadline := time.Second * 3
 	schedule := ScheduleID{Schedule: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -114,17 +129,20 @@ func TestUnitScheduleInfoQueryCoverage(t *testing.T) {
 		SetPaymentTransactionID(transactionID).
 		SetMaxQueryPayment(NewHbar(23)).
 		SetQueryPayment(NewHbar(3)).
-		SetGrpcDeadline(&grpc)
+		SetGrpcDeadline(&deadline)
 
 	err := query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
-	query.GetNodeAccountIDs()
-	query.GetMaxBackoff()
-	query.GetMinBackoff()
-	query._GetLogID()
-	query.GetScheduleID()
-	query.GetQueryPayment()
-	query.GetMaxQueryPayment()
+
+	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
+	require.Equal(t, 30*time.Second, query.GetMaxBackoff())
+	require.Equal(t, 10*time.Second, query.GetMinBackoff())
+	require.NotEmpty(t, query._GetLogID())
+	require.Equal(t, schedule, query.GetScheduleID())
+	require.Equal(t, NewHbar(3), query.GetQueryPayment())
+	require.Equal(t, NewHbar(23), query.GetMaxQueryPayment())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
+	require.Equal(t, fmt.Sprintf("ScheduleInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitScheduleInfoQueryMock(t *testing.T) {
@@ -174,9 +192,9 @@ func TestUnitScheduleInfoQueryMock(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetMaxQueryPayment(NewHbar(1))
 
-	_, err := query.GetCost(client)
+	cost, err := query.GetCost(client)
 	require.NoError(t, err)
-
+	require.Equal(t, HbarFromTinybar(2), cost)
 	_, err = query.Execute(client)
 	require.NoError(t, err)
 }

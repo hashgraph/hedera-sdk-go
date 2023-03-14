@@ -24,12 +24,11 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
 )
@@ -57,73 +56,57 @@ func TestUnitTopicInfoQueryValidateWrong(t *testing.T) {
 		SetTopicID(topicID)
 
 	err = topicInfo._ValidateNetworkOnIDs(client)
-	assert.Error(t, err)
+	require.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
+		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
 func TestUnitTopicInfoQueryGet(t *testing.T) {
-	topicID := TopicID{Topic: 7}
-
-	balance := NewTopicInfoQuery().
+	checksum := "dmqui"
+	topicID := TopicID{Topic: 3, checksum: &checksum}
+	deadline := time.Duration(time.Minute)
+	accountId := AccountID{Account: 123}
+	transactionID := TransactionIDGenerate(accountId)
+	query := NewTopicInfoQuery().
 		SetTopicID(topicID).
 		SetQueryPayment(NewHbar(2)).
 		SetMaxQueryPayment(NewHbar(1)).
 		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
-
-	balance.GetTopicID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}}).
+		SetMaxRetry(3).
+		SetMinBackoff(300 * time.Millisecond).
+		SetMaxBackoff(10 * time.Second).
+		SetPaymentTransactionID(transactionID).
+		SetMaxQueryPayment(NewHbar(500)).
+		SetGrpcDeadline(&deadline)
+	client := ClientForTestnet()
+	client.SetAutoValidateChecksums(true)
+	err := query._ValidateNetworkOnIDs(client)
+	require.NoError(t, err)
+	require.Equal(t, topicID, query.GetTopicID())
+	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, query.GetNodeAccountIDs())
+	require.Equal(t, 300*time.Millisecond, query.GetMinBackoff())
+	require.Equal(t, 10*time.Second, query.GetMaxBackoff())
+	require.Equal(t, 3, query.GetMaxRetryCount())
+	require.Equal(t, transactionID, query.GetPaymentTransactionID())
+	require.Equal(t, HbarFromTinybar(25), query.GetQueryPayment())
+	require.Equal(t, NewHbar(500), query.GetMaxQueryPayment())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
+	require.Equal(t, fmt.Sprintf("TopicInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitTopicInfoQueryNothingSet(t *testing.T) {
-	balance := NewTopicInfoQuery()
+	query := NewTopicInfoQuery()
 
-	balance.GetTopicID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
-}
-
-func TestUnitTopicInfoQueryCoverage(t *testing.T) {
-	checksum := "dmqui"
-	grpc := time.Second * 3
-	topic := TopicID{Topic: 3, checksum: &checksum}
-	nodeAccountID := []AccountID{{Account: 10}}
-	transactionID := TransactionIDGenerate(AccountID{Account: 324})
-
-	client := ClientForTestnet()
-	client.SetAutoValidateChecksums(true)
-
-	query := NewTopicInfoQuery().
-		SetTopicID(topic).
-		SetMaxRetry(3).
-		SetMaxBackoff(time.Second * 30).
-		SetMinBackoff(time.Second * 10).
-		SetNodeAccountIDs(nodeAccountID).
-		SetPaymentTransactionID(transactionID).
-		SetMaxQueryPayment(NewHbar(23)).
-		SetQueryPayment(NewHbar(3)).
-		SetGrpcDeadline(&grpc)
-
-	err := query._ValidateNetworkOnIDs(client)
-	require.NoError(t, err)
-	query.GetTopicID()
-	query.GetNodeAccountIDs()
-	query.GetMaxBackoff()
-	query.GetQueryPayment()
-	query.GetMaxQueryPayment()
+	require.Equal(t, TopicID{}, query.GetTopicID())
+	require.Equal(t, []AccountID{}, query.GetNodeAccountIDs())
+	require.Equal(t, 250*time.Millisecond, query.GetMinBackoff())
+	require.Equal(t, 8*time.Second, query.GetMaxBackoff())
+	require.Equal(t, 10, query.GetMaxRetryCount())
+	require.Equal(t, TransactionID{}, query.GetPaymentTransactionID())
+	require.Equal(t, Hbar{}, query.GetQueryPayment())
+	require.Equal(t, Hbar{}, query.GetMaxQueryPayment())
 }
 
 func TestUnitTopicInfoQueryMock(t *testing.T) {
@@ -174,9 +157,9 @@ func TestUnitTopicInfoQueryMock(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetMaxQueryPayment(NewHbar(1))
 
-	_, err := query.GetCost(client)
+	cost, err := query.GetCost(client)
 	require.NoError(t, err)
-
+	require.Equal(t, HbarFromTinybar(2), cost)
 	_, err = query.Execute(client)
 	require.NoError(t, err)
 }

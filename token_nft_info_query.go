@@ -198,9 +198,6 @@ func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	}
 
 	cost := int64(resp.(*services.Response).GetTokenGetNftInfo().Header.Cost)
-	if cost < 25 {
-		return HbarFromTinybar(25), nil
-	}
 	return HbarFromTinybar(cost), nil
 }
 
