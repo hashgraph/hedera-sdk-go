@@ -80,6 +80,7 @@ jobs:
               if: success()
               uses: codecov/codecov-action@v3
               with:
+                token: ${{ secrets.CODECOV_TOKEN }}
                 files: ./unit.out,./e2e.out,./testnets.out
 
             - name: Stop the local node
