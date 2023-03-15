@@ -58,7 +58,7 @@ jobs:
               with:
                   go-version: 1.19
               id: go
-                      
+
             - name: Check out code into the Go module directory
               uses: actions/checkout@v3
 
@@ -66,5 +66,5 @@ jobs:
               run: go install github.com/johnstarich/go/gopages@latest
 
             - name: Deploy to GitHub Pages
-              run: gopages -gh-pages -gh-pages-token ${{ secrets.GITHUB_TOKEN }}
+              run: gopages -gh-pages -gh-pages-token ${{ secrets.GH_PAGES_TOKEN }}
 
