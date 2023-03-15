@@ -1,19 +1,70 @@
-on: [pull_request]
+name: GitHub Pages
 
+on:
+    pull_request:
+        branches:
+            - main
+            - develop
+    push:
+        branches:
+            - main
+            - develop
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+    
 jobs:
-  main:
-    runs-on: ubuntu-latest
-    name: Example
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Generate GoDoc
-      uses: ktr0731/godoc-action@v0.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: gh-pages
-        
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Set up Go 1.19
+              uses: actions/setup-go@v3
+              with:
+                  go-version: 1.19
+              id: go
+
+            - name: Check out code into the Go module directory
+              uses: actions/checkout@v3
+
+            - name: Vet Examples
+              run: go vet ./examples/...
+
+            - name: Vet
+              run: go vet .
+
+            - name: Build
+              run: go build -v .
+
+            - name: Lint
+              uses: golangci/golangci-lint-action@v3
+              with:
+                  skip-cache: true
+
+    publish:
+        name: Update GitHub Pages
+        if: success()
+        runs-on: ubuntu-latest
+        needs:
+            - build
+        env:
+            HEDERA_NETWORK: localhost
+            OPERATOR_ID: ${{ secrets.LOCAL_OPERATOR_ID }}
+            OPERATOR_KEY: ${{ secrets.LOCAL_OPERATOR_KEY }}
+
+        steps:
+            - name: Set up Go 1.19
+              uses: actions/setup-go@v3
+              with:
+                  go-version: 1.19
+              id: go
+                      
+            - name: Check out code into the Go module directory
+              uses: actions/checkout@v3
+
+            - name: Install gopages
+              run: go install github.com/johnstarich/go/gopages@latest
+
+            - name: Deploy to GitHub Pages
+              run: gopages -gh-pages -gh-pages-token ${{ secrets.GITHUB_TOKEN }}
+
