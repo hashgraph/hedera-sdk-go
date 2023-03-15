@@ -14,33 +14,6 @@ concurrency:
   cancel-in-progress: true
     
 jobs:
-    build:
-        name: Build
-        runs-on: ubuntu-latest
-        steps:
-            - name: Set up Go 1.19
-              uses: actions/setup-go@v3
-              with:
-                  go-version: 1.19
-              id: go
-
-            - name: Check out code into the Go module directory
-              uses: actions/checkout@v3
-
-            - name: Vet Examples
-              run: go vet ./examples/...
-
-            - name: Vet
-              run: go vet .
-
-            - name: Build
-              run: go build -v .
-
-            - name: Lint
-              uses: golangci/golangci-lint-action@v3
-              with:
-                  skip-cache: true
-
     publish:
         name: Update GitHub Pages
         if: success()
@@ -64,8 +37,11 @@ jobs:
 
             - name: Install gopages
               run: go install github.com/johnstarich/go/gopages@latest
-            - name: Print PAT
-              run: echo ${{ secrets.GH_PAGES_TOKEN }}
+            - name: Print PAT value
+              run: echo $GH_PAGES_TOKEN
+              env:
+                MY_PAT: ${{ secrets.GH_PAGES_TOKEN }}
+
 
             - name: Deploy to GitHub Pages
               run: gopages -gh-pages -gh-pages-token ${{ secrets.GH_PAGES_TOKEN }}
