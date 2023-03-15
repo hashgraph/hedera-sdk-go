@@ -1,0 +1,847 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/token_update_transaction.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">token_update_transaction.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package hedera
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span><span class="comment">/*-
+<span id="L4" class="ln">     4  </span> *
+<span id="L5" class="ln">     5  </span> * Hedera Go SDK
+<span id="L6" class="ln">     6  </span> *
+<span id="L7" class="ln">     7  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L8" class="ln">     8  </span> *
+<span id="L9" class="ln">     9  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L10" class="ln">    10  </span> * you may not use this file except in compliance with the License.
+<span id="L11" class="ln">    11  </span> * You may obtain a copy of the License at
+<span id="L12" class="ln">    12  </span> *
+<span id="L13" class="ln">    13  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L14" class="ln">    14  </span> *
+<span id="L15" class="ln">    15  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L16" class="ln">    16  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L17" class="ln">    17  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L18" class="ln">    18  </span> * See the License for the specific language governing permissions and
+<span id="L19" class="ln">    19  </span> * limitations under the License.
+<span id="L20" class="ln">    20  </span> *
+<span id="L21" class="ln">    21  </span> */</span>
+<span id="L22" class="ln">    22  </span>
+<span id="L23" class="ln">    23  </span>import (
+<span id="L24" class="ln">    24  </span>	&#34;fmt&#34;
+<span id="L25" class="ln">    25  </span>	&#34;time&#34;
+<span id="L26" class="ln">    26  </span>
+<span id="L27" class="ln">    27  </span>	&#34;google.golang.org/protobuf/types/known/wrapperspb&#34;
+<span id="L28" class="ln">    28  </span>
+<span id="L29" class="ln">    29  </span>	&#34;github.com/hashgraph/hedera-protobufs-go/services&#34;
+<span id="L30" class="ln">    30  </span>)
+<span id="L31" class="ln">    31  </span>
+<span id="L32" class="ln">    32  </span><span class="comment">// TokenUpdateTransaction</span>
+<span id="L33" class="ln">    33  </span><span class="comment">// At consensus, updates an already created token to the given values.</span>
+<span id="L34" class="ln">    34  </span><span class="comment">//</span>
+<span id="L35" class="ln">    35  </span><span class="comment">// If no value is given for a field, that field is left unchanged. For an immutable tokens (that is,</span>
+<span id="L36" class="ln">    36  </span><span class="comment">// a token without an admin key), only the expiry may be updated. Setting any other field in that</span>
+<span id="L37" class="ln">    37  </span><span class="comment">// case will cause the transaction status to resolve to TOKEN_IS_IMMUTABLE.</span>
+<span id="L38" class="ln">    38  </span><span class="comment">//</span>
+<span id="L39" class="ln">    39  </span><span class="comment">// --- Signing Requirements ---</span>
+<span id="L40" class="ln">    40  </span><span class="comment">//  1. Whether or not a token has an admin key, its expiry can be extended with only the transaction</span>
+<span id="L41" class="ln">    41  </span><span class="comment">//     payer&#39;s signature.</span>
+<span id="L42" class="ln">    42  </span><span class="comment">//  2. Updating any other field of a mutable token requires the admin key&#39;s signature.</span>
+<span id="L43" class="ln">    43  </span><span class="comment">//  3. If a new admin key is set, this new key must sign &lt;b&gt;unless&lt;/b&gt; it is exactly an empty</span>
+<span id="L44" class="ln">    44  </span><span class="comment">//     &lt;tt&gt;KeyList&lt;/tt&gt;. This special sentinel key removes the existing admin key and causes the</span>
+<span id="L45" class="ln">    45  </span><span class="comment">//     token to become immutable. (Other &lt;tt&gt;Key&lt;/tt&gt; structures without a constituent</span>
+<span id="L46" class="ln">    46  </span><span class="comment">//     &lt;tt&gt;Ed25519&lt;/tt&gt; key will be rejected with &lt;tt&gt;INVALID_ADMIN_KEY&lt;/tt&gt;.)</span>
+<span id="L47" class="ln">    47  </span><span class="comment">//  4. If a new treasury is set, the new treasury account&#39;s key must sign the transaction.</span>
+<span id="L48" class="ln">    48  </span><span class="comment">//</span>
+<span id="L49" class="ln">    49  </span><span class="comment">// --- Nft Requirements ---</span>
+<span id="L50" class="ln">    50  </span><span class="comment">//  1. If a non fungible token has a positive treasury balance, the operation will abort with</span>
+<span id="L51" class="ln">    51  </span><span class="comment">//     CURRENT_TREASURY_STILL_OWNS_NFTS.</span>
+<span id="L52" class="ln">    52  </span>type TokenUpdateTransaction struct {
+<span id="L53" class="ln">    53  </span>	Transaction
+<span id="L54" class="ln">    54  </span>	tokenID            *TokenID
+<span id="L55" class="ln">    55  </span>	treasuryAccountID  *AccountID
+<span id="L56" class="ln">    56  </span>	autoRenewAccountID *AccountID
+<span id="L57" class="ln">    57  </span>	tokenName          string
+<span id="L58" class="ln">    58  </span>	memo               string
+<span id="L59" class="ln">    59  </span>	tokenSymbol        string
+<span id="L60" class="ln">    60  </span>	adminKey           Key
+<span id="L61" class="ln">    61  </span>	kycKey             Key
+<span id="L62" class="ln">    62  </span>	freezeKey          Key
+<span id="L63" class="ln">    63  </span>	wipeKey            Key
+<span id="L64" class="ln">    64  </span>	scheduleKey        Key
+<span id="L65" class="ln">    65  </span>	supplyKey          Key
+<span id="L66" class="ln">    66  </span>	pauseKey           Key
+<span id="L67" class="ln">    67  </span>	expirationTime     *time.Time
+<span id="L68" class="ln">    68  </span>	autoRenewPeriod    *time.Duration
+<span id="L69" class="ln">    69  </span>}
+<span id="L70" class="ln">    70  </span>
+<span id="L71" class="ln">    71  </span><span class="comment">// NewTokenUpdateTransaction creates TokenUpdateTransaction which at consensus,</span>
+<span id="L72" class="ln">    72  </span><span class="comment">// updates an already created token to the given values.</span>
+<span id="L73" class="ln">    73  </span><span class="comment">//</span>
+<span id="L74" class="ln">    74  </span><span class="comment">// If no value is given for a field, that field is left unchanged. For an immutable tokens (that is,</span>
+<span id="L75" class="ln">    75  </span><span class="comment">// a token without an admin key), only the expiry may be updated. Setting any other field in that</span>
+<span id="L76" class="ln">    76  </span><span class="comment">// case will cause the transaction status to resolve to TOKEN_IS_IMMUTABLE.</span>
+<span id="L77" class="ln">    77  </span><span class="comment">//</span>
+<span id="L78" class="ln">    78  </span><span class="comment">// --- Signing Requirements ---</span>
+<span id="L79" class="ln">    79  </span><span class="comment">//  1. Whether or not a token has an admin key, its expiry can be extended with only the transaction</span>
+<span id="L80" class="ln">    80  </span><span class="comment">//     payer&#39;s signature.</span>
+<span id="L81" class="ln">    81  </span><span class="comment">//  2. Updating any other field of a mutable token requires the admin key&#39;s signature.</span>
+<span id="L82" class="ln">    82  </span><span class="comment">//  3. If a new admin key is set, this new key must sign &lt;b&gt;unless&lt;/b&gt; it is exactly an empty</span>
+<span id="L83" class="ln">    83  </span><span class="comment">//     &lt;tt&gt;KeyList&lt;/tt&gt;. This special sentinel key removes the existing admin key and causes the</span>
+<span id="L84" class="ln">    84  </span><span class="comment">//     token to become immutable. (Other &lt;tt&gt;Key&lt;/tt&gt; structures without a constituent</span>
+<span id="L85" class="ln">    85  </span><span class="comment">//     &lt;tt&gt;Ed25519&lt;/tt&gt; key will be rejected with &lt;tt&gt;INVALID_ADMIN_KEY&lt;/tt&gt;.)</span>
+<span id="L86" class="ln">    86  </span><span class="comment">//  4. If a new treasury is set, the new treasury account&#39;s key must sign the transaction.</span>
+<span id="L87" class="ln">    87  </span><span class="comment">//</span>
+<span id="L88" class="ln">    88  </span><span class="comment">// --- Nft Requirements ---</span>
+<span id="L89" class="ln">    89  </span><span class="comment">//  1. If a non fungible token has a positive treasury balance, the operation will abort with</span>
+<span id="L90" class="ln">    90  </span><span class="comment">//     CURRENT_TREASURY_STILL_OWNS_NFTS.</span>
+<span id="L91" class="ln">    91  </span>func NewTokenUpdateTransaction() *TokenUpdateTransaction {
+<span id="L92" class="ln">    92  </span>	transaction := TokenUpdateTransaction{
+<span id="L93" class="ln">    93  </span>		Transaction: _NewTransaction(),
+<span id="L94" class="ln">    94  </span>	}
+<span id="L95" class="ln">    95  </span>	transaction._SetDefaultMaxTransactionFee(NewHbar(30))
+<span id="L96" class="ln">    96  </span>
+<span id="L97" class="ln">    97  </span>	return &amp;transaction
+<span id="L98" class="ln">    98  </span>}
+<span id="L99" class="ln">    99  </span>
+<span id="L100" class="ln">   100  </span>func _TokenUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TokenUpdateTransaction {
+<span id="L101" class="ln">   101  </span>	adminKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetAdminKey())
+<span id="L102" class="ln">   102  </span>	kycKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetKycKey())
+<span id="L103" class="ln">   103  </span>	freezeKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFreezeKey())
+<span id="L104" class="ln">   104  </span>	wipeKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetWipeKey())
+<span id="L105" class="ln">   105  </span>	scheduleKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetFeeScheduleKey())
+<span id="L106" class="ln">   106  </span>	supplyKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetSupplyKey())
+<span id="L107" class="ln">   107  </span>	pauseKey, _ := _KeyFromProtobuf(pb.GetTokenUpdate().GetPauseKey())
+<span id="L108" class="ln">   108  </span>
+<span id="L109" class="ln">   109  </span>	expirationTime := _TimeFromProtobuf(pb.GetTokenUpdate().GetExpiry())
+<span id="L110" class="ln">   110  </span>	autoRenew := _DurationFromProtobuf(pb.GetTokenUpdate().GetAutoRenewPeriod())
+<span id="L111" class="ln">   111  </span>
+<span id="L112" class="ln">   112  </span>	return &amp;TokenUpdateTransaction{
+<span id="L113" class="ln">   113  </span>		Transaction:        transaction,
+<span id="L114" class="ln">   114  </span>		tokenID:            _TokenIDFromProtobuf(pb.GetTokenUpdate().GetToken()),
+<span id="L115" class="ln">   115  </span>		treasuryAccountID:  _AccountIDFromProtobuf(pb.GetTokenUpdate().GetTreasury()),
+<span id="L116" class="ln">   116  </span>		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetTokenUpdate().GetAutoRenewAccount()),
+<span id="L117" class="ln">   117  </span>		tokenName:          pb.GetTokenUpdate().GetName(),
+<span id="L118" class="ln">   118  </span>		memo:               pb.GetTokenUpdate().GetMemo().Value,
+<span id="L119" class="ln">   119  </span>		tokenSymbol:        pb.GetTokenUpdate().GetSymbol(),
+<span id="L120" class="ln">   120  </span>		adminKey:           adminKey,
+<span id="L121" class="ln">   121  </span>		kycKey:             kycKey,
+<span id="L122" class="ln">   122  </span>		freezeKey:          freezeKey,
+<span id="L123" class="ln">   123  </span>		wipeKey:            wipeKey,
+<span id="L124" class="ln">   124  </span>		scheduleKey:        scheduleKey,
+<span id="L125" class="ln">   125  </span>		supplyKey:          supplyKey,
+<span id="L126" class="ln">   126  </span>		pauseKey:           pauseKey,
+<span id="L127" class="ln">   127  </span>		expirationTime:     &amp;expirationTime,
+<span id="L128" class="ln">   128  </span>		autoRenewPeriod:    &amp;autoRenew,
+<span id="L129" class="ln">   129  </span>	}
+<span id="L130" class="ln">   130  </span>}
+<span id="L131" class="ln">   131  </span>
+<span id="L132" class="ln">   132  </span>func (transaction *TokenUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUpdateTransaction {
+<span id="L133" class="ln">   133  </span>	transaction.Transaction.SetGrpcDeadline(deadline)
+<span id="L134" class="ln">   134  </span>	return transaction
+<span id="L135" class="ln">   135  </span>}
+<span id="L136" class="ln">   136  </span>
+<span id="L137" class="ln">   137  </span><span class="comment">// SetTokenID Sets the Token to be updated</span>
+<span id="L138" class="ln">   138  </span>func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpdateTransaction {
+<span id="L139" class="ln">   139  </span>	transaction._RequireNotFrozen()
+<span id="L140" class="ln">   140  </span>	transaction.tokenID = &amp;tokenID
+<span id="L141" class="ln">   141  </span>	return transaction
+<span id="L142" class="ln">   142  </span>}
+<span id="L143" class="ln">   143  </span>
+<span id="L144" class="ln">   144  </span>func (transaction *TokenUpdateTransaction) GetTokenID() TokenID {
+<span id="L145" class="ln">   145  </span>	if transaction.tokenID == nil {
+<span id="L146" class="ln">   146  </span>		return TokenID{}
+<span id="L147" class="ln">   147  </span>	}
+<span id="L148" class="ln">   148  </span>
+<span id="L149" class="ln">   149  </span>	return *transaction.tokenID
+<span id="L150" class="ln">   150  </span>}
+<span id="L151" class="ln">   151  </span>
+<span id="L152" class="ln">   152  </span><span class="comment">// SetTokenSymbol Sets the new Symbol of the Token.</span>
+<span id="L153" class="ln">   153  </span><span class="comment">// Must be UTF-8 capitalized alphabetical string identifying the token.</span>
+<span id="L154" class="ln">   154  </span>func (transaction *TokenUpdateTransaction) SetTokenSymbol(symbol string) *TokenUpdateTransaction {
+<span id="L155" class="ln">   155  </span>	transaction._RequireNotFrozen()
+<span id="L156" class="ln">   156  </span>	transaction.tokenSymbol = symbol
+<span id="L157" class="ln">   157  </span>	return transaction
+<span id="L158" class="ln">   158  </span>}
+<span id="L159" class="ln">   159  </span>
+<span id="L160" class="ln">   160  </span>func (transaction *TokenUpdateTransaction) GetTokenSymbol() string {
+<span id="L161" class="ln">   161  </span>	return transaction.tokenSymbol
+<span id="L162" class="ln">   162  </span>}
+<span id="L163" class="ln">   163  </span>
+<span id="L164" class="ln">   164  </span><span class="comment">// SetTokenName Sets the new Name of the Token. Must be a string of ASCII characters.</span>
+<span id="L165" class="ln">   165  </span>func (transaction *TokenUpdateTransaction) SetTokenName(name string) *TokenUpdateTransaction {
+<span id="L166" class="ln">   166  </span>	transaction._RequireNotFrozen()
+<span id="L167" class="ln">   167  </span>	transaction.tokenName = name
+<span id="L168" class="ln">   168  </span>	return transaction
+<span id="L169" class="ln">   169  </span>}
+<span id="L170" class="ln">   170  </span>
+<span id="L171" class="ln">   171  </span>func (transaction *TokenUpdateTransaction) GetTokenName() string {
+<span id="L172" class="ln">   172  </span>	return transaction.tokenName
+<span id="L173" class="ln">   173  </span>}
+<span id="L174" class="ln">   174  </span>
+<span id="L175" class="ln">   175  </span><span class="comment">// SetTreasuryAccountID sets thehe new Treasury account of the Token.</span>
+<span id="L176" class="ln">   176  </span><span class="comment">// If the provided treasury account is not existing or deleted,</span>
+<span id="L177" class="ln">   177  </span><span class="comment">// the _Response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token</span>
+<span id="L178" class="ln">   178  </span><span class="comment">// balance held in the previous Treasury Account is transferred to the new one.</span>
+<span id="L179" class="ln">   179  </span>func (transaction *TokenUpdateTransaction) SetTreasuryAccountID(treasuryAccountID AccountID) *TokenUpdateTransaction {
+<span id="L180" class="ln">   180  </span>	transaction._RequireNotFrozen()
+<span id="L181" class="ln">   181  </span>	transaction.treasuryAccountID = &amp;treasuryAccountID
+<span id="L182" class="ln">   182  </span>	return transaction
+<span id="L183" class="ln">   183  </span>}
+<span id="L184" class="ln">   184  </span>
+<span id="L185" class="ln">   185  </span>func (transaction *TokenUpdateTransaction) GetTreasuryAccountID() AccountID {
+<span id="L186" class="ln">   186  </span>	if transaction.treasuryAccountID == nil {
+<span id="L187" class="ln">   187  </span>		return AccountID{}
+<span id="L188" class="ln">   188  </span>	}
+<span id="L189" class="ln">   189  </span>
+<span id="L190" class="ln">   190  </span>	return *transaction.treasuryAccountID
+<span id="L191" class="ln">   191  </span>}
+<span id="L192" class="ln">   192  </span>
+<span id="L193" class="ln">   193  </span><span class="comment">// SetAdminKey Sets the new Admin key of the Token.</span>
+<span id="L194" class="ln">   194  </span><span class="comment">// If Token is immutable, transaction will resolve to TOKEN_IS_IMMUTABlE.</span>
+<span id="L195" class="ln">   195  </span>func (transaction *TokenUpdateTransaction) SetAdminKey(publicKey Key) *TokenUpdateTransaction {
+<span id="L196" class="ln">   196  </span>	transaction._RequireNotFrozen()
+<span id="L197" class="ln">   197  </span>	transaction.adminKey = publicKey
+<span id="L198" class="ln">   198  </span>	return transaction
+<span id="L199" class="ln">   199  </span>}
+<span id="L200" class="ln">   200  </span>
+<span id="L201" class="ln">   201  </span>func (transaction *TokenUpdateTransaction) GetAdminKey() Key {
+<span id="L202" class="ln">   202  </span>	return transaction.adminKey
+<span id="L203" class="ln">   203  </span>}
+<span id="L204" class="ln">   204  </span>
+<span id="L205" class="ln">   205  </span><span class="comment">// SetPauseKey Sets the Key which can pause and unpause the Token. If the Token does not currently have a pause key,</span>
+<span id="L206" class="ln">   206  </span><span class="comment">// transaction will resolve to TOKEN_HAS_NO_PAUSE_KEY</span>
+<span id="L207" class="ln">   207  </span>func (transaction *TokenUpdateTransaction) SetPauseKey(publicKey Key) *TokenUpdateTransaction {
+<span id="L208" class="ln">   208  </span>	transaction._RequireNotFrozen()
+<span id="L209" class="ln">   209  </span>	transaction.pauseKey = publicKey
+<span id="L210" class="ln">   210  </span>	return transaction
+<span id="L211" class="ln">   211  </span>}
+<span id="L212" class="ln">   212  </span>
+<span id="L213" class="ln">   213  </span>func (transaction *TokenUpdateTransaction) GetPauseKey() Key {
+<span id="L214" class="ln">   214  </span>	return transaction.pauseKey
+<span id="L215" class="ln">   215  </span>}
+<span id="L216" class="ln">   216  </span>
+<span id="L217" class="ln">   217  </span><span class="comment">// SetKycKey Sets the new KYC key of the Token. If Token does not have currently a KYC key, transaction will</span>
+<span id="L218" class="ln">   218  </span><span class="comment">// resolve to TOKEN_HAS_NO_KYC_KEY.</span>
+<span id="L219" class="ln">   219  </span>func (transaction *TokenUpdateTransaction) SetKycKey(publicKey Key) *TokenUpdateTransaction {
+<span id="L220" class="ln">   220  </span>	transaction._RequireNotFrozen()
+<span id="L221" class="ln">   221  </span>	transaction.kycKey = publicKey
+<span id="L222" class="ln">   222  </span>	return transaction
+<span id="L223" class="ln">   223  </span>}
+<span id="L224" class="ln">   224  </span>
+<span id="L225" class="ln">   225  </span>func (transaction *TokenUpdateTransaction) GetKycKey() Key {
+<span id="L226" class="ln">   226  </span>	return transaction.kycKey
+<span id="L227" class="ln">   227  </span>}
+<span id="L228" class="ln">   228  </span>
+<span id="L229" class="ln">   229  </span><span class="comment">// SetFreezeKey Sets the new Freeze key of the Token. If the Token does not have currently a Freeze key, transaction</span>
+<span id="L230" class="ln">   230  </span><span class="comment">// will resolve to TOKEN_HAS_NO_FREEZE_KEY.</span>
+<span id="L231" class="ln">   231  </span>func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey Key) *TokenUpdateTransaction {
+<span id="L232" class="ln">   232  </span>	transaction._RequireNotFrozen()
+<span id="L233" class="ln">   233  </span>	transaction.freezeKey = publicKey
+<span id="L234" class="ln">   234  </span>	return transaction
+<span id="L235" class="ln">   235  </span>}
+<span id="L236" class="ln">   236  </span>
+<span id="L237" class="ln">   237  </span>func (transaction *TokenUpdateTransaction) GetFreezeKey() Key {
+<span id="L238" class="ln">   238  </span>	return transaction.freezeKey
+<span id="L239" class="ln">   239  </span>}
+<span id="L240" class="ln">   240  </span>
+<span id="L241" class="ln">   241  </span><span class="comment">// SetWipeKey Sets the new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction</span>
+<span id="L242" class="ln">   242  </span><span class="comment">// will resolve to TOKEN_HAS_NO_WIPE_KEY.</span>
+<span id="L243" class="ln">   243  </span>func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey Key) *TokenUpdateTransaction {
+<span id="L244" class="ln">   244  </span>	transaction._RequireNotFrozen()
+<span id="L245" class="ln">   245  </span>	transaction.wipeKey = publicKey
+<span id="L246" class="ln">   246  </span>	return transaction
+<span id="L247" class="ln">   247  </span>}
+<span id="L248" class="ln">   248  </span>
+<span id="L249" class="ln">   249  </span>func (transaction *TokenUpdateTransaction) GetWipeKey() Key {
+<span id="L250" class="ln">   250  </span>	return transaction.wipeKey
+<span id="L251" class="ln">   251  </span>}
+<span id="L252" class="ln">   252  </span>
+<span id="L253" class="ln">   253  </span><span class="comment">// SetSupplyKey Sets the new Supply key of the Token. If the Token does not have currently a Supply key, transaction</span>
+<span id="L254" class="ln">   254  </span><span class="comment">// will resolve to TOKEN_HAS_NO_SUPPLY_KEY.</span>
+<span id="L255" class="ln">   255  </span>func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey Key) *TokenUpdateTransaction {
+<span id="L256" class="ln">   256  </span>	transaction._RequireNotFrozen()
+<span id="L257" class="ln">   257  </span>	transaction.supplyKey = publicKey
+<span id="L258" class="ln">   258  </span>	return transaction
+<span id="L259" class="ln">   259  </span>}
+<span id="L260" class="ln">   260  </span>
+<span id="L261" class="ln">   261  </span>func (transaction *TokenUpdateTransaction) GetSupplyKey() Key {
+<span id="L262" class="ln">   262  </span>	return transaction.supplyKey
+<span id="L263" class="ln">   263  </span>}
+<span id="L264" class="ln">   264  </span>
+<span id="L265" class="ln">   265  </span><span class="comment">// SetFeeScheduleKey</span>
+<span id="L266" class="ln">   266  </span><span class="comment">// If set, the new key to use to update the token&#39;s custom fee schedule; if the token does not</span>
+<span id="L267" class="ln">   267  </span><span class="comment">// currently have this key, transaction will resolve to TOKEN_HAS_NO_FEE_SCHEDULE_KEY</span>
+<span id="L268" class="ln">   268  </span>func (transaction *TokenUpdateTransaction) SetFeeScheduleKey(key Key) *TokenUpdateTransaction {
+<span id="L269" class="ln">   269  </span>	transaction._RequireNotFrozen()
+<span id="L270" class="ln">   270  </span>	transaction.scheduleKey = key
+<span id="L271" class="ln">   271  </span>	return transaction
+<span id="L272" class="ln">   272  </span>}
+<span id="L273" class="ln">   273  </span>
+<span id="L274" class="ln">   274  </span>func (transaction *TokenUpdateTransaction) GetFeeScheduleKey() Key {
+<span id="L275" class="ln">   275  </span>	return transaction.scheduleKey
+<span id="L276" class="ln">   276  </span>}
+<span id="L277" class="ln">   277  </span>
+<span id="L278" class="ln">   278  </span><span class="comment">// SetAutoRenewAccount Sets the new account which will be automatically charged to renew the token&#39;s expiration, at</span>
+<span id="L279" class="ln">   279  </span><span class="comment">// autoRenewPeriod interval.</span>
+<span id="L280" class="ln">   280  </span>func (transaction *TokenUpdateTransaction) SetAutoRenewAccount(autoRenewAccountID AccountID) *TokenUpdateTransaction {
+<span id="L281" class="ln">   281  </span>	transaction._RequireNotFrozen()
+<span id="L282" class="ln">   282  </span>	transaction.autoRenewAccountID = &amp;autoRenewAccountID
+<span id="L283" class="ln">   283  </span>	return transaction
+<span id="L284" class="ln">   284  </span>}
+<span id="L285" class="ln">   285  </span>
+<span id="L286" class="ln">   286  </span>func (transaction *TokenUpdateTransaction) GetAutoRenewAccount() AccountID {
+<span id="L287" class="ln">   287  </span>	if transaction.autoRenewAccountID == nil {
+<span id="L288" class="ln">   288  </span>		return AccountID{}
+<span id="L289" class="ln">   289  </span>	}
+<span id="L290" class="ln">   290  </span>
+<span id="L291" class="ln">   291  </span>	return *transaction.autoRenewAccountID
+<span id="L292" class="ln">   292  </span>}
+<span id="L293" class="ln">   293  </span>
+<span id="L294" class="ln">   294  </span><span class="comment">// SetAutoRenewPeriod Sets the new interval at which the auto-renew account will be charged to extend the token&#39;s expiry.</span>
+<span id="L295" class="ln">   295  </span>func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *TokenUpdateTransaction {
+<span id="L296" class="ln">   296  </span>	transaction._RequireNotFrozen()
+<span id="L297" class="ln">   297  </span>	transaction.autoRenewPeriod = &amp;autoRenewPeriod
+<span id="L298" class="ln">   298  </span>	return transaction
+<span id="L299" class="ln">   299  </span>}
+<span id="L300" class="ln">   300  </span>
+<span id="L301" class="ln">   301  </span>func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() time.Duration {
+<span id="L302" class="ln">   302  </span>	if transaction.autoRenewPeriod != nil {
+<span id="L303" class="ln">   303  </span>		return time.Duration(int64(transaction.autoRenewPeriod.Seconds()) * time.Second.Nanoseconds())
+<span id="L304" class="ln">   304  </span>	}
+<span id="L305" class="ln">   305  </span>
+<span id="L306" class="ln">   306  </span>	return time.Duration(0)
+<span id="L307" class="ln">   307  </span>}
+<span id="L308" class="ln">   308  </span>
+<span id="L309" class="ln">   309  </span><span class="comment">// SetExpirationTime Sets the new expiry time of the token. Expiry can be updated even if admin key is not set.</span>
+<span id="L310" class="ln">   310  </span><span class="comment">// If the provided expiry is earlier than the current token expiry, transaction wil resolve to</span>
+<span id="L311" class="ln">   311  </span><span class="comment">// INVALID_EXPIRATION_TIME</span>
+<span id="L312" class="ln">   312  </span>func (transaction *TokenUpdateTransaction) SetExpirationTime(expirationTime time.Time) *TokenUpdateTransaction {
+<span id="L313" class="ln">   313  </span>	transaction._RequireNotFrozen()
+<span id="L314" class="ln">   314  </span>	transaction.expirationTime = &amp;expirationTime
+<span id="L315" class="ln">   315  </span>	return transaction
+<span id="L316" class="ln">   316  </span>}
+<span id="L317" class="ln">   317  </span>
+<span id="L318" class="ln">   318  </span>func (transaction *TokenUpdateTransaction) GetExpirationTime() time.Time {
+<span id="L319" class="ln">   319  </span>	if transaction.expirationTime != nil {
+<span id="L320" class="ln">   320  </span>		return *transaction.expirationTime
+<span id="L321" class="ln">   321  </span>	}
+<span id="L322" class="ln">   322  </span>	return time.Time{}
+<span id="L323" class="ln">   323  </span>}
+<span id="L324" class="ln">   324  </span>
+<span id="L325" class="ln">   325  </span><span class="comment">// SetTokenMemo</span>
+<span id="L326" class="ln">   326  </span><span class="comment">// If set, the new memo to be associated with the token (UTF-8 encoding max 100 bytes)</span>
+<span id="L327" class="ln">   327  </span>func (transaction *TokenUpdateTransaction) SetTokenMemo(memo string) *TokenUpdateTransaction {
+<span id="L328" class="ln">   328  </span>	transaction._RequireNotFrozen()
+<span id="L329" class="ln">   329  </span>	transaction.memo = memo
+<span id="L330" class="ln">   330  </span>
+<span id="L331" class="ln">   331  </span>	return transaction
+<span id="L332" class="ln">   332  </span>}
+<span id="L333" class="ln">   333  </span>
+<span id="L334" class="ln">   334  </span>func (transaction *TokenUpdateTransaction) GeTokenMemo() string {
+<span id="L335" class="ln">   335  </span>	return transaction.memo
+<span id="L336" class="ln">   336  </span>}
+<span id="L337" class="ln">   337  </span>
+<span id="L338" class="ln">   338  </span>func (transaction *TokenUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
+<span id="L339" class="ln">   339  </span>	if client == nil || !client.autoValidateChecksums {
+<span id="L340" class="ln">   340  </span>		return nil
+<span id="L341" class="ln">   341  </span>	}
+<span id="L342" class="ln">   342  </span>
+<span id="L343" class="ln">   343  </span>	if transaction.tokenID != nil {
+<span id="L344" class="ln">   344  </span>		if err := transaction.tokenID.ValidateChecksum(client); err != nil {
+<span id="L345" class="ln">   345  </span>			return err
+<span id="L346" class="ln">   346  </span>		}
+<span id="L347" class="ln">   347  </span>	}
+<span id="L348" class="ln">   348  </span>
+<span id="L349" class="ln">   349  </span>	if transaction.treasuryAccountID != nil {
+<span id="L350" class="ln">   350  </span>		if err := transaction.treasuryAccountID.ValidateChecksum(client); err != nil {
+<span id="L351" class="ln">   351  </span>			return err
+<span id="L352" class="ln">   352  </span>		}
+<span id="L353" class="ln">   353  </span>	}
+<span id="L354" class="ln">   354  </span>
+<span id="L355" class="ln">   355  </span>	if transaction.autoRenewAccountID != nil {
+<span id="L356" class="ln">   356  </span>		if err := transaction.autoRenewAccountID.ValidateChecksum(client); err != nil {
+<span id="L357" class="ln">   357  </span>			return err
+<span id="L358" class="ln">   358  </span>		}
+<span id="L359" class="ln">   359  </span>	}
+<span id="L360" class="ln">   360  </span>
+<span id="L361" class="ln">   361  </span>	return nil
+<span id="L362" class="ln">   362  </span>}
+<span id="L363" class="ln">   363  </span>
+<span id="L364" class="ln">   364  </span>func (transaction *TokenUpdateTransaction) _Build() *services.TransactionBody {
+<span id="L365" class="ln">   365  </span>	body := &amp;services.TokenUpdateTransactionBody{
+<span id="L366" class="ln">   366  </span>		Name:   transaction.tokenName,
+<span id="L367" class="ln">   367  </span>		Symbol: transaction.tokenSymbol,
+<span id="L368" class="ln">   368  </span>		Memo:   &amp;wrapperspb.StringValue{Value: transaction.memo},
+<span id="L369" class="ln">   369  </span>	}
+<span id="L370" class="ln">   370  </span>
+<span id="L371" class="ln">   371  </span>	if transaction.tokenID != nil {
+<span id="L372" class="ln">   372  </span>		body.Token = transaction.tokenID._ToProtobuf()
+<span id="L373" class="ln">   373  </span>	}
+<span id="L374" class="ln">   374  </span>
+<span id="L375" class="ln">   375  </span>	if transaction.autoRenewPeriod != nil {
+<span id="L376" class="ln">   376  </span>		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+<span id="L377" class="ln">   377  </span>	}
+<span id="L378" class="ln">   378  </span>
+<span id="L379" class="ln">   379  </span>	if transaction.expirationTime != nil {
+<span id="L380" class="ln">   380  </span>		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
+<span id="L381" class="ln">   381  </span>	}
+<span id="L382" class="ln">   382  </span>
+<span id="L383" class="ln">   383  </span>	if transaction.treasuryAccountID != nil {
+<span id="L384" class="ln">   384  </span>		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
+<span id="L385" class="ln">   385  </span>	}
+<span id="L386" class="ln">   386  </span>
+<span id="L387" class="ln">   387  </span>	if transaction.autoRenewAccountID != nil {
+<span id="L388" class="ln">   388  </span>		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
+<span id="L389" class="ln">   389  </span>	}
+<span id="L390" class="ln">   390  </span>
+<span id="L391" class="ln">   391  </span>	if transaction.adminKey != nil {
+<span id="L392" class="ln">   392  </span>		body.AdminKey = transaction.adminKey._ToProtoKey()
+<span id="L393" class="ln">   393  </span>	}
+<span id="L394" class="ln">   394  </span>
+<span id="L395" class="ln">   395  </span>	if transaction.freezeKey != nil {
+<span id="L396" class="ln">   396  </span>		body.FreezeKey = transaction.freezeKey._ToProtoKey()
+<span id="L397" class="ln">   397  </span>	}
+<span id="L398" class="ln">   398  </span>
+<span id="L399" class="ln">   399  </span>	if transaction.scheduleKey != nil {
+<span id="L400" class="ln">   400  </span>		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
+<span id="L401" class="ln">   401  </span>	}
+<span id="L402" class="ln">   402  </span>
+<span id="L403" class="ln">   403  </span>	if transaction.kycKey != nil {
+<span id="L404" class="ln">   404  </span>		body.KycKey = transaction.kycKey._ToProtoKey()
+<span id="L405" class="ln">   405  </span>	}
+<span id="L406" class="ln">   406  </span>
+<span id="L407" class="ln">   407  </span>	if transaction.wipeKey != nil {
+<span id="L408" class="ln">   408  </span>		body.WipeKey = transaction.wipeKey._ToProtoKey()
+<span id="L409" class="ln">   409  </span>	}
+<span id="L410" class="ln">   410  </span>
+<span id="L411" class="ln">   411  </span>	if transaction.supplyKey != nil {
+<span id="L412" class="ln">   412  </span>		body.SupplyKey = transaction.supplyKey._ToProtoKey()
+<span id="L413" class="ln">   413  </span>	}
+<span id="L414" class="ln">   414  </span>
+<span id="L415" class="ln">   415  </span>	if transaction.pauseKey != nil {
+<span id="L416" class="ln">   416  </span>		body.PauseKey = transaction.pauseKey._ToProtoKey()
+<span id="L417" class="ln">   417  </span>	}
+<span id="L418" class="ln">   418  </span>
+<span id="L419" class="ln">   419  </span>	return &amp;services.TransactionBody{
+<span id="L420" class="ln">   420  </span>		TransactionFee:           transaction.transactionFee,
+<span id="L421" class="ln">   421  </span>		Memo:                     transaction.Transaction.memo,
+<span id="L422" class="ln">   422  </span>		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+<span id="L423" class="ln">   423  </span>		TransactionID:            transaction.transactionID._ToProtobuf(),
+<span id="L424" class="ln">   424  </span>		Data: &amp;services.TransactionBody_TokenUpdate{
+<span id="L425" class="ln">   425  </span>			TokenUpdate: body,
+<span id="L426" class="ln">   426  </span>		},
+<span id="L427" class="ln">   427  </span>	}
+<span id="L428" class="ln">   428  </span>}
+<span id="L429" class="ln">   429  </span>
+<span id="L430" class="ln">   430  </span>func (transaction *TokenUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+<span id="L431" class="ln">   431  </span>	transaction._RequireNotFrozen()
+<span id="L432" class="ln">   432  </span>
+<span id="L433" class="ln">   433  </span>	scheduled, err := transaction._ConstructScheduleProtobuf()
+<span id="L434" class="ln">   434  </span>	if err != nil {
+<span id="L435" class="ln">   435  </span>		return nil, err
+<span id="L436" class="ln">   436  </span>	}
+<span id="L437" class="ln">   437  </span>
+<span id="L438" class="ln">   438  </span>	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
+<span id="L439" class="ln">   439  </span>}
+<span id="L440" class="ln">   440  </span>
+<span id="L441" class="ln">   441  </span>func (transaction *TokenUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+<span id="L442" class="ln">   442  </span>	body := &amp;services.TokenUpdateTransactionBody{
+<span id="L443" class="ln">   443  </span>		Name:   transaction.tokenName,
+<span id="L444" class="ln">   444  </span>		Symbol: transaction.tokenSymbol,
+<span id="L445" class="ln">   445  </span>		Memo:   &amp;wrapperspb.StringValue{Value: transaction.memo},
+<span id="L446" class="ln">   446  </span>	}
+<span id="L447" class="ln">   447  </span>
+<span id="L448" class="ln">   448  </span>	if transaction.tokenID != nil {
+<span id="L449" class="ln">   449  </span>		body.Token = transaction.tokenID._ToProtobuf()
+<span id="L450" class="ln">   450  </span>	}
+<span id="L451" class="ln">   451  </span>
+<span id="L452" class="ln">   452  </span>	if transaction.autoRenewPeriod != nil {
+<span id="L453" class="ln">   453  </span>		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+<span id="L454" class="ln">   454  </span>	}
+<span id="L455" class="ln">   455  </span>
+<span id="L456" class="ln">   456  </span>	if transaction.expirationTime != nil {
+<span id="L457" class="ln">   457  </span>		body.Expiry = _TimeToProtobuf(*transaction.expirationTime)
+<span id="L458" class="ln">   458  </span>	}
+<span id="L459" class="ln">   459  </span>
+<span id="L460" class="ln">   460  </span>	if transaction.treasuryAccountID != nil {
+<span id="L461" class="ln">   461  </span>		body.Treasury = transaction.treasuryAccountID._ToProtobuf()
+<span id="L462" class="ln">   462  </span>	}
+<span id="L463" class="ln">   463  </span>
+<span id="L464" class="ln">   464  </span>	if transaction.autoRenewAccountID != nil {
+<span id="L465" class="ln">   465  </span>		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
+<span id="L466" class="ln">   466  </span>	}
+<span id="L467" class="ln">   467  </span>
+<span id="L468" class="ln">   468  </span>	if transaction.adminKey != nil {
+<span id="L469" class="ln">   469  </span>		body.AdminKey = transaction.adminKey._ToProtoKey()
+<span id="L470" class="ln">   470  </span>	}
+<span id="L471" class="ln">   471  </span>
+<span id="L472" class="ln">   472  </span>	if transaction.freezeKey != nil {
+<span id="L473" class="ln">   473  </span>		body.FreezeKey = transaction.freezeKey._ToProtoKey()
+<span id="L474" class="ln">   474  </span>	}
+<span id="L475" class="ln">   475  </span>
+<span id="L476" class="ln">   476  </span>	if transaction.scheduleKey != nil {
+<span id="L477" class="ln">   477  </span>		body.FeeScheduleKey = transaction.scheduleKey._ToProtoKey()
+<span id="L478" class="ln">   478  </span>	}
+<span id="L479" class="ln">   479  </span>
+<span id="L480" class="ln">   480  </span>	if transaction.kycKey != nil {
+<span id="L481" class="ln">   481  </span>		body.KycKey = transaction.kycKey._ToProtoKey()
+<span id="L482" class="ln">   482  </span>	}
+<span id="L483" class="ln">   483  </span>
+<span id="L484" class="ln">   484  </span>	if transaction.wipeKey != nil {
+<span id="L485" class="ln">   485  </span>		body.WipeKey = transaction.wipeKey._ToProtoKey()
+<span id="L486" class="ln">   486  </span>	}
+<span id="L487" class="ln">   487  </span>
+<span id="L488" class="ln">   488  </span>	if transaction.supplyKey != nil {
+<span id="L489" class="ln">   489  </span>		body.SupplyKey = transaction.supplyKey._ToProtoKey()
+<span id="L490" class="ln">   490  </span>	}
+<span id="L491" class="ln">   491  </span>
+<span id="L492" class="ln">   492  </span>	if transaction.pauseKey != nil {
+<span id="L493" class="ln">   493  </span>		body.PauseKey = transaction.pauseKey._ToProtoKey()
+<span id="L494" class="ln">   494  </span>	}
+<span id="L495" class="ln">   495  </span>
+<span id="L496" class="ln">   496  </span>	return &amp;services.SchedulableTransactionBody{
+<span id="L497" class="ln">   497  </span>		TransactionFee: transaction.transactionFee,
+<span id="L498" class="ln">   498  </span>		Memo:           transaction.Transaction.memo,
+<span id="L499" class="ln">   499  </span>		Data: &amp;services.SchedulableTransactionBody_TokenUpdate{
+<span id="L500" class="ln">   500  </span>			TokenUpdate: body,
+<span id="L501" class="ln">   501  </span>		},
+<span id="L502" class="ln">   502  </span>	}, nil
+<span id="L503" class="ln">   503  </span>}
+<span id="L504" class="ln">   504  </span>
+<span id="L505" class="ln">   505  </span>func _TokenUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+<span id="L506" class="ln">   506  </span>	return _Method{
+<span id="L507" class="ln">   507  </span>		transaction: channel._GetToken().UpdateToken,
+<span id="L508" class="ln">   508  </span>	}
+<span id="L509" class="ln">   509  </span>}
+<span id="L510" class="ln">   510  </span>
+<span id="L511" class="ln">   511  </span>func (transaction *TokenUpdateTransaction) IsFrozen() bool {
+<span id="L512" class="ln">   512  </span>	return transaction._IsFrozen()
+<span id="L513" class="ln">   513  </span>}
+<span id="L514" class="ln">   514  </span>
+<span id="L515" class="ln">   515  </span><span class="comment">// Sign uses the provided privateKey to sign the transaction.</span>
+<span id="L516" class="ln">   516  </span>func (transaction *TokenUpdateTransaction) Sign(
+<span id="L517" class="ln">   517  </span>	privateKey PrivateKey,
+<span id="L518" class="ln">   518  </span>) *TokenUpdateTransaction {
+<span id="L519" class="ln">   519  </span>	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+<span id="L520" class="ln">   520  </span>}
+<span id="L521" class="ln">   521  </span>
+<span id="L522" class="ln">   522  </span>func (transaction *TokenUpdateTransaction) SignWithOperator(
+<span id="L523" class="ln">   523  </span>	client *Client,
+<span id="L524" class="ln">   524  </span>) (*TokenUpdateTransaction, error) {
+<span id="L525" class="ln">   525  </span>	<span class="comment">// If the transaction is not signed by the _Operator, we need</span>
+<span id="L526" class="ln">   526  </span>	<span class="comment">// to sign the transaction with the _Operator</span>
+<span id="L527" class="ln">   527  </span>
+<span id="L528" class="ln">   528  </span>	if client == nil {
+<span id="L529" class="ln">   529  </span>		return nil, errNoClientProvided
+<span id="L530" class="ln">   530  </span>	} else if client.operator == nil {
+<span id="L531" class="ln">   531  </span>		return nil, errClientOperatorSigning
+<span id="L532" class="ln">   532  </span>	}
+<span id="L533" class="ln">   533  </span>
+<span id="L534" class="ln">   534  </span>	if !transaction.IsFrozen() {
+<span id="L535" class="ln">   535  </span>		_, err := transaction.FreezeWith(client)
+<span id="L536" class="ln">   536  </span>		if err != nil {
+<span id="L537" class="ln">   537  </span>			return transaction, err
+<span id="L538" class="ln">   538  </span>		}
+<span id="L539" class="ln">   539  </span>	}
+<span id="L540" class="ln">   540  </span>	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+<span id="L541" class="ln">   541  </span>}
+<span id="L542" class="ln">   542  </span>
+<span id="L543" class="ln">   543  </span><span class="comment">// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction&#39;s signature map</span>
+<span id="L544" class="ln">   544  </span><span class="comment">// with the publicKey as the map key.</span>
+<span id="L545" class="ln">   545  </span>func (transaction *TokenUpdateTransaction) SignWith(
+<span id="L546" class="ln">   546  </span>	publicKey PublicKey,
+<span id="L547" class="ln">   547  </span>	signer TransactionSigner,
+<span id="L548" class="ln">   548  </span>) *TokenUpdateTransaction {
+<span id="L549" class="ln">   549  </span>	if !transaction._KeyAlreadySigned(publicKey) {
+<span id="L550" class="ln">   550  </span>		transaction._SignWith(publicKey, signer)
+<span id="L551" class="ln">   551  </span>	}
+<span id="L552" class="ln">   552  </span>
+<span id="L553" class="ln">   553  </span>	return transaction
+<span id="L554" class="ln">   554  </span>}
+<span id="L555" class="ln">   555  </span>
+<span id="L556" class="ln">   556  </span><span class="comment">// Execute executes the Transaction with the provided client</span>
+<span id="L557" class="ln">   557  </span>func (transaction *TokenUpdateTransaction) Execute(
+<span id="L558" class="ln">   558  </span>	client *Client,
+<span id="L559" class="ln">   559  </span>) (TransactionResponse, error) {
+<span id="L560" class="ln">   560  </span>	if client == nil {
+<span id="L561" class="ln">   561  </span>		return TransactionResponse{}, errNoClientProvided
+<span id="L562" class="ln">   562  </span>	}
+<span id="L563" class="ln">   563  </span>
+<span id="L564" class="ln">   564  </span>	if transaction.freezeError != nil {
+<span id="L565" class="ln">   565  </span>		return TransactionResponse{}, transaction.freezeError
+<span id="L566" class="ln">   566  </span>	}
+<span id="L567" class="ln">   567  </span>
+<span id="L568" class="ln">   568  </span>	if !transaction.IsFrozen() {
+<span id="L569" class="ln">   569  </span>		_, err := transaction.FreezeWith(client)
+<span id="L570" class="ln">   570  </span>		if err != nil {
+<span id="L571" class="ln">   571  </span>			return TransactionResponse{}, err
+<span id="L572" class="ln">   572  </span>		}
+<span id="L573" class="ln">   573  </span>	}
+<span id="L574" class="ln">   574  </span>
+<span id="L575" class="ln">   575  </span>	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
+<span id="L576" class="ln">   576  </span>
+<span id="L577" class="ln">   577  </span>	if !client.GetOperatorAccountID()._IsZero() &amp;&amp; client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+<span id="L578" class="ln">   578  </span>		transaction.SignWith(
+<span id="L579" class="ln">   579  </span>			client.GetOperatorPublicKey(),
+<span id="L580" class="ln">   580  </span>			client.operator.signer,
+<span id="L581" class="ln">   581  </span>		)
+<span id="L582" class="ln">   582  </span>	}
+<span id="L583" class="ln">   583  </span>
+<span id="L584" class="ln">   584  </span>	resp, err := _Execute(
+<span id="L585" class="ln">   585  </span>		client,
+<span id="L586" class="ln">   586  </span>		&amp;transaction.Transaction,
+<span id="L587" class="ln">   587  </span>		_TransactionShouldRetry,
+<span id="L588" class="ln">   588  </span>		_TransactionMakeRequest,
+<span id="L589" class="ln">   589  </span>		_TransactionAdvanceRequest,
+<span id="L590" class="ln">   590  </span>		_TransactionGetNodeAccountID,
+<span id="L591" class="ln">   591  </span>		_TokenUpdateTransactionGetMethod,
+<span id="L592" class="ln">   592  </span>		_TransactionMapStatusError,
+<span id="L593" class="ln">   593  </span>		_TransactionMapResponse,
+<span id="L594" class="ln">   594  </span>		transaction._GetLogID(),
+<span id="L595" class="ln">   595  </span>		transaction.grpcDeadline,
+<span id="L596" class="ln">   596  </span>		transaction.maxBackoff,
+<span id="L597" class="ln">   597  </span>		transaction.minBackoff,
+<span id="L598" class="ln">   598  </span>		transaction.maxRetry,
+<span id="L599" class="ln">   599  </span>	)
+<span id="L600" class="ln">   600  </span>
+<span id="L601" class="ln">   601  </span>	if err != nil {
+<span id="L602" class="ln">   602  </span>		return TransactionResponse{
+<span id="L603" class="ln">   603  </span>			TransactionID:  transaction.GetTransactionID(),
+<span id="L604" class="ln">   604  </span>			NodeID:         resp.(TransactionResponse).NodeID,
+<span id="L605" class="ln">   605  </span>			ValidateStatus: true,
+<span id="L606" class="ln">   606  </span>		}, err
+<span id="L607" class="ln">   607  </span>	}
+<span id="L608" class="ln">   608  </span>
+<span id="L609" class="ln">   609  </span>	return TransactionResponse{
+<span id="L610" class="ln">   610  </span>		TransactionID:  transaction.GetTransactionID(),
+<span id="L611" class="ln">   611  </span>		NodeID:         resp.(TransactionResponse).NodeID,
+<span id="L612" class="ln">   612  </span>		Hash:           resp.(TransactionResponse).Hash,
+<span id="L613" class="ln">   613  </span>		ValidateStatus: true,
+<span id="L614" class="ln">   614  </span>	}, nil
+<span id="L615" class="ln">   615  </span>}
+<span id="L616" class="ln">   616  </span>
+<span id="L617" class="ln">   617  </span>func (transaction *TokenUpdateTransaction) Freeze() (*TokenUpdateTransaction, error) {
+<span id="L618" class="ln">   618  </span>	return transaction.FreezeWith(nil)
+<span id="L619" class="ln">   619  </span>}
+<span id="L620" class="ln">   620  </span>
+<span id="L621" class="ln">   621  </span>func (transaction *TokenUpdateTransaction) FreezeWith(client *Client) (*TokenUpdateTransaction, error) {
+<span id="L622" class="ln">   622  </span>	if transaction.IsFrozen() {
+<span id="L623" class="ln">   623  </span>		return transaction, nil
+<span id="L624" class="ln">   624  </span>	}
+<span id="L625" class="ln">   625  </span>	transaction._InitFee(client)
+<span id="L626" class="ln">   626  </span>	err := transaction._ValidateNetworkOnIDs(client)
+<span id="L627" class="ln">   627  </span>	if err != nil {
+<span id="L628" class="ln">   628  </span>		return &amp;TokenUpdateTransaction{}, err
+<span id="L629" class="ln">   629  </span>	}
+<span id="L630" class="ln">   630  </span>	if err := transaction._InitTransactionID(client); err != nil {
+<span id="L631" class="ln">   631  </span>		return transaction, err
+<span id="L632" class="ln">   632  </span>	}
+<span id="L633" class="ln">   633  </span>	body := transaction._Build()
+<span id="L634" class="ln">   634  </span>
+<span id="L635" class="ln">   635  </span>	return transaction, _TransactionFreezeWith(&amp;transaction.Transaction, client, body)
+<span id="L636" class="ln">   636  </span>}
+<span id="L637" class="ln">   637  </span>
+<span id="L638" class="ln">   638  </span>func (transaction *TokenUpdateTransaction) GetMaxTransactionFee() Hbar {
+<span id="L639" class="ln">   639  </span>	return transaction.Transaction.GetMaxTransactionFee()
+<span id="L640" class="ln">   640  </span>}
+<span id="L641" class="ln">   641  </span>
+<span id="L642" class="ln">   642  </span><span class="comment">// SetMaxTransactionFee sets the max transaction fee for this TokenUpdateTransaction.</span>
+<span id="L643" class="ln">   643  </span>func (transaction *TokenUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TokenUpdateTransaction {
+<span id="L644" class="ln">   644  </span>	transaction._RequireNotFrozen()
+<span id="L645" class="ln">   645  </span>	transaction.Transaction.SetMaxTransactionFee(fee)
+<span id="L646" class="ln">   646  </span>	return transaction
+<span id="L647" class="ln">   647  </span>}
+<span id="L648" class="ln">   648  </span>
+<span id="L649" class="ln">   649  </span><span class="comment">// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received</span>
+<span id="L650" class="ln">   650  </span>func (transaction *TokenUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TokenUpdateTransaction {
+<span id="L651" class="ln">   651  </span>	transaction._RequireNotFrozen()
+<span id="L652" class="ln">   652  </span>	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+<span id="L653" class="ln">   653  </span>	return transaction
+<span id="L654" class="ln">   654  </span>}
+<span id="L655" class="ln">   655  </span>
+<span id="L656" class="ln">   656  </span><span class="comment">// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.</span>
+<span id="L657" class="ln">   657  </span>func (transaction *TokenUpdateTransaction) GetRegenerateTransactionID() bool {
+<span id="L658" class="ln">   658  </span>	return transaction.Transaction.GetRegenerateTransactionID()
+<span id="L659" class="ln">   659  </span>}
+<span id="L660" class="ln">   660  </span>
+<span id="L661" class="ln">   661  </span>func (transaction *TokenUpdateTransaction) GetTransactionMemo() string {
+<span id="L662" class="ln">   662  </span>	return transaction.Transaction.GetTransactionMemo()
+<span id="L663" class="ln">   663  </span>}
+<span id="L664" class="ln">   664  </span>
+<span id="L665" class="ln">   665  </span><span class="comment">// SetTransactionMemo sets the memo for this TokenUpdateTransaction.</span>
+<span id="L666" class="ln">   666  </span>func (transaction *TokenUpdateTransaction) SetTransactionMemo(memo string) *TokenUpdateTransaction {
+<span id="L667" class="ln">   667  </span>	transaction._RequireNotFrozen()
+<span id="L668" class="ln">   668  </span>	transaction.Transaction.SetTransactionMemo(memo)
+<span id="L669" class="ln">   669  </span>	return transaction
+<span id="L670" class="ln">   670  </span>}
+<span id="L671" class="ln">   671  </span>
+<span id="L672" class="ln">   672  </span>func (transaction *TokenUpdateTransaction) GetTransactionValidDuration() time.Duration {
+<span id="L673" class="ln">   673  </span>	return transaction.Transaction.GetTransactionValidDuration()
+<span id="L674" class="ln">   674  </span>}
+<span id="L675" class="ln">   675  </span>
+<span id="L676" class="ln">   676  </span><span class="comment">// SetTransactionValidDuration sets the valid duration for this TokenUpdateTransaction.</span>
+<span id="L677" class="ln">   677  </span>func (transaction *TokenUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TokenUpdateTransaction {
+<span id="L678" class="ln">   678  </span>	transaction._RequireNotFrozen()
+<span id="L679" class="ln">   679  </span>	transaction.Transaction.SetTransactionValidDuration(duration)
+<span id="L680" class="ln">   680  </span>	return transaction
+<span id="L681" class="ln">   681  </span>}
+<span id="L682" class="ln">   682  </span>
+<span id="L683" class="ln">   683  </span>func (transaction *TokenUpdateTransaction) GetTransactionID() TransactionID {
+<span id="L684" class="ln">   684  </span>	return transaction.Transaction.GetTransactionID()
+<span id="L685" class="ln">   685  </span>}
+<span id="L686" class="ln">   686  </span>
+<span id="L687" class="ln">   687  </span><span class="comment">// SetTransactionID sets the TransactionID for this TokenUpdateTransaction.</span>
+<span id="L688" class="ln">   688  </span>func (transaction *TokenUpdateTransaction) SetTransactionID(transactionID TransactionID) *TokenUpdateTransaction {
+<span id="L689" class="ln">   689  </span>	transaction._RequireNotFrozen()
+<span id="L690" class="ln">   690  </span>
+<span id="L691" class="ln">   691  </span>	transaction.Transaction.SetTransactionID(transactionID)
+<span id="L692" class="ln">   692  </span>	return transaction
+<span id="L693" class="ln">   693  </span>}
+<span id="L694" class="ln">   694  </span>
+<span id="L695" class="ln">   695  </span><span class="comment">// SetNodeTokenID sets the _Node TokenID for this TokenUpdateTransaction.</span>
+<span id="L696" class="ln">   696  </span>func (transaction *TokenUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TokenUpdateTransaction {
+<span id="L697" class="ln">   697  </span>	transaction._RequireNotFrozen()
+<span id="L698" class="ln">   698  </span>	transaction.Transaction.SetNodeAccountIDs(nodeID)
+<span id="L699" class="ln">   699  </span>	return transaction
+<span id="L700" class="ln">   700  </span>}
+<span id="L701" class="ln">   701  </span>
+<span id="L702" class="ln">   702  </span>func (transaction *TokenUpdateTransaction) SetMaxRetry(count int) *TokenUpdateTransaction {
+<span id="L703" class="ln">   703  </span>	transaction.Transaction.SetMaxRetry(count)
+<span id="L704" class="ln">   704  </span>	return transaction
+<span id="L705" class="ln">   705  </span>}
+<span id="L706" class="ln">   706  </span>
+<span id="L707" class="ln">   707  </span>func (transaction *TokenUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUpdateTransaction {
+<span id="L708" class="ln">   708  </span>	transaction._RequireOneNodeAccountID()
+<span id="L709" class="ln">   709  </span>
+<span id="L710" class="ln">   710  </span>	if transaction._KeyAlreadySigned(publicKey) {
+<span id="L711" class="ln">   711  </span>		return transaction
+<span id="L712" class="ln">   712  </span>	}
+<span id="L713" class="ln">   713  </span>
+<span id="L714" class="ln">   714  </span>	if transaction.signedTransactions._Length() == 0 {
+<span id="L715" class="ln">   715  </span>		return transaction
+<span id="L716" class="ln">   716  </span>	}
+<span id="L717" class="ln">   717  </span>
+<span id="L718" class="ln">   718  </span>	transaction.transactions = _NewLockableSlice()
+<span id="L719" class="ln">   719  </span>	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+<span id="L720" class="ln">   720  </span>	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+<span id="L721" class="ln">   721  </span>	transaction.transactionIDs.locked = true
+<span id="L722" class="ln">   722  </span>
+<span id="L723" class="ln">   723  </span>	for index := 0; index &lt; transaction.signedTransactions._Length(); index++ {
+<span id="L724" class="ln">   724  </span>		var temp *services.SignedTransaction
+<span id="L725" class="ln">   725  </span>		switch t := transaction.signedTransactions._Get(index).(type) { <span class="comment">//nolint</span>
+<span id="L726" class="ln">   726  </span>		case *services.SignedTransaction:
+<span id="L727" class="ln">   727  </span>			temp = t
+<span id="L728" class="ln">   728  </span>		}
+<span id="L729" class="ln">   729  </span>		temp.SigMap.SigPair = append(
+<span id="L730" class="ln">   730  </span>			temp.SigMap.SigPair,
+<span id="L731" class="ln">   731  </span>			publicKey._ToSignaturePairProtobuf(signature),
+<span id="L732" class="ln">   732  </span>		)
+<span id="L733" class="ln">   733  </span>		transaction.signedTransactions._Set(index, temp)
+<span id="L734" class="ln">   734  </span>	}
+<span id="L735" class="ln">   735  </span>
+<span id="L736" class="ln">   736  </span>	return transaction
+<span id="L737" class="ln">   737  </span>}
+<span id="L738" class="ln">   738  </span>
+<span id="L739" class="ln">   739  </span>func (transaction *TokenUpdateTransaction) SetMaxBackoff(max time.Duration) *TokenUpdateTransaction {
+<span id="L740" class="ln">   740  </span>	if max.Nanoseconds() &lt; 0 {
+<span id="L741" class="ln">   741  </span>		panic(&#34;maxBackoff must be a positive duration&#34;)
+<span id="L742" class="ln">   742  </span>	} else if max.Nanoseconds() &lt; transaction.minBackoff.Nanoseconds() {
+<span id="L743" class="ln">   743  </span>		panic(&#34;maxBackoff must be greater than or equal to minBackoff&#34;)
+<span id="L744" class="ln">   744  </span>	}
+<span id="L745" class="ln">   745  </span>	transaction.maxBackoff = &amp;max
+<span id="L746" class="ln">   746  </span>	return transaction
+<span id="L747" class="ln">   747  </span>}
+<span id="L748" class="ln">   748  </span>
+<span id="L749" class="ln">   749  </span>func (transaction *TokenUpdateTransaction) GetMaxBackoff() time.Duration {
+<span id="L750" class="ln">   750  </span>	if transaction.maxBackoff != nil {
+<span id="L751" class="ln">   751  </span>		return *transaction.maxBackoff
+<span id="L752" class="ln">   752  </span>	}
+<span id="L753" class="ln">   753  </span>
+<span id="L754" class="ln">   754  </span>	return 8 * time.Second
+<span id="L755" class="ln">   755  </span>}
+<span id="L756" class="ln">   756  </span>
+<span id="L757" class="ln">   757  </span>func (transaction *TokenUpdateTransaction) SetMinBackoff(min time.Duration) *TokenUpdateTransaction {
+<span id="L758" class="ln">   758  </span>	if min.Nanoseconds() &lt; 0 {
+<span id="L759" class="ln">   759  </span>		panic(&#34;minBackoff must be a positive duration&#34;)
+<span id="L760" class="ln">   760  </span>	} else if transaction.maxBackoff.Nanoseconds() &lt; min.Nanoseconds() {
+<span id="L761" class="ln">   761  </span>		panic(&#34;minBackoff must be less than or equal to maxBackoff&#34;)
+<span id="L762" class="ln">   762  </span>	}
+<span id="L763" class="ln">   763  </span>	transaction.minBackoff = &amp;min
+<span id="L764" class="ln">   764  </span>	return transaction
+<span id="L765" class="ln">   765  </span>}
+<span id="L766" class="ln">   766  </span>
+<span id="L767" class="ln">   767  </span>func (transaction *TokenUpdateTransaction) GetMinBackoff() time.Duration {
+<span id="L768" class="ln">   768  </span>	if transaction.minBackoff != nil {
+<span id="L769" class="ln">   769  </span>		return *transaction.minBackoff
+<span id="L770" class="ln">   770  </span>	}
+<span id="L771" class="ln">   771  </span>
+<span id="L772" class="ln">   772  </span>	return 250 * time.Millisecond
+<span id="L773" class="ln">   773  </span>}
+<span id="L774" class="ln">   774  </span>
+<span id="L775" class="ln">   775  </span>func (transaction *TokenUpdateTransaction) _GetLogID() string {
+<span id="L776" class="ln">   776  </span>	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+<span id="L777" class="ln">   777  </span>	return fmt.Sprintf(&#34;TokenUpdateTransaction:%d&#34;, timestamp.UnixNano())
+<span id="L778" class="ln">   778  </span>}
+<span id="L779" class="ln">   779  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

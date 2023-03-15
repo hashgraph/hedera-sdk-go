@@ -1,0 +1,757 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/crypto_unit_test.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">crypto_unit_test.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span><span class="comment">//go:build all || unit</span>
+<span id="L2" class="ln">     2  </span><span class="comment">// +build all unit</span>
+<span id="L3" class="ln">     3  </span>
+<span id="L4" class="ln">     4  </span>package hedera
+<span id="L5" class="ln">     5  </span>
+<span id="L6" class="ln">     6  </span><span class="comment">/*-
+<span id="L7" class="ln">     7  </span> *
+<span id="L8" class="ln">     8  </span> * Hedera Go SDK
+<span id="L9" class="ln">     9  </span> *
+<span id="L10" class="ln">    10  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L11" class="ln">    11  </span> *
+<span id="L12" class="ln">    12  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L13" class="ln">    13  </span> * you may not use this file except in compliance with the License.
+<span id="L14" class="ln">    14  </span> * You may obtain a copy of the License at
+<span id="L15" class="ln">    15  </span> *
+<span id="L16" class="ln">    16  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L17" class="ln">    17  </span> *
+<span id="L18" class="ln">    18  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L19" class="ln">    19  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L20" class="ln">    20  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L21" class="ln">    21  </span> * See the License for the specific language governing permissions and
+<span id="L22" class="ln">    22  </span> * limitations under the License.
+<span id="L23" class="ln">    23  </span> *
+<span id="L24" class="ln">    24  </span> */</span>
+<span id="L25" class="ln">    25  </span>
+<span id="L26" class="ln">    26  </span>import (
+<span id="L27" class="ln">    27  </span>	&#34;bytes&#34;
+<span id="L28" class="ln">    28  </span>	&#34;crypto/ed25519&#34;
+<span id="L29" class="ln">    29  </span>	&#34;encoding/hex&#34;
+<span id="L30" class="ln">    30  </span>	&#34;strings&#34;
+<span id="L31" class="ln">    31  </span>	&#34;testing&#34;
+<span id="L32" class="ln">    32  </span>
+<span id="L33" class="ln">    33  </span>	&#34;github.com/ethereum/go-ethereum/crypto&#34;
+<span id="L34" class="ln">    34  </span>	&#34;github.com/stretchr/testify/assert&#34;
+<span id="L35" class="ln">    35  </span>	&#34;github.com/stretchr/testify/require&#34;
+<span id="L36" class="ln">    36  </span>)
+<span id="L37" class="ln">    37  </span>
+<span id="L38" class="ln">    38  </span>const testPrivateKeyStr = &#34;302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10&#34;
+<span id="L39" class="ln">    39  </span>
+<span id="L40" class="ln">    40  </span>const testPublicKeyStr = &#34;302a300506032b6570032100e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7&#34;
+<span id="L41" class="ln">    41  </span>
+<span id="L42" class="ln">    42  </span>const testMnemonic3 = &#34;obvious favorite remain caution remove laptop base vacant increase video erase pass sniff sausage knock grid argue salt romance way alone fever slush dune&#34;
+<span id="L43" class="ln">    43  </span>
+<span id="L44" class="ln">    44  </span><span class="comment">// generated by hedera-keygen-java, not used anywhere</span>
+<span id="L45" class="ln">    45  </span>const testMnemonic = &#34;inmate flip alley wear offer often piece magnet surge toddler submit right radio absent pear floor belt raven price stove replace reduce plate home&#34;
+<span id="L46" class="ln">    46  </span>const testMnemonicKey = &#34;302e020100300506032b657004220420853f15aecd22706b105da1d709b4ac05b4906170c2b9c7495dff9af49e1391da&#34;
+<span id="L47" class="ln">    47  </span>
+<span id="L48" class="ln">    48  </span><span class="comment">// backup phrase generated by the iOS wallet, not used anywhere</span>
+<span id="L49" class="ln">    49  </span>const iosMnemonicString = &#34;tiny denial casual grass skull spare awkward indoor ethics dash enough flavor good daughter early hard rug staff capable swallow raise flavor empty angle&#34;
+<span id="L50" class="ln">    50  </span>
+<span id="L51" class="ln">    51  </span><span class="comment">// private key for &#34;default account&#34;, should be index 0</span>
+<span id="L52" class="ln">    52  </span>const iosDefaultPrivateKey = &#34;5f66a51931e8c99089472e0d70516b6272b94dd772b967f8221e1077f966dbda2b60cf7ee8cf10ecd5a076bffad9a7c7b97df370ad758c0f1dd4ef738e04ceb6&#34;
+<span id="L53" class="ln">    53  </span>
+<span id="L54" class="ln">    54  </span><span class="comment">// backup phrase generated by the Android wallet, also not used anywhere</span>
+<span id="L55" class="ln">    55  </span>const androidMnemonicString = &#34;ramp april job flavor surround pyramid fish sea good know blame gate village viable include mixed term draft among monitor swear swing novel track&#34;
+<span id="L56" class="ln">    56  </span>
+<span id="L57" class="ln">    57  </span><span class="comment">// private key for &#34;default account&#34;, should be index 0</span>
+<span id="L58" class="ln">    58  </span>const androidDefaultPrivateKey = &#34;c284c25b3a1458b59423bc289e83703b125c8eefec4d5aa1b393c2beb9f2bae66188a344ba75c43918ab12fa2ea4a92960eca029a2320d8c6a1c3b94e06c9985&#34;
+<span id="L59" class="ln">    59  </span>
+<span id="L60" class="ln">    60  </span><span class="comment">// test pem key contests for the above testPrivateKeyStr</span>
+<span id="L61" class="ln">    61  </span>const pemString = `-----BEGIN PRIVATE KEY-----
+<span id="L62" class="ln">    62  </span>MC4CAQAwBQYDK2VwBCIEINtIS4KOZLLY8SzjwKDpOguMznrxu485yXcyOUSCU44Q
+<span id="L63" class="ln">    63  </span>-----END PRIVATE KEY-----
+<span id="L64" class="ln">    64  </span>`
+<span id="L65" class="ln">    65  </span>
+<span id="L66" class="ln">    66  </span><span class="comment">// const encryptedPem = `-----BEGIN ENCRYPTED PRIVATE KEY-----</span>
+<span id="L67" class="ln">    67  </span><span class="comment">// MIGbMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAi8WY7Gy2tThQICCAAw</span>
+<span id="L68" class="ln">    68  </span><span class="comment">// DAYIKoZIhvcNAgkFADAdBglghkgBZQMEAQIEEOq46NPss58chbjUn20NoK0EQG1x</span>
+<span id="L69" class="ln">    69  </span><span class="comment">// R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV</span>
+<span id="L70" class="ln">    70  </span><span class="comment">// 9hlo4YEh3uEaCmfJzWM=</span>
+<span id="L71" class="ln">    71  </span><span class="comment">// -----END ENCRYPTED PRIVATE KEY-----`</span>
+<span id="L72" class="ln">    72  </span>
+<span id="L73" class="ln">    73  </span>const encryptedPem = `-----BEGIN ENCRYPTED PRIVATE KEY-----
+<span id="L74" class="ln">    74  </span>MIGbMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAi8WY7Gy2tThQICCAAw
+<span id="L75" class="ln">    75  </span>DAYIKoZIhvcNAgkFADAdBglghkgBZQMEAQIEEOq46NPss58chbjUn20NoK0EQG1x
+<span id="L76" class="ln">    76  </span>R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV
+<span id="L77" class="ln">    77  </span>9hlo4YEh3uEaCmfJzWM=
+<span id="L78" class="ln">    78  </span>-----END ENCRYPTED PRIVATE KEY-----
+<span id="L79" class="ln">    79  </span>`
+<span id="L80" class="ln">    80  </span>
+<span id="L81" class="ln">    81  </span>const pemPassphrase = &#34;this is a passphrase&#34;
+<span id="L82" class="ln">    82  </span>
+<span id="L83" class="ln">    83  </span>func TestUnitPrivateKeyGenerate(t *testing.T) {
+<span id="L84" class="ln">    84  </span>	key, err := GeneratePrivateKey()
+<span id="L85" class="ln">    85  </span>
+<span id="L86" class="ln">    86  </span>	require.NoError(t, err)
+<span id="L87" class="ln">    87  </span>	assert.True(t, strings.HasPrefix(key.String(), ed25519PrivateKeyPrefix))
+<span id="L88" class="ln">    88  </span>}
+<span id="L89" class="ln">    89  </span>
+<span id="L90" class="ln">    90  </span>func TestUnitPrivateKeyExternalSerialization(t *testing.T) {
+<span id="L91" class="ln">    91  </span>	key, err := PrivateKeyFromString(testPrivateKeyStr)
+<span id="L92" class="ln">    92  </span>
+<span id="L93" class="ln">    93  </span>	require.NoError(t, err)
+<span id="L94" class="ln">    94  </span>	assert.Equal(t, testPrivateKeyStr, key.String())
+<span id="L95" class="ln">    95  </span>}
+<span id="L96" class="ln">    96  </span>
+<span id="L97" class="ln">    97  </span>func TestUnitPrivateKeyExternalSerializationForConcatenatedHex(t *testing.T) {
+<span id="L98" class="ln">    98  </span>	keyStr := &#34;db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7&#34;
+<span id="L99" class="ln">    99  </span>	key, err := PrivateKeyFromStringEd25519(keyStr)
+<span id="L100" class="ln">   100  </span>
+<span id="L101" class="ln">   101  </span>	require.NoError(t, err)
+<span id="L102" class="ln">   102  </span>	assert.Equal(t, testPrivateKeyStr, key.String())
+<span id="L103" class="ln">   103  </span>}
+<span id="L104" class="ln">   104  </span>
+<span id="L105" class="ln">   105  </span>func TestUnitShouldMatchHbarWalletV1(t *testing.T) {
+<span id="L106" class="ln">   106  </span>	mnemonic, err := MnemonicFromString(&#34;jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure&#34;)
+<span id="L107" class="ln">   107  </span>	require.NoError(t, err)
+<span id="L108" class="ln">   108  </span>
+<span id="L109" class="ln">   109  </span>	key, err := mnemonic.ToLegacyPrivateKey()
+<span id="L110" class="ln">   110  </span>	require.NoError(t, err)
+<span id="L111" class="ln">   111  </span>
+<span id="L112" class="ln">   112  </span>	deriveKey, err := key.LegacyDerive(1099511627775)
+<span id="L113" class="ln">   113  </span>	require.NoError(t, err)
+<span id="L114" class="ln">   114  </span>
+<span id="L115" class="ln">   115  </span>	assert.Equal(t, &#34;302a300506032b657003210045f3a673984a0b4ee404a1f4404ed058475ecd177729daa042e437702f7791e9&#34;, deriveKey.PublicKey().String())
+<span id="L116" class="ln">   116  </span>}
+<span id="L117" class="ln">   117  </span>
+<span id="L118" class="ln">   118  </span>func TestUnitLegacyPrivateKeyFromMnemonicDerive(t *testing.T) {
+<span id="L119" class="ln">   119  </span>	mnemonic, err := MnemonicFromString(&#34;jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure&#34;)
+<span id="L120" class="ln">   120  </span>	require.NoError(t, err)
+<span id="L121" class="ln">   121  </span>
+<span id="L122" class="ln">   122  </span>	key, err := mnemonic.ToLegacyPrivateKey()
+<span id="L123" class="ln">   123  </span>	require.NoError(t, err)
+<span id="L124" class="ln">   124  </span>
+<span id="L125" class="ln">   125  </span>	deriveKey, err := key.LegacyDerive(0)
+<span id="L126" class="ln">   126  </span>	require.NoError(t, err)
+<span id="L127" class="ln">   127  </span>	deriveKey2, err := key.LegacyDerive(-1)
+<span id="L128" class="ln">   128  </span>	require.NoError(t, err)
+<span id="L129" class="ln">   129  </span>
+<span id="L130" class="ln">   130  </span>	assert.Equal(t, &#34;302e020100300506032b657004220420882a565ad8cb45643892b5366c1ee1c1ef4a730c5ce821a219ff49b6bf173ddf&#34;, deriveKey2.String())
+<span id="L131" class="ln">   131  </span>	assert.Equal(t, &#34;302e020100300506032b657004220420fae0002d2716ea3a60c9cd05ee3c4bb88723b196341b68a02d20975f9d049dc6&#34;, deriveKey.String())
+<span id="L132" class="ln">   132  </span>}
+<span id="L133" class="ln">   133  </span>
+<span id="L134" class="ln">   134  </span>func TestUnitPrivateKeyExternalSerializationForRawHex(t *testing.T) {
+<span id="L135" class="ln">   135  </span>	keyStr := &#34;db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10&#34;
+<span id="L136" class="ln">   136  </span>	key, err := PrivateKeyFromStringEd25519(keyStr)
+<span id="L137" class="ln">   137  </span>
+<span id="L138" class="ln">   138  </span>	require.NoError(t, err)
+<span id="L139" class="ln">   139  </span>	assert.Equal(t, testPrivateKeyStr, key.String())
+<span id="L140" class="ln">   140  </span>}
+<span id="L141" class="ln">   141  </span>
+<span id="L142" class="ln">   142  </span>func TestUnitPublicKeyExternalSerializationForDerEncodedHex(t *testing.T) {
+<span id="L143" class="ln">   143  </span>	key, err := PublicKeyFromString(testPublicKeyStr)
+<span id="L144" class="ln">   144  </span>
+<span id="L145" class="ln">   145  </span>	require.NoError(t, err)
+<span id="L146" class="ln">   146  </span>	assert.Equal(t, testPublicKeyStr, key.String())
+<span id="L147" class="ln">   147  </span>}
+<span id="L148" class="ln">   148  </span>
+<span id="L149" class="ln">   149  </span>func TestUnitPublicKeyExternalSerializationForRawHex(t *testing.T) {
+<span id="L150" class="ln">   150  </span>	keyStr := &#34;e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7&#34;
+<span id="L151" class="ln">   151  </span>	key, err := PublicKeyFromStringEd25519(keyStr)
+<span id="L152" class="ln">   152  </span>
+<span id="L153" class="ln">   153  </span>	require.NoError(t, err)
+<span id="L154" class="ln">   154  </span>	assert.Equal(t, testPublicKeyStr, key.String())
+<span id="L155" class="ln">   155  </span>}
+<span id="L156" class="ln">   156  </span>
+<span id="L157" class="ln">   157  </span>func TestUnitMnemonicToPrivateKey(t *testing.T) {
+<span id="L158" class="ln">   158  </span>	mnemonic, err := MnemonicFromString(testMnemonic)
+<span id="L159" class="ln">   159  </span>	require.NoError(t, err)
+<span id="L160" class="ln">   160  </span>
+<span id="L161" class="ln">   161  </span>	key, err := mnemonic.ToPrivateKey(&#34;&#34;)
+<span id="L162" class="ln">   162  </span>	require.NoError(t, err)
+<span id="L163" class="ln">   163  </span>
+<span id="L164" class="ln">   164  </span>	assert.Equal(t, testMnemonicKey, key.String())
+<span id="L165" class="ln">   165  </span>}
+<span id="L166" class="ln">   166  </span>
+<span id="L167" class="ln">   167  </span>func TestUnitIOSPrivateKeyFromMnemonic(t *testing.T) {
+<span id="L168" class="ln">   168  </span>	mnemonic, err := MnemonicFromString(iosMnemonicString)
+<span id="L169" class="ln">   169  </span>	require.NoError(t, err)
+<span id="L170" class="ln">   170  </span>
+<span id="L171" class="ln">   171  </span>	key, err := PrivateKeyFromMnemonic(mnemonic, &#34;&#34;)
+<span id="L172" class="ln">   172  </span>	require.NoError(t, err)
+<span id="L173" class="ln">   173  </span>
+<span id="L174" class="ln">   174  </span>	derivedKey, err := key.Derive(0)
+<span id="L175" class="ln">   175  </span>	require.NoError(t, err)
+<span id="L176" class="ln">   176  </span>
+<span id="L177" class="ln">   177  </span>	expectedKey, err := PrivateKeyFromString(iosDefaultPrivateKey)
+<span id="L178" class="ln">   178  </span>	require.NoError(t, err)
+<span id="L179" class="ln">   179  </span>
+<span id="L180" class="ln">   180  </span>	assert.Equal(t, expectedKey.ed25519PrivateKey.keyData, derivedKey.ed25519PrivateKey.keyData)
+<span id="L181" class="ln">   181  </span>}
+<span id="L182" class="ln">   182  </span>
+<span id="L183" class="ln">   183  </span>func TestUnitAndroidPrivateKeyFromMnemonic(t *testing.T) {
+<span id="L184" class="ln">   184  </span>	mnemonic, err := MnemonicFromString(androidMnemonicString)
+<span id="L185" class="ln">   185  </span>	require.NoError(t, err)
+<span id="L186" class="ln">   186  </span>
+<span id="L187" class="ln">   187  </span>	key, err := PrivateKeyFromMnemonic(mnemonic, &#34;&#34;)
+<span id="L188" class="ln">   188  </span>	require.NoError(t, err)
+<span id="L189" class="ln">   189  </span>
+<span id="L190" class="ln">   190  </span>	derivedKey, err := key.Derive(0)
+<span id="L191" class="ln">   191  </span>	require.NoError(t, err)
+<span id="L192" class="ln">   192  </span>
+<span id="L193" class="ln">   193  </span>	expectedKey, err := PrivateKeyFromString(androidDefaultPrivateKey)
+<span id="L194" class="ln">   194  </span>	require.NoError(t, err)
+<span id="L195" class="ln">   195  </span>
+<span id="L196" class="ln">   196  </span>	assert.Equal(t, expectedKey.ed25519PrivateKey.keyData, derivedKey.ed25519PrivateKey.keyData)
+<span id="L197" class="ln">   197  </span>}
+<span id="L198" class="ln">   198  </span>
+<span id="L199" class="ln">   199  </span>func TestUnitMnemonic3(t *testing.T) {
+<span id="L200" class="ln">   200  </span>	mnemonic, err := MnemonicFromString(testMnemonic3)
+<span id="L201" class="ln">   201  </span>	require.NoError(t, err)
+<span id="L202" class="ln">   202  </span>
+<span id="L203" class="ln">   203  </span>	key, err := mnemonic.ToLegacyPrivateKey()
+<span id="L204" class="ln">   204  </span>	require.NoError(t, err)
+<span id="L205" class="ln">   205  </span>
+<span id="L206" class="ln">   206  </span>	derivedKey, err := key.LegacyDerive(0)
+<span id="L207" class="ln">   207  </span>	require.NoError(t, err)
+<span id="L208" class="ln">   208  </span>	derivedKey2, err := key.LegacyDerive(-1)
+<span id="L209" class="ln">   209  </span>	require.NoError(t, err)
+<span id="L210" class="ln">   210  </span>
+<span id="L211" class="ln">   211  </span>	assert.Equal(t, &#34;302e020100300506032b6570042204202b7345f302a10c2a6d55bf8b7af40f125ec41d780957826006d30776f0c441fb&#34;, derivedKey.String())
+<span id="L212" class="ln">   212  </span>	assert.Equal(t, &#34;302e020100300506032b657004220420caffc03fdb9853e6a91a5b3c57a5c0031d164ce1c464dea88f3114786b5199e5&#34;, derivedKey2.String())
+<span id="L213" class="ln">   213  </span>}
+<span id="L214" class="ln">   214  </span>
+<span id="L215" class="ln">   215  </span>func TestUnitSigning(t *testing.T) {
+<span id="L216" class="ln">   216  </span>	priKey, err := PrivateKeyFromString(testPrivateKeyStr)
+<span id="L217" class="ln">   217  </span>	require.NoError(t, err)
+<span id="L218" class="ln">   218  </span>
+<span id="L219" class="ln">   219  </span>	pubKey, err := PublicKeyFromString(testPublicKeyStr)
+<span id="L220" class="ln">   220  </span>	require.NoError(t, err)
+<span id="L221" class="ln">   221  </span>
+<span id="L222" class="ln">   222  </span>	testSignData := []byte(&#34;this is the test data to sign&#34;)
+<span id="L223" class="ln">   223  </span>	signature := priKey.Sign(testSignData)
+<span id="L224" class="ln">   224  </span>
+<span id="L225" class="ln">   225  </span>	assert.True(t, ed25519.Verify(pubKey.Bytes(), []byte(&#34;this is the test data to sign&#34;), signature))
+<span id="L226" class="ln">   226  </span>}
+<span id="L227" class="ln">   227  </span>
+<span id="L228" class="ln">   228  </span>func TestUnitGenerated24MnemonicToWorkingPrivateKey(t *testing.T) {
+<span id="L229" class="ln">   229  </span>	mnemonic, err := GenerateMnemonic24()
+<span id="L230" class="ln">   230  </span>
+<span id="L231" class="ln">   231  </span>	require.NoError(t, err)
+<span id="L232" class="ln">   232  </span>
+<span id="L233" class="ln">   233  </span>	privateKey, err := mnemonic.ToPrivateKey(&#34;&#34;)
+<span id="L234" class="ln">   234  </span>
+<span id="L235" class="ln">   235  </span>	require.NoError(t, err)
+<span id="L236" class="ln">   236  </span>
+<span id="L237" class="ln">   237  </span>	message := []byte(&#34;this is a test message&#34;)
+<span id="L238" class="ln">   238  </span>
+<span id="L239" class="ln">   239  </span>	signature := privateKey.Sign(message)
+<span id="L240" class="ln">   240  </span>
+<span id="L241" class="ln">   241  </span>	assert.True(t, ed25519.Verify(privateKey.PublicKey().Bytes(), message, signature))
+<span id="L242" class="ln">   242  </span>}
+<span id="L243" class="ln">   243  </span>
+<span id="L244" class="ln">   244  </span>func TestUnitGenerated12MnemonicToWorkingPrivateKey(t *testing.T) {
+<span id="L245" class="ln">   245  </span>	mnemonic, err := GenerateMnemonic12()
+<span id="L246" class="ln">   246  </span>
+<span id="L247" class="ln">   247  </span>	require.NoError(t, err)
+<span id="L248" class="ln">   248  </span>
+<span id="L249" class="ln">   249  </span>	privateKey, err := mnemonic.ToPrivateKey(&#34;&#34;)
+<span id="L250" class="ln">   250  </span>
+<span id="L251" class="ln">   251  </span>	require.NoError(t, err)
+<span id="L252" class="ln">   252  </span>
+<span id="L253" class="ln">   253  </span>	message := []byte(&#34;this is a test message&#34;)
+<span id="L254" class="ln">   254  </span>
+<span id="L255" class="ln">   255  </span>	signature := privateKey.Sign(message)
+<span id="L256" class="ln">   256  </span>
+<span id="L257" class="ln">   257  </span>	assert.True(t, ed25519.Verify(privateKey.PublicKey().Bytes(), message, signature))
+<span id="L258" class="ln">   258  </span>}
+<span id="L259" class="ln">   259  </span>
+<span id="L260" class="ln">   260  </span>func TestUnitPrivateKeyFromKeystore(t *testing.T) {
+<span id="L261" class="ln">   261  </span>	privatekey, err := PrivateKeyFromKeystore([]byte(testKeystore), passphrase)
+<span id="L262" class="ln">   262  </span>	require.NoError(t, err)
+<span id="L263" class="ln">   263  </span>
+<span id="L264" class="ln">   264  </span>	actualPrivateKey, err := PrivateKeyFromStringEd25519(testKeystoreKeyString)
+<span id="L265" class="ln">   265  </span>	require.NoError(t, err)
+<span id="L266" class="ln">   266  </span>
+<span id="L267" class="ln">   267  </span>	assert.Equal(t, actualPrivateKey.ed25519PrivateKey.keyData, privatekey.ed25519PrivateKey.keyData)
+<span id="L268" class="ln">   268  </span>}
+<span id="L269" class="ln">   269  </span>
+<span id="L270" class="ln">   270  </span>func TestUnitPrivateKeyKeystore(t *testing.T) {
+<span id="L271" class="ln">   271  </span>	privateKey, err := PrivateKeyFromString(testPrivateKeyStr)
+<span id="L272" class="ln">   272  </span>	require.NoError(t, err)
+<span id="L273" class="ln">   273  </span>
+<span id="L274" class="ln">   274  </span>	keystore, err := privateKey.Keystore(passphrase)
+<span id="L275" class="ln">   275  </span>	require.NoError(t, err)
+<span id="L276" class="ln">   276  </span>
+<span id="L277" class="ln">   277  </span>	ksPrivateKey, err := _ParseKeystore(keystore, passphrase)
+<span id="L278" class="ln">   278  </span>	require.NoError(t, err)
+<span id="L279" class="ln">   279  </span>
+<span id="L280" class="ln">   280  </span>	assert.Equal(t, privateKey.ed25519PrivateKey.keyData, ksPrivateKey.ed25519PrivateKey.keyData)
+<span id="L281" class="ln">   281  </span>}
+<span id="L282" class="ln">   282  </span>
+<span id="L283" class="ln">   283  </span>func TestUnitPrivateKeyReadKeystore(t *testing.T) {
+<span id="L284" class="ln">   284  </span>	actualPrivateKey, err := PrivateKeyFromStringEd25519(testKeystoreKeyString)
+<span id="L285" class="ln">   285  </span>	require.NoError(t, err)
+<span id="L286" class="ln">   286  </span>
+<span id="L287" class="ln">   287  </span>	keystoreReader := bytes.NewReader([]byte(testKeystore))
+<span id="L288" class="ln">   288  </span>
+<span id="L289" class="ln">   289  </span>	privateKey, err := PrivateKeyReadKeystore(keystoreReader, passphrase)
+<span id="L290" class="ln">   290  </span>	require.NoError(t, err)
+<span id="L291" class="ln">   291  </span>
+<span id="L292" class="ln">   292  </span>	assert.Equal(t, actualPrivateKey.ed25519PrivateKey.keyData, privateKey.ed25519PrivateKey.keyData)
+<span id="L293" class="ln">   293  </span>}
+<span id="L294" class="ln">   294  </span>
+<span id="L295" class="ln">   295  </span>func TestUnitPrivateKeyFromPem(t *testing.T) {
+<span id="L296" class="ln">   296  </span>	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
+<span id="L297" class="ln">   297  </span>	require.NoError(t, err)
+<span id="L298" class="ln">   298  </span>
+<span id="L299" class="ln">   299  </span>	privateKey, err := PrivateKeyFromPem([]byte(pemString), &#34;&#34;)
+<span id="L300" class="ln">   300  </span>	require.NoError(t, err)
+<span id="L301" class="ln">   301  </span>
+<span id="L302" class="ln">   302  </span>	assert.Equal(t, actualPrivateKey, privateKey)
+<span id="L303" class="ln">   303  </span>}
+<span id="L304" class="ln">   304  </span>
+<span id="L305" class="ln">   305  </span>func TestUnitPrivateKeyFromPemInvalid(t *testing.T) {
+<span id="L306" class="ln">   306  </span>	_, err := PrivateKeyFromPem([]byte(&#34;invalid&#34;), &#34;&#34;)
+<span id="L307" class="ln">   307  </span>	assert.Error(t, err)
+<span id="L308" class="ln">   308  </span>}
+<span id="L309" class="ln">   309  </span>
+<span id="L310" class="ln">   310  </span>func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
+<span id="L311" class="ln">   311  </span>	actualPrivateKey, err := PrivateKeyFromString(testPrivateKeyStr)
+<span id="L312" class="ln">   312  </span>	require.NoError(t, err)
+<span id="L313" class="ln">   313  </span>
+<span id="L314" class="ln">   314  </span>	privateKey, err := PrivateKeyFromPem([]byte(encryptedPem), pemPassphrase)
+<span id="L315" class="ln">   315  </span>	require.NoError(t, err)
+<span id="L316" class="ln">   316  </span>
+<span id="L317" class="ln">   317  </span>	assert.Equal(t, actualPrivateKey, privateKey)
+<span id="L318" class="ln">   318  </span>}
+<span id="L319" class="ln">   319  </span>
+<span id="L320" class="ln">   320  </span>func TestUnitPrivateKeyECDSASign(t *testing.T) {
+<span id="L321" class="ln">   321  </span>	key, err := PrivateKeyGenerateEcdsa()
+<span id="L322" class="ln">   322  </span>	require.NoError(t, err)
+<span id="L323" class="ln">   323  </span>
+<span id="L324" class="ln">   324  </span>	hash := crypto.Keccak256Hash([]byte(&#34;aaa&#34;))
+<span id="L325" class="ln">   325  </span>	sig := key.Sign([]byte(&#34;aaa&#34;))
+<span id="L326" class="ln">   326  </span>	s2 := crypto.VerifySignature(key.ecdsaPrivateKey._PublicKey()._BytesRaw(), hash.Bytes(), sig)
+<span id="L327" class="ln">   327  </span>	require.True(t, s2)
+<span id="L328" class="ln">   328  </span>}
+<span id="L329" class="ln">   329  </span>
+<span id="L330" class="ln">   330  </span>func DisabledTestUnitPrivateKeyECDSASign(t *testing.T) {
+<span id="L331" class="ln">   331  </span>	message := []byte(&#34;hello world&#34;)
+<span id="L332" class="ln">   332  </span>	key, err := PrivateKeyFromStringECDSA(&#34;8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048&#34;)
+<span id="L333" class="ln">   333  </span>	require.NoError(t, err)
+<span id="L334" class="ln">   334  </span>
+<span id="L335" class="ln">   335  </span>	sig := key.Sign(message)
+<span id="L336" class="ln">   336  </span>
+<span id="L337" class="ln">   337  </span>	require.Equal(t, hex.EncodeToString(sig), &#34;f3a13a555f1f8cd6532716b8f388bd4e9d8ed0b252743e923114c0c6cbfe414cf791c8e859afd3c12009ecf2cb20dacf01636d80823bcdbd9ec1ce59afe008f0&#34;)
+<span id="L338" class="ln">   338  </span>	require.True(t, key.PublicKey().Verify(message, sig))
+<span id="L339" class="ln">   339  </span>}
+<span id="L340" class="ln">   340  </span>
+<span id="L341" class="ln">   341  </span>func TestUnitPrivateKeyECDSAFromString(t *testing.T) {
+<span id="L342" class="ln">   342  </span>	key, err := PrivateKeyGenerateEcdsa()
+<span id="L343" class="ln">   343  </span>	require.NoError(t, err)
+<span id="L344" class="ln">   344  </span>	key2, err := PrivateKeyFromString(key.String())
+<span id="L345" class="ln">   345  </span>	require.NoError(t, err)
+<span id="L346" class="ln">   346  </span>
+<span id="L347" class="ln">   347  </span>	require.Equal(t, key2.String(), key.String())
+<span id="L348" class="ln">   348  </span>}
+<span id="L349" class="ln">   349  </span>
+<span id="L350" class="ln">   350  </span>func TestUnitPrivateKeyECDSAFromStringRaw(t *testing.T) {
+<span id="L351" class="ln">   351  </span>	key, err := PrivateKeyGenerateEcdsa()
+<span id="L352" class="ln">   352  </span>	require.NoError(t, err)
+<span id="L353" class="ln">   353  </span>	key2, err := PrivateKeyFromStringECDSA(key.StringRaw())
+<span id="L354" class="ln">   354  </span>	require.NoError(t, err)
+<span id="L355" class="ln">   355  </span>
+<span id="L356" class="ln">   356  </span>	require.Equal(t, key2.String(), key.String())
+<span id="L357" class="ln">   357  </span>}
+<span id="L358" class="ln">   358  </span>
+<span id="L359" class="ln">   359  </span>func TestUnitPublicKeyECDSAFromString(t *testing.T) {
+<span id="L360" class="ln">   360  </span>	key, err := PrivateKeyGenerateEcdsa()
+<span id="L361" class="ln">   361  </span>	require.NoError(t, err)
+<span id="L362" class="ln">   362  </span>	publicKey := key.PublicKey()
+<span id="L363" class="ln">   363  </span>	publicKey2, err := PublicKeyFromStringECDSA(publicKey.String())
+<span id="L364" class="ln">   364  </span>	require.NoError(t, err)
+<span id="L365" class="ln">   365  </span>
+<span id="L366" class="ln">   366  </span>	require.Equal(t, publicKey2.String(), publicKey.String())
+<span id="L367" class="ln">   367  </span>}
+<span id="L368" class="ln">   368  </span>
+<span id="L369" class="ln">   369  </span>func TestUnitPublicKeyECDSAFromStringRaw(t *testing.T) {
+<span id="L370" class="ln">   370  </span>	key, err := PrivateKeyGenerateEcdsa()
+<span id="L371" class="ln">   371  </span>	require.NoError(t, err)
+<span id="L372" class="ln">   372  </span>	publicKey := key.PublicKey()
+<span id="L373" class="ln">   373  </span>	publicKey2, err := PublicKeyFromStringECDSA(publicKey.StringRaw())
+<span id="L374" class="ln">   374  </span>	require.NoError(t, err)
+<span id="L375" class="ln">   375  </span>
+<span id="L376" class="ln">   376  </span>	require.Equal(t, publicKey2.String(), publicKey.String())
+<span id="L377" class="ln">   377  </span>}
+<span id="L378" class="ln">   378  </span>
+<span id="L379" class="ln">   379  </span>func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
+<span id="L380" class="ln">   380  </span>	newKey, err := PrivateKeyGenerateEcdsa()
+<span id="L381" class="ln">   381  </span>	require.NoError(t, err)
+<span id="L382" class="ln">   382  </span>
+<span id="L383" class="ln">   383  </span>	newBalance := NewHbar(2)
+<span id="L384" class="ln">   384  </span>
+<span id="L385" class="ln">   385  </span>	txID := TransactionIDGenerate(AccountID{Account: 123})
+<span id="L386" class="ln">   386  </span>
+<span id="L387" class="ln">   387  </span>	tx, err := NewAccountCreateTransaction().
+<span id="L388" class="ln">   388  </span>		SetKey(newKey).
+<span id="L389" class="ln">   389  </span>		SetNodeAccountIDs([]AccountID{{Account: 3}}).
+<span id="L390" class="ln">   390  </span>		SetTransactionID(txID).
+<span id="L391" class="ln">   391  </span>		SetInitialBalance(newBalance).
+<span id="L392" class="ln">   392  </span>		SetMaxAutomaticTokenAssociations(100).
+<span id="L393" class="ln">   393  </span>		Freeze()
+<span id="L394" class="ln">   394  </span>	require.NoError(t, err)
+<span id="L395" class="ln">   395  </span>
+<span id="L396" class="ln">   396  </span>	_, err = newKey.SignTransaction(&amp;tx.Transaction)
+<span id="L397" class="ln">   397  </span>	require.NoError(t, err)
+<span id="L398" class="ln">   398  </span>}
+<span id="L399" class="ln">   399  </span>
+<span id="L400" class="ln">   400  </span>func TestUnitPublicKeyFromPrivateKeyString(t *testing.T) {
+<span id="L401" class="ln">   401  </span>	key, err := PrivateKeyFromStringECDSA(&#34;3030020100300706052b8104000a04220420d790c27a81d745ad3340e27dacedc982d1f9252c0d7a4582da9847e2094603d4&#34;)
+<span id="L402" class="ln">   402  </span>	require.NoError(t, err)
+<span id="L403" class="ln">   403  </span>	require.Equal(t, &#34;302f300706052b8104000a032400042102b46925b64940f5d7d3f394aba914c05f1607fa42e9e721afee0770cb55797d99&#34;, key.PublicKey().String())
+<span id="L404" class="ln">   404  </span>}
+<span id="L405" class="ln">   405  </span>
+<span id="L406" class="ln">   406  </span>func TestUnitPublicKeyToEthereumAddress(t *testing.T) {
+<span id="L407" class="ln">   407  </span>	byt, err := hex.DecodeString(&#34;03af80b90d25145da28c583359beb47b21796b2fe1a23c1511e443e7a64dfdb27d&#34;)
+<span id="L408" class="ln">   408  </span>	require.NoError(t, err)
+<span id="L409" class="ln">   409  </span>	key, err := PublicKeyFromBytesECDSA(byt)
+<span id="L410" class="ln">   410  </span>	ethereumAddress := key.ToEthereumAddress()
+<span id="L411" class="ln">   411  </span>	require.Equal(t, ethereumAddress, &#34;627306090abab3a6e1400e9345bc60c78a8bef57&#34;)
+<span id="L412" class="ln">   412  </span>}
+<span id="L413" class="ln">   413  </span>
+<span id="L414" class="ln">   414  </span>func TestSlip10Ed25519Vector1(t *testing.T) {
+<span id="L415" class="ln">   415  </span>	<span class="comment">// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-1-for-ed25519</span>
+<span id="L416" class="ln">   416  </span>	test1PrivateKey := &#34;2b4be7f19ee27bbf30c667b642d5f4aa69fd169872f8fc3059c08ebae2eb19e7&#34;
+<span id="L417" class="ln">   417  </span>	test1PublicKey := &#34;a4b2856bfec510abab89753fac1ac0e1112364e7d250545963f135f2a33188ed&#34;
+<span id="L418" class="ln">   418  </span>	test1ChainCode := &#34;90046a93de5380a72b5e45010748567d5ea02bbf6522f979e05c0d8d8ca9fffb&#34;
+<span id="L419" class="ln">   419  </span>	test2PrivateKey := &#34;68e0fe46dfb67e368c75379acec591dad19df3cde26e63b93a8e704f1dade7a3&#34;
+<span id="L420" class="ln">   420  </span>	test2PublicKey := &#34;8c8a13df77a28f3445213a0f432fde644acaa215fc72dcdf300d5efaa85d350c&#34;
+<span id="L421" class="ln">   421  </span>	test2ChainCode := &#34;8b59aa11380b624e81507a27fedda59fea6d0b779a778918a2fd3590e16e9c69&#34;
+<span id="L422" class="ln">   422  </span>	test3PrivateKey := &#34;b1d0bad404bf35da785a64ca1ac54b2617211d2777696fbffaf208f746ae84f2&#34;
+<span id="L423" class="ln">   423  </span>	test3PublicKey := &#34;1932a5270f335bed617d5b935c80aedb1a35bd9fc1e31acafd5372c30f5c1187&#34;
+<span id="L424" class="ln">   424  </span>	test3ChainCode := &#34;a320425f77d1b5c2505a6b1b27382b37368ee640e3557c315416801243552f14&#34;
+<span id="L425" class="ln">   425  </span>	test4PrivateKey := &#34;92a5b23c0b8a99e37d07df3fb9966917f5d06e02ddbd909c7e184371463e9fc9&#34;
+<span id="L426" class="ln">   426  </span>	test4PublicKey := &#34;ae98736566d30ed0e9d2f4486a64bc95740d89c7db33f52121f8ea8f76ff0fc1&#34;
+<span id="L427" class="ln">   427  </span>	test4ChainCode := &#34;2e69929e00b5ab250f49c3fb1c12f252de4fed2c1db88387094a0f8c4c9ccd6c&#34;
+<span id="L428" class="ln">   428  </span>	test5PrivateKey := &#34;30d1dc7e5fc04c31219ab25a27ae00b50f6fd66622f6e9c913253d6511d1e662&#34;
+<span id="L429" class="ln">   429  </span>	test5PublicKey := &#34;8abae2d66361c879b900d204ad2cc4984fa2aa344dd7ddc46007329ac76c429c&#34;
+<span id="L430" class="ln">   430  </span>	test5ChainCode := &#34;8f6d87f93d750e0efccda017d662a1b31a266e4a6f5993b15f5c1f07f74dd5cc&#34;
+<span id="L431" class="ln">   431  </span>	test6PrivateKey := &#34;8f94d394a8e8fd6b1bc2f3f49f5c47e385281d5c17e65324b0f62483e37e8793&#34;
+<span id="L432" class="ln">   432  </span>	test6PublicKey := &#34;3c24da049451555d51a7014a37337aa4e12d41e485abccfa46b47dfb2af54b7a&#34;
+<span id="L433" class="ln">   433  </span>	test6ChainCode := &#34;68789923a0cac2cd5a29172a475fe9e0fb14cd6adb5ad98a3fa70333e7afa230&#34;
+<span id="L434" class="ln">   434  </span>
+<span id="L435" class="ln">   435  </span>	seed, err := hex.DecodeString(&#34;000102030405060708090a0b0c0d0e0f&#34;)
+<span id="L436" class="ln">   436  </span>	assert.NoError(t, err)
+<span id="L437" class="ln">   437  </span>
+<span id="L438" class="ln">   438  </span>	<span class="comment">//Chain m</span>
+<span id="L439" class="ln">   439  </span>	key1, err := PrivateKeyFromSeedEd25519(seed)
+<span id="L440" class="ln">   440  </span>	assert.NoError(t, err)
+<span id="L441" class="ln">   441  </span>
+<span id="L442" class="ln">   442  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L443" class="ln">   443  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L444" class="ln">   444  </span>	assert.Equal(t, hex.EncodeToString(key1.ed25519PrivateKey.chainCode), test1ChainCode)
+<span id="L445" class="ln">   445  </span>
+<span id="L446" class="ln">   446  </span>	<span class="comment">// Chain m/0&#39;</span>
+<span id="L447" class="ln">   447  </span>	key2, err := key1.Derive(0)
+<span id="L448" class="ln">   448  </span>	assert.NoError(t, err)
+<span id="L449" class="ln">   449  </span>
+<span id="L450" class="ln">   450  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L451" class="ln">   451  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L452" class="ln">   452  </span>	assert.Equal(t, hex.EncodeToString(key2.ed25519PrivateKey.chainCode), test2ChainCode)
+<span id="L453" class="ln">   453  </span>
+<span id="L454" class="ln">   454  </span>	<span class="comment">// Chain m/0&#39;/1&#39;</span>
+<span id="L455" class="ln">   455  </span>	key3, err := key2.Derive(1)
+<span id="L456" class="ln">   456  </span>	assert.NoError(t, err)
+<span id="L457" class="ln">   457  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L458" class="ln">   458  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L459" class="ln">   459  </span>	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
+<span id="L460" class="ln">   460  </span>
+<span id="L461" class="ln">   461  </span>	<span class="comment">// Chain m/0&#39;/1&#39;/2&#39;</span>
+<span id="L462" class="ln">   462  </span>	key4, err := key3.Derive(2)
+<span id="L463" class="ln">   463  </span>	assert.NoError(t, err)
+<span id="L464" class="ln">   464  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L465" class="ln">   465  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L466" class="ln">   466  </span>	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
+<span id="L467" class="ln">   467  </span>
+<span id="L468" class="ln">   468  </span>	<span class="comment">//Chain m/0&#39;/1&#39;/2&#39;/2&#39;</span>
+<span id="L469" class="ln">   469  </span>	key5, err := key4.Derive(2)
+<span id="L470" class="ln">   470  </span>	assert.NoError(t, err)
+<span id="L471" class="ln">   471  </span>	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
+<span id="L472" class="ln">   472  </span>	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
+<span id="L473" class="ln">   473  </span>	assert.Equal(t, hex.EncodeToString(key5.ed25519PrivateKey.chainCode), test5ChainCode)
+<span id="L474" class="ln">   474  </span>
+<span id="L475" class="ln">   475  </span>	<span class="comment">// Chain m/0&#39;/1&#39;/2&#39;/2&#39;/1000000000&#39;</span>
+<span id="L476" class="ln">   476  </span>	key6, err := key5.Derive(1000000000)
+<span id="L477" class="ln">   477  </span>	assert.NoError(t, err)
+<span id="L478" class="ln">   478  </span>	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
+<span id="L479" class="ln">   479  </span>	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
+<span id="L480" class="ln">   480  </span>	assert.Equal(t, hex.EncodeToString(key6.ed25519PrivateKey.chainCode), test6ChainCode)
+<span id="L481" class="ln">   481  </span>}
+<span id="L482" class="ln">   482  </span>
+<span id="L483" class="ln">   483  </span>func TestSlip10Ed25519Vector2(t *testing.T) {
+<span id="L484" class="ln">   484  </span>	<span class="comment">// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-2-for-ed25519</span>
+<span id="L485" class="ln">   485  </span>	test1PrivateKey := &#34;171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012&#34;
+<span id="L486" class="ln">   486  </span>	test1PublicKey := &#34;8fe9693f8fa62a4305a140b9764c5ee01e455963744fe18204b4fb948249308a&#34;
+<span id="L487" class="ln">   487  </span>	test1ChainCode := &#34;ef70a74db9c3a5af931b5fe73ed8e1a53464133654fd55e7a66f8570b8e33c3b&#34;
+<span id="L488" class="ln">   488  </span>	test2PrivateKey := &#34;1559eb2bbec5790b0c65d8693e4d0875b1747f4970ae8b650486ed7470845635&#34;
+<span id="L489" class="ln">   489  </span>	test2PublicKey := &#34;86fab68dcb57aa196c77c5f264f215a112c22a912c10d123b0d03c3c28ef1037&#34;
+<span id="L490" class="ln">   490  </span>	test2ChainCode := &#34;0b78a3226f915c082bf118f83618a618ab6dec793752624cbeb622acb562862d&#34;
+<span id="L491" class="ln">   491  </span>	test3PrivateKey := &#34;ea4f5bfe8694d8bb74b7b59404632fd5968b774ed545e810de9c32a4fb4192f4&#34;
+<span id="L492" class="ln">   492  </span>	test3PublicKey := &#34;5ba3b9ac6e90e83effcd25ac4e58a1365a9e35a3d3ae5eb07b9e4d90bcf7506d&#34;
+<span id="L493" class="ln">   493  </span>	test3ChainCode := &#34;138f0b2551bcafeca6ff2aa88ba8ed0ed8de070841f0c4ef0165df8181eaad7f&#34;
+<span id="L494" class="ln">   494  </span>	test4PrivateKey := &#34;3757c7577170179c7868353ada796c839135b3d30554bbb74a4b1e4a5a58505c&#34;
+<span id="L495" class="ln">   495  </span>	test4PublicKey := &#34;2e66aa57069c86cc18249aecf5cb5a9cebbfd6fadeab056254763874a9352b45&#34;
+<span id="L496" class="ln">   496  </span>	test4ChainCode := &#34;73bd9fff1cfbde33a1b846c27085f711c0fe2d66fd32e139d3ebc28e5a4a6b90&#34;
+<span id="L497" class="ln">   497  </span>	test5PrivateKey := &#34;5837736c89570de861ebc173b1086da4f505d4adb387c6a1b1342d5e4ac9ec72&#34;
+<span id="L498" class="ln">   498  </span>	test5PublicKey := &#34;e33c0f7d81d843c572275f287498e8d408654fdf0d1e065b84e2e6f157aab09b&#34;
+<span id="L499" class="ln">   499  </span>	test5ChainCode := &#34;0902fe8a29f9140480a00ef244bd183e8a13288e4412d8389d140aac1794825a&#34;
+<span id="L500" class="ln">   500  </span>	test6PrivateKey := &#34;551d333177df541ad876a60ea71f00447931c0a9da16f227c11ea080d7391b8d&#34;
+<span id="L501" class="ln">   501  </span>	test6PublicKey := &#34;47150c75db263559a70d5778bf36abbab30fb061ad69f69ece61a72b0cfa4fc0&#34;
+<span id="L502" class="ln">   502  </span>	test6ChainCode := &#34;5d70af781f3a37b829f0d060924d5e960bdc02e85423494afc0b1a41bbe196d4&#34;
+<span id="L503" class="ln">   503  </span>
+<span id="L504" class="ln">   504  </span>	seed, err := hex.DecodeString(&#34;fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542&#34;)
+<span id="L505" class="ln">   505  </span>	assert.NoError(t, err)
+<span id="L506" class="ln">   506  </span>
+<span id="L507" class="ln">   507  </span>	<span class="comment">// Chain m</span>
+<span id="L508" class="ln">   508  </span>	key1, err := PrivateKeyFromSeedEd25519(seed)
+<span id="L509" class="ln">   509  </span>	assert.NoError(t, err)
+<span id="L510" class="ln">   510  </span>
+<span id="L511" class="ln">   511  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L512" class="ln">   512  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L513" class="ln">   513  </span>	assert.Equal(t, hex.EncodeToString(key1.ed25519PrivateKey.chainCode), test1ChainCode)
+<span id="L514" class="ln">   514  </span>
+<span id="L515" class="ln">   515  </span>	<span class="comment">// Chain m/0&#39;</span>
+<span id="L516" class="ln">   516  </span>	key2, err := key1.Derive(0)
+<span id="L517" class="ln">   517  </span>	assert.NoError(t, err)
+<span id="L518" class="ln">   518  </span>
+<span id="L519" class="ln">   519  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L520" class="ln">   520  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L521" class="ln">   521  </span>	assert.Equal(t, hex.EncodeToString(key2.ed25519PrivateKey.chainCode), test2ChainCode)
+<span id="L522" class="ln">   522  </span>
+<span id="L523" class="ln">   523  </span>	<span class="comment">// Chain m/0&#39;/2147483647&#39;</span>
+<span id="L524" class="ln">   524  </span>	key3, err := key2.Derive(2147483647)
+<span id="L525" class="ln">   525  </span>	assert.NoError(t, err)
+<span id="L526" class="ln">   526  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L527" class="ln">   527  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L528" class="ln">   528  </span>	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
+<span id="L529" class="ln">   529  </span>
+<span id="L530" class="ln">   530  </span>	<span class="comment">// Chain m/0&#39;/2147483647&#39;/1&#39;</span>
+<span id="L531" class="ln">   531  </span>	key4, err := key3.Derive(1)
+<span id="L532" class="ln">   532  </span>	assert.NoError(t, err)
+<span id="L533" class="ln">   533  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L534" class="ln">   534  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L535" class="ln">   535  </span>	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
+<span id="L536" class="ln">   536  </span>
+<span id="L537" class="ln">   537  </span>	<span class="comment">// Chain m/0&#39;/2147483647&#39;/1&#39;/2147483646&#39;</span>
+<span id="L538" class="ln">   538  </span>	key5, err := key4.Derive(2147483646)
+<span id="L539" class="ln">   539  </span>	assert.NoError(t, err)
+<span id="L540" class="ln">   540  </span>	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
+<span id="L541" class="ln">   541  </span>	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
+<span id="L542" class="ln">   542  </span>	assert.Equal(t, hex.EncodeToString(key5.ed25519PrivateKey.chainCode), test5ChainCode)
+<span id="L543" class="ln">   543  </span>
+<span id="L544" class="ln">   544  </span>	<span class="comment">// Chain m/0&#39;/2147483647&#39;/1&#39;/2147483646&#39;/2&#39;</span>
+<span id="L545" class="ln">   545  </span>	key6, err := key5.Derive(2)
+<span id="L546" class="ln">   546  </span>	assert.NoError(t, err)
+<span id="L547" class="ln">   547  </span>	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
+<span id="L548" class="ln">   548  </span>	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
+<span id="L549" class="ln">   549  </span>	assert.Equal(t, hex.EncodeToString(key6.ed25519PrivateKey.chainCode), test6ChainCode)
+<span id="L550" class="ln">   550  </span>}
+<span id="L551" class="ln">   551  </span>
+<span id="L552" class="ln">   552  </span>func TestSlip10ECDSAVector1(t *testing.T) {
+<span id="L553" class="ln">   553  </span>	<span class="comment">// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-1-for-secp256k1</span>
+<span id="L554" class="ln">   554  </span>	test1PrivateKey := &#34;e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35&#34;
+<span id="L555" class="ln">   555  </span>	test1PublicKey := &#34;0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2&#34;
+<span id="L556" class="ln">   556  </span>	test1ChainCode := &#34;873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508&#34;
+<span id="L557" class="ln">   557  </span>	test2PrivateKey := &#34;edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea&#34;
+<span id="L558" class="ln">   558  </span>	test2PublicKey := &#34;035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56&#34;
+<span id="L559" class="ln">   559  </span>	test2ChainCode := &#34;47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141&#34;
+<span id="L560" class="ln">   560  </span>	test3PrivateKey := &#34;3c6cb8d0f6a264c91ea8b5030fadaa8e538b020f0a387421a12de9319dc93368&#34;
+<span id="L561" class="ln">   561  </span>	test3PublicKey := &#34;03501e454bf00751f24b1b489aa925215d66af2234e3891c3b21a52bedb3cd711c&#34;
+<span id="L562" class="ln">   562  </span>	test3ChainCode := &#34;2a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c19&#34;
+<span id="L563" class="ln">   563  </span>	test4PrivateKey := &#34;cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca&#34;
+<span id="L564" class="ln">   564  </span>	test4PublicKey := &#34;0357bfe1e341d01c69fe5654309956cbea516822fba8a601743a012a7896ee8dc2&#34;
+<span id="L565" class="ln">   565  </span>	test4ChainCode := &#34;04466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f&#34;
+<span id="L566" class="ln">   566  </span>	test5PrivateKey := &#34;0f479245fb19a38a1954c5c7c0ebab2f9bdfd96a17563ef28a6a4b1a2a764ef4&#34;
+<span id="L567" class="ln">   567  </span>	test5PublicKey := &#34;02e8445082a72f29b75ca48748a914df60622a609cacfce8ed0e35804560741d29&#34;
+<span id="L568" class="ln">   568  </span>	test5ChainCode := &#34;cfb71883f01676f587d023cc53a35bc7f88f724b1f8c2892ac1275ac822a3edd&#34;
+<span id="L569" class="ln">   569  </span>	test6PrivateKey := &#34;471b76e389e528d6de6d816857e012c5455051cad6660850e58372a6c3e6e7c8&#34;
+<span id="L570" class="ln">   570  </span>	test6PublicKey := &#34;022a471424da5e657499d1ff51cb43c47481a03b1e77f951fe64cec9f5a48f7011&#34;
+<span id="L571" class="ln">   571  </span>	test6ChainCode := &#34;c783e67b921d2beb8f6b389cc646d7263b4145701dadd2161548a8b078e65e9e&#34;
+<span id="L572" class="ln">   572  </span>
+<span id="L573" class="ln">   573  </span>	seed, err := hex.DecodeString(&#34;000102030405060708090a0b0c0d0e0f&#34;)
+<span id="L574" class="ln">   574  </span>	assert.NoError(t, err)
+<span id="L575" class="ln">   575  </span>
+<span id="L576" class="ln">   576  </span>	<span class="comment">// Chain m</span>
+<span id="L577" class="ln">   577  </span>	key1, err := PrivateKeyFromSeedECDSAsecp256k1(seed)
+<span id="L578" class="ln">   578  </span>	assert.NoError(t, err)
+<span id="L579" class="ln">   579  </span>
+<span id="L580" class="ln">   580  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L581" class="ln">   581  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L582" class="ln">   582  </span>	assert.Equal(t, hex.EncodeToString(key1.ecdsaPrivateKey.chainCode), test1ChainCode)
+<span id="L583" class="ln">   583  </span>
+<span id="L584" class="ln">   584  </span>	<span class="comment">// Chain m/0&#39;</span>
+<span id="L585" class="ln">   585  </span>	key2, err := key1.Derive(ToHardenedIndex(0))
+<span id="L586" class="ln">   586  </span>	assert.NoError(t, err)
+<span id="L587" class="ln">   587  </span>
+<span id="L588" class="ln">   588  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L589" class="ln">   589  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L590" class="ln">   590  </span>	assert.Equal(t, hex.EncodeToString(key2.ecdsaPrivateKey.chainCode), test2ChainCode)
+<span id="L591" class="ln">   591  </span>
+<span id="L592" class="ln">   592  </span>	<span class="comment">// Chain m/0&#39;/1</span>
+<span id="L593" class="ln">   593  </span>	key3, err := key2.Derive(1)
+<span id="L594" class="ln">   594  </span>	assert.NoError(t, err)
+<span id="L595" class="ln">   595  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L596" class="ln">   596  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L597" class="ln">   597  </span>	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
+<span id="L598" class="ln">   598  </span>
+<span id="L599" class="ln">   599  </span>	<span class="comment">// Chain m/0&#39;/1/2&#39;</span>
+<span id="L600" class="ln">   600  </span>	key4, err := key3.Derive(ToHardenedIndex(2))
+<span id="L601" class="ln">   601  </span>	assert.NoError(t, err)
+<span id="L602" class="ln">   602  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L603" class="ln">   603  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L604" class="ln">   604  </span>	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
+<span id="L605" class="ln">   605  </span>
+<span id="L606" class="ln">   606  </span>	<span class="comment">// Chain m/0&#39;/1/2&#39;/2</span>
+<span id="L607" class="ln">   607  </span>	key5, err := key4.Derive(2)
+<span id="L608" class="ln">   608  </span>	assert.NoError(t, err)
+<span id="L609" class="ln">   609  </span>	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
+<span id="L610" class="ln">   610  </span>	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
+<span id="L611" class="ln">   611  </span>	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
+<span id="L612" class="ln">   612  </span>
+<span id="L613" class="ln">   613  </span>	<span class="comment">// Chain m/0&#39;/1/2&#39;/2/1000000000</span>
+<span id="L614" class="ln">   614  </span>	key6, err := key5.Derive(1000000000)
+<span id="L615" class="ln">   615  </span>	assert.NoError(t, err)
+<span id="L616" class="ln">   616  </span>	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
+<span id="L617" class="ln">   617  </span>	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
+<span id="L618" class="ln">   618  </span>	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
+<span id="L619" class="ln">   619  </span>}
+<span id="L620" class="ln">   620  </span>
+<span id="L621" class="ln">   621  </span>func TestSlip10ECDSAVector2(t *testing.T) {
+<span id="L622" class="ln">   622  </span>	<span class="comment">// https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-2-for-secp256k1</span>
+<span id="L623" class="ln">   623  </span>	test1PrivateKey := &#34;4b03d6fc340455b363f51020ad3ecca4f0850280cf436c70c727923f6db46c3e&#34;
+<span id="L624" class="ln">   624  </span>	test1PublicKey := &#34;03cbcaa9c98c877a26977d00825c956a238e8dddfbd322cce4f74b0b5bd6ace4a7&#34;
+<span id="L625" class="ln">   625  </span>	test1ChainCode := &#34;60499f801b896d83179a4374aeb7822aaeaceaa0db1f85ee3e904c4defbd9689&#34;
+<span id="L626" class="ln">   626  </span>	test2PrivateKey := &#34;abe74a98f6c7eabee0428f53798f0ab8aa1bd37873999041703c742f15ac7e1e&#34;
+<span id="L627" class="ln">   627  </span>	test2PublicKey := &#34;02fc9e5af0ac8d9b3cecfe2a888e2117ba3d089d8585886c9c826b6b22a98d12ea&#34;
+<span id="L628" class="ln">   628  </span>	test2ChainCode := &#34;f0909affaa7ee7abe5dd4e100598d4dc53cd709d5a5c2cac40e7412f232f7c9c&#34;
+<span id="L629" class="ln">   629  </span>	test3PrivateKey := &#34;877c779ad9687164e9c2f4f0f4ff0340814392330693ce95a58fe18fd52e6e93&#34;
+<span id="L630" class="ln">   630  </span>	test3PublicKey := &#34;03c01e7425647bdefa82b12d9bad5e3e6865bee0502694b94ca58b666abc0a5c3b&#34;
+<span id="L631" class="ln">   631  </span>	test3ChainCode := &#34;be17a268474a6bb9c61e1d720cf6215e2a88c5406c4aee7b38547f585c9a37d9&#34;
+<span id="L632" class="ln">   632  </span>	test4PrivateKey := &#34;704addf544a06e5ee4bea37098463c23613da32020d604506da8c0518e1da4b7&#34;
+<span id="L633" class="ln">   633  </span>	test4PublicKey := &#34;03a7d1d856deb74c508e05031f9895dab54626251b3806e16b4bd12e781a7df5b9&#34;
+<span id="L634" class="ln">   634  </span>	test4ChainCode := &#34;f366f48f1ea9f2d1d3fe958c95ca84ea18e4c4ddb9366c336c927eb246fb38cb&#34;
+<span id="L635" class="ln">   635  </span>	test5PrivateKey := &#34;f1c7c871a54a804afe328b4c83a1c33b8e5ff48f5087273f04efa83b247d6a2d&#34;
+<span id="L636" class="ln">   636  </span>	test5PublicKey := &#34;02d2b36900396c9282fa14628566582f206a5dd0bcc8d5e892611806cafb0301f0&#34;
+<span id="L637" class="ln">   637  </span>	test5ChainCode := &#34;637807030d55d01f9a0cb3a7839515d796bd07706386a6eddf06cc29a65a0e29&#34;
+<span id="L638" class="ln">   638  </span>	test6PrivateKey := &#34;bb7d39bdb83ecf58f2fd82b6d918341cbef428661ef01ab97c28a4842125ac23&#34;
+<span id="L639" class="ln">   639  </span>	test6PublicKey := &#34;024d902e1a2fc7a8755ab5b694c575fce742c48d9ff192e63df5193e4c7afe1f9c&#34;
+<span id="L640" class="ln">   640  </span>	test6ChainCode := &#34;9452b549be8cea3ecb7a84bec10dcfd94afe4d129ebfd3b3cb58eedf394ed271&#34;
+<span id="L641" class="ln">   641  </span>
+<span id="L642" class="ln">   642  </span>	seed, err := hex.DecodeString(&#34;fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542&#34;)
+<span id="L643" class="ln">   643  </span>	assert.NoError(t, err)
+<span id="L644" class="ln">   644  </span>
+<span id="L645" class="ln">   645  </span>	<span class="comment">// Chain m</span>
+<span id="L646" class="ln">   646  </span>	key1, err := PrivateKeyFromSeedECDSAsecp256k1(seed)
+<span id="L647" class="ln">   647  </span>	assert.NoError(t, err)
+<span id="L648" class="ln">   648  </span>
+<span id="L649" class="ln">   649  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L650" class="ln">   650  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L651" class="ln">   651  </span>	assert.Equal(t, hex.EncodeToString(key1.ecdsaPrivateKey.chainCode), test1ChainCode)
+<span id="L652" class="ln">   652  </span>
+<span id="L653" class="ln">   653  </span>	<span class="comment">// Chain m/0</span>
+<span id="L654" class="ln">   654  </span>	key2, err := key1.Derive(0)
+<span id="L655" class="ln">   655  </span>	assert.NoError(t, err)
+<span id="L656" class="ln">   656  </span>
+<span id="L657" class="ln">   657  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L658" class="ln">   658  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L659" class="ln">   659  </span>	assert.Equal(t, hex.EncodeToString(key2.ecdsaPrivateKey.chainCode), test2ChainCode)
+<span id="L660" class="ln">   660  </span>
+<span id="L661" class="ln">   661  </span>	<span class="comment">// Chain m/0/2147483647&#39;</span>
+<span id="L662" class="ln">   662  </span>	key3, err := key2.Derive(ToHardenedIndex(2147483647))
+<span id="L663" class="ln">   663  </span>	assert.NoError(t, err)
+<span id="L664" class="ln">   664  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L665" class="ln">   665  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L666" class="ln">   666  </span>	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
+<span id="L667" class="ln">   667  </span>
+<span id="L668" class="ln">   668  </span>	<span class="comment">// Chain m/0/2147483647&#39;/1</span>
+<span id="L669" class="ln">   669  </span>	key4, err := key3.Derive(1)
+<span id="L670" class="ln">   670  </span>	assert.NoError(t, err)
+<span id="L671" class="ln">   671  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L672" class="ln">   672  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L673" class="ln">   673  </span>	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
+<span id="L674" class="ln">   674  </span>
+<span id="L675" class="ln">   675  </span>	<span class="comment">// Chain m/0/2147483647&#39;/1/2147483646&#39;</span>
+<span id="L676" class="ln">   676  </span>	key5, err := key4.Derive(ToHardenedIndex(2147483646))
+<span id="L677" class="ln">   677  </span>	assert.NoError(t, err)
+<span id="L678" class="ln">   678  </span>	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
+<span id="L679" class="ln">   679  </span>	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
+<span id="L680" class="ln">   680  </span>	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
+<span id="L681" class="ln">   681  </span>
+<span id="L682" class="ln">   682  </span>	<span class="comment">// Chain m/0/2147483647&#39;/1/2147483646&#39;/2</span>
+<span id="L683" class="ln">   683  </span>	key6, err := key5.Derive(2)
+<span id="L684" class="ln">   684  </span>	assert.NoError(t, err)
+<span id="L685" class="ln">   685  </span>	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
+<span id="L686" class="ln">   686  </span>	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
+<span id="L687" class="ln">   687  </span>	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
+<span id="L688" class="ln">   688  </span>}
+<span id="L689" class="ln">   689  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

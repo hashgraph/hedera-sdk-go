@@ -1,0 +1,369 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/examples/account_create_with_hts/main.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples">examples</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/account_create_with_hts">account_create_with_hts</a>/<span class="text-muted">main.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/examples/account_create_with_hts">github.com/hashgraph/hedera-sdk-go/v2/examples/account_create_with_hts</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package main
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span>import (
+<span id="L4" class="ln">     4  </span>	&#34;fmt&#34;
+<span id="L5" class="ln">     5  </span>	&#34;github.com/hashgraph/hedera-sdk-go/v2&#34;
+<span id="L6" class="ln">     6  </span>	&#34;os&#34;
+<span id="L7" class="ln">     7  </span>)
+<span id="L8" class="ln">     8  </span>
+<span id="L9" class="ln">     9  </span>func main() {
+<span id="L10" class="ln">    10  </span>
+<span id="L11" class="ln">    11  </span>	client, err := hedera.ClientForName(os.Getenv(&#34;HEDERA_NETWORK&#34;))
+<span id="L12" class="ln">    12  </span>	if err != nil {
+<span id="L13" class="ln">    13  </span>		println(err.Error(), &#34;: error creating client&#34;)
+<span id="L14" class="ln">    14  </span>		return
+<span id="L15" class="ln">    15  </span>	}
+<span id="L16" class="ln">    16  </span>
+<span id="L17" class="ln">    17  </span>	operatorId, err := hedera.AccountIDFromString(os.Getenv(&#34;OPERATOR_ID&#34;))
+<span id="L18" class="ln">    18  </span>	if err != nil {
+<span id="L19" class="ln">    19  </span>		println(err.Error(), &#34;: error converting string to AccountID&#34;)
+<span id="L20" class="ln">    20  </span>		return
+<span id="L21" class="ln">    21  </span>	}
+<span id="L22" class="ln">    22  </span>
+<span id="L23" class="ln">    23  </span>	<span class="comment">// Retrieving operator key from environment variable OPERATOR_KEY</span>
+<span id="L24" class="ln">    24  </span>	operatorKey, err := hedera.PrivateKeyFromStringEd25519(os.Getenv(&#34;OPERATOR_KEY&#34;))
+<span id="L25" class="ln">    25  </span>	if err != nil {
+<span id="L26" class="ln">    26  </span>		println(err.Error(), &#34;: error converting string to PrivateKey&#34;)
+<span id="L27" class="ln">    27  </span>		return
+<span id="L28" class="ln">    28  </span>	}
+<span id="L29" class="ln">    29  </span>
+<span id="L30" class="ln">    30  </span>	<span class="comment">// Setting the client operator ID and key</span>
+<span id="L31" class="ln">    31  </span>	client.SetOperator(operatorId, operatorKey)
+<span id="L32" class="ln">    32  </span>
+<span id="L33" class="ln">    33  </span>	supplyKey, err := hedera.PrivateKeyGenerateEcdsa()
+<span id="L34" class="ln">    34  </span>	if err != nil {
+<span id="L35" class="ln">    35  </span>		println(err.Error(), &#34;: error creating supply key&#34;)
+<span id="L36" class="ln">    36  </span>		return
+<span id="L37" class="ln">    37  </span>	}
+<span id="L38" class="ln">    38  </span>	freezeKey, err := hedera.PrivateKeyGenerateEcdsa()
+<span id="L39" class="ln">    39  </span>	if err != nil {
+<span id="L40" class="ln">    40  </span>		println(err.Error(), &#34;: error creating freeze key&#34;)
+<span id="L41" class="ln">    41  </span>		return
+<span id="L42" class="ln">    42  </span>	}
+<span id="L43" class="ln">    43  </span>	wipeKey, err := hedera.PrivateKeyGenerateEcdsa()
+<span id="L44" class="ln">    44  </span>	if err != nil {
+<span id="L45" class="ln">    45  </span>		println(err.Error(), &#34;: error creating wipe key&#34;)
+<span id="L46" class="ln">    46  </span>		return
+<span id="L47" class="ln">    47  </span>	}
+<span id="L48" class="ln">    48  </span>	<span class="comment">/**
+<span id="L49" class="ln">    49  </span>	 *     Example 1
+<span id="L50" class="ln">    50  </span>	 *
+<span id="L51" class="ln">    51  </span>	 * Step 1
+<span id="L52" class="ln">    52  </span>	 *
+<span id="L53" class="ln">    53  </span>	 * Create an NFT using the Hedera Token Service
+<span id="L54" class="ln">    54  </span>	 */</span>
+<span id="L55" class="ln">    55  </span>	fmt.Println(&#34;Example 1&#34;)
+<span id="L56" class="ln">    56  </span>	<span class="comment">// IPFS content identifiers for the NFT metadata</span>
+<span id="L57" class="ln">    57  </span>	cid := []string{&#34;QmNPCiNA3Dsu3K5FxDPMG5Q3fZRwVTg14EXA92uqEeSRXn&#34;,
+<span id="L58" class="ln">    58  </span>		&#34;QmZ4dgAgt8owvnULxnKxNe8YqpavtVCXmc1Lt2XajFpJs9&#34;,
+<span id="L59" class="ln">    59  </span>		&#34;QmPzY5GxevjyfMUF5vEAjtyRoigzWp47MiKAtLBduLMC1T&#34;,
+<span id="L60" class="ln">    60  </span>		&#34;Qmd3kGgSrAwwSrhesYcY7K54f3qD7MDo38r7Po2dChtQx5&#34;,
+<span id="L61" class="ln">    61  </span>		&#34;QmWgkKz3ozgqtnvbCLeh7EaR1H8u5Sshx3ZJzxkcrT3jbw&#34;}
+<span id="L62" class="ln">    62  </span>	<span class="comment">// Creating the transaction for token creation</span>
+<span id="L63" class="ln">    63  </span>	nftCreateTransaction, err := hedera.NewTokenCreateTransaction().
+<span id="L64" class="ln">    64  </span>		SetTokenName(&#34;HIP-542 Example Collection&#34;).SetTokenSymbol(&#34;HIP-542&#34;).
+<span id="L65" class="ln">    65  </span>		SetTokenType(hedera.TokenTypeNonFungibleUnique).SetDecimals(0).
+<span id="L66" class="ln">    66  </span>		SetInitialSupply(0).SetMaxSupply(int64(len(cid))).
+<span id="L67" class="ln">    67  </span>		SetTreasuryAccountID(operatorId).SetSupplyType(hedera.TokenSupplyTypeFinite).
+<span id="L68" class="ln">    68  </span>		SetAdminKey(operatorKey).SetFreezeKey(freezeKey).SetWipeKey(wipeKey).SetSupplyKey(supplyKey).FreezeWith(client)
+<span id="L69" class="ln">    69  </span>	if err != nil {
+<span id="L70" class="ln">    70  </span>		println(err.Error(), &#34;: error creating token transaction&#34;)
+<span id="L71" class="ln">    71  </span>		return
+<span id="L72" class="ln">    72  </span>	}
+<span id="L73" class="ln">    73  </span>	<span class="comment">// Sign the transaction with the operator key</span>
+<span id="L74" class="ln">    74  </span>	nftSignTransaction := nftCreateTransaction.Sign(operatorKey)
+<span id="L75" class="ln">    75  </span>	<span class="comment">// Submit the transaction to the Hedera network</span>
+<span id="L76" class="ln">    76  </span>	nftCreateSubmit, err := nftSignTransaction.Execute(client)
+<span id="L77" class="ln">    77  </span>	if err != nil {
+<span id="L78" class="ln">    78  </span>		println(err.Error(), &#34;: error submitting transaction&#34;)
+<span id="L79" class="ln">    79  </span>		return
+<span id="L80" class="ln">    80  </span>	}
+<span id="L81" class="ln">    81  </span>	<span class="comment">// Get transaction receipt information</span>
+<span id="L82" class="ln">    82  </span>	nftCreateReceipt, err := nftCreateSubmit.GetReceipt(client)
+<span id="L83" class="ln">    83  </span>	if err != nil {
+<span id="L84" class="ln">    84  </span>		println(err.Error(), &#34;: error receiving receipt&#34;)
+<span id="L85" class="ln">    85  </span>		return
+<span id="L86" class="ln">    86  </span>	}
+<span id="L87" class="ln">    87  </span>	<span class="comment">// Get token id from the transaction</span>
+<span id="L88" class="ln">    88  </span>	nftTokenID := *nftCreateReceipt.TokenID
+<span id="L89" class="ln">    89  </span>	fmt.Println(&#34;Created NFT with token id: &#34;, nftTokenID)
+<span id="L90" class="ln">    90  </span>
+<span id="L91" class="ln">    91  </span>	<span class="comment">/**
+<span id="L92" class="ln">    92  </span>	 * Step 2
+<span id="L93" class="ln">    93  </span>	 *
+<span id="L94" class="ln">    94  </span>	 * Mint the NFT
+<span id="L95" class="ln">    95  </span>	 */</span>
+<span id="L96" class="ln">    96  </span>
+<span id="L97" class="ln">    97  </span>	nftCollection := []hedera.TransactionReceipt{}
+<span id="L98" class="ln">    98  </span>
+<span id="L99" class="ln">    99  </span>	for i, s := range cid {
+<span id="L100" class="ln">   100  </span>		mintTransaction, err := hedera.NewTokenMintTransaction().SetTokenID(nftTokenID).SetMetadata([]byte(s)).FreezeWith(client)
+<span id="L101" class="ln">   101  </span>		if err != nil {
+<span id="L102" class="ln">   102  </span>			println(err.Error(), &#34;: error creating mint transaction&#34;)
+<span id="L103" class="ln">   103  </span>			return
+<span id="L104" class="ln">   104  </span>		}
+<span id="L105" class="ln">   105  </span>		mintTransactionSubmit, err := mintTransaction.Sign(supplyKey).Execute(client)
+<span id="L106" class="ln">   106  </span>		if err != nil {
+<span id="L107" class="ln">   107  </span>			println(err.Error(), &#34;: error submitting transaction&#34;)
+<span id="L108" class="ln">   108  </span>			return
+<span id="L109" class="ln">   109  </span>		}
+<span id="L110" class="ln">   110  </span>		receipt, err := mintTransactionSubmit.GetReceipt(client)
+<span id="L111" class="ln">   111  </span>		if err != nil {
+<span id="L112" class="ln">   112  </span>			println(err.Error(), &#34;: error receiving receipt&#34;)
+<span id="L113" class="ln">   113  </span>			return
+<span id="L114" class="ln">   114  </span>		}
+<span id="L115" class="ln">   115  </span>		nftCollection = append(nftCollection, receipt)
+<span id="L116" class="ln">   116  </span>		fmt.Println(&#34;Created NFT &#34;, nftTokenID.String(), &#34; with serial: &#34;, nftCollection[i].SerialNumbers[0])
+<span id="L117" class="ln">   117  </span>	}
+<span id="L118" class="ln">   118  </span>	exampleNftId := nftTokenID.Nft(nftCollection[0].SerialNumbers[0])
+<span id="L119" class="ln">   119  </span>	<span class="comment">/**
+<span id="L120" class="ln">   120  </span>	 * Step 3
+<span id="L121" class="ln">   121  </span>	 *
+<span id="L122" class="ln">   122  </span>	 * Create an ECDSA public key alias
+<span id="L123" class="ln">   123  </span>	 */</span>
+<span id="L124" class="ln">   124  </span>
+<span id="L125" class="ln">   125  </span>	fmt.Println(&#34;Creating new account...&#34;)
+<span id="L126" class="ln">   126  </span>	privateKey, err := hedera.PrivateKeyGenerateEcdsa()
+<span id="L127" class="ln">   127  </span>	if err != nil {
+<span id="L128" class="ln">   128  </span>		println(err.Error(), &#34;: error generating private key&#34;)
+<span id="L129" class="ln">   129  </span>		return
+<span id="L130" class="ln">   130  </span>	}
+<span id="L131" class="ln">   131  </span>	publicKey := privateKey.PublicKey()
+<span id="L132" class="ln">   132  </span>	<span class="comment">// Assuming that the target shard and realm are known.</span>
+<span id="L133" class="ln">   133  </span>	<span class="comment">// For now they are virtually always 0 and 0.</span>
+<span id="L134" class="ln">   134  </span>	aliasAccountId := publicKey.ToAccountID(0, 0)
+<span id="L135" class="ln">   135  </span>	fmt.Println(&#34;New account ID: &#34;, aliasAccountId)
+<span id="L136" class="ln">   136  </span>	fmt.Println(&#34;Just the aliasKey: &#34;, aliasAccountId.AliasKey)
+<span id="L137" class="ln">   137  </span>
+<span id="L138" class="ln">   138  </span>	<span class="comment">/**
+<span id="L139" class="ln">   139  </span>	 * Step 4
+<span id="L140" class="ln">   140  </span>	 *
+<span id="L141" class="ln">   141  </span>	 * Tranfer the NFT to the public key alias using the transfer transaction
+<span id="L142" class="ln">   142  </span>	 */</span>
+<span id="L143" class="ln">   143  </span>	nftTransferTransaction, err := hedera.NewTransferTransaction().AddNftTransfer(exampleNftId, operatorId, *aliasAccountId).FreezeWith(client)
+<span id="L144" class="ln">   144  </span>	if err != nil {
+<span id="L145" class="ln">   145  </span>		println(err.Error(), &#34;: error creating transaction&#34;)
+<span id="L146" class="ln">   146  </span>		return
+<span id="L147" class="ln">   147  </span>	}
+<span id="L148" class="ln">   148  </span>	<span class="comment">// Sign the transaction with the operator key</span>
+<span id="L149" class="ln">   149  </span>	nftTransferTransactionSign := nftTransferTransaction.Sign(operatorKey)
+<span id="L150" class="ln">   150  </span>	<span class="comment">// Submit the transaction to the Hedera network</span>
+<span id="L151" class="ln">   151  </span>	nftTransferTransactionSubmit, err := nftTransferTransactionSign.Execute(client)
+<span id="L152" class="ln">   152  </span>	if err != nil {
+<span id="L153" class="ln">   153  </span>		println(err.Error(), &#34;: error submitting transaction&#34;)
+<span id="L154" class="ln">   154  </span>		return
+<span id="L155" class="ln">   155  </span>	}
+<span id="L156" class="ln">   156  </span>	<span class="comment">// Get transaction receipt information here</span>
+<span id="L157" class="ln">   157  </span>	fmt.Println(nftTransferTransactionSubmit.GetReceipt(client))
+<span id="L158" class="ln">   158  </span>
+<span id="L159" class="ln">   159  </span>	<span class="comment">/**
+<span id="L160" class="ln">   160  </span>	 * Step 5
+<span id="L161" class="ln">   161  </span>	 *
+<span id="L162" class="ln">   162  </span>	 * Return the new account ID in the child record
+<span id="L163" class="ln">   163  </span>	 */</span>
+<span id="L164" class="ln">   164  </span>
+<span id="L165" class="ln">   165  </span>	<span class="comment">//Returns the info for the specified NFT id</span>
+<span id="L166" class="ln">   166  </span>	nftInfo, err := hedera.NewTokenNftInfoQuery().SetNftID(exampleNftId).Execute(client)
+<span id="L167" class="ln">   167  </span>	if err != nil {
+<span id="L168" class="ln">   168  </span>		println(err.Error(), &#34;: error info query transaction&#34;)
+<span id="L169" class="ln">   169  </span>		return
+<span id="L170" class="ln">   170  </span>	}
+<span id="L171" class="ln">   171  </span>	nftOwnerAccountId := nftInfo[0].AccountID
+<span id="L172" class="ln">   172  </span>	fmt.Println(&#34;Current owner account id: &#34;, nftOwnerAccountId)
+<span id="L173" class="ln">   173  </span>
+<span id="L174" class="ln">   174  </span>	<span class="comment">/**
+<span id="L175" class="ln">   175  </span>	 * Step 6
+<span id="L176" class="ln">   176  </span>	 *
+<span id="L177" class="ln">   177  </span>	 * Show the new account ID owns the NFT
+<span id="L178" class="ln">   178  </span>	 */</span>
+<span id="L179" class="ln">   179  </span>	accountInfo, err := hedera.NewAccountInfoQuery().SetAccountID(*aliasAccountId).Execute(client)
+<span id="L180" class="ln">   180  </span>	if err != nil {
+<span id="L181" class="ln">   181  </span>		println(err.Error(), &#34;: error account info query&#34;)
+<span id="L182" class="ln">   182  </span>		return
+<span id="L183" class="ln">   183  </span>	}
+<span id="L184" class="ln">   184  </span>	fmt.Println(&#34;The normal account ID of the given alias &#34;, accountInfo.AccountID)
+<span id="L185" class="ln">   185  </span>
+<span id="L186" class="ln">   186  </span>	if nftOwnerAccountId == accountInfo.AccountID {
+<span id="L187" class="ln">   187  </span>		fmt.Println(&#34;The NFT owner accountId matches the accountId created with the HTS&#34;)
+<span id="L188" class="ln">   188  </span>	} else {
+<span id="L189" class="ln">   189  </span>		fmt.Println(&#34;The two account IDs does not match&#34;)
+<span id="L190" class="ln">   190  </span>	}
+<span id="L191" class="ln">   191  </span>
+<span id="L192" class="ln">   192  </span>	<span class="comment">/**
+<span id="L193" class="ln">   193  </span>	 *     Example 2
+<span id="L194" class="ln">   194  </span>	 *
+<span id="L195" class="ln">   195  </span>	 * Step 1
+<span id="L196" class="ln">   196  </span>	 *
+<span id="L197" class="ln">   197  </span>	 * Create a fungible HTS token using the Hedera Token Service
+<span id="L198" class="ln">   198  </span>	 */</span>
+<span id="L199" class="ln">   199  </span>	fmt.Println(&#34;Example 2&#34;)
+<span id="L200" class="ln">   200  </span>
+<span id="L201" class="ln">   201  </span>	tokenCreateTransaction, err := hedera.NewTokenCreateTransaction().SetTokenName(&#34;HIP-542 Token&#34;).
+<span id="L202" class="ln">   202  </span>		SetTokenSymbol(&#34;H542&#34;).SetTokenType(hedera.TokenTypeFungibleCommon).SetTreasuryAccountID(operatorId).
+<span id="L203" class="ln">   203  </span>		SetInitialSupply(10000).SetDecimals(2).SetAutoRenewAccount(operatorId).FreezeWith(client)
+<span id="L204" class="ln">   204  </span>	if err != nil {
+<span id="L205" class="ln">   205  </span>		println(err.Error(), &#34;: error creating transaction&#34;)
+<span id="L206" class="ln">   206  </span>		return
+<span id="L207" class="ln">   207  </span>	}
+<span id="L208" class="ln">   208  </span>	<span class="comment">// Sign the transaction with the operator key</span>
+<span id="L209" class="ln">   209  </span>	tokenCreateTransactionSign := tokenCreateTransaction.Sign(operatorKey)
+<span id="L210" class="ln">   210  </span>	<span class="comment">// Submit the transaction to the Hedera network</span>
+<span id="L211" class="ln">   211  </span>	tokenCreateTransactionSubmit, err := tokenCreateTransactionSign.Execute(client)
+<span id="L212" class="ln">   212  </span>	if err != nil {
+<span id="L213" class="ln">   213  </span>		println(err.Error(), &#34;: error submitting transaction&#34;)
+<span id="L214" class="ln">   214  </span>		return
+<span id="L215" class="ln">   215  </span>	}
+<span id="L216" class="ln">   216  </span>
+<span id="L217" class="ln">   217  </span>	<span class="comment">// Get transaction receipt information</span>
+<span id="L218" class="ln">   218  </span>	tokenCreateTransactionReceipt, err := tokenCreateTransactionSubmit.GetReceipt(client)
+<span id="L219" class="ln">   219  </span>	if err != nil {
+<span id="L220" class="ln">   220  </span>		println(err.Error(), &#34;: error retrieving receipt&#34;)
+<span id="L221" class="ln">   221  </span>		return
+<span id="L222" class="ln">   222  </span>	}
+<span id="L223" class="ln">   223  </span>	tokenId := *tokenCreateTransactionReceipt.TokenID
+<span id="L224" class="ln">   224  </span>	fmt.Println(&#34;Created token with token id: &#34;, tokenId)
+<span id="L225" class="ln">   225  </span>
+<span id="L226" class="ln">   226  </span>	<span class="comment">/**
+<span id="L227" class="ln">   227  </span>	 * Step 2
+<span id="L228" class="ln">   228  </span>	 *
+<span id="L229" class="ln">   229  </span>	 * Create an ECDSA public key alias
+<span id="L230" class="ln">   230  </span>	 */</span>
+<span id="L231" class="ln">   231  </span>	privateKey2, err := hedera.PrivateKeyGenerateEcdsa()
+<span id="L232" class="ln">   232  </span>	if err != nil {
+<span id="L233" class="ln">   233  </span>		println(err.Error(), &#34;: error generating private key&#34;)
+<span id="L234" class="ln">   234  </span>		return
+<span id="L235" class="ln">   235  </span>	}
+<span id="L236" class="ln">   236  </span>	publicKey2 := privateKey2.PublicKey()
+<span id="L237" class="ln">   237  </span>	<span class="comment">// Assuming that the target shard and realm are known.</span>
+<span id="L238" class="ln">   238  </span>	<span class="comment">// For now they are virtually always 0 and 0.</span>
+<span id="L239" class="ln">   239  </span>	aliasAccountId2 := *publicKey2.ToAccountID(0, 0)
+<span id="L240" class="ln">   240  </span>	fmt.Println(&#34;New account ID: &#34;, aliasAccountId2)
+<span id="L241" class="ln">   241  </span>	fmt.Println(&#34;Just the aliasKey: &#34;, aliasAccountId2.AliasKey)
+<span id="L242" class="ln">   242  </span>
+<span id="L243" class="ln">   243  </span>	<span class="comment">/**
+<span id="L244" class="ln">   244  </span>	 * Step 3
+<span id="L245" class="ln">   245  </span>	 *
+<span id="L246" class="ln">   246  </span>	 * Transfer the fungible token to the public key alias
+<span id="L247" class="ln">   247  </span>	 */</span>
+<span id="L248" class="ln">   248  </span>
+<span id="L249" class="ln">   249  </span>	tokenTransferTransaction, err := hedera.NewTransferTransaction().
+<span id="L250" class="ln">   250  </span>		AddTokenTransfer(tokenId, operatorId, -10).AddTokenTransfer(tokenId, aliasAccountId2, 10).
+<span id="L251" class="ln">   251  </span>		FreezeWith(client)
+<span id="L252" class="ln">   252  </span>	if err != nil {
+<span id="L253" class="ln">   253  </span>		println(err.Error(), &#34;: error creating transaction&#34;)
+<span id="L254" class="ln">   254  </span>		return
+<span id="L255" class="ln">   255  </span>	}
+<span id="L256" class="ln">   256  </span>	<span class="comment">// Sign the transaction with the operator key</span>
+<span id="L257" class="ln">   257  </span>	tokenTransferTransactionSign := tokenTransferTransaction.Sign(operatorKey)
+<span id="L258" class="ln">   258  </span>	<span class="comment">// Submit the transaction to the Hedera network</span>
+<span id="L259" class="ln">   259  </span>	tokenTransferTransactionSubmit, err := tokenTransferTransactionSign.Execute(client)
+<span id="L260" class="ln">   260  </span>	if err != nil {
+<span id="L261" class="ln">   261  </span>		println(err.Error(), &#34;: error submitting transaction&#34;)
+<span id="L262" class="ln">   262  </span>		return
+<span id="L263" class="ln">   263  </span>	}
+<span id="L264" class="ln">   264  </span>	<span class="comment">// Get transaction receipt information</span>
+<span id="L265" class="ln">   265  </span>	fmt.Println(tokenTransferTransactionSubmit.GetReceipt(client))
+<span id="L266" class="ln">   266  </span>
+<span id="L267" class="ln">   267  </span>	<span class="comment">/**
+<span id="L268" class="ln">   268  </span>	 * Step 4
+<span id="L269" class="ln">   269  </span>	 *
+<span id="L270" class="ln">   270  </span>	 * Return the new account ID in the child record
+<span id="L271" class="ln">   271  </span>	 */</span>
+<span id="L272" class="ln">   272  </span>
+<span id="L273" class="ln">   273  </span>	accountId2Info, err := hedera.NewAccountInfoQuery().SetAccountID(aliasAccountId2).Execute(client)
+<span id="L274" class="ln">   274  </span>	if err != nil {
+<span id="L275" class="ln">   275  </span>		println(err.Error(), &#34;: error executing acount info query&#34;)
+<span id="L276" class="ln">   276  </span>		return
+<span id="L277" class="ln">   277  </span>	}
+<span id="L278" class="ln">   278  </span>	accountId2 := accountId2Info.AccountID
+<span id="L279" class="ln">   279  </span>	fmt.Println(&#34;The normal account ID of the given alias: &#34;, accountId2)
+<span id="L280" class="ln">   280  </span>
+<span id="L281" class="ln">   281  </span>	<span class="comment">/**
+<span id="L282" class="ln">   282  </span>	 * Step 5
+<span id="L283" class="ln">   283  </span>	 *
+<span id="L284" class="ln">   284  </span>	 * Show the new account ID owns the fungible token
+<span id="L285" class="ln">   285  </span>	 */</span>
+<span id="L286" class="ln">   286  </span>
+<span id="L287" class="ln">   287  </span>	accountBalances, err := hedera.NewAccountBalanceQuery().SetAccountID(aliasAccountId2).Execute(client)
+<span id="L288" class="ln">   288  </span>	if err != nil {
+<span id="L289" class="ln">   289  </span>		println(err.Error(), &#34;: error receiving account balance&#34;)
+<span id="L290" class="ln">   290  </span>		return
+<span id="L291" class="ln">   291  </span>	}
+<span id="L292" class="ln">   292  </span>
+<span id="L293" class="ln">   293  </span>	tokenBalanceAccountId2 := accountBalances.Tokens.Get(tokenId)
+<span id="L294" class="ln">   294  </span>	if tokenBalanceAccountId2 == 10 {
+<span id="L295" class="ln">   295  </span>		fmt.Println(`Account is created succesfully using HTS &#34;TransferTransaction&#34;`)
+<span id="L296" class="ln">   296  </span>	} else {
+<span id="L297" class="ln">   297  </span>		fmt.Println(&#34;Creating account with HTS using public key alias failed&#34;)
+<span id="L298" class="ln">   298  </span>	}
+<span id="L299" class="ln">   299  </span>
+<span id="L300" class="ln">   300  </span>}
+<span id="L301" class="ln">   301  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

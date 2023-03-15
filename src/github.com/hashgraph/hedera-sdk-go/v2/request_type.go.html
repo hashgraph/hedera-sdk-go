@@ -1,0 +1,346 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/request_type.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">request_type.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package hedera
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span><span class="comment">/*-
+<span id="L4" class="ln">     4  </span> *
+<span id="L5" class="ln">     5  </span> * Hedera Go SDK
+<span id="L6" class="ln">     6  </span> *
+<span id="L7" class="ln">     7  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L8" class="ln">     8  </span> *
+<span id="L9" class="ln">     9  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L10" class="ln">    10  </span> * you may not use this file except in compliance with the License.
+<span id="L11" class="ln">    11  </span> * You may obtain a copy of the License at
+<span id="L12" class="ln">    12  </span> *
+<span id="L13" class="ln">    13  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L14" class="ln">    14  </span> *
+<span id="L15" class="ln">    15  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L16" class="ln">    16  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L17" class="ln">    17  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L18" class="ln">    18  </span> * See the License for the specific language governing permissions and
+<span id="L19" class="ln">    19  </span> * limitations under the License.
+<span id="L20" class="ln">    20  </span> *
+<span id="L21" class="ln">    21  </span> */</span>
+<span id="L22" class="ln">    22  </span>
+<span id="L23" class="ln">    23  </span>import (
+<span id="L24" class="ln">    24  </span>	&#34;fmt&#34;
+<span id="L25" class="ln">    25  </span>)
+<span id="L26" class="ln">    26  </span>
+<span id="L27" class="ln">    27  </span>type RequestType uint32
+<span id="L28" class="ln">    28  </span>
+<span id="L29" class="ln">    29  </span>const (
+<span id="L30" class="ln">    30  </span>	<span class="comment">// UNSPECIFIED - Need to keep first value as unspecified because first element is ignored and not parsed (0 is ignored by parser)</span>
+<span id="L31" class="ln">    31  </span>	RequestTypeNone RequestType = 0
+<span id="L32" class="ln">    32  </span>	<span class="comment">// crypto transfe</span>
+<span id="L33" class="ln">    33  </span>	RequestTypeCryptoTransfer RequestType = 1
+<span id="L34" class="ln">    34  </span>	<span class="comment">// crypto update account</span>
+<span id="L35" class="ln">    35  </span>	RequestTypeCryptoUpdate RequestType = 2
+<span id="L36" class="ln">    36  </span>	<span class="comment">// crypto delete account</span>
+<span id="L37" class="ln">    37  </span>	RequestTypeCryptoDelete RequestType = 3
+<span id="L38" class="ln">    38  </span>	<span class="comment">// Add a livehash to a crypto account</span>
+<span id="L39" class="ln">    39  </span>	RequestTypeCryptoAddLiveHash RequestType = 4
+<span id="L40" class="ln">    40  </span>	<span class="comment">// Delete a livehash from a crypto account</span>
+<span id="L41" class="ln">    41  </span>	RequestTypeCryptoDeleteLiveHash RequestType = 5
+<span id="L42" class="ln">    42  </span>	<span class="comment">// Smart Contract Call</span>
+<span id="L43" class="ln">    43  </span>	RequestTypeContractCall RequestType = 6
+<span id="L44" class="ln">    44  </span>	<span class="comment">// Smart Contract Create Contract</span>
+<span id="L45" class="ln">    45  </span>	RequestTypeContractCreate RequestType = 7
+<span id="L46" class="ln">    46  </span>	<span class="comment">// Smart Contract update contract</span>
+<span id="L47" class="ln">    47  </span>	RequestTypeContractUpdate RequestType = 8
+<span id="L48" class="ln">    48  </span>	<span class="comment">// File Operation create file</span>
+<span id="L49" class="ln">    49  </span>	RequestTypeFileCreate RequestType = 9
+<span id="L50" class="ln">    50  </span>	<span class="comment">// File Operation append file</span>
+<span id="L51" class="ln">    51  </span>	RequestTypeFileAppend RequestType = 10
+<span id="L52" class="ln">    52  </span>	<span class="comment">// File Operation update file</span>
+<span id="L53" class="ln">    53  </span>	RequestTypeFileUpdate RequestType = 11
+<span id="L54" class="ln">    54  </span>	<span class="comment">// File Operation delete file</span>
+<span id="L55" class="ln">    55  </span>	RequestTypeFileDelete RequestType = 12
+<span id="L56" class="ln">    56  </span>	<span class="comment">// crypto get account balance</span>
+<span id="L57" class="ln">    57  </span>	RequestTypeCryptoGetAccountBalance RequestType = 13
+<span id="L58" class="ln">    58  </span>	<span class="comment">// crypto get account record</span>
+<span id="L59" class="ln">    59  </span>	RequestTypeCryptoGetAccountRecords RequestType = 14
+<span id="L60" class="ln">    60  </span>	<span class="comment">// Crypto get info</span>
+<span id="L61" class="ln">    61  </span>	RequestTypeCryptoGetInfo RequestType = 15
+<span id="L62" class="ln">    62  </span>	<span class="comment">// Smart Contract Call</span>
+<span id="L63" class="ln">    63  </span>	RequestTypeContractCallLocal RequestType = 16
+<span id="L64" class="ln">    64  </span>	<span class="comment">// Smart Contract get info</span>
+<span id="L65" class="ln">    65  </span>	RequestTypeContractGetInfo RequestType = 17
+<span id="L66" class="ln">    66  </span>	<span class="comment">// Smart Contract, get the byte code</span>
+<span id="L67" class="ln">    67  </span>	RequestTypeContractGetBytecode RequestType = 18
+<span id="L68" class="ln">    68  </span>	<span class="comment">// Smart Contract, get by _Solidity ID</span>
+<span id="L69" class="ln">    69  </span>	RequestTypeGetBySolidityID RequestType = 19
+<span id="L70" class="ln">    70  </span>	<span class="comment">// Smart Contract, get by key</span>
+<span id="L71" class="ln">    71  </span>	RequestTypeGetByKey RequestType = 20
+<span id="L72" class="ln">    72  </span>	<span class="comment">// Get a live hash from a crypto account</span>
+<span id="L73" class="ln">    73  </span>	RequestTypeCryptoGetLiveHash RequestType = 21
+<span id="L74" class="ln">    74  </span>	<span class="comment">// Crypto, get the stakers for the _Node</span>
+<span id="L75" class="ln">    75  </span>	RequestTypeCryptoGetStakers RequestType = 22
+<span id="L76" class="ln">    76  </span>	<span class="comment">// File Operations get file contents</span>
+<span id="L77" class="ln">    77  </span>	RequestTypeFileGetContents RequestType = 23
+<span id="L78" class="ln">    78  </span>	<span class="comment">// File Operations get the info of the file</span>
+<span id="L79" class="ln">    79  </span>	RequestTypeFileGetInfo RequestType = 24
+<span id="L80" class="ln">    80  </span>	<span class="comment">// Crypto get the transaction records</span>
+<span id="L81" class="ln">    81  </span>	RequestTypeTransactionGetRecord RequestType = 25
+<span id="L82" class="ln">    82  </span>	<span class="comment">// Contract get the transaction records</span>
+<span id="L83" class="ln">    83  </span>	RequestTypeContractGetRecords RequestType = 26
+<span id="L84" class="ln">    84  </span>	<span class="comment">// crypto create account</span>
+<span id="L85" class="ln">    85  </span>	RequestTypeCryptoCreate RequestType = 27
+<span id="L86" class="ln">    86  </span>	<span class="comment">// system delete file</span>
+<span id="L87" class="ln">    87  </span>	RequestTypeSystemDelete RequestType = 28
+<span id="L88" class="ln">    88  </span>	<span class="comment">// system undelete file</span>
+<span id="L89" class="ln">    89  </span>	RequestTypeSystemUndelete RequestType = 29
+<span id="L90" class="ln">    90  </span>	<span class="comment">// delete contract</span>
+<span id="L91" class="ln">    91  </span>	RequestTypeContractDelete RequestType = 30
+<span id="L92" class="ln">    92  </span>	<span class="comment">// freeze</span>
+<span id="L93" class="ln">    93  </span>	RequestTypeFreeze RequestType = 31
+<span id="L94" class="ln">    94  </span>	<span class="comment">// Create Tx Record</span>
+<span id="L95" class="ln">    95  </span>	RequestTypeCreateTransactionRecord RequestType = 32
+<span id="L96" class="ln">    96  </span>	<span class="comment">// Crypto Auto Renew</span>
+<span id="L97" class="ln">    97  </span>	RequestTypeCryptoAccountAutoRenew RequestType = 33
+<span id="L98" class="ln">    98  </span>	<span class="comment">// Contract Auto Renew</span>
+<span id="L99" class="ln">    99  </span>	RequestTypeContractAutoRenew RequestType = 34
+<span id="L100" class="ln">   100  </span>	<span class="comment">// Get Version</span>
+<span id="L101" class="ln">   101  </span>	RequestTypeGetVersionInfo RequestType = 35
+<span id="L102" class="ln">   102  </span>	<span class="comment">// Transaction Get Receipt</span>
+<span id="L103" class="ln">   103  </span>	RequestTypeTransactionGetReceipt RequestType = 36
+<span id="L104" class="ln">   104  </span>	<span class="comment">// Create Topic</span>
+<span id="L105" class="ln">   105  </span>	RequestTypeConsensusCreateTopic RequestType = 50
+<span id="L106" class="ln">   106  </span>	<span class="comment">// Update Topic</span>
+<span id="L107" class="ln">   107  </span>	RequestTypeConsensusUpdateTopic RequestType = 51
+<span id="L108" class="ln">   108  </span>	<span class="comment">// Delete Topic</span>
+<span id="L109" class="ln">   109  </span>	RequestTypeConsensusDeleteTopic RequestType = 52
+<span id="L110" class="ln">   110  </span>	<span class="comment">// Get Topic information</span>
+<span id="L111" class="ln">   111  </span>	RequestTypeConsensusGetTopicInfo RequestType = 53
+<span id="L112" class="ln">   112  </span>	<span class="comment">// Submit message to topic</span>
+<span id="L113" class="ln">   113  </span>	RequestTypeConsensusSubmitMessage RequestType = 54
+<span id="L114" class="ln">   114  </span>	RequestTypeUncheckedSubmit        RequestType = 55
+<span id="L115" class="ln">   115  </span>	<span class="comment">// Create Token</span>
+<span id="L116" class="ln">   116  </span>	RequestTypeTokenCreate RequestType = 56
+<span id="L117" class="ln">   117  </span>	<span class="comment">// Get Token information</span>
+<span id="L118" class="ln">   118  </span>	RequestTypeTokenGetInfo RequestType = 58
+<span id="L119" class="ln">   119  </span>	<span class="comment">// Freeze Account</span>
+<span id="L120" class="ln">   120  </span>	RequestTypeTokenFreezeAccount RequestType = 59
+<span id="L121" class="ln">   121  </span>	<span class="comment">// Unfreeze Account</span>
+<span id="L122" class="ln">   122  </span>	RequestTypeTokenUnfreezeAccount RequestType = 60
+<span id="L123" class="ln">   123  </span>	<span class="comment">// Grant KYC to Account</span>
+<span id="L124" class="ln">   124  </span>	RequestTypeTokenGrantKycToAccount RequestType = 61
+<span id="L125" class="ln">   125  </span>	<span class="comment">// Revoke KYC from Account</span>
+<span id="L126" class="ln">   126  </span>	RequestTypeTokenRevokeKycFromAccount RequestType = 62
+<span id="L127" class="ln">   127  </span>	<span class="comment">// Delete Token</span>
+<span id="L128" class="ln">   128  </span>	RequestTypeTokenDelete RequestType = 63
+<span id="L129" class="ln">   129  </span>	<span class="comment">// Update Token</span>
+<span id="L130" class="ln">   130  </span>	RequestTypeTokenUpdate RequestType = 64
+<span id="L131" class="ln">   131  </span>	<span class="comment">// Mint tokens to treasury</span>
+<span id="L132" class="ln">   132  </span>	RequestTypeTokenMint RequestType = 65
+<span id="L133" class="ln">   133  </span>	<span class="comment">// Burn tokens from treasury</span>
+<span id="L134" class="ln">   134  </span>	RequestTypeTokenBurn RequestType = 66
+<span id="L135" class="ln">   135  </span>	<span class="comment">// Wipe token amount from Account holder</span>
+<span id="L136" class="ln">   136  </span>	RequestTypeTokenAccountWipe RequestType = 67
+<span id="L137" class="ln">   137  </span>	<span class="comment">// Associate tokens to an account</span>
+<span id="L138" class="ln">   138  </span>	RequestTypeTokenAssociateToAccount RequestType = 68
+<span id="L139" class="ln">   139  </span>	<span class="comment">// Dissociate tokens from an account</span>
+<span id="L140" class="ln">   140  </span>	RequestTypeTokenDissociateFromAccount RequestType = 69
+<span id="L141" class="ln">   141  </span>	<span class="comment">// Create Scheduled Transaction</span>
+<span id="L142" class="ln">   142  </span>	RequestTypeScheduleCreate RequestType = 70
+<span id="L143" class="ln">   143  </span>	<span class="comment">// Delete Scheduled Transaction</span>
+<span id="L144" class="ln">   144  </span>	RequestTypeScheduleDelete RequestType = 71
+<span id="L145" class="ln">   145  </span>	<span class="comment">// Sign Scheduled Transaction</span>
+<span id="L146" class="ln">   146  </span>	RequestTypeScheduleSign RequestType = 72
+<span id="L147" class="ln">   147  </span>	<span class="comment">// Get Scheduled Transaction Information</span>
+<span id="L148" class="ln">   148  </span>	RequestTypeScheduleGetInfo RequestType = 73
+<span id="L149" class="ln">   149  </span>)
+<span id="L150" class="ln">   150  </span>
+<span id="L151" class="ln">   151  </span><span class="comment">// String() returns a string representation of the status</span>
+<span id="L152" class="ln">   152  </span>func (requestType RequestType) String() string { <span class="comment">// nolint</span>
+<span id="L153" class="ln">   153  </span>	switch requestType {
+<span id="L154" class="ln">   154  </span>	case RequestTypeNone:
+<span id="L155" class="ln">   155  </span>		return &#34;NONE&#34;
+<span id="L156" class="ln">   156  </span>	case RequestTypeCryptoTransfer:
+<span id="L157" class="ln">   157  </span>		return &#34;CRYPTO_TRANSFER&#34;
+<span id="L158" class="ln">   158  </span>	case RequestTypeCryptoUpdate:
+<span id="L159" class="ln">   159  </span>		return &#34;CRYPTO_UPDATE&#34;
+<span id="L160" class="ln">   160  </span>	case RequestTypeCryptoDelete:
+<span id="L161" class="ln">   161  </span>		return &#34;CRYPTO_DELETE&#34;
+<span id="L162" class="ln">   162  </span>	case RequestTypeCryptoAddLiveHash:
+<span id="L163" class="ln">   163  </span>		return &#34;CRYPTO_ADD_LIVE_HASH&#34;
+<span id="L164" class="ln">   164  </span>	case RequestTypeCryptoDeleteLiveHash:
+<span id="L165" class="ln">   165  </span>		return &#34;CRYPTO_DELETE_LIVE_HASH&#34;
+<span id="L166" class="ln">   166  </span>	case RequestTypeContractCall:
+<span id="L167" class="ln">   167  </span>		return &#34;CONTRACT_CALL&#34;
+<span id="L168" class="ln">   168  </span>	case RequestTypeContractCreate:
+<span id="L169" class="ln">   169  </span>		return &#34;CONTRACT_CREATE&#34;
+<span id="L170" class="ln">   170  </span>	case RequestTypeContractUpdate:
+<span id="L171" class="ln">   171  </span>		return &#34;CONTRACT_UPDATE&#34;
+<span id="L172" class="ln">   172  </span>	case RequestTypeFileCreate:
+<span id="L173" class="ln">   173  </span>		return &#34;FILE_CREATE&#34;
+<span id="L174" class="ln">   174  </span>	case RequestTypeFileAppend:
+<span id="L175" class="ln">   175  </span>		return &#34;FILE_APPEND&#34;
+<span id="L176" class="ln">   176  </span>	case RequestTypeFileUpdate:
+<span id="L177" class="ln">   177  </span>		return &#34;FILE_UPDATE&#34;
+<span id="L178" class="ln">   178  </span>	case RequestTypeFileDelete:
+<span id="L179" class="ln">   179  </span>		return &#34;FILE_DELETE&#34;
+<span id="L180" class="ln">   180  </span>	case RequestTypeCryptoGetAccountBalance:
+<span id="L181" class="ln">   181  </span>		return &#34;CRYPTO_GET_ACCOUNT_BALANCE&#34;
+<span id="L182" class="ln">   182  </span>	case RequestTypeCryptoGetAccountRecords:
+<span id="L183" class="ln">   183  </span>		return &#34;CRYPTO_GET_ACCOUNT_RECORDS&#34;
+<span id="L184" class="ln">   184  </span>	case RequestTypeCryptoGetInfo:
+<span id="L185" class="ln">   185  </span>		return &#34;CRYPTO_GET_INFO&#34;
+<span id="L186" class="ln">   186  </span>	case RequestTypeContractCallLocal:
+<span id="L187" class="ln">   187  </span>		return &#34;CONTRACT_CALL_LOCAL&#34;
+<span id="L188" class="ln">   188  </span>	case RequestTypeContractGetInfo:
+<span id="L189" class="ln">   189  </span>		return &#34;CONTRACT_GET_INFO&#34;
+<span id="L190" class="ln">   190  </span>	case RequestTypeContractGetBytecode:
+<span id="L191" class="ln">   191  </span>		return &#34;CONTRACT_GET_BYTECODE&#34;
+<span id="L192" class="ln">   192  </span>	case RequestTypeGetBySolidityID:
+<span id="L193" class="ln">   193  </span>		return &#34;GET_BY_SOLIDITY_ID&#34;
+<span id="L194" class="ln">   194  </span>	case RequestTypeGetByKey:
+<span id="L195" class="ln">   195  </span>		return &#34;GET_BY_KEY&#34;
+<span id="L196" class="ln">   196  </span>	case RequestTypeCryptoGetLiveHash:
+<span id="L197" class="ln">   197  </span>		return &#34;CRYPTO_GET_LIVE_HASH&#34;
+<span id="L198" class="ln">   198  </span>	case RequestTypeCryptoGetStakers:
+<span id="L199" class="ln">   199  </span>		return &#34;CRYPTO_GET_STAKERS&#34;
+<span id="L200" class="ln">   200  </span>	case RequestTypeFileGetContents:
+<span id="L201" class="ln">   201  </span>		return &#34;FILE_GET_CONTENTS&#34;
+<span id="L202" class="ln">   202  </span>	case RequestTypeFileGetInfo:
+<span id="L203" class="ln">   203  </span>		return &#34;FILE_GET_INFO&#34;
+<span id="L204" class="ln">   204  </span>	case RequestTypeTransactionGetRecord:
+<span id="L205" class="ln">   205  </span>		return &#34;TRANSACTION_GET_RECORD&#34;
+<span id="L206" class="ln">   206  </span>	case RequestTypeContractGetRecords:
+<span id="L207" class="ln">   207  </span>		return &#34;CONTRACT_GET_RECORDS&#34;
+<span id="L208" class="ln">   208  </span>	case RequestTypeCryptoCreate:
+<span id="L209" class="ln">   209  </span>		return &#34;CRYPTO_CREATE&#34;
+<span id="L210" class="ln">   210  </span>	case RequestTypeSystemDelete:
+<span id="L211" class="ln">   211  </span>		return &#34;SYSTEM_DELETE&#34;
+<span id="L212" class="ln">   212  </span>	case RequestTypeSystemUndelete:
+<span id="L213" class="ln">   213  </span>		return &#34;SYSTEM_UNDELETE&#34;
+<span id="L214" class="ln">   214  </span>	case RequestTypeContractDelete:
+<span id="L215" class="ln">   215  </span>		return &#34;CONTRACT_DELETE&#34;
+<span id="L216" class="ln">   216  </span>	case RequestTypeFreeze:
+<span id="L217" class="ln">   217  </span>		return &#34;FREEZE&#34;
+<span id="L218" class="ln">   218  </span>	case RequestTypeCreateTransactionRecord:
+<span id="L219" class="ln">   219  </span>		return &#34;CREATE_TRANSACTION_RECORD&#34;
+<span id="L220" class="ln">   220  </span>	case RequestTypeCryptoAccountAutoRenew:
+<span id="L221" class="ln">   221  </span>		return &#34;CRYPTO_ACCOUNT_AUTO_RENEW&#34;
+<span id="L222" class="ln">   222  </span>	case RequestTypeContractAutoRenew:
+<span id="L223" class="ln">   223  </span>		return &#34;CONTRACT_AUTO_RENEW&#34;
+<span id="L224" class="ln">   224  </span>	case RequestTypeGetVersionInfo:
+<span id="L225" class="ln">   225  </span>		return &#34;GET_VERSION_INFO&#34;
+<span id="L226" class="ln">   226  </span>	case RequestTypeTransactionGetReceipt:
+<span id="L227" class="ln">   227  </span>		return &#34;TRANSACTION_GET_RECEIPT&#34;
+<span id="L228" class="ln">   228  </span>	case RequestTypeConsensusCreateTopic:
+<span id="L229" class="ln">   229  </span>		return &#34;CONSENSUS_CREATE_TOPIC&#34;
+<span id="L230" class="ln">   230  </span>	case RequestTypeConsensusUpdateTopic:
+<span id="L231" class="ln">   231  </span>		return &#34;CONSENSUS_UPDATE_TOPIC&#34;
+<span id="L232" class="ln">   232  </span>	case RequestTypeConsensusDeleteTopic:
+<span id="L233" class="ln">   233  </span>		return &#34;CONSENSUS_DELETE_TOPIC&#34;
+<span id="L234" class="ln">   234  </span>	case RequestTypeConsensusGetTopicInfo:
+<span id="L235" class="ln">   235  </span>		return &#34;CONSENSUS_GET_TOPIC_INFO&#34;
+<span id="L236" class="ln">   236  </span>	case RequestTypeConsensusSubmitMessage:
+<span id="L237" class="ln">   237  </span>		return &#34;CONSENSUS_SUBMIT_MESSAGE&#34;
+<span id="L238" class="ln">   238  </span>	case RequestTypeUncheckedSubmit:
+<span id="L239" class="ln">   239  </span>		return &#34;UNCHECKED_SUBMIT&#34;
+<span id="L240" class="ln">   240  </span>	case RequestTypeTokenCreate:
+<span id="L241" class="ln">   241  </span>		return &#34;TOKEN_CREATE&#34;
+<span id="L242" class="ln">   242  </span>	case RequestTypeTokenGetInfo:
+<span id="L243" class="ln">   243  </span>		return &#34;TOKEN_GET_INFO&#34;
+<span id="L244" class="ln">   244  </span>	case RequestTypeTokenFreezeAccount:
+<span id="L245" class="ln">   245  </span>		return &#34;TOKEN_FREEZE_ACCOUNT&#34;
+<span id="L246" class="ln">   246  </span>	case RequestTypeTokenUnfreezeAccount:
+<span id="L247" class="ln">   247  </span>		return &#34;TOKEN_UNFREEZE_ACCOUNT&#34;
+<span id="L248" class="ln">   248  </span>	case RequestTypeTokenGrantKycToAccount:
+<span id="L249" class="ln">   249  </span>		return &#34;TOKEN_GRANT_KYC_TO_ACCOUNT&#34;
+<span id="L250" class="ln">   250  </span>	case RequestTypeTokenRevokeKycFromAccount:
+<span id="L251" class="ln">   251  </span>		return &#34;TOKEN_REVOKE_KYC_TO_ACCOUNT&#34;
+<span id="L252" class="ln">   252  </span>	case RequestTypeTokenDelete:
+<span id="L253" class="ln">   253  </span>		return &#34;TOKEN_DELETE&#34;
+<span id="L254" class="ln">   254  </span>	case RequestTypeTokenUpdate:
+<span id="L255" class="ln">   255  </span>		return &#34;TOKEN_UPDATE&#34;
+<span id="L256" class="ln">   256  </span>	case RequestTypeTokenMint:
+<span id="L257" class="ln">   257  </span>		return &#34;TOKEN_MINT&#34;
+<span id="L258" class="ln">   258  </span>	case RequestTypeTokenBurn:
+<span id="L259" class="ln">   259  </span>		return &#34;TOKEN_BURN&#34;
+<span id="L260" class="ln">   260  </span>	case RequestTypeTokenAccountWipe:
+<span id="L261" class="ln">   261  </span>		return &#34;TOKEN_ACCOUNT_WIPE&#34;
+<span id="L262" class="ln">   262  </span>	case RequestTypeTokenAssociateToAccount:
+<span id="L263" class="ln">   263  </span>		return &#34;TOKEN_ASSOCIATE_TO_ACCOUNT&#34;
+<span id="L264" class="ln">   264  </span>	case RequestTypeTokenDissociateFromAccount:
+<span id="L265" class="ln">   265  </span>		return &#34;TOKEN_DISSOCIATE_FROM_ACCOUNT&#34;
+<span id="L266" class="ln">   266  </span>	case RequestTypeScheduleCreate:
+<span id="L267" class="ln">   267  </span>		return &#34;SCHEDULE_CREATE&#34;
+<span id="L268" class="ln">   268  </span>	case RequestTypeScheduleDelete:
+<span id="L269" class="ln">   269  </span>		return &#34;SCHEDULE_DELETE&#34;
+<span id="L270" class="ln">   270  </span>	case RequestTypeScheduleSign:
+<span id="L271" class="ln">   271  </span>		return &#34;SCHEDULE_SIGN&#34;
+<span id="L272" class="ln">   272  </span>	case RequestTypeScheduleGetInfo:
+<span id="L273" class="ln">   273  </span>		return &#34;SCHEDULE_GET_INFO&#34;
+<span id="L274" class="ln">   274  </span>	}
+<span id="L275" class="ln">   275  </span>
+<span id="L276" class="ln">   276  </span>	panic(fmt.Sprintf(&#34;unreachable: RequestType.String() switch statement is non-exhaustive. RequestType: %v&#34;, uint32(requestType)))
+<span id="L277" class="ln">   277  </span>}
+<span id="L278" class="ln">   278  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

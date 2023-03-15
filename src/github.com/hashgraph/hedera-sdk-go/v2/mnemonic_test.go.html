@@ -1,0 +1,636 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/mnemonic_test.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">mnemonic_test.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span><span class="comment">//go:build all || unit</span>
+<span id="L2" class="ln">     2  </span><span class="comment">// +build all unit</span>
+<span id="L3" class="ln">     3  </span>
+<span id="L4" class="ln">     4  </span>package hedera
+<span id="L5" class="ln">     5  </span>
+<span id="L6" class="ln">     6  </span><span class="comment">/*-
+<span id="L7" class="ln">     7  </span> *
+<span id="L8" class="ln">     8  </span> * Hedera Go SDK
+<span id="L9" class="ln">     9  </span> *
+<span id="L10" class="ln">    10  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L11" class="ln">    11  </span> *
+<span id="L12" class="ln">    12  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L13" class="ln">    13  </span> * you may not use this file except in compliance with the License.
+<span id="L14" class="ln">    14  </span> * You may obtain a copy of the License at
+<span id="L15" class="ln">    15  </span> *
+<span id="L16" class="ln">    16  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L17" class="ln">    17  </span> *
+<span id="L18" class="ln">    18  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L19" class="ln">    19  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L20" class="ln">    20  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L21" class="ln">    21  </span> * See the License for the specific language governing permissions and
+<span id="L22" class="ln">    22  </span> * limitations under the License.
+<span id="L23" class="ln">    23  </span> *
+<span id="L24" class="ln">    24  </span> */</span>
+<span id="L25" class="ln">    25  </span>
+<span id="L26" class="ln">    26  </span>import (
+<span id="L27" class="ln">    27  </span>	&#34;encoding/hex&#34;
+<span id="L28" class="ln">    28  </span>	&#34;strings&#34;
+<span id="L29" class="ln">    29  </span>	&#34;testing&#34;
+<span id="L30" class="ln">    30  </span>
+<span id="L31" class="ln">    31  </span>	&#34;github.com/stretchr/testify/assert&#34;
+<span id="L32" class="ln">    32  </span>	&#34;github.com/stretchr/testify/require&#34;
+<span id="L33" class="ln">    33  </span>)
+<span id="L34" class="ln">    34  </span>
+<span id="L35" class="ln">    35  </span>var mnemonicLegacyV1String = &#34;jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure&#34;
+<span id="L36" class="ln">    36  </span>
+<span id="L37" class="ln">    37  </span>var mnemonicLegacyV2String = &#34;obvious favorite remain caution remove laptop base vacant increase video erase pass sniff sausage knock grid argue salt romance way alone fever slush dune&#34;
+<span id="L38" class="ln">    38  </span>
+<span id="L39" class="ln">    39  </span>var mnemonic24WordString = &#34;inmate flip alley wear offer often piece magnet surge toddler submit right radio absent pear floor belt raven price stove replace reduce plate home&#34;
+<span id="L40" class="ln">    40  </span>
+<span id="L41" class="ln">    41  </span>var mnemonic12WordString = &#34;finish furnace tomorrow wine mass goose festival air palm easy region guilt&#34;
+<span id="L42" class="ln">    42  </span>
+<span id="L43" class="ln">    43  </span>var passPhrase = &#34;some pass&#34;
+<span id="L44" class="ln">    44  </span>
+<span id="L45" class="ln">    45  </span>func TestUnitGenerate24WordMnemonic(t *testing.T) {
+<span id="L46" class="ln">    46  </span>	mnemonic, err := GenerateMnemonic24()
+<span id="L47" class="ln">    47  </span>	require.NoError(t, err)
+<span id="L48" class="ln">    48  </span>
+<span id="L49" class="ln">    49  </span>	assert.Equal(t, 24, len(mnemonic.Words()))
+<span id="L50" class="ln">    50  </span>}
+<span id="L51" class="ln">    51  </span>
+<span id="L52" class="ln">    52  </span>func TestUnitGenerate12WordMnemonic(t *testing.T) {
+<span id="L53" class="ln">    53  </span>	mnemonic, err := GenerateMnemonic12()
+<span id="L54" class="ln">    54  </span>	require.NoError(t, err)
+<span id="L55" class="ln">    55  </span>
+<span id="L56" class="ln">    56  </span>	assert.Equal(t, 12, len(mnemonic.Words()))
+<span id="L57" class="ln">    57  </span>}
+<span id="L58" class="ln">    58  </span>
+<span id="L59" class="ln">    59  </span>func TestUnitMnemonicFromString(t *testing.T) {
+<span id="L60" class="ln">    60  </span>	mnemonic, err := MnemonicFromString(testMnemonic)
+<span id="L61" class="ln">    61  </span>	require.NoError(t, err)
+<span id="L62" class="ln">    62  </span>
+<span id="L63" class="ln">    63  </span>	assert.Equal(t, testMnemonic, mnemonic.String())
+<span id="L64" class="ln">    64  </span>	assert.Equal(t, 24, len(mnemonic.Words()))
+<span id="L65" class="ln">    65  </span>}
+<span id="L66" class="ln">    66  </span>
+<span id="L67" class="ln">    67  </span>func TestUnitNew24MnemonicFromGeneratedMnemonic(t *testing.T) {
+<span id="L68" class="ln">    68  </span>	generatedMnemonic, err := GenerateMnemonic24()
+<span id="L69" class="ln">    69  </span>	require.NoError(t, err)
+<span id="L70" class="ln">    70  </span>
+<span id="L71" class="ln">    71  </span>	mnemonicFromSlice, err := NewMnemonic(generatedMnemonic.Words())
+<span id="L72" class="ln">    72  </span>	require.NoError(t, err)
+<span id="L73" class="ln">    73  </span>	assert.Equal(t, generatedMnemonic.words, mnemonicFromSlice.words)
+<span id="L74" class="ln">    74  </span>
+<span id="L75" class="ln">    75  </span>	mnemonicFromString, err := MnemonicFromString(generatedMnemonic.String())
+<span id="L76" class="ln">    76  </span>	require.NoError(t, err)
+<span id="L77" class="ln">    77  </span>	assert.Equal(t, generatedMnemonic, mnemonicFromString)
+<span id="L78" class="ln">    78  </span>
+<span id="L79" class="ln">    79  </span>	gKey, err := generatedMnemonic.ToPrivateKey(passphrase)
+<span id="L80" class="ln">    80  </span>	require.NoError(t, err)
+<span id="L81" class="ln">    81  </span>
+<span id="L82" class="ln">    82  </span>	slKey, err := generatedMnemonic.ToPrivateKey(passphrase)
+<span id="L83" class="ln">    83  </span>	require.NoError(t, err)
+<span id="L84" class="ln">    84  </span>
+<span id="L85" class="ln">    85  </span>	stKey, err := generatedMnemonic.ToPrivateKey(passphrase)
+<span id="L86" class="ln">    86  </span>	require.NoError(t, err)
+<span id="L87" class="ln">    87  </span>
+<span id="L88" class="ln">    88  </span>	assert.Equal(t, gKey.ed25519PrivateKey.keyData, slKey.ed25519PrivateKey.keyData)
+<span id="L89" class="ln">    89  </span>	assert.Equal(t, gKey.ed25519PrivateKey.keyData, stKey.ed25519PrivateKey.keyData)
+<span id="L90" class="ln">    90  </span>}
+<span id="L91" class="ln">    91  </span>
+<span id="L92" class="ln">    92  </span>func TestUnitNew12MnemonicFromGeneratedMnemonic(t *testing.T) {
+<span id="L93" class="ln">    93  </span>	generatedMnemonic, err := GenerateMnemonic12()
+<span id="L94" class="ln">    94  </span>	require.NoError(t, err)
+<span id="L95" class="ln">    95  </span>
+<span id="L96" class="ln">    96  </span>	mnemonicFromSlice, err := NewMnemonic(generatedMnemonic.Words())
+<span id="L97" class="ln">    97  </span>	require.NoError(t, err)
+<span id="L98" class="ln">    98  </span>	assert.Equal(t, generatedMnemonic.words, mnemonicFromSlice.words)
+<span id="L99" class="ln">    99  </span>
+<span id="L100" class="ln">   100  </span>	mnemonicFromString, err := MnemonicFromString(generatedMnemonic.String())
+<span id="L101" class="ln">   101  </span>	require.NoError(t, err)
+<span id="L102" class="ln">   102  </span>	assert.Equal(t, generatedMnemonic, mnemonicFromString)
+<span id="L103" class="ln">   103  </span>
+<span id="L104" class="ln">   104  </span>	gKey, err := generatedMnemonic.ToPrivateKey(passphrase)
+<span id="L105" class="ln">   105  </span>	require.NoError(t, err)
+<span id="L106" class="ln">   106  </span>
+<span id="L107" class="ln">   107  </span>	slKey, err := mnemonicFromSlice.ToPrivateKey(passphrase)
+<span id="L108" class="ln">   108  </span>	require.NoError(t, err)
+<span id="L109" class="ln">   109  </span>
+<span id="L110" class="ln">   110  </span>	stKey, err := mnemonicFromString.ToPrivateKey(passphrase)
+<span id="L111" class="ln">   111  </span>	require.NoError(t, err)
+<span id="L112" class="ln">   112  </span>
+<span id="L113" class="ln">   113  </span>	assert.Equal(t, gKey.ed25519PrivateKey.keyData, slKey.ed25519PrivateKey.keyData)
+<span id="L114" class="ln">   114  </span>	assert.Equal(t, gKey.ed25519PrivateKey.keyData, stKey.ed25519PrivateKey.keyData)
+<span id="L115" class="ln">   115  </span>}
+<span id="L116" class="ln">   116  </span>
+<span id="L117" class="ln">   117  </span>func TestLegacyV1Mnemonic(t *testing.T) {
+<span id="L118" class="ln">   118  </span>	test1PrivateKey := &#34;00c2f59212cb3417f0ee0d38e7bd876810d04f2dd2cb5c2d8f26ff406573f2bd&#34;
+<span id="L119" class="ln">   119  </span>	test1PublicKey := &#34;0c5bb4624df6b64c2f07a8cb8753945dd42d4b9a2ed4c0bf98e87ef154f473e9&#34;
+<span id="L120" class="ln">   120  </span>	test2PrivateKey := &#34;fae0002d2716ea3a60c9cd05ee3c4bb88723b196341b68a02d20975f9d049dc6&#34;
+<span id="L121" class="ln">   121  </span>	test2PublicKey := &#34;f40f9fdb1f161c31ed656794ada7af8025e8b5c70e538f38a4dfb46a0a6b0392&#34;
+<span id="L122" class="ln">   122  </span>	test3PrivateKey := &#34;882a565ad8cb45643892b5366c1ee1c1ef4a730c5ce821a219ff49b6bf173ddf&#34;
+<span id="L123" class="ln">   123  </span>	test3PublicKey := &#34;53c6b451e695d6abc52168a269316a0d20deee2331f612d4fb8b2b379e5c6854&#34;
+<span id="L124" class="ln">   124  </span>	test4PrivateKey := &#34;6890dc311754ce9d3fc36bdf83301aa1c8f2556e035a6d0d13c2cccdbbab1242&#34;
+<span id="L125" class="ln">   125  </span>	test4PublicKey := &#34;45f3a673984a0b4ee404a1f4404ed058475ecd177729daa042e437702f7791e9&#34;
+<span id="L126" class="ln">   126  </span>
+<span id="L127" class="ln">   127  </span>	mnemonic, err := MnemonicFromString(mnemonicLegacyV1String)
+<span id="L128" class="ln">   128  </span>	require.NoError(t, err)
+<span id="L129" class="ln">   129  </span>
+<span id="L130" class="ln">   130  </span>	key1, err := mnemonic.ToLegacyPrivateKey()
+<span id="L131" class="ln">   131  </span>	require.NoError(t, err)
+<span id="L132" class="ln">   132  </span>
+<span id="L133" class="ln">   133  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L134" class="ln">   134  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L135" class="ln">   135  </span>
+<span id="L136" class="ln">   136  </span>	key2, err := key1.LegacyDerive(0)
+<span id="L137" class="ln">   137  </span>	require.NoError(t, err)
+<span id="L138" class="ln">   138  </span>
+<span id="L139" class="ln">   139  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L140" class="ln">   140  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L141" class="ln">   141  </span>
+<span id="L142" class="ln">   142  </span>	key3, err := key1.LegacyDerive(-1)
+<span id="L143" class="ln">   143  </span>	require.NoError(t, err)
+<span id="L144" class="ln">   144  </span>
+<span id="L145" class="ln">   145  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L146" class="ln">   146  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L147" class="ln">   147  </span>
+<span id="L148" class="ln">   148  </span>	key4, err := key1.LegacyDerive(1099511627775)
+<span id="L149" class="ln">   149  </span>	require.NoError(t, err)
+<span id="L150" class="ln">   150  </span>
+<span id="L151" class="ln">   151  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L152" class="ln">   152  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L153" class="ln">   153  </span>}
+<span id="L154" class="ln">   154  </span>
+<span id="L155" class="ln">   155  </span>func TestLegacyV2Mnemonic(t *testing.T) {
+<span id="L156" class="ln">   156  </span>	test1PrivateKey := &#34;98aa82d6125b5efa04bf8372be7931d05cd77f5ef3330b97d6ee7c006eaaf312&#34;
+<span id="L157" class="ln">   157  </span>	test1PublicKey := &#34;e0ce688d614f22f96d9d213ca513d58a7d03d954fe45790006e6e86b25456465&#34;
+<span id="L158" class="ln">   158  </span>	test2PrivateKey := &#34;2b7345f302a10c2a6d55bf8b7af40f125ec41d780957826006d30776f0c441fb&#34;
+<span id="L159" class="ln">   159  </span>	test2PublicKey := &#34;0e19f99800b007cc7c82f9d85b73e0f6e48799469450caf43f253b48c4d0d91a&#34;
+<span id="L160" class="ln">   160  </span>	test3PrivateKey := &#34;caffc03fdb9853e6a91a5b3c57a5c0031d164ce1c464dea88f3114786b5199e5&#34;
+<span id="L161" class="ln">   161  </span>	test3PublicKey := &#34;9fe11da3fcfba5d28a6645ecb611a9a43dbe6014b102279ba1d34506ea86974b&#34;
+<span id="L162" class="ln">   162  </span>
+<span id="L163" class="ln">   163  </span>	mnemonic, err := MnemonicFromString(mnemonicLegacyV2String)
+<span id="L164" class="ln">   164  </span>	require.NoError(t, err)
+<span id="L165" class="ln">   165  </span>
+<span id="L166" class="ln">   166  </span>	key1, err := mnemonic.ToLegacyPrivateKey()
+<span id="L167" class="ln">   167  </span>	require.NoError(t, err)
+<span id="L168" class="ln">   168  </span>
+<span id="L169" class="ln">   169  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L170" class="ln">   170  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L171" class="ln">   171  </span>
+<span id="L172" class="ln">   172  </span>	key2, err := key1.LegacyDerive(0)
+<span id="L173" class="ln">   173  </span>	require.NoError(t, err)
+<span id="L174" class="ln">   174  </span>
+<span id="L175" class="ln">   175  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L176" class="ln">   176  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L177" class="ln">   177  </span>
+<span id="L178" class="ln">   178  </span>	key3, err := key1.LegacyDerive(-1)
+<span id="L179" class="ln">   179  </span>	require.NoError(t, err)
+<span id="L180" class="ln">   180  </span>
+<span id="L181" class="ln">   181  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L182" class="ln">   182  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L183" class="ln">   183  </span>}
+<span id="L184" class="ln">   184  </span>
+<span id="L185" class="ln">   185  </span>func TestUnitMnemonicBreaksWithBadLength(t *testing.T) {
+<span id="L186" class="ln">   186  </span>	<span class="comment">// note this mnemonic is probably invalid and is only used to test breakage based on length</span>
+<span id="L187" class="ln">   187  </span>	shortMnemonic := &#34;inmate flip alley wear offer often piece magnet surge toddler submit right business&#34;
+<span id="L188" class="ln">   188  </span>
+<span id="L189" class="ln">   189  </span>	_, err := MnemonicFromString(shortMnemonic)
+<span id="L190" class="ln">   190  </span>	assert.Error(t, err)
+<span id="L191" class="ln">   191  </span>
+<span id="L192" class="ln">   192  </span>	_, err = NewMnemonic(strings.Split(shortMnemonic, &#34; &#34;))
+<span id="L193" class="ln">   193  </span>	assert.Error(t, err)
+<span id="L194" class="ln">   194  </span>}
+<span id="L195" class="ln">   195  </span>
+<span id="L196" class="ln">   196  </span>func TestBIP39NFKD(t *testing.T) {
+<span id="L197" class="ln">   197  </span>	passphrase := &#34;\u03B4\u03BF\u03BA\u03B9\u03BC\u03AE&#34;
+<span id="L198" class="ln">   198  </span>	expectedPrivateKey := &#34;302e020100300506032b6570042204203fefe1000db9485372851d542453b07e7970de4e2ecede7187d733ac037f4d2c&#34;
+<span id="L199" class="ln">   199  </span>	mnemonic, err := MnemonicFromString(mnemonic24WordString)
+<span id="L200" class="ln">   200  </span>	assert.NoError(t, err)
+<span id="L201" class="ln">   201  </span>	key, err := mnemonic.ToPrivateKey(passphrase)
+<span id="L202" class="ln">   202  </span>	assert.NoError(t, err)
+<span id="L203" class="ln">   203  </span>	assert.Equal(t, key.String(), expectedPrivateKey)
+<span id="L204" class="ln">   204  </span>}
+<span id="L205" class="ln">   205  </span>func TestBIP39Vector(t *testing.T) {
+<span id="L206" class="ln">   206  </span>	passPhrase := &#34;TREZOR&#34;
+<span id="L207" class="ln">   207  </span>
+<span id="L208" class="ln">   208  </span>	<span class="comment">// the commented out tests are 18 words mnemonic, which are not supported.</span>
+<span id="L209" class="ln">   209  </span>	tests := [][]string{
+<span id="L210" class="ln">   210  </span>		{
+<span id="L211" class="ln">   211  </span>			&#34;abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about&#34;,
+<span id="L212" class="ln">   212  </span>			&#34;c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04&#34;,
+<span id="L213" class="ln">   213  </span>		},
+<span id="L214" class="ln">   214  </span>		{
+<span id="L215" class="ln">   215  </span>			&#34;legal winner thank year wave sausage worth useful legal winner thank yellow&#34;,
+<span id="L216" class="ln">   216  </span>			&#34;2e8905819b8723fe2c1d161860e5ee1830318dbf49a83bd451cfb8440c28bd6fa457fe1296106559a3c80937a1c1069be3a3a5bd381ee6260e8d9739fce1f607&#34;,
+<span id="L217" class="ln">   217  </span>		},
+<span id="L218" class="ln">   218  </span>		{
+<span id="L219" class="ln">   219  </span>			&#34;letter advice cage absurd amount doctor acoustic avoid letter advice cage above&#34;,
+<span id="L220" class="ln">   220  </span>			&#34;d71de856f81a8acc65e6fc851a38d4d7ec216fd0796d0a6827a3ad6ed5511a30fa280f12eb2e47ed2ac03b5c462a0358d18d69fe4f985ec81778c1b370b652a8&#34;,
+<span id="L221" class="ln">   221  </span>		},
+<span id="L222" class="ln">   222  </span>		{
+<span id="L223" class="ln">   223  </span>			&#34;zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong&#34;,
+<span id="L224" class="ln">   224  </span>			&#34;ac27495480225222079d7be181583751e86f571027b0497b5b5d11218e0a8a13332572917f0f8e5a589620c6f15b11c61dee327651a14c34e18231052e48c069&#34;,
+<span id="L225" class="ln">   225  </span>		},
+<span id="L226" class="ln">   226  </span>		<span class="comment">// {</span>
+<span id="L227" class="ln">   227  </span>		<span class="comment">// 	&#34;abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon agent&#34;,</span>
+<span id="L228" class="ln">   228  </span>		<span class="comment">// 	&#34;035895f2f481b1b0f01fcf8c289c794660b289981a78f8106447707fdd9666ca06da5a9a565181599b79f53b844d8a71dd9f439c52a3d7b3e8a79c906ac845fa&#34;,</span>
+<span id="L229" class="ln">   229  </span>		<span class="comment">// },</span>
+<span id="L230" class="ln">   230  </span>		<span class="comment">// {</span>
+<span id="L231" class="ln">   231  </span>		<span class="comment">// 	&#34;legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal will&#34;,</span>
+<span id="L232" class="ln">   232  </span>		<span class="comment">// 	&#34;f2b94508732bcbacbcc020faefecfc89feafa6649a5491b8c952cede496c214a0c7b3c392d168748f2d4a612bada0753b52a1c7ac53c1e93abd5c6320b9e95dd&#34;,</span>
+<span id="L233" class="ln">   233  </span>		<span class="comment">// },</span>
+<span id="L234" class="ln">   234  </span>		<span class="comment">// {</span>
+<span id="L235" class="ln">   235  </span>		<span class="comment">// 	&#34;letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter always&#34;,</span>
+<span id="L236" class="ln">   236  </span>		<span class="comment">// 	&#34;107d7c02a5aa6f38c58083ff74f04c607c2d2c0ecc55501dadd72d025b751bc27fe913ffb796f841c49b1d33b610cf0e91d3aa239027f5e99fe4ce9e5088cd65&#34;,</span>
+<span id="L237" class="ln">   237  </span>		<span class="comment">// },</span>
+<span id="L238" class="ln">   238  </span>		<span class="comment">// {</span>
+<span id="L239" class="ln">   239  </span>		<span class="comment">// 	&#34;zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo when&#34;,</span>
+<span id="L240" class="ln">   240  </span>		<span class="comment">// 	&#34;0cd6e5d827bb62eb8fc1e262254223817fd068a74b5b449cc2f667c3f1f985a76379b43348d952e2265b4cd129090758b3e3c2c49103b5051aac2eaeb890a528&#34;,</span>
+<span id="L241" class="ln">   241  </span>		<span class="comment">// },</span>
+<span id="L242" class="ln">   242  </span>		{
+<span id="L243" class="ln">   243  </span>			&#34;abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art&#34;,
+<span id="L244" class="ln">   244  </span>			&#34;bda85446c68413707090a52022edd26a1c9462295029f2e60cd7c4f2bbd3097170af7a4d73245cafa9c3cca8d561a7c3de6f5d4a10be8ed2a5e608d68f92fcc8&#34;,
+<span id="L245" class="ln">   245  </span>		},
+<span id="L246" class="ln">   246  </span>		{
+<span id="L247" class="ln">   247  </span>			&#34;legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title&#34;,
+<span id="L248" class="ln">   248  </span>			&#34;bc09fca1804f7e69da93c2f2028eb238c227f2e9dda30cd63699232578480a4021b146ad717fbb7e451ce9eb835f43620bf5c514db0f8add49f5d121449d3e87&#34;,
+<span id="L249" class="ln">   249  </span>		},
+<span id="L250" class="ln">   250  </span>		{
+<span id="L251" class="ln">   251  </span>			&#34;letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless&#34;,
+<span id="L252" class="ln">   252  </span>			&#34;c0c519bd0e91a2ed54357d9d1ebef6f5af218a153624cf4f2da911a0ed8f7a09e2ef61af0aca007096df430022f7a2b6fb91661a9589097069720d015e4e982f&#34;,
+<span id="L253" class="ln">   253  </span>		},
+<span id="L254" class="ln">   254  </span>		{
+<span id="L255" class="ln">   255  </span>			&#34;zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote&#34;,
+<span id="L256" class="ln">   256  </span>			&#34;dd48c104698c30cfe2b6142103248622fb7bb0ff692eebb00089b32d22484e1613912f0a5b694407be899ffd31ed3992c456cdf60f5d4564b8ba3f05a69890ad&#34;,
+<span id="L257" class="ln">   257  </span>		},
+<span id="L258" class="ln">   258  </span>		{
+<span id="L259" class="ln">   259  </span>			&#34;ozone drill grab fiber curtain grace pudding thank cruise elder eight picnic&#34;,
+<span id="L260" class="ln">   260  </span>			&#34;274ddc525802f7c828d8ef7ddbcdc5304e87ac3535913611fbbfa986d0c9e5476c91689f9c8a54fd55bd38606aa6a8595ad213d4c9c9f9aca3fb217069a41028&#34;,
+<span id="L261" class="ln">   261  </span>		},
+<span id="L262" class="ln">   262  </span>		<span class="comment">// {</span>
+<span id="L263" class="ln">   263  </span>		<span class="comment">// 	&#34;gravity machine north sort system female filter attitude volume fold club stay feature office ecology stable narrow fog&#34;,</span>
+<span id="L264" class="ln">   264  </span>		<span class="comment">// 	&#34;628c3827a8823298ee685db84f55caa34b5cc195a778e52d45f59bcf75aba68e4d7590e101dc414bc1bbd5737666fbbef35d1f1903953b66624f910feef245ac&#34;,</span>
+<span id="L265" class="ln">   265  </span>		<span class="comment">// },</span>
+<span id="L266" class="ln">   266  </span>		{
+<span id="L267" class="ln">   267  </span>			&#34;hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length&#34;,
+<span id="L268" class="ln">   268  </span>			&#34;64c87cde7e12ecf6704ab95bb1408bef047c22db4cc7491c4271d170a1b213d20b385bc1588d9c7b38f1b39d415665b8a9030c9ec653d75e65f847d8fc1fc440&#34;,
+<span id="L269" class="ln">   269  </span>		},
+<span id="L270" class="ln">   270  </span>		{
+<span id="L271" class="ln">   271  </span>			&#34;scheme spot photo card baby mountain device kick cradle pact join borrow&#34;,
+<span id="L272" class="ln">   272  </span>			&#34;ea725895aaae8d4c1cf682c1bfd2d358d52ed9f0f0591131b559e2724bb234fca05aa9c02c57407e04ee9dc3b454aa63fbff483a8b11de949624b9f1831a9612&#34;,
+<span id="L273" class="ln">   273  </span>		},
+<span id="L274" class="ln">   274  </span>		<span class="comment">// {</span>
+<span id="L275" class="ln">   275  </span>		<span class="comment">// 	&#34;horn tenant knee talent sponsor spell gate clip pulse soap slush warm silver nephew swap uncle crack brave&#34;,</span>
+<span id="L276" class="ln">   276  </span>		<span class="comment">// 	&#34;fd579828af3da1d32544ce4db5c73d53fc8acc4ddb1e3b251a31179cdb71e853c56d2fcb11aed39898ce6c34b10b5382772db8796e52837b54468aeb312cfc3d&#34;,</span>
+<span id="L277" class="ln">   277  </span>		<span class="comment">// },</span>
+<span id="L278" class="ln">   278  </span>		{
+<span id="L279" class="ln">   279  </span>			&#34;panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside&#34;,
+<span id="L280" class="ln">   280  </span>			&#34;72be8e052fc4919d2adf28d5306b5474b0069df35b02303de8c1729c9538dbb6fc2d731d5f832193cd9fb6aeecbc469594a70e3dd50811b5067f3b88b28c3e8d&#34;,
+<span id="L281" class="ln">   281  </span>		},
+<span id="L282" class="ln">   282  </span>		{
+<span id="L283" class="ln">   283  </span>			&#34;cat swing flag economy stadium alone churn speed unique patch report train&#34;,
+<span id="L284" class="ln">   284  </span>			&#34;deb5f45449e615feff5640f2e49f933ff51895de3b4381832b3139941c57b59205a42480c52175b6efcffaa58a2503887c1e8b363a707256bdd2b587b46541f5&#34;,
+<span id="L285" class="ln">   285  </span>		},
+<span id="L286" class="ln">   286  </span>		<span class="comment">// {</span>
+<span id="L287" class="ln">   287  </span>		<span class="comment">// 	&#34;light rule cinnamon wrap drastic word pride squirrel upgrade then income fatal apart sustain crack supply proud access&#34;,</span>
+<span id="L288" class="ln">   288  </span>		<span class="comment">// 	&#34;4cbdff1ca2db800fd61cae72a57475fdc6bab03e441fd63f96dabd1f183ef5b782925f00105f318309a7e9c3ea6967c7801e46c8a58082674c860a37b93eda02&#34;,</span>
+<span id="L289" class="ln">   289  </span>		<span class="comment">// },</span>
+<span id="L290" class="ln">   290  </span>		{
+<span id="L291" class="ln">   291  </span>			&#34;all hour make first leader extend hole alien behind guard gospel lava path output census museum junior mass reopen famous sing advance salt reform&#34;,
+<span id="L292" class="ln">   292  </span>			&#34;26e975ec644423f4a4c4f4215ef09b4bd7ef924e85d1d17c4cf3f136c2863cf6df0a475045652c57eb5fb41513ca2a2d67722b77e954b4b3fc11f7590449191d&#34;,
+<span id="L293" class="ln">   293  </span>		},
+<span id="L294" class="ln">   294  </span>		{
+<span id="L295" class="ln">   295  </span>			&#34;vessel ladder alter error federal sibling chat ability sun glass valve picture&#34;,
+<span id="L296" class="ln">   296  </span>			&#34;2aaa9242daafcee6aa9d7269f17d4efe271e1b9a529178d7dc139cd18747090bf9d60295d0ce74309a78852a9caadf0af48aae1c6253839624076224374bc63f&#34;,
+<span id="L297" class="ln">   297  </span>		},
+<span id="L298" class="ln">   298  </span>		<span class="comment">// {</span>
+<span id="L299" class="ln">   299  </span>		<span class="comment">// 	&#34;scissors invite lock maple supreme raw rapid void congress muscle digital elegant little brisk hair mango congress clump&#34;,</span>
+<span id="L300" class="ln">   300  </span>		<span class="comment">// 	&#34;7b4a10be9d98e6cba265566db7f136718e1398c71cb581e1b2f464cac1ceedf4f3e274dc270003c670ad8d02c4558b2f8e39edea2775c9e232c7cb798b069e88&#34;,</span>
+<span id="L301" class="ln">   301  </span>		<span class="comment">// },</span>
+<span id="L302" class="ln">   302  </span>		{
+<span id="L303" class="ln">   303  </span>			&#34;void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold&#34;,
+<span id="L304" class="ln">   304  </span>			&#34;01f5bced59dec48e362f2c45b5de68b9fd6c92c6634f44d6d40aab69056506f0e35524a518034ddc1192e1dacd32c1ed3eaa3c3b131c88ed8e7e54c49a5d0998&#34;,
+<span id="L305" class="ln">   305  </span>		},
+<span id="L306" class="ln">   306  </span>	}
+<span id="L307" class="ln">   307  </span>
+<span id="L308" class="ln">   308  </span>	for _, test := range tests {
+<span id="L309" class="ln">   309  </span>		test1Mnemonic, err := MnemonicFromString(test[0])
+<span id="L310" class="ln">   310  </span>		assert.NoError(t, err)
+<span id="L311" class="ln">   311  </span>		assert.Equal(t, hex.EncodeToString(test1Mnemonic._ToSeed(passPhrase)), test[1], &#34;failed for mnemonic: &#34;, test[0])
+<span id="L312" class="ln">   312  </span>	}
+<span id="L313" class="ln">   313  </span>}
+<span id="L314" class="ln">   314  </span>
+<span id="L315" class="ln">   315  </span>func TestToStandardED25519PrivateKey(t *testing.T) {
+<span id="L316" class="ln">   316  </span>	test1PrivateKey := &#34;f8dcc99a1ced1cc59bc2fee161c26ca6d6af657da9aa654da724441343ecd16f&#34;
+<span id="L317" class="ln">   317  </span>	test1PublicKey := &#34;2e42c9f5a5cdbde64afa65ce3dbaf013d5f9ff8d177f6ef4eb89fbe8c084ec0d&#34;
+<span id="L318" class="ln">   318  </span>	test1ChainCode := &#34;404914563637c92d688deb9d41f3f25cbe8d6659d859cc743712fcfac72d7eda&#34;
+<span id="L319" class="ln">   319  </span>	test2PrivateKey := &#34;e978a6407b74a0730f7aeb722ad64ab449b308e56006c8bff9aad070b9b66ddf&#34;
+<span id="L320" class="ln">   320  </span>	test2PublicKey := &#34;c4b33dca1f83509f17b69b2686ee46b8556143f79f4b9df7fe7ed3864c0c64d0&#34;
+<span id="L321" class="ln">   321  </span>	test2ChainCode := &#34;9c2b0073ac934696cd0b52c6c521b9bd1902aac134380a737282fdfe29014bf1&#34;
+<span id="L322" class="ln">   322  </span>	test3PrivateKey := &#34;abeca64d2337db386e289482a252334c68c7536daaefff55dc169ddb77fbae28&#34;
+<span id="L323" class="ln">   323  </span>	test3PublicKey := &#34;fd311925a7a04b38f7508931c6ae6a93e5dc4394d83dafda49b051c0017d3380&#34;
+<span id="L324" class="ln">   324  </span>	test3ChainCode := &#34;699344acc5e07c77eb63b154b4c5c3d33cab8bf85ee21bea4cc29ab7f0502259&#34;
+<span id="L325" class="ln">   325  </span>	test4PrivateKey := &#34;9a601db3e24b199912cec6573e6a3d01ffd3600d50524f998b8169c105165ae5&#34;
+<span id="L326" class="ln">   326  </span>	test4PublicKey := &#34;cf525500706faa7752dca65a086c9381d30d72cc67f23bf334f330579074a890&#34;
+<span id="L327" class="ln">   327  </span>	test4ChainCode := &#34;e5af7c95043a912af57a6e031ddcad191677c265d75c39954152a2733c750a3b&#34;
+<span id="L328" class="ln">   328  </span>
+<span id="L329" class="ln">   329  </span>	mnemonic, err := MnemonicFromString(mnemonic24WordString)
+<span id="L330" class="ln">   330  </span>	require.NoError(t, err)
+<span id="L331" class="ln">   331  </span>
+<span id="L332" class="ln">   332  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/0&#39;</span>
+<span id="L333" class="ln">   333  </span>	key1, err := mnemonic.ToStandardEd25519PrivateKey(&#34;&#34;, 0)
+<span id="L334" class="ln">   334  </span>	require.NoError(t, err)
+<span id="L335" class="ln">   335  </span>
+<span id="L336" class="ln">   336  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L337" class="ln">   337  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L338" class="ln">   338  </span>	assert.Equal(t, hex.EncodeToString(key1.ed25519PrivateKey.chainCode), test1ChainCode)
+<span id="L339" class="ln">   339  </span>
+<span id="L340" class="ln">   340  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/2147483647&#39;</span>
+<span id="L341" class="ln">   341  </span>	key2, err := mnemonic.ToStandardEd25519PrivateKey(&#34;&#34;, 2147483647)
+<span id="L342" class="ln">   342  </span>	require.NoError(t, err)
+<span id="L343" class="ln">   343  </span>
+<span id="L344" class="ln">   344  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L345" class="ln">   345  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L346" class="ln">   346  </span>	assert.Equal(t, hex.EncodeToString(key2.ed25519PrivateKey.chainCode), test2ChainCode)
+<span id="L347" class="ln">   347  </span>
+<span id="L348" class="ln">   348  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/0&#39;; Passphrase: &#34;some pass&#34;</span>
+<span id="L349" class="ln">   349  </span>	key3, err := mnemonic.ToStandardEd25519PrivateKey(passPhrase, 0)
+<span id="L350" class="ln">   350  </span>	require.NoError(t, err)
+<span id="L351" class="ln">   351  </span>
+<span id="L352" class="ln">   352  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L353" class="ln">   353  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L354" class="ln">   354  </span>	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
+<span id="L355" class="ln">   355  </span>
+<span id="L356" class="ln">   356  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/2147483647&#39;; Passphrase: &#34;some pass&#34;</span>
+<span id="L357" class="ln">   357  </span>	key4, err := mnemonic.ToStandardEd25519PrivateKey(passPhrase, 2147483647)
+<span id="L358" class="ln">   358  </span>	require.NoError(t, err)
+<span id="L359" class="ln">   359  </span>
+<span id="L360" class="ln">   360  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L361" class="ln">   361  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L362" class="ln">   362  </span>	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
+<span id="L363" class="ln">   363  </span>}
+<span id="L364" class="ln">   364  </span>
+<span id="L365" class="ln">   365  </span>func TestToStandardED25519PrivateKey2(t *testing.T) {
+<span id="L366" class="ln">   366  </span>	test1PrivateKey := &#34;020487611f3167a68482b0f4aacdeb02cc30c52e53852af7b73779f67eeca3c5&#34;
+<span id="L367" class="ln">   367  </span>	test1PublicKey := &#34;2d047ff02a2091f860633f849ea2024b23e7803cfd628c9bdd635010cbd782d3&#34;
+<span id="L368" class="ln">   368  </span>	test1ChainCode := &#34;48c89d67e9920e443f09d2b14525213ff83b245c8b98d63747ea0801e6d0ff3f&#34;
+<span id="L369" class="ln">   369  </span>	test2PrivateKey := &#34;d0c4484480944db698dd51936b7ecc81b0b87e8eafc3d5563c76339338f9611a&#34;
+<span id="L370" class="ln">   370  </span>	test2PublicKey := &#34;a1a2573c2c45bd57b0fd054865b5b3d8f492a6e1572bf04b44471e07e2f589b2&#34;
+<span id="L371" class="ln">   371  </span>	test2ChainCode := &#34;c0bcdbd9df6d8a4f214f20f3e5c7856415b68be34a1f406398c04690818bea16&#34;
+<span id="L372" class="ln">   372  </span>	test3PrivateKey := &#34;d06630d6e4c17942155819bbbe0db8306cd989ba7baf3c29985c8455fbefc37f&#34;
+<span id="L373" class="ln">   373  </span>	test3PublicKey := &#34;6bd0a51e0ca6fcc8b13cf25efd0b4814978bcaca7d1cf7dbedf538eb02969acb&#34;
+<span id="L374" class="ln">   374  </span>	test3ChainCode := &#34;998a156855ab5398afcde06164b63c5523ff2c8900db53962cc2af191df59e1c&#34;
+<span id="L375" class="ln">   375  </span>	test4PrivateKey := &#34;a095ef77ee88da28f373246e9ae143f76e5839f680746c3f921e90bf76c81b08&#34;
+<span id="L376" class="ln">   376  </span>	test4PublicKey := &#34;35be6a2a37ff6bbb142e9f4d9b558308f4f75d7c51d5632c6a084257455e1461&#34;
+<span id="L377" class="ln">   377  </span>	test4ChainCode := &#34;19d99506a5ce2dc0080092068d278fe29b85ffb8d9c26f8956bfca876307c79c&#34;
+<span id="L378" class="ln">   378  </span>
+<span id="L379" class="ln">   379  </span>	mnemonic, err := MnemonicFromString(mnemonic12WordString)
+<span id="L380" class="ln">   380  </span>	require.NoError(t, err)
+<span id="L381" class="ln">   381  </span>
+<span id="L382" class="ln">   382  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/0&#39;</span>
+<span id="L383" class="ln">   383  </span>	key1, err := mnemonic.ToStandardEd25519PrivateKey(&#34;&#34;, 0)
+<span id="L384" class="ln">   384  </span>	require.NoError(t, err)
+<span id="L385" class="ln">   385  </span>
+<span id="L386" class="ln">   386  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L387" class="ln">   387  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L388" class="ln">   388  </span>	assert.Equal(t, hex.EncodeToString(key1.ed25519PrivateKey.chainCode), test1ChainCode)
+<span id="L389" class="ln">   389  </span>
+<span id="L390" class="ln">   390  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/2147483647&#39;</span>
+<span id="L391" class="ln">   391  </span>	key2, err := mnemonic.ToStandardEd25519PrivateKey(&#34;&#34;, 2147483647)
+<span id="L392" class="ln">   392  </span>	require.NoError(t, err)
+<span id="L393" class="ln">   393  </span>
+<span id="L394" class="ln">   394  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L395" class="ln">   395  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L396" class="ln">   396  </span>	assert.Equal(t, hex.EncodeToString(key2.ed25519PrivateKey.chainCode), test2ChainCode)
+<span id="L397" class="ln">   397  </span>
+<span id="L398" class="ln">   398  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/0&#39;; Passphrase: &#34;some pass&#34;</span>
+<span id="L399" class="ln">   399  </span>	key3, err := mnemonic.ToStandardEd25519PrivateKey(passPhrase, 0)
+<span id="L400" class="ln">   400  </span>	require.NoError(t, err)
+<span id="L401" class="ln">   401  </span>
+<span id="L402" class="ln">   402  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L403" class="ln">   403  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L404" class="ln">   404  </span>	assert.Equal(t, hex.EncodeToString(key3.ed25519PrivateKey.chainCode), test3ChainCode)
+<span id="L405" class="ln">   405  </span>
+<span id="L406" class="ln">   406  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0&#39;/2147483647&#39;; Passphrase: &#34;some pass&#34;</span>
+<span id="L407" class="ln">   407  </span>	key4, err := mnemonic.ToStandardEd25519PrivateKey(passPhrase, 2147483647)
+<span id="L408" class="ln">   408  </span>	require.NoError(t, err)
+<span id="L409" class="ln">   409  </span>
+<span id="L410" class="ln">   410  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L411" class="ln">   411  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L412" class="ln">   412  </span>	assert.Equal(t, hex.EncodeToString(key4.ed25519PrivateKey.chainCode), test4ChainCode)
+<span id="L413" class="ln">   413  </span>}
+<span id="L414" class="ln">   414  </span>
+<span id="L415" class="ln">   415  </span>func TestToStandardED25519PrivateKeyShouldFailWhenIndexIsPreHardened(t *testing.T) {
+<span id="L416" class="ln">   416  </span>	mnemonic, err := MnemonicFromString(mnemonic24WordString)
+<span id="L417" class="ln">   417  </span>	require.NoError(t, err)
+<span id="L418" class="ln">   418  </span>
+<span id="L419" class="ln">   419  </span>	hardenedIndex := ToHardenedIndex(10)
+<span id="L420" class="ln">   420  </span>
+<span id="L421" class="ln">   421  </span>	_, err = mnemonic.ToStandardEd25519PrivateKey(&#34;&#34;, hardenedIndex)
+<span id="L422" class="ln">   422  </span>	assert.Error(t, err)
+<span id="L423" class="ln">   423  </span>}
+<span id="L424" class="ln">   424  </span>
+<span id="L425" class="ln">   425  </span>func TestToStandardECDSAsecp256k1PrivateKey(t *testing.T) {
+<span id="L426" class="ln">   426  </span>	test1PrivateKey := &#34;0fde7bfd57ae6ec310bdd8b95967d98e8762a2c02da6f694b152cf9860860ab8&#34;
+<span id="L427" class="ln">   427  </span>	test1PublicKey := &#34;03b1c064b4d04d52e51f6c8e8bb1bff75d62fa7b1446412d5901d424f6aedd6fd4&#34;
+<span id="L428" class="ln">   428  </span>	test1ChainCode := &#34;7717bc71194c257d4b233e16cf48c24adef630052f874a262d19aeb2b527620d&#34;
+<span id="L429" class="ln">   429  </span>	test2PrivateKey := &#34;aab7d720a32c2d1ea6123f58b074c865bb07f6c621f14cb012f66c08e64996bb&#34;
+<span id="L430" class="ln">   430  </span>	test2PublicKey := &#34;03a0ea31bb3562f8a309b1436bc4b2f537301778e8a5e12b68cec26052f567a235&#34;
+<span id="L431" class="ln">   431  </span>	test2ChainCode := &#34;e333da4bd9e21b5dbd2b0f6d88bad02f0fa24cf4b70b2fb613368d0364cdf8af&#34;
+<span id="L432" class="ln">   432  </span>	test3PrivateKey := &#34;6df5ed217cf6d5586fdf9c69d39c843eb9d152ca19d3e41f7bab483e62f6ac25&#34;
+<span id="L433" class="ln">   433  </span>	test3PublicKey := &#34;0357d69bb36fee569838fe7b325c07ca511e8c1b222873cde93fc6bb541eb7ecea&#34;
+<span id="L434" class="ln">   434  </span>	test3ChainCode := &#34;0ff552587f6baef1f0818136bacac0bb37236473f6ecb5a8c1cc68a716726ed1&#34;
+<span id="L435" class="ln">   435  </span>	test4PrivateKey := &#34;80df01f79ee1b1f4e9ab80491c592c0ef912194ccca1e58346c3d35cb5b7c098&#34;
+<span id="L436" class="ln">   436  </span>	test4PublicKey := &#34;039ebe79f85573baa065af5883d0509a5634245f7864ddead76a008c9e42aa758d&#34;
+<span id="L437" class="ln">   437  </span>	test4ChainCode := &#34;3a5048e93aad88f1c42907163ba4dce914d3aaf2eea87b4dd247ca7da7530f0b&#34;
+<span id="L438" class="ln">   438  </span>	test5PrivateKey := &#34;60cb2496a623e1201d4e0e7ce5da3833cd4ec7d6c2c06bce2bcbcbc9dfef22d6&#34;
+<span id="L439" class="ln">   439  </span>	test5PublicKey := &#34;02b59f348a6b69bd97afa80115e2d5331749b3c89c61297255430c487d6677f404&#34;
+<span id="L440" class="ln">   440  </span>	test5ChainCode := &#34;e54254940db58ef4913a377062ac6e411daebf435ad592d262d5a66d808a8b94&#34;
+<span id="L441" class="ln">   441  </span>	test6PrivateKey := &#34;100477c333028c8849250035be2a0a166a347a5074a8a727bce1db1c65181a50&#34;
+<span id="L442" class="ln">   442  </span>	test6PublicKey := &#34;03d10ebfa2d8ff2cd34aa96e5ef59ca2e69316b4c0996e6d5f54b6932fe51be560&#34;
+<span id="L443" class="ln">   443  </span>	test6ChainCode := &#34;cb23165e9d2d798c85effddc901a248a1a273fab2a56fe7976df97b016e7bb77&#34;
+<span id="L444" class="ln">   444  </span>
+<span id="L445" class="ln">   445  </span>	mnemonic, err := MnemonicFromString(mnemonic24WordString)
+<span id="L446" class="ln">   446  </span>	require.NoError(t, err)
+<span id="L447" class="ln">   447  </span>
+<span id="L448" class="ln">   448  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0</span>
+<span id="L449" class="ln">   449  </span>	key1, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(&#34;&#34;, 0)
+<span id="L450" class="ln">   450  </span>	require.NoError(t, err)
+<span id="L451" class="ln">   451  </span>
+<span id="L452" class="ln">   452  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L453" class="ln">   453  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L454" class="ln">   454  </span>	assert.Equal(t, hex.EncodeToString(key1.ecdsaPrivateKey.chainCode), test1ChainCode)
+<span id="L455" class="ln">   455  </span>
+<span id="L456" class="ln">   456  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0&#39;</span>
+<span id="L457" class="ln">   457  </span>	key2, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(&#34;&#34;, ToHardenedIndex(0))
+<span id="L458" class="ln">   458  </span>	require.NoError(t, err)
+<span id="L459" class="ln">   459  </span>
+<span id="L460" class="ln">   460  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L461" class="ln">   461  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L462" class="ln">   462  </span>	assert.Equal(t, hex.EncodeToString(key2.ecdsaPrivateKey.chainCode), test2ChainCode)
+<span id="L463" class="ln">   463  </span>
+<span id="L464" class="ln">   464  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0; Passphrase &#34;some pass&#34;</span>
+<span id="L465" class="ln">   465  </span>	key3, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, 0)
+<span id="L466" class="ln">   466  </span>	require.NoError(t, err)
+<span id="L467" class="ln">   467  </span>
+<span id="L468" class="ln">   468  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L469" class="ln">   469  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L470" class="ln">   470  </span>	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
+<span id="L471" class="ln">   471  </span>
+<span id="L472" class="ln">   472  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0&#39;; Passphrase &#34;some pass&#34;</span>
+<span id="L473" class="ln">   473  </span>	key4, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, ToHardenedIndex(0))
+<span id="L474" class="ln">   474  </span>	require.NoError(t, err)
+<span id="L475" class="ln">   475  </span>
+<span id="L476" class="ln">   476  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L477" class="ln">   477  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L478" class="ln">   478  </span>	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
+<span id="L479" class="ln">   479  </span>
+<span id="L480" class="ln">   480  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/2147483647; Passphrase &#34;some pass&#34;</span>
+<span id="L481" class="ln">   481  </span>	key5, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, 2147483647)
+<span id="L482" class="ln">   482  </span>	require.NoError(t, err)
+<span id="L483" class="ln">   483  </span>
+<span id="L484" class="ln">   484  </span>	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
+<span id="L485" class="ln">   485  </span>	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
+<span id="L486" class="ln">   486  </span>	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
+<span id="L487" class="ln">   487  </span>
+<span id="L488" class="ln">   488  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/2147483647&#39;; Passphrase &#34;some pass&#34;</span>
+<span id="L489" class="ln">   489  </span>	key6, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, ToHardenedIndex(2147483647))
+<span id="L490" class="ln">   490  </span>	require.NoError(t, err)
+<span id="L491" class="ln">   491  </span>
+<span id="L492" class="ln">   492  </span>	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
+<span id="L493" class="ln">   493  </span>	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
+<span id="L494" class="ln">   494  </span>	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
+<span id="L495" class="ln">   495  </span>}
+<span id="L496" class="ln">   496  </span>
+<span id="L497" class="ln">   497  </span>func TestToStandardECDSAsecp256k1PrivateKey2(t *testing.T) {
+<span id="L498" class="ln">   498  </span>	test1PrivateKey := &#34;f033824c20dd9949ad7a4440f67120ee02a826559ed5884077361d69b2ad51dd&#34;
+<span id="L499" class="ln">   499  </span>	test1PublicKey := &#34;0294bf84a54806989a74ca4b76291d386914610b40b610d303162b9e495bc06416&#34;
+<span id="L500" class="ln">   500  </span>	test1ChainCode := &#34;e76e0480faf2790e62dc1a7bac9dce51db1b3571fd74d8e264abc0d240a55d09&#34;
+<span id="L501" class="ln">   501  </span>	test2PrivateKey := &#34;962f549dafe2d9c8091ac918cb4fc348ab0767353f37501067897efbc84e7651&#34;
+<span id="L502" class="ln">   502  </span>	test2PublicKey := &#34;027123855357fd41d28130fbc59053192b771800d28ef47319ef277a1a032af78f&#34;
+<span id="L503" class="ln">   503  </span>	test2ChainCode := &#34;60c39c6a77bd68c0aaabfe2f4711dc9c2247214c4f4dae15ad4cb76905f5f544&#34;
+<span id="L504" class="ln">   504  </span>	test3PrivateKey := &#34;c139ebb363d7f441ccbdd7f58883809ec0cc3ee7a122ef67974eec8534de65e8&#34;
+<span id="L505" class="ln">   505  </span>	test3PublicKey := &#34;0293bdb1507a26542ed9c1ec42afe959cf8b34f39daab4bf842cdac5fa36d50ef7&#34;
+<span id="L506" class="ln">   506  </span>	test3ChainCode := &#34;911a1095b64b01f7f3a06198df3d618654e5ed65862b211997c67515e3167892&#34;
+<span id="L507" class="ln">   507  </span>	test4PrivateKey := &#34;87c1d8d4bb0cebb4e230852f2a6d16f6847881294b14eb1d6058b729604afea0&#34;
+<span id="L508" class="ln">   508  </span>	test4PublicKey := &#34;03358e7761a422ca1c577f145fe845c77563f164b2c93b5b34516a8fa13c2c0888&#34;
+<span id="L509" class="ln">   509  </span>	test4ChainCode := &#34;64173f2dcb1d65e15e787ef882fa15f54db00209e2dab16fa1661244cd98e95c&#34;
+<span id="L510" class="ln">   510  </span>	test5PrivateKey := &#34;2583170ee745191d2bb83474b1de41a1621c47f6e23db3f2bf413a1acb5709e4&#34;
+<span id="L511" class="ln">   511  </span>	test5PublicKey := &#34;03f9eb27cc73f751e8e476dd1db79037a7df2c749fa75b6cc6951031370d2f95a5&#34;
+<span id="L512" class="ln">   512  </span>	test5ChainCode := &#34;a7250c2b07b368a054f5c91e6a3dbe6ca3bbe01eb0489fe8778304bd0a19c711&#34;
+<span id="L513" class="ln">   513  </span>	test6PrivateKey := &#34;f2d008cd7349bdab19ed85b523ba218048f35ca141a3ecbc66377ad50819e961&#34;
+<span id="L514" class="ln">   514  </span>	test6PublicKey := &#34;027b653d04958d4bf83dd913a9379b4f9a1a1e64025a691830a67383bc3157c044&#34;
+<span id="L515" class="ln">   515  </span>	test6ChainCode := &#34;66a1175e7690e3714d53ffce16ee6bb4eb02065516be2c2ad6bf6c9df81ec394&#34;
+<span id="L516" class="ln">   516  </span>
+<span id="L517" class="ln">   517  </span>	mnemonic, err := MnemonicFromString(mnemonic12WordString)
+<span id="L518" class="ln">   518  </span>	require.NoError(t, err)
+<span id="L519" class="ln">   519  </span>
+<span id="L520" class="ln">   520  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0</span>
+<span id="L521" class="ln">   521  </span>	key1, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(&#34;&#34;, 0)
+<span id="L522" class="ln">   522  </span>	require.NoError(t, err)
+<span id="L523" class="ln">   523  </span>
+<span id="L524" class="ln">   524  </span>	assert.Equal(t, key1.StringRaw(), test1PrivateKey)
+<span id="L525" class="ln">   525  </span>	assert.Equal(t, key1.PublicKey().StringRaw(), test1PublicKey)
+<span id="L526" class="ln">   526  </span>	assert.Equal(t, hex.EncodeToString(key1.ecdsaPrivateKey.chainCode), test1ChainCode)
+<span id="L527" class="ln">   527  </span>
+<span id="L528" class="ln">   528  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0&#39;</span>
+<span id="L529" class="ln">   529  </span>	key2, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(&#34;&#34;, ToHardenedIndex(0))
+<span id="L530" class="ln">   530  </span>	require.NoError(t, err)
+<span id="L531" class="ln">   531  </span>
+<span id="L532" class="ln">   532  </span>	assert.Equal(t, key2.StringRaw(), test2PrivateKey)
+<span id="L533" class="ln">   533  </span>	assert.Equal(t, key2.PublicKey().StringRaw(), test2PublicKey)
+<span id="L534" class="ln">   534  </span>	assert.Equal(t, hex.EncodeToString(key2.ecdsaPrivateKey.chainCode), test2ChainCode)
+<span id="L535" class="ln">   535  </span>
+<span id="L536" class="ln">   536  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0; Passphrase &#34;some pass&#34;</span>
+<span id="L537" class="ln">   537  </span>	key3, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, 0)
+<span id="L538" class="ln">   538  </span>	require.NoError(t, err)
+<span id="L539" class="ln">   539  </span>
+<span id="L540" class="ln">   540  </span>	assert.Equal(t, key3.StringRaw(), test3PrivateKey)
+<span id="L541" class="ln">   541  </span>	assert.Equal(t, key3.PublicKey().StringRaw(), test3PublicKey)
+<span id="L542" class="ln">   542  </span>	assert.Equal(t, hex.EncodeToString(key3.ecdsaPrivateKey.chainCode), test3ChainCode)
+<span id="L543" class="ln">   543  </span>
+<span id="L544" class="ln">   544  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/0&#39;; Passphrase &#34;some pass&#34;</span>
+<span id="L545" class="ln">   545  </span>	key4, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, ToHardenedIndex(0))
+<span id="L546" class="ln">   546  </span>	require.NoError(t, err)
+<span id="L547" class="ln">   547  </span>
+<span id="L548" class="ln">   548  </span>	assert.Equal(t, key4.StringRaw(), test4PrivateKey)
+<span id="L549" class="ln">   549  </span>	assert.Equal(t, key4.PublicKey().StringRaw(), test4PublicKey)
+<span id="L550" class="ln">   550  </span>	assert.Equal(t, hex.EncodeToString(key4.ecdsaPrivateKey.chainCode), test4ChainCode)
+<span id="L551" class="ln">   551  </span>
+<span id="L552" class="ln">   552  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/2147483647; Passphrase &#34;some pass&#34;</span>
+<span id="L553" class="ln">   553  </span>	key5, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, 2147483647)
+<span id="L554" class="ln">   554  </span>	require.NoError(t, err)
+<span id="L555" class="ln">   555  </span>
+<span id="L556" class="ln">   556  </span>	assert.Equal(t, key5.StringRaw(), test5PrivateKey)
+<span id="L557" class="ln">   557  </span>	assert.Equal(t, key5.PublicKey().StringRaw(), test5PublicKey)
+<span id="L558" class="ln">   558  </span>	assert.Equal(t, hex.EncodeToString(key5.ecdsaPrivateKey.chainCode), test5ChainCode)
+<span id="L559" class="ln">   559  </span>
+<span id="L560" class="ln">   560  </span>	<span class="comment">// Chain m/44&#39;/3030&#39;/0&#39;/0/2147483647&#39;; Passphrase &#34;some pass&#34;</span>
+<span id="L561" class="ln">   561  </span>	key6, err := mnemonic.ToStandardECDSAsecp256k1PrivateKey(passPhrase, ToHardenedIndex(2147483647))
+<span id="L562" class="ln">   562  </span>	require.NoError(t, err)
+<span id="L563" class="ln">   563  </span>
+<span id="L564" class="ln">   564  </span>	assert.Equal(t, key6.StringRaw(), test6PrivateKey)
+<span id="L565" class="ln">   565  </span>	assert.Equal(t, key6.PublicKey().StringRaw(), test6PublicKey)
+<span id="L566" class="ln">   566  </span>	assert.Equal(t, hex.EncodeToString(key6.ecdsaPrivateKey.chainCode), test6ChainCode)
+<span id="L567" class="ln">   567  </span>}
+<span id="L568" class="ln">   568  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

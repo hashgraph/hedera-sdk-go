@@ -1,0 +1,656 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/topic_update_transaction.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">topic_update_transaction.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package hedera
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span><span class="comment">/*-
+<span id="L4" class="ln">     4  </span> *
+<span id="L5" class="ln">     5  </span> * Hedera Go SDK
+<span id="L6" class="ln">     6  </span> *
+<span id="L7" class="ln">     7  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L8" class="ln">     8  </span> *
+<span id="L9" class="ln">     9  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L10" class="ln">    10  </span> * you may not use this file except in compliance with the License.
+<span id="L11" class="ln">    11  </span> * You may obtain a copy of the License at
+<span id="L12" class="ln">    12  </span> *
+<span id="L13" class="ln">    13  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L14" class="ln">    14  </span> *
+<span id="L15" class="ln">    15  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L16" class="ln">    16  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L17" class="ln">    17  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L18" class="ln">    18  </span> * See the License for the specific language governing permissions and
+<span id="L19" class="ln">    19  </span> * limitations under the License.
+<span id="L20" class="ln">    20  </span> *
+<span id="L21" class="ln">    21  </span> */</span>
+<span id="L22" class="ln">    22  </span>
+<span id="L23" class="ln">    23  </span>import (
+<span id="L24" class="ln">    24  </span>	&#34;fmt&#34;
+<span id="L25" class="ln">    25  </span>	&#34;time&#34;
+<span id="L26" class="ln">    26  </span>
+<span id="L27" class="ln">    27  </span>	&#34;google.golang.org/protobuf/types/known/wrapperspb&#34;
+<span id="L28" class="ln">    28  </span>
+<span id="L29" class="ln">    29  </span>	&#34;github.com/hashgraph/hedera-protobufs-go/services&#34;
+<span id="L30" class="ln">    30  </span>)
+<span id="L31" class="ln">    31  </span>
+<span id="L32" class="ln">    32  </span><span class="comment">// TopicUpdateTransaction</span>
+<span id="L33" class="ln">    33  </span><span class="comment">// Updates all fields on a Topic that are set in the transaction.</span>
+<span id="L34" class="ln">    34  </span>type TopicUpdateTransaction struct {
+<span id="L35" class="ln">    35  </span>	Transaction
+<span id="L36" class="ln">    36  </span>	topicID            *TopicID
+<span id="L37" class="ln">    37  </span>	autoRenewAccountID *AccountID
+<span id="L38" class="ln">    38  </span>	adminKey           Key
+<span id="L39" class="ln">    39  </span>	submitKey          Key
+<span id="L40" class="ln">    40  </span>	memo               string
+<span id="L41" class="ln">    41  </span>	autoRenewPeriod    *time.Duration
+<span id="L42" class="ln">    42  </span>	expirationTime     *time.Time
+<span id="L43" class="ln">    43  </span>}
+<span id="L44" class="ln">    44  </span>
+<span id="L45" class="ln">    45  </span><span class="comment">// NewTopicUpdateTransaction creates a TopicUpdateTransaction transaction which</span>
+<span id="L46" class="ln">    46  </span><span class="comment">// updates all fields on a Topic that are set in the transaction.</span>
+<span id="L47" class="ln">    47  </span>func NewTopicUpdateTransaction() *TopicUpdateTransaction {
+<span id="L48" class="ln">    48  </span>	transaction := TopicUpdateTransaction{
+<span id="L49" class="ln">    49  </span>		Transaction: _NewTransaction(),
+<span id="L50" class="ln">    50  </span>	}
+<span id="L51" class="ln">    51  </span>
+<span id="L52" class="ln">    52  </span>	transaction.SetAutoRenewPeriod(7890000 * time.Second)
+<span id="L53" class="ln">    53  </span>	transaction._SetDefaultMaxTransactionFee(NewHbar(2))
+<span id="L54" class="ln">    54  </span>
+<span id="L55" class="ln">    55  </span>	return &amp;transaction
+<span id="L56" class="ln">    56  </span>}
+<span id="L57" class="ln">    57  </span>
+<span id="L58" class="ln">    58  </span>func _TopicUpdateTransactionFromProtobuf(transaction Transaction, pb *services.TransactionBody) *TopicUpdateTransaction {
+<span id="L59" class="ln">    59  </span>	adminKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetAdminKey())
+<span id="L60" class="ln">    60  </span>	submitKey, _ := _KeyFromProtobuf(pb.GetConsensusUpdateTopic().GetSubmitKey())
+<span id="L61" class="ln">    61  </span>
+<span id="L62" class="ln">    62  </span>	expirationTime := _TimeFromProtobuf(pb.GetConsensusUpdateTopic().GetExpirationTime())
+<span id="L63" class="ln">    63  </span>	autoRenew := _DurationFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewPeriod())
+<span id="L64" class="ln">    64  </span>	return &amp;TopicUpdateTransaction{
+<span id="L65" class="ln">    65  </span>		Transaction:        transaction,
+<span id="L66" class="ln">    66  </span>		topicID:            _TopicIDFromProtobuf(pb.GetConsensusUpdateTopic().GetTopicID()),
+<span id="L67" class="ln">    67  </span>		autoRenewAccountID: _AccountIDFromProtobuf(pb.GetConsensusUpdateTopic().GetAutoRenewAccount()),
+<span id="L68" class="ln">    68  </span>		adminKey:           adminKey,
+<span id="L69" class="ln">    69  </span>		submitKey:          submitKey,
+<span id="L70" class="ln">    70  </span>		memo:               pb.GetConsensusUpdateTopic().GetMemo().Value,
+<span id="L71" class="ln">    71  </span>		autoRenewPeriod:    &amp;autoRenew,
+<span id="L72" class="ln">    72  </span>		expirationTime:     &amp;expirationTime,
+<span id="L73" class="ln">    73  </span>	}
+<span id="L74" class="ln">    74  </span>}
+<span id="L75" class="ln">    75  </span>
+<span id="L76" class="ln">    76  </span>func (transaction *TopicUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicUpdateTransaction {
+<span id="L77" class="ln">    77  </span>	transaction.Transaction.SetGrpcDeadline(deadline)
+<span id="L78" class="ln">    78  </span>	return transaction
+<span id="L79" class="ln">    79  </span>}
+<span id="L80" class="ln">    80  </span>
+<span id="L81" class="ln">    81  </span><span class="comment">// SetTopicID sets the topic to be updated.</span>
+<span id="L82" class="ln">    82  </span>func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpdateTransaction {
+<span id="L83" class="ln">    83  </span>	transaction._RequireNotFrozen()
+<span id="L84" class="ln">    84  </span>	transaction.topicID = &amp;topicID
+<span id="L85" class="ln">    85  </span>	return transaction
+<span id="L86" class="ln">    86  </span>}
+<span id="L87" class="ln">    87  </span>
+<span id="L88" class="ln">    88  </span>func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
+<span id="L89" class="ln">    89  </span>	if transaction.topicID == nil {
+<span id="L90" class="ln">    90  </span>		return TopicID{}
+<span id="L91" class="ln">    91  </span>	}
+<span id="L92" class="ln">    92  </span>
+<span id="L93" class="ln">    93  </span>	return *transaction.topicID
+<span id="L94" class="ln">    94  </span>}
+<span id="L95" class="ln">    95  </span>
+<span id="L96" class="ln">    96  </span><span class="comment">// SetAdminKey sets the key required to update/delete the topic. If unset, the key will not be changed.</span>
+<span id="L97" class="ln">    97  </span><span class="comment">//</span>
+<span id="L98" class="ln">    98  </span><span class="comment">// Setting the AdminKey to an empty KeyList will clear the adminKey.</span>
+<span id="L99" class="ln">    99  </span>func (transaction *TopicUpdateTransaction) SetAdminKey(publicKey Key) *TopicUpdateTransaction {
+<span id="L100" class="ln">   100  </span>	transaction._RequireNotFrozen()
+<span id="L101" class="ln">   101  </span>	transaction.adminKey = publicKey
+<span id="L102" class="ln">   102  </span>	return transaction
+<span id="L103" class="ln">   103  </span>}
+<span id="L104" class="ln">   104  </span>
+<span id="L105" class="ln">   105  </span>func (transaction *TopicUpdateTransaction) GetAdminKey() (Key, error) {
+<span id="L106" class="ln">   106  </span>	return transaction.adminKey, nil
+<span id="L107" class="ln">   107  </span>}
+<span id="L108" class="ln">   108  </span>
+<span id="L109" class="ln">   109  </span><span class="comment">// SetSubmitKey will set the key allowed to submit messages to the topic.  If unset, the key will not be changed.</span>
+<span id="L110" class="ln">   110  </span><span class="comment">//</span>
+<span id="L111" class="ln">   111  </span><span class="comment">// Setting the submitKey to an empty KeyList will clear the submitKey.</span>
+<span id="L112" class="ln">   112  </span>func (transaction *TopicUpdateTransaction) SetSubmitKey(publicKey Key) *TopicUpdateTransaction {
+<span id="L113" class="ln">   113  </span>	transaction._RequireNotFrozen()
+<span id="L114" class="ln">   114  </span>	transaction.submitKey = publicKey
+<span id="L115" class="ln">   115  </span>	return transaction
+<span id="L116" class="ln">   116  </span>}
+<span id="L117" class="ln">   117  </span>
+<span id="L118" class="ln">   118  </span>func (transaction *TopicUpdateTransaction) GetSubmitKey() (Key, error) {
+<span id="L119" class="ln">   119  </span>	return transaction.submitKey, nil
+<span id="L120" class="ln">   120  </span>}
+<span id="L121" class="ln">   121  </span>
+<span id="L122" class="ln">   122  </span><span class="comment">// SetTopicMemo sets a short publicly visible memo about the topic. No guarantee of uniqueness.</span>
+<span id="L123" class="ln">   123  </span>func (transaction *TopicUpdateTransaction) SetTopicMemo(memo string) *TopicUpdateTransaction {
+<span id="L124" class="ln">   124  </span>	transaction._RequireNotFrozen()
+<span id="L125" class="ln">   125  </span>	transaction.memo = memo
+<span id="L126" class="ln">   126  </span>	return transaction
+<span id="L127" class="ln">   127  </span>}
+<span id="L128" class="ln">   128  </span>
+<span id="L129" class="ln">   129  </span>func (transaction *TopicUpdateTransaction) GetTopicMemo() string {
+<span id="L130" class="ln">   130  </span>	return transaction.memo
+<span id="L131" class="ln">   131  </span>}
+<span id="L132" class="ln">   132  </span>
+<span id="L133" class="ln">   133  </span><span class="comment">// SetExpirationTime sets the effective  timestamp at (and after) which all  transactions and queries</span>
+<span id="L134" class="ln">   134  </span><span class="comment">// will fail. The expirationTime may be no longer than 90 days from the  timestamp of this transaction.</span>
+<span id="L135" class="ln">   135  </span>func (transaction *TopicUpdateTransaction) SetExpirationTime(expiration time.Time) *TopicUpdateTransaction {
+<span id="L136" class="ln">   136  </span>	transaction._RequireNotFrozen()
+<span id="L137" class="ln">   137  </span>	transaction.expirationTime = &amp;expiration
+<span id="L138" class="ln">   138  </span>	return transaction
+<span id="L139" class="ln">   139  </span>}
+<span id="L140" class="ln">   140  </span>
+<span id="L141" class="ln">   141  </span>func (transaction *TopicUpdateTransaction) GetExpirationTime() time.Time {
+<span id="L142" class="ln">   142  </span>	if transaction.expirationTime != nil {
+<span id="L143" class="ln">   143  </span>		return *transaction.expirationTime
+<span id="L144" class="ln">   144  </span>	}
+<span id="L145" class="ln">   145  </span>
+<span id="L146" class="ln">   146  </span>	return time.Time{}
+<span id="L147" class="ln">   147  </span>}
+<span id="L148" class="ln">   148  </span>
+<span id="L149" class="ln">   149  </span><span class="comment">// SetAutoRenewPeriod sets the amount of time to extend the topic&#39;s lifetime automatically at expirationTime if the</span>
+<span id="L150" class="ln">   150  </span><span class="comment">// autoRenewAccount is configured and has funds. This is limited to a maximum of 90 days (server-sIDe configuration</span>
+<span id="L151" class="ln">   151  </span><span class="comment">// which may change).</span>
+<span id="L152" class="ln">   152  </span>func (transaction *TopicUpdateTransaction) SetAutoRenewPeriod(period time.Duration) *TopicUpdateTransaction {
+<span id="L153" class="ln">   153  </span>	transaction._RequireNotFrozen()
+<span id="L154" class="ln">   154  </span>	transaction.autoRenewPeriod = &amp;period
+<span id="L155" class="ln">   155  </span>	return transaction
+<span id="L156" class="ln">   156  </span>}
+<span id="L157" class="ln">   157  </span>
+<span id="L158" class="ln">   158  </span>func (transaction *TopicUpdateTransaction) GetAutoRenewPeriod() time.Duration {
+<span id="L159" class="ln">   159  </span>	if transaction.autoRenewPeriod != nil {
+<span id="L160" class="ln">   160  </span>		return *transaction.autoRenewPeriod
+<span id="L161" class="ln">   161  </span>	}
+<span id="L162" class="ln">   162  </span>
+<span id="L163" class="ln">   163  </span>	return time.Duration(0)
+<span id="L164" class="ln">   164  </span>}
+<span id="L165" class="ln">   165  </span>
+<span id="L166" class="ln">   166  </span><span class="comment">// SetAutoRenewAccountID sets the optional account to be used at the topic&#39;s expirationTime to extend the life of the</span>
+<span id="L167" class="ln">   167  </span><span class="comment">// topic. The topic lifetime will be extended up to a maximum of the autoRenewPeriod or however long the topic can be</span>
+<span id="L168" class="ln">   168  </span><span class="comment">// extended using all funds on the account (whichever is the smaller duration/amount). If specified as the default value</span>
+<span id="L169" class="ln">   169  </span><span class="comment">// (0.0.0), the autoRenewAccount will be removed.</span>
+<span id="L170" class="ln">   170  </span>func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(autoRenewAccountID AccountID) *TopicUpdateTransaction {
+<span id="L171" class="ln">   171  </span>	transaction._RequireNotFrozen()
+<span id="L172" class="ln">   172  </span>	transaction.autoRenewAccountID = &amp;autoRenewAccountID
+<span id="L173" class="ln">   173  </span>	return transaction
+<span id="L174" class="ln">   174  </span>}
+<span id="L175" class="ln">   175  </span>
+<span id="L176" class="ln">   176  </span>func (transaction *TopicUpdateTransaction) GetAutoRenewAccountID() AccountID {
+<span id="L177" class="ln">   177  </span>	if transaction.autoRenewAccountID == nil {
+<span id="L178" class="ln">   178  </span>		return AccountID{}
+<span id="L179" class="ln">   179  </span>	}
+<span id="L180" class="ln">   180  </span>
+<span id="L181" class="ln">   181  </span>	return *transaction.autoRenewAccountID
+<span id="L182" class="ln">   182  </span>}
+<span id="L183" class="ln">   183  </span>
+<span id="L184" class="ln">   184  </span><span class="comment">// ClearTopicMemo explicitly clears any memo on the topic by sending an empty string as the memo</span>
+<span id="L185" class="ln">   185  </span>func (transaction *TopicUpdateTransaction) ClearTopicMemo() *TopicUpdateTransaction {
+<span id="L186" class="ln">   186  </span>	return transaction.SetTopicMemo(&#34;&#34;)
+<span id="L187" class="ln">   187  </span>}
+<span id="L188" class="ln">   188  </span>
+<span id="L189" class="ln">   189  </span><span class="comment">// ClearAdminKey explicitly clears any admin key on the topic by sending an empty key list as the key</span>
+<span id="L190" class="ln">   190  </span>func (transaction *TopicUpdateTransaction) ClearAdminKey() *TopicUpdateTransaction {
+<span id="L191" class="ln">   191  </span>	return transaction.SetAdminKey(PublicKey{nil, nil})
+<span id="L192" class="ln">   192  </span>}
+<span id="L193" class="ln">   193  </span>
+<span id="L194" class="ln">   194  </span><span class="comment">// ClearSubmitKey explicitly clears any submit key on the topic by sending an empty key list as the key</span>
+<span id="L195" class="ln">   195  </span>func (transaction *TopicUpdateTransaction) ClearSubmitKey() *TopicUpdateTransaction {
+<span id="L196" class="ln">   196  </span>	return transaction.SetSubmitKey(PublicKey{nil, nil})
+<span id="L197" class="ln">   197  </span>}
+<span id="L198" class="ln">   198  </span>
+<span id="L199" class="ln">   199  </span><span class="comment">// ClearAutoRenewAccountID explicitly clears any auto renew account ID on the topic by sending an empty accountID</span>
+<span id="L200" class="ln">   200  </span>func (transaction *TopicUpdateTransaction) ClearAutoRenewAccountID() *TopicUpdateTransaction {
+<span id="L201" class="ln">   201  </span>	transaction.autoRenewAccountID = &amp;AccountID{}
+<span id="L202" class="ln">   202  </span>	return transaction
+<span id="L203" class="ln">   203  </span>}
+<span id="L204" class="ln">   204  </span>
+<span id="L205" class="ln">   205  </span>func (transaction *TopicUpdateTransaction) _ValidateNetworkOnIDs(client *Client) error {
+<span id="L206" class="ln">   206  </span>	if client == nil || !client.autoValidateChecksums {
+<span id="L207" class="ln">   207  </span>		return nil
+<span id="L208" class="ln">   208  </span>	}
+<span id="L209" class="ln">   209  </span>
+<span id="L210" class="ln">   210  </span>	if transaction.topicID != nil {
+<span id="L211" class="ln">   211  </span>		if err := transaction.topicID.ValidateChecksum(client); err != nil {
+<span id="L212" class="ln">   212  </span>			return err
+<span id="L213" class="ln">   213  </span>		}
+<span id="L214" class="ln">   214  </span>	}
+<span id="L215" class="ln">   215  </span>
+<span id="L216" class="ln">   216  </span>	if transaction.autoRenewAccountID != nil {
+<span id="L217" class="ln">   217  </span>		if err := transaction.autoRenewAccountID.ValidateChecksum(client); err != nil {
+<span id="L218" class="ln">   218  </span>			return err
+<span id="L219" class="ln">   219  </span>		}
+<span id="L220" class="ln">   220  </span>	}
+<span id="L221" class="ln">   221  </span>
+<span id="L222" class="ln">   222  </span>	return nil
+<span id="L223" class="ln">   223  </span>}
+<span id="L224" class="ln">   224  </span>
+<span id="L225" class="ln">   225  </span>func (transaction *TopicUpdateTransaction) _Build() *services.TransactionBody {
+<span id="L226" class="ln">   226  </span>	body := &amp;services.ConsensusUpdateTopicTransactionBody{
+<span id="L227" class="ln">   227  </span>		Memo: &amp;wrapperspb.StringValue{Value: transaction.memo},
+<span id="L228" class="ln">   228  </span>	}
+<span id="L229" class="ln">   229  </span>
+<span id="L230" class="ln">   230  </span>	if transaction.topicID != nil {
+<span id="L231" class="ln">   231  </span>		body.TopicID = transaction.topicID._ToProtobuf()
+<span id="L232" class="ln">   232  </span>	}
+<span id="L233" class="ln">   233  </span>
+<span id="L234" class="ln">   234  </span>	if transaction.autoRenewAccountID != nil {
+<span id="L235" class="ln">   235  </span>		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
+<span id="L236" class="ln">   236  </span>	}
+<span id="L237" class="ln">   237  </span>
+<span id="L238" class="ln">   238  </span>	if transaction.autoRenewPeriod != nil {
+<span id="L239" class="ln">   239  </span>		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+<span id="L240" class="ln">   240  </span>	}
+<span id="L241" class="ln">   241  </span>
+<span id="L242" class="ln">   242  </span>	if transaction.expirationTime != nil {
+<span id="L243" class="ln">   243  </span>		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
+<span id="L244" class="ln">   244  </span>	}
+<span id="L245" class="ln">   245  </span>
+<span id="L246" class="ln">   246  </span>	if transaction.adminKey != nil {
+<span id="L247" class="ln">   247  </span>		body.AdminKey = transaction.adminKey._ToProtoKey()
+<span id="L248" class="ln">   248  </span>	}
+<span id="L249" class="ln">   249  </span>
+<span id="L250" class="ln">   250  </span>	if transaction.submitKey != nil {
+<span id="L251" class="ln">   251  </span>		body.SubmitKey = transaction.submitKey._ToProtoKey()
+<span id="L252" class="ln">   252  </span>	}
+<span id="L253" class="ln">   253  </span>
+<span id="L254" class="ln">   254  </span>	return &amp;services.TransactionBody{
+<span id="L255" class="ln">   255  </span>		TransactionFee:           transaction.transactionFee,
+<span id="L256" class="ln">   256  </span>		Memo:                     transaction.Transaction.memo,
+<span id="L257" class="ln">   257  </span>		TransactionValidDuration: _DurationToProtobuf(transaction.GetTransactionValidDuration()),
+<span id="L258" class="ln">   258  </span>		TransactionID:            transaction.transactionID._ToProtobuf(),
+<span id="L259" class="ln">   259  </span>		Data: &amp;services.TransactionBody_ConsensusUpdateTopic{
+<span id="L260" class="ln">   260  </span>			ConsensusUpdateTopic: body,
+<span id="L261" class="ln">   261  </span>		},
+<span id="L262" class="ln">   262  </span>	}
+<span id="L263" class="ln">   263  </span>}
+<span id="L264" class="ln">   264  </span>
+<span id="L265" class="ln">   265  </span>func (transaction *TopicUpdateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
+<span id="L266" class="ln">   266  </span>	transaction._RequireNotFrozen()
+<span id="L267" class="ln">   267  </span>
+<span id="L268" class="ln">   268  </span>	scheduled, err := transaction._ConstructScheduleProtobuf()
+<span id="L269" class="ln">   269  </span>	if err != nil {
+<span id="L270" class="ln">   270  </span>		return nil, err
+<span id="L271" class="ln">   271  </span>	}
+<span id="L272" class="ln">   272  </span>
+<span id="L273" class="ln">   273  </span>	return NewScheduleCreateTransaction()._SetSchedulableTransactionBody(scheduled), nil
+<span id="L274" class="ln">   274  </span>}
+<span id="L275" class="ln">   275  </span>
+<span id="L276" class="ln">   276  </span>func (transaction *TopicUpdateTransaction) _ConstructScheduleProtobuf() (*services.SchedulableTransactionBody, error) {
+<span id="L277" class="ln">   277  </span>	body := &amp;services.ConsensusUpdateTopicTransactionBody{
+<span id="L278" class="ln">   278  </span>		Memo: &amp;wrapperspb.StringValue{Value: transaction.memo},
+<span id="L279" class="ln">   279  </span>	}
+<span id="L280" class="ln">   280  </span>
+<span id="L281" class="ln">   281  </span>	if transaction.topicID != nil {
+<span id="L282" class="ln">   282  </span>		body.TopicID = transaction.topicID._ToProtobuf()
+<span id="L283" class="ln">   283  </span>	}
+<span id="L284" class="ln">   284  </span>
+<span id="L285" class="ln">   285  </span>	if transaction.autoRenewAccountID != nil {
+<span id="L286" class="ln">   286  </span>		body.AutoRenewAccount = transaction.autoRenewAccountID._ToProtobuf()
+<span id="L287" class="ln">   287  </span>	}
+<span id="L288" class="ln">   288  </span>
+<span id="L289" class="ln">   289  </span>	if transaction.autoRenewPeriod != nil {
+<span id="L290" class="ln">   290  </span>		body.AutoRenewPeriod = _DurationToProtobuf(*transaction.autoRenewPeriod)
+<span id="L291" class="ln">   291  </span>	}
+<span id="L292" class="ln">   292  </span>
+<span id="L293" class="ln">   293  </span>	if transaction.expirationTime != nil {
+<span id="L294" class="ln">   294  </span>		body.ExpirationTime = _TimeToProtobuf(*transaction.expirationTime)
+<span id="L295" class="ln">   295  </span>	}
+<span id="L296" class="ln">   296  </span>
+<span id="L297" class="ln">   297  </span>	if transaction.adminKey != nil {
+<span id="L298" class="ln">   298  </span>		body.AdminKey = transaction.adminKey._ToProtoKey()
+<span id="L299" class="ln">   299  </span>	}
+<span id="L300" class="ln">   300  </span>
+<span id="L301" class="ln">   301  </span>	if transaction.submitKey != nil {
+<span id="L302" class="ln">   302  </span>		body.SubmitKey = transaction.submitKey._ToProtoKey()
+<span id="L303" class="ln">   303  </span>	}
+<span id="L304" class="ln">   304  </span>
+<span id="L305" class="ln">   305  </span>	return &amp;services.SchedulableTransactionBody{
+<span id="L306" class="ln">   306  </span>		TransactionFee: transaction.transactionFee,
+<span id="L307" class="ln">   307  </span>		Memo:           transaction.Transaction.memo,
+<span id="L308" class="ln">   308  </span>		Data: &amp;services.SchedulableTransactionBody_ConsensusUpdateTopic{
+<span id="L309" class="ln">   309  </span>			ConsensusUpdateTopic: body,
+<span id="L310" class="ln">   310  </span>		},
+<span id="L311" class="ln">   311  </span>	}, nil
+<span id="L312" class="ln">   312  </span>}
+<span id="L313" class="ln">   313  </span>
+<span id="L314" class="ln">   314  </span>func _TopicUpdateTransactionGetMethod(request interface{}, channel *_Channel) _Method {
+<span id="L315" class="ln">   315  </span>	return _Method{
+<span id="L316" class="ln">   316  </span>		transaction: channel._GetTopic().UpdateTopic,
+<span id="L317" class="ln">   317  </span>	}
+<span id="L318" class="ln">   318  </span>}
+<span id="L319" class="ln">   319  </span>
+<span id="L320" class="ln">   320  </span>func (transaction *TopicUpdateTransaction) IsFrozen() bool {
+<span id="L321" class="ln">   321  </span>	return transaction._IsFrozen()
+<span id="L322" class="ln">   322  </span>}
+<span id="L323" class="ln">   323  </span>
+<span id="L324" class="ln">   324  </span><span class="comment">// Sign uses the provided privateKey to sign the transaction.</span>
+<span id="L325" class="ln">   325  </span>func (transaction *TopicUpdateTransaction) Sign(
+<span id="L326" class="ln">   326  </span>	privateKey PrivateKey,
+<span id="L327" class="ln">   327  </span>) *TopicUpdateTransaction {
+<span id="L328" class="ln">   328  </span>	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
+<span id="L329" class="ln">   329  </span>}
+<span id="L330" class="ln">   330  </span>
+<span id="L331" class="ln">   331  </span>func (transaction *TopicUpdateTransaction) SignWithOperator(
+<span id="L332" class="ln">   332  </span>	client *Client,
+<span id="L333" class="ln">   333  </span>) (*TopicUpdateTransaction, error) {
+<span id="L334" class="ln">   334  </span>	<span class="comment">// If the transaction is not signed by the _Operator, we need</span>
+<span id="L335" class="ln">   335  </span>	<span class="comment">// to sign the transaction with the _Operator</span>
+<span id="L336" class="ln">   336  </span>
+<span id="L337" class="ln">   337  </span>	if client == nil {
+<span id="L338" class="ln">   338  </span>		return nil, errNoClientProvided
+<span id="L339" class="ln">   339  </span>	} else if client.operator == nil {
+<span id="L340" class="ln">   340  </span>		return nil, errClientOperatorSigning
+<span id="L341" class="ln">   341  </span>	}
+<span id="L342" class="ln">   342  </span>
+<span id="L343" class="ln">   343  </span>	if !transaction.IsFrozen() {
+<span id="L344" class="ln">   344  </span>		_, err := transaction.FreezeWith(client)
+<span id="L345" class="ln">   345  </span>		if err != nil {
+<span id="L346" class="ln">   346  </span>			return transaction, err
+<span id="L347" class="ln">   347  </span>		}
+<span id="L348" class="ln">   348  </span>	}
+<span id="L349" class="ln">   349  </span>	return transaction.SignWith(client.operator.publicKey, client.operator.signer), nil
+<span id="L350" class="ln">   350  </span>}
+<span id="L351" class="ln">   351  </span>
+<span id="L352" class="ln">   352  </span><span class="comment">// SignWith executes the TransactionSigner and adds the resulting signature data to the Transaction&#39;s signature map</span>
+<span id="L353" class="ln">   353  </span><span class="comment">// with the publicKey as the map key.</span>
+<span id="L354" class="ln">   354  </span>func (transaction *TopicUpdateTransaction) SignWith(
+<span id="L355" class="ln">   355  </span>	publicKey PublicKey,
+<span id="L356" class="ln">   356  </span>	signer TransactionSigner,
+<span id="L357" class="ln">   357  </span>) *TopicUpdateTransaction {
+<span id="L358" class="ln">   358  </span>	if !transaction._KeyAlreadySigned(publicKey) {
+<span id="L359" class="ln">   359  </span>		transaction._SignWith(publicKey, signer)
+<span id="L360" class="ln">   360  </span>	}
+<span id="L361" class="ln">   361  </span>
+<span id="L362" class="ln">   362  </span>	return transaction
+<span id="L363" class="ln">   363  </span>}
+<span id="L364" class="ln">   364  </span>
+<span id="L365" class="ln">   365  </span><span class="comment">// Execute executes the Transaction with the provided client</span>
+<span id="L366" class="ln">   366  </span>func (transaction *TopicUpdateTransaction) Execute(
+<span id="L367" class="ln">   367  </span>	client *Client,
+<span id="L368" class="ln">   368  </span>) (TransactionResponse, error) {
+<span id="L369" class="ln">   369  </span>	if client == nil {
+<span id="L370" class="ln">   370  </span>		return TransactionResponse{}, errNoClientProvided
+<span id="L371" class="ln">   371  </span>	}
+<span id="L372" class="ln">   372  </span>
+<span id="L373" class="ln">   373  </span>	if transaction.freezeError != nil {
+<span id="L374" class="ln">   374  </span>		return TransactionResponse{}, transaction.freezeError
+<span id="L375" class="ln">   375  </span>	}
+<span id="L376" class="ln">   376  </span>
+<span id="L377" class="ln">   377  </span>	if !transaction.IsFrozen() {
+<span id="L378" class="ln">   378  </span>		_, err := transaction.FreezeWith(client)
+<span id="L379" class="ln">   379  </span>		if err != nil {
+<span id="L380" class="ln">   380  </span>			return TransactionResponse{}, err
+<span id="L381" class="ln">   381  </span>		}
+<span id="L382" class="ln">   382  </span>	}
+<span id="L383" class="ln">   383  </span>
+<span id="L384" class="ln">   384  </span>	transactionID := transaction.transactionIDs._GetCurrent().(TransactionID)
+<span id="L385" class="ln">   385  </span>
+<span id="L386" class="ln">   386  </span>	if !client.GetOperatorAccountID()._IsZero() &amp;&amp; client.GetOperatorAccountID()._Equals(*transactionID.AccountID) {
+<span id="L387" class="ln">   387  </span>		transaction.SignWith(
+<span id="L388" class="ln">   388  </span>			client.GetOperatorPublicKey(),
+<span id="L389" class="ln">   389  </span>			client.operator.signer,
+<span id="L390" class="ln">   390  </span>		)
+<span id="L391" class="ln">   391  </span>	}
+<span id="L392" class="ln">   392  </span>
+<span id="L393" class="ln">   393  </span>	resp, err := _Execute(
+<span id="L394" class="ln">   394  </span>		client,
+<span id="L395" class="ln">   395  </span>		&amp;transaction.Transaction,
+<span id="L396" class="ln">   396  </span>		_TransactionShouldRetry,
+<span id="L397" class="ln">   397  </span>		_TransactionMakeRequest,
+<span id="L398" class="ln">   398  </span>		_TransactionAdvanceRequest,
+<span id="L399" class="ln">   399  </span>		_TransactionGetNodeAccountID,
+<span id="L400" class="ln">   400  </span>		_TopicUpdateTransactionGetMethod,
+<span id="L401" class="ln">   401  </span>		_TransactionMapStatusError,
+<span id="L402" class="ln">   402  </span>		_TransactionMapResponse,
+<span id="L403" class="ln">   403  </span>		transaction._GetLogID(),
+<span id="L404" class="ln">   404  </span>		transaction.grpcDeadline,
+<span id="L405" class="ln">   405  </span>		transaction.maxBackoff,
+<span id="L406" class="ln">   406  </span>		transaction.minBackoff,
+<span id="L407" class="ln">   407  </span>		transaction.maxRetry,
+<span id="L408" class="ln">   408  </span>	)
+<span id="L409" class="ln">   409  </span>
+<span id="L410" class="ln">   410  </span>	if err != nil {
+<span id="L411" class="ln">   411  </span>		return TransactionResponse{
+<span id="L412" class="ln">   412  </span>			TransactionID:  transaction.GetTransactionID(),
+<span id="L413" class="ln">   413  </span>			NodeID:         resp.(TransactionResponse).NodeID,
+<span id="L414" class="ln">   414  </span>			ValidateStatus: true,
+<span id="L415" class="ln">   415  </span>		}, err
+<span id="L416" class="ln">   416  </span>	}
+<span id="L417" class="ln">   417  </span>
+<span id="L418" class="ln">   418  </span>	return TransactionResponse{
+<span id="L419" class="ln">   419  </span>		TransactionID:  transaction.GetTransactionID(),
+<span id="L420" class="ln">   420  </span>		NodeID:         resp.(TransactionResponse).NodeID,
+<span id="L421" class="ln">   421  </span>		Hash:           resp.(TransactionResponse).Hash,
+<span id="L422" class="ln">   422  </span>		ValidateStatus: true,
+<span id="L423" class="ln">   423  </span>	}, nil
+<span id="L424" class="ln">   424  </span>}
+<span id="L425" class="ln">   425  </span>
+<span id="L426" class="ln">   426  </span>func (transaction *TopicUpdateTransaction) Freeze() (*TopicUpdateTransaction, error) {
+<span id="L427" class="ln">   427  </span>	return transaction.FreezeWith(nil)
+<span id="L428" class="ln">   428  </span>}
+<span id="L429" class="ln">   429  </span>
+<span id="L430" class="ln">   430  </span>func (transaction *TopicUpdateTransaction) FreezeWith(client *Client) (*TopicUpdateTransaction, error) {
+<span id="L431" class="ln">   431  </span>	if transaction.IsFrozen() {
+<span id="L432" class="ln">   432  </span>		return transaction, nil
+<span id="L433" class="ln">   433  </span>	}
+<span id="L434" class="ln">   434  </span>	transaction._InitFee(client)
+<span id="L435" class="ln">   435  </span>	err := transaction._ValidateNetworkOnIDs(client)
+<span id="L436" class="ln">   436  </span>	if err != nil {
+<span id="L437" class="ln">   437  </span>		return &amp;TopicUpdateTransaction{}, err
+<span id="L438" class="ln">   438  </span>	}
+<span id="L439" class="ln">   439  </span>	if err := transaction._InitTransactionID(client); err != nil {
+<span id="L440" class="ln">   440  </span>		return transaction, err
+<span id="L441" class="ln">   441  </span>	}
+<span id="L442" class="ln">   442  </span>	body := transaction._Build()
+<span id="L443" class="ln">   443  </span>
+<span id="L444" class="ln">   444  </span>	return transaction, _TransactionFreezeWith(&amp;transaction.Transaction, client, body)
+<span id="L445" class="ln">   445  </span>}
+<span id="L446" class="ln">   446  </span>
+<span id="L447" class="ln">   447  </span>func (transaction *TopicUpdateTransaction) GetMaxTransactionFee() Hbar {
+<span id="L448" class="ln">   448  </span>	return transaction.Transaction.GetMaxTransactionFee()
+<span id="L449" class="ln">   449  </span>}
+<span id="L450" class="ln">   450  </span>
+<span id="L451" class="ln">   451  </span><span class="comment">// SetMaxTransactionFee sets the max transaction fee for this TopicUpdateTransaction.</span>
+<span id="L452" class="ln">   452  </span>func (transaction *TopicUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TopicUpdateTransaction {
+<span id="L453" class="ln">   453  </span>	transaction._RequireNotFrozen()
+<span id="L454" class="ln">   454  </span>	transaction.Transaction.SetMaxTransactionFee(fee)
+<span id="L455" class="ln">   455  </span>	return transaction
+<span id="L456" class="ln">   456  </span>}
+<span id="L457" class="ln">   457  </span>
+<span id="L458" class="ln">   458  </span><span class="comment">// SetRegenerateTransactionID sets if transaction IDs should be regenerated when `TRANSACTION_EXPIRED` is received</span>
+<span id="L459" class="ln">   459  </span>func (transaction *TopicUpdateTransaction) SetRegenerateTransactionID(regenerateTransactionID bool) *TopicUpdateTransaction {
+<span id="L460" class="ln">   460  </span>	transaction._RequireNotFrozen()
+<span id="L461" class="ln">   461  </span>	transaction.Transaction.SetRegenerateTransactionID(regenerateTransactionID)
+<span id="L462" class="ln">   462  </span>	return transaction
+<span id="L463" class="ln">   463  </span>}
+<span id="L464" class="ln">   464  </span>
+<span id="L465" class="ln">   465  </span><span class="comment">// GetRegenerateTransactionID returns true if transaction ID regeneration is enabled.</span>
+<span id="L466" class="ln">   466  </span>func (transaction *TopicUpdateTransaction) GetRegenerateTransactionID() bool {
+<span id="L467" class="ln">   467  </span>	return transaction.Transaction.GetRegenerateTransactionID()
+<span id="L468" class="ln">   468  </span>}
+<span id="L469" class="ln">   469  </span>
+<span id="L470" class="ln">   470  </span>func (transaction *TopicUpdateTransaction) GetTransactionMemo() string {
+<span id="L471" class="ln">   471  </span>	return transaction.Transaction.GetTransactionMemo()
+<span id="L472" class="ln">   472  </span>}
+<span id="L473" class="ln">   473  </span>
+<span id="L474" class="ln">   474  </span><span class="comment">// SetTransactionMemo sets the memo for this TopicUpdateTransaction.</span>
+<span id="L475" class="ln">   475  </span>func (transaction *TopicUpdateTransaction) SetTransactionMemo(memo string) *TopicUpdateTransaction {
+<span id="L476" class="ln">   476  </span>	transaction._RequireNotFrozen()
+<span id="L477" class="ln">   477  </span>	transaction.Transaction.SetTransactionMemo(memo)
+<span id="L478" class="ln">   478  </span>	return transaction
+<span id="L479" class="ln">   479  </span>}
+<span id="L480" class="ln">   480  </span>
+<span id="L481" class="ln">   481  </span>func (transaction *TopicUpdateTransaction) GetTransactionValidDuration() time.Duration {
+<span id="L482" class="ln">   482  </span>	return transaction.Transaction.GetTransactionValidDuration()
+<span id="L483" class="ln">   483  </span>}
+<span id="L484" class="ln">   484  </span>
+<span id="L485" class="ln">   485  </span><span class="comment">// SetTransactionValidDuration sets the valid duration for this TopicUpdateTransaction.</span>
+<span id="L486" class="ln">   486  </span>func (transaction *TopicUpdateTransaction) SetTransactionValidDuration(duration time.Duration) *TopicUpdateTransaction {
+<span id="L487" class="ln">   487  </span>	transaction._RequireNotFrozen()
+<span id="L488" class="ln">   488  </span>	transaction.Transaction.SetTransactionValidDuration(duration)
+<span id="L489" class="ln">   489  </span>	return transaction
+<span id="L490" class="ln">   490  </span>}
+<span id="L491" class="ln">   491  </span>
+<span id="L492" class="ln">   492  </span>func (transaction *TopicUpdateTransaction) GetTransactionID() TransactionID {
+<span id="L493" class="ln">   493  </span>	return transaction.Transaction.GetTransactionID()
+<span id="L494" class="ln">   494  </span>}
+<span id="L495" class="ln">   495  </span>
+<span id="L496" class="ln">   496  </span><span class="comment">// SetTransactionID sets the TransactionID for this TopicUpdateTransaction.</span>
+<span id="L497" class="ln">   497  </span>func (transaction *TopicUpdateTransaction) SetTransactionID(transactionID TransactionID) *TopicUpdateTransaction {
+<span id="L498" class="ln">   498  </span>	transaction._RequireNotFrozen()
+<span id="L499" class="ln">   499  </span>
+<span id="L500" class="ln">   500  </span>	transaction.Transaction.SetTransactionID(transactionID)
+<span id="L501" class="ln">   501  </span>	return transaction
+<span id="L502" class="ln">   502  </span>}
+<span id="L503" class="ln">   503  </span>
+<span id="L504" class="ln">   504  </span><span class="comment">// SetNodeAccountID sets the _Node AccountID for this TopicUpdateTransaction.</span>
+<span id="L505" class="ln">   505  </span>func (transaction *TopicUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID) *TopicUpdateTransaction {
+<span id="L506" class="ln">   506  </span>	transaction._RequireNotFrozen()
+<span id="L507" class="ln">   507  </span>	transaction.Transaction.SetNodeAccountIDs(nodeID)
+<span id="L508" class="ln">   508  </span>	return transaction
+<span id="L509" class="ln">   509  </span>}
+<span id="L510" class="ln">   510  </span>
+<span id="L511" class="ln">   511  </span>func (transaction *TopicUpdateTransaction) SetMaxRetry(count int) *TopicUpdateTransaction {
+<span id="L512" class="ln">   512  </span>	transaction.Transaction.SetMaxRetry(count)
+<span id="L513" class="ln">   513  </span>	return transaction
+<span id="L514" class="ln">   514  </span>}
+<span id="L515" class="ln">   515  </span>
+<span id="L516" class="ln">   516  </span>func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicUpdateTransaction {
+<span id="L517" class="ln">   517  </span>	transaction._RequireOneNodeAccountID()
+<span id="L518" class="ln">   518  </span>
+<span id="L519" class="ln">   519  </span>	if transaction._KeyAlreadySigned(publicKey) {
+<span id="L520" class="ln">   520  </span>		return transaction
+<span id="L521" class="ln">   521  </span>	}
+<span id="L522" class="ln">   522  </span>
+<span id="L523" class="ln">   523  </span>	if transaction.signedTransactions._Length() == 0 {
+<span id="L524" class="ln">   524  </span>		return transaction
+<span id="L525" class="ln">   525  </span>	}
+<span id="L526" class="ln">   526  </span>
+<span id="L527" class="ln">   527  </span>	transaction.transactions = _NewLockableSlice()
+<span id="L528" class="ln">   528  </span>	transaction.publicKeys = append(transaction.publicKeys, publicKey)
+<span id="L529" class="ln">   529  </span>	transaction.transactionSigners = append(transaction.transactionSigners, nil)
+<span id="L530" class="ln">   530  </span>	transaction.transactionIDs.locked = true
+<span id="L531" class="ln">   531  </span>
+<span id="L532" class="ln">   532  </span>	for index := 0; index &lt; transaction.signedTransactions._Length(); index++ {
+<span id="L533" class="ln">   533  </span>		var temp *services.SignedTransaction
+<span id="L534" class="ln">   534  </span>		switch t := transaction.signedTransactions._Get(index).(type) { <span class="comment">//nolint</span>
+<span id="L535" class="ln">   535  </span>		case *services.SignedTransaction:
+<span id="L536" class="ln">   536  </span>			temp = t
+<span id="L537" class="ln">   537  </span>		}
+<span id="L538" class="ln">   538  </span>		temp.SigMap.SigPair = append(
+<span id="L539" class="ln">   539  </span>			temp.SigMap.SigPair,
+<span id="L540" class="ln">   540  </span>			publicKey._ToSignaturePairProtobuf(signature),
+<span id="L541" class="ln">   541  </span>		)
+<span id="L542" class="ln">   542  </span>		transaction.signedTransactions._Set(index, temp)
+<span id="L543" class="ln">   543  </span>	}
+<span id="L544" class="ln">   544  </span>
+<span id="L545" class="ln">   545  </span>	return transaction
+<span id="L546" class="ln">   546  </span>}
+<span id="L547" class="ln">   547  </span>
+<span id="L548" class="ln">   548  </span>func (transaction *TopicUpdateTransaction) SetMaxBackoff(max time.Duration) *TopicUpdateTransaction {
+<span id="L549" class="ln">   549  </span>	if max.Nanoseconds() &lt; 0 {
+<span id="L550" class="ln">   550  </span>		panic(&#34;maxBackoff must be a positive duration&#34;)
+<span id="L551" class="ln">   551  </span>	} else if max.Nanoseconds() &lt; transaction.minBackoff.Nanoseconds() {
+<span id="L552" class="ln">   552  </span>		panic(&#34;maxBackoff must be greater than or equal to minBackoff&#34;)
+<span id="L553" class="ln">   553  </span>	}
+<span id="L554" class="ln">   554  </span>	transaction.maxBackoff = &amp;max
+<span id="L555" class="ln">   555  </span>	return transaction
+<span id="L556" class="ln">   556  </span>}
+<span id="L557" class="ln">   557  </span>
+<span id="L558" class="ln">   558  </span>func (transaction *TopicUpdateTransaction) GetMaxBackoff() time.Duration {
+<span id="L559" class="ln">   559  </span>	if transaction.maxBackoff != nil {
+<span id="L560" class="ln">   560  </span>		return *transaction.maxBackoff
+<span id="L561" class="ln">   561  </span>	}
+<span id="L562" class="ln">   562  </span>
+<span id="L563" class="ln">   563  </span>	return 8 * time.Second
+<span id="L564" class="ln">   564  </span>}
+<span id="L565" class="ln">   565  </span>
+<span id="L566" class="ln">   566  </span>func (transaction *TopicUpdateTransaction) SetMinBackoff(min time.Duration) *TopicUpdateTransaction {
+<span id="L567" class="ln">   567  </span>	if min.Nanoseconds() &lt; 0 {
+<span id="L568" class="ln">   568  </span>		panic(&#34;minBackoff must be a positive duration&#34;)
+<span id="L569" class="ln">   569  </span>	} else if transaction.maxBackoff.Nanoseconds() &lt; min.Nanoseconds() {
+<span id="L570" class="ln">   570  </span>		panic(&#34;minBackoff must be less than or equal to maxBackoff&#34;)
+<span id="L571" class="ln">   571  </span>	}
+<span id="L572" class="ln">   572  </span>	transaction.minBackoff = &amp;min
+<span id="L573" class="ln">   573  </span>	return transaction
+<span id="L574" class="ln">   574  </span>}
+<span id="L575" class="ln">   575  </span>
+<span id="L576" class="ln">   576  </span>func (transaction *TopicUpdateTransaction) GetMinBackoff() time.Duration {
+<span id="L577" class="ln">   577  </span>	if transaction.minBackoff != nil {
+<span id="L578" class="ln">   578  </span>		return *transaction.minBackoff
+<span id="L579" class="ln">   579  </span>	}
+<span id="L580" class="ln">   580  </span>
+<span id="L581" class="ln">   581  </span>	return 250 * time.Millisecond
+<span id="L582" class="ln">   582  </span>}
+<span id="L583" class="ln">   583  </span>
+<span id="L584" class="ln">   584  </span>func (transaction *TopicUpdateTransaction) _GetLogID() string {
+<span id="L585" class="ln">   585  </span>	timestamp := transaction.transactionIDs._GetCurrent().(TransactionID).ValidStart
+<span id="L586" class="ln">   586  </span>	return fmt.Sprintf(&#34;TopicUpdateTransaction:%d&#34;, timestamp.UnixNano())
+<span id="L587" class="ln">   587  </span>}
+<span id="L588" class="ln">   588  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

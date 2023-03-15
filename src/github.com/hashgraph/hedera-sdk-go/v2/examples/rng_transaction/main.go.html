@@ -1,0 +1,126 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/examples/rng_transaction/main.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples">examples</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/rng_transaction">rng_transaction</a>/<span class="text-muted">main.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/examples/rng_transaction">github.com/hashgraph/hedera-sdk-go/v2/examples/rng_transaction</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package main
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span>import (
+<span id="L4" class="ln">     4  </span>	&#34;github.com/hashgraph/hedera-sdk-go/v2&#34;
+<span id="L5" class="ln">     5  </span>	&#34;os&#34;
+<span id="L6" class="ln">     6  </span>)
+<span id="L7" class="ln">     7  </span>
+<span id="L8" class="ln">     8  </span>func main() {
+<span id="L9" class="ln">     9  </span>	var client *hedera.Client
+<span id="L10" class="ln">    10  </span>	var err error
+<span id="L11" class="ln">    11  </span>
+<span id="L12" class="ln">    12  </span>	<span class="comment">// Retrieving network type from environment variable HEDERA_NETWORK</span>
+<span id="L13" class="ln">    13  </span>	client, err = hedera.ClientForName(os.Getenv(&#34;HEDERA_NETWORK&#34;))
+<span id="L14" class="ln">    14  </span>	if err != nil {
+<span id="L15" class="ln">    15  </span>		println(err.Error(), &#34;: error creating client&#34;)
+<span id="L16" class="ln">    16  </span>		return
+<span id="L17" class="ln">    17  </span>	}
+<span id="L18" class="ln">    18  </span>
+<span id="L19" class="ln">    19  </span>	<span class="comment">// Retrieving operator ID from environment variable OPERATOR_ID</span>
+<span id="L20" class="ln">    20  </span>	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv(&#34;OPERATOR_ID&#34;))
+<span id="L21" class="ln">    21  </span>	if err != nil {
+<span id="L22" class="ln">    22  </span>		println(err.Error(), &#34;: error converting string to AccountID&#34;)
+<span id="L23" class="ln">    23  </span>		return
+<span id="L24" class="ln">    24  </span>	}
+<span id="L25" class="ln">    25  </span>
+<span id="L26" class="ln">    26  </span>	<span class="comment">// Retrieving operator key from environment variable OPERATOR_KEY</span>
+<span id="L27" class="ln">    27  </span>	operatorKey, err := hedera.PrivateKeyFromString(os.Getenv(&#34;OPERATOR_KEY&#34;))
+<span id="L28" class="ln">    28  </span>	if err != nil {
+<span id="L29" class="ln">    29  </span>		println(err.Error(), &#34;: error converting string to PrivateKey&#34;)
+<span id="L30" class="ln">    30  </span>		return
+<span id="L31" class="ln">    31  </span>	}
+<span id="L32" class="ln">    32  </span>
+<span id="L33" class="ln">    33  </span>	<span class="comment">// Setting the client operator ID and key</span>
+<span id="L34" class="ln">    34  </span>	client.SetOperator(operatorAccountID, operatorKey)
+<span id="L35" class="ln">    35  </span>
+<span id="L36" class="ln">    36  </span>	createResponse, err := hedera.NewPrngTransaction().
+<span id="L37" class="ln">    37  </span>		<span class="comment">// Set the range</span>
+<span id="L38" class="ln">    38  </span>		SetRange(12).
+<span id="L39" class="ln">    39  </span>		Execute(client)
+<span id="L40" class="ln">    40  </span>	if err != nil {
+<span id="L41" class="ln">    41  </span>		println(err.Error(), &#34;: error executing rng transaction&#34;)
+<span id="L42" class="ln">    42  </span>		return
+<span id="L43" class="ln">    43  </span>	}
+<span id="L44" class="ln">    44  </span>
+<span id="L45" class="ln">    45  </span>	transactionRecord, err := createResponse.GetRecord(client)
+<span id="L46" class="ln">    46  </span>	if err != nil {
+<span id="L47" class="ln">    47  </span>		println(err.Error(), &#34;: error getting receipt&#34;)
+<span id="L48" class="ln">    48  </span>		return
+<span id="L49" class="ln">    49  </span>	}
+<span id="L50" class="ln">    50  </span>
+<span id="L51" class="ln">    51  </span>	if transactionRecord.PrngNumber != nil {
+<span id="L52" class="ln">    52  </span>		println(err.Error(), &#34;: error, pseudo-random number is nil&#34;)
+<span id="L53" class="ln">    53  </span>		return
+<span id="L54" class="ln">    54  </span>	}
+<span id="L55" class="ln">    55  </span>
+<span id="L56" class="ln">    56  </span>	println(&#34;The pseudo-random number is:&#34;, *transactionRecord.PrngNumber)
+<span id="L57" class="ln">    57  </span>}
+<span id="L58" class="ln">    58  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

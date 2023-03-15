@@ -1,0 +1,410 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/contract_execute_transaction_e2e_test.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">contract_execute_transaction_e2e_test.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span><span class="comment">//go:build all || e2e</span>
+<span id="L2" class="ln">     2  </span><span class="comment">// +build all e2e</span>
+<span id="L3" class="ln">     3  </span>
+<span id="L4" class="ln">     4  </span>package hedera
+<span id="L5" class="ln">     5  </span>
+<span id="L6" class="ln">     6  </span><span class="comment">/*-
+<span id="L7" class="ln">     7  </span> *
+<span id="L8" class="ln">     8  </span> * Hedera Go SDK
+<span id="L9" class="ln">     9  </span> *
+<span id="L10" class="ln">    10  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L11" class="ln">    11  </span> *
+<span id="L12" class="ln">    12  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L13" class="ln">    13  </span> * you may not use this file except in compliance with the License.
+<span id="L14" class="ln">    14  </span> * You may obtain a copy of the License at
+<span id="L15" class="ln">    15  </span> *
+<span id="L16" class="ln">    16  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L17" class="ln">    17  </span> *
+<span id="L18" class="ln">    18  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L19" class="ln">    19  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L20" class="ln">    20  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L21" class="ln">    21  </span> * See the License for the specific language governing permissions and
+<span id="L22" class="ln">    22  </span> * limitations under the License.
+<span id="L23" class="ln">    23  </span> *
+<span id="L24" class="ln">    24  </span> */</span>
+<span id="L25" class="ln">    25  </span>
+<span id="L26" class="ln">    26  </span>import (
+<span id="L27" class="ln">    27  </span>	&#34;testing&#34;
+<span id="L28" class="ln">    28  </span>
+<span id="L29" class="ln">    29  </span>	&#34;github.com/stretchr/testify/assert&#34;
+<span id="L30" class="ln">    30  </span>
+<span id="L31" class="ln">    31  </span>	&#34;github.com/stretchr/testify/require&#34;
+<span id="L32" class="ln">    32  </span>)
+<span id="L33" class="ln">    33  </span>
+<span id="L34" class="ln">    34  </span>func TestIntegrationContractExecuteTransactionCanExecute(t *testing.T) {
+<span id="L35" class="ln">    35  </span>	env := NewIntegrationTestEnv(t)
+<span id="L36" class="ln">    36  </span>
+<span id="L37" class="ln">    37  </span>	<span class="comment">// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract</span>
+<span id="L38" class="ln">    38  </span>	testContractByteCode := []byte(`608060405234801561001057600080fd5b506040516104d73803806104d78339818101604052602081101561003357600080fd5b810190808051604051939291908464010000000082111561005357600080fd5b90830190602082018581111561006857600080fd5b825164010000000081118282018810171561008257600080fd5b82525081516020918201929091019080838360005b838110156100af578181015183820152602001610097565b50505050905090810190601f1680156100dc5780820380516001836020036101000a031916815260200191505b506040525050600080546001600160a01b0319163317905550805161010890600190602084019061010f565b50506101aa565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061015057805160ff191683800117855561017d565b8280016001018555821561017d579182015b8281111561017d578251825591602001919060010190610162565b5061018992915061018d565b5090565b6101a791905b808211156101895760008155600101610193565b90565b61031e806101b96000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c8063368b87721461004657806341c0e1b5146100ee578063ce6d41de146100f6575b600080fd5b6100ec6004803603602081101561005c57600080fd5b81019060208101813564010000000081111561007757600080fd5b82018360208201111561008957600080fd5b803590602001918460018302840111640100000000831117156100ab57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250929550610173945050505050565b005b6100ec6101a2565b6100fe6101ba565b6040805160208082528351818301528351919283929083019185019080838360005b83811015610138578181015183820152602001610120565b50505050905090810190601f1680156101655780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000546001600160a01b0316331461018a5761019f565b805161019d906001906020840190610250565b505b50565b6000546001600160a01b03163314156101b85733ff5b565b60018054604080516020601f600260001961010087891615020190951694909404938401819004810282018101909252828152606093909290918301828280156102455780601f1061021a57610100808354040283529160200191610245565b820191906000526020600020905b81548152906001019060200180831161022857829003601f168201915b505050505090505b90565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061029157805160ff19168380011785556102be565b828001600101855582156102be579182015b828111156102be5782518255916020019190600101906102a3565b506102ca9291506102ce565b5090565b61024d91905b808211156102ca57600081556001016102d456fea264697066735822122084964d4c3f6bc912a9d20e14e449721012d625aa3c8a12de41ae5519752fc89064736f6c63430006000033`)
+<span id="L39" class="ln">    39  </span>
+<span id="L40" class="ln">    40  </span>	resp, err := NewFileCreateTransaction().
+<span id="L41" class="ln">    41  </span>		SetKeys(env.Client.GetOperatorPublicKey()).
+<span id="L42" class="ln">    42  </span>		SetNodeAccountIDs(env.NodeAccountIDs).
+<span id="L43" class="ln">    43  </span>		SetContents(testContractByteCode).
+<span id="L44" class="ln">    44  </span>		Execute(env.Client)
+<span id="L45" class="ln">    45  </span>
+<span id="L46" class="ln">    46  </span>	require.NoError(t, err)
+<span id="L47" class="ln">    47  </span>
+<span id="L48" class="ln">    48  </span>	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L49" class="ln">    49  </span>	require.NoError(t, err)
+<span id="L50" class="ln">    50  </span>
+<span id="L51" class="ln">    51  </span>	fileID := *receipt.FileID
+<span id="L52" class="ln">    52  </span>	assert.NotNil(t, fileID)
+<span id="L53" class="ln">    53  </span>
+<span id="L54" class="ln">    54  </span>	resp, err = NewContractCreateTransaction().
+<span id="L55" class="ln">    55  </span>		SetAdminKey(env.Client.GetOperatorPublicKey()).
+<span id="L56" class="ln">    56  </span>		SetGas(100000).
+<span id="L57" class="ln">    57  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L58" class="ln">    58  </span>		SetConstructorParameters(NewContractFunctionParameters().AddString(&#34;hello from hedera&#34;)).
+<span id="L59" class="ln">    59  </span>		SetBytecodeFileID(fileID).
+<span id="L60" class="ln">    60  </span>		SetContractMemo(&#34;hedera-sdk-go::TestContractDeleteTransaction_Execute&#34;).
+<span id="L61" class="ln">    61  </span>		Execute(env.Client)
+<span id="L62" class="ln">    62  </span>	require.NoError(t, err)
+<span id="L63" class="ln">    63  </span>
+<span id="L64" class="ln">    64  </span>	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L65" class="ln">    65  </span>	require.NoError(t, err)
+<span id="L66" class="ln">    66  </span>
+<span id="L67" class="ln">    67  </span>	assert.NotNil(t, receipt.ContractID)
+<span id="L68" class="ln">    68  </span>	contractID := *receipt.ContractID
+<span id="L69" class="ln">    69  </span>
+<span id="L70" class="ln">    70  </span>	resp, err = NewContractExecuteTransaction().
+<span id="L71" class="ln">    71  </span>		SetContractID(contractID).
+<span id="L72" class="ln">    72  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L73" class="ln">    73  </span>		SetGas(100000).
+<span id="L74" class="ln">    74  </span>		SetFunction(&#34;setMessage&#34;, NewContractFunctionParameters().AddString(&#34;new message&#34;)).
+<span id="L75" class="ln">    75  </span>		Execute(env.Client)
+<span id="L76" class="ln">    76  </span>	require.NoError(t, err)
+<span id="L77" class="ln">    77  </span>
+<span id="L78" class="ln">    78  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L79" class="ln">    79  </span>	require.NoError(t, err)
+<span id="L80" class="ln">    80  </span>
+<span id="L81" class="ln">    81  </span>	resp, err = NewContractDeleteTransaction().
+<span id="L82" class="ln">    82  </span>		SetContractID(contractID).
+<span id="L83" class="ln">    83  </span>		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+<span id="L84" class="ln">    84  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L85" class="ln">    85  </span>		Execute(env.Client)
+<span id="L86" class="ln">    86  </span>	require.NoError(t, err)
+<span id="L87" class="ln">    87  </span>
+<span id="L88" class="ln">    88  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L89" class="ln">    89  </span>	require.NoError(t, err)
+<span id="L90" class="ln">    90  </span>
+<span id="L91" class="ln">    91  </span>	resp, err = NewFileDeleteTransaction().
+<span id="L92" class="ln">    92  </span>		SetFileID(fileID).
+<span id="L93" class="ln">    93  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L94" class="ln">    94  </span>		Execute(env.Client)
+<span id="L95" class="ln">    95  </span>	require.NoError(t, err)
+<span id="L96" class="ln">    96  </span>
+<span id="L97" class="ln">    97  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L98" class="ln">    98  </span>	require.NoError(t, err)
+<span id="L99" class="ln">    99  </span>
+<span id="L100" class="ln">   100  </span>	err = CloseIntegrationTestEnv(env, nil)
+<span id="L101" class="ln">   101  </span>	require.NoError(t, err)
+<span id="L102" class="ln">   102  </span>}
+<span id="L103" class="ln">   103  </span>
+<span id="L104" class="ln">   104  </span>func TestIntegrationContractExecuteTransactionNoContractID(t *testing.T) {
+<span id="L105" class="ln">   105  </span>	env := NewIntegrationTestEnv(t)
+<span id="L106" class="ln">   106  </span>
+<span id="L107" class="ln">   107  </span>	_, err := NewContractExecuteTransaction().
+<span id="L108" class="ln">   108  </span>		SetGas(100000).
+<span id="L109" class="ln">   109  </span>		SetNodeAccountIDs(env.NodeAccountIDs).
+<span id="L110" class="ln">   110  </span>		SetFunction(&#34;setMessage&#34;, NewContractFunctionParameters().AddString(&#34;new message&#34;)).
+<span id="L111" class="ln">   111  </span>		Execute(env.Client)
+<span id="L112" class="ln">   112  </span>	require.NoError(t, err)
+<span id="L113" class="ln">   113  </span>	<span class="comment">//if err != nil {</span>
+<span id="L114" class="ln">   114  </span>	<span class="comment">//	assert.Equal(t, fmt.Sprintf(&#34;exceptional precheck status INVALID_CONTRACT_ID received for transaction %s&#34;, resp.TransactionID), err.Error())</span>
+<span id="L115" class="ln">   115  </span>	<span class="comment">//}</span>
+<span id="L116" class="ln">   116  </span>}
+<span id="L117" class="ln">   117  </span>
+<span id="L118" class="ln">   118  </span>func TestIntegrationContractExecuteTransactionNoGas(t *testing.T) {
+<span id="L119" class="ln">   119  </span>	env := NewIntegrationTestEnv(t)
+<span id="L120" class="ln">   120  </span>
+<span id="L121" class="ln">   121  </span>	<span class="comment">// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract</span>
+<span id="L122" class="ln">   122  </span>	testContractByteCode := []byte(`608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029`)
+<span id="L123" class="ln">   123  </span>
+<span id="L124" class="ln">   124  </span>	resp, err := NewFileCreateTransaction().
+<span id="L125" class="ln">   125  </span>		SetKeys(env.Client.GetOperatorPublicKey()).
+<span id="L126" class="ln">   126  </span>		SetNodeAccountIDs(env.NodeAccountIDs).
+<span id="L127" class="ln">   127  </span>		SetContents(testContractByteCode).
+<span id="L128" class="ln">   128  </span>		Execute(env.Client)
+<span id="L129" class="ln">   129  </span>
+<span id="L130" class="ln">   130  </span>	require.NoError(t, err)
+<span id="L131" class="ln">   131  </span>
+<span id="L132" class="ln">   132  </span>	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L133" class="ln">   133  </span>	require.NoError(t, err)
+<span id="L134" class="ln">   134  </span>
+<span id="L135" class="ln">   135  </span>	fileID := *receipt.FileID
+<span id="L136" class="ln">   136  </span>	assert.NotNil(t, fileID)
+<span id="L137" class="ln">   137  </span>
+<span id="L138" class="ln">   138  </span>	resp, err = NewContractCreateTransaction().
+<span id="L139" class="ln">   139  </span>		SetAdminKey(env.Client.GetOperatorPublicKey()).
+<span id="L140" class="ln">   140  </span>		SetGas(100000).
+<span id="L141" class="ln">   141  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L142" class="ln">   142  </span>		SetConstructorParameters(NewContractFunctionParameters().AddString(&#34;hello from hedera&#34;)).
+<span id="L143" class="ln">   143  </span>		SetBytecodeFileID(fileID).
+<span id="L144" class="ln">   144  </span>		SetContractMemo(&#34;hedera-sdk-go::TestContractDeleteTransaction_Execute&#34;).
+<span id="L145" class="ln">   145  </span>		Execute(env.Client)
+<span id="L146" class="ln">   146  </span>	require.NoError(t, err)
+<span id="L147" class="ln">   147  </span>
+<span id="L148" class="ln">   148  </span>	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L149" class="ln">   149  </span>	require.NoError(t, err)
+<span id="L150" class="ln">   150  </span>
+<span id="L151" class="ln">   151  </span>	assert.NotNil(t, receipt.ContractID)
+<span id="L152" class="ln">   152  </span>	contractID := *receipt.ContractID
+<span id="L153" class="ln">   153  </span>
+<span id="L154" class="ln">   154  </span>	resp, err = NewContractExecuteTransaction().
+<span id="L155" class="ln">   155  </span>		SetContractID(contractID).
+<span id="L156" class="ln">   156  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L157" class="ln">   157  </span>		SetFunction(&#34;setMessage&#34;, NewContractFunctionParameters().AddString(&#34;new message&#34;)).
+<span id="L158" class="ln">   158  </span>		Execute(env.Client)
+<span id="L159" class="ln">   159  </span>	require.NoError(t, err)
+<span id="L160" class="ln">   160  </span>
+<span id="L161" class="ln">   161  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L162" class="ln">   162  </span>	assert.Error(t, err)
+<span id="L163" class="ln">   163  </span>	if err != nil {
+<span id="L164" class="ln">   164  </span>		assert.Equal(t, &#34;exceptional receipt status: INSUFFICIENT_GAS&#34;, err.Error())
+<span id="L165" class="ln">   165  </span>	}
+<span id="L166" class="ln">   166  </span>
+<span id="L167" class="ln">   167  </span>	resp, err = NewContractDeleteTransaction().
+<span id="L168" class="ln">   168  </span>		SetContractID(contractID).
+<span id="L169" class="ln">   169  </span>		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+<span id="L170" class="ln">   170  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L171" class="ln">   171  </span>		Execute(env.Client)
+<span id="L172" class="ln">   172  </span>	require.NoError(t, err)
+<span id="L173" class="ln">   173  </span>
+<span id="L174" class="ln">   174  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L175" class="ln">   175  </span>	require.NoError(t, err)
+<span id="L176" class="ln">   176  </span>
+<span id="L177" class="ln">   177  </span>	resp, err = NewFileDeleteTransaction().
+<span id="L178" class="ln">   178  </span>		SetFileID(fileID).
+<span id="L179" class="ln">   179  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L180" class="ln">   180  </span>		Execute(env.Client)
+<span id="L181" class="ln">   181  </span>	require.NoError(t, err)
+<span id="L182" class="ln">   182  </span>
+<span id="L183" class="ln">   183  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L184" class="ln">   184  </span>	require.NoError(t, err)
+<span id="L185" class="ln">   185  </span>
+<span id="L186" class="ln">   186  </span>	err = CloseIntegrationTestEnv(env, nil)
+<span id="L187" class="ln">   187  </span>	require.NoError(t, err)
+<span id="L188" class="ln">   188  </span>}
+<span id="L189" class="ln">   189  </span>
+<span id="L190" class="ln">   190  </span>func TestIntegrationContractExecuteTransactionNoFunction(t *testing.T) {
+<span id="L191" class="ln">   191  </span>	env := NewIntegrationTestEnv(t)
+<span id="L192" class="ln">   192  </span>
+<span id="L193" class="ln">   193  </span>	<span class="comment">// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract</span>
+<span id="L194" class="ln">   194  </span>	testContractByteCode := []byte(`608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029`)
+<span id="L195" class="ln">   195  </span>
+<span id="L196" class="ln">   196  </span>	resp, err := NewFileCreateTransaction().
+<span id="L197" class="ln">   197  </span>		SetKeys(env.Client.GetOperatorPublicKey()).
+<span id="L198" class="ln">   198  </span>		SetNodeAccountIDs(env.NodeAccountIDs).
+<span id="L199" class="ln">   199  </span>		SetContents(testContractByteCode).
+<span id="L200" class="ln">   200  </span>		Execute(env.Client)
+<span id="L201" class="ln">   201  </span>
+<span id="L202" class="ln">   202  </span>	require.NoError(t, err)
+<span id="L203" class="ln">   203  </span>
+<span id="L204" class="ln">   204  </span>	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L205" class="ln">   205  </span>	require.NoError(t, err)
+<span id="L206" class="ln">   206  </span>
+<span id="L207" class="ln">   207  </span>	fileID := *receipt.FileID
+<span id="L208" class="ln">   208  </span>	assert.NotNil(t, fileID)
+<span id="L209" class="ln">   209  </span>
+<span id="L210" class="ln">   210  </span>	resp, err = NewContractCreateTransaction().
+<span id="L211" class="ln">   211  </span>		SetAdminKey(env.Client.GetOperatorPublicKey()).
+<span id="L212" class="ln">   212  </span>		SetGas(100000).
+<span id="L213" class="ln">   213  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L214" class="ln">   214  </span>		SetConstructorParameters(NewContractFunctionParameters().AddString(&#34;hello from hedera&#34;)).
+<span id="L215" class="ln">   215  </span>		SetBytecodeFileID(fileID).
+<span id="L216" class="ln">   216  </span>		SetContractMemo(&#34;hedera-sdk-go::TestContractDeleteTransaction_Execute&#34;).
+<span id="L217" class="ln">   217  </span>		Execute(env.Client)
+<span id="L218" class="ln">   218  </span>	require.NoError(t, err)
+<span id="L219" class="ln">   219  </span>
+<span id="L220" class="ln">   220  </span>	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L221" class="ln">   221  </span>	require.NoError(t, err)
+<span id="L222" class="ln">   222  </span>
+<span id="L223" class="ln">   223  </span>	assert.NotNil(t, receipt.ContractID)
+<span id="L224" class="ln">   224  </span>	contractID := *receipt.ContractID
+<span id="L225" class="ln">   225  </span>
+<span id="L226" class="ln">   226  </span>	resp, err = NewContractExecuteTransaction().
+<span id="L227" class="ln">   227  </span>		SetContractID(contractID).
+<span id="L228" class="ln">   228  </span>		SetGas(100000).
+<span id="L229" class="ln">   229  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L230" class="ln">   230  </span>		Execute(env.Client)
+<span id="L231" class="ln">   231  </span>	require.NoError(t, err)
+<span id="L232" class="ln">   232  </span>
+<span id="L233" class="ln">   233  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L234" class="ln">   234  </span>	assert.Error(t, err)
+<span id="L235" class="ln">   235  </span>	if err != nil {
+<span id="L236" class="ln">   236  </span>		assert.Equal(t, &#34;exceptional receipt status: CONTRACT_REVERT_EXECUTED&#34;, err.Error())
+<span id="L237" class="ln">   237  </span>	}
+<span id="L238" class="ln">   238  </span>
+<span id="L239" class="ln">   239  </span>	resp, err = NewContractDeleteTransaction().
+<span id="L240" class="ln">   240  </span>		SetContractID(contractID).
+<span id="L241" class="ln">   241  </span>		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+<span id="L242" class="ln">   242  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L243" class="ln">   243  </span>		Execute(env.Client)
+<span id="L244" class="ln">   244  </span>	require.NoError(t, err)
+<span id="L245" class="ln">   245  </span>
+<span id="L246" class="ln">   246  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L247" class="ln">   247  </span>	require.NoError(t, err)
+<span id="L248" class="ln">   248  </span>
+<span id="L249" class="ln">   249  </span>	resp, err = NewFileDeleteTransaction().
+<span id="L250" class="ln">   250  </span>		SetFileID(fileID).
+<span id="L251" class="ln">   251  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L252" class="ln">   252  </span>		Execute(env.Client)
+<span id="L253" class="ln">   253  </span>	require.NoError(t, err)
+<span id="L254" class="ln">   254  </span>
+<span id="L255" class="ln">   255  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L256" class="ln">   256  </span>	require.NoError(t, err)
+<span id="L257" class="ln">   257  </span>
+<span id="L258" class="ln">   258  </span>	err = CloseIntegrationTestEnv(env, nil)
+<span id="L259" class="ln">   259  </span>	require.NoError(t, err)
+<span id="L260" class="ln">   260  </span>}
+<span id="L261" class="ln">   261  </span>
+<span id="L262" class="ln">   262  </span>func DisabledTestIntegrationContractExecuteTransactionID(t *testing.T) { <span class="comment">// nolint</span>
+<span id="L263" class="ln">   263  </span>	env := NewIntegrationTestEnv(t)
+<span id="L264" class="ln">   264  </span>
+<span id="L265" class="ln">   265  </span>	<span class="comment">// Note: this is the bytecode for the contract found in the example for ./examples/_Create_simpleContract</span>
+<span id="L266" class="ln">   266  </span>	testContractByteCode := []byte(`608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029`)
+<span id="L267" class="ln">   267  </span>
+<span id="L268" class="ln">   268  </span>	resp, err := NewFileCreateTransaction().
+<span id="L269" class="ln">   269  </span>		SetKeys(env.Client.GetOperatorPublicKey()).
+<span id="L270" class="ln">   270  </span>		SetNodeAccountIDs(env.NodeAccountIDs).
+<span id="L271" class="ln">   271  </span>		SetContents(testContractByteCode).
+<span id="L272" class="ln">   272  </span>		Execute(env.Client)
+<span id="L273" class="ln">   273  </span>	require.NoError(t, err)
+<span id="L274" class="ln">   274  </span>
+<span id="L275" class="ln">   275  </span>	receipt, err := resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L276" class="ln">   276  </span>	require.NoError(t, err)
+<span id="L277" class="ln">   277  </span>
+<span id="L278" class="ln">   278  </span>	fileID := *receipt.FileID
+<span id="L279" class="ln">   279  </span>	assert.NotNil(t, fileID)
+<span id="L280" class="ln">   280  </span>
+<span id="L281" class="ln">   281  </span>	transactionID := resp.TransactionID
+<span id="L282" class="ln">   282  </span>	assert.NotNil(t, transactionID)
+<span id="L283" class="ln">   283  </span>
+<span id="L284" class="ln">   284  </span>	nodeIDs := make([]AccountID, 1)
+<span id="L285" class="ln">   285  </span>	nodeIDs[0] = resp.NodeID
+<span id="L286" class="ln">   286  </span>
+<span id="L287" class="ln">   287  </span>	resp, err = NewContractCreateTransaction().
+<span id="L288" class="ln">   288  </span>		SetAdminKey(env.Client.GetOperatorPublicKey()).
+<span id="L289" class="ln">   289  </span>		SetGas(100000).
+<span id="L290" class="ln">   290  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L291" class="ln">   291  </span>		SetConstructorParameters(NewContractFunctionParameters().AddString(&#34;hello from hedera&#34;)).
+<span id="L292" class="ln">   292  </span>		SetBytecodeFileID(fileID).
+<span id="L293" class="ln">   293  </span>		SetContractMemo(&#34;hedera-sdk-go::TestContractDeleteTransaction_Execute&#34;).
+<span id="L294" class="ln">   294  </span>		Execute(env.Client)
+<span id="L295" class="ln">   295  </span>	require.NoError(t, err)
+<span id="L296" class="ln">   296  </span>
+<span id="L297" class="ln">   297  </span>	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L298" class="ln">   298  </span>	require.NoError(t, err)
+<span id="L299" class="ln">   299  </span>
+<span id="L300" class="ln">   300  </span>	assert.NotNil(t, receipt.ContractID)
+<span id="L301" class="ln">   301  </span>	contractID := *receipt.ContractID
+<span id="L302" class="ln">   302  </span>
+<span id="L303" class="ln">   303  </span>	resp, err = NewContractExecuteTransaction().
+<span id="L304" class="ln">   304  </span>		SetContractID(contractID).
+<span id="L305" class="ln">   305  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L306" class="ln">   306  </span>		SetGas(100000).
+<span id="L307" class="ln">   307  </span>		SetFunction(&#34;setMessage&#34;, NewContractFunctionParameters().AddString(&#34;new message&#34;)).
+<span id="L308" class="ln">   308  </span>		Execute(env.Client)
+<span id="L309" class="ln">   309  </span>	require.NoError(t, err)
+<span id="L310" class="ln">   310  </span>
+<span id="L311" class="ln">   311  </span>	record, err := resp.GetRecord(env.Client)
+<span id="L312" class="ln">   312  </span>	require.NoError(t, err)
+<span id="L313" class="ln">   313  </span>	assert.NotNil(t, record)
+<span id="L314" class="ln">   314  </span>
+<span id="L315" class="ln">   315  </span>	receipt, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L316" class="ln">   316  </span>	require.NoError(t, err)
+<span id="L317" class="ln">   317  </span>	_, err = record.GetContractExecuteResult()
+<span id="L318" class="ln">   318  </span>	require.NoError(t, err)
+<span id="L319" class="ln">   319  </span>
+<span id="L320" class="ln">   320  </span>	resp, err = NewContractDeleteTransaction().
+<span id="L321" class="ln">   321  </span>		SetContractID(contractID).
+<span id="L322" class="ln">   322  </span>		SetTransferAccountID(env.Client.GetOperatorAccountID()).
+<span id="L323" class="ln">   323  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L324" class="ln">   324  </span>		Execute(env.Client)
+<span id="L325" class="ln">   325  </span>	require.NoError(t, err)
+<span id="L326" class="ln">   326  </span>
+<span id="L327" class="ln">   327  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L328" class="ln">   328  </span>	require.NoError(t, err)
+<span id="L329" class="ln">   329  </span>
+<span id="L330" class="ln">   330  </span>	resp, err = NewFileDeleteTransaction().
+<span id="L331" class="ln">   331  </span>		SetFileID(fileID).
+<span id="L332" class="ln">   332  </span>		SetNodeAccountIDs([]AccountID{resp.NodeID}).
+<span id="L333" class="ln">   333  </span>		Execute(env.Client)
+<span id="L334" class="ln">   334  </span>	require.NoError(t, err)
+<span id="L335" class="ln">   335  </span>
+<span id="L336" class="ln">   336  </span>	_, err = resp.SetValidateStatus(true).GetReceipt(env.Client)
+<span id="L337" class="ln">   337  </span>	require.NoError(t, err)
+<span id="L338" class="ln">   338  </span>
+<span id="L339" class="ln">   339  </span>	err = CloseIntegrationTestEnv(env, nil)
+<span id="L340" class="ln">   340  </span>	require.NoError(t, err)
+<span id="L341" class="ln">   341  </span>}
+<span id="L342" class="ln">   342  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

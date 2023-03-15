@@ -1,0 +1,138 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/topic_message_query_unit_test.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">topic_message_query_unit_test.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package hedera
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span>import (
+<span id="L4" class="ln">     4  </span>	&#34;testing&#34;
+<span id="L5" class="ln">     5  </span>	&#34;time&#34;
+<span id="L6" class="ln">     6  </span>
+<span id="L7" class="ln">     7  </span>	&#34;github.com/stretchr/testify/assert&#34;
+<span id="L8" class="ln">     8  </span>	&#34;github.com/stretchr/testify/require&#34;
+<span id="L9" class="ln">     9  </span>	&#34;google.golang.org/grpc/status&#34;
+<span id="L10" class="ln">    10  </span>)
+<span id="L11" class="ln">    11  </span>
+<span id="L12" class="ln">    12  </span>func TestUnitTopicMessageQueryValidate(t *testing.T) {
+<span id="L13" class="ln">    13  </span>	client := ClientForTestnet()
+<span id="L14" class="ln">    14  </span>	client.SetAutoValidateChecksums(true)
+<span id="L15" class="ln">    15  </span>	topicID, err := TopicIDFromString(&#34;0.0.123-esxsf&#34;)
+<span id="L16" class="ln">    16  </span>	require.NoError(t, err)
+<span id="L17" class="ln">    17  </span>
+<span id="L18" class="ln">    18  </span>	topicInfo := NewTopicMessageQuery().
+<span id="L19" class="ln">    19  </span>		SetTopicID(topicID)
+<span id="L20" class="ln">    20  </span>
+<span id="L21" class="ln">    21  </span>	err = topicInfo._ValidateNetworkOnIDs(client)
+<span id="L22" class="ln">    22  </span>	require.NoError(t, err)
+<span id="L23" class="ln">    23  </span>}
+<span id="L24" class="ln">    24  </span>
+<span id="L25" class="ln">    25  </span>func TestUnitTopicMessageQueryValidateWrong(t *testing.T) {
+<span id="L26" class="ln">    26  </span>	client := ClientForTestnet()
+<span id="L27" class="ln">    27  </span>	client.SetAutoValidateChecksums(true)
+<span id="L28" class="ln">    28  </span>	topicID, err := TopicIDFromString(&#34;0.0.123-rmkykd&#34;)
+<span id="L29" class="ln">    29  </span>	require.NoError(t, err)
+<span id="L30" class="ln">    30  </span>
+<span id="L31" class="ln">    31  </span>	topicInfo := NewTopicMessageQuery().
+<span id="L32" class="ln">    32  </span>		SetTopicID(topicID)
+<span id="L33" class="ln">    33  </span>
+<span id="L34" class="ln">    34  </span>	err = topicInfo._ValidateNetworkOnIDs(client)
+<span id="L35" class="ln">    35  </span>	assert.Error(t, err)
+<span id="L36" class="ln">    36  </span>	if err != nil {
+<span id="L37" class="ln">    37  </span>		assert.Equal(t, &#34;network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet&#34;, err.Error())
+<span id="L38" class="ln">    38  </span>	}
+<span id="L39" class="ln">    39  </span>}
+<span id="L40" class="ln">    40  </span>
+<span id="L41" class="ln">    41  </span>func TestUnitTopicMessageQueryGet(t *testing.T) {
+<span id="L42" class="ln">    42  </span>	topicID := TopicID{Topic: 7}
+<span id="L43" class="ln">    43  </span>
+<span id="L44" class="ln">    44  </span>	balance := NewTopicMessageQuery().
+<span id="L45" class="ln">    45  </span>		SetTopicID(topicID).
+<span id="L46" class="ln">    46  </span>		SetStartTime(time.Now()).
+<span id="L47" class="ln">    47  </span>		SetMaxAttempts(23).
+<span id="L48" class="ln">    48  </span>		SetEndTime(time.Now()).
+<span id="L49" class="ln">    49  </span>		SetLimit(32).
+<span id="L50" class="ln">    50  </span>		SetCompletionHandler(func() {}).
+<span id="L51" class="ln">    51  </span>		SetErrorHandler(func(stat status.Status) {}).
+<span id="L52" class="ln">    52  </span>		SetRetryHandler(func(err error) bool { return false })
+<span id="L53" class="ln">    53  </span>
+<span id="L54" class="ln">    54  </span>	balance.GetTopicID()
+<span id="L55" class="ln">    55  </span>	balance.GetStartTime()
+<span id="L56" class="ln">    56  </span>	balance.GetMaxAttempts()
+<span id="L57" class="ln">    57  </span>	balance.GetEndTime()
+<span id="L58" class="ln">    58  </span>	balance.GetLimit()
+<span id="L59" class="ln">    59  </span>}
+<span id="L60" class="ln">    60  </span>
+<span id="L61" class="ln">    61  </span>func TestUnitTopicMessageQueryNothingSet(t *testing.T) {
+<span id="L62" class="ln">    62  </span>	balance := NewTopicMessageQuery()
+<span id="L63" class="ln">    63  </span>
+<span id="L64" class="ln">    64  </span>	balance.GetTopicID()
+<span id="L65" class="ln">    65  </span>	balance.GetStartTime()
+<span id="L66" class="ln">    66  </span>	balance.GetMaxAttempts()
+<span id="L67" class="ln">    67  </span>	balance.GetEndTime()
+<span id="L68" class="ln">    68  </span>	balance.GetLimit()
+<span id="L69" class="ln">    69  </span>}
+<span id="L70" class="ln">    70  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

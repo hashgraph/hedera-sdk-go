@@ -1,0 +1,142 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/examples/generate_key_with_mnemonic/main.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples">examples</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/generate_key_with_mnemonic">generate_key_with_mnemonic</a>/<span class="text-muted">main.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/examples/generate_key_with_mnemonic">github.com/hashgraph/hedera-sdk-go/v2/examples/generate_key_with_mnemonic</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package main
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span>import (
+<span id="L4" class="ln">     4  </span>	&#34;fmt&#34;
+<span id="L5" class="ln">     5  </span>	&#34;strings&#34;
+<span id="L6" class="ln">     6  </span>
+<span id="L7" class="ln">     7  </span>	&#34;github.com/hashgraph/hedera-sdk-go/v2&#34;
+<span id="L8" class="ln">     8  </span>)
+<span id="L9" class="ln">     9  </span>
+<span id="L10" class="ln">    10  </span>func main() {
+<span id="L11" class="ln">    11  </span>	<span class="comment">// Generate 24 word mnemonic</span>
+<span id="L12" class="ln">    12  </span>	mnemonic24, err := hedera.GenerateMnemonic24()
+<span id="L13" class="ln">    13  </span>	if err != nil {
+<span id="L14" class="ln">    14  </span>		println(err.Error(), &#34;: error generating 24 word mnemonic&#34;)
+<span id="L15" class="ln">    15  </span>		return
+<span id="L16" class="ln">    16  </span>	}
+<span id="L17" class="ln">    17  </span>
+<span id="L18" class="ln">    18  </span>	<span class="comment">// Generate 12 word mnemonic</span>
+<span id="L19" class="ln">    19  </span>	mnemonic12, err := hedera.GenerateMnemonic12()
+<span id="L20" class="ln">    20  </span>	if err != nil {
+<span id="L21" class="ln">    21  </span>		println(err.Error(), &#34;: error generating 12 word mnemonic&#34;)
+<span id="L22" class="ln">    22  </span>		return
+<span id="L23" class="ln">    23  </span>	}
+<span id="L24" class="ln">    24  </span>
+<span id="L25" class="ln">    25  </span>	<span class="comment">// Given legacy string</span>
+<span id="L26" class="ln">    26  </span>	legacyString := &#34;jolly,kidnap,tom,lawn,drunk,chick,optic,lust,mutter,mole,bride,galley,dense,member,sage,neural,widow,decide,curb,aboard,margin,manure&#34;
+<span id="L27" class="ln">    27  </span>
+<span id="L28" class="ln">    28  </span>	<span class="comment">// Initializing a legacy mnemonic from legacy string</span>
+<span id="L29" class="ln">    29  </span>	mnemonicLegacy, err := hedera.NewMnemonic(strings.Split(legacyString, &#34;,&#34;))
+<span id="L30" class="ln">    30  </span>	if err != nil {
+<span id="L31" class="ln">    31  </span>		println(err.Error(), &#34;: error generating mnemonic from legacy string&#34;)
+<span id="L32" class="ln">    32  </span>		return
+<span id="L33" class="ln">    33  </span>	}
+<span id="L34" class="ln">    34  </span>
+<span id="L35" class="ln">    35  </span>	fmt.Printf(&#34;mnemonic 24 word = %v\n&#34;, mnemonic24)
+<span id="L36" class="ln">    36  </span>	fmt.Printf(&#34;mnemonic 12 word = %v\n&#34;, mnemonic12)
+<span id="L37" class="ln">    37  </span>	fmt.Printf(&#34;mnemonic legacy = %v\n&#34;, mnemonicLegacy)
+<span id="L38" class="ln">    38  </span>
+<span id="L39" class="ln">    39  </span>	<span class="comment">// Creating a Private Key from 24 word mnemonic with an optional passphrase</span>
+<span id="L40" class="ln">    40  </span>	privateKey24, err := mnemonic24.ToPrivateKey( <span class="comment">/* passphrase */</span> &#34;&#34;)
+<span id="L41" class="ln">    41  </span>	if err != nil {
+<span id="L42" class="ln">    42  </span>		println(err.Error(), &#34;: error converting 24 word mnemonic to PrivateKey&#34;)
+<span id="L43" class="ln">    43  </span>		return
+<span id="L44" class="ln">    44  </span>	}
+<span id="L45" class="ln">    45  </span>
+<span id="L46" class="ln">    46  </span>	<span class="comment">// Creating a Private Key from 12 word mnemonic with an optional passphrase</span>
+<span id="L47" class="ln">    47  </span>	privateKey12, err := mnemonic12.ToPrivateKey( <span class="comment">/* passphrase */</span> &#34;&#34;)
+<span id="L48" class="ln">    48  </span>	if err != nil {
+<span id="L49" class="ln">    49  </span>		println(err.Error(), &#34;: error converting 12 word mnemonic to PrivateKey&#34;)
+<span id="L50" class="ln">    50  </span>		return
+<span id="L51" class="ln">    51  </span>	}
+<span id="L52" class="ln">    52  </span>
+<span id="L53" class="ln">    53  </span>	<span class="comment">// ToLegacyPrivateKey() doesn&#39;t support a passphrase</span>
+<span id="L54" class="ln">    54  </span>	privateLegacy, err := mnemonicLegacy.ToLegacyPrivateKey()
+<span id="L55" class="ln">    55  </span>	if err != nil {
+<span id="L56" class="ln">    56  </span>		println(err.Error(), &#34;: error converting legacy mnemonic to PrivateKey&#34;)
+<span id="L57" class="ln">    57  </span>		return
+<span id="L58" class="ln">    58  </span>	}
+<span id="L59" class="ln">    59  </span>
+<span id="L60" class="ln">    60  </span>	<span class="comment">// Retrieving the Public Key</span>
+<span id="L61" class="ln">    61  </span>	publicKey24 := privateKey24.PublicKey()
+<span id="L62" class="ln">    62  </span>	publicKey12 := privateKey12.PublicKey()
+<span id="L63" class="ln">    63  </span>	publicLegacy := privateLegacy.PublicKey()
+<span id="L64" class="ln">    64  </span>
+<span id="L65" class="ln">    65  </span>	fmt.Printf(&#34;private 24 word = %v\n&#34;, privateKey24)
+<span id="L66" class="ln">    66  </span>	fmt.Printf(&#34;public 24 word = %v\n&#34;, publicKey24)
+<span id="L67" class="ln">    67  </span>
+<span id="L68" class="ln">    68  </span>	fmt.Printf(&#34;private 12 word = %v\n&#34;, privateKey12)
+<span id="L69" class="ln">    69  </span>	fmt.Printf(&#34;public 12 word = %v\n&#34;, publicKey12)
+<span id="L70" class="ln">    70  </span>
+<span id="L71" class="ln">    71  </span>	fmt.Printf(&#34;private legacy = %v\n&#34;, privateLegacy)
+<span id="L72" class="ln">    72  </span>	fmt.Printf(&#34;public legacy = %v\n&#34;, publicLegacy)
+<span id="L73" class="ln">    73  </span>}
+<span id="L74" class="ln">    74  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/token_nft_transfer.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">token_nft_transfer.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package hedera
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span><span class="comment">/*-
+<span id="L4" class="ln">     4  </span> *
+<span id="L5" class="ln">     5  </span> * Hedera Go SDK
+<span id="L6" class="ln">     6  </span> *
+<span id="L7" class="ln">     7  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L8" class="ln">     8  </span> *
+<span id="L9" class="ln">     9  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L10" class="ln">    10  </span> * you may not use this file except in compliance with the License.
+<span id="L11" class="ln">    11  </span> * You may obtain a copy of the License at
+<span id="L12" class="ln">    12  </span> *
+<span id="L13" class="ln">    13  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L14" class="ln">    14  </span> *
+<span id="L15" class="ln">    15  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L16" class="ln">    16  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L17" class="ln">    17  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L18" class="ln">    18  </span> * See the License for the specific language governing permissions and
+<span id="L19" class="ln">    19  </span> * limitations under the License.
+<span id="L20" class="ln">    20  </span> *
+<span id="L21" class="ln">    21  </span> */</span>
+<span id="L22" class="ln">    22  </span>
+<span id="L23" class="ln">    23  </span>import (
+<span id="L24" class="ln">    24  </span>	&#34;github.com/hashgraph/hedera-protobufs-go/services&#34;
+<span id="L25" class="ln">    25  </span>	protobuf &#34;google.golang.org/protobuf/proto&#34;
+<span id="L26" class="ln">    26  </span>)
+<span id="L27" class="ln">    27  </span>
+<span id="L28" class="ln">    28  </span>type TokenNftTransfer struct {
+<span id="L29" class="ln">    29  </span>	SenderAccountID   AccountID
+<span id="L30" class="ln">    30  </span>	ReceiverAccountID AccountID
+<span id="L31" class="ln">    31  </span>	SerialNumber      int64
+<span id="L32" class="ln">    32  </span>	IsApproved        bool
+<span id="L33" class="ln">    33  </span>}
+<span id="L34" class="ln">    34  </span>
+<span id="L35" class="ln">    35  </span>type _TokenNftTransfers struct {
+<span id="L36" class="ln">    36  </span>	tokenNftTransfers []*TokenNftTransfer
+<span id="L37" class="ln">    37  </span>}
+<span id="L38" class="ln">    38  </span>
+<span id="L39" class="ln">    39  </span>func _NftTransferFromProtobuf(pb *services.NftTransfer) TokenNftTransfer {
+<span id="L40" class="ln">    40  </span>	if pb == nil {
+<span id="L41" class="ln">    41  </span>		return TokenNftTransfer{}
+<span id="L42" class="ln">    42  </span>	}
+<span id="L43" class="ln">    43  </span>
+<span id="L44" class="ln">    44  </span>	senderAccountID := AccountID{}
+<span id="L45" class="ln">    45  </span>	if pb.SenderAccountID != nil {
+<span id="L46" class="ln">    46  </span>		senderAccountID = *_AccountIDFromProtobuf(pb.SenderAccountID)
+<span id="L47" class="ln">    47  </span>	}
+<span id="L48" class="ln">    48  </span>
+<span id="L49" class="ln">    49  </span>	receiverAccountID := AccountID{}
+<span id="L50" class="ln">    50  </span>	if pb.ReceiverAccountID != nil {
+<span id="L51" class="ln">    51  </span>		receiverAccountID = *_AccountIDFromProtobuf(pb.ReceiverAccountID)
+<span id="L52" class="ln">    52  </span>	}
+<span id="L53" class="ln">    53  </span>
+<span id="L54" class="ln">    54  </span>	return TokenNftTransfer{
+<span id="L55" class="ln">    55  </span>		SenderAccountID:   senderAccountID,
+<span id="L56" class="ln">    56  </span>		ReceiverAccountID: receiverAccountID,
+<span id="L57" class="ln">    57  </span>		SerialNumber:      pb.SerialNumber,
+<span id="L58" class="ln">    58  </span>		IsApproved:        pb.IsApproval,
+<span id="L59" class="ln">    59  </span>	}
+<span id="L60" class="ln">    60  </span>}
+<span id="L61" class="ln">    61  </span>
+<span id="L62" class="ln">    62  </span>func (transfer *TokenNftTransfer) _ToProtobuf() *services.NftTransfer {
+<span id="L63" class="ln">    63  </span>	return &amp;services.NftTransfer{
+<span id="L64" class="ln">    64  </span>		SenderAccountID:   transfer.SenderAccountID._ToProtobuf(),
+<span id="L65" class="ln">    65  </span>		ReceiverAccountID: transfer.ReceiverAccountID._ToProtobuf(),
+<span id="L66" class="ln">    66  </span>		SerialNumber:      transfer.SerialNumber,
+<span id="L67" class="ln">    67  </span>		IsApproval:        transfer.IsApproved,
+<span id="L68" class="ln">    68  </span>	}
+<span id="L69" class="ln">    69  </span>}
+<span id="L70" class="ln">    70  </span>
+<span id="L71" class="ln">    71  </span>func (transfer TokenNftTransfer) ToBytes() []byte {
+<span id="L72" class="ln">    72  </span>	data, err := protobuf.Marshal(transfer._ToProtobuf())
+<span id="L73" class="ln">    73  </span>	if err != nil {
+<span id="L74" class="ln">    74  </span>		return make([]byte, 0)
+<span id="L75" class="ln">    75  </span>	}
+<span id="L76" class="ln">    76  </span>
+<span id="L77" class="ln">    77  </span>	return data
+<span id="L78" class="ln">    78  </span>}
+<span id="L79" class="ln">    79  </span>
+<span id="L80" class="ln">    80  </span>func NftTransferFromBytes(data []byte) (TokenNftTransfer, error) {
+<span id="L81" class="ln">    81  </span>	if data == nil {
+<span id="L82" class="ln">    82  </span>		return TokenNftTransfer{}, errByteArrayNull
+<span id="L83" class="ln">    83  </span>	}
+<span id="L84" class="ln">    84  </span>	pb := services.NftTransfer{}
+<span id="L85" class="ln">    85  </span>	err := protobuf.Unmarshal(data, &amp;pb)
+<span id="L86" class="ln">    86  </span>	if err != nil {
+<span id="L87" class="ln">    87  </span>		return TokenNftTransfer{}, err
+<span id="L88" class="ln">    88  </span>	}
+<span id="L89" class="ln">    89  </span>
+<span id="L90" class="ln">    90  </span>	return _NftTransferFromProtobuf(&amp;pb), nil
+<span id="L91" class="ln">    91  </span>}
+<span id="L92" class="ln">    92  </span>
+<span id="L93" class="ln">    93  </span>func (tokenNftTransfers *_TokenNftTransfers) Len() int {
+<span id="L94" class="ln">    94  </span>	return len(tokenNftTransfers.tokenNftTransfers)
+<span id="L95" class="ln">    95  </span>}
+<span id="L96" class="ln">    96  </span>func (tokenNftTransfers *_TokenNftTransfers) Swap(i, j int) {
+<span id="L97" class="ln">    97  </span>	tokenNftTransfers.tokenNftTransfers[i], tokenNftTransfers.tokenNftTransfers[j] = tokenNftTransfers.tokenNftTransfers[j], tokenNftTransfers.tokenNftTransfers[i]
+<span id="L98" class="ln">    98  </span>}
+<span id="L99" class="ln">    99  </span>
+<span id="L100" class="ln">   100  </span>func (tokenNftTransfers *_TokenNftTransfers) Less(i, j int) bool {
+<span id="L101" class="ln">   101  </span>	if tokenNftTransfers.tokenNftTransfers[i].SenderAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].SenderAccountID) &lt; 0 { <span class="comment">//nolint</span>
+<span id="L102" class="ln">   102  </span>		return true
+<span id="L103" class="ln">   103  </span>	} else if tokenNftTransfers.tokenNftTransfers[i].SenderAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].SenderAccountID) &gt; 0 {
+<span id="L104" class="ln">   104  </span>		return false
+<span id="L105" class="ln">   105  </span>	}
+<span id="L106" class="ln">   106  </span>
+<span id="L107" class="ln">   107  </span>	if tokenNftTransfers.tokenNftTransfers[i].ReceiverAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].ReceiverAccountID) &lt; 0 { <span class="comment">//nolint</span>
+<span id="L108" class="ln">   108  </span>		return true
+<span id="L109" class="ln">   109  </span>	} else if tokenNftTransfers.tokenNftTransfers[i].ReceiverAccountID.Compare(tokenNftTransfers.tokenNftTransfers[j].ReceiverAccountID) &gt; 0 {
+<span id="L110" class="ln">   110  </span>		return false
+<span id="L111" class="ln">   111  </span>	}
+<span id="L112" class="ln">   112  </span>
+<span id="L113" class="ln">   113  </span>	if tokenNftTransfers.tokenNftTransfers[i].SerialNumber &lt; tokenNftTransfers.tokenNftTransfers[j].SerialNumber { <span class="comment">//nolint</span>
+<span id="L114" class="ln">   114  </span>		return true
+<span id="L115" class="ln">   115  </span>	} else { <span class="comment">//nolint</span>
+<span id="L116" class="ln">   116  </span>		return false
+<span id="L117" class="ln">   117  </span>	}
+<span id="L118" class="ln">   118  </span>}
+<span id="L119" class="ln">   119  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

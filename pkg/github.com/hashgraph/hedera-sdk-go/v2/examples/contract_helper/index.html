@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>contract_helper - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer></script>
+
+</head>
+<body>
+
+<div id='lowframe' style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">&#9661;</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Package contract_helper
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="#pkg-index" class="indexLink">Index</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				
+				
+			</div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+			
+			
+			
+				
+				<dd><a href="#ContractHelper">type ContractHelper</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#NewContractHelper">func NewContractHelper(bytecode []byte, constructorParameters hedera.ContractFunctionParameters, client *hedera.Client) *ContractHelper</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.AddSignerForStep">func (this *ContractHelper) AddSignerForStep(stepIndex int32, signer hedera.PrivateKey) *ContractHelper</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.ExecuteSteps">func (this *ContractHelper) ExecuteSteps(firstStep int32, lastStep int32, client *hedera.Client) (*ContractHelper, error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.GetParameterSupplier">func (this *ContractHelper) GetParameterSupplier(stepIndex int32) func() *hedera.ContractFunctionParameters</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.GetPayableAmount">func (this *ContractHelper) GetPayableAmount(stepIndex int32) *hedera.Hbar</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.GetResultValidator">func (this *ContractHelper) GetResultValidator(stepIndex int32) func(hedera.ContractFunctionResult) bool</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.GetSigners">func (this *ContractHelper) GetSigners(stepIndex int32) []hedera.PrivateKey</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.SetFeePayerForStep">func (this *ContractHelper) SetFeePayerForStep(stepIndex int32, account hedera.AccountID, accountKey hedera.PrivateKey) *ContractHelper</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.SetParameterSupplierForStep">func (this *ContractHelper) SetParameterSupplierForStep(stepIndex int32, supplier func() *hedera.ContractFunctionParameters) *ContractHelper</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.SetPayableAmountForStep">func (this *ContractHelper) SetPayableAmountForStep(stepIndex int32, amount hedera.Hbar) *ContractHelper</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ContractHelper.SetResultValidatorForStep">func (this *ContractHelper) SetResultValidatorForStep(stepIndex int32, validator func(hedera.ContractFunctionResult) bool) *ContractHelper</a></dd>
+				
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html">contract_helper.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+		
+		
+		
+			
+			
+			<h2 id="ContractHelper">type <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L11">ContractHelper</a>
+				<a class="permalink" href="#ContractHelper">&#xb6;</a>
+				
+				
+			</h2>
+			
+			<pre>type ContractHelper struct {
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="NewContractHelper">func <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L20">NewContractHelper</a>
+					<a class="permalink" href="#NewContractHelper">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func NewContractHelper(bytecode []<a href="https://pkg.go.dev/builtin/#byte">byte</a>, constructorParameters hedera.<a href="#ContractFunctionParameters">ContractFunctionParameters</a>, client *hedera.<a href="#Client">Client</a>) *<a href="#ContractHelper">ContractHelper</a></pre>
+				
+				
+				
+			
+
+			
+				
+				<h3 id="ContractHelper.AddSignerForStep">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L64">AddSignerForStep</a>
+					<a class="permalink" href="#ContractHelper.AddSignerForStep">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) AddSignerForStep(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>, signer hedera.<a href="#PrivateKey">PrivateKey</a>) *<a href="#ContractHelper">ContractHelper</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.ExecuteSteps">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L117">ExecuteSteps</a>
+					<a class="permalink" href="#ContractHelper.ExecuteSteps">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) ExecuteSteps(firstStep <a href="https://pkg.go.dev/builtin/#int32">int32</a>, lastStep <a href="https://pkg.go.dev/builtin/#int32">int32</a>, client *hedera.<a href="#Client">Client</a>) (*<a href="#ContractHelper">ContractHelper</a>, <a href="https://pkg.go.dev/builtin/#error">error</a>)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.GetParameterSupplier">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L95">GetParameterSupplier</a>
+					<a class="permalink" href="#ContractHelper.GetParameterSupplier">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) GetParameterSupplier(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>) func() *hedera.<a href="#ContractFunctionParameters">ContractFunctionParameters</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.GetPayableAmount">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L105">GetPayableAmount</a>
+					<a class="permalink" href="#ContractHelper.GetPayableAmount">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) GetPayableAmount(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>) *hedera.<a href="#Hbar">Hbar</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.GetResultValidator">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L80">GetResultValidator</a>
+					<a class="permalink" href="#ContractHelper.GetResultValidator">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) GetResultValidator(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>) func(hedera.<a href="#ContractFunctionResult">ContractFunctionResult</a>) <a href="https://pkg.go.dev/builtin/#bool">bool</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.GetSigners">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L109">GetSigners</a>
+					<a class="permalink" href="#ContractHelper.GetSigners">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) GetSigners(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>) []hedera.<a href="#PrivateKey">PrivateKey</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.SetFeePayerForStep">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L75">SetFeePayerForStep</a>
+					<a class="permalink" href="#ContractHelper.SetFeePayerForStep">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) SetFeePayerForStep(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>, account hedera.<a href="#AccountID">AccountID</a>, accountKey hedera.<a href="#PrivateKey">PrivateKey</a>) *<a href="#ContractHelper">ContractHelper</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.SetParameterSupplierForStep">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L54">SetParameterSupplierForStep</a>
+					<a class="permalink" href="#ContractHelper.SetParameterSupplierForStep">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) SetParameterSupplierForStep(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>, supplier func() *hedera.<a href="#ContractFunctionParameters">ContractFunctionParameters</a>) *<a href="#ContractHelper">ContractHelper</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.SetPayableAmountForStep">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L59">SetPayableAmountForStep</a>
+					<a class="permalink" href="#ContractHelper.SetPayableAmountForStep">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) SetPayableAmountForStep(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>, amount hedera.<a href="#Hbar">Hbar</a>) *<a href="#ContractHelper">ContractHelper</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="ContractHelper.SetResultValidatorForStep">func (*ContractHelper) <a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/contract_helper/contract_helper.go.html#L49">SetResultValidatorForStep</a>
+					<a class="permalink" href="#ContractHelper.SetResultValidatorForStep">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (this *<a href="#ContractHelper">ContractHelper</a>) SetResultValidatorForStep(stepIndex <a href="https://pkg.go.dev/builtin/#int32">int32</a>, validator func(hedera.<a href="#ContractFunctionResult">ContractFunctionResult</a>) <a href="https://pkg.go.dev/builtin/#bool">bool</a>) *<a href="#ContractHelper">ContractHelper</a></pre>
+				
+				
+				
+				
+			
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.19.6.<br>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+</body>
+</html>

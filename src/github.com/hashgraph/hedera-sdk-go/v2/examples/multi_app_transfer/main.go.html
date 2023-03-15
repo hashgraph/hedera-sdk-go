@@ -1,0 +1,208 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/examples/multi_app_transfer/main.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples">examples</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2/examples/multi_app_transfer">multi_app_transfer</a>/<span class="text-muted">main.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/examples/multi_app_transfer">github.com/hashgraph/hedera-sdk-go/v2/examples/multi_app_transfer</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package main
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span>import (
+<span id="L4" class="ln">     4  </span>	&#34;fmt&#34;
+<span id="L5" class="ln">     5  </span>	&#34;os&#34;
+<span id="L6" class="ln">     6  </span>
+<span id="L7" class="ln">     7  </span>	&#34;github.com/hashgraph/hedera-sdk-go/v2&#34;
+<span id="L8" class="ln">     8  </span>)
+<span id="L9" class="ln">     9  </span>
+<span id="L10" class="ln">    10  </span>func main() {
+<span id="L11" class="ln">    11  </span>	<span class="comment">// Our hypothetical primary service only knows the operator/sender&#39;s account ID and the recipient&#39;s accountID</span>
+<span id="L12" class="ln">    12  </span>	operatorAccountID, err := hedera.AccountIDFromString(os.Getenv(&#34;OPERATOR_ID&#34;))
+<span id="L13" class="ln">    13  </span>	if err != nil {
+<span id="L14" class="ln">    14  </span>		println(err.Error(), &#34;: error converting string to AccountID&#34;)
+<span id="L15" class="ln">    15  </span>		return
+<span id="L16" class="ln">    16  </span>	}
+<span id="L17" class="ln">    17  </span>
+<span id="L18" class="ln">    18  </span>	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv(&#34;OPERATOR_KEY&#34;))
+<span id="L19" class="ln">    19  </span>	if err != nil {
+<span id="L20" class="ln">    20  </span>		println(err.Error(), &#34;: error converting string to PrivateKey&#34;)
+<span id="L21" class="ln">    21  </span>		return
+<span id="L22" class="ln">    22  </span>	}
+<span id="L23" class="ln">    23  </span>
+<span id="L24" class="ln">    24  </span>	recipientAccountID := hedera.AccountID{Account: 3}
+<span id="L25" class="ln">    25  </span>
+<span id="L26" class="ln">    26  </span>	<span class="comment">// We create a client without a set operator</span>
+<span id="L27" class="ln">    27  </span>	client := hedera.ClientForTestnet().SetOperator(operatorAccountID, operatorPrivateKey)
+<span id="L28" class="ln">    28  </span>
+<span id="L29" class="ln">    29  </span>	<span class="comment">// We must manually construct a TransactionID with the accountID of the operator/sender</span>
+<span id="L30" class="ln">    30  </span>	<span class="comment">// This is the account that will be charged the transaction fee</span>
+<span id="L31" class="ln">    31  </span>	txID := hedera.TransactionIDGenerate(operatorAccountID)
+<span id="L32" class="ln">    32  </span>
+<span id="L33" class="ln">    33  </span>	<span class="comment">// The following steps are required for manually signing</span>
+<span id="L34" class="ln">    34  </span>	transaction, err := hedera.NewTransferTransaction().
+<span id="L35" class="ln">    35  </span>		<span class="comment">// 1. Manually set the transaction ID</span>
+<span id="L36" class="ln">    36  </span>		SetTransactionID(txID).
+<span id="L37" class="ln">    37  </span>		<span class="comment">// 2. Add your sender and amount to be send</span>
+<span id="L38" class="ln">    38  </span>		AddHbarTransfer(operatorAccountID, hedera.NewHbar(-1)).
+<span id="L39" class="ln">    39  </span>		<span class="comment">// 3. add the recipient(s) and amount to be received</span>
+<span id="L40" class="ln">    40  </span>		AddHbarTransfer(recipientAccountID, hedera.NewHbar(1)).
+<span id="L41" class="ln">    41  </span>		SetTransactionMemo(&#34;go sdk example multi_app_transfer/main.go&#34;).
+<span id="L42" class="ln">    42  </span>		<span class="comment">// 4. build the transaction using the client that does not have a set operator</span>
+<span id="L43" class="ln">    43  </span>		FreezeWith(client)
+<span id="L44" class="ln">    44  </span>
+<span id="L45" class="ln">    45  </span>	if err != nil {
+<span id="L46" class="ln">    46  </span>		println(err.Error(), &#34;: error freezing Transfer Transaction&#34;)
+<span id="L47" class="ln">    47  </span>		return
+<span id="L48" class="ln">    48  </span>	}
+<span id="L49" class="ln">    49  </span>
+<span id="L50" class="ln">    50  </span>	<span class="comment">// Marshal your transaction to bytes</span>
+<span id="L51" class="ln">    51  </span>	txBytes, err := transaction.ToBytes()
+<span id="L52" class="ln">    52  </span>	if err != nil {
+<span id="L53" class="ln">    53  </span>		println(err.Error(), &#34;: error converting transfer transaction to bytes&#34;)
+<span id="L54" class="ln">    54  </span>		return
+<span id="L55" class="ln">    55  </span>	}
+<span id="L56" class="ln">    56  </span>
+<span id="L57" class="ln">    57  </span>	fmt.Printf(&#34;Marshalled the unsigned transaction to bytes \n%v\n&#34;, txBytes)
+<span id="L58" class="ln">    58  </span>
+<span id="L59" class="ln">    59  </span>	<span class="comment">//</span>
+<span id="L60" class="ln">    60  </span>	<span class="comment">// Send the bytes to the application or service that acts as a signer for your transactions</span>
+<span id="L61" class="ln">    61  </span>	<span class="comment">//</span>
+<span id="L62" class="ln">    62  </span>	signedTxBytes, err := signingService(txBytes)
+<span id="L63" class="ln">    63  </span>
+<span id="L64" class="ln">    64  </span>	if err != nil {
+<span id="L65" class="ln">    65  </span>		println(err.Error(), &#34;: error signing transfer transaction&#34;)
+<span id="L66" class="ln">    66  </span>		return
+<span id="L67" class="ln">    67  </span>	}
+<span id="L68" class="ln">    68  </span>
+<span id="L69" class="ln">    69  </span>	fmt.Printf(&#34;Received bytes for signed transaction: \n%v\n&#34;, signedTxBytes)
+<span id="L70" class="ln">    70  </span>
+<span id="L71" class="ln">    71  </span>	<span class="comment">// Unmarshal your bytes into the signed transaction</span>
+<span id="L72" class="ln">    72  </span>	var signedTx hedera.TransferTransaction
+<span id="L73" class="ln">    73  </span>	tx, err := hedera.TransactionFromBytes(signedTxBytes)
+<span id="L74" class="ln">    74  </span>	if err != nil {
+<span id="L75" class="ln">    75  </span>		println(err.Error(), &#34;: error converting bytes to transfer transaction&#34;)
+<span id="L76" class="ln">    76  </span>		return
+<span id="L77" class="ln">    77  </span>	}
+<span id="L78" class="ln">    78  </span>
+<span id="L79" class="ln">    79  </span>	<span class="comment">// Converting from interface{} to TransferTransaction, if that&#39;s what we got</span>
+<span id="L80" class="ln">    80  </span>	switch t := tx.(type) {
+<span id="L81" class="ln">    81  </span>	case hedera.TransferTransaction:
+<span id="L82" class="ln">    82  </span>		signedTx = t
+<span id="L83" class="ln">    83  </span>	default:
+<span id="L84" class="ln">    84  </span>		panic(&#34;Did not receive `TransferTransaction` back from signed bytes&#34;)
+<span id="L85" class="ln">    85  </span>	}
+<span id="L86" class="ln">    86  </span>
+<span id="L87" class="ln">    87  </span>	<span class="comment">// Execute the transaction</span>
+<span id="L88" class="ln">    88  </span>	response, err := signedTx.Execute(client)
+<span id="L89" class="ln">    89  </span>
+<span id="L90" class="ln">    90  </span>	if err != nil {
+<span id="L91" class="ln">    91  </span>		println(err.Error(), &#34;: error executing the transfer transaction&#34;)
+<span id="L92" class="ln">    92  </span>		return
+<span id="L93" class="ln">    93  </span>	}
+<span id="L94" class="ln">    94  </span>
+<span id="L95" class="ln">    95  </span>	<span class="comment">// Get the receipt of the transaction to check the status</span>
+<span id="L96" class="ln">    96  </span>	receipt, err := response.GetReceipt(client)
+<span id="L97" class="ln">    97  </span>
+<span id="L98" class="ln">    98  </span>	if err != nil {
+<span id="L99" class="ln">    99  </span>		println(err.Error(), &#34;: error retrieving transfer transaction receipt&#34;)
+<span id="L100" class="ln">   100  </span>		return
+<span id="L101" class="ln">   101  </span>	}
+<span id="L102" class="ln">   102  </span>
+<span id="L103" class="ln">   103  </span>	<span class="comment">// If Status Success is returned then everything is good</span>
+<span id="L104" class="ln">   104  </span>	fmt.Printf(&#34;Crypto transfer status: %v\n&#34;, receipt.Status)
+<span id="L105" class="ln">   105  </span>}
+<span id="L106" class="ln">   106  </span>
+<span id="L107" class="ln">   107  </span><span class="comment">// signingService represents an offline service which knows the private keys needed for signing</span>
+<span id="L108" class="ln">   108  </span><span class="comment">// a transaction and returns the byte representation of the transaction</span>
+<span id="L109" class="ln">   109  </span>func signingService(txBytes []byte) ([]byte, error) {
+<span id="L110" class="ln">   110  </span>	fmt.Println(&#34;\nSigning service has received the transaction&#34;)
+<span id="L111" class="ln">   111  </span>
+<span id="L112" class="ln">   112  </span>	<span class="comment">// Your signing service is aware of the operator&#39;s private key</span>
+<span id="L113" class="ln">   113  </span>	operatorPrivateKey, err := hedera.PrivateKeyFromString(os.Getenv(&#34;OPERATOR_KEY&#34;))
+<span id="L114" class="ln">   114  </span>	if err != nil {
+<span id="L115" class="ln">   115  </span>		return txBytes, err
+<span id="L116" class="ln">   116  </span>	}
+<span id="L117" class="ln">   117  </span>
+<span id="L118" class="ln">   118  </span>	<span class="comment">// Unmarshal the unsigned transaction&#39;s bytes</span>
+<span id="L119" class="ln">   119  </span>	var unsignedTx hedera.TransferTransaction
+<span id="L120" class="ln">   120  </span>	tx, err := hedera.TransactionFromBytes(txBytes)
+<span id="L121" class="ln">   121  </span>	if err != nil {
+<span id="L122" class="ln">   122  </span>		return txBytes, err
+<span id="L123" class="ln">   123  </span>	}
+<span id="L124" class="ln">   124  </span>
+<span id="L125" class="ln">   125  </span>	<span class="comment">// Converting from interface{} to TransferTransaction, if that&#39;s what we got</span>
+<span id="L126" class="ln">   126  </span>	switch t := tx.(type) {
+<span id="L127" class="ln">   127  </span>	case hedera.TransferTransaction:
+<span id="L128" class="ln">   128  </span>		unsignedTx = t
+<span id="L129" class="ln">   129  </span>	default:
+<span id="L130" class="ln">   130  </span>		panic(&#34;Did not receive `TransferTransaction` back from signed bytes&#34;)
+<span id="L131" class="ln">   131  </span>	}
+<span id="L132" class="ln">   132  </span>
+<span id="L133" class="ln">   133  </span>	fmt.Printf(&#34;The Signing service is signing the transaction with key: %v\n&#34;, operatorPrivateKey)
+<span id="L134" class="ln">   134  </span>
+<span id="L135" class="ln">   135  </span>	<span class="comment">// sign your unsigned transaction and marshal back to bytes</span>
+<span id="L136" class="ln">   136  </span>	return unsignedTx.
+<span id="L137" class="ln">   137  </span>		Sign(operatorPrivateKey).
+<span id="L138" class="ln">   138  </span>		ToBytes()
+<span id="L139" class="ln">   139  </span>}
+<span id="L140" class="ln">   140  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

@@ -1,0 +1,978 @@
+<!DOCTYPE html><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#375EAB"/>
+
+  <title>src/github.com/hashgraph/hedera-sdk-go/v2/status.go - GoPages</title>
+
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css"/>
+
+<script>window.initFuncs = [];</script>
+<script src="/lib/godoc/jquery.js" defer=""></script>
+
+
+
+
+<script>var goVersion = "go1.19.6";</script>
+<script src="/lib/godoc/godocs.js" defer=""></script>
+
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages | Auto-generated docs</a></div>
+<div class="top-heading" id="heading-narrow"><a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2/">GoPages</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Source file
+    <a href="/src">src</a>/<a href="/src/github.com">github.com</a>/<a href="/src/github.com/hashgraph">hashgraph</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go">hedera-sdk-go</a>/<a href="/src/github.com/hashgraph/hedera-sdk-go/v2">v2</a>/<span class="text-muted">status.go</span>
+  </h1>
+
+
+
+
+
+  <h2>
+    Documentation: <a href="/pkg/github.com/hashgraph/hedera-sdk-go/v2">github.com/hashgraph/hedera-sdk-go/v2</a>
+  </h2>
+
+
+
+<div id="nav"></div>
+
+
+<script type="text/javascript">document.ANALYSIS_DATA = null;</script>
+<pre><span id="L1" class="ln">     1  </span>package hedera
+<span id="L2" class="ln">     2  </span>
+<span id="L3" class="ln">     3  </span><span class="comment">/*-
+<span id="L4" class="ln">     4  </span> *
+<span id="L5" class="ln">     5  </span> * Hedera Go SDK
+<span id="L6" class="ln">     6  </span> *
+<span id="L7" class="ln">     7  </span> * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+<span id="L8" class="ln">     8  </span> *
+<span id="L9" class="ln">     9  </span> * Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+<span id="L10" class="ln">    10  </span> * you may not use this file except in compliance with the License.
+<span id="L11" class="ln">    11  </span> * You may obtain a copy of the License at
+<span id="L12" class="ln">    12  </span> *
+<span id="L13" class="ln">    13  </span> *      http://www.apache.org/licenses/LICENSE-2.0
+<span id="L14" class="ln">    14  </span> *
+<span id="L15" class="ln">    15  </span> * Unless required by applicable law or agreed to in writing, software
+<span id="L16" class="ln">    16  </span> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+<span id="L17" class="ln">    17  </span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span id="L18" class="ln">    18  </span> * See the License for the specific language governing permissions and
+<span id="L19" class="ln">    19  </span> * limitations under the License.
+<span id="L20" class="ln">    20  </span> *
+<span id="L21" class="ln">    21  </span> */</span>
+<span id="L22" class="ln">    22  </span>
+<span id="L23" class="ln">    23  </span>import &#34;fmt&#34;
+<span id="L24" class="ln">    24  </span>
+<span id="L25" class="ln">    25  </span>type Status uint32
+<span id="L26" class="ln">    26  </span>
+<span id="L27" class="ln">    27  </span>const (
+<span id="L28" class="ln">    28  </span>	StatusOk                                                       Status = 0
+<span id="L29" class="ln">    29  </span>	StatusInvalidTransaction                                       Status = 1
+<span id="L30" class="ln">    30  </span>	StatusPayerAccountNotFound                                     Status = 2
+<span id="L31" class="ln">    31  </span>	StatusInvalidNodeAccount                                       Status = 3
+<span id="L32" class="ln">    32  </span>	StatusTransactionExpired                                       Status = 4
+<span id="L33" class="ln">    33  </span>	StatusInvalidTransactionStart                                  Status = 5
+<span id="L34" class="ln">    34  </span>	StatusInvalidTransactionDuration                               Status = 6
+<span id="L35" class="ln">    35  </span>	StatusInvalidSignature                                         Status = 7
+<span id="L36" class="ln">    36  </span>	StatusMemoTooLong                                              Status = 8
+<span id="L37" class="ln">    37  </span>	StatusInsufficientTxFee                                        Status = 9
+<span id="L38" class="ln">    38  </span>	StatusInsufficientPayerBalance                                 Status = 10
+<span id="L39" class="ln">    39  </span>	StatusDuplicateTransaction                                     Status = 11
+<span id="L40" class="ln">    40  </span>	StatusBusy                                                     Status = 12
+<span id="L41" class="ln">    41  </span>	StatusNotSupported                                             Status = 13
+<span id="L42" class="ln">    42  </span>	StatusInvalidFileID                                            Status = 14
+<span id="L43" class="ln">    43  </span>	StatusInvalidAccountID                                         Status = 15
+<span id="L44" class="ln">    44  </span>	StatusInvalidContractID                                        Status = 16
+<span id="L45" class="ln">    45  </span>	StatusInvalidTransactionID                                     Status = 17
+<span id="L46" class="ln">    46  </span>	StatusReceiptNotFound                                          Status = 18
+<span id="L47" class="ln">    47  </span>	StatusRecordNotFound                                           Status = 19
+<span id="L48" class="ln">    48  </span>	StatusInvalidSolidityID                                        Status = 20
+<span id="L49" class="ln">    49  </span>	StatusUnknown                                                  Status = 21
+<span id="L50" class="ln">    50  </span>	StatusSuccess                                                  Status = 22
+<span id="L51" class="ln">    51  </span>	StatusFailInvalid                                              Status = 23
+<span id="L52" class="ln">    52  </span>	StatusFailFee                                                  Status = 24
+<span id="L53" class="ln">    53  </span>	StatusFailBalance                                              Status = 25
+<span id="L54" class="ln">    54  </span>	StatusKeyRequired                                              Status = 26
+<span id="L55" class="ln">    55  </span>	StatusBadEncoding                                              Status = 27
+<span id="L56" class="ln">    56  </span>	StatusInsufficientAccountBalance                               Status = 28
+<span id="L57" class="ln">    57  </span>	StatusInvalidSolidityAddress                                   Status = 29
+<span id="L58" class="ln">    58  </span>	StatusInsufficientGas                                          Status = 30
+<span id="L59" class="ln">    59  </span>	StatusContractSizeLimitExceeded                                Status = 31
+<span id="L60" class="ln">    60  </span>	StatusLocalCallModificationException                           Status = 32
+<span id="L61" class="ln">    61  </span>	StatusContractRevertExecuted                                   Status = 33
+<span id="L62" class="ln">    62  </span>	StatusContractExecutionException                               Status = 34
+<span id="L63" class="ln">    63  </span>	StatusInvalidReceivingNodeAccount                              Status = 35
+<span id="L64" class="ln">    64  </span>	StatusMissingQueryHeader                                       Status = 36
+<span id="L65" class="ln">    65  </span>	StatusAccountUpdateFailed                                      Status = 37
+<span id="L66" class="ln">    66  </span>	StatusInvalidKeyEncoding                                       Status = 38
+<span id="L67" class="ln">    67  </span>	StatusNullSolidityAddress                                      Status = 39
+<span id="L68" class="ln">    68  </span>	StatusContractUpdateFailed                                     Status = 40
+<span id="L69" class="ln">    69  </span>	StatusInvalidQueryHeader                                       Status = 41
+<span id="L70" class="ln">    70  </span>	StatusInvalidFeeSubmitted                                      Status = 42
+<span id="L71" class="ln">    71  </span>	StatusInvalidPayerSignature                                    Status = 43
+<span id="L72" class="ln">    72  </span>	StatusKeyNotProvided                                           Status = 44
+<span id="L73" class="ln">    73  </span>	StatusInvalidExpirationTime                                    Status = 45
+<span id="L74" class="ln">    74  </span>	StatusNoWaclKey                                                Status = 46
+<span id="L75" class="ln">    75  </span>	StatusFileContentEmpty                                         Status = 47
+<span id="L76" class="ln">    76  </span>	StatusInvalidAccountAmounts                                    Status = 48
+<span id="L77" class="ln">    77  </span>	StatusEmptyTransactionBody                                     Status = 49
+<span id="L78" class="ln">    78  </span>	StatusInvalidTransactionBody                                   Status = 50
+<span id="L79" class="ln">    79  </span>	StatusInvalidSignatureTypeMismatchingKey                       Status = 51
+<span id="L80" class="ln">    80  </span>	StatusInvalidSignatureCountMismatchingKey                      Status = 52
+<span id="L81" class="ln">    81  </span>	StatusEmptyLiveHashBody                                        Status = 53
+<span id="L82" class="ln">    82  </span>	StatusEmptyLiveHash                                            Status = 54
+<span id="L83" class="ln">    83  </span>	StatusEmptyLiveHashKeys                                        Status = 55
+<span id="L84" class="ln">    84  </span>	StatusInvalidLiveHashSize                                      Status = 56
+<span id="L85" class="ln">    85  </span>	StatusEmptyQueryBody                                           Status = 57
+<span id="L86" class="ln">    86  </span>	StatusEmptyLiveHashQuery                                       Status = 58
+<span id="L87" class="ln">    87  </span>	StatusLiveHashNotFound                                         Status = 59
+<span id="L88" class="ln">    88  </span>	StatusAccountIDDoesNotExist                                    Status = 60
+<span id="L89" class="ln">    89  </span>	StatusLiveHashAlreadyExists                                    Status = 61
+<span id="L90" class="ln">    90  </span>	StatusInvalidFileWacl                                          Status = 62
+<span id="L91" class="ln">    91  </span>	StatusSerializationFailed                                      Status = 63
+<span id="L92" class="ln">    92  </span>	StatusTransactionOversize                                      Status = 64
+<span id="L93" class="ln">    93  </span>	StatusTransactionTooManyLayers                                 Status = 65
+<span id="L94" class="ln">    94  </span>	StatusContractDeleted                                          Status = 66
+<span id="L95" class="ln">    95  </span>	StatusPlatformNotActive                                        Status = 67
+<span id="L96" class="ln">    96  </span>	StatusKeyPrefixMismatch                                        Status = 68
+<span id="L97" class="ln">    97  </span>	StatusPlatformTransactionNotCreated                            Status = 69
+<span id="L98" class="ln">    98  </span>	StatusInvalidRenewalPeriod                                     Status = 70
+<span id="L99" class="ln">    99  </span>	StatusInvalidPayerAccountID                                    Status = 71
+<span id="L100" class="ln">   100  </span>	StatusAccountDeleted                                           Status = 72
+<span id="L101" class="ln">   101  </span>	StatusFileDeleted                                              Status = 73
+<span id="L102" class="ln">   102  </span>	StatusAccountRepeatedInAccountAmounts                          Status = 74
+<span id="L103" class="ln">   103  </span>	StatusSettingNegativeAccountBalance                            Status = 75
+<span id="L104" class="ln">   104  </span>	StatusObtainerRequired                                         Status = 76
+<span id="L105" class="ln">   105  </span>	StatusObtainerSameContractID                                   Status = 77
+<span id="L106" class="ln">   106  </span>	StatusObtainerDoesNotExist                                     Status = 78
+<span id="L107" class="ln">   107  </span>	StatusModifyingImmutableContract                               Status = 79
+<span id="L108" class="ln">   108  </span>	StatusFileSystemException                                      Status = 80
+<span id="L109" class="ln">   109  </span>	StatusAutorenewDurationNotInRange                              Status = 81
+<span id="L110" class="ln">   110  </span>	StatusErrorDecodingBytestring                                  Status = 82
+<span id="L111" class="ln">   111  </span>	StatusContractFileEmpty                                        Status = 83
+<span id="L112" class="ln">   112  </span>	StatusContractBytecodeEmpty                                    Status = 84
+<span id="L113" class="ln">   113  </span>	StatusInvalidInitialBalance                                    Status = 85
+<span id="L114" class="ln">   114  </span>	StatusInvalidReceiveRecordThreshold                            Status = 86
+<span id="L115" class="ln">   115  </span>	StatusInvalidSendRecordThreshold                               Status = 87
+<span id="L116" class="ln">   116  </span>	StatusAccountIsNotGenesisAccount                               Status = 88
+<span id="L117" class="ln">   117  </span>	StatusPayerAccountUnauthorized                                 Status = 89
+<span id="L118" class="ln">   118  </span>	StatusInvalidFreezeTransactionBody                             Status = 90
+<span id="L119" class="ln">   119  </span>	StatusFreezeTransactionBodyNotFound                            Status = 91
+<span id="L120" class="ln">   120  </span>	StatusTransferListSizeLimitExceeded                            Status = 92
+<span id="L121" class="ln">   121  </span>	StatusResultSizeLimitExceeded                                  Status = 93
+<span id="L122" class="ln">   122  </span>	StatusNotSpecialAccount                                        Status = 94
+<span id="L123" class="ln">   123  </span>	StatusContractNegativeGas                                      Status = 95
+<span id="L124" class="ln">   124  </span>	StatusContractNegativeValue                                    Status = 96
+<span id="L125" class="ln">   125  </span>	StatusInvalidFeeFile                                           Status = 97
+<span id="L126" class="ln">   126  </span>	StatusInvalidExchangeRateFile                                  Status = 98
+<span id="L127" class="ln">   127  </span>	StatusInsufficientLocalCallGas                                 Status = 99
+<span id="L128" class="ln">   128  </span>	StatusEntityNotAllowedToDelete                                 Status = 100
+<span id="L129" class="ln">   129  </span>	StatusAuthorizationFailed                                      Status = 101
+<span id="L130" class="ln">   130  </span>	StatusFileUploadedProtoInvalid                                 Status = 102
+<span id="L131" class="ln">   131  </span>	StatusFileUploadedProtoNotSavedToDisk                          Status = 103
+<span id="L132" class="ln">   132  </span>	StatusFeeScheduleFilePartUploaded                              Status = 104
+<span id="L133" class="ln">   133  </span>	StatusExchangeRateChangeLimitExceeded                          Status = 105
+<span id="L134" class="ln">   134  </span>	StatusMaxContractStorageExceeded                               Status = 106
+<span id="L135" class="ln">   135  </span>	StatusTransferAccountSameAsDeleteAccount                       Status = 107
+<span id="L136" class="ln">   136  </span>	StatusTotalLedgerBalanceInvalid                                Status = 108
+<span id="L137" class="ln">   137  </span>	StatusExpirationReductionNotAllowed                            Status = 110
+<span id="L138" class="ln">   138  </span>	StatusMaxGasLimitExceeded                                      Status = 111
+<span id="L139" class="ln">   139  </span>	StatusMaxFileSizeExceeded                                      Status = 112
+<span id="L140" class="ln">   140  </span>	StatusReceiverSigRequired                                      Status = 113
+<span id="L141" class="ln">   141  </span>	StatusInvalidTopicID                                           Status = 150
+<span id="L142" class="ln">   142  </span>	StatusInvalidAdminKey                                          Status = 155
+<span id="L143" class="ln">   143  </span>	StatusInvalidSubmitKey                                         Status = 156
+<span id="L144" class="ln">   144  </span>	StatusUnauthorized                                             Status = 157
+<span id="L145" class="ln">   145  </span>	StatusInvalidTopicMessage                                      Status = 158
+<span id="L146" class="ln">   146  </span>	StatusInvalidAutorenewAccount                                  Status = 159
+<span id="L147" class="ln">   147  </span>	StatusAutorenewAccountNotAllowed                               Status = 160
+<span id="L148" class="ln">   148  </span>	StatusTopicExpired                                             Status = 162
+<span id="L149" class="ln">   149  </span>	StatusInvalidChunkNumber                                       Status = 163
+<span id="L150" class="ln">   150  </span>	StatusInvalidChunkTransactionID                                Status = 164
+<span id="L151" class="ln">   151  </span>	StatusAccountFrozenForToken                                    Status = 165
+<span id="L152" class="ln">   152  </span>	StatusTokensPerAccountLimitExceeded                            Status = 166
+<span id="L153" class="ln">   153  </span>	StatusInvalidTokenID                                           Status = 167
+<span id="L154" class="ln">   154  </span>	StatusInvalidTokenDecimals                                     Status = 168
+<span id="L155" class="ln">   155  </span>	StatusInvalidTokenInitialSupply                                Status = 169
+<span id="L156" class="ln">   156  </span>	StatusInvalidTreasuryAccountForToken                           Status = 170
+<span id="L157" class="ln">   157  </span>	StatusInvalidTokenSymbol                                       Status = 171
+<span id="L158" class="ln">   158  </span>	StatusTokenHasNoFreezeKey                                      Status = 172
+<span id="L159" class="ln">   159  </span>	StatusTransfersNotZeroSumForToken                              Status = 173
+<span id="L160" class="ln">   160  </span>	StatusMissingTokenSymbol                                       Status = 174
+<span id="L161" class="ln">   161  </span>	StatusTokenSymbolTooLong                                       Status = 175
+<span id="L162" class="ln">   162  </span>	StatusAccountKycNotGrantedForToken                             Status = 176
+<span id="L163" class="ln">   163  </span>	StatusTokenHasNoKycKey                                         Status = 177
+<span id="L164" class="ln">   164  </span>	StatusInsufficientTokenBalance                                 Status = 178
+<span id="L165" class="ln">   165  </span>	StatusTokenWasDeleted                                          Status = 179
+<span id="L166" class="ln">   166  </span>	StatusTokenHasNoSupplyKey                                      Status = 180
+<span id="L167" class="ln">   167  </span>	StatusTokenHasNoWipeKey                                        Status = 181
+<span id="L168" class="ln">   168  </span>	StatusInvalidTokenMintAmount                                   Status = 182
+<span id="L169" class="ln">   169  </span>	StatusInvalidTokenBurnAmount                                   Status = 183
+<span id="L170" class="ln">   170  </span>	StatusTokenNotAssociatedToAccount                              Status = 184
+<span id="L171" class="ln">   171  </span>	StatusCannotWipeTokenTreasuryAccount                           Status = 185
+<span id="L172" class="ln">   172  </span>	StatusInvalidKycKey                                            Status = 186
+<span id="L173" class="ln">   173  </span>	StatusInvalidWipeKey                                           Status = 187
+<span id="L174" class="ln">   174  </span>	StatusInvalidFreezeKey                                         Status = 188
+<span id="L175" class="ln">   175  </span>	StatusInvalidSupplyKey                                         Status = 189
+<span id="L176" class="ln">   176  </span>	StatusMissingTokenName                                         Status = 190
+<span id="L177" class="ln">   177  </span>	StatusTokenNameTooLong                                         Status = 191
+<span id="L178" class="ln">   178  </span>	StatusInvalidWipingAmount                                      Status = 192
+<span id="L179" class="ln">   179  </span>	StatusTokenIsImmutable                                         Status = 193
+<span id="L180" class="ln">   180  </span>	StatusTokenAlreadyAssociatedToAccount                          Status = 194
+<span id="L181" class="ln">   181  </span>	StatusTransactionRequiresZeroTokenBalances                     Status = 195
+<span id="L182" class="ln">   182  </span>	StatusAccountIsTreasury                                        Status = 196
+<span id="L183" class="ln">   183  </span>	StatusTokenIDRepeatedInTokenList                               Status = 197
+<span id="L184" class="ln">   184  </span>	StatusTokenTransferListSizeLimitExceeded                       Status = 198
+<span id="L185" class="ln">   185  </span>	StatusEmptyTokenTransferBody                                   Status = 199
+<span id="L186" class="ln">   186  </span>	StatusEmptyTokenTransferAccountAmounts                         Status = 200
+<span id="L187" class="ln">   187  </span>	StatusInvalidScheduleID                                        Status = 201
+<span id="L188" class="ln">   188  </span>	StatusScheduleIsImmutable                                      Status = 202
+<span id="L189" class="ln">   189  </span>	StatusInvalidSchedulePayerID                                   Status = 203
+<span id="L190" class="ln">   190  </span>	StatusInvalidScheduleAccountID                                 Status = 204
+<span id="L191" class="ln">   191  </span>	StatusNoNewValidSignatures                                     Status = 205
+<span id="L192" class="ln">   192  </span>	StatusUnresolvableRequiredSigners                              Status = 206
+<span id="L193" class="ln">   193  </span>	StatusScheduledTransactionNotInWhitelist                       Status = 207
+<span id="L194" class="ln">   194  </span>	StatusSomeSignaturesWereInvalid                                Status = 208
+<span id="L195" class="ln">   195  </span>	StatusTransactionIDFieldNotAllowed                             Status = 209
+<span id="L196" class="ln">   196  </span>	StatusIdenticalScheduleAlreadyCreated                          Status = 210
+<span id="L197" class="ln">   197  </span>	StatusInvalidZeroByteInString                                  Status = 211
+<span id="L198" class="ln">   198  </span>	StatusScheduleAlreadyDeleted                                   Status = 212
+<span id="L199" class="ln">   199  </span>	StatusScheduleAlreadyExecuted                                  Status = 213
+<span id="L200" class="ln">   200  </span>	StatusMessageSizeTooLarge                                      Status = 214
+<span id="L201" class="ln">   201  </span>	StatusOperationRepeatedInBucketGroups                          Status = 215
+<span id="L202" class="ln">   202  </span>	StatusBucketCapacityOverflow                                   Status = 216
+<span id="L203" class="ln">   203  </span>	StatusNodeCapacityNotSufficientForOperation                    Status = 217
+<span id="L204" class="ln">   204  </span>	StatusBucketHasNoThrottleGroups                                Status = 218
+<span id="L205" class="ln">   205  </span>	StatusThrottleGroupHasZeroOpsPerSec                            Status = 219
+<span id="L206" class="ln">   206  </span>	StatusSuccessButMissingExpectedOperation                       Status = 220
+<span id="L207" class="ln">   207  </span>	StatusUnparseableThrottleDefinitions                           Status = 221
+<span id="L208" class="ln">   208  </span>	StatusInvalidThrottleDefinitions                               Status = 222
+<span id="L209" class="ln">   209  </span>	StatusAccountExpiredAndPendingRemoval                          Status = 223
+<span id="L210" class="ln">   210  </span>	StatusInvalidTokenMaxSupply                                    Status = 224
+<span id="L211" class="ln">   211  </span>	StatusInvalidTokenNftSerialNumber                              Status = 225
+<span id="L212" class="ln">   212  </span>	StatusInvalidNftID                                             Status = 226
+<span id="L213" class="ln">   213  </span>	StatusMetadataTooLong                                          Status = 227
+<span id="L214" class="ln">   214  </span>	StatusBatchSizeLimitExceeded                                   Status = 228
+<span id="L215" class="ln">   215  </span>	StatusInvalidQueryRange                                        Status = 229
+<span id="L216" class="ln">   216  </span>	StatusFractionDividesByZero                                    Status = 230
+<span id="L217" class="ln">   217  </span>	StatusInsufficientPayerBalanceForCustomFee                     Status = 231
+<span id="L218" class="ln">   218  </span>	StatusCustomFeesListTooLong                                    Status = 232
+<span id="L219" class="ln">   219  </span>	StatusInvalidCustomFeeCollector                                Status = 233
+<span id="L220" class="ln">   220  </span>	StatusInvalidTokenIDInCustomFees                               Status = 234
+<span id="L221" class="ln">   221  </span>	StatusTokenNotAssociatedToFeeCollector                         Status = 235
+<span id="L222" class="ln">   222  </span>	StatusTokenMaxSupplyReached                                    Status = 236
+<span id="L223" class="ln">   223  </span>	StatusSenderDoesNotOwnNftSerialNo                              Status = 237
+<span id="L224" class="ln">   224  </span>	StatusCustomFeeNotFullySpecified                               Status = 238
+<span id="L225" class="ln">   225  </span>	StatusCustomFeeMustBePositive                                  Status = 239
+<span id="L226" class="ln">   226  </span>	StatusTokenHasNoFeeScheduleKey                                 Status = 240
+<span id="L227" class="ln">   227  </span>	StatusCustomFeeOutsideNumericRange                             Status = 241
+<span id="L228" class="ln">   228  </span>	StatusRoyaltyFractionCannotExceedOne                           Status = 242
+<span id="L229" class="ln">   229  </span>	StatusFractionalFeeMaxAmountLessThanMinAmount                  Status = 243
+<span id="L230" class="ln">   230  </span>	StatusCustomScheduleAlreadyHasNoFees                           Status = 244
+<span id="L231" class="ln">   231  </span>	StatusCustomFeeDenominationMustBeFungibleCommon                Status = 245
+<span id="L232" class="ln">   232  </span>	StatusCustomFractionalFeeOnlyAllowedForFungibleCommon          Status = 246
+<span id="L233" class="ln">   233  </span>	StatusInvalidCustomFeeScheduleKey                              Status = 247
+<span id="L234" class="ln">   234  </span>	StatusInvalidTokenMintMetadata                                 Status = 248
+<span id="L235" class="ln">   235  </span>	StatusInvalidTokenBurnMetadata                                 Status = 249
+<span id="L236" class="ln">   236  </span>	StatusCurrentTreasuryStillOwnsNfts                             Status = 250
+<span id="L237" class="ln">   237  </span>	StatusAccountStillOwnsNfts                                     Status = 251
+<span id="L238" class="ln">   238  </span>	StatusTreasuryMustOwnBurnedNft                                 Status = 252
+<span id="L239" class="ln">   239  </span>	StatusAccountDoesNotOwnWipedNft                                Status = 253
+<span id="L240" class="ln">   240  </span>	StatusAccountAmountTransfersOnlyAllowedForFungibleCommon       Status = 254
+<span id="L241" class="ln">   241  </span>	StatusMaxNftsInPriceRegimeHaveBeenMinted                       Status = 255
+<span id="L242" class="ln">   242  </span>	StatusPayerAccountDeleted                                      Status = 256
+<span id="L243" class="ln">   243  </span>	StatusCustomFeeChargingExceededMaxRecursionDepth               Status = 257
+<span id="L244" class="ln">   244  </span>	StatusCustomFeeChargingExceededMaxAccountAmounts               Status = 258
+<span id="L245" class="ln">   245  </span>	StatusInsufficientSenderAccountBalanceForCustomFee             Status = 259
+<span id="L246" class="ln">   246  </span>	StatusSerialNumberLimitReached                                 Status = 260
+<span id="L247" class="ln">   247  </span>	StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique          Status = 261
+<span id="L248" class="ln">   248  </span>	StatusNoRemainingAutomaticAssociations                         Status = 262
+<span id="L249" class="ln">   249  </span>	StatusExistingAutomaticAssociationsExceedGivenLimit            Status = 263
+<span id="L250" class="ln">   250  </span>	StatusRequestedNumAutomaticAssociationsExceedsAssociationLimit Status = 264
+<span id="L251" class="ln">   251  </span>	StatusTokenIsPaused                                            Status = 265
+<span id="L252" class="ln">   252  </span>	StatusTokenHasNoPauseKey                                       Status = 266
+<span id="L253" class="ln">   253  </span>	StatusInvalidPauseKey                                          Status = 267
+<span id="L254" class="ln">   254  </span>	StatusFreezeUpdateFileDoesNotExist                             Status = 268
+<span id="L255" class="ln">   255  </span>	StatusFreezeUpdateFileHashDoesNotMatch                         Status = 269
+<span id="L256" class="ln">   256  </span>	StatusNoUpgradeHasBeenPrepared                                 Status = 270
+<span id="L257" class="ln">   257  </span>	StatusNoFreezeIsScheduled                                      Status = 271
+<span id="L258" class="ln">   258  </span>	StatusUpdateFileHashChangedSincePrepareUpgrade                 Status = 272
+<span id="L259" class="ln">   259  </span>	StatusFreezeStartTimeMustBeFuture                              Status = 273
+<span id="L260" class="ln">   260  </span>	StatusPreparedUpdateFileIsImmutable                            Status = 274
+<span id="L261" class="ln">   261  </span>	StatusFreezeAlreadyScheduled                                   Status = 275
+<span id="L262" class="ln">   262  </span>	StatusFreezeUpgradeInProgress                                  Status = 276
+<span id="L263" class="ln">   263  </span>	StatusUpdateFileIDDoesNotMatchPrepared                         Status = 277
+<span id="L264" class="ln">   264  </span>	StatusUpdateFileHashDoesNotMatchPrepared                       Status = 278
+<span id="L265" class="ln">   265  </span>	StatusConsensusGasExhausted                                    Status = 279
+<span id="L266" class="ln">   266  </span>	StatusRevertedSuccess                                          Status = 280
+<span id="L267" class="ln">   267  </span>	StatusMaxStorageInPriceRegimeHasBeenUsed                       Status = 281
+<span id="L268" class="ln">   268  </span>	StatusInvalidAliasKey                                          Status = 282
+<span id="L269" class="ln">   269  </span>	StatusUnexpectedTokenDecimals                                  Status = 283
+<span id="L270" class="ln">   270  </span>	StatusInvalidProxyAccountID                                    Status = 284
+<span id="L271" class="ln">   271  </span>	StatusInvalidTransferAccountID                                 Status = 285
+<span id="L272" class="ln">   272  </span>	StatusInvalidFeeCollectorAccountID                             Status = 286
+<span id="L273" class="ln">   273  </span>	StatusAliasIsImmutable                                         Status = 287
+<span id="L274" class="ln">   274  </span>	StatusSpenderAccountSameAsOwner                                Status = 288
+<span id="L275" class="ln">   275  </span>	StatusAmountExceedsTokenMaxSupply                              Status = 289
+<span id="L276" class="ln">   276  </span>	StatusNegativeAllowanceAmount                                  Status = 290
+<span id="L277" class="ln">   277  </span>	StatusCannotApproveForAllFungibleCommon                        Status = 291
+<span id="L278" class="ln">   278  </span>	StatusSpenderDoesNotHaveAllowance                              Status = 292
+<span id="L279" class="ln">   279  </span>	StatusAmountExceedsAllowance                                   Status = 293
+<span id="L280" class="ln">   280  </span>	StatusMaxAllowancesExceeded                                    Status = 294
+<span id="L281" class="ln">   281  </span>	StatusEmptyAllowances                                          Status = 295
+<span id="L282" class="ln">   282  </span>	StatusSpenderAccountRepeatedInAllowance                        Status = 296
+<span id="L283" class="ln">   283  </span>	StatusRepeatedSerialNumsInNftAllowances                        Status = 297
+<span id="L284" class="ln">   284  </span>	StatusFungibleTokenInNftAllowances                             Status = 298
+<span id="L285" class="ln">   285  </span>	StatusNftInFungibleTokenAllowances                             Status = 299
+<span id="L286" class="ln">   286  </span>	StatusInvalidAllowanceOwnerID                                  Status = 300
+<span id="L287" class="ln">   287  </span>	StatusInvalidAllowanceSpenderID                                Status = 301
+<span id="L288" class="ln">   288  </span>	StatusRepeatedAllowancesToDelete                               Status = 302
+<span id="L289" class="ln">   289  </span>	StatusInvalidDelegatingSpender                                 Status = 303
+<span id="L290" class="ln">   290  </span>	StatusDelegatingSpenderCannotGrantApproveForAll                Status = 304
+<span id="L291" class="ln">   291  </span>	StatusDelegatingSpenderDoesNotHaveApproveForAll                Status = 305
+<span id="L292" class="ln">   292  </span>	StatusScheduleExpirationTimeTooFarInFuture                     Status = 306
+<span id="L293" class="ln">   293  </span>	StatusScheduleExpirationTimeMustBeHigherThanConsensusTime      Status = 307
+<span id="L294" class="ln">   294  </span>	StatusScheduleFutureThrottleExceeded                           Status = 308
+<span id="L295" class="ln">   295  </span>	StatusScheduleFutureGasLimitExceeded                           Status = 309
+<span id="L296" class="ln">   296  </span>	StatusInvalidEthereumTransaction                               Status = 310
+<span id="L297" class="ln">   297  </span>	StatusWrongChanID                                              Status = 311
+<span id="L298" class="ln">   298  </span>	StatusWrongNonce                                               Status = 312
+<span id="L299" class="ln">   299  </span>	StatusAccessListUnsupported                                    Status = 313
+<span id="L300" class="ln">   300  </span>	StatusSchedulePendingExpiration                                Status = 314
+<span id="L301" class="ln">   301  </span>	StatusContractIsTokenTreasury                                  Status = 315
+<span id="L302" class="ln">   302  </span>	StatusContractHasNonZeroTokenBalances                          Status = 316
+<span id="L303" class="ln">   303  </span>	StatusContractExpiredAndPendingRemoval                         Status = 317
+<span id="L304" class="ln">   304  </span>	StatusContractHasNoAutoRenewAccount                            Status = 318
+<span id="L305" class="ln">   305  </span>	StatusPermanentRemovalRequiresSystemInitiation                 Status = 319
+<span id="L306" class="ln">   306  </span>	StatusProxyAccountIDFieldIsDeprecated                          Status = 320
+<span id="L307" class="ln">   307  </span>	StatusSelfStakingIsNotAllowed                                  Status = 321
+<span id="L308" class="ln">   308  </span>	StatusInvalidStakingID                                         Status = 322
+<span id="L309" class="ln">   309  </span>	StatusStakingNotEnabled                                        Status = 323
+<span id="L310" class="ln">   310  </span>	StatusInvalidRandomGenerateRange                               Status = 324
+<span id="L311" class="ln">   311  </span>	StatusMaxEntitiesInPriceRegimeHaveBeenCreated                  Status = 325
+<span id="L312" class="ln">   312  </span>	StatusInvalidFullPrefixSignatureForPrecompile                  Status = 326
+<span id="L313" class="ln">   313  </span>	StatusInsufficientBalancesForStorageRent                       Status = 327
+<span id="L314" class="ln">   314  </span>	StatusMaxChildRecordsExceeded                                  Status = 328
+<span id="L315" class="ln">   315  </span>	StatusInsufficientBalancesForRenewalFees                       Status = 329
+<span id="L316" class="ln">   316  </span>	StatusTransactionHasUnknownFields                              Status = 330
+<span id="L317" class="ln">   317  </span>	StatusAccountIsImmutable                                       Status = 331
+<span id="L318" class="ln">   318  </span>	StatusAliasAlreadyAssigned                                     Status = 332
+<span id="L319" class="ln">   319  </span>)
+<span id="L320" class="ln">   320  </span>
+<span id="L321" class="ln">   321  </span><span class="comment">// String() returns a string representation of the status</span>
+<span id="L322" class="ln">   322  </span>func (status Status) String() string { <span class="comment">// nolint</span>
+<span id="L323" class="ln">   323  </span>	switch status {
+<span id="L324" class="ln">   324  </span>	case StatusOk:
+<span id="L325" class="ln">   325  </span>		return &#34;OK&#34;
+<span id="L326" class="ln">   326  </span>	case StatusInvalidTransaction:
+<span id="L327" class="ln">   327  </span>		return &#34;INVALID_TRANSACTION&#34;
+<span id="L328" class="ln">   328  </span>	case StatusPayerAccountNotFound:
+<span id="L329" class="ln">   329  </span>		return &#34;PAYER_ACCOUNT_NOT_FOUND&#34;
+<span id="L330" class="ln">   330  </span>	case StatusInvalidNodeAccount:
+<span id="L331" class="ln">   331  </span>		return &#34;INVALID_NODE_ACCOUNT&#34;
+<span id="L332" class="ln">   332  </span>	case StatusTransactionExpired:
+<span id="L333" class="ln">   333  </span>		return &#34;TRANSACTION_EXPIRED&#34;
+<span id="L334" class="ln">   334  </span>	case StatusInvalidTransactionStart:
+<span id="L335" class="ln">   335  </span>		return &#34;INVALID_TRANSACTION_START&#34;
+<span id="L336" class="ln">   336  </span>	case StatusInvalidTransactionDuration:
+<span id="L337" class="ln">   337  </span>		return &#34;INVALID_TRANSACTION_DURATION&#34;
+<span id="L338" class="ln">   338  </span>	case StatusInvalidSignature:
+<span id="L339" class="ln">   339  </span>		return &#34;INVALID_SIGNATURE&#34;
+<span id="L340" class="ln">   340  </span>	case StatusMemoTooLong:
+<span id="L341" class="ln">   341  </span>		return &#34;MEMO_TOO_LONG&#34;
+<span id="L342" class="ln">   342  </span>	case StatusInsufficientTxFee:
+<span id="L343" class="ln">   343  </span>		return &#34;INSUFFICIENT_TX_FEE&#34;
+<span id="L344" class="ln">   344  </span>	case StatusInsufficientPayerBalance:
+<span id="L345" class="ln">   345  </span>		return &#34;INSUFFICIENT_PAYER_BALANCE&#34;
+<span id="L346" class="ln">   346  </span>	case StatusDuplicateTransaction:
+<span id="L347" class="ln">   347  </span>		return &#34;DUPLICATE_TRANSACTION&#34;
+<span id="L348" class="ln">   348  </span>	case StatusBusy:
+<span id="L349" class="ln">   349  </span>		return &#34;BUSY&#34;
+<span id="L350" class="ln">   350  </span>	case StatusNotSupported:
+<span id="L351" class="ln">   351  </span>		return &#34;NOT_SUPPORTED&#34;
+<span id="L352" class="ln">   352  </span>	case StatusInvalidFileID:
+<span id="L353" class="ln">   353  </span>		return &#34;INVALID_FILE_ID&#34;
+<span id="L354" class="ln">   354  </span>	case StatusInvalidAccountID:
+<span id="L355" class="ln">   355  </span>		return &#34;INVALID_ACCOUNT_ID&#34;
+<span id="L356" class="ln">   356  </span>	case StatusInvalidContractID:
+<span id="L357" class="ln">   357  </span>		return &#34;INVALID_CONTRACT_ID&#34;
+<span id="L358" class="ln">   358  </span>	case StatusInvalidTransactionID:
+<span id="L359" class="ln">   359  </span>		return &#34;INVALID_TRANSACTION_ID&#34;
+<span id="L360" class="ln">   360  </span>	case StatusReceiptNotFound:
+<span id="L361" class="ln">   361  </span>		return &#34;RECEIPT_NOT_FOUND&#34;
+<span id="L362" class="ln">   362  </span>	case StatusRecordNotFound:
+<span id="L363" class="ln">   363  </span>		return &#34;RECORD_NOT_FOUND&#34;
+<span id="L364" class="ln">   364  </span>	case StatusInvalidSolidityID:
+<span id="L365" class="ln">   365  </span>		return &#34;INVALID_SOLIDITY_ID&#34;
+<span id="L366" class="ln">   366  </span>	case StatusUnknown:
+<span id="L367" class="ln">   367  </span>		return &#34;UNKNOWN&#34;
+<span id="L368" class="ln">   368  </span>	case StatusSuccess:
+<span id="L369" class="ln">   369  </span>		return &#34;SUCCESS&#34;
+<span id="L370" class="ln">   370  </span>	case StatusFailInvalid:
+<span id="L371" class="ln">   371  </span>		return &#34;FAIL_INVALID&#34;
+<span id="L372" class="ln">   372  </span>	case StatusFailFee:
+<span id="L373" class="ln">   373  </span>		return &#34;FAIL_FEE&#34;
+<span id="L374" class="ln">   374  </span>	case StatusFailBalance:
+<span id="L375" class="ln">   375  </span>		return &#34;FAIL_BALANCE&#34;
+<span id="L376" class="ln">   376  </span>	case StatusKeyRequired:
+<span id="L377" class="ln">   377  </span>		return &#34;KEY_REQUIRED&#34;
+<span id="L378" class="ln">   378  </span>	case StatusBadEncoding:
+<span id="L379" class="ln">   379  </span>		return &#34;BAD_ENCODING&#34;
+<span id="L380" class="ln">   380  </span>	case StatusInsufficientAccountBalance:
+<span id="L381" class="ln">   381  </span>		return &#34;INSUFFICIENT_ACCOUNT_BALANCE&#34;
+<span id="L382" class="ln">   382  </span>	case StatusInvalidSolidityAddress:
+<span id="L383" class="ln">   383  </span>		return &#34;INVALID_SOLIDITY_ADDRESS&#34;
+<span id="L384" class="ln">   384  </span>	case StatusInsufficientGas:
+<span id="L385" class="ln">   385  </span>		return &#34;INSUFFICIENT_GAS&#34;
+<span id="L386" class="ln">   386  </span>	case StatusContractSizeLimitExceeded:
+<span id="L387" class="ln">   387  </span>		return &#34;CONTRACT_SIZE_LIMIT_EXCEEDED&#34;
+<span id="L388" class="ln">   388  </span>	case StatusLocalCallModificationException:
+<span id="L389" class="ln">   389  </span>		return &#34;LOCAL_CALL_MODIFICATION_EXCEPTION&#34;
+<span id="L390" class="ln">   390  </span>	case StatusContractRevertExecuted:
+<span id="L391" class="ln">   391  </span>		return &#34;CONTRACT_REVERT_EXECUTED&#34;
+<span id="L392" class="ln">   392  </span>	case StatusContractExecutionException:
+<span id="L393" class="ln">   393  </span>		return &#34;CONTRACT_EXECUTION_EXCEPTION&#34;
+<span id="L394" class="ln">   394  </span>	case StatusInvalidReceivingNodeAccount:
+<span id="L395" class="ln">   395  </span>		return &#34;INVALID_RECEIVING_NODE_ACCOUNT&#34;
+<span id="L396" class="ln">   396  </span>	case StatusMissingQueryHeader:
+<span id="L397" class="ln">   397  </span>		return &#34;MISSING_QUERY_HEADER&#34;
+<span id="L398" class="ln">   398  </span>	case StatusAccountUpdateFailed:
+<span id="L399" class="ln">   399  </span>		return &#34;ACCOUNT_UPDATE_FAILED&#34;
+<span id="L400" class="ln">   400  </span>	case StatusInvalidKeyEncoding:
+<span id="L401" class="ln">   401  </span>		return &#34;INVALID_KEY_ENCODING&#34;
+<span id="L402" class="ln">   402  </span>	case StatusNullSolidityAddress:
+<span id="L403" class="ln">   403  </span>		return &#34;NULL_SOLIDITY_ADDRESS&#34;
+<span id="L404" class="ln">   404  </span>	case StatusContractUpdateFailed:
+<span id="L405" class="ln">   405  </span>		return &#34;CONTRACT_UPDATE_FAILED&#34;
+<span id="L406" class="ln">   406  </span>	case StatusInvalidQueryHeader:
+<span id="L407" class="ln">   407  </span>		return &#34;INVALID_QUERY_HEADER&#34;
+<span id="L408" class="ln">   408  </span>	case StatusInvalidFeeSubmitted:
+<span id="L409" class="ln">   409  </span>		return &#34;INVALID_FEE_SUBMITTED&#34;
+<span id="L410" class="ln">   410  </span>	case StatusInvalidPayerSignature:
+<span id="L411" class="ln">   411  </span>		return &#34;INVALID_PAYER_SIGNATURE&#34;
+<span id="L412" class="ln">   412  </span>	case StatusKeyNotProvided:
+<span id="L413" class="ln">   413  </span>		return &#34;KEY_NOT_PROVIDED&#34;
+<span id="L414" class="ln">   414  </span>	case StatusInvalidExpirationTime:
+<span id="L415" class="ln">   415  </span>		return &#34;INVALID_EXPIRATION_TIME&#34;
+<span id="L416" class="ln">   416  </span>	case StatusNoWaclKey:
+<span id="L417" class="ln">   417  </span>		return &#34;NO_WACL_KEY&#34;
+<span id="L418" class="ln">   418  </span>	case StatusFileContentEmpty:
+<span id="L419" class="ln">   419  </span>		return &#34;FILE_CONTENT_EMPTY&#34;
+<span id="L420" class="ln">   420  </span>	case StatusInvalidAccountAmounts:
+<span id="L421" class="ln">   421  </span>		return &#34;INVALID_ACCOUNT_AMOUNTS&#34;
+<span id="L422" class="ln">   422  </span>	case StatusEmptyTransactionBody:
+<span id="L423" class="ln">   423  </span>		return &#34;EMPTY_TRANSACTION_BODY&#34;
+<span id="L424" class="ln">   424  </span>	case StatusInvalidTransactionBody:
+<span id="L425" class="ln">   425  </span>		return &#34;INVALID_TRANSACTION_BODY&#34;
+<span id="L426" class="ln">   426  </span>	case StatusInvalidSignatureTypeMismatchingKey:
+<span id="L427" class="ln">   427  </span>		return &#34;INVALID_SIGNATURE_TYPE_MISMATCHING_KEY&#34;
+<span id="L428" class="ln">   428  </span>	case StatusInvalidSignatureCountMismatchingKey:
+<span id="L429" class="ln">   429  </span>		return &#34;INVALID_SIGNATURE_COUNT_MISMATCHING_KEY&#34;
+<span id="L430" class="ln">   430  </span>	case StatusEmptyLiveHashBody:
+<span id="L431" class="ln">   431  </span>		return &#34;EMPTY_LIVE_HASH_BODY&#34;
+<span id="L432" class="ln">   432  </span>	case StatusEmptyLiveHash:
+<span id="L433" class="ln">   433  </span>		return &#34;EMPTY_LIVE_HASH&#34;
+<span id="L434" class="ln">   434  </span>	case StatusEmptyLiveHashKeys:
+<span id="L435" class="ln">   435  </span>		return &#34;EMPTY_LIVE_HASH_KEYS&#34;
+<span id="L436" class="ln">   436  </span>	case StatusInvalidLiveHashSize:
+<span id="L437" class="ln">   437  </span>		return &#34;INVALID_LIVE_HASH_SIZE&#34;
+<span id="L438" class="ln">   438  </span>	case StatusEmptyQueryBody:
+<span id="L439" class="ln">   439  </span>		return &#34;EMPTY_QUERY_BODY&#34;
+<span id="L440" class="ln">   440  </span>	case StatusEmptyLiveHashQuery:
+<span id="L441" class="ln">   441  </span>		return &#34;EMPTY_LIVE_HASH_QUERY&#34;
+<span id="L442" class="ln">   442  </span>	case StatusLiveHashNotFound:
+<span id="L443" class="ln">   443  </span>		return &#34;LIVE_HASH_NOT_FOUND&#34;
+<span id="L444" class="ln">   444  </span>	case StatusAccountIDDoesNotExist:
+<span id="L445" class="ln">   445  </span>		return &#34;ACCOUNT_ID_DOES_NOT_EXIST&#34;
+<span id="L446" class="ln">   446  </span>	case StatusLiveHashAlreadyExists:
+<span id="L447" class="ln">   447  </span>		return &#34;LIVE_HASH_ALREADY_EXISTS&#34;
+<span id="L448" class="ln">   448  </span>	case StatusInvalidFileWacl:
+<span id="L449" class="ln">   449  </span>		return &#34;INVALID_FILE_WACL&#34;
+<span id="L450" class="ln">   450  </span>	case StatusSerializationFailed:
+<span id="L451" class="ln">   451  </span>		return &#34;SERIALIZATION_FAILED&#34;
+<span id="L452" class="ln">   452  </span>	case StatusTransactionOversize:
+<span id="L453" class="ln">   453  </span>		return &#34;TRANSACTION_OVERSIZE&#34;
+<span id="L454" class="ln">   454  </span>	case StatusTransactionTooManyLayers:
+<span id="L455" class="ln">   455  </span>		return &#34;TRANSACTION_TOO_MANY_LAYERS&#34;
+<span id="L456" class="ln">   456  </span>	case StatusContractDeleted:
+<span id="L457" class="ln">   457  </span>		return &#34;CONTRACT_DELETED&#34;
+<span id="L458" class="ln">   458  </span>	case StatusPlatformNotActive:
+<span id="L459" class="ln">   459  </span>		return &#34;PLATFORM_NOT_ACTIVE&#34;
+<span id="L460" class="ln">   460  </span>	case StatusKeyPrefixMismatch:
+<span id="L461" class="ln">   461  </span>		return &#34;KEY_PREFIX_MISMATCH&#34;
+<span id="L462" class="ln">   462  </span>	case StatusPlatformTransactionNotCreated:
+<span id="L463" class="ln">   463  </span>		return &#34;PLATFORM_TRANSACTION_NOT_CREATED&#34;
+<span id="L464" class="ln">   464  </span>	case StatusInvalidRenewalPeriod:
+<span id="L465" class="ln">   465  </span>		return &#34;INVALID_RENEWAL_PERIOD&#34;
+<span id="L466" class="ln">   466  </span>	case StatusInvalidPayerAccountID:
+<span id="L467" class="ln">   467  </span>		return &#34;INVALID_PAYER_ACCOUNT_ID&#34;
+<span id="L468" class="ln">   468  </span>	case StatusAccountDeleted:
+<span id="L469" class="ln">   469  </span>		return &#34;ACCOUNT_DELETED&#34;
+<span id="L470" class="ln">   470  </span>	case StatusFileDeleted:
+<span id="L471" class="ln">   471  </span>		return &#34;FILE_DELETED&#34;
+<span id="L472" class="ln">   472  </span>	case StatusAccountRepeatedInAccountAmounts:
+<span id="L473" class="ln">   473  </span>		return &#34;ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS&#34;
+<span id="L474" class="ln">   474  </span>	case StatusSettingNegativeAccountBalance:
+<span id="L475" class="ln">   475  </span>		return &#34;SETTING_NEGATIVE_ACCOUNT_BALANCE&#34;
+<span id="L476" class="ln">   476  </span>	case StatusObtainerRequired:
+<span id="L477" class="ln">   477  </span>		return &#34;OBTAINER_REQUIRED&#34;
+<span id="L478" class="ln">   478  </span>	case StatusObtainerSameContractID:
+<span id="L479" class="ln">   479  </span>		return &#34;OBTAINER_SAME_CONTRACT_ID&#34;
+<span id="L480" class="ln">   480  </span>	case StatusObtainerDoesNotExist:
+<span id="L481" class="ln">   481  </span>		return &#34;OBTAINER_DOES_NOT_EXIST&#34;
+<span id="L482" class="ln">   482  </span>	case StatusModifyingImmutableContract:
+<span id="L483" class="ln">   483  </span>		return &#34;MODIFYING_IMMUTABLE_CONTRACT&#34;
+<span id="L484" class="ln">   484  </span>	case StatusFileSystemException:
+<span id="L485" class="ln">   485  </span>		return &#34;FILE_SYSTEM_EXCEPTION&#34;
+<span id="L486" class="ln">   486  </span>	case StatusAutorenewDurationNotInRange:
+<span id="L487" class="ln">   487  </span>		return &#34;AUTORENEW_DURATION_NOT_IN_RANGE&#34;
+<span id="L488" class="ln">   488  </span>	case StatusErrorDecodingBytestring:
+<span id="L489" class="ln">   489  </span>		return &#34;ERROR_DECODING_BYTESTRING&#34;
+<span id="L490" class="ln">   490  </span>	case StatusContractFileEmpty:
+<span id="L491" class="ln">   491  </span>		return &#34;CONTRACT_FILE_EMPTY&#34;
+<span id="L492" class="ln">   492  </span>	case StatusContractBytecodeEmpty:
+<span id="L493" class="ln">   493  </span>		return &#34;CONTRACT_BYTECODE_EMPTY&#34;
+<span id="L494" class="ln">   494  </span>	case StatusInvalidInitialBalance:
+<span id="L495" class="ln">   495  </span>		return &#34;INVALID_INITIAL_BALANCE&#34;
+<span id="L496" class="ln">   496  </span>	case StatusInvalidReceiveRecordThreshold:
+<span id="L497" class="ln">   497  </span>		return &#34;INVALID_RECEIVE_RECORD_THRESHOLD&#34;
+<span id="L498" class="ln">   498  </span>	case StatusInvalidSendRecordThreshold:
+<span id="L499" class="ln">   499  </span>		return &#34;INVALID_SEND_RECORD_THRESHOLD&#34;
+<span id="L500" class="ln">   500  </span>	case StatusAccountIsNotGenesisAccount:
+<span id="L501" class="ln">   501  </span>		return &#34;ACCOUNT_IS_NOT_GENESIS_ACCOUNT&#34;
+<span id="L502" class="ln">   502  </span>	case StatusPayerAccountUnauthorized:
+<span id="L503" class="ln">   503  </span>		return &#34;PAYER_ACCOUNT_UNAUTHORIZED&#34;
+<span id="L504" class="ln">   504  </span>	case StatusInvalidFreezeTransactionBody:
+<span id="L505" class="ln">   505  </span>		return &#34;INVALID_FREEZE_TRANSACTION_BODY&#34;
+<span id="L506" class="ln">   506  </span>	case StatusFreezeTransactionBodyNotFound:
+<span id="L507" class="ln">   507  </span>		return &#34;FREEZE_TRANSACTION_BODY_NOT_FOUND&#34;
+<span id="L508" class="ln">   508  </span>	case StatusTransferListSizeLimitExceeded:
+<span id="L509" class="ln">   509  </span>		return &#34;TRANSFER_LIST_SIZE_LIMIT_EXCEEDED&#34;
+<span id="L510" class="ln">   510  </span>	case StatusResultSizeLimitExceeded:
+<span id="L511" class="ln">   511  </span>		return &#34;RESULT_SIZE_LIMIT_EXCEEDED&#34;
+<span id="L512" class="ln">   512  </span>	case StatusNotSpecialAccount:
+<span id="L513" class="ln">   513  </span>		return &#34;NOT_SPECIAL_ACCOUNT&#34;
+<span id="L514" class="ln">   514  </span>	case StatusContractNegativeGas:
+<span id="L515" class="ln">   515  </span>		return &#34;CONTRACT_NEGATIVE_GAS&#34;
+<span id="L516" class="ln">   516  </span>	case StatusContractNegativeValue:
+<span id="L517" class="ln">   517  </span>		return &#34;CONTRACT_NEGATIVE_VALUE&#34;
+<span id="L518" class="ln">   518  </span>	case StatusInvalidFeeFile:
+<span id="L519" class="ln">   519  </span>		return &#34;INVALID_FEE_FILE&#34;
+<span id="L520" class="ln">   520  </span>	case StatusInvalidExchangeRateFile:
+<span id="L521" class="ln">   521  </span>		return &#34;INVALID_EXCHANGE_RATE_FILE&#34;
+<span id="L522" class="ln">   522  </span>	case StatusInsufficientLocalCallGas:
+<span id="L523" class="ln">   523  </span>		return &#34;INSUFFICIENT_LOCAL_CALL_GAS&#34;
+<span id="L524" class="ln">   524  </span>	case StatusEntityNotAllowedToDelete:
+<span id="L525" class="ln">   525  </span>		return &#34;ENTITY_NOT_ALLOWED_TO_DELETE&#34;
+<span id="L526" class="ln">   526  </span>	case StatusAuthorizationFailed:
+<span id="L527" class="ln">   527  </span>		return &#34;AUTHORIZATION_FAILED&#34;
+<span id="L528" class="ln">   528  </span>	case StatusFileUploadedProtoInvalid:
+<span id="L529" class="ln">   529  </span>		return &#34;FILE_UPLOADED_PROTO_INVALID&#34;
+<span id="L530" class="ln">   530  </span>	case StatusFileUploadedProtoNotSavedToDisk:
+<span id="L531" class="ln">   531  </span>		return &#34;FILE_UPLOADED_PROTO_NOT_SAVED_TO_DISK&#34;
+<span id="L532" class="ln">   532  </span>	case StatusFeeScheduleFilePartUploaded:
+<span id="L533" class="ln">   533  </span>		return &#34;FEE_SCHEDULE_FILE_PART_UPLOADED&#34;
+<span id="L534" class="ln">   534  </span>	case StatusExchangeRateChangeLimitExceeded:
+<span id="L535" class="ln">   535  </span>		return &#34;EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED&#34;
+<span id="L536" class="ln">   536  </span>	case StatusMaxContractStorageExceeded:
+<span id="L537" class="ln">   537  </span>		return &#34;MAX_CONTRACT_STORAGE_EXCEEDED&#34;
+<span id="L538" class="ln">   538  </span>	case StatusTransferAccountSameAsDeleteAccount:
+<span id="L539" class="ln">   539  </span>		return &#34;TRANSFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT&#34;
+<span id="L540" class="ln">   540  </span>	case StatusTotalLedgerBalanceInvalid:
+<span id="L541" class="ln">   541  </span>		return &#34;TOTAL_LEDGER_BALANCE_INVALID&#34;
+<span id="L542" class="ln">   542  </span>	case StatusExpirationReductionNotAllowed:
+<span id="L543" class="ln">   543  </span>		return &#34;EXPIRATION_REDUCTION_NOT_ALLOWED&#34;
+<span id="L544" class="ln">   544  </span>	case StatusMaxGasLimitExceeded:
+<span id="L545" class="ln">   545  </span>		return &#34;MAX_GAS_LIMIT_EXCEEDED&#34;
+<span id="L546" class="ln">   546  </span>	case StatusMaxFileSizeExceeded:
+<span id="L547" class="ln">   547  </span>		return &#34;MAX_FILE_SIZE_EXCEEDED&#34;
+<span id="L548" class="ln">   548  </span>	case StatusReceiverSigRequired:
+<span id="L549" class="ln">   549  </span>		return &#34;RECEIVER_SIG_REQUIRED&#34;
+<span id="L550" class="ln">   550  </span>	case StatusInvalidTopicID:
+<span id="L551" class="ln">   551  </span>		return &#34;INVALID_TOPIC_ID&#34;
+<span id="L552" class="ln">   552  </span>	case StatusInvalidAdminKey:
+<span id="L553" class="ln">   553  </span>		return &#34;INVALID_ADMIN_KEY&#34;
+<span id="L554" class="ln">   554  </span>	case StatusInvalidSubmitKey:
+<span id="L555" class="ln">   555  </span>		return &#34;INVALID_SUBMIT_KEY&#34;
+<span id="L556" class="ln">   556  </span>	case StatusUnauthorized:
+<span id="L557" class="ln">   557  </span>		return &#34;UNAUTHORIZED&#34;
+<span id="L558" class="ln">   558  </span>	case StatusInvalidTopicMessage:
+<span id="L559" class="ln">   559  </span>		return &#34;INVALID_TOPIC_MESSAGE&#34;
+<span id="L560" class="ln">   560  </span>	case StatusInvalidAutorenewAccount:
+<span id="L561" class="ln">   561  </span>		return &#34;INVALID_AUTORENEW_ACCOUNT&#34;
+<span id="L562" class="ln">   562  </span>	case StatusAutorenewAccountNotAllowed:
+<span id="L563" class="ln">   563  </span>		return &#34;AUTORENEW_ACCOUNT_NOT_ALLOWED&#34;
+<span id="L564" class="ln">   564  </span>	case StatusTopicExpired:
+<span id="L565" class="ln">   565  </span>		return &#34;TOPIC_EXPIRED&#34;
+<span id="L566" class="ln">   566  </span>	case StatusInvalidChunkNumber:
+<span id="L567" class="ln">   567  </span>		return &#34;INVALID_CHUNK_NUMBER&#34;
+<span id="L568" class="ln">   568  </span>	case StatusInvalidChunkTransactionID:
+<span id="L569" class="ln">   569  </span>		return &#34;INVALID_CHUNK_TRANSACTION_ID&#34;
+<span id="L570" class="ln">   570  </span>	case StatusAccountFrozenForToken:
+<span id="L571" class="ln">   571  </span>		return &#34;ACCOUNT_FROZEN_FOR_TOKEN&#34;
+<span id="L572" class="ln">   572  </span>	case StatusTokensPerAccountLimitExceeded:
+<span id="L573" class="ln">   573  </span>		return &#34;TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED&#34;
+<span id="L574" class="ln">   574  </span>	case StatusInvalidTokenID:
+<span id="L575" class="ln">   575  </span>		return &#34;INVALID_TOKEN_ID&#34;
+<span id="L576" class="ln">   576  </span>	case StatusInvalidTokenDecimals:
+<span id="L577" class="ln">   577  </span>		return &#34;INVALID_TOKEN_DECIMALS&#34;
+<span id="L578" class="ln">   578  </span>	case StatusInvalidTokenInitialSupply:
+<span id="L579" class="ln">   579  </span>		return &#34;INVALID_TOKEN_INITIAL_SUPPLY&#34;
+<span id="L580" class="ln">   580  </span>	case StatusInvalidTreasuryAccountForToken:
+<span id="L581" class="ln">   581  </span>		return &#34;INVALID_TREASURY_ACCOUNT_FOR_TOKEN&#34;
+<span id="L582" class="ln">   582  </span>	case StatusInvalidTokenSymbol:
+<span id="L583" class="ln">   583  </span>		return &#34;INVALID_TOKEN_SYMBOL&#34;
+<span id="L584" class="ln">   584  </span>	case StatusTokenHasNoFreezeKey:
+<span id="L585" class="ln">   585  </span>		return &#34;TOKEN_HAS_NO_FREEZE_KEY&#34;
+<span id="L586" class="ln">   586  </span>	case StatusTransfersNotZeroSumForToken:
+<span id="L587" class="ln">   587  </span>		return &#34;TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN&#34;
+<span id="L588" class="ln">   588  </span>	case StatusMissingTokenSymbol:
+<span id="L589" class="ln">   589  </span>		return &#34;MISSING_TOKEN_SYMBOL&#34;
+<span id="L590" class="ln">   590  </span>	case StatusTokenSymbolTooLong:
+<span id="L591" class="ln">   591  </span>		return &#34;TOKEN_SYMBOL_TOO_LONG&#34;
+<span id="L592" class="ln">   592  </span>	case StatusAccountKycNotGrantedForToken:
+<span id="L593" class="ln">   593  </span>		return &#34;ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN&#34;
+<span id="L594" class="ln">   594  </span>	case StatusTokenHasNoKycKey:
+<span id="L595" class="ln">   595  </span>		return &#34;TOKEN_HAS_NO_KYC_KEY&#34;
+<span id="L596" class="ln">   596  </span>	case StatusInsufficientTokenBalance:
+<span id="L597" class="ln">   597  </span>		return &#34;INSUFFICIENT_TOKEN_BALANCE&#34;
+<span id="L598" class="ln">   598  </span>	case StatusTokenWasDeleted:
+<span id="L599" class="ln">   599  </span>		return &#34;TOKEN_WAS_DELETED&#34;
+<span id="L600" class="ln">   600  </span>	case StatusTokenHasNoSupplyKey:
+<span id="L601" class="ln">   601  </span>		return &#34;TOKEN_HAS_NO_SUPPLY_KEY&#34;
+<span id="L602" class="ln">   602  </span>	case StatusTokenHasNoWipeKey:
+<span id="L603" class="ln">   603  </span>		return &#34;TOKEN_HAS_NO_WIPE_KEY&#34;
+<span id="L604" class="ln">   604  </span>	case StatusInvalidTokenMintAmount:
+<span id="L605" class="ln">   605  </span>		return &#34;INVALID_TOKEN_MINT_AMOUNT&#34;
+<span id="L606" class="ln">   606  </span>	case StatusInvalidTokenBurnAmount:
+<span id="L607" class="ln">   607  </span>		return &#34;INVALID_TOKEN_BURN_AMOUNT&#34;
+<span id="L608" class="ln">   608  </span>	case StatusTokenNotAssociatedToAccount:
+<span id="L609" class="ln">   609  </span>		return &#34;TOKEN_NOT_ASSOCIATED_TO_ACCOUNT&#34;
+<span id="L610" class="ln">   610  </span>	case StatusCannotWipeTokenTreasuryAccount:
+<span id="L611" class="ln">   611  </span>		return &#34;CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT&#34;
+<span id="L612" class="ln">   612  </span>	case StatusInvalidKycKey:
+<span id="L613" class="ln">   613  </span>		return &#34;INVALID_KYC_KEY&#34;
+<span id="L614" class="ln">   614  </span>	case StatusInvalidWipeKey:
+<span id="L615" class="ln">   615  </span>		return &#34;INVALID_WIPE_KEY&#34;
+<span id="L616" class="ln">   616  </span>	case StatusInvalidFreezeKey:
+<span id="L617" class="ln">   617  </span>		return &#34;INVALID_FREEZE_KEY&#34;
+<span id="L618" class="ln">   618  </span>	case StatusInvalidSupplyKey:
+<span id="L619" class="ln">   619  </span>		return &#34;INVALID_SUPPLY_KEY&#34;
+<span id="L620" class="ln">   620  </span>	case StatusMissingTokenName:
+<span id="L621" class="ln">   621  </span>		return &#34;MISSING_TOKEN_NAME&#34;
+<span id="L622" class="ln">   622  </span>	case StatusTokenNameTooLong:
+<span id="L623" class="ln">   623  </span>		return &#34;TOKEN_NAME_TOO_LONG&#34;
+<span id="L624" class="ln">   624  </span>	case StatusInvalidWipingAmount:
+<span id="L625" class="ln">   625  </span>		return &#34;INVALID_WIPING_AMOUNT&#34;
+<span id="L626" class="ln">   626  </span>	case StatusTokenIsImmutable:
+<span id="L627" class="ln">   627  </span>		return &#34;TOKEN_IS_IMMUTABLE&#34;
+<span id="L628" class="ln">   628  </span>	case StatusTokenAlreadyAssociatedToAccount:
+<span id="L629" class="ln">   629  </span>		return &#34;TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT&#34;
+<span id="L630" class="ln">   630  </span>	case StatusTransactionRequiresZeroTokenBalances:
+<span id="L631" class="ln">   631  </span>		return &#34;TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES&#34;
+<span id="L632" class="ln">   632  </span>	case StatusAccountIsTreasury:
+<span id="L633" class="ln">   633  </span>		return &#34;ACCOUNT_IS_TREASURY&#34;
+<span id="L634" class="ln">   634  </span>	case StatusTokenIDRepeatedInTokenList:
+<span id="L635" class="ln">   635  </span>		return &#34;TOKEN_ID_REPEATED_IN_TOKEN_LIST&#34;
+<span id="L636" class="ln">   636  </span>	case StatusTokenTransferListSizeLimitExceeded:
+<span id="L637" class="ln">   637  </span>		return &#34;TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED&#34;
+<span id="L638" class="ln">   638  </span>	case StatusEmptyTokenTransferBody:
+<span id="L639" class="ln">   639  </span>		return &#34;EMPTY_TOKEN_TRANSFER_BODY&#34;
+<span id="L640" class="ln">   640  </span>	case StatusEmptyTokenTransferAccountAmounts:
+<span id="L641" class="ln">   641  </span>		return &#34;EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS&#34;
+<span id="L642" class="ln">   642  </span>	case StatusInvalidScheduleID:
+<span id="L643" class="ln">   643  </span>		return &#34;INVALID_SCHEDULE_ID&#34;
+<span id="L644" class="ln">   644  </span>	case StatusScheduleIsImmutable:
+<span id="L645" class="ln">   645  </span>		return &#34;SCHEDULE_IS_IMMUTABLE&#34;
+<span id="L646" class="ln">   646  </span>	case StatusInvalidSchedulePayerID:
+<span id="L647" class="ln">   647  </span>		return &#34;INVALID_SCHEDULE_PAYER_ID&#34;
+<span id="L648" class="ln">   648  </span>	case StatusInvalidScheduleAccountID:
+<span id="L649" class="ln">   649  </span>		return &#34;INVALID_SCHEDULE_ACCOUNT_ID&#34;
+<span id="L650" class="ln">   650  </span>	case StatusNoNewValidSignatures:
+<span id="L651" class="ln">   651  </span>		return &#34;NO_NEW_VALID_SIGNATURES&#34;
+<span id="L652" class="ln">   652  </span>	case StatusUnresolvableRequiredSigners:
+<span id="L653" class="ln">   653  </span>		return &#34;UNRESOLVABLE_REQUIRED_SIGNERS&#34;
+<span id="L654" class="ln">   654  </span>	case StatusScheduledTransactionNotInWhitelist:
+<span id="L655" class="ln">   655  </span>		return &#34;SCHEDULED_TRANSACTION_NOT_IN_WHITELIST&#34;
+<span id="L656" class="ln">   656  </span>	case StatusSomeSignaturesWereInvalid:
+<span id="L657" class="ln">   657  </span>		return &#34;SOME_SIGNATURES_WERE_INVALID&#34;
+<span id="L658" class="ln">   658  </span>	case StatusTransactionIDFieldNotAllowed:
+<span id="L659" class="ln">   659  </span>		return &#34;TRANSACTION_ID_FIELD_NOT_ALLOWED&#34;
+<span id="L660" class="ln">   660  </span>	case StatusIdenticalScheduleAlreadyCreated:
+<span id="L661" class="ln">   661  </span>		return &#34;IDENTICAL_SCHEDULE_ALREADY_CREATED&#34;
+<span id="L662" class="ln">   662  </span>	case StatusInvalidZeroByteInString:
+<span id="L663" class="ln">   663  </span>		return &#34;INVALID_ZERO_BYTE_IN_STRING&#34;
+<span id="L664" class="ln">   664  </span>	case StatusScheduleAlreadyDeleted:
+<span id="L665" class="ln">   665  </span>		return &#34;SCHEDULE_ALREADY_DELETED&#34;
+<span id="L666" class="ln">   666  </span>	case StatusScheduleAlreadyExecuted:
+<span id="L667" class="ln">   667  </span>		return &#34;SCHEDULE_ALREADY_EXECUTED&#34;
+<span id="L668" class="ln">   668  </span>	case StatusMessageSizeTooLarge:
+<span id="L669" class="ln">   669  </span>		return &#34;MESSAGE_SIZE_TOO_LARGE&#34;
+<span id="L670" class="ln">   670  </span>	case StatusOperationRepeatedInBucketGroups:
+<span id="L671" class="ln">   671  </span>		return &#34;OPERATION_REPEATED_IN_BUCKET_GROUPS&#34;
+<span id="L672" class="ln">   672  </span>	case StatusBucketCapacityOverflow:
+<span id="L673" class="ln">   673  </span>		return &#34;BUCKET_CAPACITY_OVERFLOW&#34;
+<span id="L674" class="ln">   674  </span>	case StatusNodeCapacityNotSufficientForOperation:
+<span id="L675" class="ln">   675  </span>		return &#34;NODE_CAPACITY_NOT_SUFFICIENT_FOR_OPERATION&#34;
+<span id="L676" class="ln">   676  </span>	case StatusBucketHasNoThrottleGroups:
+<span id="L677" class="ln">   677  </span>		return &#34;BUCKET_HAS_NO_THROTTLE_GROUPS&#34;
+<span id="L678" class="ln">   678  </span>	case StatusThrottleGroupHasZeroOpsPerSec:
+<span id="L679" class="ln">   679  </span>		return &#34;THROTTLE_GROUP_HAS_ZERO_OPS_PER_SEC&#34;
+<span id="L680" class="ln">   680  </span>	case StatusSuccessButMissingExpectedOperation:
+<span id="L681" class="ln">   681  </span>		return &#34;SUCCESS_BUT_MISSING_EXPECTED_OPERATION&#34;
+<span id="L682" class="ln">   682  </span>	case StatusUnparseableThrottleDefinitions:
+<span id="L683" class="ln">   683  </span>		return &#34;UNPARSEABLE_THROTTLE_DEFINITIONS&#34;
+<span id="L684" class="ln">   684  </span>	case StatusInvalidThrottleDefinitions:
+<span id="L685" class="ln">   685  </span>		return &#34;INVALID_THROTTLE_DEFINITIONS&#34;
+<span id="L686" class="ln">   686  </span>	case StatusAccountExpiredAndPendingRemoval:
+<span id="L687" class="ln">   687  </span>		return &#34;ACCOUNT_EXPIRED_AND_PENDING_REMOVAL&#34;
+<span id="L688" class="ln">   688  </span>	case StatusInvalidTokenMaxSupply:
+<span id="L689" class="ln">   689  </span>		return &#34;INVALID_TOKEN_MAX_SUPPLY&#34;
+<span id="L690" class="ln">   690  </span>	case StatusInvalidTokenNftSerialNumber:
+<span id="L691" class="ln">   691  </span>		return &#34;INVALID_TOKEN_NFT_SERIAL_NUMBER&#34;
+<span id="L692" class="ln">   692  </span>	case StatusInvalidNftID:
+<span id="L693" class="ln">   693  </span>		return &#34;INVALID_NFT_ID&#34;
+<span id="L694" class="ln">   694  </span>	case StatusMetadataTooLong:
+<span id="L695" class="ln">   695  </span>		return &#34;METADATA_TOO_LONG&#34;
+<span id="L696" class="ln">   696  </span>	case StatusBatchSizeLimitExceeded:
+<span id="L697" class="ln">   697  </span>		return &#34;BATCH_SIZE_LIMIT_EXCEEDED&#34;
+<span id="L698" class="ln">   698  </span>	case StatusInvalidQueryRange:
+<span id="L699" class="ln">   699  </span>		return &#34;INVALID_QUERY_RANGE&#34;
+<span id="L700" class="ln">   700  </span>	case StatusFractionDividesByZero:
+<span id="L701" class="ln">   701  </span>		return &#34;FRACTION_DIVIDES_BY_ZERO&#34;
+<span id="L702" class="ln">   702  </span>	case StatusInsufficientPayerBalanceForCustomFee:
+<span id="L703" class="ln">   703  </span>		return &#34;INSUFFICIENT_PAYER_BALANCE_FOR_CUSTOM_FEE&#34;
+<span id="L704" class="ln">   704  </span>	case StatusCustomFeesListTooLong:
+<span id="L705" class="ln">   705  </span>		return &#34;CUSTOM_FEES_LIST_TOO_LONG&#34;
+<span id="L706" class="ln">   706  </span>	case StatusInvalidCustomFeeCollector:
+<span id="L707" class="ln">   707  </span>		return &#34;INVALID_CUSTOM_FEE_COLLECTOR&#34;
+<span id="L708" class="ln">   708  </span>	case StatusInvalidTokenIDInCustomFees:
+<span id="L709" class="ln">   709  </span>		return &#34;INVALID_TOKEN_ID_IN_CUSTOM_FEES&#34;
+<span id="L710" class="ln">   710  </span>	case StatusTokenNotAssociatedToFeeCollector:
+<span id="L711" class="ln">   711  </span>		return &#34;TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR&#34;
+<span id="L712" class="ln">   712  </span>	case StatusTokenMaxSupplyReached:
+<span id="L713" class="ln">   713  </span>		return &#34;TOKEN_MAX_SUPPLY_REACHED&#34;
+<span id="L714" class="ln">   714  </span>	case StatusSenderDoesNotOwnNftSerialNo:
+<span id="L715" class="ln">   715  </span>		return &#34;SENDER_DOES_NOT_OWN_NFT_SERIAL_NO&#34;
+<span id="L716" class="ln">   716  </span>	case StatusCustomFeeNotFullySpecified:
+<span id="L717" class="ln">   717  </span>		return &#34;CUSTOM_FEE_NOT_FULLY_SPECIFIED&#34;
+<span id="L718" class="ln">   718  </span>	case StatusCustomFeeMustBePositive:
+<span id="L719" class="ln">   719  </span>		return &#34;CUSTOM_FEE_MUST_BE_POSITIVE&#34;
+<span id="L720" class="ln">   720  </span>	case StatusTokenHasNoFeeScheduleKey:
+<span id="L721" class="ln">   721  </span>		return &#34;TOKEN_HAS_NO_FEE_SCHEDULE_KEY&#34;
+<span id="L722" class="ln">   722  </span>	case StatusCustomFeeOutsideNumericRange:
+<span id="L723" class="ln">   723  </span>		return &#34;CUSTOM_FEE_OUTSIDE_NUMERIC_RANGE&#34;
+<span id="L724" class="ln">   724  </span>	case StatusRoyaltyFractionCannotExceedOne:
+<span id="L725" class="ln">   725  </span>		return &#34;ROYALTY_FRACTION_CANNOT_EXCEED_ONE&#34;
+<span id="L726" class="ln">   726  </span>	case StatusFractionalFeeMaxAmountLessThanMinAmount:
+<span id="L727" class="ln">   727  </span>		return &#34;FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT&#34;
+<span id="L728" class="ln">   728  </span>	case StatusCustomScheduleAlreadyHasNoFees:
+<span id="L729" class="ln">   729  </span>		return &#34;CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES&#34;
+<span id="L730" class="ln">   730  </span>	case StatusCustomFeeDenominationMustBeFungibleCommon:
+<span id="L731" class="ln">   731  </span>		return &#34;CUSTOM_FEE_DENOMINATION_MUST_BE_FUNGIBLE_COMMON&#34;
+<span id="L732" class="ln">   732  </span>	case StatusCustomFractionalFeeOnlyAllowedForFungibleCommon:
+<span id="L733" class="ln">   733  </span>		return &#34;CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON&#34;
+<span id="L734" class="ln">   734  </span>	case StatusInvalidCustomFeeScheduleKey:
+<span id="L735" class="ln">   735  </span>		return &#34;INVALID_CUSTOM_FEE_SCHEDULE_KEY&#34;
+<span id="L736" class="ln">   736  </span>	case StatusInvalidTokenMintMetadata:
+<span id="L737" class="ln">   737  </span>		return &#34;INVALID_TOKEN_MINT_METADATA&#34;
+<span id="L738" class="ln">   738  </span>	case StatusInvalidTokenBurnMetadata:
+<span id="L739" class="ln">   739  </span>		return &#34;INVALID_TOKEN_BURN_METADATA&#34;
+<span id="L740" class="ln">   740  </span>	case StatusCurrentTreasuryStillOwnsNfts:
+<span id="L741" class="ln">   741  </span>		return &#34;CURRENT_TREASURY_STILL_OWNS_NFTS&#34;
+<span id="L742" class="ln">   742  </span>	case StatusAccountStillOwnsNfts:
+<span id="L743" class="ln">   743  </span>		return &#34;ACCOUNT_STILL_OWNS_NFTS&#34;
+<span id="L744" class="ln">   744  </span>	case StatusTreasuryMustOwnBurnedNft:
+<span id="L745" class="ln">   745  </span>		return &#34;TREASURY_MUST_OWN_BURNED_NFT&#34;
+<span id="L746" class="ln">   746  </span>	case StatusAccountDoesNotOwnWipedNft:
+<span id="L747" class="ln">   747  </span>		return &#34;ACCOUNT_DOES_NOT_OWN_WIPED_NFT&#34;
+<span id="L748" class="ln">   748  </span>	case StatusAccountAmountTransfersOnlyAllowedForFungibleCommon:
+<span id="L749" class="ln">   749  </span>		return &#34;ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON&#34;
+<span id="L750" class="ln">   750  </span>	case StatusMaxNftsInPriceRegimeHaveBeenMinted:
+<span id="L751" class="ln">   751  </span>		return &#34;MAX_NFTS_IN_PRICE_REGIME_HAVE_BEEN_MINTED&#34;
+<span id="L752" class="ln">   752  </span>	case StatusPayerAccountDeleted:
+<span id="L753" class="ln">   753  </span>		return &#34;PAYER_ACCOUNT_DELETED&#34;
+<span id="L754" class="ln">   754  </span>	case StatusCustomFeeChargingExceededMaxRecursionDepth:
+<span id="L755" class="ln">   755  </span>		return &#34;CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH&#34;
+<span id="L756" class="ln">   756  </span>	case StatusCustomFeeChargingExceededMaxAccountAmounts:
+<span id="L757" class="ln">   757  </span>		return &#34;CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS&#34;
+<span id="L758" class="ln">   758  </span>	case StatusInsufficientSenderAccountBalanceForCustomFee:
+<span id="L759" class="ln">   759  </span>		return &#34;INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE&#34;
+<span id="L760" class="ln">   760  </span>	case StatusSerialNumberLimitReached:
+<span id="L761" class="ln">   761  </span>		return &#34;SERIAL_NUMBER_LIMIT_REACHED&#34;
+<span id="L762" class="ln">   762  </span>	case StatusCustomRoyaltyFeeOnlyAllowedForNonFungibleUnique:
+<span id="L763" class="ln">   763  </span>		return &#34;CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE&#34;
+<span id="L764" class="ln">   764  </span>	case StatusNoRemainingAutomaticAssociations:
+<span id="L765" class="ln">   765  </span>		return &#34;NO_REMAINING_AUTOMATIC_ASSOCIATIONS&#34;
+<span id="L766" class="ln">   766  </span>	case StatusExistingAutomaticAssociationsExceedGivenLimit:
+<span id="L767" class="ln">   767  </span>		return &#34;EXISTING_AUTOMATIC_ASSOCIATIONS_EXCEED_GIVEN_LIMIT&#34;
+<span id="L768" class="ln">   768  </span>	case StatusRequestedNumAutomaticAssociationsExceedsAssociationLimit:
+<span id="L769" class="ln">   769  </span>		return &#34;REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT&#34;
+<span id="L770" class="ln">   770  </span>	case StatusTokenIsPaused:
+<span id="L771" class="ln">   771  </span>		return &#34;TOKEN_IS_PAUSED&#34;
+<span id="L772" class="ln">   772  </span>	case StatusTokenHasNoPauseKey:
+<span id="L773" class="ln">   773  </span>		return &#34;TOKEN_HAS_NO_PAUSE_KEY&#34;
+<span id="L774" class="ln">   774  </span>	case StatusInvalidPauseKey:
+<span id="L775" class="ln">   775  </span>		return &#34;INVALID_PAUSE_KEY&#34;
+<span id="L776" class="ln">   776  </span>	case StatusFreezeUpdateFileDoesNotExist:
+<span id="L777" class="ln">   777  </span>		return &#34;FREEZE_UPDATE_FILE_DOES_NOT_EXIST&#34;
+<span id="L778" class="ln">   778  </span>	case StatusFreezeUpdateFileHashDoesNotMatch:
+<span id="L779" class="ln">   779  </span>		return &#34;FREEZE_UPDATE_FILE_HASH_DOES_NOT_MATCH&#34;
+<span id="L780" class="ln">   780  </span>	case StatusNoUpgradeHasBeenPrepared:
+<span id="L781" class="ln">   781  </span>		return &#34;NO_UPGRADE_HAS_BEEN_PREPARED&#34;
+<span id="L782" class="ln">   782  </span>	case StatusNoFreezeIsScheduled:
+<span id="L783" class="ln">   783  </span>		return &#34;NO_FREEZE_IS_SCHEDULED&#34;
+<span id="L784" class="ln">   784  </span>	case StatusUpdateFileHashChangedSincePrepareUpgrade:
+<span id="L785" class="ln">   785  </span>		return &#34;UPDATE_FILE_HASH_CHANGED_SINCE_PREPARE_UPGRADE&#34;
+<span id="L786" class="ln">   786  </span>	case StatusFreezeStartTimeMustBeFuture:
+<span id="L787" class="ln">   787  </span>		return &#34;FREEZE_START_TIME_MUST_BE_FUTURE&#34;
+<span id="L788" class="ln">   788  </span>	case StatusPreparedUpdateFileIsImmutable:
+<span id="L789" class="ln">   789  </span>		return &#34;PREPARED_UPDATE_FILE_IS_IMMUTABLE&#34;
+<span id="L790" class="ln">   790  </span>	case StatusFreezeAlreadyScheduled:
+<span id="L791" class="ln">   791  </span>		return &#34;FREEZE_ALREADY_SCHEDULED&#34;
+<span id="L792" class="ln">   792  </span>	case StatusFreezeUpgradeInProgress:
+<span id="L793" class="ln">   793  </span>		return &#34;FREEZE_UPGRADE_IN_PROGRESS&#34;
+<span id="L794" class="ln">   794  </span>	case StatusUpdateFileIDDoesNotMatchPrepared:
+<span id="L795" class="ln">   795  </span>		return &#34;UPDATE_FILE_ID_DOES_NOT_MATCH_PREPARED&#34;
+<span id="L796" class="ln">   796  </span>	case StatusUpdateFileHashDoesNotMatchPrepared:
+<span id="L797" class="ln">   797  </span>		return &#34;UPDATE_FILE_HASH_DOES_NOT_MATCH_PREPARED&#34;
+<span id="L798" class="ln">   798  </span>	case StatusConsensusGasExhausted:
+<span id="L799" class="ln">   799  </span>		return &#34;CONSENSUS_GAS_EXHAUSTED&#34;
+<span id="L800" class="ln">   800  </span>	case StatusRevertedSuccess:
+<span id="L801" class="ln">   801  </span>		return &#34;REVERTED_SUCCESS&#34;
+<span id="L802" class="ln">   802  </span>	case StatusMaxStorageInPriceRegimeHasBeenUsed:
+<span id="L803" class="ln">   803  </span>		return &#34;MAX_STORAGE_IN_PRICE_REGIME_HAS_BEEN_USED&#34;
+<span id="L804" class="ln">   804  </span>	case StatusInvalidAliasKey:
+<span id="L805" class="ln">   805  </span>		return &#34;INVALID_ALIAS_KEY&#34;
+<span id="L806" class="ln">   806  </span>	case StatusUnexpectedTokenDecimals:
+<span id="L807" class="ln">   807  </span>		return &#34;UNEXPECTED_TOKEN_DECIMALS&#34;
+<span id="L808" class="ln">   808  </span>	case StatusInvalidProxyAccountID:
+<span id="L809" class="ln">   809  </span>		return &#34;INVALID_PROXY_ACCOUNT_ID&#34;
+<span id="L810" class="ln">   810  </span>	case StatusInvalidTransferAccountID:
+<span id="L811" class="ln">   811  </span>		return &#34;INVALID_TRANSFER_ACCOUNT_ID&#34;
+<span id="L812" class="ln">   812  </span>	case StatusInvalidFeeCollectorAccountID:
+<span id="L813" class="ln">   813  </span>		return &#34;INVALID_FEE_COLLECTOR_ACCOUNT_ID&#34;
+<span id="L814" class="ln">   814  </span>	case StatusAliasIsImmutable:
+<span id="L815" class="ln">   815  </span>		return &#34;ALIAS_IS_IMMUTABLE&#34;
+<span id="L816" class="ln">   816  </span>	case StatusSpenderAccountSameAsOwner:
+<span id="L817" class="ln">   817  </span>		return &#34;SPENDER_ACCOUNT_SAME_AS_OWNER&#34;
+<span id="L818" class="ln">   818  </span>	case StatusAmountExceedsTokenMaxSupply:
+<span id="L819" class="ln">   819  </span>		return &#34;AMOUNT_EXCEEDS_TOKEN_MAX_SUPPLY&#34;
+<span id="L820" class="ln">   820  </span>	case StatusNegativeAllowanceAmount:
+<span id="L821" class="ln">   821  </span>		return &#34;NEGATIVE_ALLOWANCE_AMOUNT&#34;
+<span id="L822" class="ln">   822  </span>	case StatusCannotApproveForAllFungibleCommon:
+<span id="L823" class="ln">   823  </span>		return &#34;CANNOT_APPROVE_FOR_ALL_FUNGIBLE_COMMON&#34;
+<span id="L824" class="ln">   824  </span>	case StatusSpenderDoesNotHaveAllowance:
+<span id="L825" class="ln">   825  </span>		return &#34;SPENDER_DOES_NOT_HAVE_ALLOWANCE&#34;
+<span id="L826" class="ln">   826  </span>	case StatusAmountExceedsAllowance:
+<span id="L827" class="ln">   827  </span>		return &#34;AMOUNT_EXCEEDS_ALLOWANCE&#34;
+<span id="L828" class="ln">   828  </span>	case StatusMaxAllowancesExceeded:
+<span id="L829" class="ln">   829  </span>		return &#34;MAX_ALLOWANCES_EXCEEDED&#34;
+<span id="L830" class="ln">   830  </span>	case StatusEmptyAllowances:
+<span id="L831" class="ln">   831  </span>		return &#34;EMPTY_ALLOWANCES&#34;
+<span id="L832" class="ln">   832  </span>	case StatusSpenderAccountRepeatedInAllowance:
+<span id="L833" class="ln">   833  </span>		return &#34;SPENDER_ACCOUNT_REPEATED_IN_ALLOWANCES&#34;
+<span id="L834" class="ln">   834  </span>	case StatusRepeatedSerialNumsInNftAllowances:
+<span id="L835" class="ln">   835  </span>		return &#34;REPEATED_SERIAL_NUMS_IN_NFT_ALLOWANCES&#34;
+<span id="L836" class="ln">   836  </span>	case StatusFungibleTokenInNftAllowances:
+<span id="L837" class="ln">   837  </span>		return &#34;FUNGIBLE_TOKEN_IN_NFT_ALLOWANCES&#34;
+<span id="L838" class="ln">   838  </span>	case StatusNftInFungibleTokenAllowances:
+<span id="L839" class="ln">   839  </span>		return &#34;NFT_IN_FUNGIBLE_TOKEN_ALLOWANCES&#34;
+<span id="L840" class="ln">   840  </span>	case StatusInvalidAllowanceOwnerID:
+<span id="L841" class="ln">   841  </span>		return &#34;INVALID_ALLOWANCE_OWNER_ID&#34;
+<span id="L842" class="ln">   842  </span>	case StatusInvalidAllowanceSpenderID:
+<span id="L843" class="ln">   843  </span>		return &#34;INVALID_ALLOWANCE_SPENDER_ID&#34;
+<span id="L844" class="ln">   844  </span>	case StatusRepeatedAllowancesToDelete:
+<span id="L845" class="ln">   845  </span>		return &#34;REPEATED_ALLOWANCES_TO_DELETE&#34;
+<span id="L846" class="ln">   846  </span>	case StatusInvalidDelegatingSpender:
+<span id="L847" class="ln">   847  </span>		return &#34;INVALID_DELEGATING_SPENDER&#34;
+<span id="L848" class="ln">   848  </span>	case StatusDelegatingSpenderCannotGrantApproveForAll:
+<span id="L849" class="ln">   849  </span>		return &#34;DELEGATING_SPENDER_CANNOT_GRANT_APPROVE_FOR_ALL&#34;
+<span id="L850" class="ln">   850  </span>	case StatusDelegatingSpenderDoesNotHaveApproveForAll:
+<span id="L851" class="ln">   851  </span>		return &#34;DELEGATING_SPENDER_DOES_NOT_HAVE_APPROVE_FOR_ALL&#34;
+<span id="L852" class="ln">   852  </span>	case StatusScheduleExpirationTimeTooFarInFuture:
+<span id="L853" class="ln">   853  </span>		return &#34;SCHEDULE_EXPIRATION_TIME_TOO_FAR_IN_FUTURE&#34;
+<span id="L854" class="ln">   854  </span>	case StatusScheduleExpirationTimeMustBeHigherThanConsensusTime:
+<span id="L855" class="ln">   855  </span>		return &#34;SCHEDULE_EXPIRATION_TIME_MUST_BE_HIGHER_THAN_CONSENSUS_TIME&#34;
+<span id="L856" class="ln">   856  </span>	case StatusScheduleFutureThrottleExceeded:
+<span id="L857" class="ln">   857  </span>		return &#34;SCHEDULE_FUTURE_THROTTLE_EXCEEDED&#34;
+<span id="L858" class="ln">   858  </span>	case StatusScheduleFutureGasLimitExceeded:
+<span id="L859" class="ln">   859  </span>		return &#34;SCHEDULE_FUTURE_GAS_LIMIT_EXCEEDED&#34;
+<span id="L860" class="ln">   860  </span>	case StatusInvalidEthereumTransaction:
+<span id="L861" class="ln">   861  </span>		return &#34;INVALID_ETHEREUM_TRANSACTION&#34;
+<span id="L862" class="ln">   862  </span>	case StatusWrongChanID:
+<span id="L863" class="ln">   863  </span>		return &#34;WRONG_CHAIN_ID&#34;
+<span id="L864" class="ln">   864  </span>	case StatusWrongNonce:
+<span id="L865" class="ln">   865  </span>		return &#34;WRONG_NONCE&#34;
+<span id="L866" class="ln">   866  </span>	case StatusAccessListUnsupported:
+<span id="L867" class="ln">   867  </span>		return &#34;ACCESS_LIST_UNSUPPORTED&#34;
+<span id="L868" class="ln">   868  </span>	case StatusSchedulePendingExpiration:
+<span id="L869" class="ln">   869  </span>		return &#34;SCHEDULE_PENDING_EXPIRATION&#34;
+<span id="L870" class="ln">   870  </span>	case StatusContractIsTokenTreasury:
+<span id="L871" class="ln">   871  </span>		return &#34;CONTRACT_IS_TOKEN_TREASURY&#34;
+<span id="L872" class="ln">   872  </span>	case StatusContractHasNonZeroTokenBalances:
+<span id="L873" class="ln">   873  </span>		return &#34;CONTRACT_HAS_NON_ZERO_TOKEN_BALANCES&#34;
+<span id="L874" class="ln">   874  </span>	case StatusContractExpiredAndPendingRemoval:
+<span id="L875" class="ln">   875  </span>		return &#34;CONTRACT_EXPIRED_AND_PENDING_REMOVAL&#34;
+<span id="L876" class="ln">   876  </span>	case StatusContractHasNoAutoRenewAccount:
+<span id="L877" class="ln">   877  </span>		return &#34;CONTRACT_HAS_NO_AUTO_RENEW_ACCOUNT&#34;
+<span id="L878" class="ln">   878  </span>	case StatusPermanentRemovalRequiresSystemInitiation:
+<span id="L879" class="ln">   879  </span>		return &#34;PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION&#34;
+<span id="L880" class="ln">   880  </span>	case StatusProxyAccountIDFieldIsDeprecated:
+<span id="L881" class="ln">   881  </span>		return &#34;PROXY_ACCOUNT_ID_FIELD_IS_DEPRECATED &#34;
+<span id="L882" class="ln">   882  </span>	case StatusSelfStakingIsNotAllowed:
+<span id="L883" class="ln">   883  </span>		return &#34;SELF_STAKING_IS_NOT_ALLOWED&#34;
+<span id="L884" class="ln">   884  </span>	case StatusInvalidStakingID:
+<span id="L885" class="ln">   885  </span>		return &#34;INVALID_STAKING_ID&#34;
+<span id="L886" class="ln">   886  </span>	case StatusStakingNotEnabled:
+<span id="L887" class="ln">   887  </span>		return &#34;STAKING_NOT_ENABLED&#34;
+<span id="L888" class="ln">   888  </span>	case StatusInvalidRandomGenerateRange:
+<span id="L889" class="ln">   889  </span>		return &#34;INVALID_RANDOM_GENERATE_RANGE&#34;
+<span id="L890" class="ln">   890  </span>	case StatusMaxEntitiesInPriceRegimeHaveBeenCreated:
+<span id="L891" class="ln">   891  </span>		return &#34;MAX_ENTITIES_IN_PRICE_REGIME_HAVE_BEEN_CREATED&#34;
+<span id="L892" class="ln">   892  </span>	case StatusInvalidFullPrefixSignatureForPrecompile:
+<span id="L893" class="ln">   893  </span>		return &#34;INVALID_FULL_PREFIX_SIGNATURE_FOR_PRECOMPILE&#34;
+<span id="L894" class="ln">   894  </span>	case StatusInsufficientBalancesForStorageRent:
+<span id="L895" class="ln">   895  </span>		return &#34;INSUFFICIENT_BALANCES_FOR_STORAGE_RENT&#34;
+<span id="L896" class="ln">   896  </span>	case StatusMaxChildRecordsExceeded:
+<span id="L897" class="ln">   897  </span>		return &#34;MAX_CHILD_RECORDS_EXCEEDED&#34;
+<span id="L898" class="ln">   898  </span>	case StatusInsufficientBalancesForRenewalFees:
+<span id="L899" class="ln">   899  </span>		return &#34;INSUFFICIENT_BALANCES_FOR_RENEWAL_FEES&#34;
+<span id="L900" class="ln">   900  </span>	case StatusTransactionHasUnknownFields:
+<span id="L901" class="ln">   901  </span>		return &#34;TRANSACTION_HAS_UNKNOWN_FIELDS&#34;
+<span id="L902" class="ln">   902  </span>	case StatusAccountIsImmutable:
+<span id="L903" class="ln">   903  </span>		return &#34;ACCOUNT_IS_IMMUTABLE&#34;
+<span id="L904" class="ln">   904  </span>	case StatusAliasAlreadyAssigned:
+<span id="L905" class="ln">   905  </span>		return &#34;ALIAS_ALREADY_ASSIGNED&#34;
+<span id="L906" class="ln">   906  </span>	}
+<span id="L907" class="ln">   907  </span>
+<span id="L908" class="ln">   908  </span>	panic(fmt.Sprintf(&#34;unreachable: Status.String() switch statement is non-exhaustive. Status: %v&#34;, uint32(status)))
+<span id="L909" class="ln">   909  </span>}
+<span id="L910" class="ln">   910  </span>
+</pre><p></p>
+
+<div id="footer">
+Build version go1.19.6.<br/>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>
