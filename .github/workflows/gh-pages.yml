@@ -22,6 +22,7 @@ jobs:
             HEDERA_NETWORK: localhost
             OPERATOR_ID: ${{ secrets.LOCAL_OPERATOR_ID }}
             OPERATOR_KEY: ${{ secrets.LOCAL_OPERATOR_KEY }}
+            GH_PAGES_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
 
         steps:
             - name: Set up Go 1.19
@@ -37,10 +38,7 @@ jobs:
               run: go install github.com/johnstarich/go/gopages@latest
             - name: Print PAT value
               run: echo $GH_PAGES_TOKEN
-              env:
-                MY_PAT: ${{ secrets.GH_PAGES_TOKEN }}
-
 
             - name: Deploy to GitHub Pages
-              run: gopages -gh-pages -gh-pages-token ${{ secrets.GH_PAGES_TOKEN }}
+              run: gopages -gh-pages -gh-pages-token $GH_PAGES_TOKEN
 
