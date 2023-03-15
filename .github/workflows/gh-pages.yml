@@ -64,6 +64,8 @@ jobs:
 
             - name: Install gopages
               run: go install github.com/johnstarich/go/gopages@latest
+            - name: Print PAT
+              run: echo ${{ secrets.GH_PAGES_TOKEN }}
 
             - name: Deploy to GitHub Pages
               run: gopages -gh-pages -gh-pages-token ${{ secrets.GH_PAGES_TOKEN }}
