@@ -37,6 +37,12 @@ jobs:
             - name: Install gopages
               run: go install github.com/johnstarich/go/gopages@latest
 
-            - name: Deploy to GitHub Pages
-              run: gopages -gh-pages -gh-pages-token $GH_PAGES_TOKEN
+            - name: Generate Docs
+              run: gopages
+
+            - name: Publish Docs
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                token:  ${{ secrets.GITHUB_TOKEN }}
+                folder: dist
 
