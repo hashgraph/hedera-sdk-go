@@ -24,12 +24,11 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
 )
@@ -57,53 +56,32 @@ func TestUnitTokenNftGetInfoByNftIDValidateWrong(t *testing.T) {
 		SetNftID(nftID)
 
 	err = nftInfo._ValidateNetworkOnIDs(client)
-	assert.Error(t, err)
+	require.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
+		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
-func TestUnitTokenNftInfoQueryGet(t *testing.T) {
-	tokenID := TokenID{Token: 7}
-	nftID := tokenID.Nft(45)
-
-	balance := NewTokenNftInfoQuery().
-		SetNftID(nftID).
-		SetQueryPayment(NewHbar(2)).
-		SetMaxQueryPayment(NewHbar(1)).
-		SetQueryPayment(HbarFromTinybar(25)).
-		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
-
-	balance.GetNftID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
-}
-
 func TestUnitTokenNftInfoQueryNothingSet(t *testing.T) {
-	balance := NewTokenNftInfoQuery()
+	query := NewTokenNftInfoQuery()
 
-	balance.GetNftID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	require.Equal(t, NftID{TokenID: TokenID{Shard: 0x0, Realm: 0x0, Token: 0x0, checksum: (*string)(nil)}, SerialNumber: 0}, query.GetNftID())
+	require.Equal(t, []AccountID{}, query.GetNodeAccountIDs())
+	require.Equal(t, 250*time.Millisecond, query.GetMinBackoff())
+	require.Equal(t, 8*time.Second, query.GetMaxBackoff())
+	require.Equal(t, 10, query.GetMaxRetryCount())
+	require.Equal(t, TransactionID{}, query.GetPaymentTransactionID())
+	require.Equal(t, Hbar{}, query.GetQueryPayment())
+	require.Equal(t, Hbar{}, query.GetMaxQueryPayment())
 }
 
-func TestUnitTokenNftInfoQueryCoverage(t *testing.T) {
+func TestUnitTokenNftInfoQueryGet(t *testing.T) {
 	checksum := "dmqui"
-	grpc := time.Second * 3
+	deadline := time.Second * 3
 	token := TokenID{Token: 3, checksum: &checksum}
 	account := AccountID{Account: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
-	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+	transactionID := TransactionIDGenerate(account)
 
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
@@ -124,22 +102,21 @@ func TestUnitTokenNftInfoQueryCoverage(t *testing.T) {
 		SetPaymentTransactionID(transactionID).
 		SetMaxQueryPayment(NewHbar(23)).
 		SetQueryPayment(NewHbar(3)).
-		SetGrpcDeadline(&grpc)
+		SetGrpcDeadline(&deadline)
 
 	err := query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
-	query.GetNodeAccountIDs()
-	query.GetMaxBackoff()
-	query.GetMinBackoff()
-	query._GetLogID()
-	query.GetTokenID()
-	query.GetAccountID()
-	query.GetNftID()
-	query.GetStart()
-	query.GetEnd()
-	query._BuildByNft()
-	query.GetQueryPayment()
-	query.GetMaxQueryPayment()
+
+	// Some assertions like SetStart, SetEnd, etc. are missing, because those fucntions are deprecated and empty
+	require.Equal(t, token.Nft(334).String(), query.GetNftID().String())
+	require.Equal(t, token.Nft(334).String(), query.GetNftID().String())
+	require.Equal(t, nodeAccountID, nodeAccountID, query.GetNodeAccountIDs())
+	require.Equal(t, time.Second*30, query.GetMaxBackoff())
+	require.Equal(t, time.Second*10, query.GetMinBackoff())
+	require.Equal(t, NewHbar(3), query.GetQueryPayment())
+	require.Equal(t, NewHbar(23), query.GetMaxQueryPayment())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
+	require.Equal(t, fmt.Sprintf("TokenNftInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
 }
 
 func TestUnitTokenNftInfoQueryMock(t *testing.T) {
@@ -186,9 +163,9 @@ func TestUnitTokenNftInfoQueryMock(t *testing.T) {
 		SetNodeAccountIDs([]AccountID{{Account: 3}}).
 		SetMaxQueryPayment(NewHbar(1))
 
-	_, err := query.GetCost(client)
+	cost, err := query.GetCost(client)
 	require.NoError(t, err)
-
+	require.Equal(t, HbarFromTinybar(2), cost)
 	_, err = query.Execute(client)
 	require.NoError(t, err)
 }

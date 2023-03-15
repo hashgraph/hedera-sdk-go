@@ -24,15 +24,13 @@ package hedera
  */
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
-
-	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,9 +57,9 @@ func TestUnitContractInfoQueryValidateWrong(t *testing.T) {
 		SetContractID(contractID)
 
 	err = contractInfoQuery._ValidateNetworkOnIDs(client)
-	assert.Error(t, err)
+	require.Error(t, err)
 	if err != nil {
-		assert.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
+		require.Equal(t, "network mismatch or wrong checksum given, given checksum: rmkykd, correct checksum esxsf, network: testnet", err.Error())
 	}
 }
 
@@ -112,8 +110,9 @@ func TestUnitContractInfoQueryMock(t *testing.T) {
 		SetMaxQueryPayment(NewHbar(1)).
 		SetNodeAccountIDs([]AccountID{{Account: 3}})
 
-	_, err := query.GetCost(client)
+	cost, err := query.GetCost(client)
 	require.NoError(t, err)
+	require.Equal(t, cost, HbarFromTinybar(2))
 
 	result, err := query.Execute(client)
 	require.NoError(t, err)
@@ -192,19 +191,20 @@ func TestUnitContractInfoQueryGet(t *testing.T) {
 		SetQueryPayment(HbarFromTinybar(25)).
 		SetNodeAccountIDs([]AccountID{{Account: 10}, {Account: 11}, {Account: 12}})
 
-	balance.GetContractID()
-	balance.GetNodeAccountIDs()
-	balance.GetMinBackoff()
-	balance.GetMaxBackoff()
-	balance.GetMaxRetryCount()
-	balance.GetPaymentTransactionID()
-	balance.GetQueryPayment()
-	balance.GetMaxQueryPayment()
+	require.Equal(t, spenderContractID, balance.GetContractID())
+	require.Equal(t, []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}, balance.GetNodeAccountIDs())
+	require.Equal(t, 250*time.Millisecond, balance.GetMinBackoff())
+	require.Equal(t, 8*time.Second, balance.GetMaxBackoff())
+	require.Equal(t, 10, balance.GetMaxRetryCount())
+	require.Equal(t, TransactionID{}, balance.GetPaymentTransactionID())
+	require.Equal(t, HbarFromTinybar(25), balance.GetQueryPayment())
+	require.Equal(t, NewHbar(1), balance.GetMaxQueryPayment())
+
 }
 
 func TestUnitContractInfoQueryCoverage(t *testing.T) {
 	checksum := "dmqui"
-	grpc := time.Second * 3
+	deadline := time.Second * 3
 	contract := ContractID{Contract: 3, checksum: &checksum}
 	nodeAccountID := []AccountID{{Account: 10}}
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
@@ -221,13 +221,15 @@ func TestUnitContractInfoQueryCoverage(t *testing.T) {
 		SetPaymentTransactionID(transactionID).
 		SetMaxQueryPayment(NewHbar(23)).
 		SetQueryPayment(NewHbar(3)).
-		SetGrpcDeadline(&grpc)
+		SetGrpcDeadline(&deadline)
 
 	err := query._ValidateNetworkOnIDs(client)
 	require.NoError(t, err)
-	query.GetNodeAccountIDs()
-	query.GetMaxBackoff()
-	query.GetMinBackoff()
-	query._GetLogID()
-	query.GetContractID()
+
+	require.Equal(t, nodeAccountID, query.GetNodeAccountIDs())
+	require.Equal(t, time.Second*30, query.GetMaxBackoff())
+	require.Equal(t, time.Second*10, query.GetMinBackoff())
+	require.Equal(t, fmt.Sprintf("ContractInfoQuery:%v", transactionID.ValidStart.UnixNano()), query._GetLogID())
+	require.Equal(t, contract, query.GetContractID())
+	require.Equal(t, &deadline, query.GetGrpcDeadline())
 }
