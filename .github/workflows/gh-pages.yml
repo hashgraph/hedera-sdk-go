@@ -18,8 +18,6 @@ jobs:
         name: Update GitHub Pages
         if: success()
         runs-on: ubuntu-latest
-        needs:
-            - build
         env:
             HEDERA_NETWORK: localhost
             OPERATOR_ID: ${{ secrets.LOCAL_OPERATOR_ID }}
