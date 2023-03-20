@@ -110,24 +110,32 @@ func (this *_ManagedNetwork) _SetNetwork(network map[string]_IManagedNode) error
 
 func (this *_ManagedNetwork) _ReadmitNodes() {
 	now := time.Now()
-	nextEarliestReadmitTime := time.Now().Add(this.maxNodeReadmitPeriod)
 
-	for _, node := range this.nodes {
-		if node._GetReadmitTime() != nil && node._GetReadmitTime().After(now) && node._GetReadmitTime().Before(nextEarliestReadmitTime) {
-			nextEarliestReadmitTime = *node._GetReadmitTime()
-		}
-	}
+	if this.earliestReadmitTime.Before(now) {
+		nextEarliestReadmitTime := now.Add(this.maxNodeReadmitPeriod)
 
-outer:
-	for _, node := range this.nodes {
-		for _, healthyNode := range this.healthyNodes {
-			if node == healthyNode {
-				continue outer
+		for _, node := range this.nodes {
+			if node._GetReadmitTime() != nil && node._GetReadmitTime().After(now) && node._GetReadmitTime().Before(nextEarliestReadmitTime) {
+				nextEarliestReadmitTime = *node._GetReadmitTime()
 			}
 		}
 
-		if node._IsHealthy() {
-			this.healthyNodes = append(this.healthyNodes, node)
+		this.earliestReadmitTime = nextEarliestReadmitTime
+		if this.earliestReadmitTime.Before(now.Add(this.minNodeReadmitPeriod)) {
+			this.earliestReadmitTime = now.Add(this.minNodeReadmitPeriod)
+		}
+
+	outer:
+		for _, node := range this.nodes {
+			for _, healthyNode := range this.healthyNodes {
+				if node == healthyNode {
+					continue outer
+				}
+			}
+
+			if node._GetReadmitTime().Before(now) {
+				this.healthyNodes = append(this.healthyNodes, node)
+			}
 		}
 	}
 }

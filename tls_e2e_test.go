@@ -41,7 +41,6 @@ func TestIntegrationPreviewnetTls(t *testing.T) {
 	client := ClientForNetwork(network)
 	ledger, _ := LedgerIDFromNetworkName(NetworkNamePreviewnet)
 	client.SetTransportSecurity(true)
-	client.SetMirrorNetwork([]string{"hcs.previewnet.mirrornode.hedera.com:5600"})
 	client.SetLedgerID(*ledger)
 	client.SetMaxAttempts(3)
 
@@ -67,7 +66,6 @@ func TestIntegrationTestnetTls(t *testing.T) {
 	ledger, _ := LedgerIDFromNetworkName(NetworkNameTestnet)
 	client.SetTransportSecurity(true)
 	client.SetLedgerID(*ledger)
-	client.SetMirrorNetwork([]string{"hcs.testnet.mirrornode.hedera.com:5600"})
 	client.SetMaxAttempts(3)
 
 	for _, nodeAccountID := range network {
