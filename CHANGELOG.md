@@ -1,3 +1,21 @@
+## v2.23.0
+
+### Added
+
+* `CustomFractionalFee.SetAssessmentMethod()`
+* `AccountAllowanceApproveTransaction.ApproveTokenNftAllowanceWithDelegatingSpender()`
+* `PrivateKeyFromStringECDSA()`
+* New mirror node endpoints, only 443 port is now supported `mainnet-public.mirrornode.hedera.com:443`,`testnet.mirrornode.hedera.com:443`, `previewnet.mirrornode.hedera.com:443`
+
+### Fixed
+
+* Minimum query cost can now be less than 25 tinybars
+* `TransactionFromBytes()` now correctly sets transactionValidDuration
+
+### Deprecated
+
+* `PrivateKeyFromStringECSDA()`
+
 ## v2.22.0
 
 ### Added
