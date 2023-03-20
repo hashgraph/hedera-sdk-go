@@ -101,15 +101,18 @@ func TestUnitClientSetNetworkExtensive(t *testing.T) {
 	err = client.SetNetwork(nodes)
 	require.NoError(t, err)
 	network = client.GetNetwork()
+	networkMirror := client.GetMirrorNetwork()
 	assert.Equal(t, 1, len(network))
 	assert.Equal(t, network["2.testnet.hedera.com:50211"], AccountID{0, 0, 5, nil, nil, nil})
+	// There is only one mirror address, no matter the transport security
+	assert.Equal(t, networkMirror[0], "testnet.mirrornode.hedera.com:443")
 
 	client.SetTransportSecurity(true)
 	client.SetCertificateVerification(true)
 	network = client.GetNetwork()
-	networkTLSMirror := client.GetMirrorNetwork()
+	networkMirror = client.GetMirrorNetwork()
 	assert.Equal(t, network["2.testnet.hedera.com:50212"], AccountID{0, 0, 5, nil, nil, nil})
-	assert.Equal(t, networkTLSMirror[0], "hcs.testnet.mirrornode.hedera.com:443")
+	assert.Equal(t, networkMirror[0], "testnet.mirrornode.hedera.com:443")
 
 	err = client.Close()
 	require.NoError(t, err)
@@ -153,7 +156,8 @@ func TestUnitClientSetMirrorNetwork(t *testing.T) {
 
 	client.SetTransportSecurity(true)
 	mirrorNetwork = client.GetMirrorNetwork()
-	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:443", mirrorNetwork[0])
+	// SetTransportSecurity is deprecated, so the mirror node should not be updated
+	assert.Equal(t, "hcs.testnet.mirrornode.hedera.com:5600", mirrorNetwork[0])
 
 	err := client.Close()
 	require.NoError(t, err)
