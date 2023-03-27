@@ -6,7 +6,7 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/ethereum/go-ethereum v1.11.4
+	github.com/ethereum/go-ethereum v1.11.5
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20230222133122-6549ac627de9
 	github.com/mattn/go-isatty v0.0.17 // indirect
