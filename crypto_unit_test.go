@@ -27,6 +27,7 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"encoding/hex"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -716,6 +717,176 @@ func TestUnitPublicKeyBytesRawECDSA(t *testing.T) {
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	require.Equal(t, crypto.CompressPubkey(&key.ecdsaPrivateKey.keyData.PublicKey), key.PublicKey().BytesRaw())
+}
+
+func TestUnitECDSAPrivateKeyFromBytesInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 31)
+	_, err := _ECDSAPrivateKeyFromBytes(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid private key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPrivateKeyFromBytesRawInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 31)
+	_, err := _ECDSAPrivateKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid private key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPrivateKeyFromBytesRawInvalidKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 32)
+	_, err := _ECDSAPrivateKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := "invalid private key, zero or negative"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnit_ECDSAPrivateKeyFromBytesDerInvalidKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 32)
+	_, err := _ECDSAPrivateKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func Test_EcdsaPrivateKeyFromBytesDer_InvalidData(t *testing.T) {
+	key, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+	der := key.BytesDer()
+	trailingBytes := []byte{0x01, 0x02, 0x03}
+	derWithTrailingBytes := append(der, trailingBytes...)
+	_, err = _ECDSAPrivateKeyFromBytesDer(derWithTrailingBytes)
+	require.Error(t, err)
+	expectedError := "x509: trailing data after ASN.1 of public-key"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("Expected error %q, got %q", expectedError, err)
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesInvalidLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 31)
+	_, err := _ECDSAPublicKeyFromBytes(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid compressed ECDSA public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesRawInvalidLength(t *testing.T) {
+	_, err := _ECDSAPublicKeyFromBytesRaw(nil)
+	require.Error(t, err)
+	invalidPrivateKey := make([]byte, 31)
+	_, err = _ECDSAPublicKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesRawInvalidKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 33)
+	_, err := _ECDSAPublicKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := "invalid public key"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerInvalidKey(t *testing.T) {
+	_, err := _ECDSAPublicKeyFromBytesDer(nil)
+	require.Error(t, err)
+	invalidPrivateKey := make([]byte, 33)
+	_, err = _ECDSAPublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerWrongAlgorithmOID(t *testing.T) {
+	hexStr := "3036301006072a8648ce3d020206052b8104000a032200021ef6d7f710abb6f137f1c0dd87c6fd0200486c0754273d628cde6688e0bc9bf5"
+	bytes, err := hex.DecodeString(hexStr)
+	require.NoError(t, err)
+	_, err = _ECDSAPublicKeyFromBytesDer(bytes)
+	expectedError := "public key is not an ECDSA public key"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitECDSAPublicKeyFromBytesDerWrongCurve(t *testing.T) {
+	hexStr := "3036301006072a8648ce3d020106052b8104000b03220002f3c22171a370bd5eba014c4ffa2002c4de4e0d8545ab964cda10467f23cfa2e0"
+	bytes, err := hex.DecodeString(hexStr)
+	require.NoError(t, err)
+	_, err = _ECDSAPublicKeyFromBytesDer(bytes)
+	expectedError := "public key is not a secp256k1 public key"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PrivateKeyFromBytesDerWrongLength(t *testing.T) {
+	invalidPrivateKey := make([]byte, 33)
+	_, err := _Ed25519PrivateKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError := fmt.Sprintf("invalid private key length: %v byt", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PrivateKeyFromBytesDerWrongKey(t *testing.T) {
+	invalidPrivateKey := make([]byte, 32)
+	_, err := _Ed25519PublicKeyFromBytesDer(invalidPrivateKey)
+	require.Error(t, err)
+}
+
+func TestUnitEd25519PublicKeyFromBytesDerWrongAlgorithmOID(t *testing.T) {
+	hexStr := "3036301006072a8648ce3d020206052b8104000a032200021ef6d7f710abb6f137f1c0dd87c6fd0200486c0754273d628cde6688e0bc9bf5"
+	bytes, err := hex.DecodeString(hexStr)
+	require.NoError(t, err)
+	_, err = _Ed25519PublicKeyFromBytesDer(bytes)
+	expectedError := "invalid algorithm identifier, expected Ed25519"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PublicKeyFromBytesDerWrongCurve(t *testing.T) {
+	bytes, _ := hex.DecodeString("3053300506032b6570032100b6ecf351b0d0d8fce400647f4944621b411e97ae83a249fcadb33cf165f40ca2")
+	modifiedBytes := append(bytes[:14], bytes[15:]...)
+	_Ed25519PublicKeyFromBytesDer(modifiedBytes)
+}
+
+func TestUnitEd25519PublicKeyFromStringWrongLength(t *testing.T) {
+	_, err := _Ed25519PublicKeyFromString("303")
+	require.Error(t, err)
+	expectedError := "encoding/hex: odd length hex string"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+}
+
+func TestUnitEd25519PublicKeyFromBytesRawWrongLength(t *testing.T) {
+	_, err := _Ed25519PublicKeyFromBytesRaw(nil)
+	require.Error(t, err)
+	expectedError := "byte array can't be null"
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
+	invalidPrivateKey := make([]byte, 33)
+	_, err = _Ed25519PublicKeyFromBytesRaw(invalidPrivateKey)
+	require.Error(t, err)
+	expectedError = fmt.Sprintf("invalid public key length: %v bytes", len(invalidPrivateKey))
+	if err.Error() != expectedError {
+		t.Errorf("expected error message %q, but got %q", expectedError, err.Error())
+	}
 }
 
 func TestUnitPrivateKeyECDSASignTransaction(t *testing.T) {
