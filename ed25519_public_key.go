@@ -23,11 +23,12 @@ package hedera
 import (
 	"bytes"
 	"crypto/ed25519"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/hex"
-	"fmt"
-	"strings"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/pkg/errors"
 )
 
 // _Ed25519PublicKey is an ed25519 public key.
@@ -72,32 +73,35 @@ func _Ed25519PublicKeyFromBytesRaw(bytes []byte) (*_Ed25519PublicKey, error) {
 	}, nil
 }
 
-// _Ed25519PublicKeyFromBytes constructs a known _Ed25519PublicKey from its text-encoded representation.
 func _Ed25519PublicKeyFromBytesDer(bytes []byte) (*_Ed25519PublicKey, error) {
-	if bytes == nil {
-		return &_Ed25519PublicKey{}, errByteArrayNull
-	}
+	ed25519OID := asn1.ObjectIdentifier{1, 3, 101, 112}
 
-	given := hex.EncodeToString(bytes)
+	publicKeyInfo := struct {
+		Algorithm pkix.AlgorithmIdentifier
+		PublicKey asn1.BitString
+	}{}
 
-	if len(bytes) != 44 || !strings.Contains(given, ed25519PubKeyPrefix) {
-		return &_Ed25519PublicKey{}, _NewErrBadKeyf("invalid public key length: %v bytes", len(bytes))
-	}
-
-	result := strings.ReplaceAll(given, ed25519PubKeyPrefix, "")
-	decoded, err := hex.DecodeString(result)
+	_, err := asn1.Unmarshal(bytes, &publicKeyInfo)
 	if err != nil {
-		return &_Ed25519PublicKey{}, err
+		return nil, err
 	}
 
-	return &_Ed25519PublicKey{
-		keyData: decoded,
-	}, nil
+	if !publicKeyInfo.Algorithm.Algorithm.Equal(ed25519OID) {
+		return nil, errors.New("invalid algorithm identifier, expected Ed25519")
+	}
+
+	if len(publicKeyInfo.PublicKey.Bytes) != 32 {
+		return nil, errors.New("invalid public key length, expected 32 bytes")
+	}
+
+	var pk _Ed25519PublicKey
+	pk.keyData = publicKeyInfo.PublicKey.Bytes
+
+	return &pk, nil
 }
 
-// String returns the text-encoded representation of the _Ed25519PublicKey.
 func (pk _Ed25519PublicKey) _StringDer() string {
-	return fmt.Sprint(ed25519PubKeyPrefix, hex.EncodeToString(pk.keyData))
+	return hex.EncodeToString(pk._BytesDer())
 }
 
 // String returns the text-encoded representation of the _Ed25519PublicKey.
@@ -115,10 +119,29 @@ func (pk _Ed25519PublicKey) _BytesRaw() []byte {
 	return pk.keyData
 }
 
-// _Bytes returns the byte slice representation of the _Ed25519PublicKey.
 func (pk _Ed25519PublicKey) _BytesDer() []byte {
-	decoded, _ := hex.DecodeString(ed25519PubKeyPrefix)
-	return append(decoded, pk._BytesRaw()...)
+	type PublicKeyInfo struct {
+		Algorithm pkix.AlgorithmIdentifier
+		PublicKey asn1.BitString
+	}
+
+	ed25519OID := asn1.ObjectIdentifier{1, 3, 101, 112}
+	publicKeyInfo := PublicKeyInfo{
+		Algorithm: pkix.AlgorithmIdentifier{
+			Algorithm: ed25519OID,
+		},
+		PublicKey: asn1.BitString{
+			Bytes:     pk.keyData,
+			BitLength: len(pk.keyData) * 8,
+		},
+	}
+
+	derBytes, err := asn1.Marshal(publicKeyInfo)
+	if err != nil {
+		return nil
+	}
+
+	return derBytes
 }
 
 func (pk _Ed25519PublicKey) _ToProtoKey() *services.Key {

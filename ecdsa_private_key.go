@@ -25,6 +25,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
+	"encoding/asn1"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -56,7 +57,7 @@ func _ECDSAPrivateKeyFromBytes(byt []byte) (*_ECDSAPrivateKey, error) {
 	switch length {
 	case 32:
 		return _ECDSAPrivateKeyFromBytesRaw(byt)
-	case 50:
+	case 86:
 		return _ECDSAPrivateKeyFromBytesDer(byt)
 	default:
 		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
@@ -79,27 +80,24 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 	}, nil
 }
 
-func _ECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
-	given := hex.EncodeToString(byt)
-
-	result := strings.ReplaceAll(given, _ECDSAPrivateKeyPrefix, "")
-	decoded, err := hex.DecodeString(result)
-	if err != nil {
-		return &_ECDSAPrivateKey{}, err
+func _ECDSAPrivateKeyFromBytesDer(data []byte) (*_ECDSAPrivateKey, error) {
+	type publicKeyInfo struct {
+		Version       int
+		PrivateKey    []byte
+		NamedCurveOID asn1.ObjectIdentifier `asn1:"optional,explicit,tag:0"`
+		PublicKey     asn1.BitString        `asn1:"optional,explicit,tag:1"`
 	}
-
-	if len(decoded) != 32 {
-		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
+	var pki publicKeyInfo
+	if rest, err := asn1.Unmarshal(data, &pki); err != nil {
+		return nil, err
+	} else if len(rest) != 0 {
+		return nil, errors.New("x509: trailing data after ASN.1 of public-key")
 	}
-
-	key, err := crypto.ToECDSA(decoded)
+	key, err := crypto.ToECDSA(pki.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
-
-	return &_ECDSAPrivateKey{
-		keyData: key,
-	}, nil
+	return &_ECDSAPrivateKey{keyData: key}, nil
 }
 
 func _ECDSAPrivateKeyFromSeed(seed []byte) (*_ECDSAPrivateKey, error) {
@@ -207,8 +205,28 @@ func (sk _ECDSAPrivateKey) _BytesRaw() []byte {
 }
 
 func (sk _ECDSAPrivateKey) _BytesDer() []byte {
-	prefix, _ := hex.DecodeString(_ECDSAPrivateKeyPrefix)
-	return append(prefix, sk._BytesRaw()...)
+	type ECPrivateKey struct {
+		Version       int
+		PrivateKey    []byte
+		NamedCurveOID asn1.ObjectIdentifier `asn1:"optional,explicit,tag:0"`
+		PublicKey     asn1.BitString        `asn1:"optional,explicit,tag:1"`
+	}
+
+	secp256k1OID := asn1.ObjectIdentifier{1, 3, 132, 0, 10}
+
+	ecPrivateKey := ECPrivateKey{
+		Version:       1, // EC private keys have a version of 1
+		PrivateKey:    sk._BytesRaw(),
+		NamedCurveOID: secp256k1OID,
+		PublicKey:     asn1.BitString{Bytes: sk._PublicKey()._BytesRaw()},
+	}
+
+	derBytes, err := asn1.Marshal(ecPrivateKey)
+	if err != nil {
+		return nil
+	}
+
+	return derBytes
 }
 
 func (sk _ECDSAPrivateKey) _StringDer() string {

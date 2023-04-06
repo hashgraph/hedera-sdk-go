@@ -35,11 +35,9 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
-const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
-const ed25519PubKeyPrefix = "302a300506032b6570032100"
+const _Ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
 
-const _ECDSAPrivateKeyPrefix = "3030020100300706052b8104000a04220420"
-const _ECDSAPubKeyPrefix = "302f300706052b8104000a0324000421"
+const _ECDSAPrivateKeyPrefix = "30540201010420"
 
 type Key interface {
 	_ToProtoKey() *services.Key
@@ -279,7 +277,7 @@ func PrivateKeyFromStringDer(s string) (PrivateKey, error) {
 		return PrivateKey{
 			ecdsaPrivateKey: key,
 		}, nil
-	} else if strings.Contains(s, ed25519PrivateKeyPrefix) {
+	} else if strings.Contains(s, _Ed25519PrivateKeyPrefix) {
 		key, err := _Ed25519PrivateKeyFromString(s)
 		if err != nil {
 			return PrivateKey{}, err

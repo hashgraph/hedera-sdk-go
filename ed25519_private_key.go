@@ -25,6 +25,8 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
@@ -92,7 +94,7 @@ func _Ed25519PrivateKeyFromBytesRaw(bytes []byte) (*_Ed25519PrivateKey, error) {
 // _Ed25519PrivateKeyFromBytes constructs an _Ed25519PrivateKey from a raw slice of either 32 or 64 bytes.
 func _Ed25519PrivateKeyFromBytesDer(byt []byte) (*_Ed25519PrivateKey, error) {
 	given := hex.EncodeToString(byt)
-	result := strings.ReplaceAll(given, ed25519PrivateKeyPrefix, "")
+	result := strings.ReplaceAll(given, _Ed25519PrivateKeyPrefix, "")
 	decoded, err := hex.DecodeString(result)
 	if err != nil {
 		return &_Ed25519PrivateKey{}, err
@@ -265,7 +267,7 @@ func (sk _Ed25519PrivateKey) _PublicKey() *_Ed25519PublicKey {
 
 // String returns the text-encoded representation of the _Ed25519PrivateKey.
 func (sk _Ed25519PrivateKey) _StringDer() string {
-	return fmt.Sprint(ed25519PrivateKeyPrefix, hex.EncodeToString(sk.keyData[:32]))
+	return fmt.Sprint(_Ed25519PrivateKeyPrefix, hex.EncodeToString(sk.keyData[:32]))
 }
 
 // String returns the text-encoded representation of the _Ed25519PrivateKey.
@@ -278,10 +280,37 @@ func (sk _Ed25519PrivateKey) _BytesRaw() []byte {
 	return sk.keyData[0:32]
 }
 
-// _BytesRaw returns the byte slice representation of the _Ed25519PrivateKey.
 func (sk _Ed25519PrivateKey) _BytesDer() []byte {
-	decoded, _ := hex.DecodeString(ed25519PrivateKeyPrefix)
-	return append(decoded, sk._BytesRaw()...)
+	type PrivateKeyInfo struct {
+		Version             int
+		PrivateKeyAlgorithm pkix.AlgorithmIdentifier
+		PrivateKey          asn1.RawValue
+	}
+
+	// AlgorithmIdentifier for Ed25519 keys
+	ed25519OID := asn1.ObjectIdentifier{1, 3, 101, 112}
+	privateKeyBytes, err := asn1.Marshal(sk.keyData[:32])
+	if err != nil {
+		return nil
+	}
+	privateKeyInfo := PrivateKeyInfo{
+		Version: 0,
+		PrivateKeyAlgorithm: pkix.AlgorithmIdentifier{
+			Algorithm: ed25519OID,
+		},
+		PrivateKey: asn1.RawValue{
+			Tag:   asn1.TagOctetString,
+			Class: asn1.ClassUniversal,
+			Bytes: privateKeyBytes,
+		},
+	}
+
+	derBytes, err := asn1.Marshal(privateKeyInfo)
+	if err != nil {
+		return nil
+	}
+
+	return derBytes
 }
 
 // Keystore returns an encrypted _Keystore containing the _Ed25519PrivateKey.
