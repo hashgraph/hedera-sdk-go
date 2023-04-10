@@ -54,10 +54,10 @@ func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
 
 func _ECDSAPrivateKeyFromBytes(byt []byte) (*_ECDSAPrivateKey, error) {
 	length := len(byt)
-	switch length {
-	case 32:
+	switch {
+	case length == 32:
 		return _ECDSAPrivateKeyFromBytesRaw(byt)
-	case 86:
+	case length > 32:
 		return _ECDSAPrivateKeyFromBytesDer(byt)
 	default:
 		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
@@ -81,19 +81,19 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 }
 
 func _ECDSAPrivateKeyFromBytesDer(data []byte) (*_ECDSAPrivateKey, error) {
-	type publicKeyInfo struct {
+	type ECPrivateKey struct {
 		Version       int
 		PrivateKey    []byte
 		NamedCurveOID asn1.ObjectIdentifier `asn1:"optional,explicit,tag:0"`
 		PublicKey     asn1.BitString        `asn1:"optional,explicit,tag:1"`
 	}
-	var pki publicKeyInfo
-	if rest, err := asn1.Unmarshal(data, &pki); err != nil {
+	var ecKey ECPrivateKey
+	if rest, err := asn1.Unmarshal(data, &ecKey); err != nil {
 		return nil, err
 	} else if len(rest) != 0 {
 		return nil, errors.New("x509: trailing data after ASN.1 of public-key")
 	}
-	key, err := crypto.ToECDSA(pki.PrivateKey)
+	key, err := crypto.ToECDSA(ecKey.PrivateKey)
 	if err != nil {
 		return nil, err
 	}

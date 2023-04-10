@@ -27,7 +27,6 @@ import (
 	"encoding/hex"
 	"io"
 	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -36,8 +35,6 @@ import (
 )
 
 const _Ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
-
-const _ECDSAPrivateKeyPrefix = "30540201010420"
 
 type Key interface {
 	_ToProtoKey() *services.Key
@@ -268,27 +265,17 @@ func PrivateKeyFromString(s string) (PrivateKey, error) {
 
 // PrivateKeyFromStringDer Creates PrivateKey from hex string with a der prefix
 func PrivateKeyFromStringDer(s string) (PrivateKey, error) {
-	if strings.Contains(s, _ECDSAPrivateKeyPrefix) {
-		key, err := _ECDSAPrivateKeyFromString(s)
-		if err != nil {
-			return PrivateKey{}, err
-		}
-
-		return PrivateKey{
-			ecdsaPrivateKey: key,
-		}, nil
-	} else if strings.Contains(s, _Ed25519PrivateKeyPrefix) {
-		key, err := _Ed25519PrivateKeyFromString(s)
-		if err != nil {
-			return PrivateKey{}, err
-		}
-
-		return PrivateKey{
-			ed25519PrivateKey: key,
-		}, nil
+	KeyEd25519, err := _Ed25519PrivateKeyFromString(s)
+	if err == nil {
+		return PrivateKey{ed25519PrivateKey: KeyEd25519}, nil
 	}
 
-	return PrivateKey{}, nil
+	keyECDSA, err := _ECDSAPrivateKeyFromString(s)
+	if err == nil {
+		return PrivateKey{ecdsaPrivateKey: keyECDSA}, nil
+	}
+
+	return PrivateKey{}, errors.New("invalid private key format")
 }
 
 func PrivateKeyFromStringEd25519(s string) (PrivateKey, error) {

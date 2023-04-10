@@ -38,6 +38,7 @@ import (
 
 const _Ed25519PubKeyPrefix = "302a300506032b6570032100"
 const _ECDSAPubKeyPrefix = "3036301006072a8648ce3d020106052b8104000a0322000"
+const _ECDSAPrivatePrefix = "30540201010420"
 
 const testPrivateKeyStr = "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10"
 
@@ -107,7 +108,7 @@ func TestUnitPrivateECDSAKeyGenerate(t *testing.T) {
 	key, err := PrivateKeyGenerateEcdsa()
 
 	require.NoError(t, err)
-	assert.True(t, strings.HasPrefix(key.String(), _ECDSAPrivateKeyPrefix))
+	assert.True(t, strings.HasPrefix(key.String(), _ECDSAPrivatePrefix))
 }
 
 func TestUnitPrivateKeyExternalSerialization(t *testing.T) {
@@ -506,6 +507,20 @@ func TestUnitPrivateKeyECDSAFromStringDer(t *testing.T) {
 	require.Equal(t, key2.StringDer(), key.StringDer())
 }
 
+func TestUnitPrivateKeyECDSAFromStringDerUncompressed(t *testing.T) {
+	key := "3074020101042052DDBE84838D865C18F043489C285C0B62041389569E8A62530" +
+		"56D0FFBEB7F5DA00706052B8104000AA144034200049D7DABF194F47CD5756BCC5231C821" +
+		"B34AFA03046EF7F645A2D026BF38D0332AF958B7840607EE4853DED1D372CF89FF131C788" +
+		"EE22644CF642503DF82EEF652"
+	expectedDerExport:= "3054020101042052ddbe84838d865c18f043489c285c0b62041389569e8"+
+	"a6253056d0ffbeb7f5da00706052b8104000aa124032200029d7dabf194f47cd5756bcc5231c821b"+
+	"34afa03046ef7f645a2d026bf38d0332a"	
+	key2, err := PrivateKeyFromStringECDSA(key)
+	require.NoError(t, err)
+
+	require.Equal(t, key2.StringDer(), expectedDerExport)
+}
+
 func TestUnitPublicKeyECDSAFromString(t *testing.T) {
 	t.Parallel()
 
@@ -549,7 +564,20 @@ func TestUnitPrivateKeyFromBytesDerECDSA(t *testing.T) {
 	bytes := key.BytesDer()
 	key2, err := PrivateKeyFromBytesDer(bytes)
 	require.NoError(t, err)
-	require.True(t, strings.HasPrefix(key2.String(), _ECDSAPrivateKeyPrefix))
+	require.True(t, strings.HasPrefix(key2.String(), _ECDSAPrivatePrefix))
+}
+
+func TestUnitPrivateKeyFromBytesDerECDSAUncompressed(t *testing.T) {
+	key := "3074020101042052DDBE84838D865C18F043489C285C0B62041389569E8A62530" +
+		"56D0FFBEB7F5DA00706052B8104000AA144034200049D7DABF194F47CD5756BCC5231C821" +
+		"B34AFA03046EF7F645A2D026BF38D0332AF958B7840607EE4853DED1D372CF89FF131C788" +
+		"EE22644CF642503DF82EEF652"
+	bytes, err := hex.DecodeString(key)
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromBytesDer(bytes)
+	require.NoError(t, err)
+	fmt.Printf("key2.String(): %v\n", key2.String())
+	require.True(t, strings.HasPrefix(key2.String(), _ECDSAPrivatePrefix))
 }
 
 func TestUnitPrivateKeyFromBytesDerEd25519(t *testing.T) {
