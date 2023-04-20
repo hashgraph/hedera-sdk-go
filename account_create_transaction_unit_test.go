@@ -225,8 +225,7 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
-	alias, err := hex.DecodeString("5c562e90feaf0eebd33ea75d21024f249d451417")
-	require.NoError(t, err)
+	alias := "5c562e90feaf0eebd33ea75d21024f249d451417"
 
 	transaction, err := NewAccountCreateTransaction().
 		SetTransactionID(transactionID).
@@ -258,7 +257,7 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 		stackedAccountID._ToProtobuf().String())
 	require.Equal(t, proto.DeclineReward, true)
 	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(60*time.Second).String())
-	require.Equal(t, proto.Alias, alias)
+	require.Equal(t, hex.EncodeToString(proto.Alias), alias)
 }
 
 func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
@@ -270,8 +269,7 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
 
-	alias, err := hex.DecodeString("5c562e90feaf0eebd33ea75d21024f249d451417")
-	require.NoError(t, err)
+	alias := "5c562e90feaf0eebd33ea75d21024f249d451417"
 
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)

@@ -21,7 +21,9 @@ package hedera
  */
 
 import (
+	"encoding/hex"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
@@ -223,9 +225,13 @@ func (transaction *AccountCreateTransaction) GetDeclineStakingReward() bool {
 	return transaction.declineReward
 }
 
-func (transaction *AccountCreateTransaction) SetAlias(evmAddress []byte) *AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetAlias(evmAddress string) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
-	transaction.alias = evmAddress
+
+	evmAddress = strings.TrimPrefix(evmAddress, "0x")
+	evmAddressBytes, _ := hex.DecodeString(evmAddress)
+
+	transaction.alias = evmAddressBytes
 	return transaction
 }
 
@@ -256,6 +262,7 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 		Memo:                          transaction.memo,
 		MaxAutomaticTokenAssociations: int32(transaction.maxAutomaticTokenAssociations),
 		DeclineReward:                 transaction.declineReward,
+		Alias:                         transaction.alias,
 	}
 
 	if transaction.key != nil {
@@ -272,9 +279,6 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 		body.StakedId = &services.CryptoCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
-	if transaction.alias != nil {
-		body.Alias = transaction.alias
-	}
 	return &services.TransactionBody{
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		TransactionFee:           transaction.transactionFee,

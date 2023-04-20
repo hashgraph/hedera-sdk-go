@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -48,15 +47,9 @@ func main() {
 	// Extract the Ethereum public address
 	evmAddress := publicKey.ToEvmAddress()
 
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
 	// Use the `AccountCreateTransaction` and set the EVM address field to the Ethereum public address
 	response, err := hedera.NewAccountCreateTransaction().SetReceiverSignatureRequired(true).SetInitialBalance(hedera.HbarFromTinybar(100)).
-		SetKey(adminKey).SetAlias(evmAddressBytes).Sign(adminKey).Sign(privateKey).Execute(client)
+		SetKey(adminKey).SetAlias(evmAddress).Sign(adminKey).Sign(privateKey).Execute(client)
 	if err != nil {
 		println(err.Error())
 		return

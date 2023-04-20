@@ -24,7 +24,6 @@ package hedera
  */
 
 import (
-	"encoding/hex"
 	"fmt"
 	"testing"
 
@@ -297,8 +296,6 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 	require.NoError(t, err)
 
 	evmAddress := adminKey.PublicKey().ToEvmAddress()
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	require.NoError(t, err)
 
 	// Create the admin account
 	_, err = NewAccountCreateTransaction().
@@ -308,7 +305,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) 
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(adminKey).
-		SetAlias(evmAddressBytes).
+		SetAlias(evmAddress).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -339,8 +336,6 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	require.NoError(t, err)
 
 	evmAddress := adminKey.PublicKey().ToEvmAddress()
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	require.NoError(t, err)
 
 	// Create the admin account
 	_, err = NewAccountCreateTransaction().
@@ -351,7 +346,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	resp, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
-		SetAlias(evmAddressBytes).
+		SetAlias(evmAddress).
 		Sign(adminKey).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -383,8 +378,6 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	require.NoError(t, err)
 
 	evmAddress := adminKey.PublicKey().ToEvmAddress()
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	require.NoError(t, err)
 
 	// Create the admin account
 	_, err = NewAccountCreateTransaction().
@@ -395,7 +388,7 @@ func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSig
 	resp, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
-		SetAlias(evmAddressBytes).
+		SetAlias(evmAddress).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -425,12 +418,10 @@ func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
 
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(adminKey).
-		SetAlias(evmAddressBytes).
+		SetAlias(evmAddress).
 		Sign(key).
 		Execute(env.Client)
 	require.NoError(t, err)
@@ -467,12 +458,10 @@ func TestIntegrationAccountCreateTransactionWithAliasWithoutSignature(t *testing
 
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetKey(adminKey).
-		SetAlias(evmAddressBytes).
+		SetAlias(evmAddress).
 		Execute(env.Client)
 	require.NoError(t, err)
 
@@ -502,13 +491,11 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *
 
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
-		SetAlias(evmAddressBytes).
+		SetAlias(evmAddress).
 		Sign(key).
 		Sign(adminKey).
 		Execute(env.Client)
@@ -546,13 +533,11 @@ func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWith
 
 	key, err := PrivateKeyGenerateEcdsa()
 	evmAddress := key.PublicKey().ToEvmAddress()
-	evmAddressBytes, err := hex.DecodeString(evmAddress)
-	require.NoError(t, err)
 
 	resp, err := NewAccountCreateTransaction().
 		SetReceiverSignatureRequired(true).
 		SetKey(adminKey).
-		SetAlias(evmAddressBytes).
+		SetAlias(evmAddress).
 		Sign(key).
 		Execute(env.Client)
 	require.NoError(t, err)
