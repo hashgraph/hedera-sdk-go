@@ -64,14 +64,14 @@ func main() {
 
 	newAccountId := *transactionReceipt.AccountID
 
-	// Get the `AccountInfo` on the new account and show it is a hollow account by not having a public key
+	// Get the `AccountInfo` on the new account and show that the account has contractAccountId
 	info, err := hedera.NewAccountInfoQuery().SetAccountID(newAccountId).Execute(client)
 	if err != nil {
 		println(err.Error())
 		return
 	}
-	// Verify account is created with the public address provided
-	fmt.Println(info.ContractAccountID == publicKey.ToEvmAddress())
+	// Verify account is created with the provided EVM address
+	fmt.Println(info.ContractAccountID == evmAddress)
 	// Verify the account Id is the same from the create account transaction
 	fmt.Println(info.AccountID.String() == newAccountId.String())
 }
