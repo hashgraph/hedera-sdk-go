@@ -286,3 +286,268 @@ func TestIntegrationAccountCreateTransactionNetwork(t *testing.T) {
 	err = CloseIntegrationTestEnv(env, nil)
 	require.NoError(t, err)
 }
+
+func TestIntegrationAccountCreateTransactionWithAliasFromAdminKey(t *testing.T) {
+	// Tests the third row of this table
+	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	env := NewIntegrationTestEnv(t)
+
+	adminKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	evmAddress := adminKey.PublicKey().ToEvmAddress()
+
+	// Create the admin account
+	_, err = NewAccountCreateTransaction().
+		SetKey(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(adminKey).
+		SetAlias(evmAddress).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	info, err := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	assert.NotEmpty(t, info.AccountID)
+	assert.Equal(t, evmAddress, info.ContractAccountID)
+	assert.Equal(t, adminKey.PublicKey(), info.Key)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequired(t *testing.T) {
+	// Tests the fourth row of this table
+	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	env := NewIntegrationTestEnv(t)
+
+	adminKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	evmAddress := adminKey.PublicKey().ToEvmAddress()
+
+	// Create the admin account
+	_, err = NewAccountCreateTransaction().
+		SetKey(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetReceiverSignatureRequired(true).
+		SetKey(adminKey).
+		SetAlias(evmAddress).
+		Sign(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	info, err := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	assert.NotEmpty(t, info.AccountID)
+	assert.Equal(t, evmAddress, info.ContractAccountID)
+	assert.Equal(t, adminKey.PublicKey(), info.Key)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationAccountCreateTransactionWithAliasFromAdminKeyWithReceiverSigRequiredWithoutSignature(t *testing.T) {
+	// Tests the fourth row of this table
+	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	env := NewIntegrationTestEnv(t)
+
+	adminKey, err := PrivateKeyGenerateEcdsa()
+	require.NoError(t, err)
+
+	evmAddress := adminKey.PublicKey().ToEvmAddress()
+
+	// Create the admin account
+	_, err = NewAccountCreateTransaction().
+		SetKey(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	resp, err := NewAccountCreateTransaction().
+		SetReceiverSignatureRequired(true).
+		SetKey(adminKey).
+		SetAlias(evmAddress).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())
+	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationAccountCreateTransactionWithAlias(t *testing.T) {
+	// Tests the fifth row of this table
+	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	env := NewIntegrationTestEnv(t)
+
+	adminKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create the admin account
+	_, err = NewAccountCreateTransaction().
+		SetKey(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	key, err := PrivateKeyGenerateEcdsa()
+	evmAddress := key.PublicKey().ToEvmAddress()
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(adminKey).
+		SetAlias(evmAddress).
+		Sign(key).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	info, err := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	assert.NotEmpty(t, info.AccountID)
+	assert.Equal(t, evmAddress, info.ContractAccountID)
+	assert.Equal(t, adminKey.PublicKey(), info.Key)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationAccountCreateTransactionWithAliasWithoutSignature(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	adminKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create the admin account
+	_, err = NewAccountCreateTransaction().
+		SetKey(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	key, err := PrivateKeyGenerateEcdsa()
+	evmAddress := key.PublicKey().ToEvmAddress()
+
+	resp, err := NewAccountCreateTransaction().
+		SetKey(adminKey).
+		SetAlias(evmAddress).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())
+	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequired(t *testing.T) {
+	// Tests the sixth row of this table
+	// https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+	env := NewIntegrationTestEnv(t)
+
+	adminKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create the admin account
+	_, err = NewAccountCreateTransaction().
+		SetKey(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	key, err := PrivateKeyGenerateEcdsa()
+	evmAddress := key.PublicKey().ToEvmAddress()
+
+	resp, err := NewAccountCreateTransaction().
+		SetReceiverSignatureRequired(true).
+		SetKey(adminKey).
+		SetAlias(evmAddress).
+		Sign(key).
+		Sign(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	receipt, err := resp.GetReceipt(env.Client)
+	require.NoError(t, err)
+
+	accountID := *receipt.AccountID
+
+	info, err := NewAccountInfoQuery().
+		SetAccountID(accountID).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	assert.NotEmpty(t, info.AccountID)
+	assert.Equal(t, evmAddress, info.ContractAccountID)
+	assert.Equal(t, adminKey.PublicKey(), info.Key)
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}
+
+func TestIntegrationAccountCreateTransactionWithAliasWithReceiverSigRequiredWithoutSignature(t *testing.T) {
+	env := NewIntegrationTestEnv(t)
+
+	adminKey, err := PrivateKeyGenerateEd25519()
+	require.NoError(t, err)
+
+	// Create the admin account
+	_, err = NewAccountCreateTransaction().
+		SetKey(adminKey).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	key, err := PrivateKeyGenerateEcdsa()
+	evmAddress := key.PublicKey().ToEvmAddress()
+
+	resp, err := NewAccountCreateTransaction().
+		SetReceiverSignatureRequired(true).
+		SetKey(adminKey).
+		SetAlias(evmAddress).
+		Sign(key).
+		Execute(env.Client)
+	require.NoError(t, err)
+
+	_, err = resp.GetReceipt(env.Client)
+	assert.Error(t, err)
+	if err != nil {
+		assert.Equal(t, "exceptional receipt status: INVALID_SIGNATURE", err.Error())
+	}
+
+	err = CloseIntegrationTestEnv(env, nil)
+	require.NoError(t, err)
+}

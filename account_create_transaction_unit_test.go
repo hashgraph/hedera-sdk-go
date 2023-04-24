@@ -24,6 +24,7 @@ package hedera
  */
 
 import (
+	"encoding/hex"
 	"testing"
 	"time"
 
@@ -224,6 +225,8 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 
 	transactionID := TransactionIDGenerate(AccountID{Account: 324})
 
+	alias := "5c562e90feaf0eebd33ea75d21024f249d451417"
+
 	transaction, err := NewAccountCreateTransaction().
 		SetTransactionID(transactionID).
 		SetNodeAccountIDs(nodeAccountID).
@@ -237,6 +240,7 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 		SetAutoRenewPeriod(60 * time.Second).
 		SetTransactionMemo("").
 		SetTransactionValidDuration(60 * time.Second).
+		SetAlias(alias).
 		Freeze()
 	require.NoError(t, err)
 
@@ -253,6 +257,7 @@ func TestUnitAccountCreateTransactionProtoCheck(t *testing.T) {
 		stackedAccountID._ToProtobuf().String())
 	require.Equal(t, proto.DeclineReward, true)
 	require.Equal(t, proto.AutoRenewPeriod.String(), _DurationToProtobuf(60*time.Second).String())
+	require.Equal(t, hex.EncodeToString(proto.Alias), alias)
 }
 
 func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
@@ -263,6 +268,8 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 
 	key, err := PrivateKeyGenerateEd25519()
 	require.NoError(t, err)
+
+	alias := "5c562e90feaf0eebd33ea75d21024f249d451417"
 
 	client := ClientForTestnet()
 	client.SetAutoValidateChecksums(true)
@@ -288,6 +295,7 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 		SetTransactionMemo("no").
 		SetTransactionValidDuration(time.Second * 30).
 		SetRegenerateTransactionID(false).
+		SetAlias(alias).
 		Freeze()
 	require.NoError(t, err)
 
@@ -317,6 +325,7 @@ func TestUnitAccountCreateTransactionCoverage(t *testing.T) {
 	transaction.GetStakedAccountID()
 	transaction.GetStakedNodeID()
 	transaction.GetDeclineStakingReward()
+	transaction.GetAlias()
 	_, err = transaction.GetSignatures()
 	require.NoError(t, err)
 	transaction._GetLogID()

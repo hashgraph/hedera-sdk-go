@@ -21,10 +21,10 @@ package hedera
  */
 
 import (
+	"encoding/hex"
 	"fmt"
+	"strings"
 	"time"
-
-	protobuf "google.golang.org/protobuf/proto"
 
 	"github.com/hashgraph/hedera-protobufs-go/services"
 )
@@ -49,8 +49,7 @@ type AccountCreateTransaction struct {
 	stakedAccountID               *AccountID
 	stakedNodeID                  *int64
 	declineReward                 bool
-	aliasKey                      *PublicKey
-	aliasEvmAddress               []byte
+	alias                         []byte
 }
 
 // NewAccountCreateTransaction creates an AccountCreateTransaction transaction which can be used to construct and
@@ -90,16 +89,7 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 
 	if pb.GetCryptoCreateAccount().GetAlias() != nil {
-		var aliasKey *services.Key
-		protobuf.Unmarshal(pb.GetCryptoCreateAccount().GetAlias(), aliasKey) //nolint
-		publicKey, err := _KeyFromProtobuf(aliasKey)
-		if err != nil {
-			if key, ok := publicKey.(PublicKey); ok {
-				body.aliasKey = &key
-			}
-		} else {
-			body.aliasEvmAddress = pb.GetCryptoCreateAccount().GetAlias()
-		}
+		body.alias = pb.GetCryptoCreateAccount().GetAlias()
 	}
 
 	return &body
@@ -235,28 +225,18 @@ func (transaction *AccountCreateTransaction) GetDeclineStakingReward() bool {
 	return transaction.declineReward
 }
 
-func (transaction *AccountCreateTransaction) SetAliasKey(key PublicKey) *AccountCreateTransaction {
+func (transaction *AccountCreateTransaction) SetAlias(evmAddress string) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
-	transaction.aliasKey = &key
+
+	evmAddress = strings.TrimPrefix(evmAddress, "0x")
+	evmAddressBytes, _ := hex.DecodeString(evmAddress)
+
+	transaction.alias = evmAddressBytes
 	return transaction
 }
 
-func (transaction *AccountCreateTransaction) GetAliasKey() PublicKey {
-	if transaction.aliasKey != nil {
-		return *transaction.aliasKey
-	}
-
-	return PublicKey{}
-}
-
-func (transaction *AccountCreateTransaction) SetAliasEvmAddress(evmAddress []byte) *AccountCreateTransaction {
-	transaction._RequireNotFrozen()
-	transaction.aliasEvmAddress = evmAddress
-	return transaction
-}
-
-func (transaction *AccountCreateTransaction) GetAliasEvmAddress() []byte {
-	return transaction.aliasEvmAddress
+func (transaction *AccountCreateTransaction) GetAlias() []byte {
+	return transaction.alias
 }
 
 func (transaction *AccountCreateTransaction) _ValidateNetworkOnIDs(client *Client) error {
@@ -282,6 +262,7 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 		Memo:                          transaction.memo,
 		MaxAutomaticTokenAssociations: int32(transaction.maxAutomaticTokenAssociations),
 		DeclineReward:                 transaction.declineReward,
+		Alias:                         transaction.alias,
 	}
 
 	if transaction.key != nil {
@@ -298,12 +279,6 @@ func (transaction *AccountCreateTransaction) _Build() *services.TransactionBody 
 		body.StakedId = &services.CryptoCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
-	if transaction.aliasKey != nil {
-		key, _ := protobuf.Marshal(transaction.aliasKey._ToProtoKey())
-		body.Alias = key
-	} else if transaction.aliasEvmAddress != nil {
-		body.Alias = transaction.aliasEvmAddress
-	}
 	return &services.TransactionBody{
 		TransactionID:            transaction.transactionID._ToProtobuf(),
 		TransactionFee:           transaction.transactionFee,
@@ -363,11 +338,8 @@ func (transaction *AccountCreateTransaction) _ConstructScheduleProtobuf() (*serv
 		body.StakedId = &services.CryptoCreateTransactionBody_StakedNodeId{StakedNodeId: *transaction.stakedNodeID}
 	}
 
-	if transaction.aliasKey != nil {
-		key, _ := protobuf.Marshal(transaction.aliasKey._ToProtoKey())
-		body.Alias = key
-	} else if transaction.aliasEvmAddress != nil {
-		body.Alias = transaction.aliasEvmAddress
+	if transaction.alias != nil {
+		body.Alias = transaction.alias
 	}
 	return &services.SchedulableTransactionBody{
 		TransactionFee: transaction.transactionFee,
