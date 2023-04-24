@@ -1,9 +1,10 @@
-## Unreleased
+## v2.24.0
 
 ### Added
- - Alias support in `AccountCreateTransaction`
- - `CreateAccountWithAliasExample`
- - `CreateAccountWithAliasAndReceiverSignatureRequiredExample`
+
+ * Alias support in `AccountCreateTransaction`
+ * `CreateAccountWithAliasExample`
+ * `CreateAccountWithAliasAndReceiverSignatureRequiredExample`
 
 ## v2.23.0
 
