@@ -47,3 +47,15 @@ func TestUnitTransactionIDFromStringNonce(t *testing.T) {
 	require.Equal(t, *txID.Nonce, int32(4))
 	require.Equal(t, txID.AccountID.String(), "0.0.3")
 }
+
+func TestUnitTransactionIDFromStringLeadingZero(t *testing.T) {
+	txID, err := TransactionIdFromString("0.0.3@1614997926.074912965")
+	require.NoError(t, err)
+	require.Equal(t, txID.String(), "0.0.3@1614997926.074912965")
+}
+
+func TestUnitTransactionIDFromStringTrimmedZeroes(t *testing.T) {
+	txID, err := TransactionIdFromString("0.0.3@1614997926.5")
+	require.NoError(t, err)
+	require.Equal(t, txID.String(), "0.0.3@1614997926.000000005")
+}
