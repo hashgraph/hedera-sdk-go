@@ -27,6 +27,7 @@ import (
 	"encoding/asn1"
 	"encoding/hex"
 	"math/big"
+	"strings"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -38,11 +39,15 @@ type _ECDSAPublicKey struct {
 	*ecdsa.PublicKey
 }
 
+const _LegacyECDSAPubKeyPrefix = "302d300706052b8104000a032200"
+
 func _ECDSAPublicKeyFromBytes(byt []byte) (*_ECDSAPublicKey, error) {
 	length := len(byt)
 	switch length {
 	case 33:
 		return _ECDSAPublicKeyFromBytesRaw(byt)
+	case 47:
+		return _LegacyECDSAPublicKeyFromBytesDer(byt)
 	case 56:
 		return _ECDSAPublicKeyFromBytesDer(byt)
 	default:
@@ -68,6 +73,31 @@ func _ECDSAPublicKeyFromBytesRaw(byt []byte) (*_ECDSAPublicKey, error) {
 	}, nil
 }
 
+func _LegacyECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
+	if byt == nil {
+		return &_ECDSAPublicKey{}, errByteArrayNull
+	}
+
+	given := hex.EncodeToString(byt)
+	result := strings.ReplaceAll(given, _LegacyECDSAPubKeyPrefix, "")
+	decoded, err := hex.DecodeString(result)
+	if err != nil {
+		return &_ECDSAPublicKey{}, err
+	}
+
+	if len(decoded) != 33 {
+		return &_ECDSAPublicKey{}, _NewErrBadKeyf("invalid public key length: %v bytes", len(byt))
+	}
+
+	key, err := crypto.DecompressPubkey(decoded)
+	if err != nil {
+		return &_ECDSAPublicKey{}, err
+	}
+
+	return &_ECDSAPublicKey{
+		key,
+	}, nil
+}
 func _ECDSAPublicKeyFromBytesDer(byt []byte) (*_ECDSAPublicKey, error) {
 	if byt == nil {
 		return &_ECDSAPublicKey{}, errByteArrayNull

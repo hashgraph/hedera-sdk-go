@@ -41,6 +41,8 @@ type _ECDSAPrivateKey struct {
 	chainCode []byte
 }
 
+const _LegacyECDSAPrivateKeyPrefix = "3030020100300706052b8104000a04220420"
+
 func _GenerateECDSAPrivateKey() (*_ECDSAPrivateKey, error) {
 	key, err := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	if err != nil {
@@ -80,7 +82,35 @@ func _ECDSAPrivateKeyFromBytesRaw(byt []byte) (*_ECDSAPrivateKey, error) {
 	}, nil
 }
 
+func _LegacyECDSAPrivateKeyFromBytesDer(byt []byte) (*_ECDSAPrivateKey, error) {
+	given := hex.EncodeToString(byt)
+
+	result := strings.ReplaceAll(given, _LegacyECDSAPrivateKeyPrefix, "")
+	decoded, err := hex.DecodeString(result)
+	if err != nil {
+		return &_ECDSAPrivateKey{}, err
+	}
+
+	if len(decoded) != 32 {
+		return &_ECDSAPrivateKey{}, _NewErrBadKeyf("invalid private key length: %v bytes", len(byt))
+	}
+
+	key, err := crypto.ToECDSA(decoded)
+	if err != nil {
+		return nil, err
+	}
+
+	return &_ECDSAPrivateKey{
+		keyData: key,
+	}, nil
+}
+
 func _ECDSAPrivateKeyFromBytesDer(data []byte) (*_ECDSAPrivateKey, error) {
+	given := hex.EncodeToString(data)
+	if strings.HasPrefix(given, _LegacyECDSAPrivateKeyPrefix) {
+		return _LegacyECDSAPrivateKeyFromBytesDer(data)
+	}
+
 	type ECPrivateKey struct {
 		Version       int
 		PrivateKey    []byte

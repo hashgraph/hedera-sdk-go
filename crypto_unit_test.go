@@ -507,14 +507,23 @@ func TestUnitPrivateKeyECDSAFromStringDer(t *testing.T) {
 	require.Equal(t, key2.StringDer(), key.StringDer())
 }
 
+func TestUnitPrivateKeyECDSAFromStringLegacyDer(t *testing.T) {
+	key, err := PrivateKeyFromString("3030020100300706052b8104000a04220420c78aa6584228422d2edb027dec01ff374eb0720e32be2da827d51ed0711d4f8c")
+	require.NoError(t, err)
+	key2, err := PrivateKeyFromStringECDSA(key.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, key2.StringDer(), key.StringDer())
+}
+
 func TestUnitPrivateKeyECDSAFromStringDerUncompressed(t *testing.T) {
 	key := "3074020101042052DDBE84838D865C18F043489C285C0B62041389569E8A62530" +
 		"56D0FFBEB7F5DA00706052B8104000AA144034200049D7DABF194F47CD5756BCC5231C821" +
 		"B34AFA03046EF7F645A2D026BF38D0332AF958B7840607EE4853DED1D372CF89FF131C788" +
 		"EE22644CF642503DF82EEF652"
-	expectedDerExport:= "3054020101042052ddbe84838d865c18f043489c285c0b62041389569e8"+
-	"a6253056d0ffbeb7f5da00706052b8104000aa124032200029d7dabf194f47cd5756bcc5231c821b"+
-	"34afa03046ef7f645a2d026bf38d0332a"	
+	expectedDerExport := "3054020101042052ddbe84838d865c18f043489c285c0b62041389569e8" +
+		"a6253056d0ffbeb7f5da00706052b8104000aa124032200029d7dabf194f47cd5756bcc5231c821b" +
+		"34afa03046ef7f645a2d026bf38d0332a"
 	key2, err := PrivateKeyFromStringECDSA(key)
 	require.NoError(t, err)
 
@@ -550,6 +559,15 @@ func TestUnitPublicKeyECDSAFromStringDer(t *testing.T) {
 	key, err := PrivateKeyGenerateEcdsa()
 	require.NoError(t, err)
 	publicKey := key.PublicKey()
+	publicKey2, err := PublicKeyFromStringECDSA(publicKey.StringDer())
+	require.NoError(t, err)
+
+	require.Equal(t, publicKey2.StringDer(), publicKey.StringDer())
+}
+
+func TestUnitPublicKeyECDSAFromStringLegacyDer(t *testing.T) {
+	publicKey, err := PublicKeyFromStringECDSA("302d300706052b8104000a0322000298c5d6efb814ead640467934b5ef9a02b81d3c483719675cb261cc5fde3edd57")
+	require.NoError(t, err)
 	publicKey2, err := PublicKeyFromStringECDSA(publicKey.StringDer())
 	require.NoError(t, err)
 
