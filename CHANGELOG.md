@@ -1,3 +1,9 @@
+## v2.24.1
+
+### Fixed
+
+ * `TransactionID.String()` will now return the TransactionID string without trimming the leading zeroes
+
 ## v2.24.0
 
 ### Added
