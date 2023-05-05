@@ -353,7 +353,13 @@ func PrivateKeyReadKeystore(source io.Reader, passphrase string) (PrivateKey, er
 func PrivateKeyFromPem(bytes []byte, passphrase string) (PrivateKey, error) {
 	key, err := _Ed25519PrivateKeyFromPem(bytes, passphrase)
 	if err != nil {
-		return PrivateKey{}, err
+		key, err := _ECDSAPrivateKeyFromPem(bytes, passphrase)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+		return PrivateKey{
+			ecdsaPrivateKey: key,
+		}, nil
 	}
 
 	return PrivateKey{
@@ -367,7 +373,13 @@ func PrivateKeyReadPem(source io.Reader, passphrase string) (PrivateKey, error) 
 
 	key, err := _Ed25519PrivateKeyReadPem(source, passphrase)
 	if err != nil {
-		return PrivateKey{}, err
+		key, err := _ECDSAPrivateKeyReadPem(source, passphrase)
+		if err != nil {
+			return PrivateKey{}, err
+		}
+		return PrivateKey{
+			ecdsaPrivateKey: key,
+		}, nil
 	}
 
 	return PrivateKey{

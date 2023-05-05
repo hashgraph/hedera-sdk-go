@@ -381,6 +381,59 @@ func TestUnitPrivateKeyFromPemWithPassphrase(t *testing.T) {
 	assert.Equal(t, actualPrivateKey, privateKey)
 }
 
+func TestUnitECDSAPrivateKeyFromUnencryptedUncompressedPEM(t *testing.T) {
+	unencryptedUncompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"MHQCAQEEIG8I+jKi+iGVa7ttbfnlnML5AdvPugbgBWnseYjrle6qoAcGBSuBBAAK\n" +
+		"oUQDQgAEqf5BmMeBzkU1Ra9UAbZJo3tytVOlb7erTc36LRLP20mOLU7+mFY+3Cfe\n" +
+		"fAZgBtPXRAmDtRvYGODswAalW85GKA==\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(unencryptedUncompressed), "")
+	require.NoError(t, err)
+
+	assert.Equal(t, "6f08fa32a2fa21956bbb6d6df9e59cc2f901dbcfba06e00569ec7988eb95eeaa", privateKey.StringRaw())
+}
+func TestUnitECDSAPrivateKeyFromUnencryptedCompressedPEM(t *testing.T) {
+	unencryptedCompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"MFQCAQEEIOHyhclwHbha3f281Kvd884rhBzltxGJxCZyaQCagH9joAcGBSuBBAAK\n" +
+		"oSQDIgACREr6gFZa4K7hBP+bA25VdgQ+0ABFgM+g5RYw/W6T1Og=\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(unencryptedCompressed), "")
+	require.NoError(t, err)
+
+	assert.Equal(t, "e1f285c9701db85addfdbcd4abddf3ce2b841ce5b71189c4267269009a807f63", privateKey.StringRaw())
+}
+func TestUnitECDSAPrivateKeyFromEncryptedUncompressedPEM(t *testing.T) {
+	encryptedUncompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"Proc-Type: 4,ENCRYPTED\n" +
+		"DEK-Info: AES-128-CBC,0046A9EED8D16F0CAA66A197CE8BE8BD\n" +
+		"\n" +
+		"9VU9gReUmrn4XywjMx0F0A3oGzpHIksEXma72TCSdcxI7zHy0mtzuGq4Wd25O38s\n" +
+		"H9c6kvhTPS1N/c6iNhx154B0HUoND8jvAvfxbGR/R87vpZJsOoKCmRxGqrxG8HER\n" +
+		"FIHQ1jy16DrAbU95kDyLsiF1dy2vUY/HoqFZwxl/IVc=\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(encryptedUncompressed), "asdasd123")
+	require.NoError(t, err)
+
+	assert.Equal(t, "cf49eb5206c1b0468854d6ea7b370590619625514f71ff93608a18465e4012ad", privateKey.StringRaw())
+}
+func TestUnitECDSAPrivateKeyFromEncryptedCompressedPEM(t *testing.T) {
+	encryptedCompressed := "-----BEGIN EC PRIVATE KEY-----\n" +
+		"Proc-Type: 4,ENCRYPTED\n" +
+		"DEK-Info: AES-128-CBC,4A9B3B987EC2EFFA405818327D14FFF7\n" +
+		"\n" +
+		"Wh756RkK5fn1Ke2denR1OYfqE9Kr4BXhgrEMTU/6o0SNhMULUhWGHrCWvmNeEQwp\n" +
+		"ZVZYUxgYoTlJBeREzKAZithcvxIcTbQfLABo1NZbjA6YKqAqlGpM6owwL/f9e2ST\n" +
+		"-----END EC PRIVATE KEY-----"
+
+	privateKey, err := PrivateKeyFromPem([]byte(encryptedCompressed), "asdasd123")
+	require.NoError(t, err)
+
+	assert.Equal(t, "c0d3e16ba5a1abbeac4cd327a3c3c1cc10438431d0bac019054e573e67768bb5", privateKey.StringRaw())
+}
+
 func TestUnitPrivateKeyECDSASign(t *testing.T) {
 	t.Parallel()
 

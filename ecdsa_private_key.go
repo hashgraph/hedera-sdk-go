@@ -25,9 +25,12 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
+	"crypto/x509"
 	"encoding/asn1"
 	"encoding/hex"
+	"encoding/pem"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -185,6 +188,43 @@ func (sk *_ECDSAPrivateKey) _PublicKey() *_ECDSAPublicKey {
 	}
 }
 
+func _ECDSAPrivateKeyFromPem(bytes []byte, passphrase string) (*_ECDSAPrivateKey, error) {
+	block, _ := pem.Decode(bytes)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block containing private key")
+	}
+
+	if block.Type != "EC PRIVATE KEY" {
+		return nil, fmt.Errorf("unsupported PEM block type: %s", block.Type)
+	}
+	//nolint
+	if x509.IsEncryptedPEMBlock(block) {
+		der, err := x509.DecryptPEMBlock(block, []byte(passphrase))
+		if err != nil {
+			return nil, err
+		}
+		block.Bytes = der
+	}
+
+	key, err := _ECDSAPrivateKeyFromBytes(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return key, nil
+}
+
+func _ECDSAPrivateKeyReadPem(source io.Reader, passphrase string) (*_ECDSAPrivateKey, error) {
+	// note: Passphrases are currently not supported, but included in the function definition to avoid breaking
+	// changes in the future.
+
+	pemFileBytes, err := io.ReadAll(source)
+	if err != nil {
+		return &_ECDSAPrivateKey{}, err
+	}
+
+	return _ECDSAPrivateKeyFromPem(pemFileBytes, passphrase)
+}
+
 func (sk _ECDSAPrivateKey) _Sign(message []byte) []byte {
 	hash := crypto.Keccak256Hash(message)
 	sig, err := crypto.Sign(hash.Bytes(), sk.keyData)
@@ -266,7 +306,9 @@ func (sk _ECDSAPrivateKey) _StringDer() string {
 func (sk _ECDSAPrivateKey) _StringRaw() string {
 	return fmt.Sprint(hex.EncodeToString(sk._BytesRaw()))
 }
-
+func (sk _ECDSAPrivateKey) StringRaw2() string {
+	return fmt.Sprint(hex.EncodeToString(sk._BytesRaw()))
+}
 func (sk _ECDSAPrivateKey) _ToProtoKey() *services.Key {
 	return sk._PublicKey()._ToProtoKey()
 }
