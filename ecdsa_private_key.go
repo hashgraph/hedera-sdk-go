@@ -214,9 +214,6 @@ func _ECDSAPrivateKeyFromPem(bytes []byte, passphrase string) (*_ECDSAPrivateKey
 }
 
 func _ECDSAPrivateKeyReadPem(source io.Reader, passphrase string) (*_ECDSAPrivateKey, error) {
-	// note: Passphrases are currently not supported, but included in the function definition to avoid breaking
-	// changes in the future.
-
 	pemFileBytes, err := io.ReadAll(source)
 	if err != nil {
 		return &_ECDSAPrivateKey{}, err
@@ -306,9 +303,7 @@ func (sk _ECDSAPrivateKey) _StringDer() string {
 func (sk _ECDSAPrivateKey) _StringRaw() string {
 	return fmt.Sprint(hex.EncodeToString(sk._BytesRaw()))
 }
-func (sk _ECDSAPrivateKey) StringRaw2() string {
-	return fmt.Sprint(hex.EncodeToString(sk._BytesRaw()))
-}
+
 func (sk _ECDSAPrivateKey) _ToProtoKey() *services.Key {
 	return sk._PublicKey()._ToProtoKey()
 }
