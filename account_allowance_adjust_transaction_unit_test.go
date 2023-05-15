@@ -33,6 +33,7 @@ import (
 
 func TestUnitAccountAllowanceAdjustTransactionGet(t *testing.T) {
 	key, err := PrivateKeyGenerate()
+	require.NoError(t, err)
 	key2, err := PrivateKeyGenerate()
 	require.NoError(t, err)
 
