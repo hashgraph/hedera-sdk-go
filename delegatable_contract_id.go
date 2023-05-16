@@ -64,6 +64,7 @@ func DelegatableContractIDFromString(data string) (DelegatableContractID, error)
 	}, nil
 }
 
+// Verify that the client has a valid checksum.
 func (id *DelegatableContractID) ValidateChecksum(client *Client) error {
 	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
 		var tempChecksum _ParseAddressResult

@@ -52,6 +52,7 @@ func TopicIDFromString(data string) (TopicID, error) {
 	}, nil
 }
 
+// Verify that the client has a valid checksum.
 func (id *TopicID) ValidateChecksum(client *Client) error {
 	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
 		tempChecksum, err := _ChecksumParseAddress(client.GetLedgerID(), fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic))

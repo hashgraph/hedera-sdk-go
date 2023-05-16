@@ -54,6 +54,7 @@ func NewTransactionReceiptQuery() *TransactionReceiptQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TransactionReceiptQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionReceiptQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -126,6 +127,7 @@ func (query *TransactionReceiptQuery) _Build() *services.Query_TransactionGetRec
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *TransactionReceiptQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil {
 		return Hbar{}, errNoClientProvided
@@ -238,26 +240,32 @@ func (query *TransactionReceiptQuery) GetTransactionID() TransactionID {
 	return *query.transactionID
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this TransactionReceiptQuery.
 func (query *TransactionReceiptQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionReceiptQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
 func (query *TransactionReceiptQuery) SetQueryPayment(queryPayment Hbar) *TransactionReceiptQuery {
 	query.queryPayment = queryPayment
 	return query
 }
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *TransactionReceiptQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionReceiptQuery {
 	query.maxQueryPayment = queryMaxPayment
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TransactionReceiptQuery) SetMaxRetry(count int) *TransactionReceiptQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *TransactionReceiptQuery) SetMaxBackoff(max time.Duration) *TransactionReceiptQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -268,6 +276,7 @@ func (query *TransactionReceiptQuery) SetMaxBackoff(max time.Duration) *Transact
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *TransactionReceiptQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -276,6 +285,7 @@ func (query *TransactionReceiptQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *TransactionReceiptQuery) SetMinBackoff(min time.Duration) *TransactionReceiptQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -286,6 +296,7 @@ func (query *TransactionReceiptQuery) SetMinBackoff(min time.Duration) *Transact
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *TransactionReceiptQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -294,6 +305,7 @@ func (query *TransactionReceiptQuery) GetMinBackoff() time.Duration {
 	return 250 * time.Millisecond
 }
 
+// Execute executes the Query with the provided client
 func (query *TransactionReceiptQuery) Execute(client *Client) (TransactionReceipt, error) {
 	if client == nil {
 		return TransactionReceipt{}, errNoClientProvided
@@ -349,6 +361,7 @@ func (query *TransactionReceiptQuery) _GetLogID() string {
 	return fmt.Sprintf("TransactionReceiptQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *TransactionReceiptQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

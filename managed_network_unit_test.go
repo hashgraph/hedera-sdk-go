@@ -399,8 +399,6 @@ func TestUnitReadmitNodes_NodeReadmitted(t *testing.T) {
 	require.True(t, found, "node1:50211 should be present in the healthyNodes list after readmission")
 }
 
-
-
 func TestUnitReadmitNodes_NodeNotReadmitted(t *testing.T) {
 	mn := _NewManagedNetwork()
 	mockNodes := newMockNodes()
@@ -429,7 +427,6 @@ func TestUnitReadmitNodes_NodeNotReadmitted(t *testing.T) {
 	}
 	require.False(t, found, "node1:50212 should not be present in the healthyNodes list since its readmit time is in the future")
 }
-
 
 func TestUnitReadmitNodes_UpdateEarliestReadmitTime(t *testing.T) {
 	mn := _NewManagedNetwork()
@@ -545,36 +542,34 @@ func TestUnitGetNode(t *testing.T) {
 }
 
 func TestUnitGetNodePanicNoHealthyNodes(t *testing.T) {
-    mn := _NewManagedNetwork()
-    mockNodes := newMockNodes()
-    err := mn._SetNetwork(mockNodes)
-    require.NoError(t, err)
+	mn := _NewManagedNetwork()
+	mockNodes := newMockNodes()
+	err := mn._SetNetwork(mockNodes)
+	require.NoError(t, err)
 
-    // Mark all nodes as unhealthy and set their readmit time in the future
-    for _, node := range mockNodes {
-        node.(*mockManagedNode).healthy = false
-		readmitTime:= time.Now().Add(1 * time.Minute)
-        node.(*mockManagedNode).readmitTime = &readmitTime
-    }
+	// Mark all nodes as unhealthy and set their readmit time in the future
+	for _, node := range mockNodes {
+		node.(*mockManagedNode).healthy = false
+		readmitTime := time.Now().Add(1 * time.Minute)
+		node.(*mockManagedNode).readmitTime = &readmitTime
+	}
 
-    // Update the network with unhealthy nodes
-    err = mn._SetNetwork(mockNodes)
-    require.NoError(t, err)
+	// Update the network with unhealthy nodes
+	err = mn._SetNetwork(mockNodes)
+	require.NoError(t, err)
 
-    // Ensure that there are no healthy nodes in the network
-    require.Equal(t, 0, len(mn.healthyNodes))
+	// Ensure that there are no healthy nodes in the network
+	require.Equal(t, 0, len(mn.healthyNodes))
 
-    // Check if calling _GetNode() panics when there are no healthy nodes
-    defer func() {
-        if r := recover(); r != nil {
-            panicValue, ok := r.(string)
-            require.True(t, ok, "Panic value should be a string")
-            require.Equal(t, "failed to find a healthy working node", panicValue)
-        }
-    }()
+	// Check if calling _GetNode() panics when there are no healthy nodes
+	defer func() {
+		if r := recover(); r != nil {
+			panicValue, ok := r.(string)
+			require.True(t, ok, "Panic value should be a string")
+			require.Equal(t, "failed to find a healthy working node", panicValue)
+		}
+	}()
 
-    mn._GetNode()
-    require.Fail(t, "Expected _GetNode to panic")
+	mn._GetNode()
+	require.Fail(t, "Expected _GetNode to panic")
 }
-
-

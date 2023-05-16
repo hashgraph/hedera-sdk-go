@@ -38,11 +38,13 @@ func NewNetworkVersionQuery() *NetworkVersionInfoQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *NetworkVersionInfoQuery) SetGrpcDeadline(deadline *time.Duration) *NetworkVersionInfoQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *NetworkVersionInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -97,6 +99,7 @@ func _NetworkVersionInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *NetworkVersionInfoQuery) Execute(client *Client) (NetworkVersionInfo, error) {
 	if client == nil || client.operator == nil {
 		return NetworkVersionInfo{}, errNoClientProvided
@@ -194,16 +197,20 @@ func (query *NetworkVersionInfoQuery) SetQueryPayment(paymentAmount Hbar) *Netwo
 	return query
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this NetworkVersionInfoQuery.
 func (query *NetworkVersionInfoQuery) SetNodeAccountIDs(accountID []AccountID) *NetworkVersionInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *NetworkVersionInfoQuery) SetMaxRetry(count int) *NetworkVersionInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *NetworkVersionInfoQuery) SetMaxBackoff(max time.Duration) *NetworkVersionInfoQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -214,6 +221,7 @@ func (query *NetworkVersionInfoQuery) SetMaxBackoff(max time.Duration) *NetworkV
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *NetworkVersionInfoQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -222,6 +230,7 @@ func (query *NetworkVersionInfoQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *NetworkVersionInfoQuery) SetMinBackoff(min time.Duration) *NetworkVersionInfoQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -232,6 +241,7 @@ func (query *NetworkVersionInfoQuery) SetMinBackoff(min time.Duration) *NetworkV
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *NetworkVersionInfoQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -248,6 +258,7 @@ func (query *NetworkVersionInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("NetworkVersionInfoQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *NetworkVersionInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *NetworkVersionInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

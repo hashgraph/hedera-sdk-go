@@ -95,6 +95,7 @@ func _AccountCreateTransactionFromProtobuf(transaction Transaction, pb *services
 	return &body
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *AccountCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountCreateTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -108,6 +109,7 @@ func (transaction *AccountCreateTransaction) SetKey(key Key) *AccountCreateTrans
 	return transaction
 }
 
+// GetKey returns the key that must sign each transfer out of the account.
 func (transaction *AccountCreateTransaction) GetKey() (Key, error) {
 	return transaction.key, nil
 }
@@ -119,6 +121,7 @@ func (transaction *AccountCreateTransaction) SetInitialBalance(initialBalance Hb
 	return transaction
 }
 
+// GetInitialBalance returns the initial number of Hbar to put into the account
 func (transaction *AccountCreateTransaction) GetInitialBalance() Hbar {
 	return HbarFromTinybar(int64(transaction.initialBalance))
 }
@@ -132,6 +135,7 @@ func (transaction *AccountCreateTransaction) SetMaxAutomaticTokenAssociations(ma
 	return transaction
 }
 
+// GetMaxAutomaticTokenAssociations returns the maximum number of tokens that an Account can be implicitly associated with.
 func (transaction *AccountCreateTransaction) GetMaxAutomaticTokenAssociations() uint32 {
 	return transaction.maxAutomaticTokenAssociations
 }
@@ -148,6 +152,7 @@ func (transaction *AccountCreateTransaction) SetAutoRenewPeriod(autoRenewPeriod 
 	return transaction
 }
 
+// GetAutoRenewPeriod returns the time duration for when account is charged to extend its expiration date.
 func (transaction *AccountCreateTransaction) GetAutoRenewPeriod() time.Duration {
 	if transaction.autoRenewPeriod != nil {
 		return *transaction.autoRenewPeriod
@@ -183,16 +188,19 @@ func (transaction *AccountCreateTransaction) SetAccountMemo(memo string) *Accoun
 	return transaction
 }
 
+// GetAccountMemo Gets the memo associated with the account (UTF-8 encoding max 100 bytes)
 func (transaction *AccountCreateTransaction) GetAccountMemo() string {
 	return transaction.memo
 }
 
+// SetStakedAccountID Set the account to which this account will stake.
 func (transaction *AccountCreateTransaction) SetStakedAccountID(id AccountID) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.stakedAccountID = &id
 	return transaction
 }
 
+// GetStakedAccountID returns the account to which this account will stake.
 func (transaction *AccountCreateTransaction) GetStakedAccountID() AccountID {
 	if transaction.stakedAccountID != nil {
 		return *transaction.stakedAccountID
@@ -201,12 +209,14 @@ func (transaction *AccountCreateTransaction) GetStakedAccountID() AccountID {
 	return AccountID{}
 }
 
+// SetStakedNodeID Set the node to which this account will stake
 func (transaction *AccountCreateTransaction) SetStakedNodeID(id int64) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.stakedNodeID = &id
 	return transaction
 }
 
+// GetStakedNodeID returns the node to which this account will stake
 func (transaction *AccountCreateTransaction) GetStakedNodeID() int64 {
 	if transaction.stakedNodeID != nil {
 		return *transaction.stakedNodeID
@@ -215,12 +225,14 @@ func (transaction *AccountCreateTransaction) GetStakedNodeID() int64 {
 	return 0
 }
 
+// SetDeclineStakingReward If set to true, the account declines receiving a staking reward. The default value is false.
 func (transaction *AccountCreateTransaction) SetDeclineStakingReward(decline bool) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.declineReward = decline
 	return transaction
 }
 
+// GetDeclineStakingReward returns true if the account declines receiving a staking reward.
 func (transaction *AccountCreateTransaction) GetDeclineStakingReward() bool {
 	return transaction.declineReward
 }
@@ -300,10 +312,12 @@ func (transaction *AccountCreateTransaction) SetReceiverSignatureRequired(requir
 	return transaction
 }
 
+// GetReceiverSignatureRequired returns the receiverSigRequired flag.
 func (transaction *AccountCreateTransaction) GetReceiverSignatureRequired() bool {
 	return transaction.receiverSignatureRequired
 }
 
+// Schedule a Create Account transaction
 func (transaction *AccountCreateTransaction) Schedule() (*ScheduleCreateTransaction, error) {
 	transaction._RequireNotFrozen()
 
@@ -367,6 +381,7 @@ func (transaction *AccountCreateTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *AccountCreateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountCreateTransaction, error) {
@@ -487,11 +502,12 @@ func (transaction *AccountCreateTransaction) FreezeWith(client *Client) (*Accoun
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *AccountCreateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this AccountCreateTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *AccountCreateTransaction) SetMaxTransactionFee(fee Hbar) *AccountCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -510,6 +526,7 @@ func (transaction *AccountCreateTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -521,6 +538,7 @@ func (transaction *AccountCreateTransaction) SetTransactionMemo(memo string) *Ac
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *AccountCreateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -532,6 +550,7 @@ func (transaction *AccountCreateTransaction) SetTransactionValidDuration(duratio
 	return transaction
 }
 
+// GetTransactionID returns the TransactionID for this AccountCreateTransaction.
 func (transaction *AccountCreateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -551,11 +570,13 @@ func (transaction *AccountCreateTransaction) SetNodeAccountIDs(nodeID []AccountI
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *AccountCreateTransaction) SetMaxRetry(count int) *AccountCreateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *AccountCreateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountCreateTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -588,6 +609,8 @@ func (transaction *AccountCreateTransaction) AddSignature(publicKey PublicKey, s
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *AccountCreateTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -598,6 +621,7 @@ func (transaction *AccountCreateTransaction) SetMaxBackoff(max time.Duration) *A
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *AccountCreateTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -606,6 +630,7 @@ func (transaction *AccountCreateTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *AccountCreateTransaction) SetMinBackoff(min time.Duration) *AccountCreateTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -616,6 +641,7 @@ func (transaction *AccountCreateTransaction) SetMinBackoff(min time.Duration) *A
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *AccountCreateTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

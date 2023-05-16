@@ -42,6 +42,7 @@ func NewTopicInfoQuery() *TopicInfoQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TopicInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TopicInfoQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -89,6 +90,7 @@ func (query *TopicInfoQuery) _Build() *services.Query_ConsensusGetTopicInfo {
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *TopicInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -257,16 +259,20 @@ func (query *TopicInfoQuery) SetQueryPayment(paymentAmount Hbar) *TopicInfoQuery
 	return query
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this TopicInfoQuery.
 func (query *TopicInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TopicInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TopicInfoQuery) SetMaxRetry(count int) *TopicInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *TopicInfoQuery) SetMaxBackoff(max time.Duration) *TopicInfoQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -277,6 +283,7 @@ func (query *TopicInfoQuery) SetMaxBackoff(max time.Duration) *TopicInfoQuery {
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *TopicInfoQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -285,6 +292,7 @@ func (query *TopicInfoQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *TopicInfoQuery) SetMinBackoff(min time.Duration) *TopicInfoQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -295,6 +303,7 @@ func (query *TopicInfoQuery) SetMinBackoff(min time.Duration) *TopicInfoQuery {
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *TopicInfoQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff

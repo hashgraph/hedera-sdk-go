@@ -85,6 +85,7 @@ func AccountIDFromString(data string) (AccountID, error) {
 	}, nil
 }
 
+// AccountIDFromEvmAddress constructs an AccountID from a string formatted as 0.0.<evm address>
 func AccountIDFromEvmAddress(shard uint64, realm uint64, aliasEvmAddress string) (AccountID, error) {
 	temp, err := hex.DecodeString(aliasEvmAddress)
 	if err != nil {
@@ -120,6 +121,7 @@ func AccountIDFromSolidityAddress(s string) (AccountID, error) {
 	}, nil
 }
 
+// Verify that the client has a valid checksum.
 func (id *AccountID) ValidateChecksum(client *Client) error {
 	if id.AliasKey != nil {
 		return errors.New("Account ID contains alias key, unable to validate")
@@ -298,6 +300,7 @@ func _AccountIDFromProtobuf(accountID *services.AccountID) *AccountID {
 	}
 }
 
+// IsZero returns true if this AccountID is the zero-value
 func (id AccountID) IsZero() bool {
 	return id._IsZero()
 }
@@ -306,6 +309,7 @@ func (id AccountID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Account == 0 && id.AliasKey == nil
 }
 
+// Equals returns true if this AccountID and the given AccountID are identical
 func (id AccountID) Equals(other AccountID) bool {
 	return id._Equals(other)
 }
@@ -345,6 +349,7 @@ func AccountIDFromBytes(data []byte) (AccountID, error) {
 	return *_AccountIDFromProtobuf(&pb), nil
 }
 
+// Compare returns 0 if the two AccountID are identical, -1 if not.
 func (id AccountID) Compare(given AccountID) int {
 	if id.Shard > given.Shard { //nolint
 		return 1
@@ -385,9 +390,11 @@ func (id AccountID) Compare(given AccountID) int {
 	}
 }
 
+// Len returns the number of elements in the collection.
 func (accountIDs _AccountIDs) Len() int { //nolint
 	return len(accountIDs.accountIDs)
 }
+
 func (accountIDs _AccountIDs) Swap(i, j int) { //nolint
 	accountIDs.accountIDs[i], accountIDs.accountIDs[j] = accountIDs.accountIDs[j], accountIDs.accountIDs[i]
 }

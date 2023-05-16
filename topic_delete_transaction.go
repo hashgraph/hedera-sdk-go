@@ -52,6 +52,7 @@ func _TopicDeleteTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TopicDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicDeleteTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -262,7 +263,7 @@ func (transaction *TopicDeleteTransaction) FreezeWith(client *Client) (*TopicDel
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TopicDeleteTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TopicDeleteTransaction) SetMaxTransactionFee(fee Hbar) *TopicDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -310,11 +311,13 @@ func (transaction *TopicDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID)
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TopicDeleteTransaction) SetMaxRetry(count int) *TopicDeleteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TopicDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicDeleteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -347,6 +350,8 @@ func (transaction *TopicDeleteTransaction) AddSignature(publicKey PublicKey, sig
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TopicDeleteTransaction) SetMaxBackoff(max time.Duration) *TopicDeleteTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -357,6 +362,7 @@ func (transaction *TopicDeleteTransaction) SetMaxBackoff(max time.Duration) *Top
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TopicDeleteTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -365,6 +371,7 @@ func (transaction *TopicDeleteTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TopicDeleteTransaction) SetMinBackoff(min time.Duration) *TopicDeleteTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -375,6 +382,7 @@ func (transaction *TopicDeleteTransaction) SetMinBackoff(min time.Duration) *Top
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TopicDeleteTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

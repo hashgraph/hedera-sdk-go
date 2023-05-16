@@ -62,6 +62,7 @@ func _TokenUnpauseTransactionFromProtobuf(transaction Transaction, pb *services.
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenUnpauseTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUnpauseTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -155,6 +156,7 @@ func (transaction *TokenUnpauseTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TokenUnpauseTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenUnpauseTransaction, error) {
@@ -271,11 +273,12 @@ func (transaction *TokenUnpauseTransaction) FreezeWith(client *Client) (*TokenUn
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenUnpauseTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenUnpauseTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenUnpauseTransaction) SetMaxTransactionFee(fee Hbar) *TokenUnpauseTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -294,6 +297,7 @@ func (transaction *TokenUnpauseTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TokenUnpauseTransaction.
 func (transaction *TokenUnpauseTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -305,6 +309,7 @@ func (transaction *TokenUnpauseTransaction) SetTransactionMemo(memo string) *Tok
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenUnpauseTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -316,6 +321,7 @@ func (transaction *TokenUnpauseTransaction) SetTransactionValidDuration(duration
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this TokenUnpauseTransaction.
 func (transaction *TokenUnpauseTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -335,11 +341,13 @@ func (transaction *TokenUnpauseTransaction) SetNodeAccountIDs(nodeID []AccountID
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenUnpauseTransaction) SetMaxRetry(count int) *TokenUnpauseTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TokenUnpauseTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUnpauseTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -372,6 +380,8 @@ func (transaction *TokenUnpauseTransaction) AddSignature(publicKey PublicKey, si
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TokenUnpauseTransaction) SetMaxBackoff(max time.Duration) *TokenUnpauseTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -382,6 +392,7 @@ func (transaction *TokenUnpauseTransaction) SetMaxBackoff(max time.Duration) *To
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TokenUnpauseTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -390,6 +401,7 @@ func (transaction *TokenUnpauseTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TokenUnpauseTransaction) SetMinBackoff(min time.Duration) *TokenUnpauseTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -400,6 +412,7 @@ func (transaction *TokenUnpauseTransaction) SetMinBackoff(min time.Duration) *To
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TokenUnpauseTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

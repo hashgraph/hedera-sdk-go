@@ -80,6 +80,7 @@ var mainnetMirror = []string{"mainnet-public.mirrornode.hedera.com:443"}
 var testnetMirror = []string{"testnet.mirrornode.hedera.com:443"}
 var previewnetMirror = []string{"previewnet.mirrornode.hedera.com:443"}
 
+// ClientForNetwork constructs a client given a set of nodes.
 func ClientForNetwork(network map[string]AccountID) *Client {
 	net := _NewNetwork()
 	client := _NewClient(net, []string{}, "mainnet")
@@ -163,10 +164,12 @@ func (client *Client) _ScheduleNetworkUpdate(ctx context.Context, duration time.
 	}
 }
 
+// CancelScheduledNetworkUpdate cancels the scheduled network update the network address book
 func (client *Client) CancelScheduledNetworkUpdate() {
 	client.cancelNetworkUpdate()
 }
 
+// SetNetworkUpdatePeriod sets how often the client will update the network address book
 func (client *Client) SetNetworkUpdatePeriod(period time.Duration) *Client {
 	client.defaultNetworkUpdatePeriod = period
 	client.CancelScheduledNetworkUpdate()
@@ -175,10 +178,12 @@ func (client *Client) SetNetworkUpdatePeriod(period time.Duration) *Client {
 	return client
 }
 
+// GetNetworkUpdatePeriod returns the current network update period
 func (client *Client) GetNetworkUpdatePeriod() time.Duration {
 	return client.defaultNetworkUpdatePeriod
 }
 
+// ClientForName set up the client for the selected network.
 func ClientForName(name string) (*Client, error) {
 	switch name {
 	case string(NetworkNameTestnet):
@@ -341,30 +346,42 @@ func (client *Client) Close() error {
 	return nil
 }
 
+// SetNetwork replaces all nodes in this Client with a new set of nodes.
 func (client *Client) SetNetwork(network map[string]AccountID) error {
 	return client.network.SetNetwork(network)
 }
 
+// GetNetwork returns the current set of nodes in this Client.
 func (client *Client) GetNetwork() map[string]AccountID {
 	return client.network._GetNetwork()
 }
 
+// SetMaxNodeReadmitTime The maximum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) SetMaxNodeReadmitTime(readmitTime time.Duration) {
 	client.network._SetMaxNodeReadmitPeriod(readmitTime)
 }
 
+// GetMaxNodeReadmitTime returns the maximum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) GetMaxNodeReadmitPeriod() time.Duration {
 	return client.network._GetMaxNodeReadmitPeriod()
 }
 
+// SetMinNodeReadmitTime The minimum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) SetMinNodeReadmitTime(readmitTime time.Duration) {
 	client.network._SetMinNodeReadmitPeriod(readmitTime)
 }
 
+// GetMinNodeReadmitTime returns the minimum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) GetMinNodeReadmitPeriod() time.Duration {
 	return client.network._GetMinNodeReadmitPeriod()
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (client *Client) SetMaxBackoff(max time.Duration) {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -374,10 +391,12 @@ func (client *Client) SetMaxBackoff(max time.Duration) {
 	client.maxBackoff = max
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (client *Client) GetMaxBackoff() time.Duration {
 	return client.maxBackoff
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (client *Client) SetMinBackoff(min time.Duration) {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -387,14 +406,17 @@ func (client *Client) SetMinBackoff(min time.Duration) {
 	client.minBackoff = min
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (client *Client) GetMinBackoff() time.Duration {
 	return client.minBackoff
 }
 
+// SetMaxAttempts sets the maximum number of times to attempt a transaction or query.
 func (client *Client) SetMaxAttempts(max int) {
 	client.maxAttempts = &max
 }
 
+// GetMaxAttempts returns the maximum number of times to attempt a transaction or query.
 func (client *Client) GetMaxAttempts() int {
 	if client.maxAttempts == nil {
 		return -1
@@ -403,10 +425,12 @@ func (client *Client) GetMaxAttempts() int {
 	return *client.maxAttempts
 }
 
+// SetMaxNodeAttempts sets the maximum number of times to attempt a transaction or query on a single node.
 func (client *Client) SetMaxNodeAttempts(max int) {
 	client.network._SetMaxNodeAttempts(max)
 }
 
+// GetMaxNodeAttempts returns the maximum number of times to attempt a transaction or query on a single node.
 func (client *Client) GetMaxNodeAttempts() int {
 	return client.network._GetMaxNodeAttempts()
 }
@@ -421,22 +445,27 @@ func (client *Client) GetNodeWaitTime() time.Duration {
 	return client.network._GetNodeMinBackoff()
 }
 
+// SetNodeMinBackoff sets the minimum amount of time to wait between retries on a single node.
 func (client *Client) SetNodeMinBackoff(nodeWait time.Duration) {
 	client.network._SetNodeMinBackoff(nodeWait)
 }
 
+// GetNodeMinBackoff returns the minimum amount of time to wait between retries on a single node.
 func (client *Client) GetNodeMinBackoff() time.Duration {
 	return client.network._GetNodeMinBackoff()
 }
 
+// SetNodeMaxBackoff sets the maximum amount of time to wait between retries on a single node.
 func (client *Client) SetNodeMaxBackoff(nodeWait time.Duration) {
 	client.network._SetNodeMaxBackoff(nodeWait)
 }
 
+// GetNodeMaxBackoff returns the maximum amount of time to wait between retries on a single node.
 func (client *Client) GetNodeMaxBackoff() time.Duration {
 	return client.network._GetNodeMaxBackoff()
 }
 
+// SetMaxNodesPerTransaction sets the maximum number of nodes to try for a single transaction.
 func (client *Client) SetMaxNodesPerTransaction(max int) {
 	client.network._SetMaxNodesPerTransaction(max)
 }
@@ -447,22 +476,31 @@ func (client *Client) SetMirrorNetwork(mirrorNetwork []string) {
 	_ = client.mirrorNetwork._SetNetwork(mirrorNetwork)
 }
 
+// GetNetwork returns the mirror network node list.
 func (client *Client) GetMirrorNetwork() []string {
 	return client.mirrorNetwork._GetNetwork()
 }
 
+// SetTransportSecurity sets if transport security should be used to connect to consensus nodes.
+// If transport security is enabled all connections to consensus nodes will use TLS, and
+// the server's certificate hash will be compared to the hash stored in the NodeAddressBook
+// for the given network.
+// *Note*: If transport security is enabled, but {@link Client#isVerifyCertificates()} is disabled
+// then server certificates will not be verified.
 func (client *Client) SetTransportSecurity(tls bool) *Client {
 	client.network._SetTransportSecurity(tls)
 
 	return client
 }
 
+// SetCertificateVerification sets if server certificates should be verified against an existing address book.
 func (client *Client) SetCertificateVerification(verify bool) *Client {
 	client.network._SetVerifyCertificate(verify)
 
 	return client
 }
 
+// GetCertificateVerification returns if server certificates should be verified against an existing address book.
 func (client *Client) GetCertificateVerification() bool {
 	return client.network._GetVerifyCertificate()
 }
@@ -477,42 +515,56 @@ func (client *Client) GetNetworkName() *NetworkName {
 	return client.network._GetNetworkName()
 }
 
+// SetLedgerID sets the ledger ID for the Client.
 func (client *Client) SetLedgerID(id LedgerID) {
 	client.network._SetLedgerID(id)
 }
 
+// GetLedgerID returns the ledger ID for the Client.
 func (client *Client) GetLedgerID() *LedgerID {
 	return client.network._GetLedgerID()
 }
 
+// SetAutoValidateChecksums sets if an automatic entity ID checksum validation should be performed.
 func (client *Client) SetAutoValidateChecksums(validate bool) {
 	client.autoValidateChecksums = validate
 }
 
+// GetAutoValidateChecksums returns if an automatic entity ID checksum validation should be performed.
 func (client *Client) GetAutoValidateChecksums() bool {
 	return client.autoValidateChecksums
 }
 
+// SetDefaultRegenerateTransactionIDs sets if an automatic transaction ID regeneration should be performed.
 func (client *Client) SetDefaultRegenerateTransactionIDs(regen bool) {
 	client.defaultRegenerateTransactionIDs = regen
 }
 
+// GetDefaultRegenerateTransactionIDs returns if an automatic transaction ID regeneration should be performed.
 func (client *Client) GetDefaultRegenerateTransactionIDs() bool {
 	return client.defaultRegenerateTransactionIDs
 }
 
+// SetNodeMinReadmitPeriod sets the minimum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) SetNodeMinReadmitPeriod(period time.Duration) {
 	client.network._SetNodeMinReadmitPeriod(period)
 }
 
+// SetNodeMaxReadmitPeriod sets the maximum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) SetNodeMaxReadmitPeriod(period time.Duration) {
 	client.network._SetNodeMaxReadmitPeriod(period)
 }
 
+// GetNodeMinReadmitPeriod returns the minimum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) GetNodeMinReadmitPeriod() time.Duration {
 	return client.network._GetNodeMinReadmitPeriod()
 }
 
+// GetNodeMaxReadmitPeriod returns the maximum amount of time to wait before attempting to
+// reconnect to a node that has been removed from the network.
 func (client *Client) GetNodeMaxReadmitPeriod() time.Duration {
 	return client.network._GetNodeMaxReadmitPeriod()
 }
@@ -545,10 +597,12 @@ func (client *Client) SetOperatorWith(accountID AccountID, publicKey PublicKey, 
 	return client
 }
 
+// SetRequestTimeout sets the timeout for all requests made by the client.
 func (client *Client) SetRequestTimeout(timeout *time.Duration) {
 	client.requestTimeout = timeout
 }
 
+// GetRequestTimeout returns the timeout for all requests made by the client.
 func (client *Client) GetRequestTimeout() *time.Duration {
 	return client.requestTimeout
 }
@@ -589,11 +643,13 @@ func (client *Client) PingAll() {
 	}
 }
 
+// SetNetworkFromAddressBook replaces all nodes in this Client with the nodes in the Address Book.
 func (client *Client) SetNetworkFromAddressBook(addressBook NodeAddressBook) *Client {
 	client.network._SetNetworkFromAddressBook(addressBook)
 	return client
 }
 
+// SetDefaultMaxQueryPayment sets the default maximum payment allowed for queries.
 func (client *Client) SetDefaultMaxQueryPayment(defaultMaxQueryPayment Hbar) error {
 	if defaultMaxQueryPayment.AsTinybar() < 0 {
 		return errors.New("DefaultMaxQueryPayment must be non-negative")
@@ -603,10 +659,12 @@ func (client *Client) SetDefaultMaxQueryPayment(defaultMaxQueryPayment Hbar) err
 	return nil
 }
 
+// GetDefaultMaxQueryPayment returns the default maximum payment allowed for queries.
 func (client *Client) GetDefaultMaxQueryPayment() Hbar {
 	return client.defaultMaxQueryPayment
 }
 
+// SetDefaultMaxTransactionFee sets the default maximum fee allowed for transactions.
 func (client *Client) SetDefaultMaxTransactionFee(defaultMaxTransactionFee Hbar) error {
 	if defaultMaxTransactionFee.AsTinybar() < 0 {
 		return errors.New("DefaultMaxTransactionFee must be non-negative")
@@ -616,6 +674,7 @@ func (client *Client) SetDefaultMaxTransactionFee(defaultMaxTransactionFee Hbar)
 	return nil
 }
 
+// GetDefaultMaxTransactionFee returns the default maximum fee allowed for transactions.
 func (client *Client) GetDefaultMaxTransactionFee() Hbar {
 	return client.defaultMaxTransactionFee
 }

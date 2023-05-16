@@ -67,6 +67,7 @@ func _ScheduleSignTransactionFromProtobuf(transaction Transaction, pb *services.
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *ScheduleSignTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleSignTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -139,6 +140,7 @@ func (transaction *ScheduleSignTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *ScheduleSignTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleSignTransaction, error) {
@@ -254,11 +256,12 @@ func (transaction *ScheduleSignTransaction) FreezeWith(client *Client) (*Schedul
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ScheduleSignTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this ScheduleSignTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ScheduleSignTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleSignTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -277,6 +280,7 @@ func (transaction *ScheduleSignTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -288,6 +292,7 @@ func (transaction *ScheduleSignTransaction) SetTransactionMemo(memo string) *Sch
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *ScheduleSignTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -299,6 +304,7 @@ func (transaction *ScheduleSignTransaction) SetTransactionValidDuration(duration
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	ScheduleSignTransaction.
 func (transaction *ScheduleSignTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -318,11 +324,14 @@ func (transaction *ScheduleSignTransaction) SetNodeAccountIDs(nodeID []AccountID
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *ScheduleSignTransaction) SetMaxRetry(count int) *ScheduleSignTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *ScheduleSignTransaction) SetMaxBackoff(max time.Duration) *ScheduleSignTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -333,6 +342,7 @@ func (transaction *ScheduleSignTransaction) SetMaxBackoff(max time.Duration) *Sc
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *ScheduleSignTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -341,6 +351,7 @@ func (transaction *ScheduleSignTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *ScheduleSignTransaction) SetMinBackoff(min time.Duration) *ScheduleSignTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -351,6 +362,7 @@ func (transaction *ScheduleSignTransaction) SetMinBackoff(min time.Duration) *Sc
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *ScheduleSignTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

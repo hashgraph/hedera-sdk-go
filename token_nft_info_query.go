@@ -46,6 +46,7 @@ func NewTokenNftInfoQuery() *TokenNftInfoQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TokenNftInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenNftInfoQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -149,6 +150,7 @@ func (query *TokenNftInfoQuery) _BuildByNft() *services.Query_TokenGetNftInfo {
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *TokenNftInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -217,6 +219,7 @@ func _TokenNftInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *TokenNftInfoQuery) Execute(client *Client) ([]TokenNftInfo, error) {
 	if client == nil || client.operator == nil {
 		return []TokenNftInfo{}, errNoClientProvided
@@ -319,16 +322,20 @@ func (query *TokenNftInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenNftInf
 	return query
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this TokenNftInfoQuery.
 func (query *TokenNftInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenNftInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TokenNftInfoQuery) SetMaxRetry(count int) *TokenNftInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *TokenNftInfoQuery) SetMaxBackoff(max time.Duration) *TokenNftInfoQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -339,6 +346,7 @@ func (query *TokenNftInfoQuery) SetMaxBackoff(max time.Duration) *TokenNftInfoQu
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *TokenNftInfoQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -347,6 +355,7 @@ func (query *TokenNftInfoQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *TokenNftInfoQuery) SetMinBackoff(min time.Duration) *TokenNftInfoQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -357,6 +366,7 @@ func (query *TokenNftInfoQuery) SetMinBackoff(min time.Duration) *TokenNftInfoQu
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *TokenNftInfoQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -373,6 +383,7 @@ func (query *TokenNftInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("TokenNftInfoQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *TokenNftInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenNftInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

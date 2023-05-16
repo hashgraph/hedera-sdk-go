@@ -55,6 +55,7 @@ func NewContractCallQuery() *ContractCallQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *ContractCallQuery) SetGrpcDeadline(deadline *time.Duration) *ContractCallQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -169,6 +170,7 @@ func (query *ContractCallQuery) _Build() *services.Query_ContractCallLocal {
 	return &pb
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *ContractCallQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -237,6 +239,7 @@ func _ContractCallQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *ContractCallQuery) Execute(client *Client) (ContractFunctionResult, error) {
 	if client == nil || client.operator == nil {
 		return ContractFunctionResult{}, errNoClientProvided
@@ -342,11 +345,14 @@ func (query *ContractCallQuery) SetNodeAccountIDs(accountID []AccountID) *Contra
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *ContractCallQuery) SetMaxRetry(count int) *ContractCallQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *ContractCallQuery) SetMaxBackoff(max time.Duration) *ContractCallQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -357,6 +363,7 @@ func (query *ContractCallQuery) SetMaxBackoff(max time.Duration) *ContractCallQu
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *ContractCallQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -365,6 +372,7 @@ func (query *ContractCallQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *ContractCallQuery) SetMinBackoff(min time.Duration) *ContractCallQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -375,6 +383,7 @@ func (query *ContractCallQuery) SetMinBackoff(min time.Duration) *ContractCallQu
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *ContractCallQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -391,6 +400,7 @@ func (query *ContractCallQuery) _GetLogID() string {
 	return fmt.Sprintf("ContractCallQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *ContractCallQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractCallQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

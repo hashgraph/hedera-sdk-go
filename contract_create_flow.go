@@ -44,6 +44,7 @@ type ContractCreateFlow struct {
 	maxChunks                     *uint64
 }
 
+// NewContractCreateFlow creates a new ContractCreateFlow transaction builder object.
 func NewContractCreateFlow() *ContractCreateFlow {
 	this := ContractCreateFlow{
 		Transaction: _NewTransaction(),
@@ -55,28 +56,37 @@ func NewContractCreateFlow() *ContractCreateFlow {
 	return &this
 }
 
+// SetBytecodeWithString sets the bytecode of the contract in hex-encoded string format.
 func (this *ContractCreateFlow) SetBytecodeWithString(bytecode string) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.bytecode, _ = hex.DecodeString(bytecode)
 	return this
 }
 
+// SetBytecode sets the bytecode of the contract in raw bytes.
 func (this *ContractCreateFlow) SetBytecode(bytecode []byte) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.bytecode = bytecode
 	return this
 }
 
+// GetBytecode returns the hex-encoded bytecode of the contract.
 func (this *ContractCreateFlow) GetBytecode() string {
 	return hex.EncodeToString(this.bytecode)
 }
 
+// Sets the state of the instance and its fields can be modified arbitrarily if this key signs a transaction
+// to modify it. If this is null, then such modifications are not possible, and there is no administrator
+// that can override the normal operation of this smart contract instance. Note that if it is created with no
+// admin keys, then there is no administrator to authorize changing the admin keys, so
+// there can never be any admin keys for that instance.
 func (this *ContractCreateFlow) SetAdminKey(adminKey Key) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.adminKey = &adminKey
 	return this
 }
 
+// GetAdminKey returns the admin key of the contract.
 func (this *ContractCreateFlow) GetAdminKey() Key {
 	if this.adminKey != nil {
 		return *this.adminKey
@@ -85,32 +95,40 @@ func (this *ContractCreateFlow) GetAdminKey() Key {
 	return PrivateKey{}
 }
 
+// SetGas sets the gas to run the constructor.
 func (this *ContractCreateFlow) SetGas(gas int64) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.gas = gas
 	return this
 }
 
+// GetGas returns the gas to run the constructor.
 func (this *ContractCreateFlow) GetGas() int64 {
 	return this.gas
 }
 
+// SetInitialBalance sets the initial number of hbars to put into the cryptocurrency account
+// associated with and owned by the smart contract.
 func (this *ContractCreateFlow) SetInitialBalance(initialBalance Hbar) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.initialBalance = initialBalance.AsTinybar()
 	return this
 }
 
+// GetInitialBalance returns the initial number of hbars to put into the cryptocurrency account
+// associated with and owned by the smart contract.
 func (this *ContractCreateFlow) GetInitialBalance() Hbar {
 	return HbarFromTinybar(this.initialBalance)
 }
 
+// SetAutoRenewPeriod sets the period that the instance will charge its account every this many seconds to renew.
 func (this *ContractCreateFlow) SetAutoRenewPeriod(autoRenewPeriod time.Duration) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.autoRenewPeriod = &autoRenewPeriod
 	return this
 }
 
+// GetAutoRenewPeriod returns the period that the instance will charge its account every this many seconds to renew.
 func (this *ContractCreateFlow) GetAutoRenewPeriod() time.Duration {
 	if this.autoRenewPeriod != nil {
 		return *this.autoRenewPeriod
@@ -160,16 +178,19 @@ func (this *ContractCreateFlow) SetContractMemo(memo string) *ContractCreateFlow
 	return this
 }
 
+// Gets the memo to be associated with this contract.
 func (this *ContractCreateFlow) GetContractMemo() string {
 	return this.memo
 }
 
+// SetMaxChunks sets the maximum number of chunks that the contract bytecode can be split into.
 func (this *ContractCreateFlow) SetMaxChunks(max uint64) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.maxChunks = &max
 	return this
 }
 
+// GetMaxChunks returns the maximum number of chunks that the contract bytecode can be split into.
 func (this *ContractCreateFlow) GetMaxChunks() uint64 {
 	if this.maxChunks == nil {
 		return 0
@@ -188,6 +209,7 @@ func (this *ContractCreateFlow) SetAutoRenewAccountID(id AccountID) *ContractCre
 	return this
 }
 
+// GetAutoRenewAccountID returns the account to charge for auto-renewal of this contract.
 func (this *ContractCreateFlow) GetAutoRenewAccountID() AccountID {
 	if this.autoRenewAccountID == nil {
 		return AccountID{}
@@ -205,6 +227,8 @@ func (this *ContractCreateFlow) SetMaxAutomaticTokenAssociations(max int32) *Con
 	return this
 }
 
+// GetMaxAutomaticTokenAssociations returns the maximum number of tokens that this
+// contract can be automatically associated with.
 func (this *ContractCreateFlow) GetMaxAutomaticTokenAssociations() int32 {
 	return this.maxAutomaticTokenAssociations
 }
@@ -379,12 +403,14 @@ func (this *ContractCreateFlow) Execute(client *Client) (TransactionResponse, er
 	return contractCreateResponse, nil
 }
 
+// SetNodeAccountIDs sets the node AccountID for this ContractCreateFlow.
 func (this *ContractCreateFlow) SetNodeAccountIDs(nodeID []AccountID) *ContractCreateFlow {
 	this._RequireNotFrozen()
 	this.nodeAccountIDs = nodeID
 	return this
 }
 
+// GetNodeAccountIDs returns the node AccountID for this ContractCreateFlow.
 func (this *ContractCreateFlow) GetNodeAccountIDs() []AccountID {
 	return this.nodeAccountIDs
 }

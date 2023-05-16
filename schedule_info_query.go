@@ -41,6 +41,7 @@ func NewScheduleInfoQuery() *ScheduleInfoQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *ScheduleInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ScheduleInfoQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -88,6 +89,7 @@ func (query *ScheduleInfoQuery) _Build() *services.Query_ScheduleGetInfo {
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *ScheduleInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -156,6 +158,7 @@ func _ScheduleInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *ScheduleInfoQuery) Execute(client *Client) (ScheduleInfo, error) {
 	if client == nil || client.operator == nil {
 		return ScheduleInfo{}, errNoClientProvided
@@ -255,6 +258,7 @@ func (query *ScheduleInfoQuery) SetQueryPayment(paymentAmount Hbar) *ScheduleInf
 	return query
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this ScheduleInfoQuery.
 func (query *ScheduleInfoQuery) SetNodeAccountIDs(accountID []AccountID) *ScheduleInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
@@ -264,11 +268,14 @@ func (query *ScheduleInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *ScheduleInfoQuery) SetMaxRetry(count int) *ScheduleInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *ScheduleInfoQuery) SetMaxBackoff(max time.Duration) *ScheduleInfoQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -279,6 +286,7 @@ func (query *ScheduleInfoQuery) SetMaxBackoff(max time.Duration) *ScheduleInfoQu
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *ScheduleInfoQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -287,6 +295,7 @@ func (query *ScheduleInfoQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *ScheduleInfoQuery) SetMinBackoff(min time.Duration) *ScheduleInfoQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -297,6 +306,7 @@ func (query *ScheduleInfoQuery) SetMinBackoff(min time.Duration) *ScheduleInfoQu
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *ScheduleInfoQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff

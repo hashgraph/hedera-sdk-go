@@ -203,6 +203,109 @@ func TestUnitAccountAllowanceDeleteTransactionSetNothing(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestUnitAccountAllowanceApproveTransactionFromProtobuf(t *testing.T) {
+	tokenID1 := TokenID{Token: 1}
+	tokenID2 := TokenID{Token: 141}
+	serialNumber1 := int64(3)
+	serialNumber2 := int64(4)
+	nftID1 := tokenID2.Nft(serialNumber1)
+	nftID2 := tokenID2.Nft(serialNumber2)
+	owner := AccountID{Account: 10}
+	spenderAccountID1 := AccountID{Account: 7}
+	spenderAccountID2 := AccountID{Account: 7890}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	hbarAmount := HbarFromTinybar(100)
+	tokenAmount := int64(101)
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	tx, err := NewAccountAllowanceApproveTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		ApproveHbarAllowance(owner, spenderAccountID1, hbarAmount).
+		ApproveTokenAllowance(tokenID1, owner, spenderAccountID1, tokenAmount).
+		ApproveTokenNftAllowance(nftID1, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID2).
+		Freeze()
+	require.NoError(t, err)
+
+	txFromProto := _AccountAllowanceApproveTransactionFromProtobuf(tx.Transaction, tx._Build())
+	require.Equal(t, tx, txFromProto)
+}
+
+func TestUnitAccountAllowanceApproveTransactionScheduleProtobuf(t *testing.T) {
+	tokenID1 := TokenID{Token: 1}
+	tokenID2 := TokenID{Token: 141}
+	serialNumber1 := int64(3)
+	serialNumber2 := int64(4)
+	nftID1 := tokenID2.Nft(serialNumber1)
+	nftID2 := tokenID2.Nft(serialNumber2)
+	owner := AccountID{Account: 10}
+	spenderAccountID1 := AccountID{Account: 7}
+	spenderAccountID2 := AccountID{Account: 7890}
+	nodeAccountID := []AccountID{{Account: 10}, {Account: 11}, {Account: 12}}
+	hbarAmount := HbarFromTinybar(100)
+	tokenAmount := int64(101)
+
+	transactionID := TransactionIDGenerate(AccountID{Account: 324})
+
+	tx, err := NewAccountAllowanceApproveTransaction().
+		SetTransactionID(transactionID).
+		SetNodeAccountIDs(nodeAccountID).
+		ApproveHbarAllowance(owner, spenderAccountID1, hbarAmount).
+		ApproveTokenAllowance(tokenID1, owner, spenderAccountID1, tokenAmount).
+		ApproveTokenNftAllowance(nftID1, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID1).
+		ApproveTokenNftAllowance(nftID2, owner, spenderAccountID2).
+		Freeze()
+	require.NoError(t, err)
+
+	expected := &services.SchedulableTransactionBody{
+		TransactionFee: 200000000,
+		Data: &services.SchedulableTransactionBody_CryptoApproveAllowance{
+			CryptoApproveAllowance: &services.CryptoApproveAllowanceTransactionBody{
+				CryptoAllowances: []*services.CryptoAllowance{
+					{
+						Owner:   &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 10}},
+						Spender: &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 7}},
+						Amount:  100,
+					},
+				},
+				NftAllowances: []*services.NftAllowance{
+					{
+						TokenId:           &services.TokenID{TokenNum: 141},
+						Owner:             &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 10}},
+						Spender:           &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 7}},
+						SerialNumbers:     []int64{3, 4},
+						ApprovedForAll:    &wrapperspb.BoolValue{Value: false},
+						DelegatingSpender: nil,
+					},
+					{
+						TokenId:           &services.TokenID{TokenNum: 141},
+						Owner:             &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 10}},
+						Spender:           &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 7890}},
+						SerialNumbers:     []int64{4},
+						ApprovedForAll:    &wrapperspb.BoolValue{Value: false},
+						DelegatingSpender: nil,
+					},
+				},
+				TokenAllowances: []*services.TokenAllowance{
+					{
+						TokenId: &services.TokenID{TokenNum: 1},
+						Owner:   &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 10}},
+						Spender: &services.AccountID{Account: &services.AccountID_AccountNum{AccountNum: 7}},
+						Amount:  101,
+					},
+				},
+			},
+		},
+	}
+	actual, err := tx._ConstructScheduleProtobuf()
+	require.NoError(t, err)
+	require.Equal(t, expected.String(), actual.String())
+}
+
 func TestUnitAccountAllowanceDeleteTransactionCoverage(t *testing.T) {
 	checksum := "dmqui"
 	token := TokenID{Token: 3, checksum: &checksum}

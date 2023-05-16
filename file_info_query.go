@@ -39,6 +39,7 @@ func NewFileInfoQuery() *FileInfoQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -85,6 +86,7 @@ func (query *FileInfoQuery) _Build() *services.Query_FileGetInfo {
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *FileInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -153,6 +155,7 @@ func _FileInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *FileInfoQuery) Execute(client *Client) (FileInfo, error) {
 	if client == nil || client.operator == nil {
 		return FileInfo{}, errNoClientProvided
@@ -261,6 +264,7 @@ func (query *FileInfoQuery) SetQueryPayment(paymentAmount Hbar) *FileInfoQuery {
 	return query
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this FileInfoQuery.
 func (query *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
@@ -270,11 +274,14 @@ func (query *FileInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *FileInfoQuery) SetMaxRetry(count int) *FileInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *FileInfoQuery) SetMaxBackoff(max time.Duration) *FileInfoQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -285,6 +292,7 @@ func (query *FileInfoQuery) SetMaxBackoff(max time.Duration) *FileInfoQuery {
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *FileInfoQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -293,6 +301,7 @@ func (query *FileInfoQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *FileInfoQuery) SetMinBackoff(min time.Duration) *FileInfoQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -303,6 +312,7 @@ func (query *FileInfoQuery) SetMinBackoff(min time.Duration) *FileInfoQuery {
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *FileInfoQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -319,6 +329,7 @@ func (query *FileInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("FileInfoQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *FileInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *FileInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

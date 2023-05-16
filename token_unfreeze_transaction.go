@@ -72,6 +72,7 @@ func _TokenUnfreezeTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenUnfreezeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenUnfreezeTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -100,6 +101,7 @@ func (transaction *TokenUnfreezeTransaction) SetAccountID(accountID AccountID) *
 	return transaction
 }
 
+// GetAccountID returns the account to be unfrozen
 func (transaction *TokenUnfreezeTransaction) GetAccountID() AccountID {
 	if transaction.accountID == nil {
 		return AccountID{}
@@ -196,6 +198,7 @@ func (transaction *TokenUnfreezeTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TokenUnfreezeTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenUnfreezeTransaction, error) {
@@ -312,11 +315,12 @@ func (transaction *TokenUnfreezeTransaction) FreezeWith(client *Client) (*TokenU
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenUnfreezeTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenUnfreezeTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenUnfreezeTransaction) SetMaxTransactionFee(fee Hbar) *TokenUnfreezeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -335,6 +339,7 @@ func (transaction *TokenUnfreezeTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -346,6 +351,7 @@ func (transaction *TokenUnfreezeTransaction) SetTransactionMemo(memo string) *To
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenUnfreezeTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -357,6 +363,7 @@ func (transaction *TokenUnfreezeTransaction) SetTransactionValidDuration(duratio
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	TokenUnfreezeTransaction.
 func (transaction *TokenUnfreezeTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -376,11 +383,13 @@ func (transaction *TokenUnfreezeTransaction) SetNodeAccountIDs(nodeID []AccountI
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenUnfreezeTransaction) SetMaxRetry(count int) *TokenUnfreezeTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenUnfreezeTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -413,6 +422,8 @@ func (transaction *TokenUnfreezeTransaction) AddSignature(publicKey PublicKey, s
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TokenUnfreezeTransaction) SetMaxBackoff(max time.Duration) *TokenUnfreezeTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -423,6 +434,7 @@ func (transaction *TokenUnfreezeTransaction) SetMaxBackoff(max time.Duration) *T
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TokenUnfreezeTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -431,6 +443,7 @@ func (transaction *TokenUnfreezeTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TokenUnfreezeTransaction) SetMinBackoff(min time.Duration) *TokenUnfreezeTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -441,6 +454,7 @@ func (transaction *TokenUnfreezeTransaction) SetMinBackoff(min time.Duration) *T
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TokenUnfreezeTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

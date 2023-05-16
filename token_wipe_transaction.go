@@ -88,6 +88,7 @@ func _TokenWipeTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenWipeTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenWipeTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -116,6 +117,7 @@ func (transaction *TokenWipeTransaction) SetAccountID(accountID AccountID) *Toke
 	return transaction
 }
 
+// GetAccountID returns the AccountID that is being wiped
 func (transaction *TokenWipeTransaction) GetAccountID() AccountID {
 	if transaction.accountID == nil {
 		return AccountID{}
@@ -250,6 +252,7 @@ func (transaction *TokenWipeTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TokenWipeTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenWipeTransaction, error) {
@@ -362,11 +365,12 @@ func (transaction *TokenWipeTransaction) FreezeWith(client *Client) (*TokenWipeT
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenWipeTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenWipeTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenWipeTransaction) SetMaxTransactionFee(fee Hbar) *TokenWipeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -385,6 +389,7 @@ func (transaction *TokenWipeTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -396,6 +401,7 @@ func (transaction *TokenWipeTransaction) SetTransactionMemo(memo string) *TokenW
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenWipeTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -407,6 +413,7 @@ func (transaction *TokenWipeTransaction) SetTransactionValidDuration(duration ti
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this TokenWipeTransaction.
 func (transaction *TokenWipeTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -426,11 +433,13 @@ func (transaction *TokenWipeTransaction) SetNodeAccountIDs(nodeID []AccountID) *
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenWipeTransaction) SetMaxRetry(count int) *TokenWipeTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenWipeTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -463,6 +472,8 @@ func (transaction *TokenWipeTransaction) AddSignature(publicKey PublicKey, signa
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TokenWipeTransaction) SetMaxBackoff(max time.Duration) *TokenWipeTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -473,6 +484,7 @@ func (transaction *TokenWipeTransaction) SetMaxBackoff(max time.Duration) *Token
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TokenWipeTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -481,6 +493,7 @@ func (transaction *TokenWipeTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TokenWipeTransaction) SetMinBackoff(min time.Duration) *TokenWipeTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -491,6 +504,7 @@ func (transaction *TokenWipeTransaction) SetMinBackoff(min time.Duration) *Token
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TokenWipeTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

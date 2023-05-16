@@ -107,6 +107,7 @@ func (query *AddressBookQuery) _Build() *mirror.AddressBookQuery {
 	return body
 }
 
+// Execute executes the Query with the provided client
 func (query *AddressBookQuery) Execute(client *Client) (NodeAddressBook, error) {
 	var cancel func()
 	var ctx context.Context

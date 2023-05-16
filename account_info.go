@@ -166,6 +166,7 @@ func (info AccountInfo) _ToProtobuf() *services.CryptoGetInfoResponse_AccountInf
 	return body
 }
 
+// ToBytes returns the serialized bytes of an AccountInfo
 func (info AccountInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(info._ToProtobuf())
 	if err != nil {
@@ -175,6 +176,7 @@ func (info AccountInfo) ToBytes() []byte {
 	return data
 }
 
+// AccountInfoFromBytes returns an AccountInfo from byte array
 func AccountInfoFromBytes(data []byte) (AccountInfo, error) {
 	if data == nil {
 		return AccountInfo{}, errByteArrayNull

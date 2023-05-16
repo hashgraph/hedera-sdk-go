@@ -70,6 +70,7 @@ func _TokenGrantKycTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenGrantKycTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenGrantKycTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -98,6 +99,7 @@ func (transaction *TokenGrantKycTransaction) SetAccountID(accountID AccountID) *
 	return transaction
 }
 
+// GetAccountID returns the AccountID that is being KYCed
 func (transaction *TokenGrantKycTransaction) GetAccountID() AccountID {
 	if transaction.accountID == nil {
 		return AccountID{}
@@ -194,6 +196,7 @@ func (transaction *TokenGrantKycTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TokenGrantKycTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenGrantKycTransaction, error) {
@@ -310,11 +313,12 @@ func (transaction *TokenGrantKycTransaction) FreezeWith(client *Client) (*TokenG
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenGrantKycTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenGrantKycTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenGrantKycTransaction) SetMaxTransactionFee(fee Hbar) *TokenGrantKycTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -333,6 +337,7 @@ func (transaction *TokenGrantKycTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -344,6 +349,7 @@ func (transaction *TokenGrantKycTransaction) SetTransactionMemo(memo string) *To
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenGrantKycTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -355,6 +361,7 @@ func (transaction *TokenGrantKycTransaction) SetTransactionValidDuration(duratio
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	TokenGrantKycTransaction.
 func (transaction *TokenGrantKycTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -374,11 +381,13 @@ func (transaction *TokenGrantKycTransaction) SetNodeAccountIDs(nodeID []AccountI
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenGrantKycTransaction) SetMaxRetry(count int) *TokenGrantKycTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenGrantKycTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -411,6 +420,8 @@ func (transaction *TokenGrantKycTransaction) AddSignature(publicKey PublicKey, s
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TokenGrantKycTransaction) SetMaxBackoff(max time.Duration) *TokenGrantKycTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -421,6 +432,7 @@ func (transaction *TokenGrantKycTransaction) SetMaxBackoff(max time.Duration) *T
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TokenGrantKycTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -429,6 +441,7 @@ func (transaction *TokenGrantKycTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TokenGrantKycTransaction) SetMinBackoff(min time.Duration) *TokenGrantKycTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -439,6 +452,7 @@ func (transaction *TokenGrantKycTransaction) SetMinBackoff(min time.Duration) *T
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TokenGrantKycTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

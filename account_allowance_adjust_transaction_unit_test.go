@@ -99,8 +99,8 @@ func TestUnitAccountAllowanceAdjustTransactionGet(t *testing.T) {
 }
 
 func TestUnitAccountAllowanceAdjustTransactionGrantHbarAllowance(t *testing.T) {
-	tx:=NewAccountAllowanceAdjustTransaction().
-	GrantHbarAllowance(AccountID{Account: 3}, AccountID{Account: 4}, HbarFromTinybar(1))
+	tx := NewAccountAllowanceAdjustTransaction().
+		GrantHbarAllowance(AccountID{Account: 3}, AccountID{Account: 4}, HbarFromTinybar(1))
 	expectedHbarAllowances := []*HbarAllowance{
 		{
 			SpenderAccountID: &AccountID{Account: 4},
@@ -111,8 +111,8 @@ func TestUnitAccountAllowanceAdjustTransactionGrantHbarAllowance(t *testing.T) {
 	require.Equal(t, expectedHbarAllowances, tx.GetHbarAllowances())
 }
 func TestUnitAccountAllowanceAdjustTransactionRevokeHbarAllowance(t *testing.T) {
-	tx:=NewAccountAllowanceAdjustTransaction().
-	RevokeHbarAllowance(AccountID{Account: 3}, AccountID{Account: 4}, HbarFromTinybar(1))
+	tx := NewAccountAllowanceAdjustTransaction().
+		RevokeHbarAllowance(AccountID{Account: 3}, AccountID{Account: 4}, HbarFromTinybar(1))
 	expectedHbarAllowances := []*HbarAllowance{
 		{
 			SpenderAccountID: &AccountID{Account: 4},
@@ -125,10 +125,10 @@ func TestUnitAccountAllowanceAdjustTransactionRevokeHbarAllowance(t *testing.T) 
 
 func TestUnitAccountAllowanceAdjustTransactionGrantTokenAllowance(t *testing.T) {
 	tokenID := TokenID{Token: 3}
-	tx:=NewAccountAllowanceAdjustTransaction().
-	GrantTokenAllowance(tokenID, AccountID{Account: 3}, AccountID{Account: 4}, 1)
+	tx := NewAccountAllowanceAdjustTransaction().
+		GrantTokenAllowance(tokenID, AccountID{Account: 3}, AccountID{Account: 4}, 1)
 	expectedTokenAllowances := []*TokenAllowance{
-		{	
+		{
 			TokenID:          &tokenID,
 			SpenderAccountID: &AccountID{Account: 4},
 			OwnerAccountID:   &AccountID{Account: 3},
@@ -140,10 +140,10 @@ func TestUnitAccountAllowanceAdjustTransactionGrantTokenAllowance(t *testing.T) 
 
 func TestUnitAccountAllowanceAdjustTransactionRevokeTokenAllowance(t *testing.T) {
 	tokenID := TokenID{Token: 3}
-	tx:=NewAccountAllowanceAdjustTransaction().
-	RevokeTokenAllowance(tokenID, AccountID{Account: 3}, AccountID{Account: 4}, 1)
+	tx := NewAccountAllowanceAdjustTransaction().
+		RevokeTokenAllowance(tokenID, AccountID{Account: 3}, AccountID{Account: 4}, 1)
 	expectedTokenAllowances := []*TokenAllowance{
-		{	
+		{
 			TokenID:          &tokenID,
 			SpenderAccountID: &AccountID{Account: 4},
 			OwnerAccountID:   &AccountID{Account: 3},
@@ -156,15 +156,15 @@ func TestUnitAccountAllowanceAdjustTransactionRevokeTokenAllowance(t *testing.T)
 func TestUnitAccountAllowanceAdjustTransactionGrantTokenNftAllowance(t *testing.T) {
 	tokenID := TokenID{Token: 3}
 	NftID := NftID{tokenID, 1}
-	tx:=NewAccountAllowanceAdjustTransaction().
-	GrantTokenNftAllowance(NftID, AccountID{Account: 3}, AccountID{Account: 4})
+	tx := NewAccountAllowanceAdjustTransaction().
+		GrantTokenNftAllowance(NftID, AccountID{Account: 3}, AccountID{Account: 4})
 	expectedTokenNftAllowances := []*TokenNftAllowance{
 		{
-			SpenderAccountID: &AccountID{Account: 4},
-			OwnerAccountID:   &AccountID{Account: 3},
-			TokenID:          &tokenID,
-			SerialNumbers:   []int64{1},
-			AllSerials:       false,
+			SpenderAccountID:  &AccountID{Account: 4},
+			OwnerAccountID:    &AccountID{Account: 3},
+			TokenID:           &tokenID,
+			SerialNumbers:     []int64{1},
+			AllSerials:        false,
 			DelegatingSpender: nil,
 		},
 	}
@@ -174,15 +174,15 @@ func TestUnitAccountAllowanceAdjustTransactionGrantTokenNftAllowance(t *testing.
 func TestUnitAccountAllowanceAdjustTransactionRevokeTokenNftAllowance(t *testing.T) {
 	tokenID := TokenID{Token: 3}
 	NftID := NftID{tokenID, 1}
-	tx:=NewAccountAllowanceAdjustTransaction().
-	RevokeTokenNftAllowance(NftID, AccountID{Account: 3}, AccountID{Account: 4})
+	tx := NewAccountAllowanceAdjustTransaction().
+		RevokeTokenNftAllowance(NftID, AccountID{Account: 3}, AccountID{Account: 4})
 	expectedTokenNftAllowances := []*TokenNftAllowance{
 		{
-			SpenderAccountID: &AccountID{Account: 4},
-			OwnerAccountID:   &AccountID{Account: 3},
-			TokenID:          &tokenID,
-			SerialNumbers:   []int64{1},
-			AllSerials:       false,
+			SpenderAccountID:  &AccountID{Account: 4},
+			OwnerAccountID:    &AccountID{Account: 3},
+			TokenID:           &tokenID,
+			SerialNumbers:     []int64{1},
+			AllSerials:        false,
 			DelegatingSpender: nil,
 		},
 	}
@@ -191,15 +191,15 @@ func TestUnitAccountAllowanceAdjustTransactionRevokeTokenNftAllowance(t *testing
 
 func TestUnitAccountAllowanceAdjustTransactionAddAllTokenNftAllowance(t *testing.T) {
 	tokenID := TokenID{Token: 3}
-	tx:=NewAccountAllowanceAdjustTransaction().
-	AddAllTokenNftAllowance(tokenID, AccountID{Account: 3})
+	tx := NewAccountAllowanceAdjustTransaction().
+		AddAllTokenNftAllowance(tokenID, AccountID{Account: 3})
 	expectedTokenNftAllowances := []*TokenNftAllowance{
 		{
-			SpenderAccountID: &AccountID{Account: 3},
-			OwnerAccountID:   nil,
-			TokenID:          &tokenID,
-			SerialNumbers:   []int64{},
-			AllSerials:       true,
+			SpenderAccountID:  &AccountID{Account: 3},
+			OwnerAccountID:    nil,
+			TokenID:           &tokenID,
+			SerialNumbers:     []int64{},
+			AllSerials:        true,
 			DelegatingSpender: nil,
 		},
 	}

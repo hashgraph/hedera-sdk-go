@@ -205,6 +205,7 @@ func (transaction *AccountAllowanceDeleteTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *AccountAllowanceDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountAllowanceDeleteTransaction, error) {
@@ -321,6 +322,7 @@ func (transaction *AccountAllowanceDeleteTransaction) FreezeWith(client *Client)
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *AccountAllowanceDeleteTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
@@ -344,6 +346,7 @@ func (transaction *AccountAllowanceDeleteTransaction) GetRegenerateTransactionID
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this AccountAllowanceDeleteTransaction.
 func (transaction *AccountAllowanceDeleteTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -355,6 +358,7 @@ func (transaction *AccountAllowanceDeleteTransaction) SetTransactionMemo(memo st
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *AccountAllowanceDeleteTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -366,6 +370,7 @@ func (transaction *AccountAllowanceDeleteTransaction) SetTransactionValidDuratio
 	return transaction
 }
 
+// GetTransactionID returns the TransactionID for this AccountAllowanceDeleteTransaction.
 func (transaction *AccountAllowanceDeleteTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -385,11 +390,13 @@ func (transaction *AccountAllowanceDeleteTransaction) SetNodeAccountIDs(nodeID [
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *AccountAllowanceDeleteTransaction) SetMaxRetry(count int) *AccountAllowanceDeleteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the transaction.
 func (transaction *AccountAllowanceDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountAllowanceDeleteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -422,6 +429,8 @@ func (transaction *AccountAllowanceDeleteTransaction) AddSignature(publicKey Pub
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *AccountAllowanceDeleteTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceDeleteTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -432,6 +441,7 @@ func (transaction *AccountAllowanceDeleteTransaction) SetMaxBackoff(max time.Dur
 	return transaction
 }
 
+// GetMaxBackoff returns the max back off for this AccountAllowanceDeleteTransaction.
 func (transaction *AccountAllowanceDeleteTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -440,6 +450,7 @@ func (transaction *AccountAllowanceDeleteTransaction) GetMaxBackoff() time.Durat
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the min back off for this AccountAllowanceDeleteTransaction.
 func (transaction *AccountAllowanceDeleteTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceDeleteTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -450,6 +461,7 @@ func (transaction *AccountAllowanceDeleteTransaction) SetMinBackoff(min time.Dur
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *AccountAllowanceDeleteTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

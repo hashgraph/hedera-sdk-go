@@ -120,6 +120,7 @@ func (transaction *AccountAllowanceApproveTransaction) ApproveHbarAllowance(owne
 	return transaction._ApproveHbarApproval(&ownerAccountID, id, amount)
 }
 
+// List of hbar allowance records
 func (transaction *AccountAllowanceApproveTransaction) GetHbarAllowances() []*HbarAllowance {
 	return transaction.hbarAllowances
 }
@@ -154,6 +155,7 @@ func (transaction *AccountAllowanceApproveTransaction) ApproveTokenAllowance(tok
 	return transaction._ApproveTokenApproval(tokenID, &ownerAccountID, accountID, amount)
 }
 
+// List of token allowance records
 func (transaction *AccountAllowanceApproveTransaction) GetTokenAllowances() []*TokenAllowance {
 	return transaction.tokenAllowances
 }
@@ -249,6 +251,7 @@ func (transaction *AccountAllowanceApproveTransaction) ApproveTokenNftAllowanceA
 	return transaction._ApproveTokenNftAllowanceAllSerials(tokenID, &ownerAccountID, spenderAccount)
 }
 
+// List of NFT allowance records
 func (transaction *AccountAllowanceApproveTransaction) GetTokenNftAllowances() []*TokenNftAllowance {
 	return transaction.nftAllowances
 }
@@ -405,6 +408,7 @@ func (transaction *AccountAllowanceApproveTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *AccountAllowanceApproveTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountAllowanceApproveTransaction, error) {
@@ -521,11 +525,12 @@ func (transaction *AccountAllowanceApproveTransaction) FreezeWith(client *Client
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *AccountAllowanceApproveTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this AccountAllowanceApproveTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *AccountAllowanceApproveTransaction) SetMaxTransactionFee(fee Hbar) *AccountAllowanceApproveTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -544,6 +549,7 @@ func (transaction *AccountAllowanceApproveTransaction) GetRegenerateTransactionI
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this AccountAllowanceApproveTransaction.
 func (transaction *AccountAllowanceApproveTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -555,6 +561,7 @@ func (transaction *AccountAllowanceApproveTransaction) SetTransactionMemo(memo s
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *AccountAllowanceApproveTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -566,6 +573,7 @@ func (transaction *AccountAllowanceApproveTransaction) SetTransactionValidDurati
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this AccountAllowanceApproveTransaction.
 func (transaction *AccountAllowanceApproveTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -585,11 +593,13 @@ func (transaction *AccountAllowanceApproveTransaction) SetNodeAccountIDs(nodeID 
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *AccountAllowanceApproveTransaction) SetMaxRetry(count int) *AccountAllowanceApproveTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *AccountAllowanceApproveTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountAllowanceApproveTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -622,6 +632,8 @@ func (transaction *AccountAllowanceApproveTransaction) AddSignature(publicKey Pu
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *AccountAllowanceApproveTransaction) SetMaxBackoff(max time.Duration) *AccountAllowanceApproveTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -632,6 +644,7 @@ func (transaction *AccountAllowanceApproveTransaction) SetMaxBackoff(max time.Du
 	return transaction
 }
 
+// GetMaxBackoff returns the max back off for this AccountAllowanceApproveTransaction.
 func (transaction *AccountAllowanceApproveTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -640,6 +653,7 @@ func (transaction *AccountAllowanceApproveTransaction) GetMaxBackoff() time.Dura
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the min back off for this AccountAllowanceApproveTransaction.
 func (transaction *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Duration) *AccountAllowanceApproveTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -650,6 +664,7 @@ func (transaction *AccountAllowanceApproveTransaction) SetMinBackoff(min time.Du
 	return transaction
 }
 
+// GetMinBackoff returns the min back off for this AccountAllowanceApproveTransaction.
 func (transaction *AccountAllowanceApproveTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

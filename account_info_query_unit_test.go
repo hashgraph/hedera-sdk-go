@@ -24,10 +24,11 @@ package hedera
  */
 
 import (
-	"github.com/hashgraph/hedera-protobufs-go/services"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/hashgraph/hedera-protobufs-go/services"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnitAccountInfoQueryValidate(t *testing.T) {
