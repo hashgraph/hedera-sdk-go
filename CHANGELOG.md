@@ -1,3 +1,9 @@
+## v2.24.2
+
+### Added
+
+* Comments on `client` and all `query` and `transaction` types 
+
 ## v2.24.1
 
 ### Fixed
