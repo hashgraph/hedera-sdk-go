@@ -56,6 +56,7 @@ func _LiveHashDeleteTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *LiveHashDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *LiveHashDeleteTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -79,6 +80,7 @@ func (transaction *LiveHashDeleteTransaction) SetAccountID(accountID AccountID) 
 	return transaction
 }
 
+// GetAccountID returns the account owning the livehash
 func (transaction *LiveHashDeleteTransaction) GetAccountID() AccountID {
 	if transaction.accountID == nil {
 		return AccountID{}
@@ -144,6 +146,7 @@ func (transaction *LiveHashDeleteTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *LiveHashDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*LiveHashDeleteTransaction, error) {
@@ -260,11 +263,12 @@ func (transaction *LiveHashDeleteTransaction) FreezeWith(client *Client) (*LiveH
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *LiveHashDeleteTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this LiveHashDeleteTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *LiveHashDeleteTransaction) SetMaxTransactionFee(fee Hbar) *LiveHashDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -283,6 +287,7 @@ func (transaction *LiveHashDeleteTransaction) GetRegenerateTransactionID() bool 
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -294,6 +299,7 @@ func (transaction *LiveHashDeleteTransaction) SetTransactionMemo(memo string) *L
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *LiveHashDeleteTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -305,6 +311,7 @@ func (transaction *LiveHashDeleteTransaction) SetTransactionValidDuration(durati
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	LiveHashDeleteTransaction.
 func (transaction *LiveHashDeleteTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -324,11 +331,13 @@ func (transaction *LiveHashDeleteTransaction) SetNodeAccountIDs(nodeID []Account
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *LiveHashDeleteTransaction) SetMaxRetry(count int) *LiveHashDeleteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *LiveHashDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *LiveHashDeleteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -361,6 +370,8 @@ func (transaction *LiveHashDeleteTransaction) AddSignature(publicKey PublicKey, 
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *LiveHashDeleteTransaction) SetMaxBackoff(max time.Duration) *LiveHashDeleteTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -371,6 +382,7 @@ func (transaction *LiveHashDeleteTransaction) SetMaxBackoff(max time.Duration) *
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *LiveHashDeleteTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -379,6 +391,7 @@ func (transaction *LiveHashDeleteTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *LiveHashDeleteTransaction) SetMinBackoff(min time.Duration) *LiveHashDeleteTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -389,6 +402,7 @@ func (transaction *LiveHashDeleteTransaction) SetMinBackoff(min time.Duration) *
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *LiveHashDeleteTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

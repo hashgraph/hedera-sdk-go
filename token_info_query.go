@@ -41,6 +41,7 @@ func NewTokenInfoQuery() *TokenInfoQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TokenInfoQuery) SetGrpcDeadline(deadline *time.Duration) *TokenInfoQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -87,6 +88,7 @@ func (query *TokenInfoQuery) _Build() *services.Query_TokenGetInfo {
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *TokenInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -257,16 +259,20 @@ func (query *TokenInfoQuery) SetQueryPayment(paymentAmount Hbar) *TokenInfoQuery
 	return query
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this TokenInfoQuery.
 func (query *TokenInfoQuery) SetNodeAccountIDs(accountID []AccountID) *TokenInfoQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TokenInfoQuery) SetMaxRetry(count int) *TokenInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -277,6 +283,7 @@ func (query *TokenInfoQuery) SetMaxBackoff(max time.Duration) *TokenInfoQuery {
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *TokenInfoQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -285,6 +292,7 @@ func (query *TokenInfoQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -295,6 +303,7 @@ func (query *TokenInfoQuery) SetMinBackoff(min time.Duration) *TokenInfoQuery {
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *TokenInfoQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -311,6 +320,7 @@ func (query *TokenInfoQuery) _GetLogID() string {
 	return fmt.Sprintf("TokenInfoQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *TokenInfoQuery) SetPaymentTransactionID(transactionID TransactionID) *TokenInfoQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

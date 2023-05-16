@@ -66,6 +66,7 @@ func _TokenMintTransactionFromProtobuf(transaction Transaction, pb *services.Tra
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenMintTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenMintTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -212,6 +213,7 @@ func (transaction *TokenMintTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TokenMintTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenMintTransaction, error) {
@@ -327,11 +329,12 @@ func (transaction *TokenMintTransaction) FreezeWith(client *Client) (*TokenMintT
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenMintTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenMintTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenMintTransaction) SetMaxTransactionFee(fee Hbar) *TokenMintTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -350,6 +353,7 @@ func (transaction *TokenMintTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TokenMintTransaction.
 func (transaction *TokenMintTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -361,6 +365,7 @@ func (transaction *TokenMintTransaction) SetTransactionMemo(memo string) *TokenM
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenMintTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -372,6 +377,7 @@ func (transaction *TokenMintTransaction) SetTransactionValidDuration(duration ti
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	TokenMintTransaction.
 func (transaction *TokenMintTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -391,11 +397,13 @@ func (transaction *TokenMintTransaction) SetNodeAccountIDs(nodeID []AccountID) *
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenMintTransaction) SetMaxRetry(count int) *TokenMintTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TokenMintTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenMintTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -428,6 +436,8 @@ func (transaction *TokenMintTransaction) AddSignature(publicKey PublicKey, signa
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TokenMintTransaction) SetMaxBackoff(max time.Duration) *TokenMintTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -438,6 +448,7 @@ func (transaction *TokenMintTransaction) SetMaxBackoff(max time.Duration) *Token
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TokenMintTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -446,6 +457,7 @@ func (transaction *TokenMintTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TokenMintTransaction) SetMinBackoff(min time.Duration) *TokenMintTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -456,6 +468,7 @@ func (transaction *TokenMintTransaction) SetMinBackoff(min time.Duration) *Token
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TokenMintTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

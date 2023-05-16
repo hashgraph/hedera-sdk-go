@@ -35,6 +35,7 @@ func _EthereumTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *EthereumTransaction) SetGrpcDeadline(deadline *time.Duration) *EthereumTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -155,6 +156,7 @@ func (transaction *EthereumTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *EthereumTransaction) SignWithOperator(
 	client *Client,
 ) (*EthereumTransaction, error) {
@@ -275,11 +277,12 @@ func (transaction *EthereumTransaction) FreezeWith(client *Client) (*EthereumTra
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *EthereumTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this EthereumTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *EthereumTransaction) SetMaxTransactionFee(fee Hbar) *EthereumTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -298,6 +301,7 @@ func (transaction *EthereumTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this EthereumTransaction.
 func (transaction *EthereumTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -309,6 +313,7 @@ func (transaction *EthereumTransaction) SetTransactionMemo(memo string) *Ethereu
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *EthereumTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -320,6 +325,7 @@ func (transaction *EthereumTransaction) SetTransactionValidDuration(duration tim
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	EthereumTransaction.
 func (transaction *EthereumTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -339,11 +345,13 @@ func (transaction *EthereumTransaction) SetNodeAccountIDs(nodeID []AccountID) *E
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *EthereumTransaction) SetMaxRetry(count int) *EthereumTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *EthereumTransaction) AddSignature(publicKey PublicKey, signature []byte) *EthereumTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -376,6 +384,8 @@ func (transaction *EthereumTransaction) AddSignature(publicKey PublicKey, signat
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *EthereumTransaction) SetMaxBackoff(max time.Duration) *EthereumTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -386,6 +396,7 @@ func (transaction *EthereumTransaction) SetMaxBackoff(max time.Duration) *Ethere
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *EthereumTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -394,6 +405,7 @@ func (transaction *EthereumTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *EthereumTransaction) SetMinBackoff(min time.Duration) *EthereumTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -404,6 +416,7 @@ func (transaction *EthereumTransaction) SetMinBackoff(min time.Duration) *Ethere
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *EthereumTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

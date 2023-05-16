@@ -99,6 +99,7 @@ func _TransferTransactionFromProtobuf(transaction Transaction, pb *services.Tran
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TransferTransaction) SetGrpcDeadline(deadline *time.Duration) *TransferTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -593,6 +594,7 @@ func _TransferTransactionGetMethod(request interface{}, channel *_Channel) _Meth
 	}
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TransferTransaction) AddSignature(publicKey PublicKey, signature []byte) *TransferTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -636,6 +638,7 @@ func (transaction *TransferTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TransferTransaction) SignWithOperator(
 	client *Client,
 ) (*TransferTransaction, error) {
@@ -850,11 +853,12 @@ func (transaction *TransferTransaction) FreezeWith(client *Client) (*TransferTra
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TransferTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TransferTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TransferTransaction) SetMaxTransactionFee(fee Hbar) *TransferTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -873,6 +877,7 @@ func (transaction *TransferTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TransferTransaction.
 func (transaction *TransferTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -884,6 +889,7 @@ func (transaction *TransferTransaction) SetTransactionMemo(memo string) *Transfe
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TransferTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -895,6 +901,7 @@ func (transaction *TransferTransaction) SetTransactionValidDuration(duration tim
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this TransferTransaction.
 func (transaction *TransferTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -914,11 +921,14 @@ func (transaction *TransferTransaction) SetNodeAccountIDs(nodeID []AccountID) *T
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TransferTransaction) SetMaxRetry(count int) *TransferTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TransferTransaction) SetMaxBackoff(max time.Duration) *TransferTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -929,6 +939,7 @@ func (transaction *TransferTransaction) SetMaxBackoff(max time.Duration) *Transf
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TransferTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -937,6 +948,7 @@ func (transaction *TransferTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TransferTransaction) SetMinBackoff(min time.Duration) *TransferTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -947,6 +959,7 @@ func (transaction *TransferTransaction) SetMinBackoff(min time.Duration) *Transf
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TransferTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

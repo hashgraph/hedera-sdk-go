@@ -76,6 +76,7 @@ func _TokenFeeScheduleUpdateTransactionFromProtobuf(transaction Transaction, pb 
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenFeeScheduleUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenFeeScheduleUpdateTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -174,6 +175,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TokenFeeScheduleUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenFeeScheduleUpdateTransaction, error) {
@@ -290,11 +292,12 @@ func (transaction *TokenFeeScheduleUpdateTransaction) FreezeWith(client *Client)
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenFeeScheduleUpdateTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TokenFeeScheduleUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -313,6 +316,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetRegenerateTransactionID
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TokenFeeScheduleUpdateTransaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -324,6 +328,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionMemo(memo st
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -354,11 +359,13 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetNodeAccountIDs(nodeID [
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxRetry(count int) *TokenFeeScheduleUpdateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenFeeScheduleUpdateTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -391,6 +398,8 @@ func (transaction *TokenFeeScheduleUpdateTransaction) AddSignature(publicKey Pub
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxBackoff(max time.Duration) *TokenFeeScheduleUpdateTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -401,6 +410,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetMaxBackoff(max time.Dur
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -409,6 +419,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) GetMaxBackoff() time.Durat
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TokenFeeScheduleUpdateTransaction) SetMinBackoff(min time.Duration) *TokenFeeScheduleUpdateTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -419,6 +430,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetMinBackoff(min time.Dur
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TokenFeeScheduleUpdateTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

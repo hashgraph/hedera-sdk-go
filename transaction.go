@@ -438,6 +438,7 @@ func (this *Transaction) GetTransactionHashPerNode() (map[AccountID][]byte, erro
 	return transactionHash, nil
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (this *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
 	this.grpcDeadline = deadline
 	return this
@@ -781,11 +782,12 @@ func (this *Transaction) _BuildTransaction(index int) (*services.Transaction, er
 // Shared
 //
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (this *Transaction) GetMaxTransactionFee() Hbar {
 	return HbarFromTinybar(int64(this.transactionFee))
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this Transaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (this *Transaction) SetMaxTransactionFee(fee Hbar) *Transaction {
 	this.transactionFee = uint64(fee.AsTinybar())
 	return this
@@ -810,6 +812,7 @@ func (this *Transaction) SetRegenerateTransactionID(regenerateTransactionID bool
 	return this
 }
 
+// GetTransactionMemo returns the memo for this	Transaction.
 func (this *Transaction) GetTransactionMemo() string {
 	return this.memo
 }
@@ -820,6 +823,7 @@ func (this *Transaction) SetTransactionMemo(memo string) *Transaction {
 	return this
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (this *Transaction) GetTransactionValidDuration() time.Duration {
 	if this.transactionValidDuration != nil {
 		return *this.transactionValidDuration
@@ -834,6 +838,7 @@ func (this *Transaction) SetTransactionValidDuration(duration time.Duration) *Tr
 	return this
 }
 
+// GetTransactionID gets the TransactionID for this	Transaction.
 func (this *Transaction) GetTransactionID() TransactionID {
 	if this.transactionIDs._Length() > 0 {
 		t := this.transactionIDs._GetCurrent().(TransactionID)
@@ -868,10 +873,12 @@ func (this *Transaction) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Transact
 	return this
 }
 
+// GetMaxRetry returns the max number of errors before execution will fail.
 func (this *Transaction) GetMaxRetry() int {
 	return this.maxRetry
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (this *Transaction) SetMaxRetry(count int) *Transaction {
 	this.maxRetry = count
 	return this

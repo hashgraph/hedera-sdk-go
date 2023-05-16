@@ -76,6 +76,7 @@ func _ScheduleCreateTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *ScheduleCreateTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleCreateTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -247,6 +248,7 @@ func (transaction *ScheduleCreateTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *ScheduleCreateTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleCreateTransaction, error) {
@@ -364,11 +366,12 @@ func (transaction *ScheduleCreateTransaction) FreezeWith(client *Client) (*Sched
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ScheduleCreateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this ScheduleCreateTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ScheduleCreateTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -387,6 +390,7 @@ func (transaction *ScheduleCreateTransaction) GetRegenerateTransactionID() bool 
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this ScheduleCreateTransaction.
 func (transaction *ScheduleCreateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -398,6 +402,7 @@ func (transaction *ScheduleCreateTransaction) SetTransactionMemo(memo string) *S
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *ScheduleCreateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -409,6 +414,7 @@ func (transaction *ScheduleCreateTransaction) SetTransactionValidDuration(durati
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	ScheduleCreateTransaction.
 func (transaction *ScheduleCreateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -428,11 +434,14 @@ func (transaction *ScheduleCreateTransaction) SetNodeAccountIDs(nodeID []Account
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *ScheduleCreateTransaction) SetMaxRetry(count int) *ScheduleCreateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *ScheduleCreateTransaction) SetMaxBackoff(max time.Duration) *ScheduleCreateTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -443,6 +452,7 @@ func (transaction *ScheduleCreateTransaction) SetMaxBackoff(max time.Duration) *
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *ScheduleCreateTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -451,6 +461,7 @@ func (transaction *ScheduleCreateTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *ScheduleCreateTransaction) SetMinBackoff(min time.Duration) *ScheduleCreateTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -461,6 +472,7 @@ func (transaction *ScheduleCreateTransaction) SetMinBackoff(min time.Duration) *
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *ScheduleCreateTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

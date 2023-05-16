@@ -105,6 +105,7 @@ func _AccountUpdateTransactionFromProtobuf(transaction Transaction, pb *services
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *AccountUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *AccountUpdateTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -423,6 +424,7 @@ func (transaction *AccountUpdateTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *AccountUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*AccountUpdateTransaction, error) {
@@ -539,11 +541,12 @@ func (transaction *AccountUpdateTransaction) FreezeWith(client *Client) (*Accoun
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *AccountUpdateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this AccountUpdateTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *AccountUpdateTransaction) SetMaxTransactionFee(fee Hbar) *AccountUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -562,6 +565,7 @@ func (transaction *AccountUpdateTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -573,6 +577,7 @@ func (transaction *AccountUpdateTransaction) SetTransactionMemo(memo string) *Ac
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *AccountUpdateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -584,6 +589,7 @@ func (transaction *AccountUpdateTransaction) SetTransactionValidDuration(duratio
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this AccountUpdateTransaction.
 func (transaction *AccountUpdateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -603,11 +609,13 @@ func (transaction *AccountUpdateTransaction) SetNodeAccountIDs(nodeID []AccountI
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *AccountUpdateTransaction) SetMaxRetry(count int) *AccountUpdateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *AccountUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *AccountUpdateTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -640,6 +648,8 @@ func (transaction *AccountUpdateTransaction) AddSignature(publicKey PublicKey, s
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *AccountUpdateTransaction) SetMaxBackoff(max time.Duration) *AccountUpdateTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -650,6 +660,7 @@ func (transaction *AccountUpdateTransaction) SetMaxBackoff(max time.Duration) *A
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *AccountUpdateTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -658,6 +669,7 @@ func (transaction *AccountUpdateTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *AccountUpdateTransaction) SetMinBackoff(min time.Duration) *AccountUpdateTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -668,6 +680,7 @@ func (transaction *AccountUpdateTransaction) SetMinBackoff(min time.Duration) *A
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *AccountUpdateTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

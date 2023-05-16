@@ -46,6 +46,7 @@ func NewAccountRecordsQuery() *AccountRecordsQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *AccountRecordsQuery) SetGrpcDeadline(deadline *time.Duration) *AccountRecordsQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -57,6 +58,7 @@ func (query *AccountRecordsQuery) SetAccountID(accountID AccountID) *AccountReco
 	return query
 }
 
+// GetAccountID returns the account ID for which the records will be retrieved.
 func (query *AccountRecordsQuery) GetAccountID() AccountID {
 	if query.accountID == nil {
 		return AccountID{}
@@ -93,7 +95,7 @@ func (query *AccountRecordsQuery) _Build() *services.Query_CryptoGetAccountRecor
 	return &pb
 }
 
-// GetCost Get the cost of the query
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *AccountRecordsQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -162,6 +164,7 @@ func _AccountRecordsQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *AccountRecordsQuery) Execute(client *Client) ([]TransactionRecord, error) {
 	if client == nil || client.operator == nil {
 		return []TransactionRecord{}, errNoClientProvided
@@ -276,11 +279,14 @@ func (query *AccountRecordsQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *AccountRecordsQuery) SetMaxRetry(count int) *AccountRecordsQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *AccountRecordsQuery) SetMaxBackoff(max time.Duration) *AccountRecordsQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -291,6 +297,7 @@ func (query *AccountRecordsQuery) SetMaxBackoff(max time.Duration) *AccountRecor
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *AccountRecordsQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -309,6 +316,7 @@ func (query *AccountRecordsQuery) SetMinBackoff(min time.Duration) *AccountRecor
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *AccountRecordsQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -325,6 +333,7 @@ func (query *AccountRecordsQuery) _GetLogID() string {
 	return fmt.Sprintf("AccountRecordsQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *AccountRecordsQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountRecordsQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

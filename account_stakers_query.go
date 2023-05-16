@@ -46,6 +46,7 @@ func NewAccountStakersQuery() *AccountStakersQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *AccountStakersQuery) SetGrpcDeadline(deadline *time.Duration) *AccountStakersQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -57,6 +58,7 @@ func (query *AccountStakersQuery) SetAccountID(accountID AccountID) *AccountStak
 	return query
 }
 
+// GetAccountID returns the AccountID for this AccountStakersQuery.
 func (query *AccountStakersQuery) GetAccountID() AccountID {
 	if query.accountID == nil {
 		return AccountID{}
@@ -93,6 +95,7 @@ func (query *AccountStakersQuery) _Build() *services.Query_CryptoGetProxyStakers
 	return &pb
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *AccountStakersQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -282,11 +285,14 @@ func (query *AccountStakersQuery) SetNodeAccountIDs(accountID []AccountID) *Acco
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *AccountStakersQuery) SetMaxRetry(count int) *AccountStakersQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *AccountStakersQuery) SetMaxBackoff(max time.Duration) *AccountStakersQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -297,6 +303,7 @@ func (query *AccountStakersQuery) SetMaxBackoff(max time.Duration) *AccountStake
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *AccountStakersQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -305,6 +312,7 @@ func (query *AccountStakersQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *AccountStakersQuery) SetMinBackoff(min time.Duration) *AccountStakersQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -315,6 +323,7 @@ func (query *AccountStakersQuery) SetMinBackoff(min time.Duration) *AccountStake
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *AccountStakersQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -331,6 +340,7 @@ func (query *AccountStakersQuery) _GetLogID() string {
 	return fmt.Sprintf("AccountStakersQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *AccountStakersQuery) SetPaymentTransactionID(transactionID TransactionID) *AccountStakersQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

@@ -77,6 +77,7 @@ func (fee *AssessedCustomFee) _ToProtobuf() *services.AssessedCustomFee {
 	}
 }
 
+// ToBytes returns the serialized bytes of a AssessedCustomFee
 func (fee *AssessedCustomFee) ToBytes() []byte {
 	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
@@ -86,6 +87,7 @@ func (fee *AssessedCustomFee) ToBytes() []byte {
 	return data
 }
 
+// AssessedCustomFeeFromBytes returns a AssessedCustomFee from bytes
 func AssessedCustomFeeFromBytes(data []byte) (AssessedCustomFee, error) {
 	if data == nil {
 		return AssessedCustomFee{}, errByteArrayNull

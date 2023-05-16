@@ -67,6 +67,7 @@ func _NewQuery(isPaymentRequired bool, header *services.QueryHeader) Query {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (this *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
 	this.grpcDeadline = deadline
 	return this
@@ -122,6 +123,7 @@ func (this *Query) GetMaxRetryCount() int {
 	return this.maxRetry
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (this *Query) SetMaxRetry(count int) *Query {
 	this.maxRetry = count
 	return this
@@ -246,6 +248,7 @@ func (this *Query) GetPaymentTransactionID() TransactionID {
 	return TransactionID{}
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (this *Query) SetPaymentTransactionID(transactionID TransactionID) *Query {
 	this.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return this

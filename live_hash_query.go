@@ -42,6 +42,7 @@ func NewLiveHashQuery() *LiveHashQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *LiveHashQuery) SetGrpcDeadline(deadline *time.Duration) *LiveHashQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -102,6 +103,7 @@ func (query *LiveHashQuery) _Build() *services.Query_CryptoGetLiveHash {
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *LiveHashQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -170,6 +172,7 @@ func _LiveHashQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *LiveHashQuery) Execute(client *Client) (LiveHash, error) {
 	if client == nil || client.operator == nil {
 		return LiveHash{}, errNoClientProvided
@@ -274,11 +277,14 @@ func (query *LiveHashQuery) SetQueryPayment(paymentAmount Hbar) *LiveHashQuery {
 	return query
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this LiveHashQuery.
 func (query *LiveHashQuery) SetNodeAccountIDs(accountID []AccountID) *LiveHashQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *LiveHashQuery) SetMaxBackoff(max time.Duration) *LiveHashQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -289,6 +295,7 @@ func (query *LiveHashQuery) SetMaxBackoff(max time.Duration) *LiveHashQuery {
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *LiveHashQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -297,6 +304,7 @@ func (query *LiveHashQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *LiveHashQuery) SetMinBackoff(min time.Duration) *LiveHashQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -307,6 +315,7 @@ func (query *LiveHashQuery) SetMinBackoff(min time.Duration) *LiveHashQuery {
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *LiveHashQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -323,16 +332,19 @@ func (query *LiveHashQuery) _GetLogID() string {
 	return fmt.Sprintf("LiveHashQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *LiveHashQuery) SetPaymentTransactionID(transactionID TransactionID) *LiveHashQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *LiveHashQuery) SetMaxRetry(count int) *LiveHashQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// GetMaxRetry returns the max number of errors before execution will fail.
 func (query *LiveHashQuery) GetMaxRetry() int {
 	return query.Query.maxRetry
 }

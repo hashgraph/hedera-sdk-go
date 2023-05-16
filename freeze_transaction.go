@@ -190,6 +190,7 @@ func (transaction *FreezeTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *FreezeTransaction) SignWithOperator(
 	client *Client,
 ) (*FreezeTransaction, error) {
@@ -302,11 +303,12 @@ func (transaction *FreezeTransaction) FreezeWith(client *Client) (*FreezeTransac
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FreezeTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this FreezeTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FreezeTransaction) SetMaxTransactionFee(fee Hbar) *FreezeTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -325,6 +327,7 @@ func (transaction *FreezeTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this FreezeTransaction.
 func (transaction *FreezeTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -336,6 +339,7 @@ func (transaction *FreezeTransaction) SetTransactionMemo(memo string) *FreezeTra
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *FreezeTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -347,6 +351,7 @@ func (transaction *FreezeTransaction) SetTransactionValidDuration(duration time.
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	FreezeTransaction.
 func (transaction *FreezeTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -366,11 +371,13 @@ func (transaction *FreezeTransaction) SetNodeAccountIDs(nodeID []AccountID) *Fre
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *FreezeTransaction) SetMaxRetry(count int) *FreezeTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *FreezeTransaction) AddSignature(publicKey PublicKey, signature []byte) *FreezeTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -403,6 +410,8 @@ func (transaction *FreezeTransaction) AddSignature(publicKey PublicKey, signatur
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *FreezeTransaction) SetMaxBackoff(max time.Duration) *FreezeTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -413,6 +422,7 @@ func (transaction *FreezeTransaction) SetMaxBackoff(max time.Duration) *FreezeTr
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *FreezeTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -421,6 +431,7 @@ func (transaction *FreezeTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *FreezeTransaction) SetMinBackoff(min time.Duration) *FreezeTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -431,6 +442,7 @@ func (transaction *FreezeTransaction) SetMinBackoff(min time.Duration) *FreezeTr
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *FreezeTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

@@ -130,6 +130,7 @@ func (transaction *EthereumFlow) _CreateFile(callData []byte, client *Client) (F
 	return fileID, nil
 }
 
+// Execute executes the Transaction with the provided client
 func (transaction *EthereumFlow) Execute(client *Client) (TransactionResponse, error) {
 	if transaction.ethereumData == nil {
 		return TransactionResponse{}, errors.New("cannot submit ethereum transaction with no ethereum data")

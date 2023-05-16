@@ -87,6 +87,7 @@ func _TokenDissociateTransactionFromProtobuf(transaction Transaction, pb *servic
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TokenDissociateTransaction) SetGrpcDeadline(deadline *time.Duration) *TokenDissociateTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -233,6 +234,7 @@ func (transaction *TokenDissociateTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TokenDissociateTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenDissociateTransaction, error) {
@@ -349,11 +351,12 @@ func (transaction *TokenDissociateTransaction) FreezeWith(client *Client) (*Toke
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenDissociateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TokenDissociateTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TokenDissociateTransaction) SetMaxTransactionFee(fee Hbar) *TokenDissociateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -372,6 +375,7 @@ func (transaction *TokenDissociateTransaction) GetRegenerateTransactionID() bool
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -383,6 +387,7 @@ func (transaction *TokenDissociateTransaction) SetTransactionMemo(memo string) *
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TokenDissociateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -394,6 +399,7 @@ func (transaction *TokenDissociateTransaction) SetTransactionValidDuration(durat
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this TokenDissociateTransaction.
 func (transaction *TokenDissociateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -413,11 +419,13 @@ func (transaction *TokenDissociateTransaction) SetNodeAccountIDs(nodeID []Accoun
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TokenDissociateTransaction) SetMaxRetry(count int) *TokenDissociateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TokenDissociateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TokenDissociateTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -450,6 +458,8 @@ func (transaction *TokenDissociateTransaction) AddSignature(publicKey PublicKey,
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TokenDissociateTransaction) SetMaxBackoff(max time.Duration) *TokenDissociateTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -460,6 +470,7 @@ func (transaction *TokenDissociateTransaction) SetMaxBackoff(max time.Duration) 
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TokenDissociateTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -468,6 +479,7 @@ func (transaction *TokenDissociateTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TokenDissociateTransaction) SetMinBackoff(min time.Duration) *TokenDissociateTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -478,6 +490,7 @@ func (transaction *TokenDissociateTransaction) SetMinBackoff(min time.Duration) 
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TokenDissociateTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

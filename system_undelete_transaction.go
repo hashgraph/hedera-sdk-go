@@ -51,6 +51,7 @@ func _SystemUndeleteTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *SystemUndeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *SystemUndeleteTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -186,6 +187,7 @@ func (transaction *SystemUndeleteTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *SystemUndeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*SystemUndeleteTransaction, error) {
@@ -302,11 +304,12 @@ func (transaction *SystemUndeleteTransaction) FreezeWith(client *Client) (*Syste
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *SystemUndeleteTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this SystemUndeleteTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *SystemUndeleteTransaction) SetMaxTransactionFee(fee Hbar) *SystemUndeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -336,6 +339,7 @@ func (transaction *SystemUndeleteTransaction) SetTransactionMemo(memo string) *S
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *SystemUndeleteTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -347,6 +351,7 @@ func (transaction *SystemUndeleteTransaction) SetTransactionValidDuration(durati
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	SystemUndeleteTransaction.
 func (transaction *SystemUndeleteTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -366,11 +371,13 @@ func (transaction *SystemUndeleteTransaction) SetNodeAccountIDs(nodeID []Account
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *SystemUndeleteTransaction) SetMaxRetry(count int) *SystemUndeleteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *SystemUndeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *SystemUndeleteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -413,6 +420,7 @@ func (transaction *SystemUndeleteTransaction) SetMaxBackoff(max time.Duration) *
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *SystemUndeleteTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -421,6 +429,7 @@ func (transaction *SystemUndeleteTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *SystemUndeleteTransaction) SetMinBackoff(min time.Duration) *SystemUndeleteTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -431,6 +440,7 @@ func (transaction *SystemUndeleteTransaction) SetMinBackoff(min time.Duration) *
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *SystemUndeleteTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

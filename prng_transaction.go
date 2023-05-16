@@ -49,6 +49,7 @@ func _PrngTransactionFromProtobuf(transaction Transaction, pb *services.Transact
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *PrngTransaction) SetGrpcDeadline(deadline *time.Duration) *PrngTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -115,6 +116,7 @@ func (transaction *PrngTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *PrngTransaction) SignWithOperator(
 	client *Client,
 ) (*PrngTransaction, error) {
@@ -226,11 +228,12 @@ func (transaction *PrngTransaction) FreezeWith(client *Client) (*PrngTransaction
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *PrngTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this PrngTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *PrngTransaction) SetMaxTransactionFee(fee Hbar) *PrngTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -249,6 +252,7 @@ func (transaction *PrngTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this PrngTransaction.
 func (transaction *PrngTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -260,6 +264,7 @@ func (transaction *PrngTransaction) SetTransactionMemo(memo string) *PrngTransac
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *PrngTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -271,6 +276,7 @@ func (transaction *PrngTransaction) SetTransactionValidDuration(duration time.Du
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	PrngTransaction.
 func (transaction *PrngTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -290,11 +296,14 @@ func (transaction *PrngTransaction) SetNodeAccountIDs(nodeID []AccountID) *PrngT
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *PrngTransaction) SetMaxRetry(count int) *PrngTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *PrngTransaction) SetMaxBackoff(max time.Duration) *PrngTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -305,6 +314,7 @@ func (transaction *PrngTransaction) SetMaxBackoff(max time.Duration) *PrngTransa
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *PrngTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -313,6 +323,7 @@ func (transaction *PrngTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *PrngTransaction) SetMinBackoff(min time.Duration) *PrngTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -323,6 +334,7 @@ func (transaction *PrngTransaction) SetMinBackoff(min time.Duration) *PrngTransa
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *PrngTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

@@ -64,6 +64,7 @@ func _FileAppendTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *FileAppendTransaction) SetGrpcDeadline(deadline *time.Duration) *FileAppendTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -201,6 +202,7 @@ func (transaction *FileAppendTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *FileAppendTransaction) SignWithOperator(
 	client *Client,
 ) (*FileAppendTransaction, error) {
@@ -418,11 +420,12 @@ func (transaction *FileAppendTransaction) FreezeWith(client *Client) (*FileAppen
 	return transaction, nil
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FileAppendTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this FileAppendTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FileAppendTransaction) SetMaxTransactionFee(fee Hbar) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -441,6 +444,7 @@ func (transaction *FileAppendTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this FileAppendTransaction.
 func (transaction *FileAppendTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -452,6 +456,7 @@ func (transaction *FileAppendTransaction) SetTransactionMemo(memo string) *FileA
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *FileAppendTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -463,6 +468,7 @@ func (transaction *FileAppendTransaction) SetTransactionValidDuration(duration t
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	FileAppendTransaction.
 func (transaction *FileAppendTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -482,11 +488,13 @@ func (transaction *FileAppendTransaction) SetNodeAccountIDs(nodeAccountIDs []Acc
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *FileAppendTransaction) SetMaxRetry(count int) *FileAppendTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileAppendTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -519,6 +527,8 @@ func (transaction *FileAppendTransaction) AddSignature(publicKey PublicKey, sign
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *FileAppendTransaction) SetMaxBackoff(max time.Duration) *FileAppendTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -529,6 +539,7 @@ func (transaction *FileAppendTransaction) SetMaxBackoff(max time.Duration) *File
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *FileAppendTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -537,6 +548,7 @@ func (transaction *FileAppendTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *FileAppendTransaction) SetMinBackoff(min time.Duration) *FileAppendTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -547,6 +559,7 @@ func (transaction *FileAppendTransaction) SetMinBackoff(min time.Duration) *File
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *FileAppendTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

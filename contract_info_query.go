@@ -45,6 +45,7 @@ func NewContractInfoQuery() *ContractInfoQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *ContractInfoQuery) SetGrpcDeadline(deadline *time.Duration) *ContractInfoQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -92,6 +93,7 @@ func (query *ContractInfoQuery) _Build() *services.Query_ContractGetInfo {
 	return &pb
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *ContractInfoQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -161,6 +163,7 @@ func _ContractInfoQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *ContractInfoQuery) Execute(client *Client) (ContractInfo, error) {
 	if client == nil || client.operator == nil {
 		return ContractInfo{}, errNoClientProvided
@@ -275,11 +278,14 @@ func (query *ContractInfoQuery) SetNodeAccountIDs(accountID []AccountID) *Contra
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *ContractInfoQuery) SetMaxRetry(count int) *ContractInfoQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *ContractInfoQuery) SetMaxBackoff(max time.Duration) *ContractInfoQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -290,6 +296,7 @@ func (query *ContractInfoQuery) SetMaxBackoff(max time.Duration) *ContractInfoQu
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *ContractInfoQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -298,6 +305,7 @@ func (query *ContractInfoQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *ContractInfoQuery) SetMinBackoff(min time.Duration) *ContractInfoQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -308,6 +316,7 @@ func (query *ContractInfoQuery) SetMinBackoff(min time.Duration) *ContractInfoQu
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *ContractInfoQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff

@@ -57,6 +57,7 @@ func NewTransactionRecordQuery() *TransactionRecordQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *TransactionRecordQuery) SetGrpcDeadline(deadline *time.Duration) *TransactionRecordQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -129,6 +130,7 @@ func (query *TransactionRecordQuery) _Build() *services.Query_TransactionGetReco
 	}
 }
 
+// GetCost returns the fee that would be charged to get the requested information (if a cost was requested).
 func (query *TransactionRecordQuery) GetCost(client *Client) (Hbar, error) {
 	if client == nil || client.operator == nil {
 		return Hbar{}, errNoClientProvided
@@ -238,6 +240,7 @@ func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionI
 	return query
 }
 
+// GetTransactionID gets the TransactionID for this TransactionRecordQuery.
 func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
 	if query.transactionID == nil {
 		return TransactionID{}
@@ -246,26 +249,32 @@ func (query *TransactionRecordQuery) GetTransactionID() TransactionID {
 	return *query.transactionID
 }
 
+// SetNodeAccountIDs sets the _Node AccountID for this TransactionRecordQuery.
 func (query *TransactionRecordQuery) SetNodeAccountIDs(accountID []AccountID) *TransactionRecordQuery {
 	query.Query.SetNodeAccountIDs(accountID)
 	return query
 }
 
+// SetQueryPayment sets the Hbar payment to pay the _Node a fee for handling this query
 func (query *TransactionRecordQuery) SetQueryPayment(queryPayment Hbar) *TransactionRecordQuery {
 	query.queryPayment = queryPayment
 	return query
 }
 
+// SetMaxQueryPayment sets the maximum payment allowed for this Query.
 func (query *TransactionRecordQuery) SetMaxQueryPayment(queryMaxPayment Hbar) *TransactionRecordQuery {
 	query.maxQueryPayment = queryMaxPayment
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *TransactionRecordQuery) SetMaxRetry(count int) *TransactionRecordQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *TransactionRecordQuery) SetMaxBackoff(max time.Duration) *TransactionRecordQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -276,6 +285,7 @@ func (query *TransactionRecordQuery) SetMaxBackoff(max time.Duration) *Transacti
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *TransactionRecordQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -284,6 +294,7 @@ func (query *TransactionRecordQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *TransactionRecordQuery) SetMinBackoff(min time.Duration) *TransactionRecordQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -294,6 +305,7 @@ func (query *TransactionRecordQuery) SetMinBackoff(min time.Duration) *Transacti
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *TransactionRecordQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -302,6 +314,7 @@ func (query *TransactionRecordQuery) GetMinBackoff() time.Duration {
 	return 250 * time.Millisecond
 }
 
+// Execute executes the Query with the provided client
 func (query *TransactionRecordQuery) Execute(client *Client) (TransactionRecord, error) {
 	if client == nil || client.operator == nil {
 		return TransactionRecord{}, errNoClientProvided
@@ -400,6 +413,7 @@ func (query *TransactionRecordQuery) _GetLogID() string {
 	return fmt.Sprintf("TransactionRecordQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *TransactionRecordQuery) SetPaymentTransactionID(transactionID TransactionID) *TransactionRecordQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

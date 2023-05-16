@@ -157,6 +157,7 @@ func _ContractBytecodeQueryGetMethod(_ interface{}, channel *_Channel) _Method {
 	}
 }
 
+// Execute executes the Query with the provided client
 func (query *ContractBytecodeQuery) Execute(client *Client) ([]byte, error) {
 	if client == nil || client.operator == nil {
 		return make([]byte, 0), errNoClientProvided
@@ -264,11 +265,14 @@ func (query *ContractBytecodeQuery) SetNodeAccountIDs(accountID []AccountID) *Co
 	return query
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (query *ContractBytecodeQuery) SetMaxRetry(count int) *ContractBytecodeQuery {
 	query.Query.SetMaxRetry(count)
 	return query
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (query *ContractBytecodeQuery) SetMaxBackoff(max time.Duration) *ContractBytecodeQuery {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -279,6 +283,7 @@ func (query *ContractBytecodeQuery) SetMaxBackoff(max time.Duration) *ContractBy
 	return query
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (query *ContractBytecodeQuery) GetMaxBackoff() time.Duration {
 	if query.maxBackoff != nil {
 		return *query.maxBackoff
@@ -287,6 +292,7 @@ func (query *ContractBytecodeQuery) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (query *ContractBytecodeQuery) SetMinBackoff(min time.Duration) *ContractBytecodeQuery {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -297,6 +303,7 @@ func (query *ContractBytecodeQuery) SetMinBackoff(min time.Duration) *ContractBy
 	return query
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (query *ContractBytecodeQuery) GetMinBackoff() time.Duration {
 	if query.minBackoff != nil {
 		return *query.minBackoff
@@ -313,6 +320,7 @@ func (query *ContractBytecodeQuery) _GetLogID() string {
 	return fmt.Sprintf("ContractBytecodeQuery:%d", timestamp)
 }
 
+// SetPaymentTransactionID assigns the payment transaction id.
 func (query *ContractBytecodeQuery) SetPaymentTransactionID(transactionID TransactionID) *ContractBytecodeQuery {
 	query.paymentTransactionIDs._Clear()._Push(transactionID)._SetLocked(true)
 	return query

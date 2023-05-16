@@ -55,6 +55,7 @@ func _ScheduleDeleteTransactionFromProtobuf(transaction Transaction, pb *service
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *ScheduleDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *ScheduleDeleteTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -149,6 +150,7 @@ func (transaction *ScheduleDeleteTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *ScheduleDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*ScheduleDeleteTransaction, error) {
@@ -265,11 +267,12 @@ func (transaction *ScheduleDeleteTransaction) FreezeWith(client *Client) (*Sched
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ScheduleDeleteTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this ScheduleDeleteTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ScheduleDeleteTransaction) SetMaxTransactionFee(fee Hbar) *ScheduleDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -288,6 +291,7 @@ func (transaction *ScheduleDeleteTransaction) GetRegenerateTransactionID() bool 
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -299,6 +303,7 @@ func (transaction *ScheduleDeleteTransaction) SetTransactionMemo(memo string) *S
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *ScheduleDeleteTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -310,6 +315,7 @@ func (transaction *ScheduleDeleteTransaction) SetTransactionValidDuration(durati
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	ScheduleDeleteTransaction.
 func (transaction *ScheduleDeleteTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -329,11 +335,14 @@ func (transaction *ScheduleDeleteTransaction) SetNodeAccountIDs(nodeID []Account
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *ScheduleDeleteTransaction) SetMaxRetry(count int) *ScheduleDeleteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *ScheduleDeleteTransaction) SetMaxBackoff(max time.Duration) *ScheduleDeleteTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -344,6 +353,7 @@ func (transaction *ScheduleDeleteTransaction) SetMaxBackoff(max time.Duration) *
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *ScheduleDeleteTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -352,6 +362,7 @@ func (transaction *ScheduleDeleteTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *ScheduleDeleteTransaction) SetMinBackoff(min time.Duration) *ScheduleDeleteTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -362,6 +373,7 @@ func (transaction *ScheduleDeleteTransaction) SetMinBackoff(min time.Duration) *
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *ScheduleDeleteTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

@@ -62,6 +62,7 @@ func _FileDeleteTransactionFromProtobuf(transaction Transaction, pb *services.Tr
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *FileDeleteTransaction) SetGrpcDeadline(deadline *time.Duration) *FileDeleteTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -155,6 +156,7 @@ func (transaction *FileDeleteTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *FileDeleteTransaction) SignWithOperator(
 	client *Client,
 ) (*FileDeleteTransaction, error) {
@@ -272,11 +274,12 @@ func (transaction *FileDeleteTransaction) FreezeWith(client *Client) (*FileDelet
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FileDeleteTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this FileDeleteTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *FileDeleteTransaction) SetMaxTransactionFee(fee Hbar) *FileDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -295,6 +298,7 @@ func (transaction *FileDeleteTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -306,6 +310,7 @@ func (transaction *FileDeleteTransaction) SetTransactionMemo(memo string) *FileD
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *FileDeleteTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -317,6 +322,7 @@ func (transaction *FileDeleteTransaction) SetTransactionValidDuration(duration t
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	FileDeleteTransaction.
 func (transaction *FileDeleteTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -336,11 +342,13 @@ func (transaction *FileDeleteTransaction) SetNodeAccountIDs(nodeID []AccountID) 
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *FileDeleteTransaction) SetMaxRetry(count int) *FileDeleteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, signature []byte) *FileDeleteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -373,6 +381,8 @@ func (transaction *FileDeleteTransaction) AddSignature(publicKey PublicKey, sign
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *FileDeleteTransaction) SetMaxBackoff(max time.Duration) *FileDeleteTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -383,6 +393,7 @@ func (transaction *FileDeleteTransaction) SetMaxBackoff(max time.Duration) *File
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *FileDeleteTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -391,6 +402,7 @@ func (transaction *FileDeleteTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *FileDeleteTransaction) SetMinBackoff(min time.Duration) *FileDeleteTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -401,6 +413,7 @@ func (transaction *FileDeleteTransaction) SetMinBackoff(min time.Duration) *File
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *FileDeleteTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

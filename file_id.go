@@ -67,6 +67,7 @@ func FileIDFromString(data string) (FileID, error) {
 	}, nil
 }
 
+// Verify that the client has a valid checksum.
 func (id *FileID) ValidateChecksum(client *Client) error {
 	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
 		var tempChecksum _ParseAddressResult

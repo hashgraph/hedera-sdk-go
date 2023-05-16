@@ -64,6 +64,7 @@ func _ContractExecuteTransactionFromProtobuf(transaction Transaction, pb *servic
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *ContractExecuteTransaction) SetGrpcDeadline(deadline *time.Duration) *ContractExecuteTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -212,6 +213,7 @@ func (transaction *ContractExecuteTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *ContractExecuteTransaction) SignWithOperator(
 	client *Client,
 ) (*ContractExecuteTransaction, error) {
@@ -328,11 +330,12 @@ func (transaction *ContractExecuteTransaction) FreezeWith(client *Client) (*Cont
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ContractExecuteTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this ContractExecuteTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *ContractExecuteTransaction) SetMaxTransactionFee(fee Hbar) *ContractExecuteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -351,6 +354,7 @@ func (transaction *ContractExecuteTransaction) GetRegenerateTransactionID() bool
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -362,6 +366,7 @@ func (transaction *ContractExecuteTransaction) SetTransactionMemo(memo string) *
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *ContractExecuteTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -373,6 +378,7 @@ func (transaction *ContractExecuteTransaction) SetTransactionValidDuration(durat
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this	ContractExecuteTransaction.
 func (transaction *ContractExecuteTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -392,11 +398,13 @@ func (transaction *ContractExecuteTransaction) SetNodeAccountIDs(nodeID []Accoun
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *ContractExecuteTransaction) SetMaxRetry(count int) *ContractExecuteTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey, signature []byte) *ContractExecuteTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -429,6 +437,8 @@ func (transaction *ContractExecuteTransaction) AddSignature(publicKey PublicKey,
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *ContractExecuteTransaction) SetMaxBackoff(max time.Duration) *ContractExecuteTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -439,6 +449,7 @@ func (transaction *ContractExecuteTransaction) SetMaxBackoff(max time.Duration) 
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *ContractExecuteTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -447,6 +458,7 @@ func (transaction *ContractExecuteTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *ContractExecuteTransaction) SetMinBackoff(min time.Duration) *ContractExecuteTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -457,6 +469,7 @@ func (transaction *ContractExecuteTransaction) SetMinBackoff(min time.Duration) 
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *ContractExecuteTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff

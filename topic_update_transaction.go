@@ -73,6 +73,7 @@ func _TopicUpdateTransactionFromProtobuf(transaction Transaction, pb *services.T
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (transaction *TopicUpdateTransaction) SetGrpcDeadline(deadline *time.Duration) *TopicUpdateTransaction {
 	transaction.Transaction.SetGrpcDeadline(deadline)
 	return transaction
@@ -328,6 +329,7 @@ func (transaction *TopicUpdateTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with client's operator privateKey.
 func (transaction *TopicUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*TopicUpdateTransaction, error) {
@@ -444,11 +446,12 @@ func (transaction *TopicUpdateTransaction) FreezeWith(client *Client) (*TopicUpd
 	return transaction, _TransactionFreezeWith(&transaction.Transaction, client, body)
 }
 
+// GetMaxTransactionFee returns the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TopicUpdateTransaction) GetMaxTransactionFee() Hbar {
 	return transaction.Transaction.GetMaxTransactionFee()
 }
 
-// SetMaxTransactionFee sets the max transaction fee for this TopicUpdateTransaction.
+// SetMaxTransactionFee sets the maximum transaction fee the operator (paying account) is willing to pay.
 func (transaction *TopicUpdateTransaction) SetMaxTransactionFee(fee Hbar) *TopicUpdateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.Transaction.SetMaxTransactionFee(fee)
@@ -467,6 +470,7 @@ func (transaction *TopicUpdateTransaction) GetRegenerateTransactionID() bool {
 	return transaction.Transaction.GetRegenerateTransactionID()
 }
 
+// GetTransactionMemo returns the memo for this	TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) GetTransactionMemo() string {
 	return transaction.Transaction.GetTransactionMemo()
 }
@@ -478,6 +482,7 @@ func (transaction *TopicUpdateTransaction) SetTransactionMemo(memo string) *Topi
 	return transaction
 }
 
+// GetTransactionValidDuration returns the duration that this transaction is valid for.
 func (transaction *TopicUpdateTransaction) GetTransactionValidDuration() time.Duration {
 	return transaction.Transaction.GetTransactionValidDuration()
 }
@@ -489,6 +494,7 @@ func (transaction *TopicUpdateTransaction) SetTransactionValidDuration(duration 
 	return transaction
 }
 
+// GetTransactionID gets the TransactionID for this TopicUpdateTransaction.
 func (transaction *TopicUpdateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }
@@ -508,11 +514,13 @@ func (transaction *TopicUpdateTransaction) SetNodeAccountIDs(nodeID []AccountID)
 	return transaction
 }
 
+// SetMaxRetry sets the max number of errors before execution will fail.
 func (transaction *TopicUpdateTransaction) SetMaxRetry(count int) *TopicUpdateTransaction {
 	transaction.Transaction.SetMaxRetry(count)
 	return transaction
 }
 
+// AddSignature adds a signature to the Transaction.
 func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, signature []byte) *TopicUpdateTransaction {
 	transaction._RequireOneNodeAccountID()
 
@@ -545,6 +553,8 @@ func (transaction *TopicUpdateTransaction) AddSignature(publicKey PublicKey, sig
 	return transaction
 }
 
+// SetMaxBackoff The maximum amount of time to wait between retries.
+// Every retry attempt will increase the wait time exponentially until it reaches this time.
 func (transaction *TopicUpdateTransaction) SetMaxBackoff(max time.Duration) *TopicUpdateTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")
@@ -555,6 +565,7 @@ func (transaction *TopicUpdateTransaction) SetMaxBackoff(max time.Duration) *Top
 	return transaction
 }
 
+// GetMaxBackoff returns the maximum amount of time to wait between retries.
 func (transaction *TopicUpdateTransaction) GetMaxBackoff() time.Duration {
 	if transaction.maxBackoff != nil {
 		return *transaction.maxBackoff
@@ -563,6 +574,7 @@ func (transaction *TopicUpdateTransaction) GetMaxBackoff() time.Duration {
 	return 8 * time.Second
 }
 
+// SetMinBackoff sets the minimum amount of time to wait between retries.
 func (transaction *TopicUpdateTransaction) SetMinBackoff(min time.Duration) *TopicUpdateTransaction {
 	if min.Nanoseconds() < 0 {
 		panic("minBackoff must be a positive duration")
@@ -573,6 +585,7 @@ func (transaction *TopicUpdateTransaction) SetMinBackoff(min time.Duration) *Top
 	return transaction
 }
 
+// GetMinBackoff returns the minimum amount of time to wait between retries.
 func (transaction *TopicUpdateTransaction) GetMinBackoff() time.Duration {
 	if transaction.minBackoff != nil {
 		return *transaction.minBackoff
