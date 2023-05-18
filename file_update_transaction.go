@@ -87,6 +87,7 @@ func (transaction *FileUpdateTransaction) SetFileID(fileID FileID) *FileUpdateTr
 	return transaction
 }
 
+// GetFileID returns the FileID to be updated
 func (transaction *FileUpdateTransaction) GetFileID() FileID {
 	if transaction.fileID == nil {
 		return FileID{}
@@ -124,6 +125,7 @@ func (transaction *FileUpdateTransaction) SetExpirationTime(expiration time.Time
 	return transaction
 }
 
+// GetExpirationTime returns the new expiry time
 func (transaction *FileUpdateTransaction) GetExpirationTime() time.Time {
 	if transaction.expirationTime != nil {
 		return *transaction.expirationTime
@@ -139,6 +141,7 @@ func (transaction *FileUpdateTransaction) SetContents(contents []byte) *FileUpda
 	return transaction
 }
 
+// GetContents returns the new contents that should overwrite the file's current contents
 func (transaction *FileUpdateTransaction) GetContents() []byte {
 	return transaction.contents
 }

@@ -53,6 +53,7 @@ func (query *TokenInfoQuery) SetTokenID(tokenID TokenID) *TokenInfoQuery {
 	return query
 }
 
+// GetTokenID returns the TokenID for this TokenInfoQuery
 func (query *TokenInfoQuery) GetTokenID() TokenID {
 	if query.tokenID == nil {
 		return TokenID{}

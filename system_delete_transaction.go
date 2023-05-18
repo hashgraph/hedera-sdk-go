@@ -63,12 +63,14 @@ func (transaction *SystemDeleteTransaction) SetGrpcDeadline(deadline *time.Durat
 	return transaction
 }
 
+// SetExpirationTime sets the time at which this transaction will expire.
 func (transaction *SystemDeleteTransaction) SetExpirationTime(expiration time.Time) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.expirationTime = &expiration
 	return transaction
 }
 
+// GetExpirationTime returns the time at which this transaction will expire.
 func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
 	if transaction.expirationTime != nil {
 		return transaction.expirationTime.Unix()
@@ -77,12 +79,14 @@ func (transaction *SystemDeleteTransaction) GetExpirationTime() int64 {
 	return 0
 }
 
+// SetContractID sets the ContractID of the contract which will be deleted.
 func (transaction *SystemDeleteTransaction) SetContractID(contractID ContractID) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.contractID = &contractID
 	return transaction
 }
 
+// GetContractID returns the ContractID of the contract which will be deleted.
 func (transaction *SystemDeleteTransaction) GetContractID() ContractID {
 	if transaction.contractID == nil {
 		return ContractID{}
@@ -91,12 +95,14 @@ func (transaction *SystemDeleteTransaction) GetContractID() ContractID {
 	return *transaction.contractID
 }
 
+// SetFileID sets the FileID of the file which will be deleted.
 func (transaction *SystemDeleteTransaction) SetFileID(fileID FileID) *SystemDeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.fileID = &fileID
 	return transaction
 }
 
+// GetFileID returns the FileID of the file which will be deleted.
 func (transaction *SystemDeleteTransaction) GetFileID() FileID {
 	if transaction.fileID == nil {
 		return FileID{}

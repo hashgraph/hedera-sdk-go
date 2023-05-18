@@ -72,6 +72,7 @@ func (tokenNftInfo *TokenNftInfo) _ToProtobuf() *services.TokenNftInfo {
 	}
 }
 
+// ToBytes returns the byte representation of the TokenNftInfo
 func (tokenNftInfo *TokenNftInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(tokenNftInfo._ToProtobuf())
 	if err != nil {
@@ -81,6 +82,7 @@ func (tokenNftInfo *TokenNftInfo) ToBytes() []byte {
 	return data
 }
 
+// TokenNftInfoFromBytes returns the TokenNftInfo from a byte array representation
 func TokenNftInfoFromBytes(data []byte) (TokenNftInfo, error) {
 	if data == nil {
 		return TokenNftInfo{}, errByteArrayNull

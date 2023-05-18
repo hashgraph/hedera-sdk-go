@@ -100,35 +100,42 @@ func (fee CustomFixedFee) _ToProtobuf() *services.CustomFee {
 	}
 }
 
+// SetAmount sets the amount of the fixed fee in tinybar
 func (fee *CustomFixedFee) SetAmount(tinybar int64) *CustomFixedFee {
 	fee.Amount = tinybar
 	return fee
 }
 
+// GetAmount returns the amount of the fixed fee
 func (fee *CustomFixedFee) GetAmount() Hbar {
 	return NewHbar(float64(fee.Amount))
 }
 
+// SetHbarAmount sets the amount of the fixed fee in hbar
 func (fee *CustomFixedFee) SetHbarAmount(hbar Hbar) *CustomFixedFee {
 	fee.Amount = int64(hbar.As(HbarUnits.Tinybar))
 	fee.DenominationTokenID = nil
 	return fee
 }
 
+// GetHbarAmount returns the amount of the fixed fee in hbar
 func (fee *CustomFixedFee) GetHbarAmount() Hbar {
 	return NewHbar(float64(fee.Amount))
 }
 
+// SetDenominatingTokenToSameToken sets the denomination token ID to the same token as the fee
 func (fee *CustomFixedFee) SetDenominatingTokenToSameToken() *CustomFixedFee {
 	fee.DenominationTokenID = &TokenID{0, 0, 0, nil}
 	return fee
 }
 
+// SetDenominatingTokenID sets the denomination token ID
 func (fee *CustomFixedFee) SetDenominatingTokenID(id TokenID) *CustomFixedFee {
 	fee.DenominationTokenID = &id
 	return fee
 }
 
+// GetDenominatingTokenID returns the denomination token ID
 func (fee *CustomFixedFee) GetDenominatingTokenID() TokenID {
 	if fee.DenominationTokenID != nil {
 		return *fee.DenominationTokenID
@@ -137,20 +144,24 @@ func (fee *CustomFixedFee) GetDenominatingTokenID() TokenID {
 	return TokenID{}
 }
 
+// SetFeeCollectorAccountID sets the account ID that will receive the custom fee
 func (fee *CustomFixedFee) SetFeeCollectorAccountID(id AccountID) *CustomFixedFee {
 	fee.FeeCollectorAccountID = &id
 	return fee
 }
 
+// GetFeeCollectorAccountID returns the account ID that will receive the custom fee
 func (fee *CustomFixedFee) GetFeeCollectorAccountID() AccountID {
 	return *fee.FeeCollectorAccountID
 }
 
+// SetAllCollectorsAreExempt sets whether all collectors are exempt from the custom fee
 func (fee *CustomFixedFee) SetAllCollectorsAreExempt(exempt bool) *CustomFixedFee {
 	fee.AllCollectorsAreExempt = exempt
 	return fee
 }
 
+// ToBytes returns the byte representation of the CustomFixedFee
 func (fee CustomFixedFee) ToBytes() []byte {
 	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
@@ -160,6 +171,7 @@ func (fee CustomFixedFee) ToBytes() []byte {
 	return data
 }
 
+// String returns a string representation of the CustomFixedFee
 func (fee CustomFixedFee) String() string {
 	if fee.DenominationTokenID != nil {
 		return fmt.Sprintf("feeCollectorAccountID: %s, amount: %d, denominatingTokenID: %s", fee.FeeCollectorAccountID.String(), fee.Amount, fee.DenominationTokenID.String())

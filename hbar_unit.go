@@ -40,6 +40,7 @@ var HbarUnits = struct {
 	Gigabar:  HbarUnit("gigabar"),
 }
 
+// Symbol returns the symbol representation of the HbarUnit
 func (unit HbarUnit) Symbol() string {
 	switch unit {
 	case HbarUnits.Tinybar:
@@ -61,6 +62,7 @@ func (unit HbarUnit) Symbol() string {
 	panic("unreachable: HbarUnit.Symbol() switch statement is non-exhaustive")
 }
 
+// String returns a string representation of the HbarUnit
 func (unit HbarUnit) String() string {
 	return string(unit)
 }

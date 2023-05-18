@@ -45,11 +45,13 @@ func (query *FileInfoQuery) SetGrpcDeadline(deadline *time.Duration) *FileInfoQu
 	return query
 }
 
+// SetFileID sets the FileID of the file whose info is requested.
 func (query *FileInfoQuery) SetFileID(fileID FileID) *FileInfoQuery {
 	query.fileID = &fileID
 	return query
 }
 
+// GetFileID returns the FileID of the file whose info is requested.
 func (query *FileInfoQuery) GetFileID() FileID {
 	if query.fileID == nil {
 		return FileID{}
@@ -270,6 +272,7 @@ func (query *FileInfoQuery) SetNodeAccountIDs(accountID []AccountID) *FileInfoQu
 	return query
 }
 
+// GetNodeAccountIDs returns the _Node AccountID for this FileInfoQuery.
 func (query *FileInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }

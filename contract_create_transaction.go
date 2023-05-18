@@ -112,6 +112,7 @@ func (transaction *ContractCreateTransaction) SetBytecodeFileID(byteCodeFileID F
 	return transaction
 }
 
+// GetBytecodeFileID returns the FileID of the file containing the contract's bytecode.
 func (transaction *ContractCreateTransaction) GetBytecodeFileID() FileID {
 	if transaction.byteCodeFileID == nil {
 		return FileID{}
@@ -129,6 +130,7 @@ func (transaction *ContractCreateTransaction) SetBytecode(code []byte) *Contract
 	return transaction
 }
 
+// GetBytecode returns the bytecode for the contract.
 func (transaction *ContractCreateTransaction) GetBytecode() []byte {
 	return transaction.initcode
 }
@@ -146,6 +148,8 @@ func (transaction *ContractCreateTransaction) SetAdminKey(adminKey Key) *Contrac
 	return transaction
 }
 
+// GetAdminKey returns the key that can sign to modify the state of the instance
+// and its fields can be modified arbitrarily if this key signs a transaction
 func (transaction *ContractCreateTransaction) GetAdminKey() (Key, error) {
 	return transaction.adminKey, nil
 }
@@ -157,6 +161,7 @@ func (transaction *ContractCreateTransaction) SetGas(gas uint64) *ContractCreate
 	return transaction
 }
 
+// GetGas returns the gas to run the constructor.
 func (transaction *ContractCreateTransaction) GetGas() uint64 {
 	return uint64(transaction.gas)
 }
@@ -227,6 +232,7 @@ func (transaction *ContractCreateTransaction) SetConstructorParametersRaw(params
 	return transaction
 }
 
+// GetConstructorParameters returns the constructor parameters
 func (transaction *ContractCreateTransaction) GetConstructorParameters() []byte {
 	return transaction.parameters
 }
@@ -238,6 +244,7 @@ func (transaction *ContractCreateTransaction) SetContractMemo(memo string) *Cont
 	return transaction
 }
 
+// GetContractMemo returns the memo associated with this contract.
 func (transaction *ContractCreateTransaction) GetContractMemo() string {
 	return transaction.memo
 }
@@ -252,6 +259,7 @@ func (transaction *ContractCreateTransaction) SetAutoRenewAccountID(id AccountID
 	return transaction
 }
 
+// GetAutoRenewAccountID returns the account to be used at the end of the auto renewal period
 func (transaction *ContractCreateTransaction) GetAutoRenewAccountID() AccountID {
 	if transaction.autoRenewAccountID == nil {
 		return AccountID{}
@@ -269,16 +277,19 @@ func (transaction *ContractCreateTransaction) SetMaxAutomaticTokenAssociations(m
 	return transaction
 }
 
+// GetMaxAutomaticTokenAssociations returns the maximum number of tokens that this contract can be automatically associated
 func (transaction *ContractCreateTransaction) GetMaxAutomaticTokenAssociations() int32 {
 	return transaction.maxAutomaticTokenAssociations
 }
 
+// SetStakedAccountID sets the account ID of the account to which this contract is staked.
 func (transaction *ContractCreateTransaction) SetStakedAccountID(id AccountID) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.stakedAccountID = &id
 	return transaction
 }
 
+// GetStakedAccountID returns the account ID of the account to which this contract is staked.
 func (transaction *ContractCreateTransaction) GetStakedAccountID() AccountID {
 	if transaction.stakedAccountID != nil {
 		return *transaction.stakedAccountID
@@ -287,12 +298,14 @@ func (transaction *ContractCreateTransaction) GetStakedAccountID() AccountID {
 	return AccountID{}
 }
 
+// SetStakedNodeID sets the node ID of the node to which this contract is staked.
 func (transaction *ContractCreateTransaction) SetStakedNodeID(id int64) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.stakedNodeID = &id
 	return transaction
 }
 
+// GetStakedNodeID returns the node ID of the node to which this contract is staked.
 func (transaction *ContractCreateTransaction) GetStakedNodeID() int64 {
 	if transaction.stakedNodeID != nil {
 		return *transaction.stakedNodeID
@@ -301,12 +314,14 @@ func (transaction *ContractCreateTransaction) GetStakedNodeID() int64 {
 	return 0
 }
 
+// SetDeclineStakingReward sets if the contract should decline to pay the account's staking revenue.
 func (transaction *ContractCreateTransaction) SetDeclineStakingReward(decline bool) *ContractCreateTransaction {
 	transaction._RequireNotFrozen()
 	transaction.declineReward = decline
 	return transaction
 }
 
+// GetDeclineStakingReward returns if the contract should decline to pay the account's staking revenue.
 func (transaction *ContractCreateTransaction) GetDeclineStakingReward() bool {
 	return transaction.declineReward
 }

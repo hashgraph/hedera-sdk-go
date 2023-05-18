@@ -82,6 +82,7 @@ func (approval *TokenAllowance) _ToProtobuf() *services.TokenAllowance {
 	return body
 }
 
+// String returns a string representation of the TokenAllowance
 func (approval *TokenAllowance) String() string {
 	var owner string
 	var spender string

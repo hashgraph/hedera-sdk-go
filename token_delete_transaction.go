@@ -73,6 +73,7 @@ func (transaction *TokenDeleteTransaction) SetTokenID(tokenID TokenID) *TokenDel
 	return transaction
 }
 
+// GetTokenID returns the TokenID of the token to be deleted
 func (transaction *TokenDeleteTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}

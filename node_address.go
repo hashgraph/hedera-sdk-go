@@ -73,6 +73,7 @@ func (nodeAdd *NodeAddress) _ToProtobuf() *services.NodeAddress {
 	return build
 }
 
+// String returns a string representation of the NodeAddress
 func (nodeAdd NodeAddress) String() string {
 	Addresses := ""
 	for _, k := range nodeAdd.Addresses {

@@ -80,6 +80,7 @@ func (transaction *ScheduleSignTransaction) SetScheduleID(scheduleID ScheduleID)
 	return transaction
 }
 
+// GetScheduleID returns the id of the schedule to add signing keys to
 func (transaction *ScheduleSignTransaction) GetScheduleID() ScheduleID {
 	if transaction.scheduleID == nil {
 		return ScheduleID{}

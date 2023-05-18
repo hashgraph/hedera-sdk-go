@@ -75,6 +75,7 @@ func (feeSchedule FeeSchedule) _ToProtobuf() *services.FeeSchedule {
 	}
 }
 
+// ToBytes returns the byte representation of the FeeSchedule
 func (feeSchedule FeeSchedule) ToBytes() []byte {
 	data, err := protobuf.Marshal(feeSchedule._ToProtobuf())
 	if err != nil {
@@ -84,6 +85,7 @@ func (feeSchedule FeeSchedule) ToBytes() []byte {
 	return data
 }
 
+// FeeScheduleFromBytes returns a FeeSchedule from a raw protobuf byte array
 func FeeScheduleFromBytes(data []byte) (FeeSchedule, error) {
 	if data == nil {
 		return FeeSchedule{}, errByteArrayNull
@@ -102,6 +104,7 @@ func FeeScheduleFromBytes(data []byte) (FeeSchedule, error) {
 	return info, nil
 }
 
+// String returns a string representation of the FeeSchedule
 func (feeSchedule FeeSchedule) String() string {
 	array := "\n"
 	for _, i := range feeSchedule.TransactionFeeSchedules {

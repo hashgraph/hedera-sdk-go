@@ -72,6 +72,7 @@ func (transaction *ContractDeleteTransaction) SetContractID(contractID ContractI
 	return transaction
 }
 
+// Returns the contract ID which will be deleted.
 func (transaction *ContractDeleteTransaction) GetContractID() ContractID {
 	if transaction.contractID == nil {
 		return ContractID{}
@@ -87,6 +88,7 @@ func (transaction *ContractDeleteTransaction) SetTransferContractID(transferCont
 	return transaction
 }
 
+// Returns the contract ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) GetTransferContractID() ContractID {
 	if transaction.transferContactID == nil {
 		return ContractID{}
@@ -103,6 +105,7 @@ func (transaction *ContractDeleteTransaction) SetTransferAccountID(accountID Acc
 	return transaction
 }
 
+// Returns the account ID which will receive all remaining hbars.
 func (transaction *ContractDeleteTransaction) GetTransferAccountID() AccountID {
 	if transaction.transferAccountID == nil {
 		return AccountID{}
@@ -125,6 +128,7 @@ func (transaction *ContractDeleteTransaction) SetPermanentRemoval(remove bool) *
 	return transaction
 }
 
+// GetPermanentRemoval returns true if this is a "synthetic" system transaction.
 func (transaction *ContractDeleteTransaction) GetPermanentRemoval() bool {
 	return transaction.permanentRemoval
 }

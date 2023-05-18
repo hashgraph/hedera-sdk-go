@@ -119,6 +119,7 @@ func (contractInfo *ContractInfo) _ToProtobuf() *services.ContractGetInfoRespons
 	return body
 }
 
+// ToBytes returns a serialized version of the ContractInfo object
 func (contractInfo ContractInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(contractInfo._ToProtobuf())
 	if err != nil {
@@ -128,6 +129,7 @@ func (contractInfo ContractInfo) ToBytes() []byte {
 	return data
 }
 
+// ContractInfoFromBytes returns a ContractInfo object deserialized from bytes
 func ContractInfoFromBytes(data []byte) (ContractInfo, error) {
 	if data == nil {
 		return ContractInfo{}, errByteArrayNull

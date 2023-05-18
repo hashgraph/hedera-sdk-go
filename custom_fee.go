@@ -57,24 +57,29 @@ func _CustomFeeFromProtobuf(customFee *services.CustomFee) Fee {
 	return nil
 }
 
+// SetFeeCollectorAccountID sets the account ID that will receive the custom fee
 func (fee *CustomFee) SetFeeCollectorAccountID(id AccountID) *CustomFee {
 	fee.FeeCollectorAccountID = &id
 	return fee
 }
 
+// GetFeeCollectorAccountID returns the account ID that will receive the custom fee
 func (fee *CustomFee) GetFeeCollectorAccountID() AccountID {
 	return *fee.FeeCollectorAccountID
 }
 
+// SetAllCollectorsAreExempt sets whether or not all collectors are exempt from the custom fee
 func (fee *CustomFee) SetAllCollectorsAreExempt(exempt bool) *CustomFee {
 	fee.AllCollectorsAreExempt = exempt
 	return fee
 }
 
+// GetAllCollectorsAreExempt returns whether or not all collectors are exempt from the custom fee
 func (fee *CustomFee) GetAllCollectorsAreExempt() bool {
 	return fee.AllCollectorsAreExempt
 }
 
+// CustomFeeFromBytes returns a CustomFee from a raw protobuf byte array
 func CustomFeeFromBytes(data []byte) (Fee, error) {
 	if data == nil {
 		return nil, errByteArrayNull

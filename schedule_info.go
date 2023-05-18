@@ -148,6 +148,7 @@ func (scheduleInfo *ScheduleInfo) _ToProtobuf() *services.ScheduleInfo { // noli
 	return info
 }
 
+// GetScheduledTransaction returns the scheduled transaction associated with this schedule
 func (scheduleInfo *ScheduleInfo) GetScheduledTransaction() (ITransaction, error) { // nolint
 	pb := scheduleInfo.scheduledTransactionBody
 

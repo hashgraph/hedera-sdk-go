@@ -141,6 +141,7 @@ func (transaction *FileCreateTransaction) SetContents(contents []byte) *FileCrea
 	return transaction
 }
 
+// GetContents returns the bytes that are the contents of the file (which can be empty).
 func (transaction *FileCreateTransaction) GetContents() []byte {
 	return transaction.contents
 }
@@ -152,6 +153,7 @@ func (transaction *FileCreateTransaction) SetMemo(memo string) *FileCreateTransa
 	return transaction
 }
 
+// GetMemo returns the memo associated with the file (UTF-8 encoding max 100 bytes)
 func (transaction *FileCreateTransaction) GetMemo() string {
 	return transaction.memo
 }

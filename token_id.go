@@ -60,10 +60,12 @@ func (id *TokenID) _ToProtobuf() *services.TokenID {
 	}
 }
 
+// String returns a string representation of the TokenID formatted as `Shard.Realm.TokenID` (for example "0.0.3")
 func (id TokenID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Token)
 }
 
+// ToStringWithChecksum returns a string representation of the TokenID formatted as `Shard.Realm.TokenID-Checksum` (for example "0.0.3-abcd")
 func (id TokenID) ToStringWithChecksum(client Client) (string, error) {
 	if client.GetNetworkName() == nil && client.GetLedgerID() == nil {
 		return "", errNetworkNameMissing
@@ -79,6 +81,7 @@ func (id TokenID) ToStringWithChecksum(client Client) (string, error) {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.Token, checksum.correctChecksum), nil
 }
 
+// ToBytes returns a byte array representation of the TokenID
 func (id TokenID) ToBytes() []byte {
 	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
@@ -88,6 +91,7 @@ func (id TokenID) ToBytes() []byte {
 	return data
 }
 
+// TokenIDFromBytes returns a TokenID from a byte array
 func TokenIDFromBytes(data []byte) (TokenID, error) {
 	if data == nil {
 		return TokenID{}, errByteArrayNull
@@ -101,6 +105,7 @@ func TokenIDFromBytes(data []byte) (TokenID, error) {
 	return *_TokenIDFromProtobuf(&pb), nil
 }
 
+// NftID constructs an NftID from a TokenID and a serial number
 func (id *TokenID) Nft(serial int64) NftID {
 	return NftID{
 		TokenID:      *id,
@@ -204,6 +209,7 @@ func (id TokenID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.Token == 0
 }
 
+// Compare compares two TokenIDs
 func (id TokenID) Compare(given TokenID) int {
 	if id.Shard > given.Shard { //nolint
 		return 1

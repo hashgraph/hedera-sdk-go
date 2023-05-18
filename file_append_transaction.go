@@ -77,6 +77,7 @@ func (transaction *FileAppendTransaction) SetFileID(fileID FileID) *FileAppendTr
 	return transaction
 }
 
+// GetFileID returns the FileID of the file to which the bytes are appended to.
 func (transaction *FileAppendTransaction) GetFileID() FileID {
 	if transaction.fileID == nil {
 		return FileID{}
@@ -92,16 +93,19 @@ func (transaction *FileAppendTransaction) SetMaxChunkSize(size int) *FileAppendT
 	return transaction
 }
 
+// GetMaxChunkSize returns maximum amount of chunks append function can create
 func (transaction *FileAppendTransaction) GetMaxChunkSize() int {
 	return transaction.chunkSize
 }
 
+// SetMaxChunks sets the maximum number of chunks that can be created
 func (transaction *FileAppendTransaction) SetMaxChunks(size uint64) *FileAppendTransaction {
 	transaction._RequireNotFrozen()
 	transaction.maxChunks = size
 	return transaction
 }
 
+// GetMaxChunks returns the maximum number of chunks that can be created
 func (transaction *FileAppendTransaction) GetMaxChunks() uint64 {
 	return transaction.maxChunks
 }
@@ -113,6 +117,7 @@ func (transaction *FileAppendTransaction) SetContents(contents []byte) *FileAppe
 	return transaction
 }
 
+// GetContents returns the bytes to append to the contents of the file.
 func (transaction *FileAppendTransaction) GetContents() []byte {
 	return transaction.contents
 }

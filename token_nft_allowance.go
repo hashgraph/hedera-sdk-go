@@ -129,6 +129,7 @@ func (approval *TokenNftAllowance) _ToWipeProtobuf() *services.NftRemoveAllowanc
 	return body
 }
 
+// String returns a string representation of the TokenNftAllowance
 func (approval *TokenNftAllowance) String() string {
 	var owner string
 	var spender string

@@ -77,6 +77,7 @@ func (feeSchedules FeeSchedules) _ToProtobuf() *services.CurrentAndNextFeeSchedu
 	}
 }
 
+// ToBytes returns the byte representation of the FeeSchedules
 func (feeSchedules FeeSchedules) ToBytes() []byte {
 	data, err := protobuf.Marshal(feeSchedules._ToProtobuf())
 	if err != nil {
@@ -86,6 +87,7 @@ func (feeSchedules FeeSchedules) ToBytes() []byte {
 	return data
 }
 
+// FeeSchedulesFromBytes returns a FeeSchedules object from a raw byte array
 func FeeSchedulesFromBytes(data []byte) (FeeSchedules, error) {
 	if data == nil {
 		return FeeSchedules{}, errByteArrayNull
@@ -104,6 +106,7 @@ func FeeSchedulesFromBytes(data []byte) (FeeSchedules, error) {
 	return info, nil
 }
 
+// String returns a string representation of the FeeSchedules
 func (feeSchedules FeeSchedules) String() string {
 	return fmt.Sprintf("Current: %s, Next: %s", feeSchedules.current.String(), feeSchedules.next.String())
 }

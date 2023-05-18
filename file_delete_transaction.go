@@ -75,6 +75,7 @@ func (transaction *FileDeleteTransaction) SetFileID(fileID FileID) *FileDeleteTr
 	return transaction
 }
 
+// GetFileID returns the FileID of the file to be deleted
 func (transaction *FileDeleteTransaction) GetFileID() FileID {
 	if transaction.fileID == nil {
 		return FileID{}

@@ -84,6 +84,7 @@ func (transaction *TokenRevokeKycTransaction) SetTokenID(tokenID TokenID) *Token
 	return transaction
 }
 
+// GetTokenID returns the token for which this account will get his KYC revoked.
 func (transaction *TokenRevokeKycTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}

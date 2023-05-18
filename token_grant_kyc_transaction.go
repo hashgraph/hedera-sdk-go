@@ -84,6 +84,7 @@ func (transaction *TokenGrantKycTransaction) SetTokenID(tokenID TokenID) *TokenG
 	return transaction
 }
 
+// GetTokenID returns the token for which this account will be granted KYC.
 func (transaction *TokenGrantKycTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}

@@ -53,6 +53,7 @@ func (query *FileContentsQuery) SetFileID(fileID FileID) *FileContentsQuery {
 	return query
 }
 
+// GetFileID returns the FileID of the file whose contents are requested.
 func (query *FileContentsQuery) GetFileID() FileID {
 	if query.fileID == nil {
 		return FileID{}

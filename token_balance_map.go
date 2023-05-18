@@ -27,6 +27,7 @@ type TokenBalanceMap struct {
 	balances map[string]uint64
 }
 
+// Get returns the balance of the given tokenID
 func (tokenBalances *TokenBalanceMap) Get(tokenID TokenID) uint64 {
 	return tokenBalances.balances[TokenID{
 		Shard: tokenID.Shard,

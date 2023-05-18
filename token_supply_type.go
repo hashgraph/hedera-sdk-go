@@ -29,6 +29,7 @@ const (
 	TokenSupplyTypeFinite   TokenSupplyType = 1
 )
 
+// String returns a string representation of the TokenSupplyType
 func (tokenSupplyType TokenSupplyType) String() string {
 	switch tokenSupplyType {
 	case TokenSupplyTypeInfinite:

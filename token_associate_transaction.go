@@ -135,6 +135,7 @@ func (transaction *TokenAssociateTransaction) AddTokenID(id TokenID) *TokenAssoc
 	return transaction
 }
 
+// GetTokenIDs returns the tokens to be associated with the provided account
 func (transaction *TokenAssociateTransaction) GetTokenIDs() []TokenID {
 	tokenIDs := make([]TokenID, len(transaction.tokens))
 	copy(tokenIDs, transaction.tokens)

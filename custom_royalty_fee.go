@@ -40,26 +40,31 @@ func NewCustomRoyaltyFee() *CustomRoyaltyFee {
 	}
 }
 
+// SetFeeCollectorAccountID sets the account ID that will receive the custom fee
 func (fee *CustomRoyaltyFee) SetFeeCollectorAccountID(accountID AccountID) *CustomRoyaltyFee {
 	fee.FeeCollectorAccountID = &accountID
 	return fee
 }
 
+// SetNumerator sets the numerator of the fractional fee
 func (fee *CustomRoyaltyFee) SetNumerator(numerator int64) *CustomRoyaltyFee {
 	fee.Numerator = numerator
 	return fee
 }
 
+// SetDenominator sets the denominator of the fractional fee
 func (fee *CustomRoyaltyFee) SetDenominator(denominator int64) *CustomRoyaltyFee {
 	fee.Denominator = denominator
 	return fee
 }
 
+// SetFallbackFee If present, the fixed fee to assess to the NFT receiver when no fungible value is exchanged with the sender
 func (fee *CustomRoyaltyFee) SetFallbackFee(fallbackFee *CustomFixedFee) *CustomRoyaltyFee {
 	fee.FallbackFee = fallbackFee
 	return fee
 }
 
+// GetFeeCollectorAccountID returns the account ID that will receive the custom fee
 func (fee *CustomRoyaltyFee) GetFeeCollectorAccountID() AccountID {
 	if fee.FeeCollectorAccountID != nil {
 		return *fee.FeeCollectorAccountID
@@ -68,14 +73,17 @@ func (fee *CustomRoyaltyFee) GetFeeCollectorAccountID() AccountID {
 	return AccountID{}
 }
 
+// GetNumerator returns the numerator of the fee
 func (fee *CustomRoyaltyFee) GetNumerator() int64 {
 	return fee.Numerator
 }
 
+// GetDenominator returns the denominator of the fee
 func (fee *CustomRoyaltyFee) GetDenominator() int64 {
 	return fee.Denominator
 }
 
+// GetFallbackFee returns the fallback fee
 func (fee *CustomRoyaltyFee) GetFallbackFee() CustomFixedFee {
 	if fee.FallbackFee != nil {
 		return *fee.FallbackFee
@@ -84,6 +92,7 @@ func (fee *CustomRoyaltyFee) GetFallbackFee() CustomFixedFee {
 	return CustomFixedFee{}
 }
 
+// SetAllCollectorsAreExempt sets whether all collectors are exempt from the fee
 func (fee *CustomRoyaltyFee) SetAllCollectorsAreExempt(exempt bool) *CustomRoyaltyFee {
 	fee.AllCollectorsAreExempt = exempt
 	return fee

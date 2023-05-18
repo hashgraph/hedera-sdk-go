@@ -89,6 +89,7 @@ func (stakingInfo *StakingInfo) _ToProtobuf() *services.StakingInfo { // nolint
 	return &body
 }
 
+// ToBytes returns the byte representation of the StakingInfo
 func (stakingInfo *StakingInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(stakingInfo._ToProtobuf())
 	if err != nil {
@@ -98,6 +99,7 @@ func (stakingInfo *StakingInfo) ToBytes() []byte {
 	return data
 }
 
+// StakingInfoFromBytes returns a StakingInfo object from a raw byte array
 func StakingInfoFromBytes(data []byte) (StakingInfo, error) {
 	if data == nil {
 		return StakingInfo{}, errByteArrayNull

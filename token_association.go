@@ -58,6 +58,7 @@ func (association *TokenAssociation) toProtobuf() *services.TokenAssociation {
 	}
 }
 
+// ToBytes returns the byte representation of the TokenAssociation
 func (association *TokenAssociation) ToBytes() []byte {
 	data, err := protobuf.Marshal(association.toProtobuf())
 	if err != nil {
@@ -67,6 +68,7 @@ func (association *TokenAssociation) ToBytes() []byte {
 	return data
 }
 
+// TokenAssociationFromBytes returns a TokenAssociation from a raw protobuf byte array
 func TokenAssociationFromBytes(data []byte) (TokenAssociation, error) {
 	if data == nil {
 		return TokenAssociation{}, errByteArrayNull

@@ -444,6 +444,7 @@ func (this *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
 	return this
 }
 
+// GetGrpcDeadline returns the grpc deadline
 func (this *Transaction) GetGrpcDeadline() *time.Duration {
 	return this.grpcDeadline
 }

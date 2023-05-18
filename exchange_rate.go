@@ -57,6 +57,7 @@ func (exchange *ExchangeRate) _ToProtobuf() *services.ExchangeRate {
 	}
 }
 
+// ToBytes returns the byte representation of the ExchangeRate
 func (exchange *ExchangeRate) ToBytes() []byte {
 	data, err := protobuf.Marshal(exchange._ToProtobuf())
 	if err != nil {
@@ -66,6 +67,7 @@ func (exchange *ExchangeRate) ToBytes() []byte {
 	return data
 }
 
+// ExchangeRateFromString returns an ExchangeRate from a string representation of the exchange rate
 func ExchangeRateFromBytes(data []byte) (ExchangeRate, error) {
 	if data == nil {
 		return ExchangeRate{}, errByteArrayNull
@@ -84,6 +86,7 @@ func ExchangeRateFromBytes(data []byte) (ExchangeRate, error) {
 	return exchangeRate, nil
 }
 
+// String returns a string representation of the ExchangeRate
 func (exchange *ExchangeRate) String() string {
 	return fmt.Sprintf("Hbars: %d to Cents: %d, expires: %s", exchange.Hbars, exchange.cents, exchange.expirationTime.String())
 }

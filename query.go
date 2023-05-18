@@ -73,10 +73,12 @@ func (this *Query) SetGrpcDeadline(deadline *time.Duration) *Query {
 	return this
 }
 
+// GetGrpcDeadline returns the grpc deadline.
 func (this *Query) GetGrpcDeadline() *time.Duration {
 	return this.grpcDeadline
 }
 
+// SetNodeAccountID sets the node account ID for this Query.
 func (this *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
 	for _, nodeAccountID := range nodeAccountIDs {
 		this.nodeAccountIDs._Push(nodeAccountID)
@@ -85,6 +87,7 @@ func (this *Query) SetNodeAccountIDs(nodeAccountIDs []AccountID) *Query {
 	return this
 }
 
+// GetNodeAccountID returns the node account ID for this Query.
 func (this *Query) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
 	nodeAccountIDs = []AccountID{}
 
@@ -111,14 +114,17 @@ func (this *Query) SetQueryPayment(paymentAmount Hbar) *Query {
 	return this
 }
 
+// GetMaxQueryPayment returns the maximum payment allowed for this Query.
 func (this *Query) GetMaxQueryPayment() Hbar {
 	return this.maxQueryPayment
 }
 
+// GetQueryPayment returns the payment amount for this Query.
 func (this *Query) GetQueryPayment() Hbar {
 	return this.queryPayment
 }
 
+// GetMaxRetryCount returns the max number of errors before execution will fail.
 func (this *Query) GetMaxRetryCount() int {
 	return this.maxRetry
 }
@@ -240,6 +246,7 @@ func _QueryMakePaymentTransaction(transactionID TransactionID, nodeAccountID Acc
 	}, nil
 }
 
+// GetPaymentTransactionID returns the payment transaction id.
 func (this *Query) GetPaymentTransactionID() TransactionID {
 	if !this.paymentTransactionIDs._IsEmpty() {
 		return this.paymentTransactionIDs._GetCurrent().(TransactionID)

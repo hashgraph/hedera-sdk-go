@@ -47,6 +47,7 @@ func (version *NetworkVersionInfo) _ToProtobuf() *services.NetworkGetVersionInfo
 	}
 }
 
+// ToBytes returns the byte representation of the NetworkVersionInfo
 func (version *NetworkVersionInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(version._ToProtobuf())
 	if err != nil {
@@ -56,6 +57,7 @@ func (version *NetworkVersionInfo) ToBytes() []byte {
 	return data
 }
 
+// NetworkVersionInfoFromBytes returns the NetworkVersionInfo from a raw byte array
 func NetworkVersionInfoFromBytes(data []byte) (NetworkVersionInfo, error) {
 	if data == nil {
 		return NetworkVersionInfo{}, errByteArrayNull

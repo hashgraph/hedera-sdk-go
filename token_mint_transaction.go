@@ -80,6 +80,7 @@ func (transaction *TokenMintTransaction) SetTokenID(tokenID TokenID) *TokenMintT
 	return transaction
 }
 
+// GetTokenID returns the TokenID for this TokenMintTransaction
 func (transaction *TokenMintTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}
@@ -97,6 +98,7 @@ func (transaction *TokenMintTransaction) SetAmount(amount uint64) *TokenMintTran
 	return transaction
 }
 
+// GetAmount returns the amount to mint from the Treasury Account
 func (transaction *TokenMintTransaction) GetAmount() uint64 {
 	return transaction.amount
 }
@@ -122,6 +124,7 @@ func (transaction *TokenMintTransaction) SetMetadata(meta []byte) *TokenMintTran
 	return transaction
 }
 
+// GetMetadatas returns the list of metadata that are being created.
 func (transaction *TokenMintTransaction) GetMetadatas() [][]byte {
 	return transaction.meta
 }
