@@ -209,8 +209,8 @@ func _TokenInfoFromProtobuf(pb *services.TokenInfo) TokenInfo {
 	}
 
 	var treasury AccountID
-	if pb.AutoRenewAccount != nil {
-		treasury = *_AccountIDFromProtobuf(pb.AutoRenewAccount)
+	if pb.Treasury != nil {
+		treasury = *_AccountIDFromProtobuf(pb.Treasury)
 	}
 
 	customFees := make([]Fee, 0)
