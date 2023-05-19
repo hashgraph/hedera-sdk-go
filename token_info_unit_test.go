@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTokenInfo_Protobuf(t *testing.T) {
+func TestUnitTokenInfo_Protobuf(t *testing.T) {
 	tokenInfo := setupTokenInfo()
 	pb := tokenInfo._ToProtobuf()
 	actual := _TokenInfoFromProtobuf(pb)
@@ -38,7 +38,7 @@ func TestTokenInfo_Protobuf(t *testing.T) {
 	assertTokenInfo(t, tokenInfo, actual)
 }
 
-func TestTokenInfo_Bytes(t *testing.T) {
+func TestUnitTokenInfo_Bytes(t *testing.T) {
 	tokenInfo := setupTokenInfo()
 	pb := tokenInfo.ToBytes()
 	actual, _ := TokenInfoFromBytes(pb)
@@ -46,7 +46,7 @@ func TestTokenInfo_Bytes(t *testing.T) {
 	assertTokenInfo(t, tokenInfo, actual)
 }
 
-func TestTokenInfo_ProtobufCoverage(t *testing.T) {
+func TestUnitTokenInfo_ProtobufCoverage(t *testing.T) {
 	tokenInfo := setupTokenInfo()
 
 	_true := true
@@ -63,7 +63,27 @@ func TestTokenInfo_ProtobufCoverage(t *testing.T) {
 }
 
 func setupTokenInfo() TokenInfo {
-	publickKey, _ := PublicKeyFromStringEd25519("302a300506032b6570032100996b8090805be647ff07399e30ab1423fd3fcd795410df3c344fcd98ba27122e")
+	adminPK, _ := PrivateKeyGenerate()
+	adminPubK := adminPK.PublicKey()
+
+	kycPK, _ := PrivateKeyGenerate()
+	kycPubK := kycPK.PublicKey()
+
+	freezePK, _ := PrivateKeyGenerate()
+	freezePubK := freezePK.PublicKey()
+
+	wipePK, _ := PrivateKeyGenerate()
+	wipePubK := wipePK.PublicKey()
+
+	supplyPK, _ := PrivateKeyGenerate()
+	supplyPubK := supplyPK.PublicKey()
+
+	pausePK, _ := PrivateKeyGenerate()
+	pausePubK := pausePK.PublicKey()
+
+	feeSchedulePK, _ := PrivateKeyGenerate()
+	feeSchedulePubK := feeSchedulePK.PublicKey()
+
 	accId, _ := AccountIDFromString("0.0.1111")
 
 	_true := true
@@ -71,7 +91,6 @@ func setupTokenInfo() TokenInfo {
 	ledgerId := NewLedgerIDTestnet()
 	timeDuration := time.Duration(2230000) * time.Second
 
-	// time.Time
 	timeTime := time.Unix(1230000, 0)
 	tokenId, _ := TokenIDFromString("0.0.123")
 	feeCollectorAccountId, _ := AccountIDFromString("0.0.123")
@@ -85,16 +104,16 @@ func setupTokenInfo() TokenInfo {
 
 	return TokenInfo{
 		TokenID:             tokenId,
-		Name:                "test",
-		Symbol:              "test",
+		Name:                "Test Token",
+		Symbol:              "TST",
 		Decimals:            8,
 		TotalSupply:         10000,
 		Treasury:            accId,
-		AdminKey:            publickKey,
-		KycKey:              publickKey,
-		FreezeKey:           publickKey,
-		WipeKey:             publickKey,
-		SupplyKey:           publickKey,
+		AdminKey:            adminPubK,
+		KycKey:              kycPubK,
+		FreezeKey:           freezePubK,
+		WipeKey:             wipePubK,
+		SupplyKey:           supplyPubK,
 		DefaultFreezeStatus: &_true,
 		DefaultKycStatus:    &_true,
 		Deleted:             false,
@@ -105,9 +124,9 @@ func setupTokenInfo() TokenInfo {
 		TokenType:           TokenTypeFungibleCommon,
 		SupplyType:          TokenSupplyTypeInfinite,
 		MaxSupply:           10000000,
-		FeeScheduleKey:      publickKey,
+		FeeScheduleKey:      feeSchedulePubK,
 		CustomFees:          customFees,
-		PauseKey:            publickKey,
+		PauseKey:            pausePubK,
 		PauseStatus:         &_false,
 		LedgerID:            *ledgerId,
 	}
