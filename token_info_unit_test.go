@@ -1,0 +1,142 @@
+//go:build all || unit
+// +build all unit
+
+package hedera
+
+/*-
+ *
+ * Hedera Go SDK
+ *
+ * Copyright (C) 2020 - 2022 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestTokenInfo_Protobuf(t *testing.T) {
+	tokenInfo := setupTokenInfo()
+	pb := tokenInfo._ToProtobuf()
+	actual := _TokenInfoFromProtobuf(pb)
+
+	assertTokenInfo(t, tokenInfo, actual)
+}
+
+func TestTokenInfo_Bytes(t *testing.T) {
+	tokenInfo := setupTokenInfo()
+	pb := tokenInfo.ToBytes()
+	actual, _ := TokenInfoFromBytes(pb)
+
+	assertTokenInfo(t, tokenInfo, actual)
+}
+
+func TestTokenInfo_ProtobufCoverage(t *testing.T) {
+	tokenInfo := setupTokenInfo()
+
+	_true := true
+	_false := false
+
+	tokenInfo.DefaultKycStatus = &_false
+	tokenInfo.DefaultFreezeStatus = &_false
+	tokenInfo.PauseStatus = &_true
+
+	pb := tokenInfo._ToProtobuf()
+	actual := _TokenInfoFromProtobuf(pb)
+
+	assertTokenInfo(t, tokenInfo, actual)
+}
+
+func setupTokenInfo() TokenInfo {
+	publickKey, _ := PublicKeyFromStringEd25519("302a300506032b6570032100996b8090805be647ff07399e30ab1423fd3fcd795410df3c344fcd98ba27122e")
+	accId, _ := AccountIDFromString("0.0.1111")
+
+	_true := true
+	_false := false
+	ledgerId := NewLedgerIDTestnet()
+	timeDuration := time.Duration(2230000) * time.Second
+
+	// time.Time
+	timeTime := time.Unix(1230000, 0)
+	tokenId, _ := TokenIDFromString("0.0.123")
+	feeCollectorAccountId, _ := AccountIDFromString("0.0.123")
+
+	customFees := []Fee{
+		NewCustomFixedFee().
+			SetAmount(1).
+			SetDenominatingTokenID(tokenId).
+			SetFeeCollectorAccountID(feeCollectorAccountId),
+	}
+
+	return TokenInfo{
+		TokenID:             tokenId,
+		Name:                "test",
+		Symbol:              "test",
+		Decimals:            8,
+		TotalSupply:         10000,
+		Treasury:            accId,
+		AdminKey:            publickKey,
+		KycKey:              publickKey,
+		FreezeKey:           publickKey,
+		WipeKey:             publickKey,
+		SupplyKey:           publickKey,
+		DefaultFreezeStatus: &_true,
+		DefaultKycStatus:    &_true,
+		Deleted:             false,
+		AutoRenewPeriod:     &timeDuration,
+		AutoRenewAccountID:  accId,
+		ExpirationTime:      &timeTime,
+		TokenMemo:           "test-memo",
+		TokenType:           TokenTypeFungibleCommon,
+		SupplyType:          TokenSupplyTypeInfinite,
+		MaxSupply:           10000000,
+		FeeScheduleKey:      publickKey,
+		CustomFees:          customFees,
+		PauseKey:            publickKey,
+		PauseStatus:         &_false,
+		LedgerID:            *ledgerId,
+	}
+}
+
+func assertTokenInfo(t assert.TestingT, tokenInfo TokenInfo, actual TokenInfo) {
+	assert.Equal(t, tokenInfo.TokenID, actual.TokenID)
+	assert.Equal(t, tokenInfo.Name, actual.Name)
+	assert.Equal(t, tokenInfo.Symbol, actual.Symbol)
+	assert.Equal(t, tokenInfo.Decimals, actual.Decimals)
+	assert.Equal(t, tokenInfo.TotalSupply, actual.TotalSupply)
+	assert.Equal(t, tokenInfo.Treasury, actual.Treasury)
+	assert.Equal(t, tokenInfo.AdminKey, actual.AdminKey)
+	assert.Equal(t, tokenInfo.KycKey, actual.KycKey)
+	assert.Equal(t, tokenInfo.FreezeKey, actual.FreezeKey)
+	assert.Equal(t, tokenInfo.WipeKey, actual.WipeKey)
+	assert.Equal(t, tokenInfo.SupplyKey, actual.SupplyKey)
+	assert.Equal(t, tokenInfo.DefaultFreezeStatus, actual.DefaultFreezeStatus)
+	assert.Equal(t, tokenInfo.DefaultKycStatus, actual.DefaultKycStatus)
+	assert.Equal(t, tokenInfo.Deleted, actual.Deleted)
+	assert.Equal(t, tokenInfo.AutoRenewPeriod, actual.AutoRenewPeriod)
+	assert.Equal(t, tokenInfo.AutoRenewAccountID, actual.AutoRenewAccountID)
+	assert.Equal(t, tokenInfo.ExpirationTime, actual.ExpirationTime)
+	assert.Equal(t, tokenInfo.TokenMemo, actual.TokenMemo)
+	assert.Equal(t, tokenInfo.TokenType, actual.TokenType)
+	assert.Equal(t, tokenInfo.SupplyType, actual.SupplyType)
+	assert.Equal(t, tokenInfo.MaxSupply, actual.MaxSupply)
+	assert.Equal(t, tokenInfo.FeeScheduleKey, actual.FeeScheduleKey)
+	assert.Equal(t, tokenInfo.PauseKey, actual.PauseKey)
+	assert.Equal(t, tokenInfo.PauseStatus, actual.PauseStatus)
+	assert.Equal(t, tokenInfo.LedgerID, actual.LedgerID)
+}
