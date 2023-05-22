@@ -70,6 +70,8 @@ func (query *TransactionRecordQuery) SetIncludeChildren(includeChildRecords bool
 	return query
 }
 
+// GetIncludeChildren returns whether the response should include the records of any child transactions spawned by the
+// top-level transaction with the given transactionID.
 func (query *TransactionRecordQuery) GetIncludeChildren() bool {
 	if query.includeChildRecords != nil {
 		return *query.includeChildRecords
@@ -88,6 +90,8 @@ func (query *TransactionRecordQuery) SetIncludeDuplicates(includeDuplicates bool
 	return query
 }
 
+// GetIncludeDuplicates returns whether records of processing duplicate transactions should be returned along with the record
+// of processing the first consensus transaction with the given id.
 func (query *TransactionRecordQuery) GetIncludeDuplicates() bool {
 	if query.duplicates != nil {
 		return *query.duplicates
@@ -235,6 +239,7 @@ func _TransactionRecordQueryGetMethod(_ interface{}, channel *_Channel) _Method 
 	}
 }
 
+// SetTransactionID sets the TransactionID for this TransactionRecordQuery.
 func (query *TransactionRecordQuery) SetTransactionID(transactionID TransactionID) *TransactionRecordQuery {
 	query.transactionID = &transactionID
 	return query

@@ -142,6 +142,7 @@ func (transaction *TokenUpdateTransaction) SetTokenID(tokenID TokenID) *TokenUpd
 	return transaction
 }
 
+// GetTokenID returns the TokenID for this TokenUpdateTransaction
 func (transaction *TokenUpdateTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}
@@ -169,6 +170,7 @@ func (transaction *TokenUpdateTransaction) SetTokenName(name string) *TokenUpdat
 	return transaction
 }
 
+// GetTokenName returns the TokenName for this TokenUpdateTransaction
 func (transaction *TokenUpdateTransaction) GetTokenName() string {
 	return transaction.tokenName
 }
@@ -211,6 +213,7 @@ func (transaction *TokenUpdateTransaction) SetPauseKey(publicKey Key) *TokenUpda
 	return transaction
 }
 
+// GetPauseKey returns the Key which can pause and unpause the Token
 func (transaction *TokenUpdateTransaction) GetPauseKey() Key {
 	return transaction.pauseKey
 }
@@ -223,6 +226,7 @@ func (transaction *TokenUpdateTransaction) SetKycKey(publicKey Key) *TokenUpdate
 	return transaction
 }
 
+// GetKycKey returns the new KYC key of the Token
 func (transaction *TokenUpdateTransaction) GetKycKey() Key {
 	return transaction.kycKey
 }
@@ -235,6 +239,7 @@ func (transaction *TokenUpdateTransaction) SetFreezeKey(publicKey Key) *TokenUpd
 	return transaction
 }
 
+// GetFreezeKey returns the new Freeze key of the Token
 func (transaction *TokenUpdateTransaction) GetFreezeKey() Key {
 	return transaction.freezeKey
 }
@@ -247,6 +252,7 @@ func (transaction *TokenUpdateTransaction) SetWipeKey(publicKey Key) *TokenUpdat
 	return transaction
 }
 
+// GetWipeKey returns the new Wipe key of the Token
 func (transaction *TokenUpdateTransaction) GetWipeKey() Key {
 	return transaction.wipeKey
 }
@@ -259,6 +265,7 @@ func (transaction *TokenUpdateTransaction) SetSupplyKey(publicKey Key) *TokenUpd
 	return transaction
 }
 
+// GetSupplyKey returns the new Supply key of the Token
 func (transaction *TokenUpdateTransaction) GetSupplyKey() Key {
 	return transaction.supplyKey
 }
@@ -272,6 +279,7 @@ func (transaction *TokenUpdateTransaction) SetFeeScheduleKey(key Key) *TokenUpda
 	return transaction
 }
 
+// GetFeeScheduleKey returns the new key to use to update the token's custom fee schedule
 func (transaction *TokenUpdateTransaction) GetFeeScheduleKey() Key {
 	return transaction.scheduleKey
 }
@@ -299,6 +307,7 @@ func (transaction *TokenUpdateTransaction) SetAutoRenewPeriod(autoRenewPeriod ti
 	return transaction
 }
 
+// GetAutoRenewPeriod returns the new interval at which the auto-renew account will be charged to extend the token's expiry.
 func (transaction *TokenUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 	if transaction.autoRenewPeriod != nil {
 		return time.Duration(int64(transaction.autoRenewPeriod.Seconds()) * time.Second.Nanoseconds())
@@ -520,6 +529,7 @@ func (transaction *TokenUpdateTransaction) Sign(
 	return transaction.SignWith(privateKey.PublicKey(), privateKey.Sign)
 }
 
+// SignWithOperator signs the transaction with a privateKey generated from the operator public and private keys.
 func (transaction *TokenUpdateTransaction) SignWithOperator(
 	client *Client,
 ) (*TokenUpdateTransaction, error) {

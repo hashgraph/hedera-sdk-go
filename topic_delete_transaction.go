@@ -65,6 +65,7 @@ func (transaction *TopicDeleteTransaction) SetTopicID(topicID TopicID) *TopicDel
 	return transaction
 }
 
+// GetTopicID returns the topic IDentifier.
 func (transaction *TopicDeleteTransaction) GetTopicID() TopicID {
 	if transaction.topicID == nil {
 		return TopicID{}

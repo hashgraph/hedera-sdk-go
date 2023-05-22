@@ -102,6 +102,7 @@ func (transaction *TokenWipeTransaction) SetTokenID(tokenID TokenID) *TokenWipeT
 	return transaction
 }
 
+// GetTokenID returns the TokenID that is being wiped
 func (transaction *TokenWipeTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}
@@ -135,10 +136,12 @@ func (transaction *TokenWipeTransaction) SetAmount(amount uint64) *TokenWipeTran
 	return transaction
 }
 
+// GetAmount returns the amount of tokens to be wiped from the specified account
 func (transaction *TokenWipeTransaction) GetAmount() uint64 {
 	return transaction.amount
 }
 
+// GetSerialNumbers returns the list of serial numbers to be wiped.
 func (transaction *TokenWipeTransaction) GetSerialNumbers() []int64 {
 	return transaction.serial
 }

@@ -78,6 +78,7 @@ func (transaction *TopicMessageSubmitTransaction) SetTopicID(topicID TopicID) *T
 	return transaction
 }
 
+// GetTopicID returns the TopicID for this TopicMessageSubmitTransaction
 func (transaction *TopicMessageSubmitTransaction) GetTopicID() TopicID {
 	if transaction.topicID == nil {
 		return TopicID{}
@@ -104,6 +105,7 @@ func (transaction *TopicMessageSubmitTransaction) SetMaxChunks(maxChunks uint64)
 	return transaction
 }
 
+// GetMaxChunks returns the maximum amount of chunks to use to send the message
 func (transaction *TopicMessageSubmitTransaction) GetMaxChunks() uint64 {
 	return transaction.maxChunks
 }

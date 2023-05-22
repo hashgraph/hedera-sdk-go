@@ -29,6 +29,7 @@ const (
 	TokenTypeNonFungibleUnique TokenType = 1
 )
 
+// String returns a string representation of the TokenType
 func (tokenType TokenType) String() string {
 	switch tokenType {
 	case TokenTypeFungibleCommon:

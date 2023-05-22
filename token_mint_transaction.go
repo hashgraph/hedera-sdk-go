@@ -124,7 +124,7 @@ func (transaction *TokenMintTransaction) SetMetadata(meta []byte) *TokenMintTran
 	return transaction
 }
 
-// GetMetadatas returns the list of metadata that are being created.
+// GetMetadatas returns the metadata that are being created.
 func (transaction *TokenMintTransaction) GetMetadatas() [][]byte {
 	return transaction.meta
 }

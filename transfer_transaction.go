@@ -105,6 +105,7 @@ func (transaction *TransferTransaction) SetGrpcDeadline(deadline *time.Duration)
 	return transaction
 }
 
+// SetTokenTransferApproval Sets the desired token unit balance adjustments
 func (transaction *TransferTransaction) SetTokenTransferApproval(tokenID TokenID, accountID AccountID, approval bool) *TransferTransaction { //nolint
 	for token, tokenTransfer := range transaction.tokenTransfers {
 		if token.Compare(tokenID) == 0 {
@@ -119,6 +120,7 @@ func (transaction *TransferTransaction) SetTokenTransferApproval(tokenID TokenID
 	return transaction
 }
 
+// SetHbarTransferApproval Sets the desired hbar balance adjustments
 func (transaction *TransferTransaction) SetHbarTransferApproval(spenderAccountID AccountID, approval bool) *TransferTransaction { //nolint
 	for _, k := range transaction.hbarTransfers {
 		if k.accountID.String() == spenderAccountID.String() {
@@ -128,6 +130,7 @@ func (transaction *TransferTransaction) SetHbarTransferApproval(spenderAccountID
 	return transaction
 }
 
+// SetNftTransferApproval Sets the desired nft token unit balance adjustments
 func (transaction *TransferTransaction) SetNftTransferApproval(nftID NftID, approval bool) *TransferTransaction {
 	for token, nftTransfers := range transaction.nftTransfers {
 		if token.Compare(nftID.TokenID) == 0 {
@@ -141,6 +144,7 @@ func (transaction *TransferTransaction) SetNftTransferApproval(nftID NftID, appr
 	return transaction
 }
 
+// GetNftTransfers returns the nft transfers
 func (transaction *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNftTransfer {
 	nftResult := make(map[TokenID][]TokenNftTransfer)
 	for token, nftTransfers := range transaction.nftTransfers {
@@ -155,6 +159,7 @@ func (transaction *TransferTransaction) GetNftTransfers() map[TokenID][]TokenNft
 	return nftResult
 }
 
+// GetTokenTransfers returns the token transfers
 func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenTransfer {
 	transfers := make(map[TokenID][]TokenTransfer)
 	for tokenID, tokenTransfers := range transaction.tokenTransfers {
@@ -181,6 +186,7 @@ func (transaction *TransferTransaction) GetTokenTransfers() map[TokenID][]TokenT
 	return transfers
 }
 
+// GetHbarTransfers returns the hbar transfers
 func (transaction *TransferTransaction) GetHbarTransfers() map[AccountID]Hbar {
 	result := make(map[AccountID]Hbar)
 	for _, hbarTransfers := range transaction.hbarTransfers {
@@ -209,6 +215,7 @@ func (transaction *TransferTransaction) AddHbarTransfer(accountID AccountID, amo
 	return transaction
 }
 
+// GetTokenIDDecimals returns the token decimals
 func (transaction *TransferTransaction) GetTokenIDDecimals() map[TokenID]uint32 {
 	result := make(map[TokenID]uint32)
 	for token, tokenTransfer := range transaction.tokenTransfers {
@@ -319,6 +326,7 @@ func (transaction *TransferTransaction) AddNftTransfer(nftID NftID, sender Accou
 	return transaction
 }
 
+// AddHbarTransferWithDecimals adds an approved hbar transfer
 func (transaction *TransferTransaction) AddApprovedHbarTransfer(accountID AccountID, amount Hbar, approve bool) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
@@ -339,6 +347,7 @@ func (transaction *TransferTransaction) AddApprovedHbarTransfer(accountID Accoun
 	return transaction
 }
 
+// AddHbarTransfer adds an approved hbar transfer with decimals
 func (transaction *TransferTransaction) AddApprovedTokenTransferWithDecimals(tokenID TokenID, accountID AccountID, value int64, decimal uint32, approve bool) *TransferTransaction { //nolint
 	transaction._RequireNotFrozen()
 
@@ -381,6 +390,7 @@ func (transaction *TransferTransaction) AddApprovedTokenTransferWithDecimals(tok
 	return transaction
 }
 
+// AddHbarTransfer adds an approved hbar transfer
 func (transaction *TransferTransaction) AddApprovedTokenTransfer(tokenID TokenID, accountID AccountID, value int64, approve bool) *TransferTransaction { //nolint
 	transaction._RequireNotFrozen()
 
@@ -418,6 +428,7 @@ func (transaction *TransferTransaction) AddApprovedTokenTransfer(tokenID TokenID
 	return transaction
 }
 
+// AddNftTransfer adds an approved nft transfer
 func (transaction *TransferTransaction) AddApprovedNftTransfer(nftID NftID, sender AccountID, receiver AccountID, approve bool) *TransferTransaction {
 	transaction._RequireNotFrozen()
 
