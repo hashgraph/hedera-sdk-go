@@ -94,6 +94,7 @@ func (id *DelegatableContractID) ValidateChecksum(client *Client) error {
 	return nil
 }
 
+// DelegatableContractIDFromSolidityAddress constructs a DelegatableContractID from a string representation of a _Solidity address
 func DelegatableContractIDFromEvmAddress(shard uint64, realm uint64, evmAddress string) (DelegatableContractID, error) {
 	temp, err := hex.DecodeString(evmAddress)
 	if err != nil {
@@ -132,6 +133,7 @@ func (id DelegatableContractID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
 }
 
+// ToStringWithChecksum returns the string representation of a DelegatableContractID formatted as `Shard.Realm.Contract-Checksum` (for example "0.0.3-abcde")
 func (id DelegatableContractID) ToStringWithChecksum(client Client) (string, error) {
 	if id.EvmAddress != nil {
 		return "", errors.New("EvmAddress doesn't support checksums")
@@ -203,6 +205,7 @@ func (id DelegatableContractID) _ToProtoKey() *services.Key {
 	return &services.Key{Key: &services.Key_ContractID{ContractID: id._ToProtobuf()}}
 }
 
+// ToBytes returns a byte array representation of the DelegatableContractID
 func (id DelegatableContractID) ToBytes() []byte {
 	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
@@ -212,6 +215,7 @@ func (id DelegatableContractID) ToBytes() []byte {
 	return data
 }
 
+// DelegatableContractIDFromBytes returns a DelegatableContractID generated from a byte array
 func DelegatableContractIDFromBytes(data []byte) (DelegatableContractID, error) {
 	pb := services.ContractID{}
 	err := protobuf.Unmarshal(data, &pb)

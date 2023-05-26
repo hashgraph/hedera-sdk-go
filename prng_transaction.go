@@ -65,6 +65,7 @@ func (transaction *PrngTransaction) SetRange(r uint32) *PrngTransaction {
 	return transaction
 }
 
+// GetRange returns the range of the prng
 func (transaction *PrngTransaction) GetRange() uint32 {
 	return transaction.rang
 }

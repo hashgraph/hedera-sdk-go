@@ -83,6 +83,7 @@ func (feeData FeeData) _ToProtobuf() *services.FeeData {
 	}
 }
 
+// ToBytes returns the byte representation of the FeeData
 func (feeData FeeData) ToBytes() []byte {
 	data, err := protobuf.Marshal(feeData._ToProtobuf())
 	if err != nil {
@@ -92,6 +93,7 @@ func (feeData FeeData) ToBytes() []byte {
 	return data
 }
 
+// FeeDataFromBytes returns a FeeData struct from a raw byte array
 func FeeDataFromBytes(data []byte) (FeeData, error) {
 	if data == nil {
 		return FeeData{}, errByteArrayNull
@@ -110,6 +112,7 @@ func FeeDataFromBytes(data []byte) (FeeData, error) {
 	return info, nil
 }
 
+// String returns a string representation of the FeeData
 func (feeData FeeData) String() string {
 	return fmt.Sprintf("\nNodedata: %s\nNetworkdata: %s\nServicedata: %s\n", feeData.NodeData.String(), feeData.NetworkData.String(), feeData.ServiceData.String())
 }

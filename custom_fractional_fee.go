@@ -47,31 +47,37 @@ func NewCustomFractionalFee() *CustomFractionalFee {
 	}
 }
 
+// SetFeeCollectorAccountID sets the account ID that will receive the custom fee
 func (fee *CustomFractionalFee) SetFeeCollectorAccountID(id AccountID) *CustomFractionalFee {
 	fee.FeeCollectorAccountID = &id
 	return fee
 }
 
+// SetNumerator sets the numerator of the fractional fee
 func (fee *CustomFractionalFee) SetNumerator(numerator int64) *CustomFractionalFee {
 	fee.Numerator = numerator
 	return fee
 }
 
+// SetDenominator sets the denominator of the fractional fee
 func (fee *CustomFractionalFee) SetDenominator(denominator int64) *CustomFractionalFee {
 	fee.Denominator = denominator
 	return fee
 }
 
+// SetMin sets the minimum amount of the fractional fee
 func (fee *CustomFractionalFee) SetMin(min int64) *CustomFractionalFee {
 	fee.MinimumAmount = min
 	return fee
 }
 
+// SetMax sets the maximum amount of the fractional fee
 func (fee *CustomFractionalFee) SetMax(max int64) *CustomFractionalFee {
 	fee.MaximumAmount = max
 	return fee
 }
 
+// GetFeeCollectorAccountID returns the account ID that will receive the custom fee
 func (fee *CustomFractionalFee) GetFeeCollectorAccountID() AccountID {
 	if fee.FeeCollectorAccountID != nil {
 		return *fee.FeeCollectorAccountID
@@ -80,26 +86,32 @@ func (fee *CustomFractionalFee) GetFeeCollectorAccountID() AccountID {
 	return AccountID{}
 }
 
+// GetNumerator returns the numerator of the fractional fee
 func (fee *CustomFractionalFee) GetNumerator() int64 {
 	return fee.Numerator
 }
 
+// GetDenominator returns the denominator of the fractional fee
 func (fee *CustomFractionalFee) GetDenominator() int64 {
 	return fee.Denominator
 }
 
+// GetMin returns the minimum amount of the fractional fee
 func (fee *CustomFractionalFee) GetMin() int64 {
 	return fee.MinimumAmount
 }
 
+// GetMax returns the maximum amount of the fractional fee
 func (fee *CustomFractionalFee) GetMax() int64 {
 	return fee.MaximumAmount
 }
 
+// GetAssessmentMethod returns the assessment method of the fractional fee
 func (fee *CustomFractionalFee) GetAssessmentMethod() FeeAssessmentMethod {
 	return fee.AssessmentMethod
 }
 
+// SetAssessmentMethod sets the assessment method of the fractional fee
 func (fee *CustomFractionalFee) SetAssessmentMethod(feeAssessmentMethod FeeAssessmentMethod) *CustomFractionalFee {
 	fee.AssessmentMethod = feeAssessmentMethod
 	return fee
@@ -132,6 +144,7 @@ func (fee CustomFractionalFee) _ValidateNetworkOnIDs(client *Client) error {
 	return nil
 }
 
+// SetAllCollectorsAreExempt sets the flag that indicates if all collectors are exempt from the custom fee
 func (fee *CustomFractionalFee) SetAllCollectorsAreExempt(exempt bool) *CustomFractionalFee {
 	fee.AllCollectorsAreExempt = exempt
 	return fee
@@ -160,6 +173,7 @@ func (fee CustomFractionalFee) _ToProtobuf() *services.CustomFee {
 	}
 }
 
+// ToBytes returns a byte array representation of the CustomFractionalFee
 func (fee CustomFractionalFee) ToBytes() []byte {
 	data, err := protobuf.Marshal(fee._ToProtobuf())
 	if err != nil {
@@ -169,6 +183,7 @@ func (fee CustomFractionalFee) ToBytes() []byte {
 	return data
 }
 
+// String returns a string representation of the CustomFractionalFee
 func (fee CustomFractionalFee) String() string {
 	return fmt.Sprintf("feeCollectorAccountID: %s, numerator: %d, denominator: %d, min: %d, Max: %d, assessmentMethod: %s", fee.FeeCollectorAccountID.String(), fee.Numerator, fee.Denominator, fee.MinimumAmount, fee.MaximumAmount, fee.AssessmentMethod.String())
 }

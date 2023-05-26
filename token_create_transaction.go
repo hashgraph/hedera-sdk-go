@@ -202,6 +202,7 @@ func (transaction *TokenCreateTransaction) SetTokenName(name string) *TokenCreat
 	return transaction
 }
 
+// GetTokenName returns the token name
 func (transaction *TokenCreateTransaction) GetTokenName() string {
 	return transaction.tokenName
 }
@@ -220,10 +221,12 @@ func (transaction *TokenCreateTransaction) SetTokenMemo(memo string) *TokenCreat
 	return transaction
 }
 
+// GetTokenMemo returns the token memo
 func (transaction *TokenCreateTransaction) GetTokenMemo() string {
 	return transaction.memo
 }
 
+// GetTokenSymbol returns the token symbol
 func (transaction *TokenCreateTransaction) GetTokenSymbol() string {
 	return transaction.tokenSymbol
 }
@@ -235,6 +238,7 @@ func (transaction *TokenCreateTransaction) SetDecimals(decimals uint) *TokenCrea
 	return transaction
 }
 
+// GetDecimals returns the number of decimal places a token is divisible by
 func (transaction *TokenCreateTransaction) GetDecimals() uint {
 	return uint(transaction.decimals)
 }
@@ -246,6 +250,7 @@ func (transaction *TokenCreateTransaction) SetTokenType(t TokenType) *TokenCreat
 	return transaction
 }
 
+// GetTokenType returns the token type
 func (transaction *TokenCreateTransaction) GetTokenType() TokenType {
 	return transaction.tokenType
 }
@@ -257,6 +262,7 @@ func (transaction *TokenCreateTransaction) SetSupplyType(tokenSupply TokenSupply
 	return transaction
 }
 
+// GetSupplyType returns the token supply type
 func (transaction *TokenCreateTransaction) GetSupplyType() TokenSupplyType {
 	return transaction.tokenSupplyType
 }
@@ -271,6 +277,7 @@ func (transaction *TokenCreateTransaction) SetMaxSupply(maxSupply int64) *TokenC
 	return transaction
 }
 
+// GetMaxSupply returns the max supply
 func (transaction *TokenCreateTransaction) GetMaxSupply() int64 {
 	return transaction.maxSupply
 }
@@ -282,6 +289,7 @@ func (transaction *TokenCreateTransaction) SetTreasuryAccountID(treasuryAccountI
 	return transaction
 }
 
+// GetTreasuryAccountID returns the treasury account ID
 func (transaction *TokenCreateTransaction) GetTreasuryAccountID() AccountID {
 	if transaction.treasuryAccountID == nil {
 		return AccountID{}
@@ -297,6 +305,7 @@ func (transaction *TokenCreateTransaction) SetAdminKey(publicKey Key) *TokenCrea
 	return transaction
 }
 
+// GetAdminKey returns the admin key
 func (transaction *TokenCreateTransaction) GetAdminKey() Key {
 	return transaction.adminKey
 }
@@ -319,6 +328,7 @@ func (transaction *TokenCreateTransaction) SetFreezeKey(publicKey Key) *TokenCre
 	return transaction
 }
 
+// GetFreezeKey returns the freeze key
 func (transaction *TokenCreateTransaction) GetFreezeKey() Key {
 	return transaction.freezeKey
 }
@@ -330,6 +340,7 @@ func (transaction *TokenCreateTransaction) SetWipeKey(publicKey Key) *TokenCreat
 	return transaction
 }
 
+// GetWipeKey returns the wipe key
 func (transaction *TokenCreateTransaction) GetWipeKey() Key {
 	return transaction.wipeKey
 }
@@ -342,6 +353,7 @@ func (transaction *TokenCreateTransaction) SetFeeScheduleKey(key Key) *TokenCrea
 	return transaction
 }
 
+// GetFeeScheduleKey returns the fee schedule key
 func (transaction *TokenCreateTransaction) GetFeeScheduleKey() Key {
 	return transaction.scheduleKey
 }
@@ -354,6 +366,7 @@ func (transaction *TokenCreateTransaction) SetPauseKey(key Key) *TokenCreateTran
 	return transaction
 }
 
+// GetPauseKey returns the pause key
 func (transaction *TokenCreateTransaction) GetPauseKey() Key {
 	return transaction.pauseKey
 }
@@ -365,6 +378,7 @@ func (transaction *TokenCreateTransaction) SetCustomFees(customFee []Fee) *Token
 	return transaction
 }
 
+// GetCustomFees returns the custom fees
 func (transaction *TokenCreateTransaction) GetCustomFees() []Fee {
 	return transaction.customFees
 }
@@ -590,6 +604,7 @@ func (transaction *TokenCreateTransaction) SetFreezeDefault(freezeDefault bool) 
 	return transaction
 }
 
+// GetFreezeDefault returns the freeze default
 func (transaction *TokenCreateTransaction) GetFreezeDefault() bool {
 	return *transaction.freezeDefault
 }

@@ -121,6 +121,7 @@ func (id *FileID) Validate(client *Client) error {
 	return nil
 }
 
+// FileIDFromSolidityAddress returns a FileID parsed from the given solidity address.
 func FileIDFromSolidityAddress(s string) (FileID, error) {
 	shard, realm, file, err := _IdFromSolidityAddress(s)
 	if err != nil {
@@ -138,10 +139,12 @@ func (id FileID) _IsZero() bool {
 	return id.Shard == 0 && id.Realm == 0 && id.File == 0
 }
 
+// String returns the string representation of a FileID in the format used within protobuf.
 func (id FileID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.File)
 }
 
+// ToStringWithChecksum returns the string representation of a FileId with checksum.
 func (id FileID) ToStringWithChecksum(client Client) (string, error) {
 	if client.GetNetworkName() == nil && client.GetLedgerID() == nil {
 		return "", errNetworkNameMissing
@@ -157,6 +160,7 @@ func (id FileID) ToStringWithChecksum(client Client) (string, error) {
 	return fmt.Sprintf("%d.%d.%d-%s", id.Shard, id.Realm, id.File, checksum.correctChecksum), nil
 }
 
+// ToSolidityAddress returns the string representation of a FileID in the format used by Solidity.
 func (id FileID) ToSolidityAddress() string {
 	return _IdToSolidityAddress(id.Shard, id.Realm, id.File)
 }
@@ -181,6 +185,7 @@ func _FileIDFromProtobuf(fileID *services.FileID) *FileID {
 	}
 }
 
+// ToBytes returns a byte array representation of the FileID
 func (id FileID) ToBytes() []byte {
 	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
@@ -190,6 +195,7 @@ func (id FileID) ToBytes() []byte {
 	return data
 }
 
+// FileIDFromBytes returns a FileID from a byte array
 func FileIDFromBytes(data []byte) (FileID, error) {
 	if data == nil {
 		return FileID{}, errByteArrayNull

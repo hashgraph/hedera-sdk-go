@@ -57,12 +57,14 @@ func (transaction *SystemUndeleteTransaction) SetGrpcDeadline(deadline *time.Dur
 	return transaction
 }
 
+// SetContractID sets the ContractID of the contract whose deletion is being undone.
 func (transaction *SystemUndeleteTransaction) SetContractID(contractID ContractID) *SystemUndeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.contractID = &contractID
 	return transaction
 }
 
+// GetContractID returns the ContractID of the contract whose deletion is being undone.
 func (transaction *SystemUndeleteTransaction) GetContractID() ContractID {
 	if transaction.contractID == nil {
 		return ContractID{}
@@ -71,12 +73,14 @@ func (transaction *SystemUndeleteTransaction) GetContractID() ContractID {
 	return *transaction.contractID
 }
 
+// SetFileID sets the FileID of the file whose deletion is being undone.
 func (transaction *SystemUndeleteTransaction) SetFileID(fileID FileID) *SystemUndeleteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.fileID = &fileID
 	return transaction
 }
 
+// GetFileID returns the FileID of the file whose deletion is being undone.
 func (transaction *SystemUndeleteTransaction) GetFileID() FileID {
 	if transaction.fileID == nil {
 		return FileID{}
@@ -410,6 +414,7 @@ func (transaction *SystemUndeleteTransaction) AddSignature(publicKey PublicKey, 
 	return transaction
 }
 
+// SetMaxBackoff sets the maximum amount of time to wait between retries.
 func (transaction *SystemUndeleteTransaction) SetMaxBackoff(max time.Duration) *SystemUndeleteTransaction {
 	if max.Nanoseconds() < 0 {
 		panic("maxBackoff must be a positive duration")

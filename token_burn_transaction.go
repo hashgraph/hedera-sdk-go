@@ -81,6 +81,7 @@ func (transaction *TokenBurnTransaction) SetTokenID(tokenID TokenID) *TokenBurnT
 	return transaction
 }
 
+// GetTokenID returns the TokenID for the token which will be burned.
 func (transaction *TokenBurnTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}
@@ -119,12 +120,14 @@ func (transaction *TokenBurnTransaction) SetSerialNumber(serial int64) *TokenBur
 	return transaction
 }
 
+// SetSerialNumbers sets the list of serial numbers to be burned.
 func (transaction *TokenBurnTransaction) SetSerialNumbers(serial []int64) *TokenBurnTransaction {
 	transaction._RequireNotFrozen()
 	transaction.serial = serial
 	return transaction
 }
 
+// GetSerialNumbers returns the list of serial numbers to be burned.
 func (transaction *TokenBurnTransaction) GetSerialNumbers() []int64 {
 	return transaction.serial
 }

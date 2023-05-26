@@ -124,6 +124,7 @@ func (transaction *LiveHashAddTransaction) SetDuration(duration time.Duration) *
 	return transaction
 }
 
+// GetDuration returns the duration for which the livehash will remain valid
 func (transaction *LiveHashAddTransaction) GetDuration() time.Duration {
 	if transaction.duration != nil {
 		return *transaction.duration

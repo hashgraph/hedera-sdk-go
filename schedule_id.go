@@ -53,6 +53,7 @@ func ScheduleIDFromString(data string) (ScheduleID, error) {
 	}, nil
 }
 
+// ValidateChecksum validates the checksum of the account ID
 func (id *ScheduleID) ValidateChecksum(client *Client) error {
 	if !id._IsZero() && client != nil && client.network.ledgerID != nil {
 		var tempChecksum _ParseAddressResult
@@ -112,6 +113,8 @@ func (id ScheduleID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Schedule)
 }
 
+// ToStringWithChecksum returns the string representation of an ScheduleID in
+// `Shard.Realm.Account-checksum` (for example "0.0.3-laujm")
 func (id ScheduleID) ToStringWithChecksum(client Client) (string, error) {
 	if client.GetNetworkName() == nil && client.GetLedgerID() == nil {
 		return "", errNetworkNameMissing

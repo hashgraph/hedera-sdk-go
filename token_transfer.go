@@ -69,6 +69,7 @@ func (transfer *TokenTransfer) _ToProtobuf() *services.AccountAmount {
 	}
 }
 
+// ToBytes returns a protobuf encoded version of the TokenTransfer
 func (transfer TokenTransfer) ToBytes() []byte {
 	data, err := protobuf.Marshal(transfer._ToProtobuf())
 	if err != nil {
@@ -78,6 +79,7 @@ func (transfer TokenTransfer) ToBytes() []byte {
 	return data
 }
 
+// TokenTransferFromBytes returns a TokenTransfer struct from a protobuf encoded byte array
 func TokenTransferFromBytes(data []byte) (TokenTransfer, error) {
 	if data == nil {
 		return TokenTransfer{}, errByteArrayNull

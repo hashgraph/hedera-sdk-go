@@ -86,6 +86,7 @@ func (transaction *TopicUpdateTransaction) SetTopicID(topicID TopicID) *TopicUpd
 	return transaction
 }
 
+// GetTopicID returns the topic to be updated.
 func (transaction *TopicUpdateTransaction) GetTopicID() TopicID {
 	if transaction.topicID == nil {
 		return TopicID{}
@@ -103,6 +104,7 @@ func (transaction *TopicUpdateTransaction) SetAdminKey(publicKey Key) *TopicUpda
 	return transaction
 }
 
+// GetAdminKey returns the key required to update/delete the topic.
 func (transaction *TopicUpdateTransaction) GetAdminKey() (Key, error) {
 	return transaction.adminKey, nil
 }
@@ -116,6 +118,7 @@ func (transaction *TopicUpdateTransaction) SetSubmitKey(publicKey Key) *TopicUpd
 	return transaction
 }
 
+// GetSubmitKey returns the key allowed to submit messages to the topic.
 func (transaction *TopicUpdateTransaction) GetSubmitKey() (Key, error) {
 	return transaction.submitKey, nil
 }
@@ -127,6 +130,7 @@ func (transaction *TopicUpdateTransaction) SetTopicMemo(memo string) *TopicUpdat
 	return transaction
 }
 
+// GetTopicMemo returns the short publicly visible memo about the topic.
 func (transaction *TopicUpdateTransaction) GetTopicMemo() string {
 	return transaction.memo
 }
@@ -139,6 +143,7 @@ func (transaction *TopicUpdateTransaction) SetExpirationTime(expiration time.Tim
 	return transaction
 }
 
+// GetExpirationTime returns the effective  timestamp at (and after) which all transactions and queries will fail.
 func (transaction *TopicUpdateTransaction) GetExpirationTime() time.Time {
 	if transaction.expirationTime != nil {
 		return *transaction.expirationTime
@@ -156,6 +161,8 @@ func (transaction *TopicUpdateTransaction) SetAutoRenewPeriod(period time.Durati
 	return transaction
 }
 
+// GetAutoRenewPeriod returns the amount of time to extend the topic's lifetime automatically at expirationTime if the
+// autoRenewAccount is configured and has funds.
 func (transaction *TopicUpdateTransaction) GetAutoRenewPeriod() time.Duration {
 	if transaction.autoRenewPeriod != nil {
 		return *transaction.autoRenewPeriod
@@ -174,6 +181,8 @@ func (transaction *TopicUpdateTransaction) SetAutoRenewAccountID(autoRenewAccoun
 	return transaction
 }
 
+// GetAutoRenewAccountID returns the optional account to be used at the topic's expirationTime to extend the life of the
+// topic.
 func (transaction *TopicUpdateTransaction) GetAutoRenewAccountID() AccountID {
 	if transaction.autoRenewAccountID == nil {
 		return AccountID{}

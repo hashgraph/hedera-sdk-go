@@ -63,6 +63,7 @@ func GenerateMnemonic24() (Mnemonic, error) {
 	return Mnemonic{mnemonic}, nil
 }
 
+// GenerateMnemonic12 generates a random 12-word mnemonic
 func GenerateMnemonic12() (Mnemonic, error) {
 	entropy, err := bip39.NewEntropy(128)
 
@@ -89,10 +90,12 @@ func MnemonicFromString(s string) (Mnemonic, error) {
 	return NewMnemonic(strings.Split(s, " "))
 }
 
+// String returns the mnemonic as a string.
 func (m Mnemonic) String() string {
 	return m.words
 }
 
+// Words returns the mnemonic as a slice of strings
 func (m Mnemonic) Words() []string {
 	return strings.Split(m.words, " ")
 }
@@ -172,6 +175,7 @@ func (m Mnemonic) _Indices() ([]int, error) {
 	return indices, nil
 }
 
+// ToLegacyPrivateKey converts a mnemonic to a legacy private key
 func (m Mnemonic) ToLegacyPrivateKey() (PrivateKey, error) {
 	indices, err := m._Indices()
 	if err != nil {
@@ -278,6 +282,7 @@ func (m Mnemonic) _ToSeed(passPhrase string) []byte {
 	return seed
 }
 
+// ToStandardEd25519PrivateKey converts a mnemonic to a standard ed25519 private key
 func (m Mnemonic) ToStandardEd25519PrivateKey(passPhrase string, index uint32) (PrivateKey, error) {
 	seed := m._ToSeed(passPhrase)
 	derivedKey, err := _Ed25519PrivateKeyFromSeed(seed)
@@ -305,6 +310,7 @@ func (m Mnemonic) ToStandardEd25519PrivateKey(passPhrase string, index uint32) (
 	}, nil
 }
 
+// ToStandardECDSAsecp256k1PrivateKey converts a mnemonic to a standard ecdsa secp256k1 private key
 func (m Mnemonic) ToStandardECDSAsecp256k1PrivateKey(passPhrase string, index uint32) (PrivateKey, error) {
 	seed := m._ToSeed(passPhrase)
 	derivedKey, err := _ECDSAPrivateKeyFromSeed(seed)

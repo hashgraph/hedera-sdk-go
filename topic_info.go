@@ -91,6 +91,7 @@ func (topicInfo *TopicInfo) _ToProtobuf() *services.ConsensusTopicInfo {
 	}
 }
 
+// ToBytes returns a byte array representation of the TopicInfo object
 func (topicInfo TopicInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(topicInfo._ToProtobuf())
 	if err != nil {
@@ -100,6 +101,7 @@ func (topicInfo TopicInfo) ToBytes() []byte {
 	return data
 }
 
+// TopicInfoFromBytes returns a TopicInfo object from a byte array
 func TopicInfoFromBytes(data []byte) (TopicInfo, error) {
 	if data == nil {
 		return TopicInfo{}, errByteArrayNull

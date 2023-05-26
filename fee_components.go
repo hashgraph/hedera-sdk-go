@@ -78,6 +78,7 @@ func (feeComponents FeeComponents) _ToProtobuf() *services.FeeComponents {
 	}
 }
 
+// ToBytes returns the byte representation of the FeeComponents
 func (feeComponents FeeComponents) ToBytes() []byte {
 	data, err := protobuf.Marshal(feeComponents._ToProtobuf())
 	if err != nil {
@@ -87,6 +88,7 @@ func (feeComponents FeeComponents) ToBytes() []byte {
 	return data
 }
 
+// FeeComponentsFromBytes returns the FeeComponents from a byte array representation
 func FeeComponentsFromBytes(data []byte) (FeeComponents, error) {
 	if data == nil {
 		return FeeComponents{}, errByteArrayNull
@@ -105,6 +107,7 @@ func FeeComponentsFromBytes(data []byte) (FeeComponents, error) {
 	return info, nil
 }
 
+// String returns a string representation of the FeeComponents
 func (feeComponents FeeComponents) String() string {
 	return fmt.Sprintf("Min: %d, Max: %d, Constant: %d,TransactionBandwithByte: %d,TransactionVerification: %d,TransactionRamByteHour: %d,TransactionStorageByteHour: %d, ContractTransactionGas: %d,TransferVolumeHbar: %d, ResponseMemoryByte: %d, ResponseDiscByte: %d", feeComponents.Min, feeComponents.Max, feeComponents.Constant, feeComponents.TransactionBandwidthByte, feeComponents.TransactionVerification, feeComponents.TransactionRamByteHour, feeComponents.TransactionStorageByteHour, feeComponents.ContractTransactionGas, feeComponents.TransferVolumeHbar, feeComponents.ResponseMemoryByte, feeComponents.ResponseDiscByte)
 }

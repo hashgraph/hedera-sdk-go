@@ -72,6 +72,7 @@ func (approval *HbarAllowance) _ToProtobuf() *services.CryptoAllowance {
 	return body
 }
 
+// String returns a string representation of the HbarAllowance
 func (approval *HbarAllowance) String() string {
 	if approval.OwnerAccountID != nil && approval.SpenderAccountID != nil { //nolint
 		return fmt.Sprintf("OwnerAccountID: %s, SpenderAccountID: %s, Amount: %s", approval.OwnerAccountID.String(), approval.SpenderAccountID.String(), HbarFromTinybar(approval.Amount).String())

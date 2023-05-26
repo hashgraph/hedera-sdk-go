@@ -75,6 +75,7 @@ func (transaction *TokenUnpauseTransaction) SetTokenID(tokenID TokenID) *TokenUn
 	return transaction
 }
 
+// GetTokenID returns the TokenID of the token to be unpaused.
 func (transaction *TokenUnpauseTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}

@@ -105,6 +105,7 @@ func (id TransactionID) String() string {
 	return returnString
 }
 
+// TransactionIDFromString constructs a TransactionID from a string representation
 func TransactionIdFromString(data string) (TransactionID, error) { // nolint
 	parts := strings.SplitN(data, "/", 2)
 
@@ -205,6 +206,7 @@ func _TransactionIDFromProtobuf(pb *services.TransactionID) TransactionID {
 	return TransactionID{&accountID, &validStart, pb.Scheduled, nonce}
 }
 
+// ToBytes returns a byte array representation of the TransactionID
 func (id TransactionID) ToBytes() []byte {
 	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
@@ -214,6 +216,7 @@ func (id TransactionID) ToBytes() []byte {
 	return data
 }
 
+// TransactionIDFromBytes constructs a TransactionID from a byte array
 func TransactionIDFromBytes(data []byte) (TransactionID, error) {
 	if data == nil {
 		return TransactionID{}, errByteArrayNull
@@ -227,20 +230,24 @@ func TransactionIDFromBytes(data []byte) (TransactionID, error) {
 	return _TransactionIDFromProtobuf(&pb), nil
 }
 
+// SetScheduled sets the scheduled flag on the TransactionID
 func (id TransactionID) SetScheduled(scheduled bool) TransactionID {
 	id.scheduled = scheduled
 	return id
 }
 
+// GetScheduled returns the scheduled flag on the TransactionID
 func (id TransactionID) GetScheduled() bool {
 	return id.scheduled
 }
 
+// SetNonce sets the nonce on the TransactionID
 func (id TransactionID) SetNonce(nonce int32) TransactionID {
 	id.Nonce = &nonce
 	return id
 }
 
+// GetNonce returns the nonce on the TransactionID
 func (id TransactionID) GetNonce() int32 {
 	if id.Nonce != nil {
 		return *id.Nonce

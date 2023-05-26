@@ -42,6 +42,7 @@ func NewContractBytecodeQuery() *ContractBytecodeQuery {
 	}
 }
 
+// When execution is attempted, a single attempt will timeout when this deadline is reached. (The SDK may subsequently retry the execution.)
 func (query *ContractBytecodeQuery) SetGrpcDeadline(deadline *time.Duration) *ContractBytecodeQuery {
 	query.Query.SetGrpcDeadline(deadline)
 	return query
@@ -53,6 +54,7 @@ func (query *ContractBytecodeQuery) SetContractID(contractID ContractID) *Contra
 	return query
 }
 
+// GetContractID returns the contract for which the bytecode is requested
 func (query *ContractBytecodeQuery) GetContractID() ContractID {
 	if query.contractID == nil {
 		return ContractID{}

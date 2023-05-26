@@ -89,6 +89,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetTokenID(tokenID TokenID
 	return transaction
 }
 
+// GetTokenID returns the token whose fee schedule is to be updated
 func (transaction *TokenFeeScheduleUpdateTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}
@@ -104,6 +105,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetCustomFees(fees []Fee) 
 	return transaction
 }
 
+// GetCustomFees returns the new custom fees to be assessed during a CryptoTransfer that transfers units of this token
 func (transaction *TokenFeeScheduleUpdateTransaction) GetCustomFees() []Fee {
 	return transaction.customFees
 }
@@ -340,6 +342,7 @@ func (transaction *TokenFeeScheduleUpdateTransaction) SetTransactionValidDuratio
 	return transaction
 }
 
+// GetTransactionID returns the TransactionID for this TokenFeeScheduleUpdateTransaction.
 func (transaction *TokenFeeScheduleUpdateTransaction) GetTransactionID() TransactionID {
 	return transaction.Transaction.GetTransactionID()
 }

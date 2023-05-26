@@ -81,6 +81,7 @@ func (fileInfo *FileInfo) _ToProtobuf() *services.FileGetInfoResponse_FileInfo {
 	}
 }
 
+// ToBytes returns the byte representation of the FileInfo
 func (fileInfo FileInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(fileInfo._ToProtobuf())
 	if err != nil {
@@ -90,6 +91,7 @@ func (fileInfo FileInfo) ToBytes() []byte {
 	return data
 }
 
+// FileInfoFromBytes returns a FileInfo object from a raw byte array
 func FileInfoFromBytes(data []byte) (FileInfo, error) {
 	if data == nil {
 		return FileInfo{}, errByteArrayNull

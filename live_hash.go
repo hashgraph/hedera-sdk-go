@@ -77,6 +77,7 @@ func _LiveHashFromProtobuf(hash *services.LiveHash) (LiveHash, error) {
 	}, nil
 }
 
+// ToBytes returns the byte representation of the LiveHash
 func (liveHash LiveHash) ToBytes() []byte {
 	data, err := protobuf.Marshal(liveHash._ToProtobuf())
 	if err != nil {
@@ -86,6 +87,7 @@ func (liveHash LiveHash) ToBytes() []byte {
 	return data
 }
 
+// LiveHashFromBytes returns a LiveHash object from a raw byte array
 func LiveHashFromBytes(data []byte) (LiveHash, error) {
 	if data == nil {
 		return LiveHash{}, errByteArrayNull

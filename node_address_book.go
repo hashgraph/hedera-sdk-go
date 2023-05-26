@@ -53,6 +53,7 @@ func (book NodeAddressBook) _ToProtobuf() *services.NodeAddressBook {
 	}
 }
 
+// ToBytes returns the byte representation of the NodeAddressBook
 func (book NodeAddressBook) ToBytes() []byte {
 	data, err := protobuf.Marshal(book._ToProtobuf())
 	if err != nil {
@@ -76,6 +77,7 @@ func (book NodeAddressBook) _ToMap() (result map[AccountID]NodeAddress) {
 	return result
 }
 
+// NodeAddressBookFromBytes returns the NodeAddressBook from a raw byte array
 func NodeAddressBookFromBytes(data []byte) (NodeAddressBook, error) {
 	if data == nil {
 		return NodeAddressBook{}, errByteArrayNull

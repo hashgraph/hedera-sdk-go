@@ -115,6 +115,7 @@ func (id TopicID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Topic)
 }
 
+// ToStringWithChecksum returns the string representation of a TopicID in `Shard.Realm.Topic-Checksum` (for example "0.0.3-abcde")
 func (id TopicID) ToStringWithChecksum(client Client) (string, error) {
 	if client.GetNetworkName() == nil && client.GetLedgerID() == nil {
 		return "", errNetworkNameMissing
@@ -150,6 +151,7 @@ func _TopicIDFromProtobuf(topicID *services.TopicID) *TopicID {
 	}
 }
 
+// ToBytes returns a byte array representation of the TopicID
 func (id TopicID) ToBytes() []byte {
 	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
@@ -159,6 +161,7 @@ func (id TopicID) ToBytes() []byte {
 	return data
 }
 
+// TopicIDFromBytes constructs a TopicID from a byte array
 func TopicIDFromBytes(data []byte) (TopicID, error) {
 	if data == nil {
 		return TopicID{}, errByteArrayNull

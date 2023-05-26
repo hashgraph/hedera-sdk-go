@@ -77,6 +77,7 @@ func (transaction *ContractExecuteTransaction) SetContractID(contractID Contract
 	return transaction
 }
 
+// GetContractID returns the contract instance to call.
 func (transaction *ContractExecuteTransaction) GetContractID() ContractID {
 	if transaction.contractID == nil {
 		return ContractID{}
@@ -92,6 +93,7 @@ func (transaction *ContractExecuteTransaction) SetGas(gas uint64) *ContractExecu
 	return transaction
 }
 
+// GetGas returns the maximum amount of gas to use for the call.
 func (transaction *ContractExecuteTransaction) GetGas() uint64 {
 	return uint64(transaction.gas)
 }
@@ -103,17 +105,19 @@ func (transaction *ContractExecuteTransaction) SetPayableAmount(amount Hbar) *Co
 	return transaction
 }
 
+// GetPayableAmount returns the amount of Hbar sent (the function must be payable if this is nonzero)
 func (transaction ContractExecuteTransaction) GetPayableAmount() Hbar {
 	return HbarFromTinybar(transaction.amount)
 }
 
-// Sets the function parameters
+// SetFunctionParameters sets the function parameters
 func (transaction *ContractExecuteTransaction) SetFunctionParameters(params []byte) *ContractExecuteTransaction {
 	transaction._RequireNotFrozen()
 	transaction.parameters = params
 	return transaction
 }
 
+// GetFunctionParameters returns the function parameters
 func (transaction *ContractExecuteTransaction) GetFunctionParameters() []byte {
 	return transaction.parameters
 }

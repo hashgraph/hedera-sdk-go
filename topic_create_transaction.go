@@ -85,6 +85,7 @@ func (transaction *TopicCreateTransaction) SetAdminKey(publicKey Key) *TopicCrea
 	return transaction
 }
 
+// GetAdminKey returns the key required to update or delete the topic
 func (transaction *TopicCreateTransaction) GetAdminKey() (Key, error) {
 	return transaction.adminKey, nil
 }
@@ -96,6 +97,7 @@ func (transaction *TopicCreateTransaction) SetSubmitKey(publicKey Key) *TopicCre
 	return transaction
 }
 
+// GetSubmitKey returns the key required for submitting messages to the topic
 func (transaction *TopicCreateTransaction) GetSubmitKey() (Key, error) {
 	return transaction.submitKey, nil
 }
@@ -107,6 +109,7 @@ func (transaction *TopicCreateTransaction) SetTopicMemo(memo string) *TopicCreat
 	return transaction
 }
 
+// GetTopicMemo returns the memo for this topic
 func (transaction *TopicCreateTransaction) GetTopicMemo() string {
 	return transaction.memo
 }
@@ -121,6 +124,7 @@ func (transaction *TopicCreateTransaction) SetAutoRenewPeriod(period time.Durati
 	return transaction
 }
 
+// GetAutoRenewPeriod returns the auto renew period for this topic
 func (transaction *TopicCreateTransaction) GetAutoRenewPeriod() time.Duration {
 	if transaction.autoRenewPeriod != nil {
 		return *transaction.autoRenewPeriod
@@ -140,6 +144,7 @@ func (transaction *TopicCreateTransaction) SetAutoRenewAccountID(autoRenewAccoun
 	return transaction
 }
 
+// GetAutoRenewAccountID returns the auto renew account ID for this topic
 func (transaction *TopicCreateTransaction) GetAutoRenewAccountID() AccountID {
 	if transaction.autoRenewAccountID == nil {
 		return AccountID{}

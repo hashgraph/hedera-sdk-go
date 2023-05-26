@@ -63,10 +63,12 @@ func (hbar Hbar) AsTinybar() int64 {
 	return hbar.tinybar
 }
 
+// As returns the equivalent amount in the given unit.
 func (hbar Hbar) As(unit HbarUnit) float64 {
 	return float64(hbar.tinybar) / float64(unit._NumberOfTinybar())
 }
 
+// String returns a string representation of the Hbar value.
 func (hbar Hbar) String() string {
 	// Format the string as tinybar if the value is 1000 tinybar or less
 	if -10000 <= hbar.tinybar && hbar.tinybar <= 10000 {
@@ -76,6 +78,7 @@ func (hbar Hbar) String() string {
 	return fmt.Sprintf("%v %s", float64(hbar.tinybar)/float64(HbarUnits.Hbar._NumberOfTinybar()), HbarUnits.Hbar.Symbol())
 }
 
+// HbarFromString returns a Hbar representation of the string provided.
 func HbarFromString(hbar string) (Hbar, error) {
 	var err error
 	match := regexp.MustCompile(`^((?:\+|\-)?\d+(?:\.\d+)?)(?: (tℏ|μℏ|mℏ|ℏ|kℏ|Mℏ|Gℏ))?$`)
@@ -112,10 +115,12 @@ func _HbarUnitFromString(symbol string) HbarUnit {
 	}
 }
 
+// ToString returns a string representation of the Hbar value in the given unit.
 func (hbar Hbar) ToString(unit HbarUnit) string {
 	return fmt.Sprintf("%v %v", float64(hbar.tinybar)/float64(unit._NumberOfTinybar()), unit.Symbol())
 }
 
+// Negated returns the negated value of the Hbar.
 func (hbar Hbar) Negated() Hbar {
 	return Hbar{
 		tinybar: -hbar.tinybar,

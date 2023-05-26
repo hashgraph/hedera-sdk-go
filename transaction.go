@@ -444,6 +444,7 @@ func (this *Transaction) SetGrpcDeadline(deadline *time.Duration) *Transaction {
 	return this
 }
 
+// GetGrpcDeadline returns the grpc deadline
 func (this *Transaction) GetGrpcDeadline() *time.Duration {
 	return this.grpcDeadline
 }
@@ -614,6 +615,7 @@ func _TransactionMapResponse(request interface{}, _ interface{}, nodeID AccountI
 	}, nil
 }
 
+// String returns a string representation of the Transaction
 func (this *Transaction) String() string {
 	switch sig := this.signedTransactions._Get(0).(type) { //nolint
 	case *services.SignedTransaction:
@@ -854,6 +856,7 @@ func (this *Transaction) SetTransactionID(transactionID TransactionID) *Transact
 	return this
 }
 
+// GetNodeAccountID returns the node AccountID for this Transaction.
 func (this *Transaction) GetNodeAccountIDs() (nodeAccountIDs []AccountID) {
 	nodeAccountIDs = []AccountID{}
 

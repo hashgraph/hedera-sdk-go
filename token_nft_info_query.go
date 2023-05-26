@@ -58,6 +58,7 @@ func (query *TokenNftInfoQuery) SetNftID(nftID NftID) *TokenNftInfoQuery {
 	return query
 }
 
+// GetNftID returns the ID of the NFT
 func (query *TokenNftInfoQuery) GetNftID() NftID {
 	if query.nftID == nil {
 		return NftID{}

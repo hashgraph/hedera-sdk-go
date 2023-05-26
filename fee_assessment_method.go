@@ -27,6 +27,7 @@ const (
 	FeeAssessmentMethodExclusive FeeAssessmentMethod = true
 )
 
+// String returns a string representation of the FeeAssessmentMethod
 func (assessment FeeAssessmentMethod) String() string {
 	if assessment {
 		return "FeeAssessmentMethodExclusive"

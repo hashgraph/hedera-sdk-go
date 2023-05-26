@@ -30,10 +30,12 @@ type StorageChange struct {
 	ValueWritten *big.Int
 }
 
+// ToBytes returns the byte representation of the StorageChange
 func (storageChange *StorageChange) ToBytes() []byte {
 	return []byte{}
 }
 
+// StorageChangeFromBytes returns a StorageChange from a byte array
 func StorageChangeFromBytes(data []byte) (StorageChange, error) {
 	return StorageChange{}, nil
 }

@@ -36,6 +36,7 @@ func _NewNetwork() _Network {
 	}
 }
 
+// SetNetwork sets the network to the given map of node addresses.
 func (network *_Network) SetNetwork(net map[string]AccountID) (err error) {
 	newNetwork := make(map[string]_IManagedNode)
 
@@ -212,6 +213,7 @@ func (network *_Network) _GetNodeMaxReadmitPeriod() time.Duration {
 	return network._ManagedNetwork.maxNodeReadmitPeriod
 }
 
+// Close closes the network.
 func (network *_Network) Close() error {
 	err := network._ManagedNetwork._Close()
 	if err != nil {

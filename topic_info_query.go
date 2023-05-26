@@ -54,6 +54,7 @@ func (query *TopicInfoQuery) SetTopicID(topicID TopicID) *TopicInfoQuery {
 	return query
 }
 
+// GetTopicID returns the TopicID for this TopicInfoQuery
 func (query *TopicInfoQuery) GetTopicID() TopicID {
 	if query.topicID == nil {
 		return TopicID{}

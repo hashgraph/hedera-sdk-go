@@ -92,6 +92,7 @@ func (transaction *ScheduleCreateTransaction) SetPayerAccountID(payerAccountID A
 	return transaction
 }
 
+// GetPayerAccountID returns the optional id of the account to be charged the service fee for the scheduled transaction
 func (transaction *ScheduleCreateTransaction) GetPayerAccountID() AccountID {
 	if transaction.payerAccountID == nil {
 		return AccountID{}
@@ -117,6 +118,7 @@ func (transaction *ScheduleCreateTransaction) SetExpirationTime(time time.Time) 
 	return transaction
 }
 
+// GetExpirationTime returns the optional timestamp for specifying when the transaction should be evaluated for execution and then expire.
 func (transaction *ScheduleCreateTransaction) GetExpirationTime() time.Time {
 	if transaction.expirationTime != nil {
 		return *transaction.expirationTime
@@ -138,6 +140,8 @@ func (transaction *ScheduleCreateTransaction) SetWaitForExpiry(wait bool) *Sched
 	return transaction
 }
 
+// GetWaitForExpiry returns true if the transaction will be evaluated for execution at expiration_time instead
+// of when all required signatures are received.
 func (transaction *ScheduleCreateTransaction) GetWaitForExpiry() bool {
 	return transaction.waitForExpiry
 }
@@ -149,6 +153,7 @@ func (transaction *ScheduleCreateTransaction) _SetSchedulableTransactionBody(txB
 	return transaction
 }
 
+// GetAdminKey returns the optional Hedera key which can be used to sign a ScheduleDelete and remove the schedule
 func (transaction *ScheduleCreateTransaction) GetAdminKey() *Key {
 	if transaction.adminKey == nil {
 		return nil
@@ -164,6 +169,7 @@ func (transaction *ScheduleCreateTransaction) SetScheduleMemo(memo string) *Sche
 	return transaction
 }
 
+// GetScheduleMemo returns the optional memo with a UTF-8 encoding of no more than 100 bytes which does not contain the zero byte.
 func (transaction *ScheduleCreateTransaction) GetScheduleMemo() string {
 	return transaction.memo
 }

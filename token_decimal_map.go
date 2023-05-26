@@ -27,6 +27,7 @@ type TokenDecimalMap struct {
 	decimals map[string]uint64
 }
 
+// Get returns the balance of the given tokenID
 func (tokenDecimals *TokenDecimalMap) Get(tokenID TokenID) uint64 {
 	return tokenDecimals.decimals[TokenID{
 		Shard: tokenID.Shard,

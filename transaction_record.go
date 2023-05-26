@@ -63,6 +63,7 @@ type TransactionRecord struct {
 	EvmAddress         []byte
 }
 
+// GetContractExecuteResult returns the ContractFunctionResult if the transaction was a contract call
 func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResult, error) {
 	if record.CallResult == nil || record.CallResultIsCreate {
 		return ContractFunctionResult{}, fmt.Errorf("record does not contain a contract execute result")
@@ -71,6 +72,7 @@ func (record TransactionRecord) GetContractExecuteResult() (ContractFunctionResu
 	return *record.CallResult, nil
 }
 
+// GetContractCreateResult returns the ContractFunctionResult if the transaction was a contract create
 func (record TransactionRecord) GetContractCreateResult() (ContractFunctionResult, error) {
 	if record.CallResult == nil || !record.CallResultIsCreate {
 		return ContractFunctionResult{}, fmt.Errorf("record does not contain a contract create result")
@@ -364,10 +366,12 @@ func (record TransactionRecord) _ToProtobuf() (*services.TransactionGetRecordRes
 	}, err
 }
 
+// Validate checks that the receipt status is Success
 func (record TransactionRecord) ValidateReceiptStatus(shouldValidate bool) error {
 	return record.Receipt.ValidateStatus(shouldValidate)
 }
 
+// ToBytes returns the serialized bytes of a TransactionRecord
 func (record TransactionRecord) ToBytes() []byte {
 	rec, err := record._ToProtobuf()
 	if err != nil {
@@ -381,6 +385,7 @@ func (record TransactionRecord) ToBytes() []byte {
 	return data
 }
 
+// TransactionRecordFromBytes returns a TransactionRecord from a raw protobuf byte array
 func TransactionRecordFromBytes(data []byte) (TransactionRecord, error) {
 	if data == nil {
 		return TransactionRecord{}, errByteArrayNull

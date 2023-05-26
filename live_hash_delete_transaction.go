@@ -69,6 +69,7 @@ func (transaction *LiveHashDeleteTransaction) SetHash(hash []byte) *LiveHashDele
 	return transaction
 }
 
+// GetHash returns the SHA-384 livehash to delete from the account
 func (transaction *LiveHashDeleteTransaction) GetHash() []byte {
 	return transaction.hash
 }

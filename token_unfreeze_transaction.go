@@ -86,6 +86,7 @@ func (transaction *TokenUnfreezeTransaction) SetTokenID(tokenID TokenID) *TokenU
 	return transaction
 }
 
+// GetTokenID returns the token for which this account will be unfrozen.
 func (transaction *TokenUnfreezeTransaction) GetTokenID() TokenID {
 	if transaction.tokenID == nil {
 		return TokenID{}

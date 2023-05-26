@@ -53,6 +53,7 @@ func (query *ScheduleInfoQuery) SetScheduleID(scheduleID ScheduleID) *ScheduleIn
 	return query
 }
 
+// GetScheduleID returns the id of the schedule to interrogate
 func (query *ScheduleInfoQuery) GetScheduleID() ScheduleID {
 	if query.scheduleID == nil {
 		return ScheduleID{}
@@ -264,6 +265,7 @@ func (query *ScheduleInfoQuery) SetNodeAccountIDs(accountID []AccountID) *Schedu
 	return query
 }
 
+// GetNodeAccountIDs returns the _Node AccountID for this ScheduleInfoQuery.
 func (query *ScheduleInfoQuery) GetNodeAccountIDs() []AccountID {
 	return query.Query.GetNodeAccountIDs()
 }

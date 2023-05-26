@@ -68,6 +68,7 @@ func (query *TopicMessageQuery) SetTopicID(topicID TopicID) *TopicMessageQuery {
 	return query
 }
 
+// GetTopicID returns the TopicID for this TopicMessageQuery
 func (query *TopicMessageQuery) GetTopicID() TopicID {
 	if query.topicID == nil {
 		return TopicID{}
@@ -83,6 +84,7 @@ func (query *TopicMessageQuery) SetStartTime(startTime time.Time) *TopicMessageQ
 	return query
 }
 
+// GetStartTime returns the start time for this TopicMessageQuery
 func (query *TopicMessageQuery) GetStartTime() time.Time {
 	if query.startTime != nil {
 		return *query.startTime
@@ -123,20 +125,24 @@ func (query *TopicMessageQuery) SetMaxAttempts(maxAttempts uint64) *TopicMessage
 	return query
 }
 
+// GetMaxAttempts returns the amount of attempts to try to retrieve message
 func (query *TopicMessageQuery) GetMaxAttempts() uint64 {
 	return query.maxAttempts
 }
 
+// SetErrorHandler Sets the error handler for this query
 func (query *TopicMessageQuery) SetErrorHandler(errorHandler func(stat status.Status)) *TopicMessageQuery {
 	query.errorHandler = errorHandler
 	return query
 }
 
+// SetCompletionHandler Sets the completion handler for this query
 func (query *TopicMessageQuery) SetCompletionHandler(completionHandler func()) *TopicMessageQuery {
 	query.completionHandler = completionHandler
 	return query
 }
 
+// SetRetryHandler Sets the retry handler for this query
 func (query *TopicMessageQuery) SetRetryHandler(retryHandler func(err error) bool) *TopicMessageQuery {
 	query.retryHandler = retryHandler
 	return query
@@ -177,6 +183,7 @@ func (query *TopicMessageQuery) _Build() *mirror.ConsensusTopicQuery {
 	return body
 }
 
+// Subscribe subscribes to messages sent to the specific TopicID
 func (query *TopicMessageQuery) Subscribe(client *Client, onNext func(TopicMessage)) (SubscriptionHandle, error) {
 	handle := SubscriptionHandle{}
 

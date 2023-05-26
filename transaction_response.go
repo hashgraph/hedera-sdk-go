@@ -28,6 +28,7 @@ type TransactionResponse struct {
 	ValidateStatus         bool
 }
 
+// GetReceipt retrieves the receipt for the transaction
 func (response TransactionResponse) GetReceipt(client *Client) (TransactionReceipt, error) {
 	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
@@ -41,6 +42,7 @@ func (response TransactionResponse) GetReceipt(client *Client) (TransactionRecei
 	return receipt, receipt.ValidateStatus(response.ValidateStatus)
 }
 
+// GetRecord retrieves the record for the transaction
 func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord, error) {
 	receipt, err := NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
@@ -58,23 +60,27 @@ func (response TransactionResponse) GetRecord(client *Client) (TransactionRecord
 		Execute(client)
 }
 
+// GetReceiptQuery retrieves the receipt query for the transaction
 func (response TransactionResponse) GetReceiptQuery() *TransactionReceiptQuery {
 	return NewTransactionReceiptQuery().
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID})
 }
 
+// GetRecordQuery retrieves the record query for the transaction
 func (response TransactionResponse) GetRecordQuery() *TransactionRecordQuery {
 	return NewTransactionRecordQuery().
 		SetTransactionID(response.TransactionID).
 		SetNodeAccountIDs([]AccountID{response.NodeID})
 }
 
+// SetValidateStatus sets the validate status for the transaction
 func (response TransactionResponse) SetValidateStatus(validate bool) *TransactionResponse {
 	response.ValidateStatus = validate
 	return &response
 }
 
+// GetValidateStatus returns the validate status for the transaction
 func (response TransactionResponse) GetValidateStatus() bool {
 	return response.ValidateStatus
 }

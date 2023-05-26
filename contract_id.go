@@ -159,6 +159,7 @@ func (id ContractID) String() string {
 	return fmt.Sprintf("%d.%d.%d", id.Shard, id.Realm, id.Contract)
 }
 
+// ToStringWithChecksum returns the string representation of a ContractID formatted as `Shard.Realm.Contract-Checksum`
 func (id ContractID) ToStringWithChecksum(client Client) (string, error) {
 	if id.EvmAddress != nil {
 		return "", errors.New("EvmAddress doesn't support checksums")
@@ -230,6 +231,7 @@ func (id ContractID) _ToProtoKey() *services.Key {
 	return &services.Key{Key: &services.Key_ContractID{ContractID: id._ToProtobuf()}}
 }
 
+// ToBytes returns a byte array representation of the ContractID
 func (id ContractID) ToBytes() []byte {
 	data, err := protobuf.Marshal(id._ToProtobuf())
 	if err != nil {
@@ -239,6 +241,7 @@ func (id ContractID) ToBytes() []byte {
 	return data
 }
 
+// ContractIDFromBytes returns a ContractID generated from a byte array
 func ContractIDFromBytes(data []byte) (ContractID, error) {
 	pb := services.ContractID{}
 	err := protobuf.Unmarshal(data, &pb)

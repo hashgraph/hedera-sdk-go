@@ -67,6 +67,8 @@ func (query *TransactionReceiptQuery) SetIncludeChildren(includeChildReceipts bo
 	return query
 }
 
+// GetIncludeChildren returns whether the response should include the receipts of any child transactions spawned by the
+// top-level transaction with the given transactionID.
 func (query *TransactionReceiptQuery) GetIncludeChildren() bool {
 	if query.childReceipts != nil {
 		return *query.childReceipts
@@ -85,6 +87,8 @@ func (query *TransactionReceiptQuery) SetIncludeDuplicates(includeDuplicates boo
 	return query
 }
 
+// GetIncludeDuplicates returns whether receipts of processing duplicate transactions should be returned along with the
+// receipt of processing the first consensus transaction with the given id
 func (query *TransactionReceiptQuery) GetIncludeDuplicates() bool {
 	if query.duplicates != nil {
 		return *query.duplicates
@@ -227,11 +231,13 @@ func _TransactionReceiptQueryGetMethod(_ interface{}, channel *_Channel) _Method
 	}
 }
 
+// SetTransactionID sets the TransactionID for which the receipt is being requested.
 func (query *TransactionReceiptQuery) SetTransactionID(transactionID TransactionID) *TransactionReceiptQuery {
 	query.transactionID = &transactionID
 	return query
 }
 
+// GetTransactionID returns the TransactionID for which the receipt is being requested.
 func (query *TransactionReceiptQuery) GetTransactionID() TransactionID {
 	if query.transactionID == nil {
 		return TransactionID{}

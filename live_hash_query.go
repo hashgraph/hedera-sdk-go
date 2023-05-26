@@ -54,6 +54,7 @@ func (query *LiveHashQuery) SetAccountID(accountID AccountID) *LiveHashQuery {
 	return query
 }
 
+// GetAccountID returns the AccountID to which the livehash is associated
 func (query *LiveHashQuery) GetAccountID() AccountID {
 	if query.accountID == nil {
 		return AccountID{}
@@ -68,6 +69,7 @@ func (query *LiveHashQuery) SetHash(hash []byte) *LiveHashQuery {
 	return query
 }
 
+// GetHash returns the SHA-384 data in the livehash
 func (query *LiveHashQuery) GetGetHash() []byte {
 	return query.hash
 }

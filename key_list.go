@@ -31,6 +31,7 @@ type KeyList struct {
 	threshold int
 }
 
+// NewKeyListWithThreshold creates a new KeyList with the given threshold
 func KeyListWithThreshold(threshold uint) *KeyList {
 	return &KeyList{
 		keys:      make([]Key, 0),
@@ -38,6 +39,7 @@ func KeyListWithThreshold(threshold uint) *KeyList {
 	}
 }
 
+// NewKeyList creates a new KeyList with no threshold
 func NewKeyList() *KeyList {
 	return &KeyList{
 		keys:      make([]Key, 0),
@@ -45,11 +47,13 @@ func NewKeyList() *KeyList {
 	}
 }
 
+// Add adds a key to the KeyList
 func (kl *KeyList) Add(key Key) *KeyList {
 	kl.keys = append(kl.keys, key)
 	return kl
 }
 
+// AddAll adds all the keys to the KeyList
 func (kl *KeyList) AddAll(keys []Key) *KeyList {
 	for _, key := range keys {
 		kl.Add(key)
@@ -58,6 +62,7 @@ func (kl *KeyList) AddAll(keys []Key) *KeyList {
 	return kl
 }
 
+// AddAllPublicKeys adds all the public keys to the KeyList
 func (kl *KeyList) AddAllPublicKeys(keys []PublicKey) *KeyList {
 	for _, key := range keys {
 		kl.Add(key)
@@ -66,6 +71,7 @@ func (kl *KeyList) AddAllPublicKeys(keys []PublicKey) *KeyList {
 	return kl
 }
 
+// String returns a string representation of the KeyList
 func (kl *KeyList) String() string {
 	var s string
 	if kl.threshold > 0 {

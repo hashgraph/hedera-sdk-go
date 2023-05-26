@@ -96,6 +96,7 @@ func _PauseStatusFromProtobuf(pb services.TokenPauseStatus) *bool {
 	return &pauseStatus
 }
 
+// FreezeStatusToProtobuf converts the TokenInfo's DefaultFreezeStatus to a protobuf TokenFreezeStatus
 func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *services.TokenFreezeStatus {
 	var freezeStatus services.TokenFreezeStatus
 
@@ -115,6 +116,7 @@ func (tokenInfo *TokenInfo) FreezeStatusToProtobuf() *services.TokenFreezeStatus
 	return &freezeStatus
 }
 
+// KycStatusToProtobuf converts the TokenInfo's DefaultKycStatus to a protobuf TokenKycStatus
 func (tokenInfo *TokenInfo) KycStatusToProtobuf() *services.TokenKycStatus {
 	var kycStatus services.TokenKycStatus
 
@@ -134,6 +136,7 @@ func (tokenInfo *TokenInfo) KycStatusToProtobuf() *services.TokenKycStatus {
 	return &kycStatus
 }
 
+// PauseStatusToProtobuf converts the TokenInfo's PauseStatus to a protobuf TokenPauseStatus
 func (tokenInfo *TokenInfo) PauseStatusToProtobuf() *services.TokenPauseStatus {
 	var pauseStatus services.TokenPauseStatus
 
@@ -338,6 +341,7 @@ func (tokenInfo *TokenInfo) _ToProtobuf() *services.TokenInfo {
 	}
 }
 
+// ToBytes returns the byte representation of the TokenInfo
 func (tokenInfo TokenInfo) ToBytes() []byte {
 	data, err := protobuf.Marshal(tokenInfo._ToProtobuf())
 	if err != nil {
@@ -347,6 +351,7 @@ func (tokenInfo TokenInfo) ToBytes() []byte {
 	return data
 }
 
+// TokenInfoFromBytes returns a TokenInfo struct from a raw protobuf byte array
 func TokenInfoFromBytes(data []byte) (TokenInfo, error) {
 	if data == nil {
 		return TokenInfo{}, errByteArrayNull

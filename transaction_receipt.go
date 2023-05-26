@@ -202,6 +202,7 @@ func (receipt TransactionReceipt) _ToProtobuf() *services.TransactionGetReceiptR
 	}
 }
 
+// ValidateStatus validates the status of the receipt
 func (receipt TransactionReceipt) ValidateStatus(shouldValidate bool) error {
 	if shouldValidate && receipt.Status != StatusSuccess {
 		if receipt.TransactionID != nil {
@@ -213,6 +214,7 @@ func (receipt TransactionReceipt) ValidateStatus(shouldValidate bool) error {
 	return nil
 }
 
+// ToBytes returns the byte representation of the receipt
 func (receipt TransactionReceipt) ToBytes() []byte {
 	data, err := protobuf.Marshal(receipt._ToProtobuf())
 	if err != nil {
@@ -222,6 +224,7 @@ func (receipt TransactionReceipt) ToBytes() []byte {
 	return data
 }
 
+// TransactionReceiptFromBytes returns the receipt from the byte representation
 func TransactionReceiptFromBytes(data []byte) (TransactionReceipt, error) {
 	if data == nil {
 		return TransactionReceipt{}, errByteArrayNull

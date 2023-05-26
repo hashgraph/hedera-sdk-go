@@ -67,6 +67,7 @@ func (query *ContractCallQuery) SetContractID(contractID ContractID) *ContractCa
 	return query
 }
 
+// GetContractID returns the contract instance to call
 func (query *ContractCallQuery) GetContractID() ContractID {
 	if query.contractID == nil {
 		return ContractID{}
@@ -84,6 +85,7 @@ func (query *ContractCallQuery) SetSenderID(id AccountID) *ContractCallQuery {
 	return query
 }
 
+// GetSenderID returns the AccountID that is the "sender."
 func (query *ContractCallQuery) GetSenderID() AccountID {
 	if query.senderID == nil {
 		return AccountID{}
@@ -98,6 +100,7 @@ func (query *ContractCallQuery) SetGas(gas uint64) *ContractCallQuery {
 	return query
 }
 
+// GetGas returns the amount of gas to use for the call.
 func (query *ContractCallQuery) GetGas() uint64 {
 	return query.gas
 }
@@ -118,11 +121,13 @@ func (query *ContractCallQuery) SetFunction(name string, params *ContractFunctio
 	return query
 }
 
+// SetFunctionParameters sets the function parameters as their raw bytes.
 func (query *ContractCallQuery) SetFunctionParameters(byteArray []byte) *ContractCallQuery {
 	query.functionParameters = byteArray
 	return query
 }
 
+// GetFunctionParameters returns the function parameters as their raw bytes.
 func (query *ContractCallQuery) GetFunctionParameters() []byte {
 	return query.functionParameters
 }
