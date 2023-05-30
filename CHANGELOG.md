@@ -2,7 +2,7 @@
 
 ### Added
 
-* Comments on thereset of the functions
+* Comments on the rest of the functions
 
 ## v2.24.2
 
