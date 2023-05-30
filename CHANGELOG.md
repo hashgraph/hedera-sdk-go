@@ -1,3 +1,9 @@
+## v2.24.3
+
+### Added
+
+* Comments on thereset of the functions
+
 ## v2.24.2
 
 ### Added
